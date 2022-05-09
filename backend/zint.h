@@ -1,7 +1,7 @@
 /*  zint.h - definitions for libzint
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 /*
  * For version, see "zintconfig.h"
  * For documentation, see "../docs/manual.txt"
@@ -83,7 +82,7 @@ extern "C" {
 
     /* Structured Append info - ignored unless `zint_structapp.count` is set to non-zero value */
     struct zint_structapp {
-        int index;          /* Position in Structured Append sequence, 1-based. Must be <= count */
+        int index;          /* Position in Structured Append sequence, 1-based. Must be <= `count` */
         int count;          /* Number of symbols in Structured Append sequence. Set >= 2 to add SA Info */
         char id[32];        /* Optional ID to distinguish sequence, ASCII, NUL-terminated unless max 32 long */
     };
@@ -129,6 +128,13 @@ extern "C" {
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
     };
 
+    /* Segment for use with `ZBarcode_Encode_Segs()` below */
+    struct zint_seg {
+        unsigned char *source; /* Data to encode */
+        int length;         /* Length of `source`. If 0, `source` must be NUL-terminated */
+        int eci;            /* Extended Channel Interpretation */
+    };
+
 /* Symbologies (`symbol->symbology`) */
     /* Tbarcode 7 codes */
 #define BARCODE_CODE11          1   /* Code 11 */
@@ -163,7 +169,7 @@ extern "C" {
 #define BARCODE_UPCA_CHK        35  /* UPC-A + Check Digit */
 #define BARCODE_UPCE            37  /* UPC-E */
 #define BARCODE_UPCE_CHK        38  /* UPC-E + Check Digit */
-#define BARCODE_POSTNET         40  /* USPS POSTNET */
+#define BARCODE_POSTNET         40  /* USPS (U.S. Postal Service) POSTNET */
 #define BARCODE_MSI_PLESSEY     47  /* MSI Plessey */
 #define BARCODE_FIM             49  /* Facing Identification Mark */
 #define BARCODE_LOGMARS         50  /* LOGMARS */
@@ -211,7 +217,7 @@ extern "C" {
 #define BARCODE_MICROQR         97  /* Micro QR Code */
 
     /* Tbarcode 9 codes */
-#define BARCODE_HIBC_128        98  /* HIBC Code 128 */
+#define BARCODE_HIBC_128        98  /* HIBC (Health Industry Barcode) Code 128 */
 #define BARCODE_HIBC_39         99  /* HIBC Code 39 */
 #define BARCODE_HIBC_DM         102 /* HIBC Data Matrix */
 #define BARCODE_HIBC_QR         104 /* HIBC QR Code */
@@ -333,6 +339,8 @@ extern "C" {
 
 /* The largest amount of data that can be encoded is 4350 4-byte UTF-8 chars in Han Xin Code */
 #define ZINT_MAX_DATA_LEN       17400
+/* Maximum number of segments allowed for (`seg_count`) */
+#define ZINT_MAX_SEG_COUNT      256
 
 /* Debug flags (debug) */
 #define ZINT_DEBUG_PRINT        0x0001  /* Print debug info (if any) to stdout */
@@ -360,8 +368,12 @@ extern "C" {
     ZINT_EXTERN void ZBarcode_Delete(struct zint_symbol *symbol);
 
 
-    /* Encode a barcode. If `length` is 0, `source` must be NUL-terminated. */
+    /* Encode a barcode. If `length` is 0, `source` must be NUL-terminated */
     ZINT_EXTERN int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length);
+
+    /* Encode a barcode with multiple ECI segments */
+    ZINT_EXTERN int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[],
+                        const int seg_count);
 
     /* Encode a barcode using input data from file `filename` */
     ZINT_EXTERN int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename);
@@ -373,6 +385,10 @@ extern "C" {
     /* Encode and output a symbol to file `symbol->outfile` */
     ZINT_EXTERN int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, const unsigned char *source, int length,
                         int rotate_angle);
+
+    /* Encode a symbol with multiple ECI segments and output to file `symbol->outfile` */
+    ZINT_EXTERN int ZBarcode_Encode_Segs_and_Print(struct zint_symbol *symbol, const struct zint_seg segs[],
+                        const int seg_count, int rotate_angle);
 
     /* Encode a symbol using input data from file `filename` and output to file `symbol->outfile` */
     ZINT_EXTERN int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, const char *filename,
@@ -386,6 +402,10 @@ extern "C" {
     ZINT_EXTERN int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, const unsigned char *source, int length,
                         int rotate_angle);
 
+    /* Encode a symbol with multiple ECI segments and output to memory as raster (`symbol->bitmap`) */
+    ZINT_EXTERN int ZBarcode_Encode_Segs_and_Buffer(struct zint_symbol *symbol, const struct zint_seg segs[],
+                        const int seg_count, int rotate_angle);
+
     /* Encode a symbol using input data from file `filename` and output to memory as raster (`symbol->bitmap`) */
     ZINT_EXTERN int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, const char *filename,
                         int rotate_angle);
@@ -397,6 +417,10 @@ extern "C" {
     /* Encode and output a symbol to memory as vector (`symbol->vector`) */
     ZINT_EXTERN int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, const unsigned char *source,
                         int length, int rotate_angle);
+
+    /* Encode a symbol with multiple ECI segments and output to memory as vector (`symbol->vector`) */
+    ZINT_EXTERN int ZBarcode_Encode_Segs_and_Buffer_Vector(struct zint_symbol *symbol, const struct zint_seg segs[],
+                        const int seg_count, int rotate_angle);
 
     /* Encode a symbol using input data from file `filename` and output to memory as vector (`symbol->vector`) */
     ZINT_EXTERN int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, const char *filename,
@@ -420,4 +444,5 @@ extern "C" {
 }
 #endif /* __cplusplus */
 
+/* vim: set ts=4 sw=4 et : */
 #endif /* ZINT_H */

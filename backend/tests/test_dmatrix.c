@@ -653,8 +653,11 @@ static void test_reader_init(int index, int generate, int debug) {
     testFinish();
 }
 
+#define ZINT_TEST_ENCODING
+#ifdef ZINT_TEST_ENCODING
 STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned char source[],
-            unsigned char target[], int *p_length, int *p_binlen);
+            const int length, const int eci, const int gs1, unsigned char target[], int *p_tp);
+#endif
 
 static void test_input(int index, int generate, int debug) {
 
@@ -967,7 +970,7 @@ static void test_input(int index, int generate, int debug) {
                     } else {
                         char modules_dump[144 * 144 + 1];
                         assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
@@ -988,13 +991,14 @@ static void test_input(int index, int generate, int debug) {
                 }
             }
 
+#ifdef ZINT_TEST_ENCODING
             if (ret < ZINT_ERROR) {
                 if (i && (data[i].input_mode & 0x07) == (data[i - 1].input_mode & 0x07) && !(data[i].input_mode & FAST_MODE) && (data[i - 1].input_mode & FAST_MODE)
                         && data[i].eci == data[i - 1].eci && data[i].option_2 == data[i - 1].option_2
                         && data[i].option_3 == data[i - 1].option_3 && data[i].output_options == data[i - 1].output_options
                         && strcmp(data[i].data, data[i - 1].data) == 0) {
                     unsigned char binary[2][2200];
-                    int inputlen;
+                    int gs1;
                     int binlen;
                     int binlens[2] = {0};
                     unsigned char reduced[1000];
@@ -1012,18 +1016,18 @@ static void test_input(int index, int generate, int debug) {
                     } else {
                         text = (unsigned char *) data[i].data;
                     }
-                    inputlen = length;
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
-                    ret = dm_encode(symbol, text, binary[0], &inputlen, &binlen);
+                    gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+                    ret = dm_encode(symbol, text, length, symbol->eci, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
 
-                    inputlen = length;
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
-                    ret = dm_encode(symbol, text, binary[1], &inputlen, &binlen);
+                    gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+                    ret = dm_encode(symbol, text, length, symbol->eci, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -1035,6 +1039,7 @@ static void test_input(int index, int generate, int debug) {
                     }
                 }
             }
+#endif
         }
 
         ZBarcode_Delete(symbol);
@@ -1736,7 +1741,7 @@ static void test_encode(int index, int generate, int debug) {
                     "11110110001001001010110111010110"
                     "11111111111111111111111111111111"
                 },
-        /* 33*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 1,
+        /* 33*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 2,
                     "10101010101010101010101010101010"
                     "11001000010111111001100001001011"
                     "10001001100001101101000101000010"
@@ -5219,7 +5224,7 @@ static void test_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
@@ -5239,12 +5244,13 @@ static void test_encode(int index, int generate, int debug) {
                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                 }
 
+#ifdef ZINT_TEST_ENCODING
                 if (i && (data[i].input_mode & 0x07) == (data[i - 1].input_mode & 0x07) && !(data[i].input_mode & FAST_MODE) && (data[i - 1].input_mode & FAST_MODE)
                         && data[i].eci == data[i - 1].eci && data[i].option_2 == data[i - 1].option_2
                         && data[i].option_3 == data[i - 1].option_3 && data[i].output_options == data[i - 1].output_options
                         && strcmp(data[i].data, data[i - 1].data) == 0) {
                     unsigned char binary[2][2200];
-                    int inputlen;
+                    int gs1;
                     int binlen;
                     int binlens[2] = {0};
 
@@ -5252,18 +5258,18 @@ static void test_encode(int index, int generate, int debug) {
                         "i:%d data[i].expected_rows * data[i].expected_width %d > data[i - 1].expected_rows * data[i - 1].expected_width %d\n", i,
                         data[i].expected_rows * data[i].expected_width, data[i - 1].expected_rows * data[i - 1].expected_width);
 
-                    inputlen = length;
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
-                    ret = dm_encode(symbol, (unsigned char *) data[i].data, binary[0], &inputlen, &binlen);
+                    gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+                    ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
 
-                    inputlen = length;
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
-                    ret = dm_encode(symbol, (unsigned char *) data[i].data, binary[1], &inputlen, &binlen);
+                    gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+                    ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -5271,6 +5277,287 @@ static void test_encode(int index, int generate, int debug) {
                     assert_equal(binlens[1] <= binlens[0], 1, "i:%d binlens[1] %d > binlens[0] %d\n", i, binlens[1], binlens[0]);
                     assert_equal(binlens[0], binlens[1] + data[i].expected_diff, "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
                                 i, binlens[0], binlens[1] + data[i].expected_diff, binlens[1], data[i].expected_diff);
+                }
+#endif
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_encode_segs(int index, int generate, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int output_options;
+        int option_2;
+        int option_3;
+        struct zint_structapp structapp;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        int bwipp_cmp;
+        char *comment;
+        char *expected;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 14, 14, 1, "ISO 16022:2006 11.6 example",
+                    "10101010101010"
+                    "10000100111111"
+                    "11101100000000"
+                    "11111010010001"
+                    "11000110001000"
+                    "11110110011111"
+                    "10111101000000"
+                    "10010010000111"
+                    "10100110111100"
+                    "11011111011011"
+                    "10101001101110"
+                    "10001001101001"
+                    "10011111100000"
+                    "11111111111111"
+                },
+        /*  1*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 14, 14, 1, "ISO 16022:2006 11.6 example auto-ECI",
+                    "10101010101010"
+                    "10000100111111"
+                    "11101100000000"
+                    "11111010010001"
+                    "11000110001000"
+                    "11110110011111"
+                    "10111101000000"
+                    "10010010000111"
+                    "10100110111100"
+                    "11011111011011"
+                    "10101001101110"
+                    "10001001101001"
+                    "10011111100000"
+                    "11111111111111"
+                },
+        /*  2*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 14, 14, 1, "ISO 16022:2006 11.6 example auto-ECI inverted",
+                    "10101010101010"
+                    "10001111001101"
+                    "10011111110110"
+                    "10001100000111"
+                    "10000011111010"
+                    "11000001100101"
+                    "11100001111110"
+                    "10101101000111"
+                    "11101101001110"
+                    "11100001000001"
+                    "11110100111010"
+                    "10010111100111"
+                    "10011001010000"
+                    "11111111111111"
+                },
+        /*  3*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 14, 14, 1, "ISO 16022:2006 11.6 example inverted auto-ECI",
+                    "10101010101010"
+                    "10001111001101"
+                    "10011111110110"
+                    "10001100000111"
+                    "10000011111010"
+                    "11000001100101"
+                    "11100001111110"
+                    "10101101000111"
+                    "11101101001110"
+                    "11100001000001"
+                    "11110100111010"
+                    "10010111100111"
+                    "10011001010000"
+                    "11111111111111"
+                },
+        /*  4*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 52, 52, 0, "AIM ITS/04-023:2022 Annex A example **NOT SAME** example corrupt??; BWIPP different encodation",
+                    "1010101010101010101010101010101010101010101010101010"
+                    "1001111110000011100010110111011001110111111001111011"
+                    "1000000101110101100111011011101110011001111001000100"
+                    "1100110100101001111110011111001110000110000111101111"
+                    "1001101110101111110111110010111100011101001000010110"
+                    "1110110010010101001110011111001001011001010001001001"
+                    "1011111001110110111110111010011000101100110010000110"
+                    "1000010111011001010111101110001100011011110011000011"
+                    "1010010110001000100110010010011001000110001111101100"
+                    "1011011010010000111001000111010000010101010000010111"
+                    "1111001000010000010000010011101110011011010011011100"
+                    "1000110001001000001100000111110000001111010011110111"
+                    "1100100011001001011000011011010010110010100000101000"
+                    "1011000000001101110101001110111010000100000100111111"
+                    "1010001011100101001100110011110011100111001010100000"
+                    "1010001110111001100001100111100110001111011001011101"
+                    "1001110101011110011000011010110101111101000110000000"
+                    "1001010111111011101111111111001000100011111111011001"
+                    "1100000100000111010100111010110101110011010011100000"
+                    "1000011000010011111011011110111111100101010110011001"
+                    "1000001000101000011010100011000110110100000100011100"
+                    "1000110110011010111111001111101001001001110000000101"
+                    "1100011111101110000011100010100101111110100101100010"
+                    "1110100000110111110110010111010101111110111110111001"
+                    "1101100110011001001101000011110110101011001001101110"
+                    "1111111111111111111111111111111111111111111111111111"
+                    "1010101010101010101010101010101010101010101010101010"
+                    "1010001100010001001111010111111001010101000110010101"
+                    "1000110000010111111000011011110010101010101000011100"
+                    "1001110110101100101110010111101010011011011011110111"
+                    "1010110000000100101010010010111000010101100001001000"
+                    "1111100001101000011110000111000100111111010100001101"
+                    "1001110010010010000000010011010110010001101101111110"
+                    "1011010010011010100000000111110110010101000100100001"
+                    "1011000111011001111010110010101101100100010010100000"
+                    "1110100011100110001001101111110010111100010010001101"
+                    "1111111010100111111010111010000011100111111010111110"
+                    "1101000000010110010000000110000001010011000001000011"
+                    "1101100101110111000011111011100101000100110001101000"
+                    "1011110111000000000110111111000110000011001101110111"
+                    "1100011000010001101101011011010011100011000010001100"
+                    "1011001111111111110011100111001000001000101001000111"
+                    "1011000101011101100001111010011101011000000000100110"
+                    "1000010011100100111000010110010110010111100010100011"
+                    "1000010111101101110100000010001110000111110010111000"
+                    "1010111010111001011110010111000010010001010111101011"
+                    "1101011010010010011000011010110111000101111000011100"
+                    "1111111000111101110111011111011110101111100100010011"
+                    "1100110000000100110000111011100110101110101011011000"
+                    "1101101101001110001100100111011110110000000010010101"
+                    "1101011000011011100011100010001001010110110010101110"
+                    "1111111111111111111111111111111111111111111111111111"
+                },
+        /*  5*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("price:$439.97"), -1, 3 }, { TU("零售价:￥3149.79"), -1, 29 }, { TU("Preis:444,90 €"), -1, 17 } }, 0, 16, 48, 1, "AIM ITS/04-023:2022 Annex A example price only",
+                    "101010101010101010101010101010101010101010101010"
+                    "100001110110010111001111101001001000110101101111"
+                    "100001011100111101001110111101110011001101011100"
+                    "110010100011100110010101100101101010001101110111"
+                    "100101010111111010110010111000011000011000001110"
+                    "111000011111100110110101110110010001000000001001"
+                    "111001110100011100001100111010100000001100101100"
+                    "100100100000111101000111100000111111000101110111"
+                    "110101111100000101011100100010011101010101001110"
+                    "100101111010010100101111110011010011011010100001"
+                    "110001110001010011101100100000100001010111000000"
+                    "110111110100110011000001110000000100010011100011"
+                    "100001001001011101011100110101010101100000100010"
+                    "101000111110011010011101111110111000001110011011"
+                    "110011100111011000101110100011101100000110010010"
+                    "111111111111111111111111111111111111111111111111"
+                },
+        /*  6*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, 0, 8, 32, 1, "Standard example + extra seg, data mode",
+                    "10101010101010101010101010101010"
+                    "10000100100011111101000010000011"
+                    "11101100000000101110100001010100"
+                    "11111011110010011011000100011111"
+                    "11000111100111101101010111010110"
+                    "11110110010001111100110110010101"
+                    "11111110000111001100101011000000"
+                    "11111111111111111111111111111111"
+                },
+        /*  7*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 1, 2, "001001" }, { { TU("A"), -1, 3 }, { TU("B"), -1, 4 }, { TU("C"), -1, 5 } }, 0, 12, 26, 1, "",
+                    "10101010101010101010101010"
+                    "10000100011110000011000101"
+                    "10011100111010100100011000"
+                    "11111100100100001110011111"
+                    "11000010000100110011010100"
+                    "11000000110100010011001001"
+                    "11100000111111010111000000"
+                    "10011101101010000100011101"
+                    "11011000101010010101011000"
+                    "10000100000010000011010001"
+                    "10000011000001110111011000"
+                    "11111111111111111111111111"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+
+    testStart("test_encode_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options,
+                                    NULL, 0, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            char escaped1[4096];
+            char escaped2[4096];
+            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %s, %s, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    testUtilOutputOptionsName(data[i].output_options),
+                    data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            testUtilModulesPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < ZINT_ERROR) {
+                int width, row;
+
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwippSegs(i, symbol, -1, data[i].option_2, -1, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length, debug)) {
+                    if (data[i].input_mode == DATA_MODE) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology));
+                        }
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[144 * 144 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length,
+                                modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
+                                NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                    }
                 }
             }
         }
@@ -5281,6 +5568,7 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
+#ifdef ZINT_TEST_ENCODING
 static void test_minimalenc(int index, int debug) {
 
     struct item {
@@ -6320,7 +6608,7 @@ static void test_minimalenc(int index, int debug) {
     struct zint_symbol *symbol;
 
     unsigned char binary[2][2200];
-    int inputlen;
+    int gs1;
     int binlen;
     int binlens[2] = {0};
 
@@ -6336,18 +6624,18 @@ static void test_minimalenc(int index, int debug) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, data[i].data, data[i].length, debug);
 
-        inputlen = length;
         binlen = 0;
         symbol->input_mode |= FAST_MODE;
-        ret = dm_encode(symbol, (unsigned char *) data[i].data, binary[0], &inputlen, &binlen);
+        gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+        ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() FAST_MODE ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[0] = binlen;
 
-        inputlen = length;
         binlen = 0;
         symbol->input_mode &= ~FAST_MODE;
-        ret = dm_encode(symbol, (unsigned char *) data[i].data, binary[1], &inputlen, &binlen);
+        gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+        ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() minimal ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[1] = binlen;
@@ -6371,6 +6659,7 @@ static void test_minimalenc(int index, int debug) {
 
     testFinish();
 }
+#endif
 
 #include <time.h>
 
@@ -6554,7 +6843,10 @@ int main(int argc, char *argv[]) {
         { "test_reader_init", test_reader_init, 1, 1, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
+        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
+#ifdef ZINT_TEST_ENCODING
         { "test_minimalenc", test_minimalenc, 1, 0, 1 },
+#endif
         { "test_perf", test_perf, 1, 0, 1 },
     };
 

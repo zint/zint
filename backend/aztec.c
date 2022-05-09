@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <assert.h>
 #include <stdio.h>
@@ -100,9 +99,10 @@ static int az_bin_append_posn(const int arg, const int length, char *binary, con
 }
 
 static int aztec_text_process(const unsigned char source[], int src_len, int bp, char binary_string[], const int gs1,
-            const int eci, int *data_length, const int debug_print) {
+            const int eci, char *p_current_mode, int *data_length, const int debug_print) {
 
     int i, j;
+    const char initial_mode = p_current_mode ? *p_current_mode : 'U';
     char current_mode;
     int count;
     char next_mode;
@@ -129,7 +129,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
 
     // Deal first with letter combinations which can be combined to one codeword
     // Combinations are (CR LF) (. SP) (, SP) (: SP) in Punct mode
-    current_mode = 'U';
+    current_mode = initial_mode;
     for (i = 0; i + 1 < src_len; i++) {
         // Combination (CR LF) should always be in Punct mode
         if ((source[i] == 13) && (source[i + 1] == 10)) {
@@ -230,7 +230,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
 
     reduced_length = j;
 
-    current_mode = 'U';
+    current_mode = initial_mode;
     for (i = 0; i < reduced_length; i++) {
         // Resolve Carriage Return (CR) which can be Punct or Mixed mode
         if (reduced_source[i] == 13) {
@@ -386,7 +386,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     }
 
     // Decide when to use P/S instead of P/L and U/S instead of U/L
-    current_mode = 'U';
+    current_mode = initial_mode;
     for (i = 0; i < reduced_length; i++) {
 
         if (reduced_encode_mode[i] != current_mode) {
@@ -459,14 +459,14 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
         printf("%.*s\n", reduced_length, reduced_encode_mode);
     }
 
-    if (gs1) {
+    if (bp == 0 && gs1) {
         bp = bin_append_posn(0, 5, binary_string, bp); // P/S
         bp = bin_append_posn(0, 5, binary_string, bp); // FLG(n)
         bp = bin_append_posn(0, 3, binary_string, bp); // FLG(0)
     }
 
     if (eci != 0) {
-        bp = bin_append_posn(0, 5, binary_string, bp); // P/S
+        bp = bin_append_posn(0, initial_mode == 'D' ? 4 : 5, binary_string, bp); // P/S
         bp = bin_append_posn(0, 5, binary_string, bp); // FLG(n)
         if (eci < 10) {
             bp = bin_append_posn(1, 3, binary_string, bp); // FLG(1)
@@ -504,7 +504,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
         }
     }
 
-    current_mode = 'U';
+    current_mode = initial_mode;
     for (i = 0; i < reduced_length; i++) {
 
         if (reduced_encode_mode[i] != 'B') {
@@ -516,124 +516,124 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
             if (current_mode == 'U') {
                 switch (reduced_encode_mode[i]) {
                     case 'L':
-                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // L/L
+                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return 0; // L/L
                         break;
                     case 'M':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
                         break;
                     case 'P':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // P/L
                         break;
                     case 'p':
-                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/S
+                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0; // P/S
                         break;
                     case 'D':
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // D/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // D/L
                         break;
                     case 'B':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // B/S
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // B/S
                         break;
                 }
             } else if (current_mode == 'L') {
                 switch (reduced_encode_mode[i]) {
                     case 'U':
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // D/L
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // D/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
                         break;
                     case 'u':
-                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/S
+                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return 0; // U/S
                         break;
                     case 'M':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
                         break;
                     case 'P':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // P/L
                         break;
                     case 'p':
-                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/S
+                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0; // P/S
                         break;
                     case 'D':
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // D/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // D/L
                         break;
                     case 'B':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // B/S
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // B/S
                         break;
                 }
             } else if (current_mode == 'M') {
                 switch (reduced_encode_mode[i]) {
                     case 'U':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // U/L
                         break;
                     case 'L':
-                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // L/L
+                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return 0; // L/L
                         break;
                     case 'P':
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // P/L
                         break;
                     case 'p':
-                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/S
+                        if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0; // P/S
                         break;
                     case 'D':
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // D/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // D/L
                         break;
                     case 'B':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // B/S
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // B/S
                         break;
                 }
             } else if (current_mode == 'P') {
                 switch (reduced_encode_mode[i]) {
                     case 'U':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // U/L
                         break;
                     case 'L':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // L/L
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return 0; // L/L
                         break;
                     case 'M':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
                         break;
                     case 'D':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // D/L
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // D/L
                         break;
                     case 'B':
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // U/L
                         current_mode = 'U';
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // B/S
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // B/S
                         break;
                 }
             } else if (current_mode == 'D') {
                 switch (reduced_encode_mode[i]) {
                     case 'U':
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
                         break;
                     case 'u':
-                        if (!(bp = az_bin_append_posn(15, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/S
+                        if (!(bp = az_bin_append_posn(15, 4, binary_string, bp))) return 0; // U/S
                         break;
                     case 'L':
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // L/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(28, 5, binary_string, bp))) return 0; // L/L
                         break;
                     case 'M':
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
                         break;
                     case 'P':
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
-                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // M/L
-                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
+                        if (!(bp = az_bin_append_posn(29, 5, binary_string, bp))) return 0; // M/L
+                        if (!(bp = az_bin_append_posn(30, 5, binary_string, bp))) return 0; // P/L
                         break;
                     case 'p':
-                        if (!(bp = az_bin_append_posn(0, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // P/S
+                        if (!(bp = az_bin_append_posn(0, 4, binary_string, bp))) return 0; // P/S
                         break;
                     case 'B':
-                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // U/L
+                        if (!(bp = az_bin_append_posn(14, 4, binary_string, bp))) return 0; // U/L
                         current_mode = 'U';
-                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // B/S
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; // B/S
                         break;
                 }
             }
@@ -643,16 +643,16 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
                 for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i + count] == 'B'); count++);
 
                 if (count > 2079) {
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
                 }
 
                 if (count > 31) {
                     /* Put 00000 followed by 11-bit number of bytes less 31 */
-                    if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG;
-                    if (!(bp = az_bin_append_posn(count - 31, 11, binary_string, bp))) return ZINT_ERROR_TOO_LONG;
+                    if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0;
+                    if (!(bp = az_bin_append_posn(count - 31, 11, binary_string, bp))) return 0;
                 } else {
                     /* Put 5-bit number of bytes */
-                    if (!(bp = az_bin_append_posn(count, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG;
+                    if (!(bp = az_bin_append_posn(count, 5, binary_string, bp))) return 0;
                 }
                 byte_mode = 1;
             }
@@ -665,73 +665,94 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
 
         if ((reduced_encode_mode[i] == 'U') || (reduced_encode_mode[i] == 'u')) {
             if (reduced_source[i] == ' ') {
-                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // SP
+                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; // SP
             } else {
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
             }
         } else if (reduced_encode_mode[i] == 'L') {
             if (reduced_source[i] == ' ') {
-                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // SP
+                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; // SP
             } else {
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
             }
         } else if (reduced_encode_mode[i] == 'M') {
             if (reduced_source[i] == ' ') {
-                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // SP
+                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; // SP
             } else if (reduced_source[i] == 13) {
-                if (!(bp = az_bin_append_posn(14, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // CR
+                if (!(bp = az_bin_append_posn(14, 5, binary_string, bp))) return 0; // CR
             } else {
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
             }
         } else if ((reduced_encode_mode[i] == 'P') || (reduced_encode_mode[i] == 'p')) {
             if (gs1 && (reduced_source[i] == '[')) {
-                if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // FLG(n)
-                if (!(bp = az_bin_append_posn(0, 3, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // FLG(0) = FNC1
+                if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0; // FLG(n)
+                if (!(bp = az_bin_append_posn(0, 3, binary_string, bp))) return 0; // FLG(0) = FNC1
             } else if (reduced_source[i] == 13) {
-                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // CR
+                if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; // CR
             } else if (reduced_source[i] == 'a') {
-                if (!(bp = az_bin_append_posn(2, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // CR LF
+                if (!(bp = az_bin_append_posn(2, 5, binary_string, bp))) return 0; // CR LF
             } else if (reduced_source[i] == 'b') {
-                if (!(bp = az_bin_append_posn(3, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // . SP
+                if (!(bp = az_bin_append_posn(3, 5, binary_string, bp))) return 0; // . SP
             } else if (reduced_source[i] == 'c') {
-                if (!(bp = az_bin_append_posn(4, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // , SP
+                if (!(bp = az_bin_append_posn(4, 5, binary_string, bp))) return 0; // , SP
             } else if (reduced_source[i] == 'd') {
-                if (!(bp = az_bin_append_posn(5, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // : SP
+                if (!(bp = az_bin_append_posn(5, 5, binary_string, bp))) return 0; // : SP
             } else if (reduced_source[i] == ',') {
-                if (!(bp = az_bin_append_posn(17, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // Comma
+                if (!(bp = az_bin_append_posn(17, 5, binary_string, bp))) return 0; // Comma
             } else if (reduced_source[i] == '.') {
-                if (!(bp = az_bin_append_posn(19, 5, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // Full stop
+                if (!(bp = az_bin_append_posn(19, 5, binary_string, bp))) return 0; // Full stop
             } else {
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
             }
         } else if (reduced_encode_mode[i] == 'D') {
             if (reduced_source[i] == ' ') {
-                if (!(bp = az_bin_append_posn(1, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // SP
+                if (!(bp = az_bin_append_posn(1, 4, binary_string, bp))) return 0; // SP
             } else if (reduced_source[i] == ',') {
-                if (!(bp = az_bin_append_posn(12, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // Comma
+                if (!(bp = az_bin_append_posn(12, 4, binary_string, bp))) return 0; // Comma
             } else if (reduced_source[i] == '.') {
-                if (!(bp = az_bin_append_posn(13, 4, binary_string, bp))) return ZINT_ERROR_TOO_LONG; // Full stop
+                if (!(bp = az_bin_append_posn(13, 4, binary_string, bp))) return 0; // Full stop
             } else {
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 4, binary_string, bp)))
-                    return ZINT_ERROR_TOO_LONG;
+                    return 0;
             }
         } else if (reduced_encode_mode[i] == 'B') {
-            if (!(bp = az_bin_append_posn(reduced_source[i], 8, binary_string, bp))) return ZINT_ERROR_TOO_LONG;
+            if (!(bp = az_bin_append_posn(reduced_source[i], 8, binary_string, bp))) return 0;
         }
     }
 
     if (debug_print) {
-        printf("Binary String:\n");
-        printf("%.*s\n", bp, binary_string);
+        printf("Binary String (%d): %.*s\n", bp, bp, binary_string);
+    }
+
+    *data_length = bp;
+    if (p_current_mode) {
+        *p_current_mode = current_mode;
+    }
+
+    return 1;
+}
+
+/* Call `aztec_text_process()` for each segment */
+static int aztec_text_process_segs(struct zint_seg segs[], const int seg_count, int bp, char binary_string[],
+            const int gs1, int *data_length, const int debug_print) {
+    int i;
+
+    char current_mode = 'U';
+
+    for (i = 0; i < seg_count; i++) {
+        if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, segs[i].eci, &current_mode,
+                &bp, debug_print)) {
+            return 0;
+        }
     }
 
     *data_length = bp;
 
-    return 0;
+    return 1;
 }
 
 /* Prevent data from obscuring reference grid */
@@ -819,7 +840,7 @@ static void az_populate_map(short AztecMap[], const int layers) {
     }
 }
 
-INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
     char bit_pattern[AZTEC_MAP_POSN_MAX + 1]; /* Note AZTEC_MAP_POSN_MAX > AZTEC_BIN_CAPACITY */
     /* To lessen stack usage, share binary_string buffer with bit_pattern, as accessed separately */
@@ -828,11 +849,13 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     char adjusted_string[AZTEC_MAX_CAPACITY];
     short AztecMap[AZTEC_MAP_SIZE];
     unsigned char desc_data[4], desc_ecc[6];
-    int error_number, compact, data_length, data_maxsize, codeword_size, adjusted_length;
-    int remainder, padbits, count, gs1, adjustment_size;
+    int error_number = 0;
+    int compact, data_length, data_maxsize, codeword_size, adjusted_length;
+    int remainder, padbits, count, adjustment_size;
     int reader = 0;
     int comp_loop = 4;
     int bp = 0;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     rs_t rs;
     rs_uint_t rs_uint;
@@ -842,11 +865,6 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned int *ecc_part;
 #endif
 
-    if ((symbol->input_mode & 0x07) == GS1_MODE) {
-        gs1 = 1;
-    } else {
-        gs1 = 0;
-    }
     if (symbol->output_options & READER_INIT) {
         reader = 1;
         comp_loop = 1;
@@ -895,16 +913,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
                     symbol->structapp.count, symbol->structapp.count, symbol->structapp.id, sa_src);
         }
 
-        (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*eci*/, &bp, debug_print);
+        (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*eci*/, NULL /*p_current_mode*/,
+                                    &bp, debug_print);
         /* Will be in U/L due to uppercase A-Z index/count indicators at end */
     }
 
-    error_number = aztec_text_process(source, length, bp, binary_string, gs1, symbol->eci, &data_length,
-                    debug_print);
-
-    if (error_number != 0) {
+    if (!aztec_text_process_segs(segs, seg_count, bp, binary_string, gs1, &data_length, debug_print)) {
         strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
-        return error_number;
+        return ZINT_ERROR_TOO_LONG;
     }
     assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 
@@ -1409,7 +1425,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, unsigned char source[], int lengt
         for (y = offset; y < end_offset; y++) {
             int y_map = y * 27;
             for (x = offset; x < end_offset; x++) {
-                int map = CompactAztecMap[y_map + x];
+                int map = AztecCompactMap[y_map + x];
                 if (map == 1) {
                     set_module(symbol, y - offset, x - offset);
                 } else if (map >= 2 && bit_pattern[map - 2] == '1') {
@@ -1509,9 +1525,9 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     for (y = 8; y < 19; y++) {
         r = y * 27;
         for (x = 8; x < 19; x++) {
-            if (CompactAztecMap[r + x] == 1) {
+            if (AztecCompactMap[r + x] == 1) {
                 set_module(symbol, y - 8, x - 8);
-            } else if (CompactAztecMap[r + x] && binary_string[CompactAztecMap[r + x] - 2000] == '1') {
+            } else if (AztecCompactMap[r + x] && binary_string[AztecCompactMap[r + x] - 2000] == '1') {
                 set_module(symbol, y - 8, x - 8);
             }
         }
@@ -1523,3 +1539,5 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

@@ -186,49 +186,294 @@
              <property name="toolTip">
               <string>Input data</string>
              </property>
-             <layout class="QHBoxLayout" name="horizontalLayout_4">
+             <layout class="QVBoxLayout" name="verticalLayoutData">
               <item>
-               <widget class="QLineEdit" name="txtData">
-                <property name="toolTip">
-                 <string>Input data</string>
-                </property>
-                <property name="text">
-                 <string>Your Data Here!</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QToolButton" name="btnMoreData">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Encode more data
+               <layout class="QHBoxLayout" name="horizontalLayoutData">
+                <item>
+                 <widget class="QLineEdit" name="txtData">
+                  <property name="toolTip">
+                   <string>Input data</string>
+                  </property>
+                  <property name="text">
+                   <string>Your Data Here!</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnMoreData">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Encode more data
 or import from file</string>
-                </property>
-                <property name="text">
-                 <string>&amp;...</string>
-                </property>
-               </widget>
+                  </property>
+                  <property name="text">
+                   <string>&amp;...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnSequence">
+                  <property name="toolTip">
+                   <string>Encode a sequence</string>
+                  </property>
+                  <property name="text">
+                   <string>123&amp;4..</string>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>60</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
               <item>
-               <widget class="QPushButton" name="btnSequence">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>24</height>
-                 </size>
-                </property>
-                <property name="toolTip">
-                 <string>Encode a sequence</string>
-                </property>
-                <property name="text">
-                 <string>&amp;123..</string>
-                </property>
-               </widget>
+               <layout class="QHBoxLayout" name="eciLayout">
+                <item>
+                 <widget class="QLabel" name="lblECI">
+                  <property name="maximumSize">
+                   <size>
+                    <width>40</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Set the ECI (Extended Channel Interpretation) code
+(ignored if disabled)</string>
+                  </property>
+                  <property name="text">
+                   <string>EC&amp;I:</string>
+                  </property>
+                  <property name="alignment">
+                   <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+                  </property>
+                  <property name="buddy">
+                   <cstring>cmbECI</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbECI">
+                  <property name="minimumSize">
+                   <size>
+                    <width>64</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
+                  </property>
+                  <property name="toolTip">
+                   <string>Set the ECI (Extended Channel Interpretation) code
+(ignored if disabled)</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3: ISO 8859-1 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>4: ISO 8859-2 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>5: ISO 8859-3 Latin-3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6: ISO 8859-4 Latin-4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>7: ISO 8859-5 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>8: ISO 8859-6 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>9: ISO 8859-7 Greek</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>10: ISO 8859-8 Hebrew</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>11: ISO 8859-9 Turkish</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>12: ISO 8859-10 Nordic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>13: ISO 8859-11 Thai</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>15: ISO 8859-13 Baltic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>16: ISO 8859-14 Celtic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>17: ISO 8859-15 Latin-9</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>18: ISO 8859-16 Latin-10</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>20: Shift JIS </string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>21: Windows 1250 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>22: Windows 1251 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>23: Windows 1252 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>24: Windows 1256 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>25: UTF-16BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>26: UTF-8</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>27: ISO 646 ASCII</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>28: Big5 (Taiwan)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>29: GB 2312 (PRC)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30: Korean EUC-KR</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>31: GBK</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>32: GB 18030</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>33: UTF-16LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>34: UTF-32BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>35: UTF-32LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>170: ISO 646 Invariant</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>899: 8-bit binary data</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <spacer name="horizontalSpacer_eciLayout">
+                  <property name="orientation">
+                   <enum>Qt::Horizontal</enum>
+                  </property>
+                  <property name="sizeHint" stdset="0">
+                   <size>
+                    <width>10</width>
+                    <height>20</height>
+                   </size>
+                  </property>
+                 </spacer>
+                </item>
+                <item>
+                 <widget class="QCheckBox" name="chkRInit">
+                  <property name="toolTip">
+                   <string>Create reader initialisation/programming symbol
+(ignored if disabled)</string>
+                  </property>
+                  <property name="text">
+                   <string>&amp;Reader Init</string>
+                  </property>
+                  <property name="checked">
+                   <bool>false</bool>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
               </item>
              </layout>
             </widget>
@@ -393,245 +638,786 @@ Remember to place [square brackets] around AI identifiers</string>
             </widget>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="eciLayout">
-             <item>
-              <widget class="QLabel" name="lblECI">
-               <property name="maximumSize">
-                <size>
-                 <width>40</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Set the ECI (Extended Channel Interpretation) code
-(ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>EC&amp;I:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>cmbECI</cstring>
-               </property>
-              </widget>
-             </item>
-             <item>
-              <widget class="QComboBox" name="cmbECI">
-               <property name="minimumSize">
-                <size>
-                 <width>64</width>
-                 <height>0</height>
-                </size>
-               </property>
-               <property name="maxVisibleItems">
-                <number>34</number>
-               </property>
-               <property name="toolTip">
-                <string>Set the ECI (Extended Channel Interpretation) code
-(ignored if disabled)</string>
-               </property>
-               <item>
-                <property name="text">
-                 <string>None</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>3: ISO 8859-1 Latin-1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>4: ISO 8859-2 Latin-2</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>5: ISO 8859-3 Latin-3</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>6: ISO 8859-4 Latin-4</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>7: ISO 8859-5 Cyrillic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>8: ISO 8859-6 Arabic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>9: ISO 8859-7 Greek</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>10: ISO 8859-8 Hebrew</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>11: ISO 8859-9 Turkish</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>12: ISO 8859-10 Nordic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>13: ISO 8859-11 Thai</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>15: ISO 8859-13 Baltic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>16: ISO 8859-14 Celtic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>17: ISO 8859-15 Latin-9</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>18: ISO 8859-16 Latin-10</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>20: Shift JIS </string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>21: Windows 1250 Latin-2</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>22: Windows 1251 Cyrillic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>23: Windows 1252 Latin-1</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>24: Windows 1256 Arabic</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>25: UTF-16BE</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>26: UTF-8</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>27: ISO 646 ASCII</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>28: Big5 (Taiwan)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>29: GB 2312 (PRC)</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>30: Korean EUC-KR</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>31: GBK</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>32: GB 18030</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>33: UTF-16LE</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>34: UTF-32BE</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>35: UTF-32LE</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>170: ISO 646 Invariant</string>
-                </property>
-               </item>
-               <item>
-                <property name="text">
-                 <string>899: 8-bit binary data</string>
-                </property>
-               </item>
-              </widget>
-             </item>
-             <item>
-              <spacer name="horizontalSpacer_eciLayout">
-               <property name="orientation">
-                <enum>Qt::Horizontal</enum>
-               </property>
-               <property name="sizeHint" stdset="0">
-                <size>
-                 <width>10</width>
-                 <height>20</height>
-                </size>
-               </property>
-              </spacer>
-             </item>
-             <item>
-              <widget class="QCheckBox" name="chkRInit">
-               <property name="toolTip">
-                <string>Create reader initialisation/programming symbol
-(ignored if disabled)</string>
-               </property>
-               <property name="text">
-                <string>&amp;Reader Init</string>
-               </property>
-               <property name="checked">
-                <bool>false</bool>
-               </property>
-              </widget>
-             </item>
-            </layout>
+            <widget class="QGroupBox" name="grpSegs">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>400</height>
+              </size>
+             </property>
+             <property name="title">
+              <string>Additional ECI/Data Segments</string>
+             </property>
+             <property name="toolTip">
+              <string>Additional data segments with their own
+Extended Channel Interpretation (ECI)</string>
+             </property>
+             <layout class="QVBoxLayout" name="verticalLayoutSegs">
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutSeg1">
+                <item>
+                 <widget class="QLabel" name="lblSeg1">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Segment 1</string>
+                  </property>
+                  <property name="text">
+                   <string>&amp;1:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>txtDataSeg1</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbECISeg1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>64</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>160</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
+                  </property>
+                  <property name="toolTip">
+                   <string>ECI for segment 1</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3: ISO 8859-1 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>4: ISO 8859-2 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>5: ISO 8859-3 Latin-3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6: ISO 8859-4 Latin-4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>7: ISO 8859-5 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>8: ISO 8859-6 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>9: ISO 8859-7 Greek</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>10: ISO 8859-8 Hebrew</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>11: ISO 8859-9 Turkish</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>12: ISO 8859-10 Nordic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>13: ISO 8859-11 Thai</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>15: ISO 8859-13 Baltic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>16: ISO 8859-14 Celtic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>17: ISO 8859-15 Latin-9</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>18: ISO 8859-16 Latin-10</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>20: Shift JIS </string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>21: Windows 1250 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>22: Windows 1251 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>23: Windows 1252 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>24: Windows 1256 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>25: UTF-16BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>26: UTF-8</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>27: ISO 646 ASCII</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>28: Big5 (Taiwan)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>29: GB 2312 (PRC)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30: Korean EUC-KR</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>31: GBK</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>32: GB 18030</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>33: UTF-16LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>34: UTF-32BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>35: UTF-32LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>170: ISO 646 Invariant</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>899: 8-bit binary data</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="txtDataSeg1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Data for segment 1</string>
+                  </property>
+                  <property name="text">
+                   <string></string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnMoreDataSeg1">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Encode more segment 1 data
+or import from file</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutSeg2">
+                <item>
+                 <widget class="QLabel" name="lblSeg2">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Segment 2</string>
+                  </property>
+                  <property name="text">
+                   <string>&amp;2:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>txtDataSeg2</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbECISeg2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>64</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>160</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
+                  </property>
+                  <property name="toolTip">
+                   <string>ECI for segment 2</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3: ISO 8859-1 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>4: ISO 8859-2 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>5: ISO 8859-3 Latin-3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6: ISO 8859-4 Latin-4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>7: ISO 8859-5 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>8: ISO 8859-6 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>9: ISO 8859-7 Greek</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>10: ISO 8859-8 Hebrew</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>11: ISO 8859-9 Turkish</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>12: ISO 8859-10 Nordic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>13: ISO 8859-11 Thai</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>15: ISO 8859-13 Baltic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>16: ISO 8859-14 Celtic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>17: ISO 8859-15 Latin-9</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>18: ISO 8859-16 Latin-10</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>20: Shift JIS </string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>21: Windows 1250 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>22: Windows 1251 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>23: Windows 1252 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>24: Windows 1256 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>25: UTF-16BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>26: UTF-8</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>27: ISO 646 ASCII</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>28: Big5 (Taiwan)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>29: GB 2312 (PRC)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30: Korean EUC-KR</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>31: GBK</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>32: GB 18030</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>33: UTF-16LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>34: UTF-32BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>35: UTF-32LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>170: ISO 646 Invariant</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>899: 8-bit binary data</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="txtDataSeg2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Data for segment 2</string>
+                  </property>
+                  <property name="text">
+                   <string></string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnMoreDataSeg2">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Encode more segment 2 data
+or import from file</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+              <item>
+               <layout class="QHBoxLayout" name="horizontalLayoutSeg3">
+                <item>
+                 <widget class="QLabel" name="lblSeg3">
+                  <property name="enabled">
+                   <bool>true</bool>
+                  </property>
+                  <property name="toolTip">
+                   <string>Segment 3</string>
+                  </property>
+                  <property name="text">
+                   <string>&amp;3:</string>
+                  </property>
+                  <property name="buddy">
+                   <cstring>txtDataSeg3</cstring>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QComboBox" name="cmbECISeg3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>64</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="maximumSize">
+                   <size>
+                    <width>160</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
+                  </property>
+                  <property name="toolTip">
+                   <string>ECI for segment 3</string>
+                  </property>
+                  <item>
+                   <property name="text">
+                    <string>None</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>3: ISO 8859-1 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>4: ISO 8859-2 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>5: ISO 8859-3 Latin-3</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>6: ISO 8859-4 Latin-4</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>7: ISO 8859-5 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>8: ISO 8859-6 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>9: ISO 8859-7 Greek</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>10: ISO 8859-8 Hebrew</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>11: ISO 8859-9 Turkish</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>12: ISO 8859-10 Nordic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>13: ISO 8859-11 Thai</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>15: ISO 8859-13 Baltic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>16: ISO 8859-14 Celtic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>17: ISO 8859-15 Latin-9</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>18: ISO 8859-16 Latin-10</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>20: Shift JIS </string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>21: Windows 1250 Latin-2</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>22: Windows 1251 Cyrillic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>23: Windows 1252 Latin-1</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>24: Windows 1256 Arabic</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>25: UTF-16BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>26: UTF-8</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>27: ISO 646 ASCII</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>28: Big5 (Taiwan)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>29: GB 2312 (PRC)</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>30: Korean EUC-KR</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>31: GBK</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>32: GB 18030</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>33: UTF-16LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>34: UTF-32BE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>35: UTF-32LE</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>170: ISO 646 Invariant</string>
+                   </property>
+                  </item>
+                  <item>
+                   <property name="text">
+                    <string>899: 8-bit binary data</string>
+                   </property>
+                  </item>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QLineEdit" name="txtDataSeg3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>200</width>
+                    <height>0</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Data for segment 3</string>
+                  </property>
+                  <property name="text">
+                   <string></string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QToolButton" name="btnMoreDataSeg3">
+                  <property name="minimumSize">
+                   <size>
+                    <width>0</width>
+                    <height>24</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Encode more segment 3 data
+or import from file</string>
+                  </property>
+                  <property name="text">
+                   <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+               </layout>
+              </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <spacer name="vertSpacerData">
+             <property name="orientation">
+              <enum>Qt::Vertical</enum>
+             </property>
+             <property name="sizeHint" stdset="0">
+              <size>
+               <width>40</width>
+               <height>10</height>
+              </size>
+             </property>
+            </spacer>
            </item>
            <item>
             <layout class="QHBoxLayout" name="chksLayout">

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2022 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -13,7 +13,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
-/* vim: set ts=4 sw=4 et : */
 
 #include <QApplication>
 #include "mainwindow.h"
@@ -38,3 +37,5 @@ int main(int argc, char *argv[])
     w.show();
     return app.exec();
 }
+
+/* vim: set ts=4 sw=4 et : */

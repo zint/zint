@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,14 +29,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "common.h"
 #include "general_field.h"
 
 static const char alphanum_puncs[] = "*,-./";
 static const char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ "; /* Note contains space, not in cset82 */
-#define IS_ISOIEC_F (IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F)
+#define IS_ISOIEC_F (IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F)
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
 static int general_field_type(const char *general_field, const int i) {
@@ -205,3 +204,5 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
 
     return 1;
 }
+
+/* vim: set ts=4 sw=4 et : */

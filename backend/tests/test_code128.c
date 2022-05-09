@@ -102,7 +102,7 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char *source, int source_len);
+int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
 static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
@@ -157,7 +157,7 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = hrt_cpy_iso8859_1(&symbol, (unsigned char *) data[i].data, length);
+        ret = c128_hrt_cpy_iso8859_1(&symbol, (unsigned char *) data[i].data, length);
         if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < ret; j++) {
                 fprintf(stderr, "symbol.text[%d] %2X\n", j, symbol.text[j]);
@@ -822,7 +822,7 @@ static void test_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);

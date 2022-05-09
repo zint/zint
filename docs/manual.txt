@@ -40,7 +40,7 @@ symbol: A symbol is an image which encodes data according to one of the
 symbology: A method of encoding data to create a certain type of symbol.
 
 linear: A linear symbol is one which consists of bars and spaces, and is what
-        most people associate with the term "barcode". Examples include EAN.
+        most people associate with the term 'barcode'. Examples include EAN.
 
 stacked: A stacked symbol consists of multiple linear symbols placed one above
         another and which together hold the message, usually alongside some
@@ -58,12 +58,12 @@ X-dimension: The X-dimension of a symbol is the size (usually the width) of the
 
 composite: A composite symbology is one which is made up of elements which are
         both linear and stacked. Those currently supported are made up of a
-        linear "primary" message above which is printed a stacked component
+        linear 'primary' message above which is printed a stacked component
         based on the PDF417 symbology. These symbols also have a separator
         which separates the linear and the stacked components.
 
 GS1 data: This is a structured way of representing information which consists
-        of "chunks" of data, each of which starts with an Application
+        of 'chunks' of data, each of which starts with an Application
         Identifier. The AI identifies what type of information is being
         encoded.
 
@@ -136,7 +136,7 @@ qtZint.exe - Zint Barcode Studio
 zint.exe - Command Line Interface
 
 For fresh releases you will get a warning message from Microsoft Defender
-SmartScreen that this is an "unrecognised app". This happens because Zint is
+SmartScreen that this is an 'unrecognised app'. This happens because Zint is
 a free and open-source software project with no advertising and hence no
 income, meaning we are not able to afford the $664 per year to have the
 application digitally signed by Microsoft.
@@ -559,8 +559,8 @@ The maximum scale for both raster and vector is 100.
 
 4.9.1 Scaling Example
 ---------------------
-The GS1 General Specifications Section 5.2.6.6 "Symbol dimensions at nominal
-size" gives an example of an EAN-13 barcode using the X-dimension of 0.33mm.
+The GS1 General Specifications Section 5.2.6.6 'Symbol dimensions at nominal
+size' gives an example of an EAN-13 barcode using the X-dimension of 0.33mm.
 To print that example as a PNG at 12 dots per mm (dpmm), the equivalent of 300
 dots per inch (dpi = dpmm * 25.4), specify a scale of 2, since 0.33 * 12 = 3.96
 pixels, or 4 pixels rounding to the nearest pixel:
@@ -641,7 +641,7 @@ Health Industry Barcode (HIBC) data may also be encoded in the symbologies Code
 Code. Within this mode, the leading '+' and the check character are
 automatically added, conforming to HIBC Labeler Identification Code (HIBC LIC).
 For HIBC Provider Applications Standard (HIBC PAS), preface the data with a
-slash "/".
+slash '/'.
 
 The --binary option encodes the input data as given. Automatic code page
 translation to an ECI page is disabled, and no validation of the data's encoding
@@ -650,25 +650,35 @@ switch plays together with the built-in ECI logic and examples may be found
 below.
 
 The --fullmultibyte option uses the multibyte modes of QR Code, Micro QR Code,
-Rectangular Micro QR Code, Han Xin Code and Grid Matrix for binary and Latin
-data, maximizing density. This is achieved by using compression designed for
-Kanji/Hanzi characters, however some decoders take blocks which are encoded this
-way and interpret them as Kanji/Hanzi characters, typically by applying a
+Rectangular Micro QR Code (rMQR), Han Xin Code and Grid Matrix for binary and
+Latin data, maximizing density. This is achieved by using compression designed
+for Kanji/Hanzi characters, however some decoders take blocks which are encoded
+this way and interpret them as Kanji/Hanzi characters, typically by applying a
 transformation to UTF-8 and thus causing data corruption. Symbols encoded with
 this option should be checked against decoders before they are used. The popular
 open-source ZXing decoder is known to exhibit this behaviour.
 
 If your data contains non-Latin-1 characters, you may encode it using an
 ECI-aware symbology and an ECI value from the table below. The ECI information
-is added to your code symbol as prefix data.
+is added to your code symbol as prefix data. The symbologies that support ECI
+are Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code,
+MaxiCode, PDF417 and MicroPDF417, QR Code and rMQR, and Ultracode.
 
 The ECI value may be specified with the --eci switch, followed by the value in
 the column "ECI Code". The input data should be UTF-8 formatted. Zint
 automatically translates the data into the target encoding.
 
-The ECI value of 0 does not encode any ECI information in the code symbol. In
-this case, the default encoding applies for the data which is "ISO/IEC 8859-1 -
-Latin alphabet No. 1".
+An ECI value of 0 does not encode any ECI information in the code symbol (unless
+the data contains non-Latin-1 characters). In this case, the default encoding
+applies, which is "ISO/IEC 8859-1 - Latin alphabet No. 1".
+
+If no ECI is specified or a value of 0 is given, and the data does contain
+characters other than Latin-1, then Zint will automatically insert the
+appropriate single-byte ECI if possible (ECIs 4 to 24, excluding ECI 20), or
+failing that ECI 26 (UTF-8). A warning will be generated. This mechanism is not
+applied if the --binary option is given.
+
+Multiple ECIs can be specified using the --segN= options - see section 4.15.
 
 Note: the "--eci=3" specification should only be used for special purposes.
 Using this parameter, the ECI information is explicitly added to the code
@@ -775,7 +785,7 @@ Input Character   |  Interpretation
 ---------------------------------------------
 ~                 |  Insert a number or '0'
 #                 |  Insert a number or space
-@                 |  Insert a number or "*"
+@                 |  Insert a number or '*'
 Any other         |  Insert literally
 ---------------------------------------------
 
@@ -847,7 +857,26 @@ minimum dot size is 0.01, the maximum is 20. The default size is 0.8.
 
 The default and minimum scale for raster output in dotty mode is 1.
 
-4.15 Structured Append
+4.15 Multiple Segments
+----------------------
+If you need to specify different ECIs for different sections of the input data,
+the --seg1= to --seg9= options can be used. Each option is of the form
+--segN=ECI,data where "ECI" is the ECI code (see table in section 4.10) and
+"data" is the data to which this applies. This is in addition to the ECI and
+data specified using the --eci= and -d options which must still be present and
+which in effect constitute segment 0. For instance
+
+zint -b AZTEC_CODE --eci=9 -d "Κείμενο" --seg1=13,"Текст" --seg2=20,"文章"
+
+specifies 3 segments: segment 0 with ECI 9 (Greek), segment 1 with ECI 7
+(Cyrillic), and segment 2 with ECI 20 (Shift JIS). Segments must be consecutive.
+
+ECIs of zero may be given, in which case Zint will automatically determine an
+ECI if necessary, as described in section 4.10.
+
+Multiple segments are not currently supported for use with GS1 data.
+
+4.16 Structured Append
 ----------------------
 Structured Append is a method of splitting data among several symbols so that
 they form a sequence that can be scanned and re-assembled in the correct order
@@ -1557,7 +1586,62 @@ For HEIGHTPERROW_MODE, see --heightperrow in section 4.4. The height variable
 should be set to the desired per-row value on input (it will be set to the
 overall height on output).
 
-5.11 Verifying Symbology Availability
+5.11 Multiple Segments
+----------------------
+For input data requiring multiple ECIs, the following functions may be used:
+
+int ZBarcode_Encode_Segs(struct zint_symbol *symbol,
+        const struct zint_seg segs[], const int seg_count);
+
+int ZBarcode_Encode_Segs_and_Print(struct zint_symbol *symbol,
+        const struct zint_seg segs[], const int seg_count, int rotate_angle);
+
+int ZBarcode_Encode_Segs_and_Buffer(struct zint_symbol *symbol,
+        const struct zint_seg segs[], const int seg_count, int rotate_angle);
+
+int ZBarcode_Encode_Segs_and_Buffer_Vector(struct zint_symbol *symbol,
+        const struct zint_seg segs[], const int seg_count, int rotate_angle);
+
+These are direct analogues of ZBarcode_Encode(), ZBarcode_Encode_and_Print(),
+ZBarcode_Encode_and_Buffer() and ZBarcode_Encode_and_Buffer_Vector()
+respectively, where in place of a "source, length" pair you have a "segs,
+seg_count" pair, with "segs" being an array of zint_seg structures and
+"seg_count" being the number of elements it contains. The zint_seg structure is
+of the form:
+
+struct zint_seg {
+    unsigned char *source; /* Data to encode */
+    int length;            /* Length of `source`. If 0, `source` must be
+                              NUL-terminated */
+    int eci;               /* Extended Channel Interpretation */
+};
+
+The symbology must of course support ECIs, i.e. be Aztec Code, Code One, Data
+Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, PDF417, MicroPDF417, QR
+Code, rMQR, or Ultracode. For example:
+
+#include <zint.h>
+int main(int argc, char **argv)
+{
+    struct zint_seg segs[] = {
+        { "Κείμενο", 0, 9 },
+        { "Текст", 0, 7 },
+        { "文章", 0, 20 }
+    };
+    struct zint_symbol *my_symbol;
+    my_symbol = ZBarcode_Create();
+    my_symbol->symbology = BARCODE_AZTEC;
+    my_symbol->input_mode = UNICODE_MODE;
+    ZBarcode_Encode_Segs(my_symbol, segs, 3);
+    ZBarcode_Print(my_symbol, 0);
+    ZBarcode_Delete(my_symbol);
+    return 0;
+}
+
+A maximum of 256 segments may be specified. Use of multiple segments with GS1
+data is not currently supported.
+
+5.12 Verifying Symbology Availability
 -------------------------------------
 An additional function available in the API is defined as:
 
@@ -1588,7 +1672,7 @@ if (ZBarcode_BarcodeName(BARCODE_PDF417, name) == 0) {
 
 will print "BARCODE_PDF417".
 
-5.12 Checking Symbology Capabilities
+5.13 Checking Symbology Capabilities
 ------------------------------------
 It can be useful for frontend programs to know the capabilities of a symbology.
 This can be determined using another additional function:
@@ -1600,7 +1684,7 @@ see which are set.
 
 --------------------------------------------------------------------------------
 Value                     |  Meaning
----------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 ZINT_CAP_HRT              |  Can the symbology print Human Readable Text?
 ZINT_CAP_STACKABLE        |  Is the symbology stackable?
 ZINT_CAP_EXTENDABLE       |  Is the symbology extendable with add-on data?
@@ -1635,7 +1719,7 @@ if (cap & ZINT_CAP_ECI) {
     printf("PDF417 does not support ECI\n");
 }
 
-5.13 Zint Version
+5.14 Zint Version
 -----------------
 Lastly, the version of the Zint library linked to is returned by:
 
@@ -2003,7 +2087,7 @@ required. The GTIN check digit and AI (01) are added by Zint.
 
 6.1.11.5 NVE-18 (SSCC-18)
 -------------------------
-A variation of Code 128 the "Nummer der Versandeinheit" standard, also known as
+A variation of Code 128 the 'Nummer der Versandeinheit' standard, also known as
 SSCC-18 (Serial Shipping Container Code), includes both modulo-10 and modulo-103
 check digits. NVE-18 requires a 17 digit numerical input. Check digits and AI
 (00) are added by Zint.
@@ -2149,23 +2233,25 @@ or by setting option_1, with values from 2 to 16.
 Heavily used in the parcel industry, the PDF417 symbology can encode a vast
 amount of data into a small space. Zint supports encoding up to the ISO
 standard maximum symbol size of 925 codewords which (at error correction level
-0) allows a maximum data size of 1850 text characters, or 2710 digits. The
-width of the generated PDF417 symbol can be specified at the command line using
-the --cols switch followed by a number between 1 and 30, the number of rows
-using the --rows switch followed by a number between 3 and 90, and the amount of
-error correction information can be specified by using the --secure switch
-followed by a number between 0 and 8 where the number of codewords used for
-error correction is determined by 2^(value + 1). If using the API these values
-are assigned to option_2, option_3 and option_1 respectively. The default level
-of error correction is determined by the amount of data being encoded. This
-symbology uses Latin-1 character encoding by default but also supports the ECI
-encoding mechanism. A separate symbology ID can be used to encode Health
+0) allows a maximum data size of 1850 text characters, or 2710 digits.
+
+The width of the generated PDF417 symbol can be specified at the command line
+using the --cols switch followed by a number between 1 and 30, the number of
+rows using the --rows switch followed by a number between 3 and 90, and the
+amount of error correction information can be specified by using the --secure
+switch followed by a number between 0 and 8 where the number of codewords used
+for error correction is determined by 2^(value + 1). If using the API these
+values are assigned to option_2, option_3 and option_1 respectively. The default
+level of error correction is determined by the amount of data being encoded.
+
+This symbology uses Latin-1 character encoding by default but also supports the
+ECI encoding mechanism. A separate symbology ID can be used to encode Health
 Industry Barcode (HIBC) data which adds a leading '+' character and a modulo-49
 check digit to the encoded data.
 
 PDF417 supports Structured Append of up to a 99,999 symbols and an optional
 numeric ID of up to 30 digits, which can be set by using the --structapp option
-(see section 4.15) or the API structapp variable. The ID consists of up to 10
+(see section 4.16) or the API structapp variable. The ID consists of up to 10
 triplets, each ranging from "000" to "899". For instance "123456789" would be a
 valid ID of 3 triplets. However "123456900" would not, as the last triplet "900"
 exceeds "899". The triplets are 0-filled, for instance "1234" becomes "123004".
@@ -2184,9 +2270,10 @@ where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are
 available with 1 - 4 columns and 4 - 44 rows. The maximum size a MicroPDF417
 symbol can hold is 250 alphanumeric characters or 366 digits. The amount of
 error correction used is dependent on symbol size. The number of columns used
-can be determined using the --cols switch or option_2 as with PDF417. This
-symbology uses Latin-1 character encoding by default but also supports the ECI
-encoding mechanism. A separate symbology ID can be used to encode Health
+can be determined using the --cols switch or option_2 as with PDF417.
+
+This symbology uses Latin-1 character encoding by default but also supports the
+ECI encoding mechanism. A separate symbology ID can be used to encode Health
 Industry Barcode (HIBC) data which adds a leading '+' character and a modulo-49
 check digit to the encoded data. MicroPDF417 supports Structured Append the same
 as PDF417, for which see details.
@@ -2440,40 +2527,20 @@ Barcode (HIBC) data which adds a leading '+' character and a modulo-49 check
 digit to the encoded data. Note that only ECC200 encoding is supported, the
 older standards have now been removed from Zint.
 
----------------------
-Input  |  Symbol Size
----------------------
-1      |  10 x 10
-2      |  12 x 12
-3      |  14 x 14
-4      |  16 x 16
-5      |  18 x 18
-6      |  20 x 20
-7      |  22 x 22
-8      |  24 x 24
-9      |  26 x 26
-10     |  32 x 32
-11     |  36 x 36
-12     |  40 x 40
-13     |  44 x 44
-14     |  48 x 48
-15     |  52 x 52
-16     |  64 x 64
-17     |  72 x 72
-18     |  80 x 80
-19     |  88 x 88
-20     |  96 x 96
-21     |  104 x 104
-22     |  120 x 120
-23     |  132 x 132
-24     |  144 x 144
-25     |  8 x 18
-26     |  8 x 32
-28     |  12 x 26
-28     |  12 x 36
-29     |  16 x 36
-30     |  16 x 48
----------------------
+-------------------------------------------------------------------------------
+Input  |  Symbol Size     |  Input  |  Symbol Size     |  Input  |  Symbol Size
+-------------------------------------------------------------------------------
+1      |  10 x 10         |  11     |  36 x 36         |  21     |  104 x 104
+2      |  12 x 12         |  12     |  40 x 40         |  22     |  120 x 120
+3      |  14 x 14         |  13     |  44 x 44         |  23     |  132 x 132
+4      |  16 x 16         |  14     |  48 x 48         |  24     |  144 x 144
+5      |  18 x 18         |  15     |  52 x 52         |  25     |  8 x 18
+6      |  20 x 20         |  16     |  64 x 64         |  26     |  8 x 32
+7      |  22 x 22         |  17     |  72 x 72         |  28     |  12 x 26
+8      |  24 x 24         |  18     |  80 x 80         |  28     |  12 x 36
+9      |  26 x 26         |  19     |  88 x 88         |  29     |  16 x 36
+10     |  32 x 32         |  20     |  96 x 96         |  30     |  16 x 48
+-------------------------------------------------------------------------------
 
 When using automatic symbol sizes you can force Zint to use square symbols
 (versions 1-24) at the command line by using the option --square and when
@@ -2482,28 +2549,19 @@ using the API by setting the value option_3 = DM_SQUARE.
 Data Matrix Rectangular Extension (ISO/IEC 21471) codes may be generated with
 the following values as before:
 
----------------------
-Input  |  Symbol Size
----------------------
-31     |  8 x 48
-32     |  8 x 64
-33     |  8 x 80
-34     |  8 x 96
-35     |  8 x 120
-36     |  8 x 144
-37     |  12 x 64
-38     |  12 x 88
-39     |  16 x 64
-40     |  20 x 36
-41     |  20 x 44
-42     |  20 x 64
-43     |  22 x 48
-44     |  24 x 48
-45     |  24 x 64
-46     |  26 x 40
-47     |  26 x 48
-48     |  26 x 64
----------------------
+---------------------------------------------------
+Input  |  Symbol Size      |  Input  |  Symbol Size
+---------------------------------------------------
+31     |  8 x 48           |  40     |  20 x 36
+32     |  8 x 64           |  41     |  20 x 44
+33     |  8 x 80           |  42     |  20 x 64
+34     |  8 x 96           |  43     |  22 x 48
+35     |  8 x 120          |  44     |  24 x 48
+36     |  8 x 144          |  45     |  24 x 64
+37     |  12 x 64          |  46     |  26 x 40
+38     |  12 x 88          |  47     |  26 x 48
+39     |  16 x 64          |  48     |  26 x 64
+---------------------------------------------------
 
 DMRE symbol sizes may be activated in automatic size mode using the option
 --dmre or by the API option_3 = DM_DMRE
@@ -2516,7 +2574,7 @@ FAST_MODE) may be used.
 
 Data Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file identifications), which can be set by using the --structapp option (see
-section 4.15) or the API structapp variable. The ID consists of 2 numbers ID1
+section 4.16) or the API structapp variable. The ID consists of 2 numbers ID1
 and ID2, each of which can range from 1 to 254, and is specified as the single
 number ID1 * 1000 + ID2, so for instance ID1 "123" and ID2 "234" would be given
 as "123234". Note that both ID1 and ID2 must be non-zero, so e.g. "123000" or
@@ -2528,63 +2586,37 @@ Also known as Quick Response Code this symbology was developed by Denso. Four
 levels of error correction are available using the --secure= option or by
 setting option_1 as shown in the following table.
 
--------------------------------------------------------------------------
-Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
--------------------------------------------------------------------------
-1      |  L (default)  |  Approx 20% of symbol       |  Approx 7%
-2      |  M            |  Approx 37% of symbol       |  Approx 15%
-3      |  Q            |  Approx 55% of symbol       |  Approx 25%
-4      |  H            |  Approx 65% of symbol       |  Approx 30%
--------------------------------------------------------------------------
+-----------------------------------------------------------------------
+Input  |  ECC Level  |  Error Correction Capacity  |  Recovery Capacity
+-----------------------------------------------------------------------
+1      |  L          |  Approx 20% of symbol       |  Approx 7%
+2      |  M          |  Approx 37% of symbol       |  Approx 15%
+3      |  Q          |  Approx 55% of symbol       |  Approx 25%
+4      |  H          |  Approx 65% of symbol       |  Approx 30%
+-----------------------------------------------------------------------
 
 The size of the symbol can be set by using the --vers= option or setting
 option_2 to the QR Code version required (1-40). The size of symbol generated
 is shown in the table below.
 
----------------------
-Input  |  Symbol Size
----------------------
-1      |  21 x 21
-2      |  25 x 25
-3      |  29 x 29
-4      |  33 x 33
-5      |  37 x 37
-6      |  41 x 41
-7      |  45 x 45
-8      |  49 x 49
-9      |  53 x 53
-10     |  57 x 57
-11     |  61 x 61
-12     |  65 x 65
-13     |  69 x 69
-14     |  73 x 73
-15     |  77 x 77
-16     |  81 x 81
-17     |  85 x 85
-18     |  89 x 89
-19     |  93 x 93
-20     |  97 x 97
-21     |  101 x 101
-22     |  105 x 105
-23     |  109 x 109
-24     |  113 x 113
-25     |  117 x 117
-26     |  121 x 121
-28     |  125 x 125
-28     |  129 x 129
-29     |  133 x 133
-30     |  137 x 137
-31     |  141 x 141
-32     |  145 x 145
-33     |  149 x 149
-34     |  153 x 153
-35     |  157 x 157
-36     |  161 x 161
-38     |  165 x 165
-38     |  169 x 169
-39     |  173 x 173
-40     |  177 x 177
----------------------
+-------------------------------------------------------------------------------
+Input  |  Symbol Size     |  Input  |  Symbol Size     |  Input  |  Symbol Size
+-------------------------------------------------------------------------------
+1      |  21 x 21         |  15     |  77 x 77         |  29     |  133 x 133
+2      |  25 x 25         |  16     |  81 x 81         |  30     |  137 x 137
+3      |  29 x 29         |  17     |  85 x 85         |  31     |  141 x 141
+4      |  33 x 33         |  18     |  89 x 89         |  32     |  145 x 145
+5      |  37 x 37         |  19     |  93 x 93         |  33     |  149 x 149
+6      |  41 x 41         |  20     |  97 x 97         |  34     |  153 x 153
+7      |  45 x 45         |  21     |  101 x 101       |  35     |  157 x 157
+8      |  49 x 49         |  22     |  105 x 105       |  36     |  161 x 161
+9      |  53 x 53         |  23     |  109 x 109       |  37     |  165 x 165
+10     |  57 x 57         |  24     |  113 x 113       |  38     |  169 x 169
+11     |  61 x 61         |  25     |  117 x 117       |  39     |  173 x 173
+12     |  65 x 65         |  26     |  121 x 121       |  40     |  177 x 177
+13     |  69 x 69         |  27     |  125 x 125       |
+14     |  73 x 73         |  28     |  129 x 129       |
+-------------------------------------------------------------------------------
 
 The maximum capacity of a (version 40) QR Code symbol is 7089 numeric digits,
 4296 alphanumeric characters or 2953 bytes of data. QR Code symbols can also be
@@ -2607,7 +2639,7 @@ by using the --mask= switch with values 0-7, or by setting option_3 to
 ZINT_FULL_MULTIBYTE | (N + 1) << 8.
 
 QR Code supports Structured Append of up to 16 symbols and a numeric ID
-(parity), which can be set by using the --structapp option (see section 4.15) or
+(parity), which can be set by using the --structapp option (see section 4.16) or
 the API structapp variable. The parity ID ranges from 0 (default) to 255, and
 for full compliance should be set to the value obtained by XOR-ing together each
 byte of the complete data forming the sequence. Currently this calculation must
@@ -2615,23 +2647,40 @@ be done outside of Zint.
 
 6.6.3 Micro QR Code (ISO 18004)
 -------------------------------
-A miniature version of the QR Code symbol for short messages. ECC levels can be
-selected as for QR Code (above). QR Code symbols can encode characters in the
-Latin-1 set and Kanji characters which are members of the Shift JIS encoding
-scheme. Input should be entered as a UTF-8 stream with conversion to Shift JIS
-being carried out automatically by Zint. A preferred symbol size can be
-selected by using the --vers= option or by setting option_2 although the actual
-version used by Zint may be different if required by the input data. The table
-below shows the possible sizes:
+A miniature version of the QR Code symbol for short messages, Micro QR Code
+symbols can encode characters in the Latin-1 set and Kanji characters which are
+members of the Shift JIS encoding scheme. Input should be entered as a UTF-8
+stream with conversion to Latin-1 or Shift JIS being carried out automatically
+by Zint. A preferred symbol size can be selected by using the --vers= option or
+by setting option_2, as shown in the table below. Note that versions M1 and M2
+have restrictions on what characters can be encoded.
 
----------------------------------
-Input  |  Version  |  Symbol Size
----------------------------------
-1      |  M1       |  11 x 11
-2      |  M2       |  13 x 13
-3      |  M3       |  15 x 15
-4      |  M4       |  17 x 17
----------------------------------
+------------------------------------------------------------------------
+Input  |  Version  |  Symbol Size  |  Allowed Characters
+------------------------------------------------------------------------
+1      |  M1       |  11 x 11      |  Numeric only
+2      |  M2       |  13 x 13      |  Numeric, uppercase letters, space,
+       |           |               |    and the characters "$%*+-./:"
+3      |  M3       |  15 x 15      |  Latin-1 and Kanji
+4      |  M4       |  17 x 17      |  Latin-1 and Kanji
+------------------------------------------------------------------------
+
+Except for version M1, which is always ECC level L, the amount of ECC codewords
+can be adjusted using the --secure= option (API option_1); however ECC level H
+is not available for any version, and ECC level Q is only available for version
+M4:
+
+----------------------------------------------------------------------------
+Input  |  ECC    |  Error Correction      |  Recovery    |  Available for
+       |  Level  |  Capacity              |  Capacity    |  Versions
+----------------------------------------------------------------------------
+1      |  L      |  Approx 20% of symbol  |  Approx 7%   |  M1, M2, M3, M4
+2      |  M      |  Approx 37% of symbol  |  Approx 15%  |  M2, M3, M4
+3      |  Q      |  Approx 55% of symbol  |  Approx 25%  |  M4
+---------------------------------------------------------------------------
+
+The defaults for symbol size and ECC level depend on the input and whether
+either of them is specified.
 
 For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
@@ -2653,60 +2702,40 @@ entered as UTF-8 with conversion being handled by Zint. The amount of ECC
 codewords can be adjusted using the --secure= option (API option_1), however
 only ECC levels M and H are valid for this type of symbol.
 
--------------------------------------------------------------------------
-Input  |  ECC Level    |  Error Correction Capacity  |  Recovery Capacity
--------------------------------------------------------------------------
-2      |  M (default)  |  Approx 37% of symbol       |  Approx 15%
-4      |  H            |  Approx 65% of symbol       |  Approx 30%
--------------------------------------------------------------------------
+-----------------------------------------------------------------------
+Input  |  ECC Level  |  Error Correction Capacity  |  Recovery Capacity
+-----------------------------------------------------------------------
+2      |  M          |  Approx 37% of symbol       |  Approx 15%
+4      |  H          |  Approx 65% of symbol       |  Approx 30%
+-----------------------------------------------------------------------
 
 The preferred symbol sizes can be selected using the --vers= option (API
 option_2) as shown in the table below. Input values between 33 and 38 fix the
 height of the symbol while allowing Zint to determine the minimum symbol width.
 
----------------------------------------
-Input  |  Version  |  Symbol Size (HxW)
----------------------------------------
-1      |  R7x43    |  7 x 73
-2      |  R7x59    |  7 x 59
-3      |  R7x77    |  7 x 77
-4      |  R7x99    |  7 x 99
-5      |  R7x139   |  7 x 139
-6      |  R9x43    |  9 x 43
-7      |  R9x59    |  9 x 59
-8      |  R9x77    |  9 x 77
-9      |  R9x99    |  9 x 99
-10     |  R9x139   |  9 x 139
-11     |  R11x27   |  11 x 27
-12     |  R11x43   |  11 x 43
-13     |  R11x59   |  11 x 59
-14     |  R11x77   |  11 x 77
-15     |  R11x99   |  11 x 99
-16     |  R11x139  |  11 x 139
-17     |  R13x27   |  13 x 27
-18     |  R13x43   |  13 x 43
-19     |  R13x59   |  13 x 59
-20     |  R13x77   |  13 x 77
-21     |  R13x99   |  13 x 99
-22     |  R13x139  |  13 x 139
-23     |  R15x43   |  15 x 43
-24     |  R15x59   |  15 x 59
-25     |  R15x77   |  15 x 77
-26     |  R15x99   |  15 x 99
-27     |  R15x139  |  15 x 139
-28     |  R17x43   |  17 x 43
-29     |  R17x59   |  17 x 59
-30     |  R17x77   |  17 x 77
-31     |  R17x99   |  17 x 99
-32     |  R17x139  |  17 x 139
----------------------------------------
-33     |  R7 x automatic width
-34     |  R9 x automatic width
-35     |  R11 x automatic width
-36     |  R13 x automatic width
-37     |  R15 x automatic width
-38     |  R17 x automatic width
----------------------------------------
+--------------------------------------------------------------------------------
+Input | Version  | Symbol Size (HxW)   | Input | Version  | Symbol Size (HxW)
+--------------------------------------------------------------------------------
+1     | R7x43    | 7 x 73              | 20    | R13x77   | 13 x 77
+2     | R7x59    | 7 x 59              | 21    | R13x99   | 13 x 99
+3     | R7x77    | 7 x 77              | 22    | R13x139  | 13 x 139
+4     | R7x99    | 7 x 99              | 23    | R15x43   | 15 x 43
+5     | R7x139   | 7 x 139             | 24    | R15x59   | 15 x 59
+6     | R9x43    | 9 x 43              | 25    | R15x77   | 15 x 77
+7     | R9x59    | 9 x 59              | 26    | R15x99   | 15 x 99
+8     | R9x77    | 9 x 77              | 27    | R15x139  | 15 x 139
+9     | R9x99    | 9 x 99              | 28    | R17x43   | 17 x 43
+10    | R9x139   | 9 x 139             | 29    | R17x59   | 17 x 59
+11    | R11x27   | 11 x 27             | 30    | R17x77   | 17 x 77
+12    | R11x43   | 11 x 43             | 31    | R17x99   | 17 x 99
+13    | R11x59   | 11 x 59             | 32    | R17x139  | 17 x 139
+14    | R11x77   | 11 x 77             | 33    | R7xW     | 7 x automatic width
+15    | R11x99   | 11 x 99             | 34    | R9xW     | 9 x automatic width
+16    | R11x139  | 11 x 139            | 35    | R11xW    | 11 x automatic width
+17    | R13x27   | 13 x 27             | 36    | R13xW    | 13 x automatic width
+18    | R13x43   | 13 x 43             | 37    | R15xW    | 15 x automatic width
+19    | R13x59   | 13 x 59             | 38    | R17xW    | 17 x automatic width
+--------------------------------------------------------------------------------
 
 For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or by setting option_3 to ZINT_FULL_MULTIBYTE.
@@ -2797,7 +2826,7 @@ Mode  |  Maximum Data Length  |  Maximum Data Length  |  Number of Error
 * - secondary only
 
 MaxiCode supports Structured Append of up to 8 symbols, which can be set by
-using the --structapp option (see section 4.15) or the API structapp variable.
+using the --structapp option (see section 4.16) or the API structapp variable.
 It does not support specifying an ID.
 
 MaxiCode uses a different scaling than other symbols for raster output, see
@@ -2808,7 +2837,7 @@ instead of 2.
 ----------------------------
 Invented by Andrew Longacre at Welch Allyn Inc in 1995 the Aztec Code symbol is
 a matrix symbol with a distinctive bulls-eye finder pattern. Zint can generate
-Compact Aztec Code (sometimes called Small Aztec Code) as well as "full-range"
+Compact Aztec Code (sometimes called Small Aztec Code) as well as 'full-range'
 Aztec Code symbols and by default will automatically select symbol type and
 size dependent on the length of the data to be encoded. Error correction
 codewords will normally be generated to fill at least 23% of the symbol. Two
@@ -2816,49 +2845,25 @@ options are available to change this behaviour:
 
 The size of the symbol can be specified using the --vers= option or setting
 option_2 to a value between 1 and 36 according to the following table. The
-symbols marked with an asterisk (*) in the table below are "compact" symbols,
+symbols marked with an asterisk (*) in the table below are 'compact' symbols,
 meaning they have a smaller bulls-eye pattern at the centre of the symbol.
 
----------------------
-Input  |  Symbol Size
----------------------
-1      |  15 x 15*
-2      |  19 x 19*
-3      |  23 x 23*
-4      |  27 x 27*
-5      |  19 x 19
-6      |  23 x 23
-7      |  27 x 27
-8      |  31 x 31
-9      |  37 x 37
-10     |  41 x 41
-11     |  45 x 45
-12     |  49 x 49
-13     |  53 x 53
-14     |  57 x 57
-15     |  61 x 61
-16     |  67 x 67
-17     |  71 x 71
-18     |  75 x 75
-19     |  79 x 79
-20     |  83 x 83
-21     |  87 x 87
-22     |  91 x 91
-23     |  95 x 95
-24     |  101 x 101
-25     |  105 x 105
-26     |  109 x 109
-27     |  113 x 113
-28     |  117 x 117
-29     |  121 x 121
-30     |  125 x 125
-31     |  131 x 131
-32     |  135 x 135
-33     |  139 x 139
-34     |  143 x 143
-35     |  147 x 147
-36     |  151 x 151
----------------------
+-------------------------------------------------------------------------------
+Input  |  Symbol Size     |  Input  |  Symbol Size     |  Input  |  Symbol Size
+-------------------------------------------------------------------------------
+1      |  15 x 15*        |  13     |  53 x 53         |  25     |  105 x 105
+2      |  19 x 19*        |  14     |  57 x 57         |  26     |  109 x 109
+3      |  23 x 23*        |  15     |  61 x 61         |  27     |  113 x 113
+4      |  27 x 27*        |  16     |  67 x 67         |  28     |  117 x 117
+5      |  19 x 19         |  17     |  71 x 71         |  29     |  121 x 121
+6      |  23 x 23         |  18     |  75 x 75         |  30     |  125 x 125
+7      |  27 x 27         |  19     |  79 x 79         |  31     |  131 x 131
+8      |  31 x 31         |  20     |  83 x 83         |  32     |  135 x 135
+9      |  37 x 37         |  21     |  87 x 87         |  33     |  139 x 139
+10     |  41 x 41         |  22     |  91 x 91         |  34     |  143 x 143
+11     |  45 x 45         |  23     |  95 x 95         |  35     |  147 x 147
+12     |  49 x 49         |  24     |  101 x 101       |  36     |  151 x 151
+-------------------------------------------------------------------------------
 
 Note that in symbols which have a specified size the amount of error correction
 is dependent on the length of the data input and Zint will allow error
@@ -2888,7 +2893,7 @@ encoded data.
 
 Aztec Code supports Structured Append of up to 26 symbols and an optional
 alphanumeric ID of up to 32 characters, which can be set by using the
---structapp option (see section 4.15) or the API structapp variable. The ID
+--structapp option (see section 4.16) or the API structapp variable. The ID
 cannot contain spaces. If an ID is not given, no ID is encoded.
 
 6.6.8 Aztec Runes
@@ -2926,7 +2931,7 @@ Version S symbols can only encode numeric data. The width of version S and
 version T symbols is determined by the length of the input data.
 
 Code One supports Structured Append of up to 128 symbols, which can be set by
-using the --structapp option (see section 4.15) or the API structapp variable.
+using the --structapp option (see section 4.16) or the API structapp variable.
 It does not support specifying an ID. Structured Append is not supported with
 GS1 data nor for Version S symbols.
 
@@ -2945,23 +2950,17 @@ option or by setting option_2, and the error correction capacity can be
 specified by using the --secure= option or by setting option_1 according to
 the following tables:
 
----------------------
-Input  |  Symbol Size
----------------------
-1      |  18 x 18
-2      |  30 x 30
-3      |  42 x 42
-4      |  54 x 54
-5      |  66 x 66
-6      |  78 x 78
+----------------------------------------------------
+Input  |  Symbol Size       |  Input  |  Symbol Size
+----------------------------------------------------
+1      |  18 x 18           |  8      |  102 x 102
+2      |  30 x 30           |  9      |  114 x 114
+3      |  42 x 42           |  10     |  126 x 126
+4      |  54 x 54           |  11     |  138 x 138
+5      |  66 x 66           |  12     |  150 x 150
+6      |  78 x 78           |  13     |  162 x 162
 7      |  90 x 90
-8      |  102 x 102
-9      |  114 x 114
-10     |  126 x 126
-11     |  138 x 138
-12     |  150 x 150
-13     |  162 x 162
----------------------
+----------------------------------------------------
 
 ----------------------------------
 Mode  |  Error Correction Capacity
@@ -2979,7 +2978,7 @@ supports this before using.
 
 Grid Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file signature), which can be set by using the --structapp option (see section
-4.15) or the API structapp variable. The ID ranges from 0 (default) to 255.
+4.16) or the API structapp variable. The ID ranges from 0 (default) to 255.
 
 6.6.11 DotCode
 --------------
@@ -2993,116 +2992,58 @@ setting the scale of the image to a larger value than the default (e.g. approx
 10) for the dots to be plotted correctly. Approximately 33% of the resulting
 symbol is comprised of error correction codewords.
 
-DotCode has two sets of 4 masks, designated 0-3 and 0'-3', the second "prime"
+DotCode has two sets of 4 masks, designated 0-3 and 0'-3', the second 'prime'
 set being the same as the first with corners lit. The best mask to use is
 selected automatically by Zint but may be manually specified by using the
 --mask= switch with values 0-7, where 4-7 denote 0'-3', or by setting option_3
 to (N + 1) << 8 where N is 0-7.
 
 DotCode supports Structured Append of up to 35 symbols, which can be set by
-using the --structapp option (see section 4.15) or the API structapp variable.
+using the --structapp option (see section 4.16) or the API structapp variable.
 It does not support specifying an ID.
 
 6.6.12 Han Xin Code
 -------------------
-Also known as Chinese Sensible Code, Han Xin is a symbology which is still under
-development, so it is recommended it should not yet be used for a production
-environment. The symbology is capable of encoding characters in the GB 18030
-character set (which includes all Unicode characters) and is also able to
-support the ECI mechanism. Support for the encoding of GS1 data has not yet been
-implemented.
+Also known as Chinese Sensible Code, Han Xin is capable of encoding characters
+in the GB 18030 character set (which includes all Unicode characters) and is
+also able to support the ECI mechanism. Support for the encoding of GS1 data has
+not yet been implemented.
 
 The size of the symbol can be specified using the --vers= option or setting
 option_2 to a value between 1 and 84 according to the following table.
 
----------------------
-Input  |  Symbol Size
----------------------
-1      |  23 x 23
-2      |  25 x 25
-3      |  27 x 27
-4      |  29 x 29
-5      |  31 x 31
-6      |  33 x 33
-7      |  35 x 35
-8      |  37 x 37
-9      |  39 x 39
-10     |  41 x 41
-11     |  43 x 43
-12     |  45 x 45
-13     |  47 x 47
-14     |  49 x 49
-15     |  51 x 51
-16     |  53 x 53
-17     |  55 x 55
-18     |  57 x 57
-19     |  59 x 59
-20     |  61 x 61
-21     |  63 x 63
-22     |  65 x 65
-23     |  67 x 67
-24     |  69 x 69
-25     |  71 x 71
-26     |  73 x 73
-28     |  75 x 75
-28     |  77 x 77
-29     |  79 x 79
-30     |  81 x 81
-31     |  83 x 83
-32     |  85 x 85
-33     |  87 x 87
-34     |  89 x 89
-35     |  91 x 91
-36     |  93 x 93
-37     |  95 x 95
-38     |  97 x 97
-39     |  99 x 99
-40     |  101 x 101
-41     |  103 x 103
-42     |  105 x 105
-43     |  107 x 107
-44     |  109 x 109
-45     |  111 x 111
-46     |  113 x 113
-47     |  115 x 115
-48     |  117 x 117
-49     |  119 x 119
-50     |  121 x 121
-51     |  123 x 123
-52     |  125 x 125
-53     |  127 x 127
-54     |  129 x 129
-55     |  131 x 131
-56     |  133 x 133
-57     |  135 x 135
-58     |  137 x 137
-59     |  139 x 139
-60     |  141 x 141
-61     |  143 x 143
-62     |  145 x 145
-63     |  147 x 147
-64     |  149 x 149
-65     |  151 x 151
-66     |  153 x 153
-67     |  155 x 155
-68     |  157 x 157
-69     |  159 x 159
-70     |  161 x 161
-71     |  163 x 163
-72     |  165 x 165
-73     |  167 x 167
-74     |  169 x 169
-75     |  171 x 171
-76     |  173 x 173
-77     |  175 x 175
-78     |  177 x 177
-79     |  179 x 179
-80     |  181 x 181
-81     |  183 x 183
-82     |  185 x 185
-83     |  187 x 187
-84     |  189 x 189
----------------------
+-------------------------------------------------------------------------------
+Input  |  Symbol Size     |  Input  |  Symbol Size     |  Input  |  Symbol Size
+-------------------------------------------------------------------------------
+1      |  23 x 23         |  29     |  79 x 79         |  57     |  135 x 135
+2      |  25 x 25         |  30     |  81 x 81         |  58     |  137 x 137
+3      |  27 x 27         |  31     |  83 x 83         |  59     |  139 x 139
+4      |  29 x 29         |  32     |  85 x 85         |  60     |  141 x 141
+5      |  31 x 31         |  33     |  87 x 87         |  61     |  143 x 143
+6      |  33 x 33         |  34     |  89 x 89         |  62     |  145 x 145
+7      |  35 x 35         |  35     |  91 x 91         |  63     |  147 x 147
+8      |  37 x 37         |  36     |  93 x 93         |  64     |  149 x 149
+9      |  39 x 39         |  37     |  95 x 95         |  65     |  151 x 151
+10     |  41 x 41         |  38     |  97 x 97         |  66     |  153 x 153
+11     |  43 x 43         |  39     |  99 x 99         |  67     |  155 x 155
+12     |  45 x 45         |  40     |  101 x 101       |  68     |  157 x 157
+13     |  47 x 47         |  41     |  103 x 103       |  69     |  159 x 159
+14     |  49 x 49         |  42     |  105 x 105       |  70     |  161 x 161
+15     |  51 x 51         |  43     |  107 x 107       |  71     |  163 x 163
+16     |  53 x 53         |  44     |  109 x 109       |  72     |  165 x 165
+17     |  55 x 55         |  45     |  111 x 111       |  73     |  167 x 167
+18     |  57 x 57         |  46     |  113 x 113       |  74     |  169 x 169
+19     |  59 x 59         |  47     |  115 x 115       |  75     |  171 x 171
+20     |  61 x 61         |  48     |  117 x 117       |  76     |  173 x 173
+21     |  63 x 63         |  49     |  119 x 119       |  77     |  175 x 175
+22     |  65 x 65         |  50     |  121 x 121       |  78     |  177 x 177
+23     |  67 x 67         |  51     |  123 x 123       |  79     |  179 x 179
+24     |  69 x 69         |  52     |  125 x 125       |  80     |  181 x 181
+25     |  71 x 71         |  53     |  127 x 127       |  81     |  183 x 183
+26     |  73 x 73         |  54     |  129 x 129       |  82     |  185 x 185
+27     |  75 x 75         |  55     |  131 x 131       |  83     |  187 x 187
+28     |  77 x 77         |  56     |  133 x 133       |  84     |  189 x 189
+-------------------------------------------------------------------------------
 
 There are four levels of error correction capacity available for Han Xin Code
 which can be set by using the --secure= option or by setting option_1 to a value
@@ -3159,7 +3100,7 @@ option_2 to 2.
 
 Ultracode supports Structured Append of up to 8 symbols and an optional numeric
 ID (File Number), which can be set by using the --structapp option (see section
-4.15) or the API structapp variable. The ID ranges from 1 to 80088. If an ID is
+4.16) or the API structapp variable. The ID ranges from 1 to 80088. If an ID is
 not given, no ID is encoded.
 
 6.7 Other Barcode-Like Markings

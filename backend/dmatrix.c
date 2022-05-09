@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -37,7 +37,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include <assert.h>
@@ -1485,12 +1484,11 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
 STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned char source[],
-            unsigned char target[], int *p_length, int *p_binlen) {
+            const int length, const int eci, const int gs1, unsigned char target[], int *p_tp) {
     int sp = 0;
-    int tp = 0;
+    int tp = *p_tp;
     int current_mode = DM_ASCII;
-    int i, gs1;
-    int length = *p_length;
+    int i;
     int process_buffer[8]; /* holds remaining data to finalised */
     int process_p = 0; /* number of characters left to finalise */
     int b256_start = 0;
@@ -1498,134 +1496,20 @@ STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned
     int error_number;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if (length > 3116) { /* Max is 3166 digits */
-        strcpy(symbol->errtxt, "760: Data too long to fit in symbol");
-        return ZINT_ERROR_TOO_LONG;
-    }
-
-    if (symbol->structapp.count) {
-        int id1, id2;
-
-        if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
-            strcpy(symbol->errtxt, "720: Structured Append count out of range (2-16)");
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "721: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        if (symbol->structapp.id[0]) {
-            int id, id_len, id1_err, id2_err;
-
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
-
-            if (id_len > 6) { /* ID1 * 1000 + ID2 */
-                strcpy(symbol->errtxt, "722: Structured Append ID too long (6 digit maximum)");
-                return ZINT_ERROR_INVALID_OPTION;
-            }
-
-            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
-            if (id == -1) {
-                strcpy(symbol->errtxt, "723: Invalid Structured Append ID (digits only)");
-                return ZINT_ERROR_INVALID_OPTION;
-            }
-            id1 = id / 1000;
-            id2 = id % 1000;
-            id1_err = id1 < 1 || id1 > 254;
-            id2_err = id2 < 1 || id2 > 254;
-            if (id1_err || id2_err) {
-                if (id1_err && id2_err) {
-                    sprintf(symbol->errtxt,
-                            "724: Structured Append ID1 '%03d' and ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id1, id2, id1, id2);
-                } else if (id1_err) {
-                    sprintf(symbol->errtxt,
-                            "725: Structured Append ID1 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id1, id1, id2);
-                } else {
-                    sprintf(symbol->errtxt,
-                            "726: Structured Append ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id2, id1, id2);
-                }
-                return ZINT_ERROR_INVALID_OPTION;
-            }
-        } else {
-            id1 = id2 = 1;
-        }
-
-        target[tp++] = 233;
-        target[tp++] = (17 - symbol->structapp.count) | ((symbol->structapp.index - 1) << 4);
-        target[tp++] = id1;
-        target[tp++] = id2;
-    }
-
-    /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
-    if ((symbol->input_mode & 0x07) == GS1_MODE) {
-        if (symbol->output_options & GS1_GS_SEPARATOR) {
-            gs1 = 2;
-        } else {
-            gs1 = 1;
-        }
-    } else {
-        gs1 = 0;
-    }
-
-    if (gs1) {
-        target[tp++] = 232;
-        if (debug_print) printf("FN1 ");
-    } /* FNC1 */
-
-    if (symbol->output_options & READER_INIT) {
-        if (gs1) {
-            strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        if (symbol->structapp.count) {
-            strcpy(symbol->errtxt, "727: Cannot have Structured Append and Reader Initialisation at the same time");
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        target[tp++] = 234; /* Reader Programming */
-        if (debug_print) printf("RP ");
-    }
-
-    if (symbol->eci > 0) {
+    if (eci > 0) {
         /* Encode ECI numbers according to Table 6 */
         target[tp++] = 241; /* ECI Character */
-        if (symbol->eci <= 126) {
-            target[tp++] = (unsigned char) (symbol->eci + 1);
-        } else if (symbol->eci <= 16382) {
-            target[tp++] = (unsigned char) ((symbol->eci - 127) / 254 + 128);
-            target[tp++] = (unsigned char) ((symbol->eci - 127) % 254 + 1);
+        if (eci <= 126) {
+            target[tp++] = (unsigned char) (eci + 1);
+        } else if (eci <= 16382) {
+            target[tp++] = (unsigned char) ((eci - 127) / 254 + 128);
+            target[tp++] = (unsigned char) ((eci - 127) % 254 + 1);
         } else {
-            target[tp++] = (unsigned char) ((symbol->eci - 16383) / 64516 + 192);
-            target[tp++] = (unsigned char) (((symbol->eci - 16383) / 254) % 254 + 1);
-            target[tp++] = (unsigned char) ((symbol->eci - 16383) % 254 + 1);
+            target[tp++] = (unsigned char) ((eci - 16383) / 64516 + 192);
+            target[tp++] = (unsigned char) (((eci - 16383) / 254) % 254 + 1);
+            target[tp++] = (unsigned char) ((eci - 16383) % 254 + 1);
         }
-        if (debug_print) printf("ECI %d ", symbol->eci + 1);
-    }
-
-    /* Check for Macro05/Macro06 */
-    /* "[)>[RS]05[GS]...[RS][EOT]" -> CW 236 */
-    /* "[)>[RS]06[GS]...[RS][EOT]" -> CW 237 */
-    if (tp == 0 && sp == 0 && length >= 9
-            && source[0] == '[' && source[1] == ')' && source[2] == '>'
-            && source[3] == '\x1e' && source[4] == '0'
-            && (source[5] == '5' || source[5] == '6')
-            && source[6] == '\x1d'
-            && source[length - 2] == '\x1e' && source[length - 1] == '\x04') {
-
-        /* Output macro Codeword */
-        if (source[5] == '5') {
-            target[tp++] = 236;
-            if (debug_print) printf("Macro05 ");
-        } else {
-            target[tp++] = 237;
-            if (debug_print) printf("Macro06 ");
-        }
-        /* Remove macro characters from input string */
-        sp = 7;
-        length -= 2;
-        *p_length -= 2;
+        if (debug_print) printf("ECI %d ", eci + 1);
     }
 
     if (symbol->input_mode & FAST_MODE) { /* If FAST_MODE, do Annex J-based encodation */
@@ -1769,6 +1653,153 @@ STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned
         printf("\n");
     }
 
+    *p_tp = tp;
+
+    return 0;
+}
+
+/* Call `dm_encode()` for each segment, dealing with Structured Append, GS1, READER_INIT and macro headers
+   beforehand */
+static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+            unsigned char target[], int *p_binlen) {
+    int error_number;
+    int i;
+    int tp = 0;
+    int gs1;
+    int in_macro = 0;
+    const struct zint_seg *last_seg = &segs[seg_count - 1];
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+
+    if (segs_length(segs, seg_count) > 3116) { /* Max is 3166 digits */
+        strcpy(symbol->errtxt, "760: Data too long to fit in symbol");
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    if (symbol->structapp.count) {
+        int id1, id2;
+
+        if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
+            strcpy(symbol->errtxt, "720: Structured Append count out of range (2-16)");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
+            sprintf(symbol->errtxt, "721: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.id[0]) {
+            int id, id_len, id1_err, id2_err;
+
+            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+
+            if (id_len > 6) { /* ID1 * 1000 + ID2 */
+                strcpy(symbol->errtxt, "722: Structured Append ID too long (6 digit maximum)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+
+            id = to_int((const unsigned char *) symbol->structapp.id, id_len);
+            if (id == -1) {
+                strcpy(symbol->errtxt, "723: Invalid Structured Append ID (digits only)");
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+            id1 = id / 1000;
+            id2 = id % 1000;
+            id1_err = id1 < 1 || id1 > 254;
+            id2_err = id2 < 1 || id2 > 254;
+            if (id1_err || id2_err) {
+                if (id1_err && id2_err) {
+                    sprintf(symbol->errtxt,
+                            "724: Structured Append ID1 '%03d' and ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id1, id2, id1, id2);
+                } else if (id1_err) {
+                    sprintf(symbol->errtxt,
+                            "725: Structured Append ID1 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id1, id1, id2);
+                } else {
+                    sprintf(symbol->errtxt,
+                            "726: Structured Append ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
+                            id2, id1, id2);
+                }
+                return ZINT_ERROR_INVALID_OPTION;
+            }
+        } else {
+            id1 = id2 = 1;
+        }
+
+        target[tp++] = 233;
+        target[tp++] = (17 - symbol->structapp.count) | ((symbol->structapp.index - 1) << 4);
+        target[tp++] = id1;
+        target[tp++] = id2;
+    }
+
+    /* gs1 flag values: 0: no gs1, 1: gs1 with FNC1 serparator, 2: GS separator */
+    if ((symbol->input_mode & 0x07) == GS1_MODE) {
+        if (symbol->output_options & GS1_GS_SEPARATOR) {
+            gs1 = 2;
+        } else {
+            gs1 = 1;
+        }
+    } else {
+        gs1 = 0;
+    }
+
+    if (gs1) {
+        target[tp++] = 232;
+        if (debug_print) printf("FN1 ");
+    } /* FNC1 */
+
+    if (symbol->output_options & READER_INIT) {
+        if (gs1) {
+            strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (symbol->structapp.count) {
+            strcpy(symbol->errtxt, "727: Cannot have Structured Append and Reader Initialisation at the same time");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        target[tp++] = 234; /* Reader Programming */
+        if (debug_print) printf("RP ");
+    }
+
+    /* Check for Macro05/Macro06 */
+    /* "[)>[RS]05[GS]...[RS][EOT]" -> CW 236 */
+    /* "[)>[RS]06[GS]...[RS][EOT]" -> CW 237 */
+    if (tp == 0 && segs[0].length >= 9 && last_seg->length >= 2
+            && segs[0].source[0] == '[' && segs[0].source[1] == ')' && segs[0].source[2] == '>'
+            && segs[0].source[3] == '\x1e' /*RS*/ && segs[0].source[4] == '0'
+            && (segs[0].source[5] == '5' || segs[0].source[5] == '6')
+            && segs[0].source[6] == '\x1d' /*GS*/
+            && last_seg->source[last_seg->length - 1] == '\x04' /*EOT*/
+            && last_seg->source[last_seg->length - 2] == '\x1e' /*RS*/) {
+
+        /* Output macro Codeword */
+        if (segs[0].source[5] == '5') {
+            target[tp++] = 236;
+            if (debug_print) printf("Macro05 ");
+        } else {
+            target[tp++] = 237;
+            if (debug_print) printf("Macro06 ");
+        }
+        /* Remove macro characters from input string */
+        in_macro = 1;
+    }
+
+    for (i = 0; i < seg_count; i++) {
+        int src_inc = 0, len_dec = 0;
+        if (in_macro) {
+            if (i == 0) {
+                src_inc = len_dec = 7; /* Skip over macro characters at beginning */
+            }
+            if (i + 1 == seg_count) {
+                len_dec += 2;  /* Remove RS + EOT from end */
+            }
+        }
+        error_number = dm_encode(symbol, segs[i].source + src_inc, segs[i].length - len_dec, segs[i].eci, gs1,
+                        target, &tp);
+        if (error_number != 0) {
+            return error_number;
+        }
+    }
+
     *p_binlen = tp;
 
     return 0;
@@ -1791,7 +1822,7 @@ static void dm_add_tail(unsigned char target[], int tp, const int tail_length) {
     }
 }
 
-static int dm_ecc200(struct zint_symbol *symbol, const unsigned char source[], int length) {
+static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, skew = 0;
     unsigned char binary[2200];
     int binlen;
@@ -1801,7 +1832,7 @@ static int dm_ecc200(struct zint_symbol *symbol, const unsigned char source[], i
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* `length` may be decremented by 2 if macro character is used */
-    error_number = dm_encode(symbol, source, binary, &length, &binlen);
+    error_number = dm_encode_segs(symbol, segs, seg_count, binary, &binlen);
     if (error_number != 0) {
         return error_number;
     }
@@ -1906,12 +1937,12 @@ static int dm_ecc200(struct zint_symbol *symbol, const unsigned char source[], i
     return error_number;
 }
 
-INTERNAL int datamatrix(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int error_number;
 
     if (symbol->option_1 <= 1) {
         /* ECC 200 */
-        error_number = dm_ecc200(symbol, source, length);
+        error_number = dm_ecc200(symbol, segs, seg_count);
     } else {
         /* ECC 000 - 140 */
         strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");
@@ -1920,3 +1951,5 @@ INTERNAL int datamatrix(struct zint_symbol *symbol, unsigned char source[], int 
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

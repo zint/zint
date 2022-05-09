@@ -141,6 +141,10 @@
 2022-04-08 GL
 - Updated ECIs to AIM ITS/04-023:2022
   Note changed names "unicode" -> "utf-16be", "euc-cn" -> "gb2312"
+2022-04-24 GL
+- Added -segN options
+- Added "invariant" and "binary" ECIs
+- Tcl_GetIndexFromObj() flags arg -> 0
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -431,7 +435,7 @@ static const char *s_eci_list[] = {
     "cp1256",       /*24: Windows-1256*/
     "utf-16be",     /*25: UTF-16BE (High order byte first) Unicode*/
     "utf-8",        /*26: Unicode (UTF-8)*/
-    "ascii",        /*27: ISO-646:1991 7-bit character set*/
+    "ascii",        /*27: ISO-646:1991 7-bit character set ASCII*/
     "big5",         /*28: Big5 (Taiwan) Chinese Character Set*/
     "gb2312",       /*29: GB 2312 (PRC) Chinese Character Set*/
     "iso2022-kr",   /*30: Korean Character Set EUC-KR (KS X 1001:2002)*/
@@ -440,13 +444,15 @@ static const char *s_eci_list[] = {
     "utf-16le",     /*33: UTF-16LE (Low order byte first) Unicode*/
     "utf-32be",     /*34: UTF-32BE (High order byte first) Unicode*/
     "utf-32le",     /*35: UTF-32BE (Low order byte first) Unicode*/
+    "invariant",    /*170: ISO-646:1991 7-bit character set invariant*/
+    "binary",       /*899: 8-bit binary*/
     NULL
 };
 
 /* The ECI numerical number to pass to ZINT */
 static const int s_eci_number[] = {
     3,4,5,6,7,8,9,10,11,12,13,15,16,17,18,20,21,22,23,24,25,26,27,28,29,30,
-    31,32,33,34,35
+    31,32,33,34,35,170,899
 };
 
 /* Version information */
@@ -460,7 +466,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "  photo: a tcl photo image handle ('p' after 'image create photo p')\n"
     "  Available options:\n"
     "   -barcode choice: symbology, use 'zint symbology' to get a list\n"
-    "   -addongap number: (7..12, default: 9) set add-on gap in multiple of module size (UPC/EAN-CC)\n"
+    "   -addongap integer: (7..12, default: 9) set add-on gap in multiple of module size (UPC/EAN-CC)\n"
     "   -bg color: set background color as 6 or 8 hex rrggbbaa\n"
     /* cli option --binary internally handled */
     "   -bind bool: bars above/below the code, size set by -border\n"
@@ -476,7 +482,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -dotty bool: use dots instead of boxes for matrix codes\n"
     /* cli option --dump not supported */
     /* cli option --ecinos not supported */
-    "   -eci number: ECI to use\n"
+    "   -eci choice: ECI to use\n"
     /* cli option --esc not supported */
     "   -fast bool: use fast encodation (Data Matrix)\n"
     "   -fg color: set foreground color as 6 or 8 hex rrggbbaa\n"
@@ -492,9 +498,9 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -heightperrow bool: treat height as per-row\n"
     /* cli option --input not supported */
     "   -init bool: Create reader initialisation symbol (Code 128, Data Matrix)\n"
-    "   -mask number: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
+    "   -mask integer: set masking pattern to use (QR/MicroQR/HanXin/DotCode)\n"
     /* cli option --mirror not supported */
-    "   -mode number: set encoding mode (MaxiCode, Composite)\n"
+    "   -mode integer: set encoding mode (MaxiCode, Composite)\n"
     "   -nobackground bool: set background transparent\n"
     "   -noquietzones bool: disable default quiet zones\n"
     "   -notext bool: no interpretation line\n"
@@ -505,8 +511,9 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -rows integer: Codablock F, PDF417: number of rows\n"
     "   -scale double: Scale the image to this factor\n"
-    "   -scmvv number: Prefix SCM with [)>\\R01\\Gvv (vv is NUMBER) (MaxiCode)\n"
+    "   -scmvv integer: Prefix SCM with [)>\\R01\\Gvv (vv is integer) (MaxiCode)\n"
     "   -secure integer: EC Level (Aztec, GridMatrix, HanXin, PDF417, QR, UltraCode)\n"
+    "   -segN {eci data}: Set the ECI & data content for segment N where N is 1 to 9\n"
     "   -separator 0..4 (default: 1) : Stacked symbologies: separator width\n"
     /* cli option --small replaced by -smalltext */
     "   -smalltext bool: tiny interpretation line font\n"
@@ -710,6 +717,11 @@ static int Encode(Tcl_Interp *interp, int objc,
     int Mask = 0;
     int rows = 0;
     unsigned int cap;
+    int seg_count = 0;
+    int seg_no;
+    Tcl_Obj *pSegDataObjs[10] = {0};
+    Tcl_DString segInputs[10];
+    struct zint_seg segs[10];
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
     /* >> options */
@@ -741,8 +753,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
-            "-reverse", "-rotate", "-rows", "-scale", "-scmvv",
-            "-secure", "-separator", "-smalltext", "-square", "-structapp",
+            "-reverse", "-rotate", "-rows", "-scale", "-scmvv", "-secure",
+            "-seg1", "-seg2", "-seg3", "-seg4", "-seg5", "-seg6", "-seg7", "-seg8", "-seg9",
+            "-separator", "-smalltext", "-square", "-structapp",
             "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
@@ -752,8 +765,9 @@ static int Encode(Tcl_Interp *interp, int objc,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
-            iReverse, iRotate, iRows, iScale, iSCMvv,
-            iSecure, iSeparator, iSmallText, iSquare, iStructApp,
+            iReverse, iRotate, iRows, iScale, iSCMvv, iSecure,
+            iSeg1, iSeg2, iSeg3, iSeg4, iSeg5, iSeg6, iSeg7, iSeg8, iSeg9,
+            iSeparator, iSmallText, iSquare, iStructApp,
             iTo, iVers, iVWhiteSp, iWError, iWhiteSp
             };
         int optionIndex;
@@ -762,7 +776,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         /*--------------------------------------------------------------------*/
         if(Tcl_GetIndexFromObj(interp, objv[optionPos],
             (const char **) optionList,
-            "zint option", optionPos-1, &optionIndex)
+            "zint option", 0, &optionIndex)
             == TCL_ERROR)
         {
             fError = 1;
@@ -850,6 +864,38 @@ static int Encode(Tcl_Interp *interp, int objc,
                 Tcl_DStringFree(&dString);
                 Tcl_SetObjResult(interp,Tcl_NewStringObj("String too long", -1));
                 fError = 1;
+            }
+            break;
+        case iSeg1: case iSeg2: case iSeg3: case iSeg4: case iSeg5:
+        case iSeg6: case iSeg7: case iSeg8: case iSeg9:
+            seg_no = optionIndex - iSeg1 + 1;
+            if (pSegDataObjs[seg_no]) {
+                Tcl_SetObjResult(interp, Tcl_NewStringObj("duplicate segment", -1));
+                fError = 1;
+            } else {
+                Tcl_Obj *poParam;
+                if (TCL_OK != Tcl_ListObjLength(interp, objv[optionPos+1], &lStr)) {
+                    Tcl_SetObjResult(interp, Tcl_Format(interp, "option %s not a list", 1, objv + optionPos));
+                    fError = 1;
+                } else if (lStr != 2) {
+                    Tcl_SetObjResult(interp, Tcl_Format(interp, "option %s not a list of 2", 1, objv + optionPos));
+                    fError = 1;
+                } else if (TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                        0, &poParam)
+                        || TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            1, &pSegDataObjs[seg_no])) {
+                    Tcl_SetObjResult(interp, Tcl_Format(interp, "option %s list format is {eci data}", 1, objv + optionPos));
+                    fError = 1;
+                } else if (Tcl_GetIndexFromObj(interp, poParam,
+                            (const char **) s_eci_list, Tcl_GetString(objv[optionPos]), 0, &ECIIndex)
+                            == TCL_ERROR) {
+                    fError = 1;
+                } else {
+                    segs[seg_no].eci = s_eci_number[ECIIndex];
+                    if (seg_no >= seg_count) {
+                        seg_count = seg_no + 1;
+                    }
+                }
             }
             break;
         }
@@ -944,7 +990,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             break;
         case iECI:
             if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
-                (const char **) s_eci_list,"-eci", optionPos, &ECIIndex)
+                (const char **) s_eci_list, "-eci", 0, &ECIIndex)
                 == TCL_ERROR)
             {
                 fError = 1;
@@ -1129,7 +1175,7 @@ static int Encode(Tcl_Interp *interp, int objc,
                 /*------------------------------------------------------------*/
                 if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
                     (const char **) rotateList,
-                    "rotate", optionPos, &intValue)
+                    "-rotate", 0, &intValue)
                     == TCL_ERROR)
                 {
                     fError = 1;
@@ -1145,7 +1191,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             break;
         case iBarcode:
             if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
-                (const char **) s_code_list,"-barcode", optionPos, &intValue)
+                (const char **) s_code_list, "-barcode", 0, &intValue)
                 == TCL_ERROR)
             {
                 fError = 1;
@@ -1255,7 +1301,7 @@ static int Encode(Tcl_Interp *interp, int objc,
                 /*------------------------------------------------------------*/
                 if(Tcl_GetIndexFromObj(interp, objv[optionPos+1],
                     (const char **) formatList,
-                    "format", optionPos, &intValue)
+                    "-format", 0, &intValue)
                     == TCL_ERROR)
                 {
                     fError = 1;
@@ -1325,6 +1371,32 @@ static int Encode(Tcl_Interp *interp, int objc,
             pStr = Tcl_DStringValue( &dsInput );
             lStr = Tcl_DStringLength( &dsInput );
         }
+        if (seg_count) {
+            segs[0].source = (unsigned char *) pStr;
+            segs[0].length = lStr;
+            segs[0].eci = my_symbol->eci;
+            for (seg_no = 1; seg_no < seg_count; seg_no++) {
+                if (!pSegDataObjs[seg_no]) {
+                    Tcl_SetObjResult(interp, Tcl_NewStringObj("Segments must be consecutive", -1));
+                    fError = 1;
+                    break;
+                }
+            }
+            if (!fError) {
+                for (seg_no = 1; seg_no < seg_count; seg_no++) {
+                    if ((my_symbol->input_mode & 0x07) == DATA_MODE) {
+                        segs[seg_no].source = (unsigned char *) Tcl_GetByteArrayFromObj(pSegDataObjs[seg_no],
+                            &segs[seg_no].length);
+                    } else {
+                        pStr = Tcl_GetStringFromObj(pSegDataObjs[seg_no], &lStr);
+                        Tcl_DStringInit(& segInputs[seg_no]);
+                        Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &segInputs[seg_no]);
+                        segs[seg_no].source = (unsigned char *) Tcl_DStringValue( &segInputs[seg_no] );
+                        segs[seg_no].length = Tcl_DStringLength( &segInputs[seg_no] );
+                    }
+                }
+            }
+        }
     }
     /*------------------------------------------------------------------------*/
     /* >>> Build symbol graphic */
@@ -1333,8 +1405,13 @@ static int Encode(Tcl_Interp *interp, int objc,
         Tk_PhotoHandle hPhoto;
         /*--------------------------------------------------------------------*/
         /* call zint graphic creation to buffer */
-        ErrorNumber = ZBarcode_Encode_and_Buffer(my_symbol,
-            (unsigned char *) pStr, lStr, rotate_angle);
+        if (seg_count) {
+            ErrorNumber = ZBarcode_Encode_Segs_and_Buffer(my_symbol,
+                segs, seg_count, rotate_angle);
+        } else {
+            ErrorNumber = ZBarcode_Encode_and_Buffer(my_symbol,
+                (unsigned char *) pStr, lStr, rotate_angle);
+        }
         /*--------------------------------------------------------------------*/
         /* >> Show a message */
         if( 0 != ErrorNumber )

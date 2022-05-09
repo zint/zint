@@ -34,9 +34,35 @@
 #define QSL QStringLiteral
 
 namespace Zint {
-    static const char *fontStyle = "Helvetica";
-    static const char *fontStyleError = "Helvetica";
+    static const char fontStyle[] = "Helvetica";
+    static const char fontStyleError[] = "Helvetica";
     static const int fontSizeError = 14; /* Point size */
+
+    static const int maxSegs = 256;
+    static const int maxCLISegs = 10; /* CLI restricted to 10 segments (including main data) */
+
+    /* Helper to convert ECI combo index to ECI value */
+    static int ECIIndexToECI(const int ECIIndex) {
+        int ret;
+        if (ECIIndex >= 1 && ECIIndex <= 11) {
+            ret = ECIIndex + 2;
+        } else if (ECIIndex >= 12 && ECIIndex <= 15) {
+            ret = ECIIndex + 3;
+        } else if (ECIIndex >= 16 && ECIIndex <= 31) {
+            ret = ECIIndex + 4;
+        } else if (ECIIndex == 32) {
+            ret = 170; /* ISO 646 Invariant */
+        } else if (ECIIndex == 33) {
+            ret = 899; /* 8-bit binary data */
+        } else {
+            ret = 0;
+        }
+        return ret;
+    }
+
+    /* Segment constructors */
+    QZintSeg::QZintSeg() : m_eci(0) {}
+    QZintSeg::QZintSeg(const QString& text, const int ECIIndex) : m_text(text), m_eci(ECIIndexToECI(ECIIndex)) {}
 
     QZint::QZint()
         : m_zintSymbol(NULL), m_symbol(BARCODE_CODE128), m_input_mode(UNICODE_MODE),
@@ -139,9 +165,17 @@ namespace Zint {
 
     void QZint::encode() {
         resetSymbol();
-        QByteArray bstr = m_text.toUtf8();
-        /* Note do our own rotation */
-        m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), 0);
+        if (m_segs.empty()) {
+            QByteArray bstr = m_text.toUtf8();
+            /* Note do our own rotation */
+            m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), 0);
+        } else {
+            struct zint_seg segs[maxSegs];
+            std::vector<QByteArray> bstrs;
+            int seg_count = convertSegs(segs, bstrs);
+            /* Note do our own rotation */
+            m_error = ZBarcode_Encode_Segs_and_Buffer_Vector(m_zintSymbol, segs, seg_count, 0);
+        }
         m_lastError = m_zintSymbol->errtxt;
 
         if (m_error < ZINT_ERROR) {
@@ -182,6 +216,19 @@ namespace Zint {
 
     void QZint::setText(const QString& text) {
         m_text = text;
+        m_segs.clear();
+    }
+
+    std::vector<QZintSeg> QZint::segs() const {
+        return m_segs;
+    }
+
+    void QZint::setSegs(const std::vector<QZintSeg>& segs) {
+        m_segs = segs;
+        m_text.clear();
+        if (m_segs.size()) { /* Make sure `symbol->eci` synced */
+            m_eci = m_segs[0].m_eci;
+        }
     }
 
     QString QZint::primaryMessage() const {
@@ -454,19 +501,7 @@ namespace Zint {
     }
 
     void QZint::setECI(int ECIIndex) { // Sets from comboBox index
-        if (ECIIndex >= 1 && ECIIndex <= 11) {
-            m_eci = ECIIndex + 2;
-        } else if (ECIIndex >= 12 && ECIIndex <= 15) {
-            m_eci = ECIIndex + 3;
-        } else if (ECIIndex >= 16 && ECIIndex <= 31) {
-            m_eci = ECIIndex + 4;
-        } else if (ECIIndex == 32) {
-            m_eci = 170; /* ISO 646 Invariant */
-        } else if (ECIIndex == 33) {
-            m_eci = 899; /* 8-bit binary data */
-        } else {
-            m_eci = 0;
-        }
+        m_eci = ECIIndexToECI(ECIIndex);
     }
 
     void QZint::setECIValue(int eci) { // Sets literal value
@@ -611,12 +646,19 @@ namespace Zint {
         return ZBarcode_Version();
     }
 
-    bool QZint::save_to_file(const QString &filename) {
+    bool QZint::save_to_file(const QString& filename) {
         resetSymbol();
         strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
-        QByteArray bstr = m_text.toUtf8();
-        m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
-                                            m_rotate_angle);
+        if (m_segs.empty()) {
+            QByteArray bstr = m_text.toUtf8();
+            m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
+                                                m_rotate_angle);
+        } else {
+            struct zint_seg segs[maxSegs];
+            std::vector<QByteArray> bstrs;
+            int seg_count = convertSegs(segs, bstrs);
+            m_error = ZBarcode_Encode_Segs_and_Print(m_zintSymbol, segs, seg_count, m_rotate_angle);
+        }
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
             m_encodedWidth = 0;
@@ -655,6 +697,19 @@ namespace Zint {
                 return Qt::black;
                 break;
         }
+    }
+
+    /* Helper to convert `m_segs` to `struct zint_seg[]` */
+    int QZint::convertSegs(struct zint_seg segs[], std::vector<QByteArray>& bstrs) {
+        bstrs.reserve(m_segs.size());
+        int i;
+        for (i = 0; i < (int) m_segs.size() && i < maxSegs && !m_segs[i].m_text.isEmpty(); i++) {
+            segs[i].eci = m_segs[i].m_eci;
+            bstrs.push_back(m_segs[i].m_text.toUtf8());
+            segs[i].source = (unsigned char *) bstrs.back().data();
+            segs[i].length = bstrs.back().length();
+        }
+        return i;
     }
 
     /* Note: legacy argument `mode` is not used */
@@ -824,7 +879,7 @@ namespace Zint {
        If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
        height */
     QString QZint::getAsCLI(const bool win, const bool longOptOnly, const bool barcodeNames,
-                    const bool autoHeight, const float heightPerRow, const QString &outfile) const {
+                    const bool autoHeight, const float heightPerRow, const QString& outfile) const {
         QString cmd(win ? QSL("zint.exe") : QSL("zint"));
 
         char name_buf[32];
@@ -859,7 +914,18 @@ namespace Zint {
 
         arg_bool(cmd, "--compliantheight", hasCompliantHeight() && compliantHeight());
 
-        arg_data(cmd, longOptOnly ? "--data=" : "-d ", text(), win);
+        if (m_segs.empty()) {
+            if (supportsECI()) {
+                arg_int(cmd, "--eci=", eci());
+            }
+            arg_data(cmd, longOptOnly ? "--data=" : "-d ", m_text, win);
+        } else {
+            arg_int(cmd, "--eci=", m_segs.front().m_eci);
+            arg_data(cmd, longOptOnly ? "--data=" : "-d ", m_segs.front().m_text, win);
+            for (int i = 1; i < (int) m_segs.size() && i < maxCLISegs && !m_segs[i].m_text.isEmpty(); i++) {
+                arg_seg(cmd, i, m_segs[i], win);
+            }
+        }
 
         if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
             arg_bool(cmd, "--dmre", option3() == DM_DMRE);
@@ -870,10 +936,6 @@ namespace Zint {
         }
         if (m_symbol != BARCODE_DOTCODE && isDotty() && dotty()) {
             arg_bool(cmd, "--dotty", dotty());
-        }
-
-        if (supportsECI()) {
-            arg_int(cmd, "--eci=", eci());
         }
 
         arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);
@@ -992,26 +1054,26 @@ namespace Zint {
     }
 
     /* `getAsCLI()` helpers */
-    void QZint::arg_str(QString &cmd, const char *const opt, const QString &val) {
+    void QZint::arg_str(QString& cmd, const char *const opt, const QString& val) {
         if (!val.isEmpty()) {
             QByteArray bstr = val.toUtf8();
             cmd += QString::asprintf(" %s%.*s", opt, bstr.length(), bstr.data());
         }
     }
 
-    void QZint::arg_int(QString &cmd, const char *const opt, const int val, const bool allowZero) {
+    void QZint::arg_int(QString& cmd, const char *const opt, const int val, const bool allowZero) {
         if (val > 0 || (val == 0 && allowZero)) {
             cmd += QString::asprintf(" %s%d", opt, val);
         }
     }
 
-    void QZint::arg_bool(QString &cmd, const char *const opt, const bool val) {
+    void QZint::arg_bool(QString& cmd, const char *const opt, const bool val) {
         if (val) {
             cmd += QString::asprintf(" %s", opt);
         }
     }
 
-    void QZint::arg_color(QString &cmd, const char *const opt, const QColor val) {
+    void QZint::arg_color(QString& cmd, const char *const opt, const QColor val) {
         if (val.alpha() != 0xFF) {
             cmd += QString::asprintf(" %s%02X%02X%02X%02X", opt, val.red(), val.green(), val.blue(), val.alpha());
         } else {
@@ -1019,33 +1081,43 @@ namespace Zint {
         }
     }
 
-    void QZint::arg_data(QString &cmd, const char *const opt, const QString &val, const bool win) {
+    void QZint::arg_data(QString& cmd, const char *const opt, const QString& val, const bool win) {
         if (!val.isEmpty()) {
             QString text(val);
-            const char delim = win ? '"' : '\'';
-            if (win) {
-                // Difficult (impossible?) to fully escape strings on Windows, e.g. "blah%PATH%" will substitute
-                // env var PATH, so just doing basic escaping here
-                text.replace("\\\\", "\\\\\\\\"); // Double-up backslashed backslash `\\` -> `\\\\`
-                text.replace("\"", "\\\""); // Backslash quote `"` -> `\"`
-                QByteArray bstr = text.toUtf8();
-                cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
-            } else {
-                text.replace("'", "'\\''"); // Single quote `'` -> `'\''`
-                QByteArray bstr = text.toUtf8();
-                cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
-            }
+            arg_data_esc(cmd, opt, text, win);
         }
     }
 
-    void QZint::arg_float(QString &cmd, const char *const opt, const float val, const bool allowZero) {
+    void QZint::arg_seg(QString& cmd, const int seg_no, const QZintSeg& val, const bool win) {
+        QString text(val.m_text);
+        QString opt = QString::asprintf("--seg%d=%d,", seg_no, val.m_eci);
+        arg_data_esc(cmd, opt.toUtf8(), text, win);
+    }
+
+    void QZint::arg_data_esc(QString& cmd, const char *const opt, QString& text, const bool win) {
+        const char delim = win ? '"' : '\'';
+        if (win) {
+            // Difficult (impossible?) to fully escape strings on Windows, e.g. "blah%PATH%" will substitute
+            // env var PATH, so just doing basic escaping here
+            text.replace("\\\\", "\\\\\\\\"); // Double-up backslashed backslash `\\` -> `\\\\`
+            text.replace("\"", "\\\""); // Backslash quote `"` -> `\"`
+            QByteArray bstr = text.toUtf8();
+            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+        } else {
+            text.replace("'", "'\\''"); // Single quote `'` -> `'\''`
+            QByteArray bstr = text.toUtf8();
+            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+        }
+    }
+
+    void QZint::arg_float(QString& cmd, const char *const opt, const float val, const bool allowZero) {
         if (val > 0 || (val == 0 && allowZero)) {
             cmd += QString::asprintf(" %s%g", opt, val);
         }
     }
 
-    void QZint::arg_structapp(QString &cmd, const char *const opt, const int count, const int index,
-                                const QString &id, const bool win) {
+    void QZint::arg_structapp(QString& cmd, const char *const opt, const int count, const int index,
+                                const QString& id, const bool win) {
         if (count >= 2 && index >= 1) {
             if (id.isEmpty()) {
                 cmd += QString::asprintf(" %s%d,%d", opt, index, count);

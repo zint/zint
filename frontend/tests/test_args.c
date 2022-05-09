@@ -150,6 +150,14 @@ static void arg_data(char *cmd, const char *opt, const char *data) {
     }
 }
 
+static void arg_seg(char *cmd, const char *opt, const char *data, const int eci) {
+    if (data != NULL) {
+        sprintf(cmd + (int) strlen(cmd), "%s%s%d,\"%s\"", strlen(cmd) ? " " : "", opt, eci, data);
+    } else {
+        sprintf(cmd + (int) strlen(cmd), "%s%s%d", strlen(cmd) ? " " : "", opt, eci);
+    }
+}
+
 static int arg_input(char *cmd, const char *filename, const char *input) {
     FILE *fp;
     int cnt;
@@ -364,6 +372,77 @@ static void test_dump_args(int index, int debug) {
         if (have_input2) {
             assert_zero(remove(input2_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input2_filename, errno, strerror(errno));
         }
+    }
+
+    testFinish();
+}
+
+// Tests segs
+static void test_dump_segs(int index, int debug) {
+
+    struct item {
+        int b;
+        char *data;
+        char *data_seg1;
+        char *data_seg2;
+        int eci;
+        int eci_seg1;
+        int eci_seg2;
+
+        char *expected;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ {              -1, "123", NULL, NULL, -1, -1, -1, "D2 13 9B 39 65 C8 C9 8E B" },
+        /*  1*/ {              -1, "123", NULL, NULL, -1, 3, -1, "Error 166: Invalid segment argument, expect \"ECI,DATA\"" },
+        /*  2*/ {              -1, "123", "456", NULL, -1, -1, -1, "Error 167: Invalid segment ECI (digits only)" },
+        /*  3*/ {              -1, "123", "456", NULL, -1, 1000000, -1, "Error 168: Segment ECI code out of range (0 to 999999)" },
+        /*  4*/ {              -1, "123", "456", NULL, -1, 3, -1, "Error 775: Symbology does not support multiple segments" },
+        /*  5*/ {   BARCODE_AZTEC, "123", "456", NULL, -1, 3, -1, "2B 7A\nC7 02\nF0 6E\n3F FE\n70 1C\nB7 D6\nB4 58\n15 54\n94 56\nB7 DC\n30 1A\n1F FC\n4C 66\n22 DA\n1E C6" },
+        /*  6*/ {   BARCODE_AZTEC, "123", NULL, "789", -1, -1, 3, "Error 172: Segments must be consecutive - segment 1 missing" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+
+    char cmd[4096];
+    char buf[4096];
+
+    testStart("test_dump_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        strcpy(cmd, "zint --dump");
+        if (debug & ZINT_DEBUG_PRINT) {
+            strcat(cmd, " --verbose");
+        }
+
+        arg_int(cmd, "-b ", data[i].b);
+
+        if (data[i].data && data[i].data[0]) {
+            arg_data(cmd, "-d ", data[i].data);
+        }
+        if (data[i].eci > 0) {
+            arg_int(cmd, "--eci=", data[i].eci);
+        }
+
+        if (data[i].data_seg1 && data[i].data_seg1[0]) {
+            arg_seg(cmd, "--seg1=", data[i].data_seg1, data[i].eci_seg1);
+        } else if (data[i].eci_seg1 >= 0) {
+            arg_seg(cmd, "--seg1=", NULL, data[i].eci_seg1);
+        }
+
+        if (data[i].data_seg2 && data[i].data_seg2[0]) {
+            arg_seg(cmd, "--seg2=", data[i].data_seg2, data[i].eci_seg2);
+        } else if (data[i].eci_seg2 >= 0) {
+            arg_seg(cmd, "--seg2=", NULL, data[i].eci_seg2);
+        }
+
+        strcat(cmd, " 2>&1");
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i), "i:%d exec(%s) NULL\n", i, cmd);
+        assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
     }
 
     testFinish();
@@ -997,6 +1076,7 @@ int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_dump_args", test_dump_args, 1, 0, 1 },
+        { "test_dump_segs", test_dump_segs, 1, 0, 1 },
         { "test_input", test_input, 1, 0, 1 },
         { "test_stdin_input", test_stdin_input, 1, 0, 1 },
         { "test_batch_input", test_batch_input, 1, 0, 1 },

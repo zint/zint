@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
 
@@ -67,86 +66,90 @@ static void test_is_sane(int index) {
         /*  1*/ { IS_SPC_F, "\000", 1, 0, " " },
         /*  2*/ { IS_HSH_F, "#", -1, 1, "#" },
         /*  3*/ { IS_HSH_F, " ", -1, 0, "#" },
-        /*  4*/ { IS_PLS_F, "+", -1, 1, "+" },
-        /*  5*/ { IS_PLS_F, " ", -1, 0, "+" },
-        /*  6*/ { IS_MNS_F, "-", -1, 1, "-" },
-        /*  7*/ { IS_MNS_F, " ", -1, 0, "-" },
-        /*  8*/ { IS_NUM_F, "0123456789", -1, 1, "0123456789" }, // NEON
-        /*  9*/ { IS_NUM_F, "0123456789 ", -1, 0, "0123456789" },
-        /* 10*/ { IS_NUM_F, "012345678A9", -1, 0, "0123456789" },
-        /* 11*/ { IS_UPO_F, "GHIJKLMNOPQRSTUVWYZ", -1, 1, "GHIJKLMNOPQRSTUVWYZ" },
-        /* 12*/ { IS_UPO_F, "FGHIJKLMNOPQRSTUVWYZ", -1, 0, "GHIJKLMNOPQRSTUVWYZ" },
-        /* 13*/ { IS_LWO_F, "ghijklmnopqrstuvwyz", -1, 1, "ghijklmnopqrstuvwyz" },
-        /* 14*/ { IS_LWO_F, "fghijklmnopqrstuvwyz", -1, 0, "ghijklmnopqrstuvwyz" },
-        /* 15*/ { IS_UHX_F, "ABCDEF", -1, 1, "ABCDEF" },
-        /* 16*/ { IS_UHX_F, "ABCDEf", -1, 0, "ABCDEF" },
-        /* 17*/ { IS_LHX_F, "abcdef", -1, 1, "abcdef" },
-        /* 18*/ { IS_LHX_F, "abcdeF", -1, 0, "abcdef" },
-        /* 19*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 20*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 21*/ { IS_UPR_F, "X", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 22*/ { IS_UPR_F, "x", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 23*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
-        /* 24*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz ", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
-        /* 25*/ { IS_LWR_F, "x", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
-        /* 26*/ { IS_LWR_F, "X", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
-        /* 27*/ { IS_UX__F, "X", -1, 1, "X" },
-        /* 28*/ { IS_UX__F, "x", -1, 0, "X" },
-        /* 29*/ { IS_LX__F, "x", -1, 1, "x" },
-        /* 30*/ { IS_LX__F, "X", -1, 0, "x" },
-        /* 31*/ { IS_C82_F, "!\"%&'()*,./:;<=>?_", -1, 1, "!\"%&'()*,./:;<=>?_" }, // CSET82 punctuation less "-+"
-        /* 32*/ { IS_C82_F, "!\"%&'()*,./:;<=>?_ ", -1, 0, "!\"%&'()*,./:;<=>?_" },
-        /* 33*/ { IS_C82_F, "-", -1, 0, "!\"%&'()*,./:;<=>?_" },
-        /* 34*/ { IS_C82_F, "$", -1, 0, "!\"%&'()*,./:;<=>?_" },
-        /* 35*/ { IS_SIL_F, ".$/%", -1, 1, ".$/%" }, // SILVER punctuation less " -+"
-        /* 36*/ { IS_SIL_F, ".$/% " , -1, 0, ".$/%" },
-        /* 37*/ { IS_SIL_F, "-", -1, 0, ".$/%" },
-        /* 38*/ { IS_CLI_F, "$:/.", -1, 1, "$:/." }, // CALCIUM INNER punctuation less "-+"
-        /* 39*/ { IS_CLI_F, "$:/. ", -1, 0, "$:/." },
-        /* 40*/ { IS_CLI_F, "+", -1, 0, "$:/." },
-        /* 41*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC uppercase
-        /* 42*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ ", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 43*/ { IS_ARS_F, "I", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 44*/ { IS_ARS_F, "O", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 45*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEF", -1, 1, "0123456789ABCDEF" }, // SSET
-        /* 46*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEf", -1, 0, "0123456789ABCDEF" },
-        /* 47*/ { IS_NUM_F | IS_PLS_F, "0123456789+", -1, 1, "0123456789+" }, // SODIUM_PLS
-        /* 48*/ { IS_NUM_F | IS_PLS_F, "0123456789+-", -1, 0, "0123456789+" },
-        /* 49*/ { IS_NUM_F | IS_UX__F, "0123456789X", -1, 1, "0123456789X" }, // ISBNX_SANE
-        /* 50*/ { IS_NUM_F | IS_UX__F, "0123456789x", -1, 0, "0123456789X" },
-        /* 51*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+", -1, 1, "0123456789Xx+" }, // ISBNX_ADDON_SANE
-        /* 52*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+Y", -1, 0, "0123456789Xx+" },
-        /* 53*/ { IS_NUM_F | IS_MNS_F, "0123456789-", -1, 1, "0123456789-" }, // SODIUM_MNS
-        /* 54*/ { IS_NUM_F | IS_MNS_F, "0123456789-+", -1, 0, "0123456789-" },
-        /* 55*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" }, // CSET82
-        /* 56*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, " ", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 57*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "#", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 58*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "$", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 59*/ { IS_C82_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "@", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 60*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ ", -1, 1, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " }, // IS_ISOIEC_F
-        /* 61*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ #", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
-        /* 62*/ { IS_LWR_F | IS_C82_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "$", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
-        /* 63*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/+%", -1, 1, "" },
-        /* 64*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/!+%", -1, 0, "" },
-        /* 65*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" }, // SILVER
-        /* 66*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%a", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" },
-        /* 67*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC
-        /* 68*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 69*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYz", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 70*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" }, // GDSET
-        /* 71*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #!", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" },
-        /* 72*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+", -1, 1, "0123456789-$:/.+" }, // CALCIUM_INNER
-        /* 73*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+ ", -1, 0, "0123456789-$:/.+" },
-        /* 74*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+!", -1, 0, "0123456789-$:/.+" },
-        /* 75*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // KRSET
-        /* 76*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 77*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " }, // RUBIDIUM
-        /* 78*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789aBCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " },
-        /* 79*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // SHKASUTSET
-        /* 80*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /*  4*/ { IS_AST_F, "*", -1, 1, "*" },
+        /*  5*/ { IS_AST_F, " ", -1, 0, "*" },
+        /*  6*/ { IS_PLS_F, "+", -1, 1, "+" },
+        /*  7*/ { IS_PLS_F, " ", -1, 0, "+" },
+        /*  8*/ { IS_MNS_F, "-", -1, 1, "-" },
+        /*  9*/ { IS_MNS_F, " ", -1, 0, "-" },
+        /* 10*/ { IS_NUM_F, "0123456789", -1, 1, "0123456789" }, // NEON
+        /* 11*/ { IS_NUM_F, "0123456789 ", -1, 0, "0123456789" },
+        /* 12*/ { IS_NUM_F, "012345678A9", -1, 0, "0123456789" },
+        /* 13*/ { IS_UPO_F, "GHIJKLMNOPQRSTUVWYZ", -1, 1, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 14*/ { IS_UPO_F, "FGHIJKLMNOPQRSTUVWYZ", -1, 0, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 15*/ { IS_LWO_F, "ghijklmnopqrstuvwyz", -1, 1, "ghijklmnopqrstuvwyz" },
+        /* 16*/ { IS_LWO_F, "fghijklmnopqrstuvwyz", -1, 0, "ghijklmnopqrstuvwyz" },
+        /* 17*/ { IS_UHX_F, "ABCDEF", -1, 1, "ABCDEF" },
+        /* 18*/ { IS_UHX_F, "ABCDEf", -1, 0, "ABCDEF" },
+        /* 19*/ { IS_LHX_F, "abcdef", -1, 1, "abcdef" },
+        /* 20*/ { IS_LHX_F, "abcdeF", -1, 0, "abcdef" },
+        /* 21*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 22*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 23*/ { IS_UPR_F, "X", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 24*/ { IS_UPR_F, "x", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 25*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
+        /* 26*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz ", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 27*/ { IS_LWR_F, "x", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
+        /* 28*/ { IS_LWR_F, "X", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 29*/ { IS_UX__F, "X", -1, 1, "X" },
+        /* 30*/ { IS_UX__F, "x", -1, 0, "X" },
+        /* 31*/ { IS_LX__F, "x", -1, 1, "x" },
+        /* 32*/ { IS_LX__F, "X", -1, 0, "x" },
+        /* 33*/ { IS_C82_F, "!\"%&'(),./:;<=>?_", -1, 1, "!\"%&'(),./:;<=>?_" }, // CSET82 punctuation less "*+-"
+        /* 34*/ { IS_C82_F, "!\"%&'(),./:;<=>?_ ", -1, 0, "!\"%&'(),./:;<=>?_" },
+        /* 35*/ { IS_C82_F, "-", -1, 0, "!\"%&'(),./:;<=>?_" },
+        /* 36*/ { IS_C82_F, "$", -1, 0, "!\"%&'(),./:;<=>?_" },
+        /* 37*/ { IS_SIL_F, ".$/%", -1, 1, ".$/%" }, // SILVER punctuation less " +-"
+        /* 38*/ { IS_SIL_F, ".$/% " , -1, 0, ".$/%" },
+        /* 39*/ { IS_SIL_F, "-", -1, 0, ".$/%" },
+        /* 40*/ { IS_CLI_F, "$:/.", -1, 1, "$:/." }, // CALCIUM INNER punctuation less "+-"
+        /* 41*/ { IS_CLI_F, "$:/. ", -1, 0, "$:/." },
+        /* 42*/ { IS_CLI_F, "+", -1, 0, "$:/." },
+        /* 43*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC uppercase
+        /* 44*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ ", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 45*/ { IS_ARS_F, "I", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 46*/ { IS_ARS_F, "O", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 47*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEF", -1, 1, "0123456789ABCDEF" }, // SSET
+        /* 48*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEf", -1, 0, "0123456789ABCDEF" },
+        /* 49*/ { IS_NUM_F | IS_PLS_F, "0123456789+", -1, 1, "0123456789+" }, // SODIUM_PLS
+        /* 50*/ { IS_NUM_F | IS_PLS_F, "0123456789+-", -1, 0, "0123456789+" },
+        /* 51*/ { IS_NUM_F | IS_UX__F, "0123456789X", -1, 1, "0123456789X" }, // ISBNX_SANE
+        /* 52*/ { IS_NUM_F | IS_UX__F, "0123456789x", -1, 0, "0123456789X" },
+        /* 53*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+", -1, 1, "0123456789Xx+" }, // ISBNX_ADDON_SANE
+        /* 54*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+Y", -1, 0, "0123456789Xx+" },
+        /* 55*/ { IS_NUM_F | IS_MNS_F, "0123456789-", -1, 1, "0123456789-" }, // SODIUM_MNS
+        /* 56*/ { IS_NUM_F | IS_MNS_F, "0123456789-+", -1, 0, "0123456789-" },
+        /* 57*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" }, // CSET82
+        /* 58*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, " ", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 59*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "#", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 60*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "$", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 61*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "@", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 62*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ ", -1, 1, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " }, // IS_ISOIEC_F
+        /* 63*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ #", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 64*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "$", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 65*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/+%", -1, 1, "" },
+        /* 66*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/!+%", -1, 0, "" },
+        /* 67*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" }, // SILVER
+        /* 68*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%a", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" },
+        /* 69*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" }, // ARSENIC
+        /* 70*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 71*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYz", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 72*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" }, // GDSET
+        /* 73*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #!", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" },
+        /* 74*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+", -1, 1, "0123456789-$:/.+" }, // CALCIUM_INNER
+        /* 75*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+ ", -1, 0, "0123456789-$:/.+" },
+        /* 76*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+!", -1, 0, "0123456789-$:/.+" },
+        /* 77*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // KRSET
+        /* 78*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 79*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " }, // RUBIDIUM
+        /* 80*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789aBCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " },
+        /* 81*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // SHKASUTSET
+        /* 82*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 83*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, // QR_ALPHA
+        /* 84*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
     };
     int data_size = ARRAY_SIZE(data);
-    int i, length, ret;
+    int i, j, length, ret;
 
     testStart("test_is_sane");
 
@@ -167,6 +170,15 @@ static void test_is_sane(int index) {
                 assert_zero(ret, "i:%d orig_ret %d, ret %d != 0\n", i, orig_ret, ret);
             }
         }
+
+        ret = 1;
+        for (j = 0; j < length; j++) {
+            if (!is_chr(data[i].flg, data[i].data[j])) {
+                ret = 0;
+                break;
+            }
+        }
+        assert_equal(ret, data[i].ret, "i:%d is_chr() ret %d != %d\n", i, ret, data[i].ret);
     }
 
     testFinish();
@@ -416,3 +428,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

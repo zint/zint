@@ -121,7 +121,7 @@ static void test_upce_input(int index, int debug) {
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
                 char modules_dump[8192 + 1];
                 assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].hrt, (int) strlen(data[i].hrt), NULL, cmp_buf, sizeof(cmp_buf));
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].hrt, (int) strlen(data[i].hrt), NULL, cmp_buf, sizeof(cmp_buf), NULL);
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
@@ -952,7 +952,7 @@ static void test_encode(int index, int generate, int debug) {
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);

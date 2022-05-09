@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
 
@@ -213,7 +212,7 @@ static void test_input(int index, int generate, int debug) {
         /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "β", ZINT_WARN_USES_ECI, "Warning (2) 263 226", "" },
         /* 17*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "β", 0, "(2) 263 226", "" },
         /* 18*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "βAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(253) 263 226 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "249 chars EC2" },
-        /* 19*/ { UNICODE_MODE, 9, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(2) 272 65", "Note ECI ignored and not outputted if ULTRA_COMPRESSION and all ASCII" },
+        /* 19*/ { UNICODE_MODE, 9, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(2) 263 65", "Note previously ECI ignored and not outputted if ULTRA_COMPRESSION and all ASCII" },
         /* 20*/ { UNICODE_MODE, 15, -1, -1, -1, { 0, 0, "" }, "Ŗ", 0, "(2) 268 170", "" },
         /* 21*/ { DATA_MODE, 898, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(7) 278 130 1 2 3 4 255", "" },
         /* 22*/ { DATA_MODE, 899, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(6) 280 1 2 3 4 255", "" },
@@ -280,13 +279,15 @@ static void test_input(int index, int generate, int debug) {
 
         symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_ULTRA, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_ULTRA, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, data[i].option_2, data[i].option_3,
+                                    -1 /*output_options*/, data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
             printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -818,8 +819,257 @@ static void test_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                    }
+                }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_encode_segs(int index, int generate, int debug) {
+
+    struct item {
+        int input_mode;
+        int option_1;
+        int option_2;
+        int option_3;
+        struct zint_structapp structapp;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        int bwipp_cmp;
+        char *comment;
+        char *expected;
+    };
+    // Based on AIMD/TSC15032-43 (v 0.99c), with values updated from BWIPP update 2021-07-14
+    // https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 13, 15, 0, "Standard example; BWIPP no ECI support for Ultracode",
+                    "777777777777777"
+                    "785786131155157"
+                    "773783613563337"
+                    "781786355656167"
+                    "776785561363337"
+                    "783781355651517"
+                    "778787878787877"
+                    "786781665116117"
+                    "771783136335337"
+                    "786785653613557"
+                    "773781536165117"
+                    "781786115333557"
+                    "777777777777777"
+                },
+        /*  1*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 13, 15, 0, "Standard example auto-ECI; BWIPP no ECI support for Ultracode",
+                    "777777777777777"
+                    "785786131155157"
+                    "773783613563337"
+                    "781786355656167"
+                    "776785561363337"
+                    "783781355651517"
+                    "778787878787877"
+                    "786781665116117"
+                    "771783136335337"
+                    "786785653613557"
+                    "773781536165117"
+                    "781786115333557"
+                    "777777777777777"
+                },
+        /*  2*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 13, 15, 0, "Standard example inverted; BWIPP no ECI support for Ultracode",
+                    "777777777777777"
+                    "785786351355157"
+                    "773785113663337"
+                    "781781365356167"
+                    "776783136163337"
+                    "783786555651517"
+                    "778787878787877"
+                    "786781356116117"
+                    "771783663335337"
+                    "786785531613157"
+                    "773781353165517"
+                    "781786565333657"
+                    "777777777777777"
+                },
+        /*  3*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 13, 15, 0, "Standard example inverted auto-ECI; BWIPP no ECI support for Ultracode",
+                    "777777777777777"
+                    "785786351355157"
+                    "773785113663337"
+                    "781781365356167"
+                    "776783136163337"
+                    "783786555651517"
+                    "778787878787877"
+                    "786781356116117"
+                    "771783663335337"
+                    "786785531613157"
+                    "773781353165517"
+                    "781786565333657"
+                    "777777777777777"
+                },
+        /*  4*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 31, 51, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP no ECI support for Ultracode",
+                    "777777777777777777777777777777777777777777777777777"
+                    "788786553615151313686615635315656568556155565633167"
+                    "778783131336563655375536556151531317365661116315357"
+                    "788786366163615166181363163533665138151555551131667"
+                    "778785631636351311375511615351516667316663165656357"
+                    "788781563115163655581635531513353338163331636363137"
+                    "778787878787878787878787878787878787878787878787877"
+                    "788785515563115631383565335311551158666513631316557"
+                    "778786651356351315575153153566315667555156366135637"
+                    "788781363513515166181666316333666318161633113513317"
+                    "775783635365361331576153163515155637655155661351537"
+                    "781785353136156566383335656633633318536616353136617"
+                    "773787878787878787878787878787878787878787878787877"
+                    "781781331535616631386565316331555568565666316651557"
+                    "776786666356535565175656551655663617153515131366317"
+                    "788783355511663311383331636113116138635136555113557"
+                    "773785516665311566576556353555655567351513361555317"
+                    "781783633336533155181333115131513638536365113131157"
+                    "773787878787878787878787878787878787878787878787877"
+                    "785786636561663636181316366313566618513136611663557"
+                    "771781563655535363573133555551311167331655355551317"
+                    "788783155566111151385315661133633538516533131135557"
+                    "778786516633355666676136356651116667635356516556317"
+                    "788785133151663353583553135516551118156615665661657"
+                    "778787878787878787878787878787878787878787878787877"
+                    "788781353515665533386611351311655558113366366156117"
+                    "778783616631513151171356535556166617531115155365537"
+                    "788785555563336315386533363665613368666653363516367"
+                    "778781366656651133171316155153135557515516515663557"
+                    "788786635535536351685531611336513668663633636555117"
+                    "777777777777777777777777777777777777777777777777777"
+                },
+        /*  5*/ { DATA_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, 0, 13, 17, 0, "Standard example + extra seg, data mode; BWIPP no ECI support for Ultracode",
+                    "77777777777777777"
+                    "78578616315515157"
+                    "77378361566333337"
+                    "78578633115616167"
+                    "77678566656333337"
+                    "78378131365151517"
+                    "77878787878787877"
+                    "78678136111616117"
+                    "77378361633535337"
+                    "78178513161353157"
+                    "77378656536515517"
+                    "78178135353353657"
+                    "77777777777777777"
+                },
+        /*  6*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("¿é"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("φχψω"), -1, 0 } }, ZINT_WARN_USES_ECI, 13, 20, 0, "Auto-ECI; BWIPP no ECI support for Ultracode",
+                    "77777777777777777777"
+                    "78578651555561561667"
+                    "77678333166653153337"
+                    "78178655335135635557"
+                    "77578563166556553337"
+                    "78378131655133331167"
+                    "77878787878787878787"
+                    "78678166111615516617"
+                    "77378351653131633337"
+                    "78578663311616515557"
+                    "77378315636535131317"
+                    "78178131363151656557"
+                    "77777777777777777777"
+                },
+        /*  7*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 2, 3, "4" }, { { TU("¿é"), -1, 3 }, { TU("กขฯ"), -1, 13 }, { TU("φχψω"), -1, 9 } }, 0, 13, 23, 0, "Structured Append; BWIPP no ECI support for Ultracode",
+                    "77777777777777777777777"
+                    "78578613615616155168657"
+                    "77678335366131316337317"
+                    "78378666635516165158557"
+                    "77578515156665351317317"
+                    "78378163515131516568557"
+                    "77878787878787878787877"
+                    "78678151513156156168617"
+                    "77578366351365315337337"
+                    "78178633513113563558557"
+                    "77378516666355655337317"
+                    "78178133151513333118657"
+                    "77777777777777777777777"
+                },
+        /*  8*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("çèéêëì"), -1, 0 }, { TU("òóô"), -1, 899 }, { TU("òóô"), -1, 10000 } }, 0, 13, 27, 0, "ECIs >= 899; BWIPP no ECI support for Ultracode",
+                    "777777777777777777777777777"
+                    "785786353555666665585335557"
+                    "771783161616113513373663337"
+                    "783786335335661355686335667"
+                    "771785511666353666171656117"
+                    "786781655535111113385163357"
+                    "778787878787878787878787877"
+                    "783781151511666355586355517"
+                    "771785616353113666675666637"
+                    "783781363635661511183311157"
+                    "775786615561353366676566637"
+                    "781785551653535633383633317"
+                    "777777777777777777777777777"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[1024];
+    char bwipp_buf[32768];
+    char bwipp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+
+    testStart("test_encode_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_ULTRA, data[i].input_mode, -1 /*eci*/,
+                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, NULL, 0, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            char escaped1[4096];
+            char escaped2[4096];
+            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %d, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            testUtilModulesPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < ZINT_ERROR) {
+                int width, row;
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].segs, seg_count, NULL, bwipp_buf, sizeof(bwipp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -842,6 +1092,7 @@ int main(int argc, char *argv[]) {
         { "test_reader_init", test_reader_init, 1, 1, 1 },
         { "test_input", test_input, 1, 1, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
+        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -850,3 +1101,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

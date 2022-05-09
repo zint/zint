@@ -177,7 +177,7 @@ static void test_reduced_charset_input(int index, int debug) {
         /* 38*/ { BARCODE_PDF417, UNICODE_MODE, 12, "Ĩ", 0, 12, "In ISO 8859-10; Note no characters in ISO 8859-10 that aren't also in earlier ISO pages" },
         /* 39*/ { BARCODE_PDF417, UNICODE_MODE, 0, "ก", ZINT_WARN_USES_ECI, 13, "" },
         /* 40*/ { BARCODE_PDF417, UNICODE_MODE, 13, "ก", 0, 13, "" },
-        /* 41*/ { BARCODE_PDF417, UNICODE_MODE, 14, "A", ZINT_ERROR_INVALID_DATA, -1, "Reserved ECI" },
+        /* 41*/ { BARCODE_PDF417, UNICODE_MODE, 14, "A", ZINT_ERROR_INVALID_OPTION, -1, "Reserved ECI" },
         /* 42*/ { BARCODE_PDF417, UNICODE_MODE, 0, "„", ZINT_WARN_USES_ECI, 15, "" },
         /* 43*/ { BARCODE_PDF417, UNICODE_MODE, 15, "„", 0, 15, "In ISO 8859-13 and ISO 8859-16 and Win 125x pages" },
         /* 44*/ { BARCODE_PDF417, UNICODE_MODE, 0, "Ḃ", ZINT_WARN_USES_ECI, 16, "In ISO 8859-14 only of single-byte pages" },
@@ -186,7 +186,7 @@ static void test_reduced_charset_input(int index, int debug) {
         /* 47*/ { BARCODE_PDF417, UNICODE_MODE, 0, "Ș", ZINT_WARN_USES_ECI, 18, "In ISO 8859-16 only of single-byte pages" },
         /* 48*/ { BARCODE_PDF417, UNICODE_MODE, 18, "Ș", 0, 18, "" },
         /* 49*/ { BARCODE_PDF417, UNICODE_MODE, 0, "テ", ZINT_WARN_USES_ECI, 26, "Not in any single-byte page" },
-        /* 50*/ { BARCODE_PDF417, UNICODE_MODE, 19, "A", ZINT_ERROR_INVALID_DATA, -1, "Reserved ECI" },
+        /* 50*/ { BARCODE_PDF417, UNICODE_MODE, 19, "A", ZINT_ERROR_INVALID_OPTION, -1, "Reserved ECI" },
         /* 51*/ { BARCODE_PDF417, UNICODE_MODE, 20, "テ", 0, 20, "In Shift JIS" },
         /* 52*/ { BARCODE_PDF417, UNICODE_MODE, 20, "テテ", 0, 20, "In Shift JIS" },
         /* 53*/ { BARCODE_PDF417, UNICODE_MODE, 20, "\\\\", 0, 20, "In Shift JIS" },
@@ -742,6 +742,12 @@ static void test_utf8_to_eci_ascii(void) {
         /* 15*/ { 170, "}", -1, ZINT_ERROR_INVALID_DATA },
         /* 16*/ { 170, "~", -1, ZINT_ERROR_INVALID_DATA },
         /* 17*/ { 170, "\302\200", -1, ZINT_ERROR_INVALID_DATA },
+        /* 18*/ { 170, "~", -1, ZINT_ERROR_INVALID_DATA },
+        /* 19*/ { 1, "A", -1, ZINT_ERROR_INVALID_DATA },
+        /* 20*/ { 2, "A", -1, ZINT_ERROR_INVALID_DATA },
+        /* 21*/ { 14, "A", -1, ZINT_ERROR_INVALID_DATA },
+        /* 22*/ { 19, "A", -1, ZINT_ERROR_INVALID_DATA },
+        /* 23*/ { 26, "A", -1, ZINT_ERROR_INVALID_DATA },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1177,6 +1183,138 @@ static void test_utf8_to_eci_euc_kr(void) {
     }
 }
 
+static void test_utf8_to_eci_gbk(void) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { "\302\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+0080
+        /*  3*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { "\357\277\277", -1, ZINT_ERROR_INVALID_DATA, -1 }, // No mapping for U+FFFF
+        /*  5*/ { "\357\277\276", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+FFFE (reversed BOM) not allowed
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    const int eci = 31;
+
+    testStart("test_utf8_to_eci_gbk");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+}
+
+static void test_utf8_to_eci_gb18030(void) {
+
+    struct item {
+        char *data;
+        int length;
+        int ret;
+        int expected_length;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 32, 0, 32 },
+        /*  1*/ { " !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 96, 0, 96 },
+        /*  2*/ { "\302\200", -1, 0, 4 }, // Has mapping for U+0080
+        /*  3*/ { "\343\200\200", -1, 0, 2 }, // U+3000 IDEOGRAPHIC SPACE
+        /*  4*/ { "\357\277\277", -1, 0, 4 }, // Has mapping for U+FFFF
+        /*  5*/ { "\357\277\276", -1, 0, 4 }, // U+FFFE (reversed BOM) allowed
+        /*  6*/ { "\355\240\200", -1, ZINT_ERROR_INVALID_DATA, -1 }, // U+D800 surrogate not allowed
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    const int eci = 32;
+
+    testStart("test_utf8_to_eci_gb18030");
+
+    for (i = 0; i < data_size; i++) {
+        int out_length, eci_length;
+        char dest[1024];
+
+        length = data[i].length != -1 ? data[i].length : (int) strlen(data[i].data);
+        out_length = length;
+        eci_length = get_eci_length(eci, (const unsigned char *) data[i].data, length);
+
+        assert_nonzero(eci_length + 1 <= 1024, "i:%d eci_length %d + 1 > 1024\n", i, eci_length);
+        ret = utf8_to_eci(eci, (const unsigned char *) data[i].data, (unsigned char *) dest, &out_length);
+        assert_equal(ret, data[i].ret, "i:%d utf8_to_eci ret %d != %d\n", i, ret, data[i].ret);
+        if (ret == 0) {
+            assert_equal(out_length, data[i].expected_length, "i:%d length %d != %d\n", i, out_length, data[i].expected_length);
+            assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
+        }
+    }
+}
+
+static void test_is_eci_convertible_segs(int index) {
+
+    struct item {
+        struct zint_seg segs[3];
+        int ret;
+        int expected_convertible[3];
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { { { TU("A"), -1, 0 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 1, { 1, -1, -1 } },
+        /*  1*/ { { { TU("A"), -1, 26 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, { 0, -1, -1 } },
+        /*  2*/ { { { TU("A"), -1, 36 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, { 0, -1, -1 } },
+        /*  3*/ { { { TU("A"), -1, 170 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 1, { 1, -1, -1 } },
+        /*  4*/ { { { TU("A"), -1, 899 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, { 0, -1, -1 } },
+        /*  5*/ { { { TU("A"), -1, 3 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 1, { 1, -1, -1 } },
+        /*  6*/ { { { TU("A"), -1, 899 }, { TU("A"), -1, 0 }, { TU(""), 0, 0 } }, 1, { 0, 1, -1 } },
+        /*  7*/ { { { TU("A"), -1, 0 }, { TU("A"), -1, 899 }, { TU(""), 0, 0 } }, 1, { 1, 0, -1 } },
+        /*  8*/ { { { TU("A"), -1, 3 }, { TU("A"), -1, 4 }, { TU("A"), -1, 35 } }, 1, { 1, 1, 1 } },
+        /*  9*/ { { { TU("A"), -1, 3 }, { TU("A"), -1, 899 }, { TU("A"), -1, 0 } }, 1, { 1, 0, 1 } },
+        /* 10*/ { { { TU("A"), -1, 899 }, { TU("A"), -1, 899 }, { TU("A"), -1, 0 } }, 1, { 0, 0, 1 } },
+        /* 11*/ { { { TU("A"), -1, 899 }, { TU("A"), -1, 0 }, { TU("A"), -1, 899 } }, 1, { 0, 1, 0 } },
+        /* 12*/ { { { TU("A"), -1, 899 }, { TU("A"), -1, 899 }, { TU("A"), -1, 899 } }, 0, { 0, 0, 0 } },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+
+    int convertible[3];
+
+    testStart("test_is_eci_convertible_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        for (j = 0; j < 3; j++) convertible[j] = -1;
+
+        ret = is_eci_convertible_segs(data[i].segs, seg_count, convertible);
+        assert_equal(ret, data[i].ret, "i:%d is_eci_convertible_segs ret %d != %d\n", i, ret, data[i].ret);
+        for (j = 0; j < 3; j++) {
+            assert_equal(convertible[j], data[i].expected_convertible[j], "i:%d is_eci_convertible_segs convertible[%d] %d != %d\n", i, j, convertible[j], data[i].expected_convertible[j]);
+        }
+    }
+
+    testFinish();
+}
+
 static void test_get_best_eci(int index) {
 
     struct item {
@@ -1213,6 +1351,54 @@ static void test_get_best_eci(int index) {
     testFinish();
 }
 
+static void test_get_best_eci_segs(int index) {
+
+    struct item {
+        struct zint_seg segs[3];
+        int ret;
+        int expected_symbol_eci;
+    };
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { { { TU("\300\301"), -1, 0 }, { TU(""), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 },
+        /*  1*/ { { { TU("A"), -1, 0 }, { TU("\300\301"), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 },
+        /*  2*/ { { { TU("A"), -1, 0 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 }, // As 1st seg default ECI, 3 not returned
+        /*  3*/ { { { TU("A"), -1, 4 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 3, 0 },
+        /*  4*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
+        /*  5*/ { { { TU("A"), -1, 4 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
+        /*  6*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("Ѐ"), -1, 0 } }, 26, 0 }, // Cyrillic U+0400 not in single-byte code pages
+        /*  7*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU("β"), -1, 0 } }, 7, 0 },
+        /*  8*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("β"), -1, 0 } }, 9, 0 },
+        /*  9*/ { { { TU("˜"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU(""), 0, 0 } }, 23, 23 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    testStart("test_get_best_eci_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+        for (j = 0; j < seg_count; j++) {
+            if (data[i].segs[j].length < 0) data[i].segs[j].length = (int) ustrlen(data[i].segs[j].source);
+        }
+
+        ret = get_best_eci_segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d get_best_eci_segs ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(symbol->eci, data[i].expected_symbol_eci, "i:%d get_best_eci_segs symbol->eci %d != %d\n", i, symbol->eci, data[i].expected_symbol_eci);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
@@ -1229,7 +1415,11 @@ int main(int argc, char *argv[]) {
         { "test_utf8_to_eci_big5", test_utf8_to_eci_big5, 0, 0, 0 },
         { "test_utf8_to_eci_gb2312", test_utf8_to_eci_gb2312, 0, 0, 0 },
         { "test_utf8_to_eci_euc_kr", test_utf8_to_eci_euc_kr, 0, 0, 0 },
+        { "test_utf8_to_eci_gbk", test_utf8_to_eci_gbk, 0, 0, 0 },
+        { "test_utf8_to_eci_gb18030", test_utf8_to_eci_gb18030, 0, 0, 0 },
+        { "test_is_eci_convertible_segs", test_is_eci_convertible_segs, 1, 0, 0 },
         { "test_get_best_eci", test_get_best_eci, 1, 0, 0 },
+        { "test_get_best_eci_segs", test_get_best_eci_segs, 1, 0, 0 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

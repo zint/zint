@@ -39,10 +39,13 @@ extern "C" {
 INTERNAL int gbk_wctomb_zint(unsigned int *r, const unsigned int wc);
 INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, const unsigned int wc);
 INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-                unsigned int *gbdata);
-INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+                unsigned int *ddata);
+INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
-INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata,
+
+INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte);
+INTERNAL void gb18030_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
                 const int full_multibyte);
 
 #ifdef __cplusplus

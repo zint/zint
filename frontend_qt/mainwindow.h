@@ -47,6 +47,7 @@ public slots:
     void change_options();
     void on_fgcolor_clicked();
     void on_bgcolor_clicked();
+    void data_ui_set();
     void composite_ui_set();
     void composite_ean_check();
     void maxi_scm_ui_set();
@@ -70,6 +71,9 @@ public slots:
 
     void reset_colours();
     void open_data_dialog();
+    void open_data_dialog_seg1();
+    void open_data_dialog_seg2();
+    void open_data_dialog_seg3();
     void open_sequence_dialog();
     void open_cli_dialog();
 
@@ -98,6 +102,7 @@ public slots:
 protected:
     void resizeEvent(QResizeEvent *event);
     bool event(QEvent *event) override;
+    bool eventFilter(QObject *watched, QEvent *event);
 
     void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
     void upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base);
@@ -105,6 +110,8 @@ protected:
     void guard_reset(const QString &spnBoxName);
     void set_gs1_mode(bool gs1_mode);
     void set_smaller_font(const QString &labelName);
+
+    void open_data_dialog_seg(const int seg_no);
 
     void createActions();
     void createMenu();

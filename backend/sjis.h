@@ -1,7 +1,7 @@
 /*  sjis.h - Unicode to Shift JIS
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,9 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
-#ifndef SJIS_H
-#define SJIS_H
+#ifndef Z_SJIS_H
+#define Z_SJIS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,13 +38,17 @@ extern "C" {
 
 INTERNAL int sjis_wctomb_zint(unsigned int *r, const unsigned int wc);
 INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-                unsigned int *jisdata);
-INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
+                unsigned int *ddata);
+INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
-INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *jisdata, const int full_multibyte);
+
+INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte);
+INTERNAL void sjis_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* SJIS_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_SJIS_H */

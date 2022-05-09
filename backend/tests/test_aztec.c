@@ -2431,7 +2431,7 @@ static void test_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
@@ -2449,6 +2449,290 @@ static void test_encode(int index, int generate, int debug) {
                     ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_encode_segs(int index, int generate, int debug) {
+
+    struct item {
+        int input_mode;
+        int output_options;
+        int option_1;
+        int option_2;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        int bwipp_cmp;
+        char *comment;
+        char *expected;
+    };
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example",
+                    "001111000011111"
+                    "110111100100011"
+                    "111100001000111"
+                    "101111111111111"
+                    "001100000001111"
+                    "000101111101101"
+                    "110101000101101"
+                    "011101010101001"
+                    "101101000101010"
+                    "110101111101001"
+                    "000100000001011"
+                    "000111111111111"
+                    "010001100010001"
+                    "001010111001010"
+                    "000001011100111"
+                },
+        /*  1*/ { UNICODE_MODE, -1, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 15, 15, 1, "ISO/IEC 24778:2008 16.5 example auto-ECI",
+                    "001111000011111"
+                    "110111100100011"
+                    "111100001000111"
+                    "101111111111111"
+                    "001100000001111"
+                    "000101111101101"
+                    "110101000101101"
+                    "011101010101001"
+                    "101101000101010"
+                    "110101111101001"
+                    "000100000001011"
+                    "000111111111111"
+                    "010001100010001"
+                    "001010111001010"
+                    "000001011100111"
+                },
+        /*  2*/ { UNICODE_MODE, -1, -1, 2, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted",
+                    "0000011010000000000"
+                    "0000001101101010000"
+                    "0111000110100011110"
+                    "0010011111100001110"
+                    "0001110100110010000"
+                    "0110111111111111110"
+                    "0000010000000100011"
+                    "1100110111110110000"
+                    "0011110100010110101"
+                    "1100010101010100001"
+                    "1110010100010100000"
+                    "1001010111110100000"
+                    "1001010000000100011"
+                    "0011011111111110001"
+                    "0100001111100000111"
+                    "1011111010011010111"
+                    "1111010101011010101"
+                    "1000001011111001010"
+                    "0100000000011100111"
+                },
+        /*  3*/ { UNICODE_MODE, -1, -1, 2, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 19, 19, 1, "ISO/IEC 24778:2008 16.5 example inverted auto-ECI",
+                    "0000011010000000000"
+                    "0000001101101010000"
+                    "0111000110100011110"
+                    "0010011111100001110"
+                    "0001110100110010000"
+                    "0110111111111111110"
+                    "0000010000000100011"
+                    "1100110111110110000"
+                    "0011110100010110101"
+                    "1100010101010100001"
+                    "1110010100010100000"
+                    "1001010111110100000"
+                    "1001010000000100011"
+                    "0011011111111110001"
+                    "0100001111100000111"
+                    "1011111010011010111"
+                    "1111010101011010101"
+                    "1000001011111001010"
+                    "0100000000011100111"
+                },
+        /*  4*/ { UNICODE_MODE, -1, -1, -1, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 49, 49, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP different encodation (better)",
+                    "0000110010100000001100011100010010010010100010101"
+                    "0001100000010101011010010100011100000001000100010"
+                    "0001110011110000000000101101100110101001100000000"
+                    "0110001001100100100100110111000111101010011110100"
+                    "0001011110100011010010001000111110010110111010111"
+                    "0010010001101101100111010110111000001101001111101"
+                    "0110001110110010010000111001100100011001100101001"
+                    "0110001101010110010001010100001101001110000110000"
+                    "1010101010101010101010101010101010101010101010101"
+                    "0100110100001010010110010100111110010110001010010"
+                    "1110111010111110101110101010011011000100100100010"
+                    "1000000100001011101010010110010011101011000101001"
+                    "0101101011110000011100001001000011010101101101111"
+                    "0010001100010010110111110101101001011110000011010"
+                    "0100000011001011111011111011111010001101100110000"
+                    "1000010001011000100111100100010100101010001101101"
+                    "0101110010010100010110101010010100011001111001011"
+                    "1101110001010101111001110000100101000010001111000"
+                    "0001110110000111111111111111111101110001111110000"
+                    "0000010101001010011000000000001110111111001001000"
+                    "0000010010100111111011111111101101100011110000110"
+                    "1000010100010111101010000000101011000001010011101"
+                    "1110011111100110111010111110101000110101100100011"
+                    "0101100000101101001010100010101011101000001111110"
+                    "1010101010101010101010101010101010101010101010101"
+                    "1011101100001100011010100010101111011100011001000"
+                    "0011111111100111101010111110101111011100111111001"
+                    "1000100100011010001010000000101010000101001110110"
+                    "0111000010011110111011111111101000101101110100000"
+                    "0100100101000110001000000000001010101001001111100"
+                    "0110011110001110101111111111111111101101110011101"
+                    "0011011000010110000010110100110010001000001001100"
+                    "0001100111010000001111001101101000000111100000011"
+                    "0111100000100011110011100001000110110000011010011"
+                    "0110011110111110100010011001001011111111101100100"
+                    "0111111001101011000101000001010010110100001101000"
+                    "1101000010001010010001101010001111110111101100110"
+                    "1011110000000110111001010011000110001000000110110"
+                    "0000010110110000101010001110111000011101101001001"
+                    "1010010100110110000011000000110100110100000100001"
+                    "1010101010101010101010101010101010101010101010101"
+                    "0000100100100000000110100100000001001000011010110"
+                    "1000101110101110011110001000100100110100111100001"
+                    "0000110101111100011101100000001111001111010100000"
+                    "0101000010011111110110101100010011010010101110100"
+                    "0000100101011010101001110100111010000000001010011"
+                    "0001001111111100100111011100111101001111101100011"
+                    "1001101000110101111010100111100011111001000100101"
+                    "0001001010011000000100101101100110101000100000000"
+                },
+        /*  5*/ { DATA_MODE, -1, -1, -1, { { TU("\357"), 1, 0 }, { TU("\357"), 1, 7 }, { TU("\357"), 1, 0 } }, 0, 19, 19, 1, "Standard example + extra seg, data mode",
+                    "1110011101010111000"
+                    "1100010001011100011"
+                    "1001110101000010110"
+                    "0001000011101001111"
+                    "0001110100111011000"
+                    "1111111111111110101"
+                    "1100110000000111011"
+                    "0110010111110100111"
+                    "1110110100010101011"
+                    "1010010101010110001"
+                    "0010010100010100111"
+                    "0001110111110111010"
+                    "0011110000000111100"
+                    "0000011111111110001"
+                    "0111001101000000011"
+                    "0011000000111110111"
+                    "1111111001101000010"
+                    "0110001101100001010"
+                    "0111100111100000010"
+                },
+        /*  6*/ { UNICODE_MODE, -1, -1, -1, { { TU("12345678"), -1, 3 }, { TU("ABCDEFGH"), -1, 4 }, { TU("123456789"), -1, 5 } }, 0, 23, 23, 0, "Mode change between segs; BWIPP different encodation",
+                    "00100011011101100111000"
+                    "00101011010000010111111"
+                    "00011001010101011010100"
+                    "01011001100000101110000"
+                    "00011000100010011101100"
+                    "00110000100011111111000"
+                    "01001111100101001111000"
+                    "01000111111111111000110"
+                    "01010111000000011000101"
+                    "11010101011111011111000"
+                    "11111101010001011100100"
+                    "00100011010101011101010"
+                    "01000001010001010001111"
+                    "10111101011111010110010"
+                    "10001001000000010111000"
+                    "00001001111111111011111"
+                    "10101100101001000010000"
+                    "10110011100001111000110"
+                    "11101000100001111011010"
+                    "00010010100111001011100"
+                    "11111111000010000100001"
+                    "10101100001011010010000"
+                    "10001000000000111000011"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[1024];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+
+    testStart("test_encode_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_AZTEC, data[i].input_mode, -1 /*eci*/,
+                            data[i].option_1, data[i].option_2, -1, data[i].output_options, NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            char escaped1[4096];
+            char escaped2[4096];
+            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %s, %d, %d, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
+                    data[i].option_1, data[i].option_2,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            testUtilModulesPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < ZINT_ERROR) {
+                int width, row;
+
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length, debug)) {
+                    if (data[i].input_mode == DATA_MODE) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology));
+                        }
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[22801 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length,
+                                modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
+                                NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                    }
                 }
             }
         }
@@ -3011,6 +3295,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
         { "test_options", test_options, 1, 0, 1 },
         { "test_encode", test_encode, 1, 1, 1 },
+        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
         { "test_fuzz", test_fuzz, 1, 0, 1 },
         { "test_perf", test_perf, 1, 0, 1 },
     };

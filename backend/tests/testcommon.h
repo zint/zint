@@ -111,6 +111,8 @@ void assert_notequal(int e1, int e2, ...);
 #define assert_notequal(__e1__, __e2__, ...) assert_exp((__e1__) != (__e2__), __VA_ARGS__)
 #endif
 
+#define TU(p) ((unsigned char *) (p))
+
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci,
@@ -170,7 +172,9 @@ int testUtilVerifyTiffInfo(const char *filename, int debug);
 int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             int debug);
 int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int option_2, int option_3,
-            const char *data, int length, const char *primary, char *buffer, int buffer_size);
+            const char *data, int length, const char *primary, char *buffer, int buffer_size, int *p_parsefnc);
+int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int option_2, int option_3,
+            const struct zint_seg segs[], const int seg_count, const char *primary, char *buffer, int buffer_size);
 int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *cmp_buf, const char *expected);
 int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, const char *cmp_buf,
             const char *expected);
@@ -180,8 +184,12 @@ int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char 
             const int debug);
 int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
             char *buffer, const int buffer_size, int *p_cmp_len);
+int testUtilZXingCPPSegs(int index, struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count, char *bits,
+            char *buffer, const int buffer_size, int *p_cmp_len);
 int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
             const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len);
+int testUtilZXingCPPCmpSegs(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
+            const struct zint_seg segs[], const int seg_count, const char *primary, char *ret_buf, int *p_ret_len);
 
 #ifdef __cplusplus
 }

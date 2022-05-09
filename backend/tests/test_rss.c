@@ -165,7 +165,7 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
             assert_zero(ret, "i:%d ZBarcode_Buffer_Vector ret %d != 0\n", i, ret);
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
-                ret = testUtilBwipp(i, symbol, -1, -1, -1, text, length, symbol->primary, cmp_buf, sizeof(cmp_buf));
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, text, length, symbol->primary, cmp_buf, sizeof(cmp_buf), NULL);
                 assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilBwippCmpRow(symbol, symbol->rows - 1, cmp_msg, cmp_buf, data[i].expected);
@@ -904,7 +904,7 @@ static void test_examples(int index, int generate, int debug) {
                 if (!data[i].bwipp_cmp) {
                     if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                 } else {
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                     assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);

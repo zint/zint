@@ -1,7 +1,7 @@
 /*  hanxin.h - definitions for Han Xin code
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2017 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2016 Zoe Stuart
 
     Redistribution and use in source and binary forms, with or without
@@ -30,8 +30,11 @@
     SUCH DAMAGE.
  */
 
+#ifndef Z_HANXIN_H
+#define Z_HANXIN_H
+
 /* Data from table B1: Data capacity of Han Xin Code */
-static const unsigned short int hx_total_codewords[] = {
+static const unsigned short hx_total_codewords[] = {
     25, 37, 50, 54, 69, 84, 100, 117, 136, 155, 161, 181, 203, 225, 249,
     273, 299, 325, 353, 381, 411, 422, 453, 485, 518, 552, 587, 623, 660,
     698, 737, 754, 794, 836, 878, 922, 966, 1011, 1058, 1105, 1126, 1175,
@@ -41,7 +44,7 @@ static const unsigned short int hx_total_codewords[] = {
     3500, 3585, 3671, 3758, 3798, 3886
 };
 
-static const unsigned short int hx_data_codewords_L1[] = {
+static const unsigned short hx_data_codewords_L1[] = {
     21, 31, 42, 46, 57, 70, 84, 99, 114, 131, 135, 153, 171, 189, 209, 229,
     251, 273, 297, 321, 345, 354, 381, 407, 436, 464, 493, 523, 554, 586, 619,
     634, 666, 702, 738, 774, 812, 849, 888, 929, 946, 987, 1028, 1071, 1115,
@@ -51,7 +54,7 @@ static const unsigned short int hx_data_codewords_L1[] = {
     3083, 3156, 3190, 3264
 };
 
-static const unsigned short int hx_data_codewords_L2[] = {
+static const unsigned short hx_data_codewords_L2[] = {
     17, 25, 34, 38, 49, 58, 70, 81, 96, 109, 113, 127, 143, 157, 175, 191, 209,
     227, 247, 267, 287, 296, 317, 339, 362, 386, 411, 437, 462, 488, 515, 528,
     556, 586, 614, 646, 676, 707, 740, 773, 788, 823, 856, 893, 929, 966, 1004,
@@ -61,7 +64,7 @@ static const unsigned short int hx_data_codewords_L2[] = {
     2720
 };
 
-static const unsigned short int hx_data_codewords_L3[] = {
+static const unsigned short hx_data_codewords_L3[] = {
     13, 19, 26, 30, 37, 46, 54, 63, 74, 83, 87, 97, 109, 121, 135, 147, 161,
     175, 191, 205, 221, 228, 245, 261, 280, 298, 317, 337, 358, 376, 397, 408,
     428, 452, 474, 498, 522, 545, 572, 597, 608, 635, 660, 689, 717, 746, 774,
@@ -70,7 +73,7 @@ static const unsigned short int hx_data_codewords_L3[] = {
     1713, 1756, 1800, 1844, 1890, 1935, 1983, 2030, 2050, 2098
 };
 
-static const unsigned short int hx_data_codewords_L4[] = {
+static const unsigned short hx_data_codewords_L4[] = {
     9, 15, 20, 22, 27, 34, 40, 47, 54, 61, 65, 73, 81, 89, 99, 109, 119, 129,
     141, 153, 165, 168, 181, 195, 208, 220, 235, 251, 264, 280, 295, 302, 318,
     334, 352, 368, 386, 405, 424, 441, 450, 469, 490, 509, 531, 552, 574, 595, 605,
@@ -119,7 +122,7 @@ static const char hx_module_m[] = {
 };
 
 /* Error correction block sizes from Table D1 */
-static const unsigned short int hx_table_d1[] = {
+static const unsigned short hx_table_d1[] = {
     /* #blocks, k, 2t, #blocks, k, 2t, #blocks, k, 2t */
     1, 21, 4, 0, 0, 0, 0, 0, 0, // version 1
     1, 17, 8, 0, 0, 0, 0, 0, 0,
@@ -458,3 +461,6 @@ static const unsigned short int hx_table_d1[] = {
     2, 26, 26, 62, 33, 28, 0, 0, 0,
     79, 18, 28, 4, 33, 30, 0, 0, 0
 };
+
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_HANXIN_H */

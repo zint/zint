@@ -1,7 +1,7 @@
 /*  gb2312.h - Unicode to GB 2312-1980 (EUC-CN)
 
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,9 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
-#ifndef GB2312_H
-#define GB2312_H
+#ifndef Z_GB2312_H
+#define Z_GB2312_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -39,14 +38,18 @@ extern "C" {
 
 INTERNAL int gb2312_wctomb_zint(unsigned int *r, const unsigned int wc);
 INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-                unsigned int *gbdata);
-INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+                unsigned int *ddata);
+INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
-INTERNAL void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata,
+
+INTERNAL void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte);
+INTERNAL void gb2312_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
                 const int full_multibyte);
 
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
 
-#endif /* GB2312_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_GB2312_H */

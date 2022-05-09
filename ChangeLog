@@ -61,6 +61,10 @@ Changes
 - HANXIN: removed alternating filler in function information
 - GRIDMATRIX/HANXIN/QRCODE/RMQR: warn if auto-conversion (i.e. no ECI given)
   occurs to resp. specialized char sets (GB 2312/GB 18030/Shift JIS)
+- Add multiple segments support for AZTEC, CODEONE, DATAMATRIX, DOTCODE,
+  GRIDMATRIX, HANXIN, MAXICODE, MICROPDF417, PDF417, QRCODE, RMQR, ULTRA
+- MICROQR: check versions M1 and M2 for allowed characters so as to give better
+  error messages
 
 Bugs
 ----
@@ -85,6 +89,8 @@ Bugs
 - DATAMATRIX: fix mis-encoding of FNC1/GS in EDIFACT in GS1 mode
 - Allow for dot overspill in height of vertical box sides (dotty mode)
 - HANXIN: fix gate-posts on codeword limits
+- GUI: cater for HiDPI display, props bitaround (#257)
+- RMQR: fix ECI encoding (wrong bit length for indicator)
 
 
 Version 2.10.0 2021-08-14

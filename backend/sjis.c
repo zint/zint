@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 /*
  * Adapted from the GNU LIBICONV library and patched to make compatible with
  * https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT
@@ -1516,7 +1515,7 @@ INTERNAL int sjis_wctomb_zint(unsigned int *r, const unsigned int wc) {
 
 /* Convert UTF-8 string to Shift JIS and place in array of ints */
 INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-                unsigned int *jisdata) {
+                unsigned int *ddata) {
     int error_number;
     unsigned int i, length;
 #ifndef _MSC_VER
@@ -1531,7 +1530,7 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
     }
 
     for (i = 0, length = *p_length; i < length; i++) {
-        if (!sjis_wctomb_zint(jisdata + i, utfdata[i])) {
+        if (!sjis_wctomb_zint(ddata + i, utfdata[i])) {
             strcpy(symbol->errtxt, "800: Invalid character in input data");
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -1541,7 +1540,7 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints */
-INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *jisdata,
+INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
 
     if (is_eci_convertible(eci)) {
@@ -1559,9 +1558,9 @@ INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *
             return error_number;
         }
 
-        sjis_cpy(converted, p_length, jisdata, full_multibyte);
+        sjis_cpy(converted, p_length, ddata, full_multibyte);
     } else {
-        sjis_cpy(source, p_length, jisdata, full_multibyte);
+        sjis_cpy(source, p_length, ddata, full_multibyte);
     }
 
     return 0;
@@ -1569,7 +1568,7 @@ INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *
 
 /* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in
  * a single entry. If `full_multibyte` not set, do a straight copy */
-INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *jisdata, const int full_multibyte) {
+INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte) {
     unsigned int i, j, jis, length;
     unsigned char c;
 
@@ -1581,20 +1580,34 @@ INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int
                 if ((jis >= 0x8140 && jis <= 0x9FFC) || (jis >= 0xE040 && jis <= 0xEBBF)) {
                     /* This may or may not be valid Shift JIS, but don't care as long as it can be encoded in
                      * QR Kanji mode */
-                    jisdata[j] = jis;
+                    ddata[j] = jis;
                     i++;
                 } else {
-                    jisdata[j] = c;
+                    ddata[j] = c;
                 }
             } else {
-                jisdata[j] = c;
+                ddata[j] = c;
             }
         }
         *p_length = j;
     } else {
         /* Straight copy */
         for (i = 0, length = *p_length; i < length; i++) {
-            jisdata[i] = source[i];
+            ddata[i] = source[i];
         }
     }
 }
+
+/* Call `sjis_cpy()` for each segment */
+INTERNAL void sjis_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
+    int i;
+    unsigned int *dd = ddata;
+
+    for (i = 0; i < seg_count; i++) {
+        sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        dd += segs[i].length;
+    }
+}
+
+/* vim: set ts=4 sw=4 et : */

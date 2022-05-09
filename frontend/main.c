@@ -127,14 +127,14 @@ static void usage(void) {
             "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
             "  --cols=NUMBER         Set the number of data columns in symbol\n"
             "  --compliantheight     Warn if height not compliant, and use standard default\n"
-            "  -d, --data=DATA       Set the symbol content\n"
+            "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
             "  --direct              Send output to stdout\n"
             "  --dmre                Allow Data Matrix Rectangular Extended\n"
             "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
             "  --dotty               Use dots instead of squares for matrix symbols\n"
             "  --dump                Dump hexadecimal representation to stdout\n"
-            "  -e, --ecinos          Display table of ECI character encodings\n"
-            "  --eci=NUMBER          Set the ECI (Extended Channel Interpretation) code\n"
+            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n"
+            "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
             "  --esc                 Process escape characters in input data\n"
             "  --fast                Use faster encodation (Data Matrix)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n"
@@ -165,6 +165,7 @@ static void usage(void) {
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
+            "  --segN=ECI,DATA       Set the ECI & data content for segment N where N is 1 to 9\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
@@ -561,6 +562,28 @@ int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
     return 1;
 }
 
+/* Parse and validate the segment argument "ECI,DATA" to "--segN" */
+static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10]) {
+    char eci[10] = {0};
+    const char *comma = strchr(optarg, ',');
+    if (!comma || comma == optarg || comma - optarg > 9 || *(comma + 1) == '\0') {
+        fprintf(stderr, "Error 166: Invalid segment argument, expect \"ECI,DATA\"\n");
+        return 0;
+    }
+    strncpy(eci, optarg, comma - optarg);
+    if (!validate_int(eci, &segs[N].eci)) {
+        fprintf(stderr, "Error 167: Invalid segment ECI (digits only)\n");
+        return 0;
+    }
+    if (segs[N].eci > 999999) {
+        fprintf(stderr, "Error 168: Segment ECI code out of range (0 to 999999)\n");
+        return 0;
+    }
+    segs[N].length = (int) strlen(comma + 1);
+    segs[N].source = (unsigned char *) (comma + 1);
+    return 1;
+}
+
 /* Batch mode - output symbol for each line of text in `filename` */
 static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
             const char *filetype, const int rotate_angle) {
@@ -819,6 +842,7 @@ typedef struct { char *arg; int opt; } arg_opt;
 
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
+    struct zint_seg segs[10] = {0};
     int error_number = 0;
     int rotate_angle = 0;
     int help = 0;
@@ -839,6 +863,7 @@ int main(int argc, char **argv) {
     int ret;
     char *outfile_extension;
     int data_arg_num = 0;
+    int seg_count = 0;
     float float_opt;
 #ifndef _MSC_VER
     arg_opt arg_opts[argc];
@@ -872,8 +897,9 @@ int main(int argc, char **argv) {
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
-            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV,
-            OPT_SECURE, OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
+            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV, OPT_SECURE,
+            OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
+            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
             OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
@@ -929,6 +955,15 @@ int main(int argc, char **argv) {
             {"scale", 1, NULL, OPT_SCALE},
             {"scmvv", 1, NULL, OPT_SCMVV},
             {"secure", 1, NULL, OPT_SECURE},
+            {"seg1", 1, NULL, OPT_SEG1},
+            {"seg2", 1, NULL, OPT_SEG2},
+            {"seg3", 1, NULL, OPT_SEG3},
+            {"seg4", 1, NULL, OPT_SEG4},
+            {"seg5", 1, NULL, OPT_SEG5},
+            {"seg6", 1, NULL, OPT_SEG6},
+            {"seg7", 1, NULL, OPT_SEG7},
+            {"seg8", 1, NULL, OPT_SEG8},
+            {"seg9", 1, NULL, OPT_SEG9},
             {"separator", 1, NULL, OPT_SEPARATOR},
             {"small", 0, NULL, OPT_SMALL},
             {"square", 0, NULL, OPT_SQUARE},
@@ -1241,6 +1276,32 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                 }
                 break;
+            case OPT_SEG1:
+            case OPT_SEG2:
+            case OPT_SEG3:
+            case OPT_SEG4:
+            case OPT_SEG5:
+            case OPT_SEG6:
+            case OPT_SEG7:
+            case OPT_SEG8:
+            case OPT_SEG9:
+                if (batch_mode == 0) {
+                    val = c - OPT_SEG1 + 1; /* Segment number */
+                    if (segs[val].source) {
+                        fprintf(stderr, "Error 164: Duplicate segment %d\n", val);
+                        return do_exit(1);
+                    }
+                    if (!validate_seg(optarg, c - OPT_SEG1 + 1, segs)) {
+                        return do_exit(1);
+                    }
+                    if (val >= seg_count) {
+                        seg_count = val + 1;
+                    }
+                } else {
+                    fprintf(stderr, "Warning 165: Can't define segments in batch mode, ignoring '%s'\n", optarg);
+                    fflush(stderr);
+                }
+                break;
             case OPT_SEPARATOR:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 128: Invalid separator value (digits only)\n");
@@ -1419,6 +1480,10 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Warning 144: Processing first input file '%s' only\n", arg_opts[0].arg);
                 fflush(stderr);
             }
+            if (seg_count) {
+                fprintf(stderr, "Warning 169: Ignoring segment arguments\n");
+                fflush(stderr);
+            }
             if (filetype[0] == '\0') {
                 outfile_extension = get_extension(my_symbol->outfile);
                 if (outfile_extension && supported_filetype(outfile_extension, no_png, NULL)) {
@@ -1440,6 +1505,25 @@ int main(int argc, char **argv) {
                 fflush(stderr);
             }
         } else {
+            if (seg_count) {
+                if (data_arg_num > 1) {
+                    fprintf(stderr, "Error 170: Cannot specify segments and multiple data arguments together\n");
+                    return do_exit(1);
+                }
+                if (arg_opts[0].opt != 'd') { /* For simplicity disallow input args for now */
+                    fprintf(stderr, "Error 171: Cannot use input argument with segment arguments\n");
+                    return do_exit(1);
+                }
+                segs[0].eci = my_symbol->eci;
+                segs[0].source = (unsigned char *) arg_opts[0].arg;
+                segs[0].length = (int) strlen(arg_opts[0].arg);
+                for (i = 0; i < seg_count; i++) {
+                    if (segs[i].source == NULL) {
+                        fprintf(stderr, "Error 172: Segments must be consecutive - segment %d missing\n", i);
+                        return do_exit(1);
+                    }
+                }
+            }
             if (filetype[0] != '\0') {
                 set_extension(my_symbol->outfile, filetype);
             }
@@ -1452,8 +1536,12 @@ int main(int argc, char **argv) {
             }
             for (i = 0; i < data_arg_num; i++) {
                 if (arg_opts[i].opt == 'd') {
-                    ret = ZBarcode_Encode(my_symbol, (unsigned char *) arg_opts[i].arg,
-                            (int) strlen(arg_opts[i].arg));
+                    if (seg_count) {
+                        ret = ZBarcode_Encode_Segs(my_symbol, segs, seg_count);
+                    } else {
+                        ret = ZBarcode_Encode(my_symbol, (unsigned char *) arg_opts[i].arg,
+                                (int) strlen(arg_opts[i].arg));
+                    }
                 } else {
                     ret = ZBarcode_Encode_File(my_symbol, arg_opts[i].arg);
                 }

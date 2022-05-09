@@ -171,10 +171,12 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     bstyle->setCurrentIndex(settings.value(QSL("studio/symbology"), 10).toInt());
 
     txtData->setText(settings.value(QSL("studio/data"), tr("Your Data Here!")).toString());
+    /* Don't save seg data */
     txtComposite->setText(settings.value(QSL("studio/composite_text"), tr("Your Data Here!")).toString());
     chkComposite->setChecked(settings.value(QSL("studio/chk_composite")).toInt() ? true : false);
     cmbCompType->setCurrentIndex(settings.value(QSL("studio/comp_type"), 0).toInt());
-    cmbECI->setCurrentIndex(settings.value(QSL("studio/appearance/eci"), 0).toInt());
+    cmbECI->setCurrentIndex(settings.value(QSL("studio/eci"), 0).toInt());
+    /* Don't save seg ECIs */
     chkEscape->setChecked(settings.value(QSL("studio/chk_escape")).toInt() ? true : false);
     chkData->setChecked(settings.value(QSL("studio/chk_data")).toInt() ? true : false);
     chkRInit->setChecked(settings.value(QSL("studio/chk_rinit")).toInt() ? true : false);
@@ -209,11 +211,20 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+    connect(txtDataSeg1, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
+    connect(txtDataSeg1, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+    connect(txtDataSeg2, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
+    connect(txtDataSeg2, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
+    connect(txtDataSeg3, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
+    connect(txtDataSeg3, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
     connect(txtComposite, SIGNAL(textChanged()), SLOT(update_preview()));
     connect(chkComposite, SIGNAL(toggled( bool )), SLOT(composite_ui_set()));
     connect(chkComposite, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbECI, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(cmbECISeg1, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(cmbECISeg2, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(cmbECISeg3, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(chkEscape, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(chkData, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(chkRInit, SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -227,6 +238,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(btnExit, SIGNAL(clicked( bool )), SLOT(quit_now()));
     connect(btnReset, SIGNAL(clicked( bool )), SLOT(reset_colours()));
     connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
+    connect(btnMoreDataSeg1, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg1()));
+    connect(btnMoreDataSeg2, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg2()));
+    connect(btnMoreDataSeg3, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg3()));
     connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(autoheight_ui_set()));
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -258,6 +272,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
 
     createActions();
     createMenu();
+    bstyle->setFocus();
+
+    tabMain->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -279,10 +296,12 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/paper/blue"), m_bgcolor.blue());
     settings.setValue(QSL("studio/paper/alpha"), m_bgcolor.alpha());
     settings.setValue(QSL("studio/data"), txtData->text());
+    /* Seg data not saved so don't restore */
     settings.setValue(QSL("studio/composite_text"), txtComposite->toPlainText());
     settings.setValue(QSL("studio/chk_composite"), chkComposite->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/comp_type"), cmbCompType->currentIndex());
     settings.setValue(QSL("studio/eci"), cmbECI->currentIndex());
+    /* Seg ECIs not saved so don't restore */
     settings.setValue(QSL("studio/chk_escape"), chkEscape->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_data"), chkData->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/chk_rinit"), chkRInit->isChecked() ? 1 : 0);
@@ -348,6 +367,20 @@ bool MainWindow::event(QEvent *event)
     }
 
     return QWidget::event(event);
+}
+
+bool MainWindow::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::ShortcutOverride) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
+        if (keyEvent->modifiers().testFlag(Qt::AltModifier) && keyEvent->key() == 'O') {
+            event->ignore();
+            txtData->setFocus();
+            return true;
+        }
+    }
+
+    return QWidget::eventFilter(watched, event);
 }
 
 void MainWindow::reset_colours()
@@ -471,11 +504,11 @@ void MainWindow::about()
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
            "EN 797:1996, EN 798:1996, EN 12323:2005, ISO/IEC 15417:2007,<br>"
            "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
-           "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 24723:2010,<br>"
-           "ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008,<br>"
-           "ISO/IEC 16390:2007, ISO/IEC 21471:2019, ANSI-HIBC 2.6-2016,<br>"
-           "ANSI/AIM BC6-2000, ANSI/AIM BC12-1998, ANSI/AIM BC5-1995,<br>"
-           "AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200"
+           "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,<br>"
+           "ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,<br>"
+           "ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019,<br>"
+           "ANSI-HIBC 2.6-2016, ANSI/AIM BC12-1998, ANSI/AIM BC6-2000,<br>"
+           "ANSI/AIM BC5-1995, AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200"
            "</small></td></tr></table></p>").arg(zint_version).arg(QT_VERSION_STR));
 }
 
@@ -484,22 +517,60 @@ void MainWindow::help()
     QDesktopServices::openUrl(QSL("https://zint.org.uk/manual")); // TODO: manual.md
 }
 
-void MainWindow::open_data_dialog()
+void MainWindow::open_data_dialog_seg(const int seg_no)
 {
-    DataWindow dlg(txtData->text(), chkEscape->isChecked());
+    if (seg_no < 0 || seg_no > 3) {
+        return;
+    }
+    static QLineEdit *edits[4] = {
+        txtData, txtDataSeg1, txtDataSeg2, txtDataSeg3
+    };
+    DataWindow dlg(edits[seg_no]->text(), chkEscape->isChecked());
     (void) dlg.exec();
     if (dlg.Valid) {
-        const bool updated = txtData->text() != dlg.DataOutput;
-        txtData->setText(dlg.DataOutput);
+        const bool updated = edits[seg_no]->text() != dlg.DataOutput;
+        edits[seg_no]->setText(dlg.DataOutput);
         if (updated) {
+            static const QString updatedEscTxts[4] = {
+                tr("Set \"Parse Escapes\", updated data"),
+                tr("Set \"Parse Escapes\", updated segment 1 data"),
+                tr("Set \"Parse Escapes\", updated segment 2 data"),
+                tr("Set \"Parse Escapes\", updated segment 3 data"),
+            };
+            static const QString updatedTxts[4] = {
+                tr("Updated data"),
+                tr("Updated segment 1 data"),
+                tr("Updated segment 2 data"),
+                tr("Updated segment 3 data"),
+            };
             if (dlg.Escaped && !chkEscape->isChecked()) {
                 chkEscape->setChecked(true);
-                statusBar->showMessage(tr("Set \"Parse Escapes\", updated data"), tempMessageTimeout);
+                statusBar->showMessage(updatedEscTxts[seg_no], tempMessageTimeout);
             } else {
-                statusBar->showMessage(tr("Updated data"), tempMessageTimeout);
+                statusBar->showMessage(updatedTxts[seg_no], tempMessageTimeout);
             }
         }
     }
+}
+
+void MainWindow::open_data_dialog()
+{
+    open_data_dialog_seg(0);
+}
+
+void MainWindow::open_data_dialog_seg1()
+{
+    open_data_dialog_seg(1);
+}
+
+void MainWindow::open_data_dialog_seg2()
+{
+    open_data_dialog_seg(2);
+}
+
+void MainWindow::open_data_dialog_seg3()
+{
+    open_data_dialog_seg(3);
 }
 
 void MainWindow::open_sequence_dialog()
@@ -1523,9 +1594,27 @@ void MainWindow::change_options()
         case BARCODE_DBAR_OMNSTK:
         case BARCODE_DBAR_EXPSTK:
             grpComposite->show();
+            grpSegs->hide();
+            break;
+        case BARCODE_AZTEC:
+        case BARCODE_DATAMATRIX:
+        case BARCODE_MAXICODE:
+        case BARCODE_MICROPDF417:
+        case BARCODE_PDF417:
+        case BARCODE_PDF417COMP:
+        case BARCODE_QRCODE:
+        case BARCODE_DOTCODE:
+        case BARCODE_CODEONE:
+        case BARCODE_GRIDMATRIX:
+        case BARCODE_HANXIN:
+        case BARCODE_ULTRA:
+        case BARCODE_RMQR:
+            grpComposite->hide();
+            grpSegs->show();
             break;
         default:
             grpComposite->hide();
+            grpSegs->hide();
             break;
     }
 
@@ -1536,6 +1625,7 @@ void MainWindow::change_options()
     chkQuietZones->setEnabled(!m_bc.bc.hasDefaultQuietZones(symbology));
     chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
 
+    data_ui_set();
     composite_ui_set();
     autoheight_ui_set();
     HRTShow_ui_set();
@@ -1549,6 +1639,46 @@ void MainWindow::change_options()
         tabMain->setCurrentIndex(original_tab_index == 2 ? 1 : 0);
     } else {
         tabMain->setCurrentIndex(original_tab_index == 1 ? 2 : 0);
+    }
+}
+
+void MainWindow::data_ui_set()
+{
+    if (grpSegs->isHidden()) {
+        return;
+    }
+    if (txtDataSeg1->text().isEmpty()) {
+        cmbECISeg1->setEnabled(false);
+        lblSeg2->setEnabled(false);
+        cmbECISeg2->setEnabled(false);
+        txtDataSeg2->setEnabled(false);
+        btnMoreDataSeg2->setEnabled(false);
+        lblSeg3->setEnabled(false);
+        cmbECISeg3->setEnabled(false);
+        txtDataSeg3->setEnabled(false);
+        btnMoreDataSeg3->setEnabled(false);
+    } else {
+        cmbECISeg1->setEnabled(true);
+        lblSeg2->setEnabled(true);
+        txtDataSeg2->setEnabled(true);
+        btnMoreDataSeg2->setEnabled(true);
+        if (txtDataSeg2->text().isEmpty()) {
+            cmbECISeg2->setEnabled(false);
+            lblSeg3->setEnabled(false);
+            cmbECISeg3->setEnabled(false);
+            txtDataSeg3->setEnabled(false);
+            btnMoreDataSeg3->setEnabled(false);
+        } else {
+            cmbECISeg2->setEnabled(true);
+            lblSeg3->setEnabled(true);
+            txtDataSeg3->setEnabled(true);
+            btnMoreDataSeg3->setEnabled(true);
+            if (txtDataSeg3->text().isEmpty()) {
+                cmbECISeg3->setEnabled(false);
+            } else {
+                cmbECISeg3->setEnabled(true);
+            }
+        }
     }
 }
 
@@ -1715,7 +1845,20 @@ void MainWindow::update_preview()
         m_bc.bc.setPrimaryMessage(txtData->text());
         m_bc.bc.setText(txtComposite->toPlainText());
     } else {
-        m_bc.bc.setText(txtData->text());
+        if (!grpSegs->isHidden() && !txtDataSeg1->text().isEmpty()) {
+            std::vector<Zint::QZintSeg> segs;
+            segs.push_back(Zint::QZintSeg(txtData->text(), cmbECI->currentIndex()));
+            segs.push_back(Zint::QZintSeg(txtDataSeg1->text(), cmbECISeg1->currentIndex()));
+            if (!txtDataSeg2->text().isEmpty()) {
+                segs.push_back(Zint::QZintSeg(txtDataSeg2->text(), cmbECISeg2->currentIndex()));
+                if (!txtDataSeg3->text().isEmpty()) {
+                    segs.push_back(Zint::QZintSeg(txtDataSeg3->text(), cmbECISeg3->currentIndex()));
+                }
+            }
+            m_bc.bc.setSegs(segs);
+        } else {
+            m_bc.bc.setText(txtData->text());
+        }
     }
     m_bc.bc.setOption1(-1);
     m_bc.bc.setOption2(0);
@@ -2689,6 +2832,11 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
     QString name = get_setting_name(symbology);
     if (!name.isEmpty()) {
         settings.setValue(QSL("studio/bc/%1/data").arg(name), txtData->text());
+        if (!grpSegs->isHidden()) {
+            settings.setValue(QSL("studio/bc/%1/data_seg1").arg(name), txtDataSeg1->text());
+            settings.setValue(QSL("studio/bc/%1/data_seg2").arg(name), txtDataSeg2->text());
+            settings.setValue(QSL("studio/bc/%1/data_seg3").arg(name), txtDataSeg3->text());
+        }
         if (!grpComposite->isHidden()) {
             settings.setValue(QSL("studio/bc/%1/composite_text").arg(name), txtComposite->toPlainText());
             settings.setValue(QSL("studio/bc/%1/chk_composite").arg(name), chkComposite->isChecked() ? 1 : 0);
@@ -2696,6 +2844,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         }
         if (cmbECI->isEnabled()) {
             settings.setValue(QSL("studio/bc/%1/eci").arg(name), cmbECI->currentIndex());
+            settings.setValue(QSL("studio/bc/%1/eci_seg1").arg(name), cmbECISeg1->currentIndex());
+            settings.setValue(QSL("studio/bc/%1/eci_seg2").arg(name), cmbECISeg2->currentIndex());
+            settings.setValue(QSL("studio/bc/%1/eci_seg3").arg(name), cmbECISeg3->currentIndex());
         }
         settings.setValue(QSL("studio/bc/%1/chk_escape").arg(name), chkEscape->isChecked() ? 1 : 0);
         settings.setValue(QSL("studio/bc/%1/chk_data").arg(name), chkData->isChecked() ? 1 : 0);
@@ -3050,6 +3201,11 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         if (!tdata.isEmpty()) {
             txtData->setText(tdata);
         }
+        if (!grpSegs->isHidden()) {
+            txtDataSeg1->setText(settings.value(QSL("studio/bc/%1/data_seg1").arg(name), QSL("")).toString());
+            txtDataSeg2->setText(settings.value(QSL("studio/bc/%1/data_seg2").arg(name), QSL("")).toString());
+            txtDataSeg3->setText(settings.value(QSL("studio/bc/%1/data_seg3").arg(name), QSL("")).toString());
+        }
         if (!grpComposite->isHidden()) {
             const QString &composite_text = settings.value(
                                                 QSL("studio/bc/%1/composite_text").arg(name), QSL("")).toString();
@@ -3062,6 +3218,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         }
         if (cmbECI->isEnabled()) {
             cmbECI->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci").arg(name), 0).toInt());
+            cmbECISeg1->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci_seg1").arg(name), 0).toInt());
+            cmbECISeg2->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci_seg2").arg(name), 0).toInt());
+            cmbECISeg3->setCurrentIndex(settings.value(QSL("studio/bc/%1/eci_seg3").arg(name), 0).toInt());
         }
         chkEscape->setChecked(settings.value(QSL("studio/bc/%1/chk_escape").arg(name)).toInt() ? true : false);
         chkData->setChecked(settings.value(QSL("studio/bc/%1/chk_data").arg(name)).toInt() ? true : false);

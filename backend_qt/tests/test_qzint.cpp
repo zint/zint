@@ -60,6 +60,35 @@ private slots:
         QString text("text");
         bc.setText(text);
         QCOMPARE(bc.text(), text);
+        QCOMPARE(bc.segs().empty(), true);
+
+        std::vector<QString> segTexts;
+        std::vector<int> segECIs;
+        segTexts.push_back(QString("Τεχτ"));
+        segECIs.push_back(9);
+        segTexts.push_back(QString("貫やぐ禁"));
+        segECIs.push_back(20);
+        segTexts.push_back(QString("กขฯ"));
+        segECIs.push_back(13);
+
+        std::vector<Zint::QZintSeg> segs;
+        for (int i = 0; i < (int) segTexts.size(); i++) {
+            segs.push_back(Zint::QZintSeg(segTexts[i]));
+            segs.back().m_eci = segECIs[i];
+        }
+
+        bc.setSegs(segs);
+        QCOMPARE(bc.segs().size(), segs.size());
+        for (int i = 0; i < (int) segs.size(); i++) {
+            QCOMPARE(bc.segs()[i].m_text, segTexts[i]);
+            QCOMPARE(bc.segs()[i].m_eci, segECIs[i]);
+        }
+        QCOMPARE(bc.text().isEmpty(), true);
+        QCOMPARE(bc.eci(), segECIs[0]);
+
+        bc.setText(text);
+        QCOMPARE(bc.text(), text);
+        QCOMPARE(bc.segs().empty(), true);
 
         QString primaryMessage("primary message");
         bc.setPrimaryMessage(primaryMessage);
@@ -343,7 +372,7 @@ private slots:
 
         QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 205: No input data" << 0 << 0;
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 773: Input segment 0 length zero" << 0 << 0;
         }
     }
 
@@ -499,9 +528,9 @@ private slots:
             << true << 0 << 0 << 2 << 3 << 0 // cmyk-fontSetting
             << true << false << false << false << false << 0 // showText-rotateAngle
             << 7 << false << false << false << WARN_DEFAULT << false // eci-debug
-            << "zint -b 92 --cmyk -d '12345678Ж0%var%' --dotsize=0.9 --dotty --eci=7 --fg=0000FF --scale=4"
+            << "zint -b 92 --cmyk --eci=7 -d '12345678Ж0%var%' --dotsize=0.9 --dotty --fg=0000FF --scale=4"
                 " --secure=1 --structapp='1,2,as\"dfa'\\''sdf' --vwhitesp=3 -w 2"
-            << "zint.exe -b 92 --cmyk -d \"12345678Ж0%var%\" --dotsize=0.9 --dotty --eci=7 --fg=0000FF --scale=4"
+            << "zint.exe -b 92 --cmyk --eci=7 -d \"12345678Ж0%var%\" --dotsize=0.9 --dotty --fg=0000FF --scale=4"
                 " --secure=1 --structapp=\"1,2,as\\\"dfa'sdf\" --vwhitesp=3 -w 2"
             << "" << "";
 
@@ -679,8 +708,8 @@ private slots:
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 29 << false << false << false << WARN_DEFAULT << false // eci-debug
-            << "zint -b 116 -d 'éβÿ啊\\e\"'\\''' --eci=29 --esc --mask=0 --secure=2 --vers=5"
-            << "zint.exe -b 116 -d \"éβÿ啊\\e\\\"'\" --eci=29 --esc --mask=0 --secure=2 --vers=5"
+            << "zint -b 116 --eci=29 -d 'éβÿ啊\\e\"'\\''' --esc --mask=0 --secure=2 --vers=5"
+            << "zint.exe -b 116 --eci=29 -d \"éβÿ啊\\e\\\"'\" --esc --mask=0 --secure=2 --vers=5"
             << "" << "";
 
         QTest::newRow("BARCODE_HIBC_DM") << false << 10.0f << ""
@@ -770,8 +799,8 @@ private slots:
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 180 // showText-rotateAngle
             << 20 << false << false << false << WARN_DEFAULT << false // eci-debug
-            << "zint -b 145 -d 'テ' --eci=20 --rotate=180 --vers=8"
-            << "zint.exe -b 145 -d \"テ\" --eci=20 --rotate=180 --vers=8"
+            << "zint -b 145 --eci=20 -d 'テ' --rotate=180 --vers=8"
+            << "zint.exe -b 145 --eci=20 -d \"テ\" --rotate=180 --vers=8"
             << "" << "";
 
         QTest::newRow("BARCODE_ULTRA") << false << 0.0f << ""
@@ -924,6 +953,44 @@ private slots:
                         autoHeight, heightPerRow, outfile);
             QCOMPARE(cmd, expected_barcodeNames);
         }
+    }
+
+    void getAsCLISegsTest()
+    {
+        Zint::QZint bc;
+
+        QString cmd;
+        QString expected_cmd;
+        QString expected_win;
+
+        std::vector<QString> segTexts;
+        std::vector<int> segECIs;
+        segTexts.push_back(QString("Τεχτ"));
+        segECIs.push_back(9);
+        segTexts.push_back(QString("Téxt"));
+        segECIs.push_back(3);
+        segTexts.push_back(QString("กขฯ"));
+        segECIs.push_back(13);
+        segTexts.push_back(QString("貫やぐ禁"));
+        segECIs.push_back(20);
+
+        std::vector<Zint::QZintSeg> segs;
+        for (int i = 0; i < (int) segTexts.size(); i++) {
+            segs.push_back(Zint::QZintSeg(segTexts[i]));
+            segs.back().m_eci = segECIs[i];
+        }
+
+        bc.setSymbol(BARCODE_QRCODE);
+        bc.setSegs(segs);
+        bc.setDotty(true);
+
+        expected_cmd = "zint -b 58 --eci=9 -d 'Τεχτ' --seg1=3,'Téxt' --seg2=13,'กขฯ' --seg3=20,'貫やぐ禁' --dotty";
+        cmd = bc.getAsCLI(false /*win*/);
+        QCOMPARE(cmd, expected_cmd);
+
+        expected_win = "zint.exe -b 58 --eci=9 -d \"Τεχτ\" --seg1=3,\"Téxt\" --seg2=13,\"กขฯ\" --seg3=20,\"貫やぐ禁\" --dotty";
+        cmd = bc.getAsCLI(true /*win*/);
+        QCOMPARE(cmd, expected_win);
     }
 
     void qZintAndLibZintEqual_data()

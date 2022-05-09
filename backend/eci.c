@@ -197,6 +197,18 @@ INTERNAL int is_eci_convertible(const int eci) {
     return 1;
 }
 
+/* Are any of the ECIs in the segments convertible from UTF-8?
+   Sets `convertible[]` for each, which must be at least `seg_count` in size */
+INTERNAL int is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]) {
+    int ret = 0;
+    int i;
+    for (i = 0; i < seg_count; i++) {
+        convertible[i] = is_eci_convertible(segs[i].eci);
+        ret |= convertible[i];
+    }
+    return ret;
+}
+
 /* Calculate length required to convert UTF-8 to (double-byte) encoding */
 INTERNAL int get_eci_length(const int eci, const unsigned char source[], int length) {
     if (eci == 20) { /* Shift JIS */
@@ -218,6 +230,18 @@ INTERNAL int get_eci_length(const int eci, const unsigned char source[], int len
     }
 
     /* Big5, GB 2312, EUC-KR and GBK fit in UTF-8 length */
+
+    return length;
+}
+
+/* Call `get_eci_length()` for each segment, returning total */
+INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_count) {
+    int length = 0;
+    int i;
+
+    for (i = 0; i < seg_count; i++) {
+        length += get_eci_length(segs[i].eci, segs[i].source, segs[i].length);
+    }
 
     return length;
 }
@@ -323,6 +347,39 @@ INTERNAL int get_best_eci(const unsigned char source[], int length) {
     }
 
     return 26; // If all of these fail, use Unicode!
+}
+
+/* Return 0 on failure, first ECI set on success */
+INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+    int first_eci_set = 0;
+    int i;
+
+    for (i = 0; i < seg_count; i++) {
+        if (segs[i].eci == 0) {
+            int eci = get_best_eci(segs[i].source, segs[i].length);
+            if (eci == 0) {
+                return 0;
+            }
+            if (eci == 3) {
+                if (i != 0 && segs[i - 1].eci > 3) {
+                    segs[i].eci = eci;
+                    if (first_eci_set == 0) {
+                        first_eci_set = eci;
+                    }
+                }
+            } else {
+                segs[i].eci = eci;
+                if (first_eci_set == 0) {
+                    first_eci_set = eci;
+                    if (i == 0) {
+                        symbol->eci = eci;
+                    }
+                }
+            }
+        }
+    }
+
+    return first_eci_set;
 }
 
 /* vim: set ts=4 sw=4 et : */

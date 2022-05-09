@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 
 /*  Zint - A barcode generating program using libpng
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -30,7 +30,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 /*  This code is adapted from "Code barre PDF 417 / PDF 417 barcode" v2.5.0
     which is Copyright (C) 2004 (Grandzebu).
@@ -461,11 +460,11 @@ static void pdf_numbprocess(int *chainemc, int *mclength, const unsigned char ch
 }
 
 /* Initial processing of data, shared by `pdf417()` and `micropdf417()` */
-static int pdf_initial(struct zint_symbol *symbol, unsigned char chaine[], const int length, const int is_micro,
-            int chainemc[PDF_MAX_LEN], int *p_mclength, int structapp_cws[18], int *p_structapp_cp) {
+static int pdf_initial(struct zint_symbol *symbol, unsigned char chaine[], const int length, const int eci,
+            const int is_micro, int chainemc[PDF_MAX_LEN], int *p_mclength) {
     int i, indexchaine, indexliste, mode;
     int liste[2][PDF_MAX_LEN] = {{0}};
-    int mclength, structapp_cp = 0;
+    int mclength;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* 456 */
@@ -507,7 +506,63 @@ static int pdf_initial(struct zint_symbol *symbol, unsigned char chaine[], const
 
     /* 541 - now compress the data */
     indexchaine = 0;
-    mclength = is_micro ? 0 : 1; /* Allow for length descriptor for full symbol */
+    mclength = *p_mclength;
+    if (mclength == 0 && !is_micro) {
+        mclength++; /* Allow for length descriptor for full symbol */
+    }
+
+    if (*p_mclength == 0 && (symbol->output_options & READER_INIT)) {
+        chainemc[mclength++] = 921; /* Reader Initialisation */
+    }
+
+    if (eci != 0) {
+        if (eci > 811799) {
+            strcpy(symbol->errtxt, "472: Invalid ECI");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        /* Encoding ECI assignment number, according to Table 8 */
+        if (eci <= 899) {
+            chainemc[mclength++] = 927; /* ECI */
+            chainemc[mclength++] = eci;
+        } else if (eci <= 810899) {
+            chainemc[mclength++] = 926; /* ECI */
+            chainemc[mclength++] = (eci / 900) - 1;
+            chainemc[mclength++] = eci % 900;
+        } else {
+            chainemc[mclength++] = 925; /* ECI */
+            chainemc[mclength++] = eci - 810900;
+        }
+    }
+
+    for (i = 0; i < indexliste; i++) {
+        switch (liste[1][i]) {
+            case TEX: /* 547 - text mode */
+                pdf_textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], is_micro);
+                break;
+            case BYT: /* 670 - octet stream mode */
+                pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug_print);
+                break;
+            case NUM: /* 712 - numeric mode */
+                pdf_numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
+                break;
+        }
+        indexchaine = indexchaine + liste[0][i];
+    }
+
+    *p_mclength = mclength;
+
+    return 0;
+}
+
+/* Call `pdf_initial()` for each segment, dealing with Structured Append beforehand */
+static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+            const int is_micro, int chainemc[PDF_MAX_LEN], int *p_mclength, int structapp_cws[18],
+            int *p_structapp_cp) {
+    int i;
+    int error_number = 0;
+    int structapp_cp = 0;
+
+    *p_mclength = 0;
 
     if (symbol->structapp.count) {
         int id_cnt = 0, ids[10];
@@ -558,53 +613,21 @@ static int pdf_initial(struct zint_symbol *symbol, unsigned char chaine[], const
             structapp_cws[structapp_cp++] = 922; /* Special last segment terminator */
         }
     }
-
-    if (symbol->output_options & READER_INIT) {
-        chainemc[mclength++] = 921; /* Reader Initialisation */
-    }
-
-    if (symbol->eci != 0) {
-        if (symbol->eci > 811799) {
-            strcpy(symbol->errtxt, "472: Invalid ECI");
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        /* Encoding ECI assignment number, according to Table 8 */
-        if (symbol->eci <= 899) {
-            chainemc[mclength++] = 927; /* ECI */
-            chainemc[mclength++] = symbol->eci;
-        } else if (symbol->eci <= 810899) {
-            chainemc[mclength++] = 926; /* ECI */
-            chainemc[mclength++] = (symbol->eci / 900) - 1;
-            chainemc[mclength++] = symbol->eci % 900;
-        } else {
-            chainemc[mclength++] = 925; /* ECI */
-            chainemc[mclength++] = symbol->eci - 810900;
-        }
-    }
-
-    for (i = 0; i < indexliste; i++) {
-        switch (liste[1][i]) {
-            case TEX: /* 547 - text mode */
-                pdf_textprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], is_micro);
-                break;
-            case BYT: /* 670 - octet stream mode */
-                pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], debug_print);
-                break;
-            case NUM: /* 712 - numeric mode */
-                pdf_numbprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i]);
-                break;
-        }
-        indexchaine = indexchaine + liste[0][i];
-    }
-
-    *p_mclength = mclength;
     *p_structapp_cp = structapp_cp;
 
-    return 0;
+    for (i = 0; i < seg_count; i++) {
+        error_number = pdf_initial(symbol, segs[i].source, segs[i].length, segs[i].eci, is_micro, chainemc,
+                        p_mclength);
+        if (error_number) { /* Only errors return >= ZINT_ERROR */
+            return error_number;
+        }
+    }
+
+    return error_number;
 }
 
 /* 366 */
-static int pdf_enc(struct zint_symbol *symbol, unsigned char chaine[], const int length) {
+static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, j, longueur, loop, mccorrection[520] = {0}, offset;
     int total, chainemc[PDF_MAX_LEN], mclength, c1, c2, c3, dummy[35];
     int rows, cols, ecc, ecc_cws, padding;
@@ -616,12 +639,12 @@ static int pdf_enc(struct zint_symbol *symbol, unsigned char chaine[], const int
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     static const int ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
-    if (length > PDF_MAX_LEN) {
+    if (segs_length(segs, seg_count) > PDF_MAX_LEN) {
         strcpy(symbol->errtxt, "463: Input string too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
-    error_number = pdf_initial(symbol, chaine, length, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
+    error_number = pdf_initial_segs(symbol, segs, seg_count, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
                     &structapp_cp);
     if (error_number) { /* Only errors return >= ZINT_ERROR */
         return error_number;
@@ -856,7 +879,7 @@ static int pdf_enc(struct zint_symbol *symbol, unsigned char chaine[], const int
 }
 
 /* 345 */
-INTERNAL int pdf417(struct zint_symbol *symbol, unsigned char source[], int length) {
+INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int codeerr, error_number;
 
     error_number = 0;
@@ -887,7 +910,7 @@ INTERNAL int pdf417(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* 349 */
-    codeerr = pdf_enc(symbol, source, length);
+    codeerr = pdf_enc(symbol, segs, seg_count);
 
     /* 352 */
     if (codeerr != 0) {
@@ -899,7 +922,7 @@ INTERNAL int pdf417(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 /* like PDF417 only much smaller! */
-INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int length) {
+INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, k, j, longueur, mccorrection[50] = {0}, offset;
     int total, chainemc[PDF_MAX_LEN], mclength, error_number = 0;
     char pattern[580];
@@ -910,7 +933,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if (length > MICRO_PDF_MAX_LEN) {
+    if (segs_length(segs, seg_count) > MICRO_PDF_MAX_LEN) {
         strcpy(symbol->errtxt, "474: Input data too long");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -921,7 +944,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int
 
     /* Encoding starts out the same as PDF417, so use the same code */
 
-    error_number = pdf_initial(symbol, chaine, length, 1 /*is_micro*/, chainemc, &mclength, structapp_cws,
+    error_number = pdf_initial_segs(symbol, segs, seg_count, 1 /*is_micro*/, chainemc, &mclength, structapp_cws,
                     &structapp_cp);
     if (error_number) { /* Only errors return >= ZINT_ERROR */
         return error_number;
@@ -1230,3 +1253,5 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, unsigned char chaine[], int
 #undef TEX
 #undef BYT
 #undef NUM
+
+/* vim: set ts=4 sw=4 et : */

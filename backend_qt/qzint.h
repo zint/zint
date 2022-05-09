@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2021 Robin Stuart                                  *
+ *   Copyright (C) 2010-2022 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -14,7 +14,6 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
-/* vim: set ts=4 sw=4 et : */
 
 #ifndef QZINT_H
 #define QZINT_H
@@ -26,6 +25,17 @@
 namespace Zint
 {
 
+/* QString version of `struct zint_seg` */
+class QZintSeg {
+public:
+    QString m_text;
+    int m_eci;
+
+    QZintSeg();
+    QZintSeg(const QString& text, const int ECIIndex = 0); // `ECIIndex` is comboBox index (not ECI value)
+};
+
+/* Interface */
 class QZint : public QObject
 {
     Q_OBJECT
@@ -44,7 +54,10 @@ public:
     void setInputMode(int input_mode);
 
     QString text() const;
-    void setText(const QString& text);
+    void setText(const QString& text); // Clears segs
+
+    std::vector<QZintSeg> segs() const;
+    void setSegs(const std::vector<QZintSeg>& segs); // Clears text and sets eci
 
     QString primaryMessage() const;
     void setPrimaryMessage(const QString& primaryMessage);
@@ -177,7 +190,7 @@ public:
     const QString& lastError() const;
     bool hasErrors() const;
 
-    bool save_to_file(const QString &filename);
+    bool save_to_file(const QString& filename);
 
     /* Note: legacy argument `mode` is not used */
     void render(QPainter& painter, const QRectF& paintRect, AspectRatioMode mode = IgnoreAspectRatio);
@@ -189,7 +202,7 @@ public:
        If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
        height */
     QString getAsCLI(const bool win, const bool longOptOnly = false, const bool barcodeNames = false,
-                const bool autoHeight = false, const float heightPerRow = 0.0f, const QString &outfile = "") const;
+                const bool autoHeight = false, const float heightPerRow = 0.0f, const QString& outfile = "") const;
 
 signals:
     void encoded();
@@ -198,17 +211,22 @@ signals:
 private:
     void resetSymbol();
     void encode();
+
+    int convertSegs(struct zint_seg segs[], std::vector<QByteArray>& bstrs);
+
     static Qt::GlobalColor colourToQtColor(int colour);
 
     /* `getAsCLI()` helpers */
-    static void arg_str(QString &cmd, const char *const opt, const QString &val);
-    static void arg_int(QString &cmd, const char *const opt, const int val, const bool allowZero = false);
-    static void arg_bool(QString &cmd, const char *const opt, const bool val);
-    static void arg_color(QString &cmd, const char *const opt, const QColor val);
-    static void arg_data(QString &cmd, const char *const opt, const QString &val, const bool win);
-    static void arg_float(QString &cmd, const char *const opt, const float val, const bool allowZero = false);
-    static void arg_structapp(QString &cmd, const char *const opt, const int count, const int index,
-                                const QString &id, const bool win);
+    static void arg_str(QString& cmd, const char *const opt, const QString& val);
+    static void arg_int(QString& cmd, const char *const opt, const int val, const bool allowZero = false);
+    static void arg_bool(QString& cmd, const char *const opt, const bool val);
+    static void arg_color(QString& cmd, const char *const opt, const QColor val);
+    static void arg_data(QString& cmd, const char *const opt, const QString& val, const bool win);
+    static void arg_seg(QString& cmd, const int seg_no, const QZintSeg& val, const bool win);
+    static void arg_data_esc(QString& cmd, const char *const opt, QString& text, const bool win);
+    static void arg_float(QString& cmd, const char *const opt, const float val, const bool allowZero = false);
+    static void arg_structapp(QString& cmd, const char *const opt, const int count, const int index,
+                                const QString& id, const bool win);
 
 private:
     zint_symbol *m_zintSymbol;
@@ -216,6 +234,7 @@ private:
     int m_input_mode;
     QString m_text;
     QString m_primaryMessage;
+    std::vector<QZintSeg> m_segs;
     float m_height;
     int m_option_1;
     int m_option_2;
@@ -256,4 +275,5 @@ private:
 
 } /* namespace Zint */
 
+/* vim: set ts=4 sw=4 et : */
 #endif /* QZINT_H */

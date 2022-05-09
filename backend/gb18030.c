@@ -2868,7 +2868,7 @@ INTERNAL int gb18030_wctomb_zint(unsigned int *r1, unsigned int *r2, const unsig
 
 /* Convert UTF-8 string to GB 18030 and place in array of ints */
 INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
-                unsigned int *gbdata) {
+                unsigned int *ddata) {
     int error_number, ret;
     unsigned int i, j, length;
 #ifndef _MSC_VER
@@ -2884,9 +2884,9 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
 
     for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
         if (utfdata[i] < 0x80) {
-            gbdata[j] = utfdata[i];
+            ddata[j] = utfdata[i];
         } else {
-            ret = gb18030_wctomb_zint(gbdata + j, gbdata + j + 1, utfdata[i]);
+            ret = gb18030_wctomb_zint(ddata + j, ddata + j + 1, utfdata[i]);
             if (ret == 0) { /* Should never happen, as GB 18030 is a UTF i.e. maps all Unicode codepoints */
                 strcpy(symbol->errtxt, "820: Invalid character in input data"); /* Not reached */
                 return ZINT_ERROR_INVALID_DATA;
@@ -2903,7 +2903,7 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints */
-INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *gbdata,
+INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
 
     if (is_eci_convertible(eci)) {
@@ -2921,9 +2921,9 @@ INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], in
             return error_number;
         }
 
-        gb18030_cpy(converted, p_length, gbdata, full_multibyte);
+        gb18030_cpy(converted, p_length, ddata, full_multibyte);
     } else {
-        gb18030_cpy(source, p_length, gbdata, full_multibyte);
+        gb18030_cpy(source, p_length, ddata, full_multibyte);
     }
 
     return 0;
@@ -2931,7 +2931,7 @@ INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], in
 
 /* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match HANXIN
  * Chinese mode in single entry, and quad-bytes in 2 entries. If `full_multibyte` not set, do a straight copy */
-INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *gbdata,
+INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte) {
     unsigned int i, j, length;
     int done;
@@ -2945,15 +2945,15 @@ INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned 
                 if (c1 >= 0x81 && c1 <= 0xFE) {
                     c2 = source[i + 1];
                     if ((c2 >= 0x40 && c2 <= 0x7E) || (c2 >= 0x80 && c2 <= 0xFE)) {
-                        gbdata[j] = (c1 << 8) | c2;
+                        ddata[j] = (c1 << 8) | c2;
                         i++;
                         done = 1;
                     } else if (length - i >= 4 && (c2 >= 0x30 && c2 <= 0x39)) {
                         c3 = source[i + 2];
                         c4 = source[i + 3];
                         if ((c3 >= 0x81 && c3 <= 0xFE) && (c4 >= 0x30 && c4 <= 0x39)) {
-                            gbdata[j++] = (c1 << 8) | c2;
-                            gbdata[j] = (c3 << 8) | c4;
+                            ddata[j++] = (c1 << 8) | c2;
+                            ddata[j] = (c3 << 8) | c4;
                             i += 3;
                             done = 1;
                         }
@@ -2961,15 +2961,27 @@ INTERNAL void gb18030_cpy(const unsigned char source[], int *p_length, unsigned 
                 }
             }
             if (!done) {
-                gbdata[j] = c1;
+                ddata[j] = c1;
             }
         }
         *p_length = j;
     } else {
         /* Straight copy */
         for (i = 0, length = *p_length; i < length; i++) {
-            gbdata[i] = source[i];
+            ddata[i] = source[i];
         }
+    }
+}
+
+/* Call `gb18030_cpy()` for each segment */
+INTERNAL void gb18030_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
+    int i;
+    unsigned int *dd = ddata;
+
+    for (i = 0; i < seg_count; i++) {
+        gb18030_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        dd += segs[i].length;
     }
 }
 

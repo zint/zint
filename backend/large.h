@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,9 +29,8 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
-/* vim: set ts=4 sw=4 et : */
-#ifndef __LARGE_H
-#define __LARGE_H
+#ifndef Z_LARGE_H
+#define Z_LARGE_H
 
 #ifndef _MSC_VER
 #include <stdint.h>
@@ -77,4 +76,5 @@ INTERNAL char *large_dump(const large_int *t, char *buf);
 }
 #endif /* __cplusplus */
 
-#endif /* __LARGE_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_LARGE_H */

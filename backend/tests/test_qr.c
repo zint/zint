@@ -135,11 +135,14 @@ static void test_qr_input(int index, int generate, int debug) {
     struct item {
         int input_mode;
         int eci;
+        int option_1;
         int option_3;
         char *data;
         int ret;
         int expected_eci;
         char *expected;
+        int bwipp_cmp;
+        int zxingcpp_cmp;
         char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
@@ -157,139 +160,145 @@ static void test_qr_input(int index, int generate, int debug) {
     // テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
     // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, -1, "é", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
-        /*  1*/ { UNICODE_MODE, 3, -1, "é", 0, 3, "70 34 01 E9 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /*  2*/ { UNICODE_MODE, 20, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "é not in Shift JIS" },
-        /*  3*/ { UNICODE_MODE, 26, -1, "é", 0, 26, "71 A4 02 C3 A9 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { DATA_MODE, 0, -1, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /*  5*/ { DATA_MODE, 0, -1, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", "B1 (ISO 8859-1)" },
-        /*  6*/ { UNICODE_MODE, 0, -1, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 00 00 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /*  7*/ { UNICODE_MODE, 9, -1, "β", 0, 9, "70 94 01 E2 00 EC 11 EC 11", "ECI-9 B1 (ISO 8859-7)" },
-        /*  8*/ { UNICODE_MODE, 20, -1, "β", 0, 20, "71 48 01 10 00 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /*  9*/ { UNICODE_MODE, 26, -1, "β", 0, 26, "71 A4 02 CE B2 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 10*/ { DATA_MODE, 0, -1, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 11*/ { UNICODE_MODE, 0, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
-        /* 12*/ { UNICODE_MODE, 13, -1, "ก", 0, 13, "70 D4 01 A1 00 EC 11 EC 11", "ECI-13 B1 (ISO 8859-11)" },
-        /* 13*/ { UNICODE_MODE, 20, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
-        /* 14*/ { UNICODE_MODE, 26, -1, "ก", 0, 26, "71 A4 03 E0 B8 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 15*/ { DATA_MODE, 0, -1, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 16*/ { UNICODE_MODE, 0, -1, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 23 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 17*/ { UNICODE_MODE, 7, -1, "Ж", 0, 7, "70 74 01 B6 00 EC 11 EC 11", "ECI-7 B1 (ISO 8859-5)" },
-        /* 18*/ { UNICODE_MODE, 20, -1, "Ж", 0, 20, "71 48 01 12 38 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 19*/ { UNICODE_MODE, 26, -1, "Ж", 0, 26, "71 A4 02 D0 96 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 20*/ { DATA_MODE, 0, -1, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 21*/ { UNICODE_MODE, 0, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 22*/ { UNICODE_MODE, 20, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
-        /* 23*/ { UNICODE_MODE, 26, -1, "ກ", 0, 26, "71 A4 03 E0 BA 81 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 24*/ { DATA_MODE, 0, -1, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 25*/ { UNICODE_MODE, 0, -1, "\\", 0, 0, "40 15 C0 EC 11 EC 11 EC 11", "B1 (ASCII)" },
-        /* 26*/ { UNICODE_MODE, 20, -1, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 27*/ { UNICODE_MODE, 20, -1, "[", 0, 20, "71 44 01 5B 00 EC 11 EC 11", "B1 (ASCII)" },
-        /* 28*/ { UNICODE_MODE, 20, -1, "\177", 0, 20, "71 44 01 7F 00 EC 11 EC 11", "ECI-20 B1 (ASCII)" },
-        /* 29*/ { UNICODE_MODE, 0, -1, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /* 30*/ { UNICODE_MODE, 3, -1, "¥", 0, 3, "70 34 01 A5 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /* 31*/ { UNICODE_MODE, 20, -1, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
-        /* 32*/ { UNICODE_MODE, 26, -1, "¥", 0, 26, "71 A4 02 C2 A5 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 33*/ { DATA_MODE, 0, -1, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 34*/ { UNICODE_MODE, 0, -1, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1A 50 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /* 35*/ { UNICODE_MODE, 3, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", "" },
-        /* 36*/ { UNICODE_MODE, 20, -1, "･", 0, 20, "71 44 01 A5 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
-        /* 37*/ { UNICODE_MODE, 26, -1, "･", 0, 26, "71 A4 03 EF BD A5 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 38*/ { DATA_MODE, 0, -1, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 39*/ { UNICODE_MODE, 0, -1, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 40*/ { UNICODE_MODE, 3, -1, "¿", 0, 3, "70 34 01 BF 00 EC 11 EC 11", "ECI-3 B1 (ISO 8859-1)" },
-        /* 41*/ { UNICODE_MODE, 20, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "¿ not in Shift JIS" },
-        /* 42*/ { UNICODE_MODE, 26, -1, "¿", 0, 26, "71 A4 02 C2 BF 00 EC 11 EC", "ECI-26 B2 (UTF-8)" },
-        /* 43*/ { DATA_MODE, 0, -1, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", "B2 (UTF-8)" },
-        /* 44*/ { UNICODE_MODE, 0, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1B F0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 45*/ { UNICODE_MODE, 3, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", "" },
-        /* 46*/ { UNICODE_MODE, 20, -1, "ｿ", 0, 20, "71 44 01 BF 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
-        /* 47*/ { UNICODE_MODE, 26, -1, "ｿ", 0, 26, "71 A4 03 EF BD BF 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 48*/ { DATA_MODE, 0, -1, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 49*/ { UNICODE_MODE, 0, -1, "~", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 50*/ { UNICODE_MODE, 3, -1, "~", 0, 3, "70 34 01 7E 00 EC 11 EC 11", "ECI-3 B1 (ASCII)" },
-        /* 51*/ { UNICODE_MODE, 20, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "tilde not in Shift JIS (codepoint used for overline)" },
-        /* 52*/ { UNICODE_MODE, 0, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 17 E0 EC 11 EC 11 EC 11", "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 53*/ { UNICODE_MODE, 3, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", "" },
-        /* 54*/ { UNICODE_MODE, 20, -1, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
-        /* 55*/ { UNICODE_MODE, 26, -1, "‾", 0, 26, "71 A4 03 E2 80 BE 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 56*/ { DATA_MODE, 0, -1, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 57*/ { UNICODE_MODE, 0, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 58*/ { UNICODE_MODE, 3, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", "" },
-        /* 59*/ { UNICODE_MODE, 20, -1, "点", 0, 20, "71 48 01 6C F8 00 EC 11 EC", "ECI-20 K1 (Shift JIS)" },
-        /* 60*/ { UNICODE_MODE, 26, -1, "点", 0, 26, "71 A4 03 E7 82 B9 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /* 61*/ { DATA_MODE, 0, -1, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", "B3 (UTF-8)" },
-        /* 62*/ { DATA_MODE, 0, -1, "\223\137", 0, 0, "40 29 35 F0 EC 11 EC 11 EC", "B2 (Shift JIS) (not full multibyte)" },
-        /* 63*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", "K1 (Shift JIS)" },
-        /* 64*/ { UNICODE_MODE, 0, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 45 CA 59 35 F0 EC 11 EC", "B4 (Shift JIS) (optimized to byte mode only)" },
-        /* 65*/ { UNICODE_MODE, 3, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", "" },
-        /* 66*/ { UNICODE_MODE, 20, -1, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", "ECI-20 B4 (Shift JIS)" },
-        /* 67*/ { UNICODE_MODE, 26, -1, "¥･点", 0, 26, "71 A4 08 C2 A5 EF BD A5 E7 82 B9 00 EC", "ECI-26 B8 (UTF-8)" },
-        /* 68*/ { DATA_MODE, 0, -1, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", "B8 (Shift JIS)" },
-        /* 69*/ { DATA_MODE, 0, -1, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", "B8 (UTF-8)" },
-        /* 70*/ { UNICODE_MODE, 0, -1, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 26 CF EA A8 00 EC 11 EC", "K2 (Shift JIS)" },
-        /* 71*/ { UNICODE_MODE, 0, -1, "点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 36 CF EA A8 34 A0 EC 11", "K3 (Shift JIS)" },
-        /* 72*/ { UNICODE_MODE, 0, -1, "点茗テ点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 46 CF EA A8 34 AD 9F 00", "K4 (Shift JIS)" },
-        /* 73*/ { UNICODE_MODE, 0, -1, "点茗テ点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 56 CF EA A8 34 AD 9F D5 50 00 EC 11", "K5 (Shift JIS)" },
-        /* 74*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 40 EC", "K6 (Shift JIS)" },
-        /* 75*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS)" },
-        /* 76*/ { DATA_MODE, 0, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "40 D9 35 FE 4A A8 36 59 35 FE 4A A8 36 5B F0 EC", "B13 (Shift JIS)" },
-        /* 77*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", "K6 B1 (Shift JIS) (full multibyte)" },
-        /* 78*/ { DATA_MODE, 0, -1, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", "B21 (UTF-8)" },
-        /* 79*/ { DATA_MODE, 0, -1, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", "B18 (UTF-8)" },
-        /* 80*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", "B18 (UTF-8) (full multibyte)" },
-        /* 81*/ { DATA_MODE, 0, -1, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "41 4C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20", "B20 (UTF-8)" },
-        /* 82*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "40 1C 38 09 04 40 22 01 10 08 80 44 02 20 11 00 88 0A 12 00 D1 00", "B1 K9 B1 (UTF-8) (full multibyte)" },
-        /* 83*/ { UNICODE_MODE, 0, -1, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B18 (UTF-8)" },
-        /* 84*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B18 (UTF-8)" },
-        /* 85*/ { UNICODE_MODE, 0, -1, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 14 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11", "B20 (UTF-8)" },
-        /* 86*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 01 C3 80 90 44 02 20 11 00 88 04 40 22 01 10 08 80 A1 20 0D 10 00 EC 11 EC 11", "B1 K9 B1 (UTF-8) (full multibyte)" },
-        /* 87*/ { UNICODE_MODE, 0, -1, "áA", 0, 0, "40 2E 14 10 EC 11 EC 11 EC", "B2 (ISO 8859-1)" },
-        /* 88*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", "K1 (ISO 8859-1) (full multibyte)" },
-        /* 89*/ { UNICODE_MODE, 0, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(34) 21 69 C2 3E 08 79 26 27 A5 50 B5 98 23 32 6C 0E 65 FA C5 19 5B 42 6B 2D C1 C3 B9 E7", "A45" },
-        /* 90*/ { UNICODE_MODE, 0, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 44 01 A2 00 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
-        /* 91*/ { UNICODE_MODE, 4, -1, "˘", 0, 4, "70 44 01 A2 00 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
-        /* 92*/ { UNICODE_MODE, 0, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 70 54 01 A1 00 EC 11 EC 11", "ECI-5 B1 (ISO 8859-3)" },
-        /* 93*/ { UNICODE_MODE, 5, -1, "Ħ", 0, 5, "70 54 01 A1 00 EC 11 EC 11", "ECI-5 B1 (ISO 8859-3)" },
-        /* 94*/ { UNICODE_MODE, 0, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning 70 64 01 A2 00 EC 11 EC 11", "ECI-6 B1 (ISO 8859-4)" },
-        /* 95*/ { UNICODE_MODE, 6, -1, "ĸ", 0, 6, "70 64 01 A2 00 EC 11 EC 11", "ECI-6 B1 (ISO 8859-4)" },
-        /* 96*/ { UNICODE_MODE, 0, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 71 24 01 AA 00 EC 11 EC 11", "ECI-18 B1 (ISO 8859-16)" },
-        /* 97*/ { UNICODE_MODE, 18, -1, "Ș", 0, 18, "71 24 01 AA 00 EC 11 EC 11", "ECI-18 B1 (ISO 8859-16)" },
-        /* 98*/ { UNICODE_MODE, 0, -1, "テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 D2 80 EC 11 EC 11 EC", "K1 (SHIFT JIS)" },
-        /* 99*/ { UNICODE_MODE, 20, -1, "テ", 0, 20, "71 48 01 0D 28 00 EC 11 EC", "ECI-20 K1 (SHIFT JIS)" },
-        /*100*/ { UNICODE_MODE, 20, -1, "テテ", 0, 20, "71 48 02 0D 28 69 40 EC 11", "ECI-20 K2 (SHIFT JIS)" },
-        /*101*/ { UNICODE_MODE, 20, -1, "\\\\", 0, 20, "71 48 02 00 F8 07 C0 EC 11", "ECI-20 K2 (SHIFT JIS)" },
-        /*102*/ { UNICODE_MODE, 0, -1, "…", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 11 80 EC 11 EC 11 EC", "K1 (SHIFT JIS)" },
-        /*103*/ { UNICODE_MODE, 21, -1, "…", 0, 21, "71 54 01 85 00 EC 11 EC 11", "ECI-21 B1 (Win 1250)" },
-        /*104*/ { UNICODE_MODE, 0, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 64 01 A5 00 EC 11 EC 11", "ECI-22 B1 (Win 1251)" },
-        /*105*/ { UNICODE_MODE, 22, -1, "Ґ", 0, 22, "71 64 01 A5 00 EC 11 EC 11", "ECI-22 B1 (Win 1251)" },
-        /*106*/ { UNICODE_MODE, 0, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning 71 74 01 98 00 EC 11 EC 11", "ECI-23 B1 (Win 1252)" },
-        /*107*/ { UNICODE_MODE, 23, -1, "˜", 0, 23, "71 74 01 98 00 EC 11 EC 11", "ECI-23 B1 (Win 1252)" },
-        /*108*/ { UNICODE_MODE, 24, -1, "پ", 0, 24, "71 84 01 81 00 EC 11 EC 11", "ECI-24 B1 (Win 1256)" },
-        /*109*/ { UNICODE_MODE, 0, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E1 80 80 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /*110*/ { UNICODE_MODE, 25, -1, "က", 0, 25, "71 94 02 10 00 00 EC 11 EC", "ECI-25 B2 (UCS-2BE)" },
-        /*111*/ { UNICODE_MODE, 25, -1, "ကက", 0, 25, "71 94 04 10 00 10 00 00 EC", "ECI-25 B4 (UCS-2BE)" },
-        /*112*/ { UNICODE_MODE, 25, -1, "12", 0, 25, "71 94 04 00 31 00 32 00 EC", "ECI-25 B4 (UCS-2BE ASCII)" },
-        /*113*/ { UNICODE_MODE, 27, -1, "@", 0, 27, "71 B4 01 40 00 EC 11 EC 11", "ECI-27 B1 (ASCII)" },
-        /*114*/ { UNICODE_MODE, 0, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BE 98 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /*115*/ { UNICODE_MODE, 28, -1, "龘", 0, 28, "71 C4 02 F9 D5 00 EC 11 EC", "ECI-28 B2 (Big5)" },
-        /*116*/ { UNICODE_MODE, 28, -1, "龘龘", 0, 28, "71 C4 04 F9 D5 F9 D5 00 EC", "ECI-28 B4 (Big5)" },
-        /*117*/ { UNICODE_MODE, 0, -1, "齄", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BD 84 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /*118*/ { UNICODE_MODE, 29, -1, "齄", 0, 29, "71 D4 02 F7 FE 00 EC 11 EC", "ECI-29 B2 (GB 2312)" },
-        /*119*/ { UNICODE_MODE, 29, -1, "齄齄", 0, 29, "71 D4 04 F7 FE F7 FE 00 EC", "ECI-29 B4 (GB 2312)" },
-        /*120*/ { UNICODE_MODE, 0, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 EA B0 80 00 EC 11", "ECI-26 B3 (UTF-8)" },
-        /*121*/ { UNICODE_MODE, 30, -1, "가", 0, 30, "71 E4 02 B0 A1 00 EC 11 EC", "ECI-30 B2 (EUC-KR)" },
-        /*122*/ { UNICODE_MODE, 30, -1, "가가", 0, 30, "71 E4 04 B0 A1 B0 A1 00 EC", "ECI-30 B4 (EUC-KR)" },
-        /*123*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "78 0A A4 01 3F 00 EC 11 EC", "ECI-170 B1 (ASCII invariant)" },
-        /*124*/ { DATA_MODE, 899, -1, "\200", 0, 899, "78 38 34 01 80 00 EC 11 EC", "ECI-899 B1 (8-bit binary)" },
-        /*125*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", "ECI-900 B2 (no conversion)" },
-        /*126*/ { UNICODE_MODE, 16384, -1, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", "ECI-16384 B2 (no conversion)" },
+        /*  0*/ { UNICODE_MODE, 0, 4, 6 << 8, "é", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1)" },
+        /*  1*/ { UNICODE_MODE, 3, 4, -1, "é", 0, 3, "70 34 01 E9 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
+        /*  2*/ { UNICODE_MODE, 20, -1, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, 1, "é not in Shift JIS" },
+        /*  3*/ { UNICODE_MODE, 26, 4, -1, "é", 0, 26, "71 A4 02 C3 A9 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
+        /*  4*/ { DATA_MODE, 0, 4, 7 << 8, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /*  5*/ { DATA_MODE, 0, 4, 6 << 8, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1)" },
+        /*  6*/ { UNICODE_MODE, 0, 4, 2 << 8, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 00 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
+        /*  7*/ { UNICODE_MODE, 9, 4, 7 << 8, "β", 0, 9, "70 94 01 E2 00 EC 11 EC 11", 1, 1, "ECI-9 B1 (ISO 8859-7)" },
+        /*  8*/ { UNICODE_MODE, 20, 4, -1, "β", 0, 20, "71 48 01 10 00 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
+        /*  9*/ { UNICODE_MODE, 26, 4, 5 << 8, "β", 0, 26, "71 A4 02 CE B2 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
+        /* 10*/ { DATA_MODE, 0, 4, 4 << 8, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 11*/ { UNICODE_MODE, 0, 4, 5 << 8, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D4 01 A1 00 EC 11 EC 11", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
+        /* 12*/ { UNICODE_MODE, 13, 4, 5 << 8, "ก", 0, 13, "70 D4 01 A1 00 EC 11 EC 11", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
+        /* 13*/ { UNICODE_MODE, 20, -1, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, 1, "ก not in Shift JIS" },
+        /* 14*/ { UNICODE_MODE, 26, 4, 8 << 8, "ก", 0, 26, "71 A4 03 E0 B8 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 15*/ { DATA_MODE, 0, 4, 3 << 8, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 16*/ { UNICODE_MODE, 0, 4, 8 << 8, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 23 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
+        /* 17*/ { UNICODE_MODE, 7, 4, -1, "Ж", 0, 7, "70 74 01 B6 00 EC 11 EC 11", 1, 1, "ECI-7 B1 (ISO 8859-5)" },
+        /* 18*/ { UNICODE_MODE, 20, 4, 7 << 8, "Ж", 0, 20, "71 48 01 12 38 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
+        /* 19*/ { UNICODE_MODE, 26, 4, -1, "Ж", 0, 26, "71 A4 02 D0 96 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
+        /* 20*/ { DATA_MODE, 0, 4, -1, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 21*/ { UNICODE_MODE, 0, 4, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E0 BA 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 22*/ { UNICODE_MODE, 20, -1, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, 1, "ກ not in Shift JIS" },
+        /* 23*/ { UNICODE_MODE, 26, 4, -1, "ກ", 0, 26, "71 A4 03 E0 BA 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 24*/ { DATA_MODE, 0, 4, 8 << 8, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 25*/ { UNICODE_MODE, 0, 4, 2 << 8, "\\", 0, 0, "40 15 C0 EC 11 EC 11 EC 11", 1, 1, "B1 (ASCII)" },
+        /* 26*/ { UNICODE_MODE, 20, 4, 4 << 8, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", 1, 0, "ECI-20 K1 (Shift JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 27*/ { UNICODE_MODE, 20, 4, -1, "[", 0, 20, "71 44 01 5B 00 EC 11 EC 11", 1, 1, "B1 (ASCII)" },
+        /* 28*/ { UNICODE_MODE, 20, 4, 3 << 8, "\177", 0, 20, "71 44 01 7F 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (ASCII)" },
+        /* 29*/ { UNICODE_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /* 30*/ { UNICODE_MODE, 3, 4, 3 << 8, "¥", 0, 3, "70 34 01 A5 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
+        /* 31*/ { UNICODE_MODE, 20, 4, 5 << 8, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 32*/ { UNICODE_MODE, 26, 4, 6 << 8, "¥", 0, 26, "71 A4 02 C2 A5 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
+        /* 33*/ { DATA_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 34*/ { UNICODE_MODE, 0, 4, 2 << 8, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1A 50 EC 11 EC 11 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /* 35*/ { UNICODE_MODE, 3, -1, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, 1, "" },
+        /* 36*/ { UNICODE_MODE, 20, 4, 7 << 8, "･", 0, 20, "71 44 01 A5 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
+        /* 37*/ { UNICODE_MODE, 26, 4, -1, "･", 0, 26, "71 A4 03 EF BD A5 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 38*/ { DATA_MODE, 0, 4, 8 << 8, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 39*/ { UNICODE_MODE, 0, 4, -1, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 40*/ { UNICODE_MODE, 3, 4, 8 << 8, "¿", 0, 3, "70 34 01 BF 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
+        /* 41*/ { UNICODE_MODE, 20, -1, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, 1, "¿ not in Shift JIS" },
+        /* 42*/ { UNICODE_MODE, 26, 4, 2 << 8, "¿", 0, 26, "71 A4 02 C2 BF 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
+        /* 43*/ { DATA_MODE, 0, 4, 3 << 8, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 44*/ { UNICODE_MODE, 0, 4, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1B F0 EC 11 EC 11 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 45*/ { UNICODE_MODE, 3, -1, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, 1, "" },
+        /* 46*/ { UNICODE_MODE, 20, 4, 6 << 8, "ｿ", 0, 20, "71 44 01 BF 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
+        /* 47*/ { UNICODE_MODE, 26, 4, 4 << 8, "ｿ", 0, 26, "71 A4 03 EF BD BF 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 48*/ { DATA_MODE, 0, 4, -1, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 49*/ { UNICODE_MODE, 0, 4, -1, "~", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", 1, 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 50*/ { UNICODE_MODE, 3, 4, -1, "~", 0, 3, "70 34 01 7E 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ASCII)" },
+        /* 51*/ { UNICODE_MODE, 20, -1, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, 1, "tilde not in Shift JIS (codepoint used for overline)" },
+        /* 52*/ { UNICODE_MODE, 0, 4, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 17 E0 EC 11 EC 11 EC 11", 1, 0, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 53*/ { UNICODE_MODE, 3, -1, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, 1, "" },
+        /* 54*/ { UNICODE_MODE, 20, 4, 7 << 8, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 55*/ { UNICODE_MODE, 26, 4, 1 << 8, "‾", 0, 26, "71 A4 03 E2 80 BE 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 56*/ { DATA_MODE, 0, 4, -1, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 57*/ { UNICODE_MODE, 0, 4, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 16 CF 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
+        /* 58*/ { UNICODE_MODE, 3, -1, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, 1, "" },
+        /* 59*/ { UNICODE_MODE, 20, 4, 3 << 8, "点", 0, 20, "71 48 01 6C F8 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
+        /* 60*/ { UNICODE_MODE, 26, 4, -1, "点", 0, 26, "71 A4 03 E7 82 B9 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /* 61*/ { DATA_MODE, 0, 4, 6 << 8, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 62*/ { DATA_MODE, 0, 4, 4 << 8, "\223\137", 0, 0, "40 29 35 F0 EC 11 EC 11 EC", 0, 0, "B2 (Shift JIS) (not full multibyte); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 63*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, 4, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B4 (Shift JIS) (optimized to byte mode only); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 65*/ { UNICODE_MODE, 3, -1, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, 1, "" },
+        /* 66*/ { UNICODE_MODE, 20, 4, 4 << 8, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", 1, 0, "ECI-20 B4 (Shift JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 67*/ { UNICODE_MODE, 26, 3, 7 << 8, "¥･点", 0, 26, "71 A4 08 C2 A5 EF BD A5 E7 82 B9 00 EC", 1, 1, "ECI-26 B8 (UTF-8)" },
+        /* 68*/ { DATA_MODE, 0, 4, -1, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B8 (Shift JIS); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 69*/ { DATA_MODE, 0, 3, -1, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", 1, 0, "B8 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 70*/ { UNICODE_MODE, 0, 4, 8 << 8, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 26 CF EA A8 00 EC 11 EC", 1, 1, "K2 (Shift JIS)" },
+        /* 71*/ { UNICODE_MODE, 0, 4, -1, "点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 36 CF EA A8 34 A0 EC 11", 1, 1, "K3 (Shift JIS)" },
+        /* 72*/ { UNICODE_MODE, 0, 4, -1, "点茗テ点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 46 CF EA A8 34 AD 9F 00", 1, 1, "K4 (Shift JIS)" },
+        /* 73*/ { UNICODE_MODE, 0, 3, -1, "点茗テ点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 56 CF EA A8 34 AD 9F D5 50 00 EC 11", 1, 1, "K5 (Shift JIS)" },
+        /* 74*/ { UNICODE_MODE, 0, 3, 1 << 8, "点茗テ点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 40 EC", 1, 1, "K6 (Shift JIS)" },
+        /* 75*/ { UNICODE_MODE, 0, 2, 4 << 8, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", 1, 1, "K6 B1 (Shift JIS)" },
+        /* 76*/ { DATA_MODE, 0, 2, 8 << 8, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "40 D9 35 FE 4A A8 36 59 35 FE 4A A8 36 5B F0 EC", 0, 0, "B13 (Shift JIS); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 77*/ { DATA_MODE, 0, 2, ZINT_FULL_MULTIBYTE | (4 << 8), "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", 1, 1, "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 78*/ { DATA_MODE, 0, 2, 2 << 8, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", 1, 0, "B21 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 79*/ { DATA_MODE, 0, 3, 8 << 8, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", 1, 0, "B18 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 80*/ { DATA_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (8 << 8), "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", 1, 1, "B18 (UTF-8) (full multibyte)" },
+        /* 81*/ { DATA_MODE, 0, 3, 4 << 8, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "41 4C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20", 0, 0, "B20 (UTF-8); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 82*/ { DATA_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (4 << 8), "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "40 1C 38 09 04 40 22 01 10 08 80 44 02 20 11 00 88 0A 12 00 D1 00", 1, 1, "B1 K9 B1 (UTF-8) (full multibyte)" },
+        /* 83*/ { UNICODE_MODE, 0, 3, 8 << 8, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 1, 1, "B18 (UTF-8)" },
+        /* 84*/ { UNICODE_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (8 << 8), "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 1, 1, "B18 (UTF-8)" },
+        /* 85*/ { UNICODE_MODE, 0, 2, 1 << 8, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 14 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11", 0, 1, "B20 (UTF-8); BWIPP same as FULL_MULTIBYTE" },
+        /* 86*/ { UNICODE_MODE, 0, 2, ZINT_FULL_MULTIBYTE | (1 << 8), "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 01 C3 80 90 44 02 20 11 00 88 04 40 22 01 10 08 80 A1 20 0D 10 00 EC 11 EC 11", 1, 1, "B1 K9 B1 (UTF-8) (full multibyte)" },
+        /* 87*/ { UNICODE_MODE, 0, 4, -1, "áA", 0, 0, "40 2E 14 10 EC 11 EC 11 EC", 0, 1, "B2 (ISO 8859-1); BWIPP same as FULL_MULTIBYTE" },
+        /* 88*/ { UNICODE_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", 1, 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /* 89*/ { UNICODE_MODE, 0, 1, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(34) 21 69 C2 3E 08 79 26 27 A5 50 B5 98 23 32 6C 0E 65 FA C5 19 5B 42 6B 2D C1 C3 B9 E7", 1, 1, "A45" },
+        /* 90*/ { UNICODE_MODE, 0, 4, 7 << 8, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 44 01 A2 00 EC 11 EC 11", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
+        /* 91*/ { UNICODE_MODE, 4, 4, 7 << 8, "˘", 0, 4, "70 44 01 A2 00 EC 11 EC 11", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
+        /* 92*/ { UNICODE_MODE, 0, 4, 7 << 8, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 70 54 01 A1 00 EC 11 EC 11", 1, 1, "ECI-5 B1 (ISO 8859-3)" },
+        /* 93*/ { UNICODE_MODE, 5, 4, 7 << 8, "Ħ", 0, 5, "70 54 01 A1 00 EC 11 EC 11", 1, 1, "ECI-5 B1 (ISO 8859-3)" },
+        /* 94*/ { UNICODE_MODE, 0, 4, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning 70 64 01 A2 00 EC 11 EC 11", 1, 1, "ECI-6 B1 (ISO 8859-4)" },
+        /* 95*/ { UNICODE_MODE, 6, 4, -1, "ĸ", 0, 6, "70 64 01 A2 00 EC 11 EC 11", 1, 1, "ECI-6 B1 (ISO 8859-4)" },
+        /* 96*/ { UNICODE_MODE, 0, 4, 8 << 8, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 71 24 01 AA 00 EC 11 EC 11", 1, 1, "ECI-18 B1 (ISO 8859-16)" },
+        /* 97*/ { UNICODE_MODE, 18, 4, 8 << 8, "Ș", 0, 18, "71 24 01 AA 00 EC 11 EC 11", 1, 1, "ECI-18 B1 (ISO 8859-16)" },
+        /* 98*/ { UNICODE_MODE, 0, 4, 2 << 8, "テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 D2 80 EC 11 EC 11 EC", 1, 1, "K1 (SHIFT JIS)" },
+        /* 99*/ { UNICODE_MODE, 20, 4, 2 << 8, "テ", 0, 20, "71 48 01 0D 28 00 EC 11 EC", 1, 1, "ECI-20 K1 (SHIFT JIS)" },
+        /*100*/ { UNICODE_MODE, 20, 4, 4 << 8, "テテ", 0, 20, "71 48 02 0D 28 69 40 EC 11", 1, 1, "ECI-20 K2 (SHIFT JIS)" },
+        /*101*/ { UNICODE_MODE, 20, 4, -1, "\\\\", 0, 20, "71 48 02 00 F8 07 C0 EC 11", 1, 0, "ECI-20 K2 (SHIFT JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /*102*/ { UNICODE_MODE, 0, 4, -1, "…", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 11 80 EC 11 EC 11 EC", 1, 1, "K1 (SHIFT JIS)" },
+        /*103*/ { UNICODE_MODE, 21, 4, -1, "…", 0, 21, "71 54 01 85 00 EC 11 EC 11", 1, 1, "ECI-21 B1 (Win 1250)" },
+        /*104*/ { UNICODE_MODE, 0, 4, 7 << 8, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 64 01 A5 00 EC 11 EC 11", 1, 1, "ECI-22 B1 (Win 1251)" },
+        /*105*/ { UNICODE_MODE, 22, 4, 7 << 8, "Ґ", 0, 22, "71 64 01 A5 00 EC 11 EC 11", 1, 1, "ECI-22 B1 (Win 1251)" },
+        /*106*/ { UNICODE_MODE, 0, 4, 6 << 8, "˜", ZINT_WARN_USES_ECI, 23, "Warning 71 74 01 98 00 EC 11 EC 11", 1, 1, "ECI-23 B1 (Win 1252)" },
+        /*107*/ { UNICODE_MODE, 23, 4, 6 << 8, "˜", 0, 23, "71 74 01 98 00 EC 11 EC 11", 1, 1, "ECI-23 B1 (Win 1252)" },
+        /*108*/ { UNICODE_MODE, 24, 4, 5 << 8, "پ", 0, 24, "71 84 01 81 00 EC 11 EC 11", 1, 1, "ECI-24 B1 (Win 1256)" },
+        /*109*/ { UNICODE_MODE, 0, 4, 7 << 8, "က", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E1 80 80 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /*110*/ { UNICODE_MODE, 25, 4, -1, "က", 0, 25, "71 94 02 10 00 00 EC 11 EC", 1, 1, "ECI-25 B2 (UCS-2BE)" },
+        /*111*/ { UNICODE_MODE, 25, 4, 4 << 8, "ကက", 0, 25, "71 94 04 10 00 10 00 00 EC", 1, 1, "ECI-25 B4 (UCS-2BE)" },
+        /*112*/ { UNICODE_MODE, 25, 4, -1, "12", 0, 25, "71 94 04 00 31 00 32 00 EC", 1, 1, "ECI-25 B4 (UCS-2BE ASCII)" },
+        /*113*/ { UNICODE_MODE, 27, 4, 4 << 8, "@", 0, 27, "71 B4 01 40 00 EC 11 EC 11", 1, 1, "ECI-27 B1 (ASCII)" },
+        /*114*/ { UNICODE_MODE, 0, 4, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BE 98 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /*115*/ { UNICODE_MODE, 28, 4, 3 << 8, "龘", 0, 28, "71 C4 02 F9 D5 00 EC 11 EC", 1, 1, "ECI-28 B2 (Big5)" },
+        /*116*/ { UNICODE_MODE, 28, 4, 4 << 8, "龘龘", 0, 28, "71 C4 04 F9 D5 F9 D5 00 EC", 1, 1, "ECI-28 B4 (Big5)" },
+        /*117*/ { UNICODE_MODE, 0, 4, 8 << 8, "齄", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E9 BD 84 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /*118*/ { UNICODE_MODE, 29, 4, -1, "齄", 0, 29, "71 D4 02 F7 FE 00 EC 11 EC", 1, 1, "ECI-29 B2 (GB 2312)" },
+        /*119*/ { UNICODE_MODE, 29, 4, 4 << 8, "齄齄", 0, 29, "71 D4 04 F7 FE F7 FE 00 EC", 1, 1, "ECI-29 B4 (GB 2312)" },
+        /*120*/ { UNICODE_MODE, 0, 4, 8 << 8, "가", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 EA B0 80 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
+        /*121*/ { UNICODE_MODE, 30, 4, -1, "가", 0, 30, "71 E4 02 B0 A1 00 EC 11 EC", 1, 1, "ECI-30 B2 (EUC-KR)" },
+        /*122*/ { UNICODE_MODE, 30, 4, -1, "가가", 0, 30, "71 E4 04 B0 A1 B0 A1 00 EC", 1, 1, "ECI-30 B4 (EUC-KR)" },
+        /*123*/ { UNICODE_MODE, 170, 4, 2 << 8, "?", 0, 170, "78 0A A4 01 3F 00 EC 11 EC", 1, 1, "ECI-170 B1 (ASCII invariant)" },
+        /*124*/ { DATA_MODE, 899, 4, 3 << 8, "\200", 0, 899, "78 38 34 01 80 00 EC 11 EC", 1, 1, "ECI-899 B1 (8-bit binary)" },
+        /*125*/ { UNICODE_MODE, 900, 4, 8 << 8, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", 1, 1, "ECI-900 B2 (no conversion)" },
+        /*126*/ { UNICODE_MODE, 16384, 4, 8 << 8, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", 1, 1, "ECI-16384 B2 (no conversion)" },
+        /*127*/ { UNICODE_MODE, 3, 4, -1, "product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97", 0, 3, "(86) 70 34 39 70 72 6F 64 75 63 74 3A 47 6F 6F 67 6C 65 20 50 69 78 65 6C 20 34 61 20 2D", 0, 1, "ECI-3 B57 A8; BWIPP different encodation (B65)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_qr_input");
 
@@ -303,21 +312,54 @@ static void test_qr_input(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(data[i].option_3),
+            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, \"%s\", %d, %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt,
+                    data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (ret < ZINT_ERROR) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        char modules_dump[177 * 177 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    if (!data[i].zxingcpp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[177 * 177 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                    }
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -330,31 +372,37 @@ static void test_qr_gs1(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
+        int option_3;
         char *data;
         int ret;
         char *expected;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { GS1_MODE, "[01]12345678901231", 0, "51 04 00 B3 AA 37 DE 87 B1", "N16" },
-        /*  1*/ { GS1_MODE | GS1PARENS_MODE, "(01)12345678901231", 0, "51 04 00 B3 AA 37 DE 87 B1", "N16" },
-        /*  2*/ { GS1_MODE, "[01]04912345123459[15]970331[30]128[10]ABC123", 0, "51 07 40 A7 AC EA 80 15 9E 4F CA 52 D2 D3 84 09 D5 E0 28 FD 82 F0 C0 EC 11 EC 11 EC", "N29 A9" },
-        /*  3*/ { GS1_MODE | GS1PARENS_MODE, "(01)04912345123459(15)970331(30)128(10)ABC123", 0, "51 07 40 A7 AC EA 80 15 9E 4F CA 52 D2 D3 84 09 D5 E0 28 FD 82 F0 C0 EC 11 EC 11 EC", "N29 A9" },
-        /*  4*/ { GS1_MODE, "[91]12%[20]12", 0, "52 05 99 60 5F B5 35 80 01 08 00 EC 11", "A10(11)" },
-        /*  5*/ { GS1_MODE, "[91]123%[20]12", 0, "52 06 19 60 5E 2B 76 A0 5A 05 E0 EC 11", "A11(12)" },
-        /*  6*/ { GS1_MODE, "[91]1234%[20]12", 0, "52 06 99 60 5E 22 F6 A6 B0 00 21 00 EC", "A12(13)" },
-        /*  7*/ { GS1_MODE, "[91]12345%[20]12", 0, "51 01 F8 F3 A9 48 0F B5 35 80 01 08 00", "N7 A6(7) (same bit count as A13(14))" },
-        /*  8*/ { GS1_MODE, "[91]%%[20]12", 0, "52 05 99 6D A9 B5 35 80 01 08 00 EC 11", "A9(11)" },
-        /*  9*/ { GS1_MODE, "[91]%%%[20]12", 0, "52 06 99 6D A9 B5 36 A6 B0 00 21 00 EC", "A10(13)" },
-        /* 10*/ { GS1_MODE, "[91]A%%%%1234567890123AA%", 0, "52 05 99 63 D1 B5 36 A6 D4 98 40 D1 ED C8 C5 40 C3 20 21 CC DA 80", "A7(11) N13 A3(4)" },
-        /* 11*/ { GS1_MODE, "[91]%23%%6789%%%34567%%%%234%%%%%", 0, "(34) 52 17 19 6D A8 17 76 A6 D4 22 A5 C7 6A 6D 4D A8 22 C7 39 61 DA 9B 53 6A 6B 01 17 B5", "A31(46)" },
-        /* 12*/ { GS1_MODE, "[91]ABCDEFGHI[92]ABCDEF", 0, "52 0A 19 63 9A 8A 54 2A E1 6A 06 5C E6 A2 95 0A", "A20(23)" },
+        /*  0*/ { GS1_MODE, 4, 7 << 8, "[01]12345678901231", 0, "51 04 00 B3 AA 37 DE 87 B1", "N16" },
+        /*  1*/ { GS1_MODE | GS1PARENS_MODE, 4, 7 << 8, "(01)12345678901231", 0, "51 04 00 B3 AA 37 DE 87 B1", "N16" },
+        /*  2*/ { GS1_MODE, 2, 4 << 8, "[01]04912345123459[15]970331[30]128[10]ABC123", 0, "51 07 40 A7 AC EA 80 15 9E 4F CA 52 D2 D3 84 09 D5 E0 28 FD 82 F0 C0 EC 11 EC 11 EC", "N29 A9" },
+        /*  3*/ { GS1_MODE | GS1PARENS_MODE, 2, 4 << 8, "(01)04912345123459(15)970331(30)128(10)ABC123", 0, "51 07 40 A7 AC EA 80 15 9E 4F CA 52 D2 D3 84 09 D5 E0 28 FD 82 F0 C0 EC 11 EC 11 EC", "N29 A9" },
+        /*  4*/ { GS1_MODE, 3, -1, "[91]12%[20]12", 0, "52 05 99 60 5F B5 35 80 01 08 00 EC 11", "A10(11)" },
+        /*  5*/ { GS1_MODE, 3, 1 << 8, "[91]123%[20]12", 0, "52 06 19 60 5E 2B 76 A0 5A 05 E0 EC 11", "A11(12)" },
+        /*  6*/ { GS1_MODE, 3, 6 << 8, "[91]1234%[20]12", 0, "52 06 99 60 5E 22 F6 A6 B0 00 21 00 EC", "A12(13)" },
+        /*  7*/ { GS1_MODE, 3, -1, "[91]12345%[20]12", 0, "51 01 F8 F3 A9 48 0F B5 35 80 01 08 00", "N7 A6(7) (same bit count as A13(14))" },
+        /*  8*/ { GS1_MODE, 3, 8 << 8, "[91]%%[20]12", 0, "52 05 99 6D A9 B5 35 80 01 08 00 EC 11", "A9(11)" },
+        /*  9*/ { GS1_MODE, 3, 6 << 8, "[91]%%%[20]12", 0, "52 06 99 6D A9 B5 36 A6 B0 00 21 00 EC", "A10(13)" },
+        /* 10*/ { GS1_MODE, 3, 6 << 8, "[91]A%%%%1234567890123AA%", 0, "52 05 99 63 D1 B5 36 A6 D4 98 40 D1 ED C8 C5 40 C3 20 21 CC DA 80", "A7(11) N13 A3(4)" },
+        /* 11*/ { GS1_MODE, 1, -1, "[91]%23%%6789%%%34567%%%%234%%%%%", 0, "(34) 52 17 19 6D A8 17 76 A6 D4 22 A5 C7 6A 6D 4D A8 22 C7 39 61 DA 9B 53 6A 6B 01 17 B5", "A31(46)" },
+        /* 12*/ { GS1_MODE, 2, 5 << 8, "[91]ABCDEFGHI[92]ABCDEF", 0, "52 0A 19 63 9A 8A 54 2A E1 6A 06 5C E6 A2 95 0A", "A20(23)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_qr_gs1");
 
@@ -368,16 +416,32 @@ static void test_qr_gs1(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3, debug)) {
+                if (0 /*!data[i].bwipp_cmp*/) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[177 * 177 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -391,48 +455,55 @@ static void test_qr_optimize(int index, int generate, int debug) {
     struct item {
         int input_mode;
         int option_1;
+        int option_3; // OR-ed with ZINT_FULL_MULTIBYTE
         char *data;
         int ret;
         char *expected;
+        int bwipp_cmp;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "1", 0, "10 04 40 EC 11 EC 11 EC 11", "N1" },
-        /*  1*/ { UNICODE_MODE, -1, "AAA", 0, "20 19 CC 28 00 EC 11 EC 11", "A3" },
-        /*  2*/ { UNICODE_MODE, -1, "0123456789", 0, "10 28 0C 56 6A 69 00 EC 11", " N10 (nayuki.io - pure numeric)" },
-        /*  3*/ { UNICODE_MODE, -1, "ABCDEF", 0, "20 31 CD 45 2A 14 00 EC 11", "A6 (nayuki.io - pure alphanumeric)" },
-        /*  4*/ { UNICODE_MODE, -1, "wxyz", 0, "40 47 77 87 97 A0 EC 11 EC", "B4 (nayuki.io - pure byte)" },
-        /*  5*/ { UNICODE_MODE, 1, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", ZINT_WARN_NONCOMPLIANT, "Warning (55) 81 D0 1A C0 09 F8 0A ED 56 B8 57 02 8E 12 90 2C 86 F4 31 A1 8A 01 B0 50 42 88 00 10", "K29 (nayuki.io - pure kanji)" },
-        /*  6*/ { UNICODE_MODE, -1, "012345A", 0, "20 38 01 0B A2 E4 A0 EC 11", "A7 (nayuki.io - alpha/numeric)" },
-        /*  7*/ { UNICODE_MODE, -1, "0123456A", 0, "10 1C 0C 56 58 80 25 00 EC", "N7 A1 (nayuki.io - alpha/numeric) (note same bits as A8)" },
-        /*  8*/ { UNICODE_MODE, -1, "012a", 0, "40 43 03 13 26 10 EC 11 EC", "B4 (nayuki.io - numeric/byte)" },
-        /*  9*/ { UNICODE_MODE, -1, "0123a", 0, "10 10 0C 34 01 61 00 EC 11", "N4 B1 (nayuki.io - numeric/byte)" },
-        /* 10*/ { UNICODE_MODE, -1, "ABCDEa", 0, "40 64 14 24 34 44 56 10 EC", "B6 (nayuki.io - alphanumeric/byte)" },
-        /* 11*/ { UNICODE_MODE, -1, "ABCDEFa", 0, "20 31 CD 45 2A 15 00 58 40", "A6 B1 (nayuki.io - alphanumeric/byte)" },
-        /* 12*/ { UNICODE_MODE, 1, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", 0, "(55) 20 D5 2A 53 54 1A A8 4C DC DF 14 29 EC 47 CA D9 9A 88 05 71 10 59 E3 56 32 5D 45 F0", " A26 N65 (nayuki.io - alpha/numeric)" },
-        /* 13*/ { UNICODE_MODE, 1, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", ZINT_WARN_NONCOMPLIANT, "Warning (80) 41 44 76 F6 C6 46 56 E2 07 26 17 46 96 F2 08 3D 32 03 D2 03 12 E1 19 26 A0 87 DC BB", "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
-        /* 14*/ { UNICODE_MODE, 1, "こんにちwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 41 B8 2B 18 2F 18 2C 98 2B F7 76 18 14 19 0A 28 A4 58 14 92 08 3B F8 3C 08 3C 18 3C", "B27 (nayuki.io - kanji/european **NOT SAME** K4 B2 K4 A1 K4, less bits as nayuki (1.5.0) miscounting byte-mode input as UTF-8)" },
-        /* 15*/ { UNICODE_MODE, 1, "こんにちテwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 80 50 98 85 C4 29 21 3F 0D 2A 09 BB B0 C0 A0 C8 51 45 22 C0 A4 90 41 DF C1 E0 41 E0", "K5 B19 (nayuki.io - kanji/european + extra leading kanji **NOT SAME** K5 B2 K4 A1 K4, same reason as above)" },
-        /* 16*/ { UNICODE_MODE, 1, "67128177921547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www0530329356521790265903SG.COM.NETS46968696003522G33250183309051017567088693441243693268766948304B2AE13344004SG.SGQR209710339366720B439682.63667470805057501195235502733744600368027857918629797829126902859SG8236HELLO FOO2517Singapore3272B815", 0, "(232) 10 52 9F 46 70 B3 5D DE 9A 1F A1 7B 1B 7B 69 73 0B 1B 6B 29 99 A9 A9 C1 A3 0B 31 A9", "N20 B47 N9 B15 N22 A11 N14 A1 N47 A19 N15 A8 N65 A20 B8 A8 (nayuki.io - SGQR alpha/numeric/byte)" },
-        /* 17*/ { UNICODE_MODE, -1, "纪", ZINT_WARN_USES_ECI, "Warning 71 A4 03 E7 BA AA 00 EC 11", "ECI-26 B3 (UTF-8 E7BAAA, U+7EAA, not in Shift JIS)" },
-        /* 18*/ { DATA_MODE, -1, "纪", 0, "40 3E 7B AA A0 EC 11 EC 11", "B3 (UTF-8 or Shift JIS, note ambiguous as 0xE7BA 0xAA happens to be valid Shift JIS 郤ｪ as well)" },
-        /* 19*/ { UNICODE_MODE, -1, "郤ｪ", ZINT_WARN_NONCOMPLIANT, "Warning 40 3E 7B AA A0 EC 11 EC 11", "B3 (Shift JIS or UTF-8 E7BAAA 纪, see above)" },
-        /* 20*/ { UNICODE_MODE, 1, "2004年大西洋颶風季是有纪录以来造成人员伤亡和财产损失最为惨重的大西洋飓风季之一，于2004年6月1日正式开始，同年11月30日结束，传统上这样的日期界定了一年中绝大多数热带气旋在大西洋形成的时间段lll ku", ZINT_WARN_USES_ECI, "Warning (324) 71 A1 00 43 21 10 04 4B 96 E6 D3 96 92 9F A2 96 FF 9A D2 2F A6 8A DB A6 8A A3 96 B6", "ECI-26 N4 B274 (nayuki.io - kanji/byte/numeric **NOT SAME* N4 K9 B6 K5 etc mixing Shift JIS and UTF-8)" },
-        /* 21*/ { UNICODE_MODE, -1, "AB123456A", 0, "20 49 CD 05 E2 2C 73 94 00", "A9" },
-        /* 22*/ { UNICODE_MODE, -1, "AB1234567890A", 0, "20 69 CD 05 E2 2C 73 94 33 2A 50 00 EC", "A13" },
-        /* 23*/ { UNICODE_MODE, -1, "AB123456789012A", 0, "20 79 CD 05 E2 2C 73 94 33 2A 0B CA 00", "A15" },
-        /* 24*/ { UNICODE_MODE, -1, "AB1234567890123A", 0, "20 11 CD 10 34 7B 72 31 50 30 C8 02 50", "A2 N13 A1" },
-        /* 25*/ { UNICODE_MODE, -1, "テaABCD1", ZINT_WARN_NONCOMPLIANT, "Warning 40 88 36 56 14 14 24 34 43 10 EC 11 EC", "B8" },
-        /* 26*/ { UNICODE_MODE, -1, "テaABCDE1", ZINT_WARN_NONCOMPLIANT, "Warning 40 38 36 56 12 03 1C D4 52 9D C0 EC 11", "B3 A6" },
-        /* 27*/ { UNICODE_MODE, -1, "テéaABCDE1", ZINT_WARN_USES_ECI, "Warning 71 A4 06 E3 83 86 C3 A9 61 20 31 CD 45 29 DC 00", "B6 A6" },
-        /* 28*/ { UNICODE_MODE, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", ZINT_WARN_NONCOMPLIANT, "Warning (44) 80 83 A8 85 88 25 CA 2F 40 B0 53 C2 44 98 41 00 4A 02 0E A8 F8 F5 0D 30 4C 35 A1 CC", "K8 N1 K8 B3" },
-        /* 29*/ { UNICODE_MODE, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", ZINT_WARN_NONCOMPLIANT, "Warning (589) 80 20 EA 21 62 09 72 8B D0 2C 14 F0 91 26 10 40 04 A0 08 3A A3 E3 D4 34 C1 30 D6 87", "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K89 N2 K14 B5 K28 N2 K40 N1 K65" },
+        /*  0*/ { UNICODE_MODE, 4, -1, "1", 0, "10 04 40 EC 11 EC 11 EC 11", 1, "N1" },
+        /*  1*/ { UNICODE_MODE, 4, 5 << 8, "AAA", 0, "20 19 CC 28 00 EC 11 EC 11", 1, "A3" },
+        /*  2*/ { UNICODE_MODE, 4, 1 << 8, "0123456789", 0, "10 28 0C 56 6A 69 00 EC 11", 1, " N10 (nayuki.io - pure numeric)" },
+        /*  3*/ { UNICODE_MODE, 4, -1, "ABCDEF", 0, "20 31 CD 45 2A 14 00 EC 11", 1, "A6 (nayuki.io - pure alphanumeric)" },
+        /*  4*/ { UNICODE_MODE, 4, -1, "wxyz", 0, "40 47 77 87 97 A0 EC 11 EC", 1, "B4 (nayuki.io - pure byte)" },
+        /*  5*/ { UNICODE_MODE, 1, -1, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", ZINT_WARN_NONCOMPLIANT, "Warning (55) 81 D0 1A C0 09 F8 0A ED 56 B8 57 02 8E 12 90 2C 86 F4 31 A1 8A 01 B0 50 42 88 00 10", 1, "K29 (nayuki.io - pure kanji)" },
+        /*  6*/ { UNICODE_MODE, 4, 1 << 8, "012345A", 0, "20 38 01 0B A2 E4 A0 EC 11", 1, "A7 (nayuki.io - alpha/numeric)" },
+        /*  7*/ { UNICODE_MODE, 4, -1, "0123456A", 0, "10 1C 0C 56 58 80 25 00 EC", 1, "N7 A1 (nayuki.io - alpha/numeric) (note same bits as A8)" },
+        /*  8*/ { UNICODE_MODE, 4, 1 << 8, "012a", 0, "40 43 03 13 26 10 EC 11 EC", 1, "B4 (nayuki.io - numeric/byte)" },
+        /*  9*/ { UNICODE_MODE, 4, 4 << 8, "0123a", 0, "10 10 0C 34 01 61 00 EC 11", 1, "N4 B1 (nayuki.io - numeric/byte)" },
+        /* 10*/ { UNICODE_MODE, 4, 4 << 8, "ABCDEa", 0, "40 64 14 24 34 44 56 10 EC", 1, "B6 (nayuki.io - alphanumeric/byte)" },
+        /* 11*/ { UNICODE_MODE, 4, -1, "ABCDEFa", 0, "20 31 CD 45 2A 15 00 58 40", 1, "A6 B1 (nayuki.io - alphanumeric/byte)" },
+        /* 12*/ { UNICODE_MODE, 1, 1 << 8, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", 0, "(55) 20 D5 2A 53 54 1A A8 4C DC DF 14 29 EC 47 CA D9 9A 88 05 71 10 59 E3 56 32 5D 45 F0", 1, " A26 N65 (nayuki.io - alpha/numeric)" },
+        /* 13*/ { UNICODE_MODE, 1, -1, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", ZINT_WARN_NONCOMPLIANT, "Warning (80) 41 44 76 F6 C6 46 56 E2 07 26 17 46 96 F2 08 3D 32 03 D2 03 12 E1 19 26 A0 87 DC BB", 1, "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
+        /* 14*/ { UNICODE_MODE, 1, -1, "こんにちwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 41 B8 2B 18 2F 18 2C 98 2B F7 76 18 14 19 0A 28 A4 58 14 92 08 3B F8 3C 08 3C 18 3C", 1, "B27 (nayuki.io - kanji/european **NOT SAME** K4 B2 K4 A1 K4, less bits as nayuki (1.5.0) miscounting byte-mode input as UTF-8)" },
+        /* 15*/ { UNICODE_MODE, 1, 2 << 8, "こんにちテwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 80 50 98 85 C4 29 21 3F 0D 2A 09 BB B0 C0 A0 C8 51 45 22 C0 A4 90 41 DF C1 E0 41 E0", 1, "K5 B19 (nayuki.io - kanji/european + extra leading kanji **NOT SAME** K5 B2 K4 A1 K4, same reason as above)" },
+        /* 16*/ { UNICODE_MODE, 1, 8 << 8, "67128177921547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www0530329356521790265903SG.COM.NETS46968696003522G33250183309051017567088693441243693268766948304B2AE13344004SG.SGQR209710339366720B439682.63667470805057501195235502733744600368027857918629797829126902859SG8236HELLO FOO2517Singapore3272B815", 0, "(232) 10 52 9F 46 70 B3 5D DE 9A 1F A1 7B 1B 7B 69 73 0B 1B 6B 29 99 A9 A9 C1 A3 0B 31 A9", 0, "N20 B47 N9 B15 N22 A11 N14 A1 N47 A19 N15 A8 N65 A20 B8 A8 (nayuki.io - SGQR alpha/numeric/byte); BWIPP different encodation (B13 N3 at end instead of B8 A8)" },
+        /* 17*/ { UNICODE_MODE, 4, 1 << 8, "纪", ZINT_WARN_USES_ECI, "Warning 71 A4 03 E7 BA AA 00 EC 11", 1, "ECI-26 B3 (UTF-8 E7BAAA, U+7EAA, not in Shift JIS)" },
+        /* 18*/ { DATA_MODE, 4, 1 << 8, "纪", 0, "40 3E 7B AA A0 EC 11 EC 11", 1, "B3 (UTF-8 or Shift JIS, note ambiguous as 0xE7BA 0xAA happens to be valid Shift JIS 郤ｪ as well)" },
+        /* 19*/ { UNICODE_MODE, 4, 1 << 8, "郤ｪ", ZINT_WARN_NONCOMPLIANT, "Warning 40 3E 7B AA A0 EC 11 EC 11", 1, "B3 (Shift JIS or UTF-8 E7BAAA 纪, see above)" },
+        /* 20*/ { UNICODE_MODE, 1, -1, "2004年大西洋颶風季是有纪录以来造成人员伤亡和财产损失最为惨重的大西洋飓风季之一，于2004年6月1日正式开始，同年11月30日结束，传统上这样的日期界定了一年中绝大多数热带气旋在大西洋形成的时间段lll ku", ZINT_WARN_USES_ECI, "Warning (324) 71 A1 00 43 21 10 04 4B 96 E6 D3 96 92 9F A2 96 FF 9A D2 2F A6 8A DB A6 8A A3 96 B6", 0, "ECI-26 N4 B274 (nayuki.io - kanji/byte/numeric **NOT SAME* N4 K9 B6 K5 etc mixing Shift JIS and UTF-8); BWIPP different encodation (N4 K1 B272)" },
+        /* 21*/ { UNICODE_MODE, 4, 1 << 8, "AB123456A", 0, "20 49 CD 05 E2 2C 73 94 00", 1, "A9" },
+        /* 22*/ { UNICODE_MODE, 3, -1, "AB1234567890A", 0, "20 69 CD 05 E2 2C 73 94 33 2A 50 00 EC", 1, "A13" },
+        /* 23*/ { UNICODE_MODE, 3, -1, "AB123456789012A", 0, "20 79 CD 05 E2 2C 73 94 33 2A 0B CA 00", 1, "A15" },
+        /* 24*/ { UNICODE_MODE, 3, -1, "AB1234567890123A", 0, "20 11 CD 10 34 7B 72 31 50 30 C8 02 50", 1, "A2 N13 A1" },
+        /* 25*/ { UNICODE_MODE, 3, 2 << 8, "テaABCD1", ZINT_WARN_NONCOMPLIANT, "Warning 40 88 36 56 14 14 24 34 43 10 EC 11 EC", 1, "B8" },
+        /* 26*/ { UNICODE_MODE, 3, -1, "テaABCDE1", ZINT_WARN_NONCOMPLIANT, "Warning 40 38 36 56 12 03 1C D4 52 9D C0 EC 11", 0, "B3 A6; BWIPP different encodation (B9)" },
+        /* 27*/ { UNICODE_MODE, 2, -1, "テéaABCDE1", ZINT_WARN_USES_ECI, "Warning 71 A4 06 E3 83 86 C3 A9 61 20 31 CD 45 29 DC 00", 0, "B6 A6; BWIPP different encodation (B12)" },
+        /* 28*/ { UNICODE_MODE, 2, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", ZINT_WARN_NONCOMPLIANT, "Warning (44) 80 83 A8 85 88 25 CA 2F 40 B0 53 C2 44 98 41 00 4A 02 0E A8 F8 F5 0D 30 4C 35 A1 CC", 0, "K8 N1 K8 B3; BWIPP different encodation (K8 N1 K8 N1 K1)" },
+        /* 29*/ { UNICODE_MODE, 1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", ZINT_WARN_NONCOMPLIANT, "Warning (589) 80 20 EA 21 62 09 72 8B D0 2C 14 F0 91 26 10 40 04 A0 08 3A A3 E3 D4 34 C1 30 D6 87", 0, "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K89 N2 K14 B5 K28 N2 K40 N1 K65; BWIPP different encodation (same except A2 B6 instead of B5)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_qr_optimize");
 
@@ -446,17 +517,43 @@ static void test_qr_optimize(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[177 * 177 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[177 * 177 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -1575,7 +1672,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011001010011000001"
                     "1111111011010111011011111"
                 },
-        /* 32*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 011 instead of 100",
+        /* 32*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 1, -1, 1 << 8, { 0, 0, "" }, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 3 Example 3 **NOT SAME** different encodation",
+                    "1111111001001101101111111"
+                    "1000001000111001101000001"
+                    "1011101011101010001011101"
+                    "1011101001110011001011101"
+                    "1011101000100000101011101"
+                    "1000001001000111101000001"
+                    "1111111010101010101111111"
+                    "0000000011101101100000000"
+                    "1110111110110010011000100"
+                    "0010110010110001010011001"
+                    "1001101111000101101111001"
+                    "1011100000010000111001110"
+                    "1010011000001001001100011"
+                    "0011010001011101010100010"
+                    "1010001101111010011111100"
+                    "0111110101001111000000110"
+                    "1010101011010010111110101"
+                    "0000000011110010100010010"
+                    "1111111011100101101010111"
+                    "1000001010110001100010001"
+                    "1011101011101001111110101"
+                    "1011101000011100111010010"
+                    "1011101010111010100010101"
+                    "1000001011101110111100101"
+                    "1111111011110011111111011"
+                },
+        /* 33*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 011 instead of 100",
                     "1111111010000110001111111"
                     "1000001010011110101000001"
                     "1011101011001111101011101"
@@ -1602,7 +1726,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011110101110010101"
                     "1111111010101100000011011"
                 },
-        /* 33*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 100 instead of 111",
+        /* 34*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, 4 << 8, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation",
+                    "1111111011000001001111111"
+                    "1000001000000010101000001"
+                    "1011101010011010101011101"
+                    "1011101011010011001011101"
+                    "1011101011110110001011101"
+                    "1000001001001110101000001"
+                    "1111111010101010101111111"
+                    "0000000001010101000000000"
+                    "1111001010000000110011101"
+                    "1000100001000110110000011"
+                    "1101011110000001000101111"
+                    "0101010010011111101001101"
+                    "1101101101010001000001000"
+                    "0010100100110100101111001"
+                    "0111011111001110010011011"
+                    "1001010010001000100100001"
+                    "0010001000110010111111010"
+                    "0000000011101101100011100"
+                    "1111111000011001101011111"
+                    "1000001000101010100011010"
+                    "1011101000111101111110110"
+                    "1011101011101100101010001"
+                    "1011101010011100100100110"
+                    "1000001010100000100111111"
+                    "1111111011101011000100011"
+                },
+        /* 35*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 100 instead of 111",
                     "11111110000111011111001111111"
                     "10000010011001101100101000001"
                     "10111010000010110011101011101"
@@ -1633,7 +1784,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010110011101010011100110"
                     "11111110101010100011111001100"
                 },
-        /* 34*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, -1, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP uses mask 011 instead of 101",
+        /* 36*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, -1, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP uses mask 011 instead of 101",
                     "111111100111101111111"
                     "100000100101001000001"
                     "101110100100001011101"
@@ -1656,7 +1807,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101010010111111"
                     "111111101011110000010"
                 },
-        /* 35*/ { BARCODE_QRCODE, UNICODE_MODE, 6, 1, -1, -1, { 0, 0, "" }, "Lietuvą", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 6 Example 1",
+        /* 37*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, 4 << 8, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 5 Example 1 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101111001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000111000000000"
+                    "111100101010010011101"
+                    "110101001111011111100"
+                    "001001110110110111010"
+                    "010111000100101001110"
+                    "111000110001101000100"
+                    "000000001101111100001"
+                    "111111100111101110100"
+                    "100000100100010110010"
+                    "101110100110001100011"
+                    "101110101010100010110"
+                    "101110101100001001000"
+                    "100000101011111110010"
+                    "111111101101000110100"
+                },
+        /* 38*/ { BARCODE_QRCODE, UNICODE_MODE, 6, 1, -1, -1, { 0, 0, "" }, "Lietuvą", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 6 Example 1",
                     "111111101000101111111"
                     "100000101010001000001"
                     "101110100000101011101"
@@ -1679,7 +1853,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011011111011"
                     "111111101111111010101"
                 },
-        /* 36*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 7 Example 1",
+        /* 39*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 7 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -1702,7 +1876,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011100101011"
                     "111111101100010100110"
                 },
-        /* 37*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 7 Example 2; BWIPP uses mask 000 instead of 111",
+        /* 40*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 7 Example 2; BWIPP uses mask 000 instead of 111",
                     "111111100101101111111"
                     "100000101101001000001"
                     "101110101100101011101"
@@ -1725,7 +1899,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011000010111"
                     "111111101001110100110"
                 },
-        /* 38*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 8 Example 1",
+        /* 41*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 7 Example 2 **NOT SAME** explicit mask 000",
+                    "111111100101101111111"
+                    "100000100111001000001"
+                    "101110101101101011101"
+                    "101110100101001011101"
+                    "101110100010101011101"
+                    "100000100000101000001"
+                    "111111101010101111111"
+                    "000000001101100000000"
+                    "111011111111011000100"
+                    "111110010000001011100"
+                    "000100110000100001000"
+                    "101001010010010000110"
+                    "000011110010110100101"
+                    "000000001111001110110"
+                    "111111101011011101111"
+                    "100000101001111000101"
+                    "101110101011010100011"
+                    "101110100111001010110"
+                    "101110101110100011101"
+                    "100000101001010000101"
+                    "111111101000111101111"
+                },
+        /* 42*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 8 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -1748,7 +1945,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101110000010011"
                     "111111101000010100010"
                 },
-        /* 39*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 8 Example 2; BWIPP uses mask 000 instead of 010",
+        /* 43*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 8 Example 2; BWIPP uses mask 000 instead of 010",
                     "11111110001011110110001111111"
                     "10000010101001111101001000001"
                     "10111010000011010110101011101"
@@ -1779,7 +1976,38 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010100011001101001000101"
                     "11111110110010101010110010100"
                 },
-        /* 40*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, -1, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses mask 111 instead of 000",
+        /* 44*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** explicit mask 000",
+                    "11111110010011001110101111111"
+                    "10000010001110111010001000001"
+                    "10111010111011101110001011101"
+                    "10111010011101110000101011101"
+                    "10111010001000100110101011101"
+                    "10000010010001000111101000001"
+                    "11111110101010101010101111111"
+                    "00000000111011101001100000000"
+                    "11101111101100111011011000100"
+                    "01000001101100110111000000110"
+                    "11001011010001001111010000011"
+                    "01001001000100010101111010011"
+                    "00110011000010000011111011110"
+                    "11000100110111010001100000101"
+                    "01010010101110111000110000011"
+                    "10101001101011111100111010010"
+                    "00110111110100111101011100010"
+                    "01110001000100100010110000110"
+                    "10110110110001011100110011101"
+                    "01000000111100001101111010011"
+                    "10100010110010010001111110101"
+                    "00000000110111001001100010110"
+                    "11111110101110111000101010111"
+                    "10000010101011111111100011010"
+                    "10111010110100111110111111000"
+                    "10111010001100110011110101010"
+                    "10111010111001011000110011001"
+                    "10000010100100001010001111101"
+                    "11111110101010010010001010011"
+                },
+        /* 45*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, -1, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses mask 111 instead of 000",
                     "111111100100101111111"
                     "100000100111001000001"
                     "101110101100101011101"
@@ -1802,7 +2030,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111110111001"
                     "111111101101001101111"
                 },
-        /* 41*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 8 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 9 Example 1 with explicit mask 111; BWIPP uses mask 000",
+        /* 46*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 8 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 9 Example 1 with explicit mask 111; BWIPP uses mask 000",
                     "111111100100101111111"
                     "100000101101001000001"
                     "101110101101101011101"
@@ -1825,7 +2053,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101100101011"
                     "111111101100000100110"
                 },
-        /* 42*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 10 Example 1; BWIPP uses mask 000 instead of 101",
+        /* 47*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 1 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** explicit mask 000",
+                    "111111100100101111111"
+                    "100000100111001000001"
+                    "101110101100101011101"
+                    "101110100101001011101"
+                    "101110100011001011101"
+                    "100000100001101000001"
+                    "111111101010101111111"
+                    "000000001100100000000"
+                    "111011111111111000100"
+                    "101100010001010100111"
+                    "101101101011000010100"
+                    "100010000101010110110"
+                    "010111101110110010101"
+                    "000000001001010110110"
+                    "111111101000100011111"
+                    "100000101000001010100"
+                    "101110101100100101100"
+                    "101110100010010010110"
+                    "101110101010100101001"
+                    "100000101111110111001"
+                    "111111101101001101111"
+                },
+        /* 48*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 10 Example 1; BWIPP uses mask 000 instead of 101",
                     "111111100000101111111"
                     "100000100010101000001"
                     "101110100011101011101"
@@ -1848,7 +2099,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111111010011"
                     "111111101110100011010"
                 },
-        /* 43*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP uses mask 000 instead of 100",
+        /* 49*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 10 Example 1 **NOT SAME** explicit mask 000",
+                    "111111100101101111111"
+                    "100000100111001000001"
+                    "101110101101101011101"
+                    "101110100101001011101"
+                    "101110100010101011101"
+                    "100000100000101000001"
+                    "111111101010101111111"
+                    "000000001101100000000"
+                    "111011111111011000100"
+                    "010001001110001100100"
+                    "000000110000100010011"
+                    "101001000100001101010"
+                    "000001101000101011001"
+                    "000000001001010010110"
+                    "111111101001011101011"
+                    "100000101011110111111"
+                    "101110101111011100100"
+                    "101110100000001000110"
+                    "101110101100100110001"
+                    "100000101010001111101"
+                    "111111101000101101011"
+                },
+        /* 50*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP uses mask 000 instead of 100",
                     "1111111011101100001111111"
                     "1000001011100001001000001"
                     "1011101010110001001011101"
@@ -1875,7 +2149,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011001010100011101"
                     "1111111011010110001000011"
                 },
-        /* 44*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Amerika Birleşik Devletleri", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 11 Example 1",
+        /* 51*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation",
+                    "1111111001001000101111111"
+                    "1000001000111010001000001"
+                    "1011101011101010001011101"
+                    "1011101001110100101011101"
+                    "1011101000100010101011101"
+                    "1000001001000001001000001"
+                    "1111111010101010101111111"
+                    "0000000011101101000000000"
+                    "1110111110110010111000100"
+                    "0000110000110000001000111"
+                    "1010011011000101101101010"
+                    "0011010110010001101011011"
+                    "1101011110001001100011110"
+                    "0010000111011101111010101"
+                    "1000001111111011101001000"
+                    "0101010101001110011010010"
+                    "1011111100110010111110101"
+                    "0000000011110011100010110"
+                    "1111111010100100101011011"
+                    "1000001010110001100011111"
+                    "1011101010101000111110100"
+                    "1011101000011100010011010"
+                    "1011101010011010101110001"
+                    "1000001011101110000111001"
+                    "1111111011110010101100111"
+                },
+        /* 52*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Amerika Birleşik Devletleri", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 11 Example 1",
                     "1111111000111100101111111"
                     "1000001001101101001000001"
                     "1011101000001000101011101"
@@ -1902,7 +2203,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110000111010110"
                     "1111111010110101100010101"
                 },
-        /* 45*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 101 instead of 111",
+        /* 53*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 101 instead of 111",
                     "1111111000100110101111111"
                     "1000001011100110001000001"
                     "1011101010000001001011101"
@@ -1929,7 +2230,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011100010011100111"
                     "1111111010001001010010011"
                 },
-        /* 46*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, -1, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 12 Example 1; BWIPP uses mask 111 instead of 100",
+        /* 54*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, 6 << 8, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation",
+                    "1111111001110011101111111"
+                    "1000001000011111101000001"
+                    "1011101001110000101011101"
+                    "1011101010110100101011101"
+                    "1011101010101001101011101"
+                    "1000001001100010001000001"
+                    "1111111010101010101111111"
+                    "0000000001001001000000000"
+                    "1100011101101101000011000"
+                    "1100110000100010111011100"
+                    "1000101011011111111011101"
+                    "1010010100110010010100101"
+                    "0100001011100111011000101"
+                    "1100010101101101000011011"
+                    "1010111101100111011011110"
+                    "1000110100101111110111001"
+                    "1001001111101011111111101"
+                    "0000000011100000100011001"
+                    "1111111011001111101011001"
+                    "1000001010110010100010110"
+                    "1011101001010001111110000"
+                    "1011101001101100011011001"
+                    "1011101001100111001000101"
+                    "1000001010101101010011110"
+                    "1111111011011100000111001"
+                },
+        /* 55*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, -1, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 12 Example 1; BWIPP uses mask 111 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -1952,7 +2280,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011110001011"
                     "111111101001101100001"
                 },
-        /* 47*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, -1, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 13 Example 1; BWIPP uses mask 001 instead of 111",
+        /* 56*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, 8 << 8, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** explicit mask 111",
+                    "111111100101101111111"
+                    "100000101101001000001"
+                    "101110101100101011101"
+                    "101110100101001011101"
+                    "101110101000101011101"
+                    "100000101001101000001"
+                    "111111101010101111111"
+                    "000000001111100000000"
+                    "110100110110001110110"
+                    "001011000111011000001"
+                    "101100111100100010110"
+                    "011011010110010110111"
+                    "011111111000100111001"
+                    "000000001010010101100"
+                    "111111101001101010010"
+                    "100000100110111110110"
+                    "101110100110000100000"
+                    "101110101011001001011"
+                    "101110100001010001001"
+                    "100000101011110001011"
+                    "111111101010110111010"
+                },
+        /* 57*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, -1, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 13 Example 1; BWIPP uses mask 001 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -1975,7 +2326,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011100101011"
                     "111111101010000100010"
                 },
-        /* 48*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, -1, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 15 Example 1; BWIPP uses mask 011 instead of 111",
+        /* 58*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, 2 << 8, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** explicit mask 001",
+                    "111111101111101111111"
+                    "100000101101101000001"
+                    "101110100111001011101"
+                    "101110100101101011101"
+                    "101110101000101011101"
+                    "100000101010001000001"
+                    "111111101010101111111"
+                    "000000001111000000000"
+                    "111001101111111110011"
+                    "001011011010011000100"
+                    "101011111010010010010"
+                    "010001010000101010100"
+                    "000110111010011101011"
+                    "000000001011001101100"
+                    "111111100011100110101"
+                    "100000101011010010010"
+                    "101110100101111001000"
+                    "101110100100000111100"
+                    "101110101010011101111"
+                    "100000101100100010011"
+                    "111111101110011000001"
+                },
+        /* 59*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, -1, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 15 Example 1; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -1998,7 +2372,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111100101011"
                     "111111101000000101010"
                 },
-        /* 49*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, -1, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 16 Example 1; BWIPP uses mask 001 instead of 111",
+        /* 60*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, 4 << 8, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 15 Example 1 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "000001011010110001100"
+                    "110010111100100100100"
+                    "010101000000101101010"
+                    "001100111101010001100"
+                    "000000001010011100001"
+                    "111111100100001101100"
+                    "100000100001100110011"
+                    "101110100111010101110"
+                    "101110101000010101110"
+                    "101110101001000001000"
+                    "100000101001101011010"
+                    "111111101001110100100"
+                },
+        /* 61*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, -1, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 16 Example 1; BWIPP uses mask 001 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2021,7 +2418,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101100001011"
                     "111111101010010001010"
                 },
-        /* 50*/ { BARCODE_QRCODE, UNICODE_MODE, 17, 1, -1, -1, { 0, 0, "" }, "Price: €13.50", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 17 Example 1",
+        /* 62*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, 2 << 8, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 **NOT SAME** explicit mask 001",
+                    "111111101111101111111"
+                    "100000101101101000001"
+                    "101110100111001011101"
+                    "101110100101101011101"
+                    "101110101000101011101"
+                    "100000101010001000001"
+                    "111111101010101111111"
+                    "000000001111000000000"
+                    "111001101111111110011"
+                    "010001010010000100101"
+                    "011101111010011010001"
+                    "010101010100100011000"
+                    "100010100110011100111"
+                    "000000001011011101100"
+                    "111111100101110110001"
+                    "100000101111011010000"
+                    "101110100011111000011"
+                    "101110100100000111010"
+                    "101110101010001000011"
+                    "100000101010100110011"
+                    "111111101110001101001"
+                },
+        /* 63*/ { BARCODE_QRCODE, UNICODE_MODE, 17, 1, -1, -1, { 0, 0, "" }, "Price: €13.50", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 17 Example 1",
                     "111111100100101111111"
                     "100000101101001000001"
                     "101110101101101011101"
@@ -2044,7 +2464,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000100101111"
                     "111111101101110110110"
                 },
-        /* 51*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, -1, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 18 Example 1; BWIPP uses mask 001 instead of 100",
+        /* 64*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, -1, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 18 Example 1; BWIPP uses mask 001 instead of 100",
                     "1111111010000111001111111"
                     "1000001010011000001000001"
                     "1011101011001100001011101"
@@ -2071,7 +2491,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001011110101011011101"
                     "1111111010001100000011111"
                 },
-        /* 52*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 1; BWIPP uses mask 011 instead of 111",
+        /* 65*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, 2 << 8, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** explicit mask 001",
+                    "1111111011110110101111111"
+                    "1000001010010110001000001"
+                    "1011101001000010001011101"
+                    "1011101000011110101011101"
+                    "1011101010011101001011101"
+                    "1000001011101111101000001"
+                    "1111111010101010101111111"
+                    "0000000011000101100000000"
+                    "1110011011011010011110011"
+                    "1111100100001011010001000"
+                    "0100101001101001011101001"
+                    "1011010010111101001101010"
+                    "1100101111100110011000101"
+                    "0111100010100011100100000"
+                    "1101101001110001101001001"
+                    "0010010110000001111100010"
+                    "1101011101011101111111111"
+                    "0000000011101010100011000"
+                    "1111111000101111101010001"
+                    "1000001011111000100010001"
+                    "1011101000100111111110011"
+                    "1011101001100100100110110"
+                    "1011101010010001100000011"
+                    "1000001010000100101010011"
+                    "1111111011111101110010001"
+                },
+        /* 66*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 1; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2094,7 +2541,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011100110011"
                     "111111101010000101010"
                 },
-        /* 53*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 67*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "011010001010101000110"
+                    "000010101000110001011"
+                    "001001010010110011110"
+                    "101001111101000101100"
+                    "000000001110010000001"
+                    "111111100100000111111"
+                    "100000100111110110000"
+                    "101110100111001001011"
+                    "101110101110010100000"
+                    "101110101101000100100"
+                    "100000101101101000010"
+                    "111111101011110100100"
+                },
+        /* 68*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 2; BWIPP uses mask 000 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -2117,7 +2587,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101010011010011"
                     "111111101100111011001"
                 },
-        /* 54*/ { BARCODE_QRCODE, UNICODE_MODE, 21, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation",
+        /* 69*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 1 << 8, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** explicit mask 000",
+                    "111111100101101111111"
+                    "100000100111001000001"
+                    "101110101101101011101"
+                    "101110100101001011101"
+                    "101110100010101011101"
+                    "100000100000101000001"
+                    "111111101010101111111"
+                    "000000001101100000000"
+                    "111011111111011000100"
+                    "110011010000001100001"
+                    "010110101010100010001"
+                    "111100001110001100110"
+                    "000000101010101010001"
+                    "000000001001010110010"
+                    "111111101101011110000"
+                    "100000101011110111010"
+                    "101110101111011111111"
+                    "101110100110001010100"
+                    "101110101000100001001"
+                    "100000101000001000001"
+                    "111111101110101001011"
+                },
+        /* 70*/ { BARCODE_QRCODE, UNICODE_MODE, 21, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation",
                     "1111111010000110001111111"
                     "1000001010011110101000001"
                     "1011101011001111101011101"
@@ -2144,7 +2637,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010010101110010101"
                     "1111111010101100000011011"
                 },
-        /* 55*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 22 Example 1",
+        /* 71*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 22 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2167,7 +2660,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001100001011"
                     "111111101100010100110"
                 },
-        /* 56*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 22 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 72*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 22 Example 2; BWIPP uses mask 000 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -2190,7 +2683,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001000100111"
                     "111111101000101111101"
                 },
-        /* 57*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, -1, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 23 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 73*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 22 Example 2 **NOT SAME** explicit mask 000",
+                    "111111100101101111111"
+                    "100000100111001000001"
+                    "101110101101101011101"
+                    "101110100101001011101"
+                    "101110100010101011101"
+                    "100000100000101000001"
+                    "111111101010101111111"
+                    "000000001101100000000"
+                    "111011111111011000100"
+                    "011111001100001010100"
+                    "000100111000110000100"
+                    "001001011110010110110"
+                    "100100101110110100101"
+                    "000000001001001110110"
+                    "111111101101000100011"
+                    "100000101001111110111"
+                    "101110101101010100011"
+                    "101110100011001010100"
+                    "101110101000110010001"
+                    "100000101011010110101"
+                    "111111101010111101111"
+                },
+        /* 74*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, -1, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 23 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2213,7 +2729,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001100100011"
                     "111111101000010110110"
                 },
-        /* 58*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 24 Example 1",
+        /* 75*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, 1 << 8, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 23 Example 1 ** NOT SAME** explicit mask 000",
+                    "111111100010101111111"
+                    "100000100000101000001"
+                    "101110101010001011101"
+                    "101110100000101011101"
+                    "101110100101101011101"
+                    "100000100111001000001"
+                    "111111101010101111111"
+                    "000000001010000000000"
+                    "111011111010111000100"
+                    "010001001111010100010"
+                    "000011110001011100011"
+                    "110110000101110111010"
+                    "010100110101011100001"
+                    "000000001000001101110"
+                    "111111101010100011111"
+                    "100000101100001100101"
+                    "101110101100101010111"
+                    "101110100101010110000"
+                    "101110101101011111001"
+                    "100000101011110110001"
+                    "111111101001011111111"
+                },
+        /* 76*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 24 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2236,7 +2775,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101010001000001"
                     "111111101101011101011"
                 },
-        /* 59*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 24 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 77*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 24 Example 2; BWIPP uses mask 000 instead of 100",
                     "11111110111010000111101111111"
                     "10000010111000001100101000001"
                     "10111010101101011000101011101"
@@ -2267,7 +2806,38 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "10000010111101000011000110100"
                     "11111110111011010111000011010"
                 },
-        /* 60*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 1",
+        /* 78*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 24 Example 2 **NOT SAME** explicit mask 000",
+                    "11111110010011001110101111111"
+                    "10000010001110111010001000001"
+                    "10111010111011101110001011101"
+                    "10111010011101110110101011101"
+                    "10111010001000100100101011101"
+                    "10000010010001000111101000001"
+                    "11111110101010101010101111111"
+                    "00000000111011101001100000000"
+                    "11101111101100111011111000100"
+                    "00101000001100110110001100100"
+                    "00101011110001001111010000001"
+                    "10110100100100010101111011011"
+                    "00011010100010000011001111010"
+                    "11010101110111010001001100101"
+                    "11111110100110111000110000011"
+                    "00110001101011111100111010010"
+                    "11101010110100110101001100110"
+                    "01001001111100111010100000110"
+                    "10100010001001011100110011101"
+                    "01000001111100001101100010011"
+                    "10100011101010010011111110101"
+                    "00000000100111001011100010110"
+                    "11111110110110111000101010111"
+                    "10000010111011111111100011010"
+                    "10111010110100111110111111000"
+                    "10111010001100101011101101000"
+                    "10111010100001001000110011001"
+                    "10000010110100001010001111101"
+                    "11111110110010011110001010011"
+                },
+        /* 79*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2290,7 +2860,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011110101101"
                     "111111101111011010111"
                 },
-        /* 61*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 25 Example 2; BWIPP uses mask 000 instead of 111",
+        /* 80*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 25 Example 2; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2313,7 +2883,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001000001011"
                     "111111101110000101110"
                 },
-        /* 62*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 3",
+        /* 81*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, 1 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 2 **NOT SAME** explicit mask 000",
+                    "111111100010101111111"
+                    "100000100000101000001"
+                    "101110101010001011101"
+                    "101110100000101011101"
+                    "101110100101101011101"
+                    "100000100111001000001"
+                    "111111101010101111111"
+                    "000000001010000000000"
+                    "111011111010111000100"
+                    "011011010111010011011"
+                    "100000100001010011000"
+                    "110101011111110011010"
+                    "000001100011001000101"
+                    "000000001011001100110"
+                    "111111101000110011111"
+                    "100000101001001011000"
+                    "101110101110101010100"
+                    "101110100000010101000"
+                    "101110101000010101001"
+                    "100000101011010011001"
+                    "111111101111001100111"
+                },
+        /* 82*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2336,7 +2929,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101110000101"
                     "111111101001011111011"
                 },
-        /* 63*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 83*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2359,7 +2952,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111100101011"
                     "111111101110010100110"
                 },
-        /* 64*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 26 Example 2; BWIPP uses mask 101 instead of 010",
+        /* 84*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, 1 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 26 Example 1 **NOT SAME** explicit mask 000",
+                    "111111100010101111111"
+                    "100000100000101000001"
+                    "101110101010001011101"
+                    "101110100000101011101"
+                    "101110100101101011101"
+                    "100000100111001000001"
+                    "111111101010101111111"
+                    "000000001010000000000"
+                    "111011111010111000100"
+                    "010111001111010000111"
+                    "101000110001001010011"
+                    "110011011001110100010"
+                    "011001110101001000001"
+                    "000000001110001101110"
+                    "111111101110100011111"
+                    "100000101110001110111"
+                    "101110101000101001100"
+                    "101110100111010011100"
+                    "101110101011011110001"
+                    "100000101101110111001"
+                    "111111101111011101111"
+                },
+        /* 85*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 26 Example 2; BWIPP uses mask 101 instead of 010",
                     "1111111001111101001111111"
                     "1000001001001111001000001"
                     "1011101011101101001011101"
@@ -2386,7 +3002,34 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001001110010100111010"
                     "1111111010110001001010111"
                 },
-        /* 65*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 3; BWIPP uses mask 111 instead of 001",
+        /* 86*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 6 << 8, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 26 Example 2 **NOT SAME** explicit mask 101",
+                    "1111111001001011101111111"
+                    "1000001010001110001000001"
+                    "1011101011101101001011101"
+                    "1011101010011000001011101"
+                    "1011101000011001001011101"
+                    "1000001001100001001000001"
+                    "1111111010101010101111111"
+                    "0000000011100010000000000"
+                    "1000001011011000111001110"
+                    "0011110001110101100010010"
+                    "0110001111000111000001001"
+                    "1011010011111100010010000"
+                    "1001001100001100011000000"
+                    "1001110000100001010000110"
+                    "1001011111111001010010010"
+                    "1001000101010001000100101"
+                    "1010101001110000111111001"
+                    "0000000010001110100011101"
+                    "1111111001110001101011001"
+                    "1000001000001101100010000"
+                    "1011101000101010111110100"
+                    "1011101000000011001010011"
+                    "1011101000011001110111001"
+                    "1000001000110011100110010"
+                    "1111111010000111111100001"
+                },
+        /* 87*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 3; BWIPP uses mask 111 instead of 001",
                     "111111101011001111111"
                     "100000100001001000001"
                     "101110101100101011101"
@@ -2409,7 +3052,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100010011011011"
                     "111111101011111001101"
                 },
-        /* 66*/ { BARCODE_QRCODE, UNICODE_MODE, 27, 2, -1, -1, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 27 Example 1 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 111 instead of 010",
+        /* 88*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 8 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 26 Example 3 **NOT SAME** explicit mask 111",
+                    "111111100110001111111"
+                    "100000100110001000001"
+                    "101110100000101011101"
+                    "101110100100001011101"
+                    "101110100000101011101"
+                    "100000101101101000001"
+                    "111111101010101111111"
+                    "000000000001100000000"
+                    "100101101010010100000"
+                    "101100000000001100100"
+                    "110101100100110100010"
+                    "001100001111010000111"
+                    "000000110010110001001"
+                    "000000001001001011100"
+                    "111111100010010100010"
+                    "100000101111110011011"
+                    "101110100001000010110"
+                    "101110101000010100101"
+                    "101110100110111101101"
+                    "100000100101011100011"
+                    "111111101111100101110"
+                },
+        /* 89*/ { BARCODE_QRCODE, UNICODE_MODE, 27, 2, -1, -1, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 27 Example 1 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 111 instead of 010",
                     "111111101010101111111"
                     "100000101111101000001"
                     "101110100110001011101"
@@ -2432,7 +3098,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000100011000001010"
                     "111111101000111110000"
                 },
-        /* 67*/ { BARCODE_QRCODE, UNICODE_MODE, 28, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 28 Example 1",
+        /* 90*/ { BARCODE_QRCODE, UNICODE_MODE, 28, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 28 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2455,7 +3121,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101110000101"
                     "111111101101011111111"
                 },
-        /* 68*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 1",
+        /* 91*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2478,7 +3144,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111110111001"
                     "111111101101011100011"
                 },
-        /* 69*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 2",
+        /* 92*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 2",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -2501,7 +3167,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101100000111011"
                     "111111101011010110010"
                 },
-        /* 70*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 30 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 93*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 30 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2524,7 +3190,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001100010011"
                     "111111101110010101110"
                 },
-        /* 71*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "서울", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 30 Example 2",
+        /* 94*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** explicit mask 000",
+                    "111111100010101111111"
+                    "100000100000101000001"
+                    "101110101010001011101"
+                    "101110100000101011101"
+                    "101110100101101011101"
+                    "100000100111001000001"
+                    "111111101010101111111"
+                    "000000001010000000000"
+                    "111011111010111000100"
+                    "000010000001010001111"
+                    "010101100011001111011"
+                    "000011011011110111110"
+                    "100110110111001101101"
+                    "000000001010001000110"
+                    "111111101100100111111"
+                    "100000101110001011111"
+                    "101110101000101001110"
+                    "101110100111010110100"
+                    "101110101001011000101"
+                    "100000101011110000001"
+                    "111111101111011100111"
+                },
+        /* 95*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "서울", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 30 Example 2",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2547,7 +3236,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001110110101"
                     "111111101011011101011"
                 },
-        /* 72*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 1",
+        /* 96*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2570,7 +3259,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011110111001"
                     "111111101101011100011"
                 },
-        /* 73*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 31 Example 2; BWIPP uses mask 011 instead of 010",
+        /* 97*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 31 Example 2; BWIPP uses mask 011 instead of 010",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -2593,7 +3282,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000000111011"
                     "111111101011010110010"
                 },
-        /* 74*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 3",
+        /* 98*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "001001000110100100000"
+                    "000110110000111110111"
+                    "010101010000110000010"
+                    "011011100001010011100"
+                    "000000001100010001101"
+                    "111111100010011011100"
+                    "100000100001111100111"
+                    "101110100011001000010"
+                    "101110101110010110100"
+                    "101110101001010111000"
+                    "100000101101101010110"
+                    "111111101101100000100"
+                },
+        /* 99*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2616,7 +3328,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001110110001"
                     "111111101111011110111"
                 },
-        /* 75*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 1",
+        /*100*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 1",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -2639,7 +3351,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101100000110111"
                     "111111101111010010010"
                 },
-        /* 76*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 2; BWIPP uses mask 011 instead of 111",
+        /*101*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 2; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2662,7 +3374,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101100100111"
                     "111111101000010001010"
                 },
-        /* 77*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 3; BWIPP uses mask 011 instead of 001",
+        /*102*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "111100000110100100000"
+                    "110011100100111110111"
+                    "110110001100110000010"
+                    "101011111001010011100"
+                    "000000001100010001101"
+                    "111111100110011011100"
+                    "100000100111111100100"
+                    "101110100101001000001"
+                    "101110101010010110111"
+                    "101110101101010111000"
+                    "100000101011101010110"
+                    "111111101001100000100"
+                },
+        /*103*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 3; BWIPP uses mask 011 instead of 001",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -2685,7 +3420,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101010100011011"
                     "111111101110001011101"
                 },
-        /* 78*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "པེ་ཅིང།", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 32 Example 4",
+        /*104*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "000000001110100100000"
+                    "010010100010111110011"
+                    "111001000010110001010"
+                    "001100101111010011000"
+                    "000000001100010000001"
+                    "111111100110011010100"
+                    "100000100101111101000"
+                    "101110100011001001001"
+                    "101110101010010110111"
+                    "101110101111010101000"
+                    "100000101011101010010"
+                    "111111101011100110000"
+                },
+        /*105*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "པེ་ཅིང།", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 32 Example 4",
                     "1111111011110110001111111"
                     "1000001000011010101000001"
                     "1011101010110101101011101"
@@ -2712,7 +3470,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010111111111010111"
                     "1111111010011101100000011"
                 },
-        /* 79*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 5; BWIPP uses mask 011 instead of 111",
+        /*106*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 5; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2735,7 +3493,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101001010101111"
                     "111111101110010110110"
                 },
-        /* 80*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 6; BWIPP uses mask 011 instead of 111",
+        /*107*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 5 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101110001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000110000000000"
+                    "111100101010010011101"
+                    "000110011100101010001"
+                    "011100110110100001100"
+                    "001000010110111101010"
+                    "110000101011010111100"
+                    "000000001101011100101"
+                    "111111100100011111000"
+                    "100000100010100110100"
+                    "101110100001001011001"
+                    "101110101101011010111"
+                    "101110101100001100000"
+                    "100000101111011011110"
+                    "111111101111100111000"
+                },
+        /*108*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 6; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2758,7 +3539,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101110100001011"
                     "111111101101101010110"
                 },
-        /* 81*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 1; BWIPP uses mask 111 instead of 010",
+        /*109*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 6 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101111001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000111000000000"
+                    "111100101010010011101"
+                    "010111000011011100000"
+                    "010010110011000101010"
+                    "110000000001100100010"
+                    "100110111010110101000"
+                    "000000001001101111001"
+                    "111111100111001011100"
+                    "100000100011001100100"
+                    "101110100001111011001"
+                    "101110101111011111111"
+                    "101110101010000101000"
+                    "100000101000101111010"
+                    "111111101100011011000"
+                },
+        /*110*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 1; BWIPP uses mask 111 instead of 010",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -2781,7 +3585,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101010000010111"
                     "111111101101010001110"
                 },
-        /* 82*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 2",
+        /*111*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 8 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 1 **NOT SAME** explicit mask 111",
+                    "111111100010101111111"
+                    "100000101010101000001"
+                    "101110101011001011101"
+                    "101110100000101011101"
+                    "101110101111101011101"
+                    "100000101110001000001"
+                    "111111101010101111111"
+                    "000000001000000000000"
+                    "110100110011101110110"
+                    "000011010101010100010"
+                    "011101100001001110001"
+                    "001101011100111110011"
+                    "000001100001011101101"
+                    "000000001000011110000"
+                    "111111101111101011010"
+                    "100000100000001100000"
+                    "101110100010111001011"
+                    "101110101010011100010"
+                    "101110100001011000101"
+                    "100000101001100001011"
+                    "111111101010010110110"
+                },
+        /*112*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 2",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2804,7 +3631,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101100111010101"
                     "111111101110111010111"
                 },
-        /* 83*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 3; BWIPP uses mask 000 instead of 111",
+        /*113*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 3; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2827,7 +3654,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101111100110011"
                     "111111101000010101110"
                 },
-        /* 84*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 1",
+        /*114*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** explicit mask 000",
+                    "111111100010101111111"
+                    "100000100000101000001"
+                    "101110101010001011101"
+                    "101110100000101011101"
+                    "101110100101101011101"
+                    "100000100111001000001"
+                    "111111101010101111111"
+                    "000000001010000000000"
+                    "111011111010111000100"
+                    "111111011101010101011"
+                    "000110110011001111111"
+                    "100100000111110010010"
+                    "001101111001001000101"
+                    "000000001100001101110"
+                    "111111101000100101011"
+                    "100000101110001000100"
+                    "101110101000101100101"
+                    "101110100101010010011"
+                    "101110101101011101101"
+                    "100000101101110100001"
+                    "111111101001011100111"
+                },
+        /*115*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2850,7 +3700,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011100100011"
                     "111111101110000110010"
                 },
-        /* 85*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 34 Example 2",
+        /*116*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 34 Example 2",
                     "1111111000100010001111111"
                     "1000001001000100101000001"
                     "1011101010010011001011101"
@@ -2877,7 +3727,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110001010101001"
                     "1111111010001000110010111"
                 },
-        /* 86*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 3",
+        /*117*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -2900,7 +3750,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101101010000101"
                     "111111101010101010111"
                 },
-        /* 87*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 35 Example 1",
+        /*118*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 35 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2923,7 +3773,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101011100111011"
                     "111111101110000011110"
                 },
-        /* 88*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 35 Example 2",
+        /*119*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 35 Example 2",
                     "1111111000100110101111111"
                     "1000001001000111001000001"
                     "1011101010010110101011101"
@@ -2950,7 +3800,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "1000001010110001010010101"
                     "1111111011001000101010111"
                 },
-        /* 89*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 35 Example 3; BWIPP uses mask 011 instead of 111",
+        /*120*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 35 Example 3; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2973,7 +3823,30 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000111111011"
                     "111111101101000011110"
                 },
-        /* 90*/ { BARCODE_QRCODE, UNICODE_MODE, 170, 1, -1, -1, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 170 Example 1 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 011 instead of 111",
+        /*121*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 35 Example 3 **NOT SAME** explicit mask 011",
+                    "111111101100101111111"
+                    "100000100100101000001"
+                    "101110101010101011101"
+                    "101110101001001011101"
+                    "101110101111001011101"
+                    "100000100000001000001"
+                    "111111101010101111111"
+                    "000000000111000000000"
+                    "111100101010010011101"
+                    "101010001000100010100"
+                    "010000100011001110010"
+                    "000001011010010011010"
+                    "110101101000100010100"
+                    "000000001011001001101"
+                    "111111100110010111100"
+                    "100000100000100001011"
+                    "101110100111001101001"
+                    "101110101010001010011"
+                    "101110101001110100100"
+                    "100000101110110001010"
+                    "111111101100110010000"
+                },
+        /*122*/ { BARCODE_QRCODE, UNICODE_MODE, 170, 1, -1, -1, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 170 Example 1 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 011 instead of 111",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -2996,7 +3869,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     "100000101000110010110"
                     "111111101011100010100"
                 },
-        /* 91*/ { BARCODE_QRCODE, DATA_MODE, 899, 1, -1, -1, { 0, 0, "" }, "\000\001\002\133\134\135\375\376\377", 9, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 899 Example 1",
+        /*123*/ { BARCODE_QRCODE, DATA_MODE, 899, 1, -1, -1, { 0, 0, "" }, "\000\001\002\133\134\135\375\376\377", 9, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 899 Example 1",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -3073,7 +3946,7 @@ static void test_qr_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
@@ -3091,6 +3964,347 @@ static void test_qr_encode(int index, int generate, int debug) {
                     ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_qr_encode_segs(int index, int generate, int debug) {
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int option_1;
+        int option_2;
+        int option_3;
+        struct zint_structapp structapp;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        int bwipp_cmp;
+        char *comment;
+        char *expected;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, 8 << 8, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, 1, "Standard example",
+                    "111111101101001111111"
+                    "100000101100101000001"
+                    "101110100010101011101"
+                    "101110101011101011101"
+                    "101110101011101011101"
+                    "100000101110101000001"
+                    "111111101010101111111"
+                    "000000000100000000000"
+                    "000100100011000111011"
+                    "001000000000000001001"
+                    "111100111101110000101"
+                    "010111011010000001010"
+                    "111110101101111011011"
+                    "000000001100110110011"
+                    "111111100001100101101"
+                    "100000100110101111000"
+                    "101110100101001110111"
+                    "101110101100010100011"
+                    "101110100110100011101"
+                    "100000100100111101100"
+                    "111111100010000110010"
+                },
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, 8 << 8, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, 1, "Standard example auto-ECI",
+                    "111111101101001111111"
+                    "100000101100101000001"
+                    "101110100010101011101"
+                    "101110101011101011101"
+                    "101110101011101011101"
+                    "100000101110101000001"
+                    "111111101010101111111"
+                    "000000000100000000000"
+                    "000100100011000111011"
+                    "001000000000000001001"
+                    "111100111101110000101"
+                    "010111011010000001010"
+                    "111110101101111011011"
+                    "000000001100110110011"
+                    "111111100001100101101"
+                    "100000100110101111000"
+                    "101110100101001110111"
+                    "101110101100010100011"
+                    "101110100110100011101"
+                    "100000100100111101100"
+                    "111111100010000110010"
+                },
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, 8 << 8, { 0, 0, "" }, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 21, 21, 1, "Standard example inverted",
+                    "111111101111101111111"
+                    "100000101011001000001"
+                    "101110100000101011101"
+                    "101110101110101011101"
+                    "101110101101101011101"
+                    "100000101010001000001"
+                    "111111101010101111111"
+                    "000000000011000000000"
+                    "000100100000000111011"
+                    "001100000111100101100"
+                    "110010100000011001011"
+                    "011000000001100101011"
+                    "101000101011111010001"
+                    "000000001001111100000"
+                    "111111100101010110010"
+                    "100000100110100011001"
+                    "101110100111101010101"
+                    "101110101000001000011"
+                    "101110100001001011001"
+                    "100000100100110110011"
+                    "111111100001000011110"
+                },
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, 4, -1, 8 << 8, { 0, 0, "" }, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, 1, "Standard example inverted auto-ECI",
+                    "111111101111101111111"
+                    "100000101011001000001"
+                    "101110100000101011101"
+                    "101110101110101011101"
+                    "101110101101101011101"
+                    "100000101010001000001"
+                    "111111101010101111111"
+                    "000000000011000000000"
+                    "000100100000000111011"
+                    "001100000111100101100"
+                    "110010100000011001011"
+                    "011000000001100101011"
+                    "101000101011111010001"
+                    "000000001001111100000"
+                    "111111100101010110010"
+                    "100000100110100011001"
+                    "101110100111101010101"
+                    "101110101000001000011"
+                    "101110100001001011001"
+                    "100000100100110110011"
+                    "111111100001000011110"
+                },
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97"), -1, 3 }, { TU("品名:Google 谷歌 Pixel 4a -128 GB的存储空间-黑色;零售价:￥3149.79"), -1, 29 }, { TU("Produkt:Google Pixel 4a - 128 GB Speicher - Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 53, 53, 0, "AIM ITS/04-023:2022 Annex A example; BWIPP different encodation",
+                    "11111110010010001110011110000111001001011110001111111"
+                    "10000010100101111001000000001000010110100111001000001"
+                    "10111010010101001110001011100010000010111101001011101"
+                    "10111010111101111000000010111011000100010010101011101"
+                    "10111010001100111110110111111110011010010110001011101"
+                    "10000010111000011101010110001111000011110110001000001"
+                    "11111110101010101010101010101010101010101010101111111"
+                    "00000000011101001000110110001101000000001111000000000"
+                    "11111011100100000100000011111000011010101000010101010"
+                    "11100000100111010011110110011110110010011011001001101"
+                    "00110110000101000010110100111001100110000111110110101"
+                    "10100100101111110111100110011000111111000010010011011"
+                    "00001110111010001100110011100001100110011001110111000"
+                    "00100100001010101011010001000110110110111010011011000"
+                    "00111011011011100011010010001010100111110101001110110"
+                    "10111001010100100110000111101101100011010010100101001"
+                    "01000010001111110011000000001101011011010000011110001"
+                    "00100100001100001110010100101100010000011010000001011"
+                    "10001110001010011011010111100011001011110010100110110"
+                    "01100001001101001110011111010010010001101000001011101"
+                    "11110011100011000010011011100011110100010001100101000"
+                    "00010101000010110010010000100000011000011000001111010"
+                    "10100110010110000101011010110000000101100100011011110"
+                    "01000000010101000000110101111100000111011010110101011"
+                    "01101111111100000100010111111010011101110000111111001"
+                    "10001000101101010011110010001100111001010100100011110"
+                    "10011010111011100010110110101000001010000111101011010"
+                    "10011000100111010001101010001111011100001111100011101"
+                    "10111111111101111010000011111001101010111110111110100"
+                    "01001100101111011100010101001100111100101001111101000"
+                    "00001111111111100011101010101011010101110100010000101"
+                    "10101000110010100110011011101011010011001011010110000"
+                    "10100110010001110011001111010101001010100001101011111"
+                    "10010101111110001110010011100000111001110011000011000"
+                    "01111010110001011001011000001011001011100011110110111"
+                    "01110001010100101000001010111110011001001000111011101"
+                    "10011110000101101010101111100001110010111000000101010"
+                    "01010001100011010110110100100100100010001011100101000"
+                    "11011011001100001101010010111110010011000110010001100"
+                    "01000001001101000000000011101101100111010010010111000"
+                    "10100111010100000100010110011000001111110100000000001"
+                    "10100100110001010011100111110000110000011011010010110"
+                    "11011111010110100110110001001001010110110111011111000"
+                    "01100000111011110111101110110011010110001100001101101"
+                    "00010010010100111000010011111011110000011111111111010"
+                    "00000000101011011000011010001100101010001011100010010"
+                    "11111110110011000011001110101000111011000001101011100"
+                    "10000010001011100110011110001011000101010011100010111"
+                    "10111010100100010011001011111110101110111100111110100"
+                    "10111010101000001110010011011100110000001010000101010"
+                    "10111010100110111101011111100111011111010000111111010"
+                    "10000010110010101000001000110100010100101010011010001"
+                    "11111110100110011010100111101001110010111100100111000"
+                },
+        /*  5*/ { BARCODE_QRCODE, DATA_MODE, 2, -1, 3 << 8, { 0, 0, "" }, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, 0, 21, 21, 1, "Standard example + extra seg, data mode",
+                    "111111100111001111111"
+                    "100000100010001000001"
+                    "101110101010001011101"
+                    "101110101101101011101"
+                    "101110101000101011101"
+                    "100000101101001000001"
+                    "111111101010101111111"
+                    "000000001100000000000"
+                    "101111100001001111100"
+                    "011001000111100100111"
+                    "100010111100110100110"
+                    "001100001101101101101"
+                    "100110100000111001010"
+                    "000000001010110011111"
+                    "111111100101001100101"
+                    "100000101000000100110"
+                    "101110101101000100100"
+                    "101110101001111010100"
+                    "101110101110101001100"
+                    "100000100101111110000"
+                    "111111101110100001010"
+                },
+        /*  6*/ { BARCODE_QRCODE, UNICODE_MODE, 2, -1, 3 << 8, { 0, 0, "" }, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, 1, "Auto-ECI",
+                    "111111100001001111111"
+                    "100000100111001000001"
+                    "101110101011101011101"
+                    "101110101000101011101"
+                    "101110101100101011101"
+                    "100000101100101000001"
+                    "111111101010101111111"
+                    "000000001100000000000"
+                    "101111100110101111100"
+                    "111100011010011100001"
+                    "011000100111011011111"
+                    "101011010000010111110"
+                    "100100101010111101001"
+                    "000000001000000110101"
+                    "111111100011000110111"
+                    "100000101100001001001"
+                    "101110101010110101100"
+                    "101110101000010111100"
+                    "101110101011000110100"
+                    "100000100101000010100"
+                    "111111101100100100110"
+                },
+        /*  7*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, { 2, 3, "123" }, { { TU("éé"), -1, 23 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 25, 25, 1, "Structured Append",
+                    "1111111010110011001111111"
+                    "1000001010010000001000001"
+                    "1011101011111011101011101"
+                    "1011101010001101001011101"
+                    "1011101010110111001011101"
+                    "1000001001010010001000001"
+                    "1111111010101010101111111"
+                    "0000000011110000000000000"
+                    "0110101101111000101011111"
+                    "0001100000010100111110001"
+                    "1101111111001011001100111"
+                    "0010000101000110000101000"
+                    "0000011011100010100010101"
+                    "0011010001011111011101001"
+                    "1000101100001000101010011"
+                    "0100100111100101111000101"
+                    "1000011110011100111110000"
+                    "0000000010110000100011101"
+                    "1111111011001110101011111"
+                    "1000001001010111100010111"
+                    "1011101010111111111110001"
+                    "1011101001011111001001100"
+                    "1011101011110010101101101"
+                    "1000001010100000101100001"
+                    "1111111000101101110011001"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+
+    testStart("test_qr_encode_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                            data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                            NULL, 0, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            char escaped1[4096];
+            char escaped2[4096];
+            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %s, %d, %d, %s, { %d, %d, \"%s\" }, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            testUtilModulesPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < ZINT_ERROR) {
+                int width, row;
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+                if (do_zxingcpp) {
+                    if ((symbol->input_mode & 0x07) == DATA_MODE) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology));
+                        }
+                    } else {
+                        int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+                        if (testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length, debug)) {
+                            int cmp_len, ret_len;
+                            char modules_dump[32768];
+                            assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                            ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length,
+                                    modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                            assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                            ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
+                                    NULL /*primary*/, escaped, &ret_len);
+                            assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                        }
+                    }
                 }
             }
         }
@@ -3187,9 +4401,9 @@ static void test_qr_perf(int index, int debug) {
 static void test_microqr_options(int index, int debug) {
 
     struct item {
-        char *data;
         int option_1;
         int option_2;
+        char *data;
         int ret_encode;
         int ret_vector;
         int expected_size;
@@ -3197,58 +4411,69 @@ static void test_microqr_options(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "12345", -1, -1, 0, 0, 11, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
-        /*  1*/ { "12345", 1, -1, 0, 0, 11, 0 }, // ECC 1 (L), version auto-set to 1
-        /*  2*/ { "12345", 2, -1, 0, 0, 13, 1 }, // ECC 2 (M), version auto-set to 2
-        /*  3*/ { "12345", 3, -1, 0, 0, 17, 1 }, // ECC 3 (Q), version auto-set to 3
-        /*  4*/ { "12345", 4, -1, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /*  5*/ { "12345", -1, 1, 0, 0, 11, -1 }, // ECC auto-set to 1, version 1
-        /*  6*/ { "12345", -1, 2, 0, 0, 13, 1 }, // ECC auto-set to 2, version 2
-        /*  7*/ { "12345", 2, 2, 0, 0, 13, 0 },
-        /*  8*/ { "12345", -1, 3, 0, 0, 15, 1 }, // ECC auto-set to 2, version 3
-        /*  9*/ { "12345", 2, 3, 0, 0, 15, 0 },
-        /* 10*/ { "12345", 1, 3, 0, 0, 15, 1 },
-        /* 11*/ { "12345", -1, 4, 0, 0, 17, 1 }, // ECC auto-set to 3, version 4
-        /* 12*/ { "12345", 3, 4, 0, 0, 17, 0 }, // ECC auto-set to 3, version 4
-        /* 13*/ { "12345", 2, 4, 0, 0, 17, 1 },
-        /* 14*/ { "12345", -1, 5, 0, 0, 11, -1 }, // Size > 4 ignored
-        /* 15*/ { "12345", 1, 5, 0, 0, 11, 0 }, // Ignored also if ECC given
-        /* 16*/ { "12345", 1, 1, 0, 0, 11, 0 }, // ECC 1, version 1
-        /* 17*/ { "12345", 1, 2, 0, 0, 13, 1 }, // ECC 1, version 2
-        /* 18*/ { "12345", 1, 3, 0, 0, 15, 1 }, // ECC 1, version 3
-        /* 19*/ { "12345", 1, 4, 0, 0, 17, 1 }, // ECC 1, version 4
-        /* 20*/ { "12345", 2, 1, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /* 21*/ { "12345", 2, 2, 0, -1, 13, -1 }, // ECC 2, version 2
-        /* 22*/ { "12345", 2, 3, 0, -1, 15, 1 }, // ECC 2, version 3
-        /* 23*/ { "12345", 2, 4, 0, -1, 17, 1 }, // ECC 2, version 4
-        /* 24*/ { "12345", 3, 1, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /* 25*/ { "12345", 3, 2, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /* 26*/ { "12345", 3, 3, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /* 27*/ { "12345", 3, 4, 0, -1, 17, -1 }, // ECC 3, version 4
-        /* 28*/ { "12345", 4, 4, ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
-        /* 29*/ { "12345", 5, -1, 0, 0, 11, -1 }, // ECC > 4 ignored
-        /* 30*/ { "12345", 5, 1, 0, 0, 11, 0 }, // Ignored also if size given
-        /* 31*/ { "123456", 1, 1, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 32*/ { "123456", 1, -1, 0, 0, 13, -1 }, // ECC 1 (L), version auto-set to 2
-        /* 33*/ { "123456", 1, 2, 0, 0, 13, 0 },
-        /* 34*/ { "ABCDEF", 2, 2, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 35*/ { "ABCDEF", 1, -1, 0, 0, 13, -1 }, // ECC 1 (L), version auto-set to 2
-        /* 36*/ { "ABCDEF", 1, 2, 0, 0, 13, 0 },
-        /* 37*/ { "ABCDE", 2, -1, 0, 0, 13, -1 }, // ECC 2 (M), version auto-set to 2
-        /* 38*/ { "ABCDE", 2, 2, 0, 0, 13, 0 }, // ECC 2 (M), version auto-set to 2
-        /* 39*/ { "ABCDEABCDEABCD", 1, -1, 0, 0, 15, -1 }, // 14 alphanumerics, ECC 1, version auto-set to 3
-        /* 40*/ { "ABCDEABCDEABCD", 1, 3, 0, 0, 15, 0 },
-        /* 41*/ { "ABCDEABCDEABCD", 2, 3, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 42*/ { "ABCDEABCDEA", 2, 3, 0, 0, 15, -1 }, // 11 alphanumerics, ECC 2, version 3
-        /* 43*/ { "ABCDEFGHIJABCDEFGHIJA", 1, -1, 0, 0, 17, -1 }, // 21 alphanumerics, ECC 1, version auto-set to 4
-        /* 44*/ { "ABCDEFGHIJABCDEFGHIJA", 1, 4, 0, 0, 17, 0 },
-        /* 45*/ { "ABCDEFGHIJABCDEFGHIJA", 2, 4, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 46*/ { "ABCDEFGHIJABCDEFGH", 2, 4, 0, 0, 17, -1 }, // 18 alphanumerics, ECC 2, version 4
-        /* 47*/ { "ABCDEFGHIJABCDEFGH", 3, 4, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 48*/ { "ABCDEFGHIJABC", 3, 4, 0, 0, 17, -1 }, // 13 alphanumerics, ECC 3 (Q), version 4
-        /* 49*/ { "123456789012345678901234567890123456", -1, -1, ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 35 absolute max
-        /* 50*/ { "貫貫貫貫貫", -1, -1, 0, 0, 17, -1 }, // 5 Kanji max
-        /* 51*/ { "貫貫貫貫貫貫", -1, -1, ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /*  0*/ { -1, -1, "12345", 0, 0, 11, -1 }, // ECC auto-set to 1 (L), version auto-set to 1
+        /*  1*/ { 1, -1, "12345", 0, 0, 11, 0 }, // ECC 1 (L), version auto-set to 1
+        /*  2*/ { 2, -1, "12345", 0, 0, 13, 1 }, // ECC 2 (M), version auto-set to 2
+        /*  3*/ { 3, -1, "12345", 0, 0, 17, 1 }, // ECC 3 (Q), version auto-set to 3
+        /*  4*/ { 4, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /*  5*/ { -1, 1, "12345", 0, 0, 11, -1 }, // ECC auto-set to 1, version 1
+        /*  6*/ { -1, 2, "12345", 0, 0, 13, 1 }, // ECC auto-set to 2, version 2
+        /*  7*/ { 2, 2, "12345", 0, 0, 13, 0 },
+        /*  8*/ { -1, 3, "12345", 0, 0, 15, 1 }, // ECC auto-set to 2, version 3
+        /*  9*/ { 2, 3, "12345", 0, 0, 15, 0 },
+        /* 10*/ { 1, 3, "12345", 0, 0, 15, 1 },
+        /* 11*/ { -1, 4, "12345", 0, 0, 17, 1 }, // ECC auto-set to 3, version 4
+        /* 12*/ { 3, 4, "12345", 0, 0, 17, 0 }, // ECC auto-set to 3, version 4
+        /* 13*/ { 2, 4, "12345", 0, 0, 17, 1 },
+        /* 14*/ { -1, 5, "12345", 0, 0, 11, -1 }, // Size > 4 ignored
+        /* 15*/ { 1, 5, "12345", 0, 0, 11, 0 }, // Ignored also if ECC given
+        /* 16*/ { 1, 1, "12345", 0, 0, 11, 0 }, // ECC 1, version 1
+        /* 17*/ { 1, 2, "12345", 0, 0, 13, 1 }, // ECC 1, version 2
+        /* 18*/ { 1, 3, "12345", 0, 0, 15, 1 }, // ECC 1, version 3
+        /* 19*/ { 1, 4, "12345", 0, 0, 17, 1 }, // ECC 1, version 4
+        /* 20*/ { 2, 1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /* 21*/ { 2, 2, "12345", 0, -1, 13, -1 }, // ECC 2, version 2
+        /* 22*/ { 2, 3, "12345", 0, -1, 15, 1 }, // ECC 2, version 3
+        /* 23*/ { 2, 4, "12345", 0, -1, 17, 1 }, // ECC 2, version 4
+        /* 24*/ { 3, 1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /* 25*/ { 3, 2, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /* 26*/ { 3, 3, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /* 27*/ { 3, 4, "12345", 0, -1, 17, -1 }, // ECC 3, version 4
+        /* 28*/ { 4, 4, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 },
+        /* 29*/ { 5, -1, "12345", 0, 0, 11, -1 }, // ECC > 4 ignored
+        /* 30*/ { 5, 1, "12345", 0, 0, 11, 0 }, // Ignored also if size given
+        /* 31*/ { 1, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 32*/ { 1, -1, "123456", 0, 0, 13, -1 }, // ECC 1 (L), version auto-set to 2
+        /* 33*/ { 1, 2, "123456", 0, 0, 13, 0 },
+        /* 34*/ { 2, 2, "ABCDEF", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 35*/ { 1, -1, "ABCDEF", 0, 0, 13, -1 }, // ECC 1 (L), version auto-set to 2
+        /* 36*/ { 1, 2, "ABCDEF", 0, 0, 13, 0 },
+        /* 37*/ { 2, -1, "ABCDE", 0, 0, 13, -1 }, // ECC 2 (M), version auto-set to 2
+        /* 38*/ { 2, 2, "ABCDE", 0, 0, 13, 0 }, // ECC 2 (M), version auto-set to 2
+        /* 39*/ { 1, -1, "ABCDEABCDEABCD", 0, 0, 15, -1 }, // 14 alphanumerics, ECC 1, version auto-set to 3
+        /* 40*/ { 1, 3, "ABCDEABCDEABCD", 0, 0, 15, 0 },
+        /* 41*/ { 2, 3, "ABCDEABCDEABCD", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 42*/ { 2, 3, "ABCDEABCDEA", 0, 0, 15, -1 }, // 11 alphanumerics, ECC 2, version 3
+        /* 43*/ { 1, -1, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, -1 }, // 21 alphanumerics, ECC 1, version auto-set to 4
+        /* 44*/ { 1, 4, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, 0 },
+        /* 45*/ { 2, 4, "ABCDEFGHIJABCDEFGHIJA", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 46*/ { 2, 4, "ABCDEFGHIJABCDEFGH", 0, 0, 17, -1 }, // 18 alphanumerics, ECC 2, version 4
+        /* 47*/ { 3, 4, "ABCDEFGHIJABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 48*/ { 3, 4, "ABCDEFGHIJABC", 0, 0, 17, -1 }, // 13 alphanumerics, ECC 3 (Q), version 4
+        /* 49*/ { -1, -1, "123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, // 35 absolute max
+        /* 50*/ { -1, -1, "貫貫貫貫貫", 0, 0, 17, -1 }, // 5 Kanji max
+        /* 51*/ { -1, -1, "貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
+        /* 52*/ { -1, 1, "A", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Numeric only
+        /* 53*/ { -1, 2, "A", 0, 0, 13, -1 },
+        /* 54*/ { -1, 2, " ", 0, 0, 13, -1 },
+        /* 55*/ { -1, 2, "$%*+", 0, 0, 13, -1 },
+        /* 56*/ { -1, 2, "-./:", 0, 0, 13, -1 },
+        /* 57*/ { -1, 2, "a", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Uppercase only
+        /* 58*/ { -1, 2, "!", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Certain punctuation only
+        /* 59*/ { -1, 2, "#", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Certain punctuation only
+        /* 60*/ { -1, 2, ",", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Certain punctuation only
+        /* 61*/ { -1, 2, "@", ZINT_ERROR_INVALID_DATA, -1, 0, -1 }, // Certain punctuation only
+        /* 62*/ { -1, 2, "\177", ZINT_ERROR_INVALID_DATA, -1, 0, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -3292,10 +4517,12 @@ static void test_microqr_input(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
+        int option_1;
         int option_3;
         char *data;
         int ret;
         char *expected;
+        int bwipp_cmp;
         char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
@@ -3312,59 +4539,64 @@ static void test_microqr_input(int index, int generate, int debug) {
     // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
     // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", "B2 (UTF-8)" },
-        /*  2*/ { UNICODE_MODE, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /*  3*/ { UNICODE_MODE, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
-        /*  4*/ { UNICODE_MODE, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /*  5*/ { UNICODE_MODE, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
-        /*  6*/ { UNICODE_MODE, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", "B1 (ASCII)" },
-        /*  7*/ { UNICODE_MODE, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /*  8*/ { UNICODE_MODE, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /*  9*/ { UNICODE_MODE, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 10*/ { UNICODE_MODE, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 11*/ { UNICODE_MODE, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 12*/ { UNICODE_MODE, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 13*/ { UNICODE_MODE, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 14*/ { DATA_MODE, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00", "B2 (Shift JIS)" },
-        /* 15*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", "K1 (Shift JIS) (full multibyte)" },
-        /* 16*/ { DATA_MODE, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", "B3 (UTF-8)" },
-        /* 17*/ { UNICODE_MODE, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS)" },
-        /* 18*/ { DATA_MODE, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00", "B2 (Shift JIS)" },
-        /* 19*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", "K1 (Shift JIS) (full multibyte)" },
-        /* 20*/ { DATA_MODE, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", "B3 (UTF-8)" },
-        /* 21*/ { UNICODE_MODE, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 22*/ { DATA_MODE, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 23*/ { DATA_MODE, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", "B5 (UTF-8)" },
-        /* 24*/ { UNICODE_MODE, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS)" },
-        /* 25*/ { DATA_MODE, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00", "B4 (Shift JIS)" },
-        /* 26*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", "K2 (Shift JIS) (full multibyte)" },
-        /* 27*/ { DATA_MODE, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", "B6 (UTF-8)" },
-        /* 28*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", "B6 (UTF-8)" },
-        /* 29*/ { UNICODE_MODE, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS)" },
-        /* 30*/ { DATA_MODE, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00", "B5 (Shift JIS)" },
-        /* 31*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", "K2 B1 (Shift JIS) (full multibyte)" },
-        /* 32*/ { DATA_MODE, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", "B9 (UTF-8)" },
-        /* 33*/ { UNICODE_MODE, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 34*/ { DATA_MODE, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 35*/ { DATA_MODE, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", "B11 (UTF-8)" },
-        /* 36*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B12 (UTF-8)" },
-        /* 37*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", "B14 (UTF-8)" },
-        /* 38*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00", "B1 K6 B1 (UTF-8) (full multibyte)" },
-        /* 39*/ { UNICODE_MODE, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", "B2 (ISO 8859-1)" },
-        /* 40*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", "K1 (ISO 8859-1) (full multibyte)" },
+        /*  0*/ { UNICODE_MODE, 2, 1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1)" },
+        /*  1*/ { DATA_MODE, 2, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", 1, "B2 (UTF-8)" },
+        /*  2*/ { UNICODE_MODE, 2, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
+        /*  3*/ { UNICODE_MODE, 2, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, "ก not in Shift JIS" },
+        /*  4*/ { UNICODE_MODE, 2, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
+        /*  5*/ { UNICODE_MODE, 2, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, "ກ not in Shift JIS" },
+        /*  6*/ { UNICODE_MODE, 2, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", 1, "B1 (ASCII)" },
+        /*  7*/ { UNICODE_MODE, 2, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /*  8*/ { UNICODE_MODE, 2, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /*  9*/ { UNICODE_MODE, 2, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 10*/ { UNICODE_MODE, 2, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 11*/ { UNICODE_MODE, 2, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 12*/ { UNICODE_MODE, 2, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous)" },
+        /* 13*/ { UNICODE_MODE, 2, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
+        /* 14*/ { DATA_MODE, 2, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00", 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 15*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS) (full multibyte)" },
+        /* 16*/ { DATA_MODE, 2, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", 1, "B3 (UTF-8)" },
+        /* 17*/ { UNICODE_MODE, 2, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
+        /* 18*/ { DATA_MODE, 2, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00", 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 19*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", 1, "K1 (Shift JIS) (full multibyte)" },
+        /* 20*/ { DATA_MODE, 2, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", 1, "B3 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, 2, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, "B3 (Shift JIS) (optimized from B1 K1)" },
+        /* 22*/ { DATA_MODE, 2, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, "B3 (Shift JIS) (optimized from B1 K1)" },
+        /* 23*/ { DATA_MODE, 2, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", 1, "B5 (UTF-8)" },
+        /* 24*/ { UNICODE_MODE, 2, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, "K2 (Shift JIS)" },
+        /* 25*/ { DATA_MODE, 2, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00", 0, "B4 (Shift JIS; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below))" },
+        /* 26*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, "K2 (Shift JIS) (full multibyte)" },
+        /* 27*/ { DATA_MODE, 2, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, "B6 (UTF-8)" },
+        /* 28*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, "B6 (UTF-8)" },
+        /* 29*/ { UNICODE_MODE, 2, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, "K2 B1 (Shift JIS)" },
+        /* 30*/ { DATA_MODE, 2, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00", 0, "B5 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 31*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, "K2 B1 (Shift JIS) (full multibyte)" },
+        /* 32*/ { DATA_MODE, 1, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", 1, "B9 (UTF-8)" },
+        /* 33*/ { UNICODE_MODE, 2, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", 1, "B6 (Shift JIS) (optimized from B1 K2 B1)" },
+        /* 34*/ { DATA_MODE, 2, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", 1, "B6 (Shift JIS) (optimized from B1 K2 B1)" },
+        /* 35*/ { DATA_MODE, 2, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", 1, "B11 (UTF-8)" },
+        /* 36*/ { DATA_MODE, 2, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, "B12 (UTF-8); BWIPP different encodation (B1 K5 B1)" },
+        /* 37*/ { DATA_MODE, 1, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, "B14 (UTF-8); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 38*/ { DATA_MODE, 1, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00", 1, "B1 K6 B1 (UTF-8) (full multibyte)" },
+        /* 39*/ { UNICODE_MODE, 2, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", 0, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 40*/ { UNICODE_MODE, 2, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", 1, "K1 (ISO 8859-1) (full multibyte)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_microqr_input");
 
     for (i = 0; i < data_size; i++) {
 
         if (index != -1 && i != index) continue;
+        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -3377,12 +4609,29 @@ static void test_microqr_input(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilOption3Name(data[i].option_3),
+            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (ret < ZINT_ERROR) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        char modules_dump[17 * 17 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                    }
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -3395,48 +4644,48 @@ static void test_microqr_input(int index, int generate, int debug) {
 static void test_microqr_padding(int index, int generate, int debug) {
 
     struct item {
-        char *data;
         int option_1;
+        char *data;
         int ret;
         char *expected;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { "1", -1, 0, "22 00 00", "M1, bits left 13" },
-        /*  1*/ { "12", -1, 0, "43 00 00", "M1, bits left 10" },
-        /*  2*/ { "123", -1, 0, "63 D8 00", "M1, bits left 7" },
-        /*  3*/ { "1234", -1, 0, "83 DA 00", "M1, bits left 3" },
-        /*  4*/ { "12345", -1, 0, "A3 DA D0", "M1, bits left 0" },
-        /*  5*/ { "123456", 1, 0, "30 F6 E4 00 EC", "M2-L, bits left 15" },
-        /*  6*/ { "1234567", 1, 0, "38 F6 E4 38 00", "M2-L, bits left 11" },
-        /*  7*/ { "12345678", 1, 0, "40 F6 E4 4E 00", "M2-L, bits left 8" },
-        /*  8*/ { "123456789", 1, 0, "48 F6 E4 62 A0", "M2-L, bits left 5" },
-        /*  9*/ { "1234567890", 1, 0, "50 F6 E4 62 A0", "M2-L, bits left 1" },
-        /* 10*/ { "1234", 2, 0, "20 F6 80 EC", "M2-M, bits left 13" },
-        /* 11*/ { "123456", 2, 0, "30 F6 E4 00", "M2-M, bits left 7" },
-        /* 12*/ { "1234567", 2, 0, "38 F6 E4 38", "M2-M, bits left 3" },
-        /* 13*/ { "12345678", 2, 0, "40 F6 E4 4E", "M2-M, bits left 0" },
-        /* 14*/ { "ABCDEF", 1, 0, "E3 9A 8A 54 28", "M2-L, bits left 3" },
-        /* 15*/ { "ABCDE", 2, 0, "D3 9A 8A 4E", "M2-M, bits left 0" },
-        /* 16*/ { "1234567890123456789", 1, 0, "26 3D B9 18 A8 18 AC D4 D2 00 00", "M3-L, bits left 13" },
-        /* 17*/ { "12345678901234567890", 1, 0, "28 3D B9 18 A8 18 AC D4 D6 80 00", "M3-L, bits left 10" },
-        /* 18*/ { "123456789012345678901", 1, 0, "2A 3D B9 18 A8 18 AC D4 DC 28 00", "M3-L, bits left 7" },
-        /* 19*/ { "1234567890123456789012", 1, 0, "2C 3D B9 18 A8 18 AC D4 DC 29 00", "M3-L, bits left 3" },
-        /* 20*/ { "12345678901234567890123", 1, 0, "2E 3D B9 18 A8 18 AC D4 DC 29 70", "M3-L, bits left 0" },
-        /* 21*/ { "1234567890", 2, 0, "14 3D B9 18 A8 00 EC 11 00", "M3-M, bits left 27" },
-        /* 22*/ { "123456789012345678", 2, 0, "24 3D B9 18 A8 18 AC D4 C0", "M3-M, bits left 1" },
-        /* 23*/ { "ABCDEFGHIJKLMN", 1, 0, "78 E6 A2 95 0A B8 59 EB 99 7E A0", "M3-L, bits left 1" },
-        /* 24*/ { "ABCDEFGHIJK", 2, 0, "6C E6 A2 95 0A B8 59 EA 80", "M3-M, bits left 1" },
-        /* 25*/ { "1234567890123456789012345678", 1, 0, "0E 0F 6E 46 2A 06 2B 35 37 0A 75 46 F0 00 EC 11", "M4-L, bits left 25" },
-        /* 26*/ { "123456789012345678901234567890", 1, 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 00 EC", "M4-L, bits left 19" },
-        /* 27*/ { "1234567890123456789012345678901234", 1, 0, "11 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 80", "M4-L, bits left 5" },
-        /* 28*/ { "12345678901234567890123456789012345", 1, 0, "11 8F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 B4", "M4-L, bits left 1" },
-        /* 29*/ { "123456789012345ABCDEFGHIJK", 1, 0, "07 8F 6E 46 2A 06 2B 25 67 35 14 A8 55 C2 CF 54", "M4-L, bits left 0" },
-        /* 30*/ { "123456789012345678901234567890", 2, 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0", "M4-M, bits left 3" },
-        /* 31*/ { "123456789012345678901", 3, 0, "0A 8F 6E 46 2A 06 2B 35 37 0A", "M4-Q, bits left 1" },
-        /* 32*/ { "ABCDEFGHIJKLMNOPQRSTU", 1, 0, "35 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 B4 25 E0", "M4-L, bits left 4" },
-        /* 33*/ { "ABCDEFGHIJKLMNOPQR", 2, 0, "32 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 A0", "M4-M, bits left 5" },
-        /* 34*/ { "ABCDEFGHIJKLM", 3, 0, "2D 39 A8 A5 42 AE 16 7A E6 56", "M4-Q, bits left 0" },
+        /*  0*/ { -1, "1", 0, "22 00 00", "M1, bits left 13" },
+        /*  1*/ { -1, "12", 0, "43 00 00", "M1, bits left 10" },
+        /*  2*/ { -1, "123", 0, "63 D8 00", "M1, bits left 7" },
+        /*  3*/ { -1, "1234", 0, "83 DA 00", "M1, bits left 3" },
+        /*  4*/ { -1, "12345", 0, "A3 DA D0", "M1, bits left 0" },
+        /*  5*/ { 1, "123456", 0, "30 F6 E4 00 EC", "M2-L, bits left 15" },
+        /*  6*/ { 1, "1234567", 0, "38 F6 E4 38 00", "M2-L, bits left 11" },
+        /*  7*/ { 1, "12345678", 0, "40 F6 E4 4E 00", "M2-L, bits left 8" },
+        /*  8*/ { 1, "123456789", 0, "48 F6 E4 62 A0", "M2-L, bits left 5" },
+        /*  9*/ { 1, "1234567890", 0, "50 F6 E4 62 A0", "M2-L, bits left 1" },
+        /* 10*/ { 2, "1234", 0, "20 F6 80 EC", "M2-M, bits left 13" },
+        /* 11*/ { 2, "123456", 0, "30 F6 E4 00", "M2-M, bits left 7" },
+        /* 12*/ { 2, "1234567", 0, "38 F6 E4 38", "M2-M, bits left 3" },
+        /* 13*/ { 2, "12345678", 0, "40 F6 E4 4E", "M2-M, bits left 0" },
+        /* 14*/ { 1, "ABCDEF", 0, "E3 9A 8A 54 28", "M2-L, bits left 3" },
+        /* 15*/ { 2, "ABCDE", 0, "D3 9A 8A 4E", "M2-M, bits left 0" },
+        /* 16*/ { 1, "1234567890123456789", 0, "26 3D B9 18 A8 18 AC D4 D2 00 00", "M3-L, bits left 13" },
+        /* 17*/ { 1, "12345678901234567890", 0, "28 3D B9 18 A8 18 AC D4 D6 80 00", "M3-L, bits left 10" },
+        /* 18*/ { 1, "123456789012345678901", 0, "2A 3D B9 18 A8 18 AC D4 DC 28 00", "M3-L, bits left 7" },
+        /* 19*/ { 1, "1234567890123456789012", 0, "2C 3D B9 18 A8 18 AC D4 DC 29 00", "M3-L, bits left 3" },
+        /* 20*/ { 1, "12345678901234567890123", 0, "2E 3D B9 18 A8 18 AC D4 DC 29 70", "M3-L, bits left 0" },
+        /* 21*/ { 2, "1234567890", 0, "14 3D B9 18 A8 00 EC 11 00", "M3-M, bits left 27" },
+        /* 22*/ { 2, "123456789012345678", 0, "24 3D B9 18 A8 18 AC D4 C0", "M3-M, bits left 1" },
+        /* 23*/ { 1, "ABCDEFGHIJKLMN", 0, "78 E6 A2 95 0A B8 59 EB 99 7E A0", "M3-L, bits left 1" },
+        /* 24*/ { 2, "ABCDEFGHIJK", 0, "6C E6 A2 95 0A B8 59 EA 80", "M3-M, bits left 1" },
+        /* 25*/ { 1, "1234567890123456789012345678", 0, "0E 0F 6E 46 2A 06 2B 35 37 0A 75 46 F0 00 EC 11", "M4-L, bits left 25" },
+        /* 26*/ { 1, "123456789012345678901234567890", 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 00 EC", "M4-L, bits left 19" },
+        /* 27*/ { 1, "1234567890123456789012345678901234", 0, "11 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 80", "M4-L, bits left 5" },
+        /* 28*/ { 1, "12345678901234567890123456789012345", 0, "11 8F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0 F6 B4", "M4-L, bits left 1" },
+        /* 29*/ { 1, "123456789012345ABCDEFGHIJK", 0, "07 8F 6E 46 2A 06 2B 25 67 35 14 A8 55 C2 CF 54", "M4-L, bits left 0" },
+        /* 30*/ { 2, "123456789012345678901234567890", 0, "0F 0F 6E 46 2A 06 2B 35 37 0A 75 46 FB D0", "M4-M, bits left 3" },
+        /* 31*/ { 3, "123456789012345678901", 0, "0A 8F 6E 46 2A 06 2B 35 37 0A", "M4-Q, bits left 1" },
+        /* 32*/ { 1, "ABCDEFGHIJKLMNOPQRSTU", 0, "35 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 B4 25 E0", "M4-L, bits left 4" },
+        /* 33*/ { 2, "ABCDEFGHIJKLMNOPQR", 0, "32 39 A8 A5 42 AE 16 7A E6 5F AC 51 95 A0", "M4-M, bits left 5" },
+        /* 34*/ { 3, "ABCDEFGHIJKLM", 0, "2D 39 A8 A5 42 AE 16 7A E6 56", "M4-Q, bits left 0" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -3468,8 +4717,8 @@ static void test_microqr_padding(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { \"%s\", %d, %s, \"%s\", \"%s\" },\n",
-                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].option_1,
+            printf("        /*%3d*/ { %d, \"%s\", %s, \"%s\", \"%s\" },\n",
+                    i, data[i].option_1, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -3491,28 +4740,33 @@ static void test_microqr_optimize(int index, int generate, int debug) {
         char *data;
         int ret;
         char *expected;
+        int bwipp_cmp;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, -1, "1", 0, "22 00 00", "N1" },
-        /*  1*/ { UNICODE_MODE, 1, 2, -1, "A123", 0, "92 86 3D 80 EC", "A1 N3" },
-        /*  2*/ { UNICODE_MODE, 1, -1, -1, "AAAAAA", 0, "E3 98 73 0E 60", "A6" },
-        /*  3*/ { UNICODE_MODE, 1, -1, -1, "AA123456", 0, "A3 98 61 ED C8", "A2 N6" },
-        /*  4*/ { UNICODE_MODE, 1, 3, -1, "01a", 0, "04 06 16 10 00 EC 11 EC 11 EC 00", "N3 B1" },
-        /*  5*/ { UNICODE_MODE, 1, 4, -1, "01a", 0, "43 30 31 61 00 00 EC 11 EC 11 EC 11 EC 11 EC 11", "B3" },
-        /*  6*/ { UNICODE_MODE, 1, -1, -1, "こんwa、αβ", 0, "46 82 B1 82 F1 77 61 66 00 10 FF 88 00 00 EC 11", "B6 K3" },
-        /*  7*/ { UNICODE_MODE, 1, -1, -1, "こんにwa、αβ", 0, "66 13 10 B8 85 25 09 DD 85 98 00 43 FE 20 00 00", "K3 B2 K3" },
-        /*  8*/ { UNICODE_MODE, 1, 3, -1, "こんAB123\177", 0, "D0 4C 42 E2 91 CD 06 3D C2 FE 00", "K2 A2 N3 B1" },
-        /*  9*/ { UNICODE_MODE, 1, 4, -1, "こんAB123\177", 0, "64 13 10 B8 92 9C D0 5E 1A 0B F8 00 EC 11 EC 11", "K2 A5 B1" },
-        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00", "B2" },
-        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", "K1" },
-        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", "K1" },
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "1", 0, "22 00 00", 1, "N1" },
+        /*  1*/ { UNICODE_MODE, 1, 2, -1, "A123", 0, "92 86 3D 80 EC", 1, "A1 N3" },
+        /*  2*/ { UNICODE_MODE, 1, -1, -1, "AAAAAA", 0, "E3 98 73 0E 60", 1, "A6" },
+        /*  3*/ { UNICODE_MODE, 1, -1, -1, "AA123456", 0, "A3 98 61 ED C8", 1, "A2 N6" },
+        /*  4*/ { UNICODE_MODE, 1, 3, -1, "01a", 0, "04 06 16 10 00 EC 11 EC 11 EC 00", 1, "N3 B1" },
+        /*  5*/ { UNICODE_MODE, 1, 4, -1, "01a", 0, "43 30 31 61 00 00 EC 11 EC 11 EC 11 EC 11 EC 11", 1, "B3" },
+        /*  6*/ { UNICODE_MODE, 1, -1, -1, "こんwa、αβ", 0, "46 82 B1 82 F1 77 61 66 00 10 FF 88 00 00 EC 11", 1, "B6 K3" },
+        /*  7*/ { UNICODE_MODE, 1, -1, -1, "こんにwa、αβ", 0, "66 13 10 B8 85 25 09 DD 85 98 00 43 FE 20 00 00", 1, "K3 B2 K3" },
+        /*  8*/ { UNICODE_MODE, 1, 3, -1, "こんAB123\177", 0, "D0 4C 42 E2 91 CD 06 3D C2 FE 00", 0, "K2 A2 N3 B1; BWIPP different encodation (K2 A5 B1)" },
+        /*  9*/ { UNICODE_MODE, 1, 4, -1, "こんAB123\177", 0, "64 13 10 B8 92 9C D0 5E 1A 0B F8 00 EC 11 EC 11", 1, "K2 A5 B1" },
+        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00", 0, "B2; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, "K1" },
+        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, "K1" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_microqr_optimize");
 
@@ -3531,12 +4785,27 @@ static void test_microqr_optimize(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[17 * 17 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -3884,7 +5153,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
@@ -4035,9 +5304,9 @@ static void test_upnqr_encode(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
-        char *data;
         int option_1;
         int option_2;
+        char *data;
         int ret;
 
         int expected_rows;
@@ -4047,7 +5316,7 @@ static void test_upnqr_encode(int index, int generate, int debug) {
     };
 
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "Ą˘Ł¤ĽŚ§¨ŠŞŤŹŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙", -1, -1, 0, 77, 77, "ISO 8859-2",
+        /*  0*/ { UNICODE_MODE, -1, -1, "Ą˘Ł¤ĽŚ§¨ŠŞŤŹŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙", 0, 77, 77, "ISO 8859-2",
                     "11111110000111101001000110101100101001111110111011001111111000110000001111111"
                     "10000010001011100100110111111011110100001011110000100001001110011010101000001"
                     "10111010110101111111101101111101001010110101111011011110100001100100101011101"
@@ -4146,8 +5415,9 @@ static void test_upnqr_encode(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %d, %s, %d, %d, \"%s\",\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].data, data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
+                    data[i].data, testUtilErrorName(data[i].ret),
                     symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("               },\n");
@@ -4171,9 +5441,9 @@ static void test_upnqr_encode(int index, int generate, int debug) {
 static void test_rmqr_options(int index, int debug) {
 
     struct item {
-        char *data;
         int option_1;
         int option_2;
+        char *data;
         int ret_encode;
         int ret_vector;
         int expected_rows;
@@ -4181,75 +5451,75 @@ static void test_rmqr_options(int index, int debug) {
     };
     // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
     struct item data[] = {
-        /*  0*/ { "12345", -1, -1, 0, 0, 11, 27 }, // ECC auto-set to H, version auto-set to 11 (R11x27)
-        /*  1*/ { "12345", 4, 11, 0, 0, 11, 27 },
-        /*  2*/ { "12345", 1, -1, ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, // ECC L not available
-        /*  3*/ { "12345", 3, -1, ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, // ECC Q not available
-        /*  4*/ { "123456789", 4, 11, 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 9 numbers
-        /*  5*/ { "1234567890", 4, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /*  6*/ { "12345678901234", 2, 11, 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 14 numbers
-        /*  7*/ { "123456789012345", 2, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /*  8*/ { "ABCDEF", 4, 11, 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 6 letters
-        /*  9*/ { "ABCDEFG", 4, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 10*/ { "ABCDEFGH", 2, 11, 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 8 letters
-        /* 11*/ { "ABCDEFGHI", 2, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 12*/ { "\177\177\177\177", 4, 11, 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 4 bytes
-        /* 13*/ { "\177\177\177\177\177", 4, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 14*/ { "\177\177\177\177\177\177", 2, 11, 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 6 bytes
-        /* 15*/ { "\177\177\177\177\177\177\177", 2, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 16*/ { "点茗", 4, 11, ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // Max capacity ECC H, version 11, 2 kanji
-        /* 17*/ { "点茗点", 4, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 18*/ { "点茗点", 2, 11, ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // Max capacity ECC M, version 11, 3 kanji
-        /* 19*/ { "点茗点茗", 2, 11, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 20*/ { "12345", -1, 1, 0, 0, 7, 43 }, // ECC auto-set to M, version 1 (R7x43)
-        /* 21*/ { "12345", 2, 1, 0, 0, 7, 43 },
-        /* 22*/ { "12345", 4, 1, 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 5 numbers
-        /* 23*/ { "123456", 4, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 24*/ { "123456789012", 2, 1, 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 12 numbers
-        /* 25*/ { "1234567890123", 2, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 26*/ { "ABC", 4, 1, 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 3 letters
-        /* 27*/ { "ABCD", 4, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 28*/ { "ABCDEFG", 2, 1, 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 7 letters
-        /* 29*/ { "ABCDEFGH", 2, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 30*/ { "\177\177", 4, 1, 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 2 bytes
-        /* 31*/ { "\177\177\177", 4, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 32*/ { "\177\177\177\177\177", 2, 1, 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 5 bytes
-        /* 33*/ { "\177\177\177\177\177\177", 2, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 34*/ { "点", 4, 1, ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // Max capacity ECC H, version 1, 1 kanji
-        /* 35*/ { "点茗", 4, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 36*/ { "点茗点", 2, 1, ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // Max capacity ECC M, version 1, 3 kanji
-        /* 37*/ { "点茗点茗", 2, 1, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 38*/ { "12345678901234567890123", 4, 7, 0, 0, 9, 59 }, // Max capacity ECC H, version 7 (R9x59), 23 numbers
-        /* 39*/ { "123456789012345678901234", 4, 7, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 40*/ { "点茗点茗点茗", 4, 7, ZINT_WARN_NONCOMPLIANT, 0, 9, 59 }, // Max capacity ECC H, version 7, 6 kanji
-        /* 41*/ { "点茗点茗点茗点", 4, 7, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 42*/ { "点茗点茗点茗点茗", 4, 13, ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, // Max capacity ECC H, version 13 (R11x59), 8 kanji
-        /* 43*/ { "点茗点茗点茗点茗点", 4, 13, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 44*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 20, ZINT_WARN_NONCOMPLIANT, 0, 13, 77 }, // Max capacity ECC H, version 20 (R13x77), 17 kanji
-        /* 45*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 20, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 46*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", 4, 26, ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, // Max capacity ECC H, version 26 (R15x99), 28 kanji
-        /* 47*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 26, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 48*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 32, ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // Max capacity ECC H, version 32 (R17x139), 46 kanji
-        /* 49*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 32, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 50*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 32, ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // Max capacity ECC M, version 32, 92 kanji
-        /* 51*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, 32, ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 52*/ { "点茗点", -1, 33, ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43
-        /* 53*/ { "点茗点", 4, 33, ZINT_WARN_NONCOMPLIANT, 0, 7, 59 }, // ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59
-        /* 54*/ { "点茗点", -1, 34, ZINT_WARN_NONCOMPLIANT, 0, 9, 43 }, // ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43
-        /* 55*/ { "点茗点", -1, 35, ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27
-        /* 56*/ { "点茗点茗点茗点", 4, 35, ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, // ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59
-        /* 57*/ { "点茗点茗点茗点", -1, 35, ZINT_WARN_NONCOMPLIANT, 0, 11, 43 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43
-        /* 58*/ { "点茗点茗点茗点茗", -1, 36, ZINT_WARN_NONCOMPLIANT, 0, 13, 43 }, // ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43
-        /* 59*/ { "点茗点茗点茗点茗", 4, 36, ZINT_WARN_NONCOMPLIANT, 0, 13, 59 }, // ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59
-        /* 60*/ { "点茗点茗点茗点茗点", -1, 37, ZINT_WARN_NONCOMPLIANT, 0, 15, 43 }, // ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43
-        /* 61*/ { "点茗点茗点茗点茗点", 4, 37, ZINT_WARN_NONCOMPLIANT, 0, 15, 59 }, // ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59
-        /* 62*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", -1, 38, ZINT_WARN_NONCOMPLIANT, 0, 17, 43 }, // ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43
-        /* 63*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, 38, ZINT_WARN_NONCOMPLIANT, 0, 17, 77 }, // ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77
-        /* 64*/ { "点茗点", -1, 39, ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
-        /* 65*/ { "点茗点", 4, -1, ZINT_WARN_NONCOMPLIANT, 0, 13, 27 }, // ECC set to H, auto-sets R13x27
-        /* 66*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, -1, ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, // ECC set to H, auto-sets R15x99 (max capacity)
-        /* 67*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", 4, -1, ZINT_WARN_NONCOMPLIANT, 0, 17, 99 }, // ECC set to H, auto-sets R17x99
-        /* 68*/ { "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", 4, -1, ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // ECC set to H, auto-sets R17x139 (max capacity)
+        /*  0*/ { -1, -1, "12345", 0, 0, 11, 27 }, // ECC auto-set to H, version auto-set to 11 (R11x27)
+        /*  1*/ { 4, 11, "12345", 0, 0, 11, 27 },
+        /*  2*/ { 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, // ECC L not available
+        /*  3*/ { 3, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, // ECC Q not available
+        /*  4*/ { 4, 11, "123456789", 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 9 numbers
+        /*  5*/ { 4, 11, "1234567890", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /*  6*/ { 2, 11, "12345678901234", 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 14 numbers
+        /*  7*/ { 2, 11, "123456789012345", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /*  8*/ { 4, 11, "ABCDEF", 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 6 letters
+        /*  9*/ { 4, 11, "ABCDEFG", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 10*/ { 2, 11, "ABCDEFGH", 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 8 letters
+        /* 11*/ { 2, 11, "ABCDEFGHI", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 12*/ { 4, 11, "\177\177\177\177", 0, 0, 11, 27 }, // Max capacity ECC H, version 11, 4 bytes
+        /* 13*/ { 4, 11, "\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 14*/ { 2, 11, "\177\177\177\177\177\177", 0, 0, 11, 27 }, // Max capacity ECC M, version 11, 6 bytes
+        /* 15*/ { 2, 11, "\177\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 16*/ { 4, 11, "点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // Max capacity ECC H, version 11, 2 kanji
+        /* 17*/ { 4, 11, "点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 18*/ { 2, 11, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // Max capacity ECC M, version 11, 3 kanji
+        /* 19*/ { 2, 11, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 20*/ { -1, 1, "12345", 0, 0, 7, 43 }, // ECC auto-set to M, version 1 (R7x43)
+        /* 21*/ { 2, 1, "12345", 0, 0, 7, 43 },
+        /* 22*/ { 4, 1, "12345", 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 5 numbers
+        /* 23*/ { 4, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 24*/ { 2, 1, "123456789012", 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 12 numbers
+        /* 25*/ { 2, 1, "1234567890123", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 26*/ { 4, 1, "ABC", 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 3 letters
+        /* 27*/ { 4, 1, "ABCD", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 28*/ { 2, 1, "ABCDEFG", 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 7 letters
+        /* 29*/ { 2, 1, "ABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 30*/ { 4, 1, "\177\177", 0, 0, 7, 43 }, // Max capacity ECC H, version 1, 2 bytes
+        /* 31*/ { 4, 1, "\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 32*/ { 2, 1, "\177\177\177\177\177", 0, 0, 7, 43 }, // Max capacity ECC M, version 1, 5 bytes
+        /* 33*/ { 2, 1, "\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 34*/ { 4, 1, "点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // Max capacity ECC H, version 1, 1 kanji
+        /* 35*/ { 4, 1, "点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 36*/ { 2, 1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // Max capacity ECC M, version 1, 3 kanji
+        /* 37*/ { 2, 1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 38*/ { 4, 7, "12345678901234567890123", 0, 0, 9, 59 }, // Max capacity ECC H, version 7 (R9x59), 23 numbers
+        /* 39*/ { 4, 7, "123456789012345678901234", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 40*/ { 4, 7, "点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 9, 59 }, // Max capacity ECC H, version 7, 6 kanji
+        /* 41*/ { 4, 7, "点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 42*/ { 4, 13, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, // Max capacity ECC H, version 13 (R11x59), 8 kanji
+        /* 43*/ { 4, 13, "点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 44*/ { 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 77 }, // Max capacity ECC H, version 20 (R13x77), 17 kanji
+        /* 45*/ { 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 46*/ { 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, // Max capacity ECC H, version 26 (R15x99), 28 kanji
+        /* 47*/ { 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 48*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // Max capacity ECC H, version 32 (R17x139), 46 kanji
+        /* 49*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 50*/ { -1, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // Max capacity ECC M, version 32, 92 kanji
+        /* 51*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 52*/ { -1, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, // ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43
+        /* 53*/ { 4, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 59 }, // ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59
+        /* 54*/ { -1, 34, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 9, 43 }, // ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43
+        /* 55*/ { -1, 35, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27
+        /* 56*/ { 4, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, // ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59
+        /* 57*/ { -1, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 43 }, // ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43
+        /* 58*/ { -1, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 43 }, // ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43
+        /* 59*/ { 4, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 59 }, // ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59
+        /* 60*/ { -1, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 43 }, // ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43
+        /* 61*/ { 4, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 59 }, // ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59
+        /* 62*/ { -1, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 43 }, // ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43
+        /* 63*/ { 4, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 77 }, // ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77
+        /* 64*/ { -1, 39, "点茗点", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
+        /* 65*/ { 4, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 27 }, // ECC set to H, auto-sets R13x27
+        /* 66*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, // ECC set to H, auto-sets R15x99 (max capacity)
+        /* 67*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 17, 99 }, // ECC set to H, auto-sets R17x99
+        /* 68*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, // ECC set to H, auto-sets R17x139 (max capacity)
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4288,135 +5558,145 @@ static void test_rmqr_input(int index, int generate, int debug) {
     struct item {
         int input_mode;
         int eci;
+        int option_1;
+        int option_2;
         int option_3;
         char *data;
         int ret;
         int expected_eci;
         char *expected;
+        int bwipp_cmp;
         char *comment;
     };
     // See test_qr_input() for details about test characters
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, -1, "é", 0, 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  1*/ { UNICODE_MODE, 3, -1, "é", 0, 3, "70 36 7A 40 EC", "ECI-3 B1 (ISO 8859-1)" },
-        /*  2*/ { UNICODE_MODE, 20, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "é not in Shift JIS" },
-        /*  3*/ { UNICODE_MODE, 26, -1, "é", 0, 26, "71 A6 B0 EA 40", "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { DATA_MODE, 0, -1, "é", 0, 0, "6B 0E A4 00 EC", "B2 (UTF-8)" },
-        /*  5*/ { DATA_MODE, 0, -1, "\351", 0, 0, "67 A4 00 EC 11", "B1 (ISO 8859-1)" },
-        /*  6*/ { UNICODE_MODE, 0, -1, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 80 00 EC 11", "K1 (Shift JIS)" },
-        /*  7*/ { UNICODE_MODE, 9, -1, "β", 0, 9, "70 96 78 80 EC", "ECI-9 B1 (ISO 8859-7)" },
-        /*  8*/ { UNICODE_MODE, 20, -1, "β", 0, 20, "71 48 88 00 00", "ECI-20 K1 (Shift JIS)" },
-        /*  9*/ { UNICODE_MODE, 26, -1, "β", 0, 26, "71 A6 B3 AC 80", "ECI-26 B2 (UTF-8)" },
-        /* 10*/ { DATA_MODE, 0, -1, "β", 0, 0, "6B 3A C8 00 EC", "B2 (UTF-8)" },
-        /* 11*/ { UNICODE_MODE, 0, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D6 68 40 EC", "ECI-13 B1 (ISO 8859-11)" },
-        /* 12*/ { UNICODE_MODE, 13, -1, "ก", 0, 13, "70 D6 68 40 EC", "ECI-13 B1 (ISO 8859-11)" },
-        /* 13*/ { UNICODE_MODE, 20, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ก not in Shift JIS" },
-        /* 14*/ { UNICODE_MODE, 26, -1, "ก", 0, 26, "71 A6 F8 2E 20 40 EC", "ECI-26 B3 (UTF-8)" },
-        /* 15*/ { DATA_MODE, 0, -1, "ก", 0, 0, "6F 82 E2 04 00", "B3 (UTF-8)" },
-        /* 16*/ { UNICODE_MODE, 0, -1, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 91 C0 EC 11", "K1 (Shift JIS)" },
-        /* 17*/ { UNICODE_MODE, 7, -1, "Ж", 0, 7, "70 76 6D 80 EC", "ECI-7 B1 (ISO 8859-5)" },
-        /* 18*/ { UNICODE_MODE, 20, -1, "Ж", 0, 20, "71 48 89 1C 00", "ECI-20 K1 (Shift JIS)" },
-        /* 19*/ { UNICODE_MODE, 26, -1, "Ж", 0, 26, "71 A6 B4 25 80", "ECI-26 B2 (UTF-8)" },
-        /* 20*/ { DATA_MODE, 0, -1, "Ж", 0, 0, "6B 42 58 00 EC", "B2 (UTF-8)" },
-        /* 21*/ { UNICODE_MODE, 0, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 F8 2E A0 40 EC", "ECI-26 B3 (UTF-8)" },
-        /* 22*/ { UNICODE_MODE, 20, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "ກ not in Shift JIS" },
-        /* 23*/ { UNICODE_MODE, 26, -1, "ກ", 0, 26, "71 A6 F8 2E A0 40 EC", "ECI-26 B3 (UTF-8)" },
-        /* 24*/ { DATA_MODE, 0, -1, "ກ", 0, 0, "6F 82 EA 04 00", "B3 (UTF-8)" },
-        /* 25*/ { UNICODE_MODE, 0, -1, "\\", 0, 0, "65 70 00 EC 11", "B1 (ASCII)" },
-        /* 26*/ { UNICODE_MODE, 20, -1, "\\", 0, 20, "71 48 80 7C 00", "ECI-20 K1 (Shift JIS)" },
-        /* 27*/ { UNICODE_MODE, 20, -1, "[", 0, 20, "71 46 56 C0 EC", "B1 (ASCII)" },
-        /* 28*/ { UNICODE_MODE, 20, -1, "\177", 0, 20, "71 46 5F C0 EC", "ECI-20 B1 (ASCII)" },
-        /* 29*/ { UNICODE_MODE, 0, -1, "¥", 0, 0, "66 94 00 EC 11", "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /* 30*/ { UNICODE_MODE, 3, -1, "¥", 0, 3, "70 36 69 40 EC", "ECI-3 B1 (ISO 8859-1)" },
-        /* 31*/ { UNICODE_MODE, 20, -1, "¥", 0, 20, "71 46 57 00 EC", "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
-        /* 32*/ { UNICODE_MODE, 26, -1, "¥", 0, 26, "71 A6 B0 A9 40", "ECI-26 B2 (UTF-8)" },
-        /* 33*/ { DATA_MODE, 0, -1, "¥", 0, 0, "6B 0A 94 00 EC", "B2 (UTF-8)" },
-        /* 34*/ { UNICODE_MODE, 0, -1, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 94 00 EC 11", "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /* 35*/ { UNICODE_MODE, 3, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
-        /* 36*/ { UNICODE_MODE, 20, -1, "･", 0, 20, "71 46 69 40 EC", "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
-        /* 37*/ { UNICODE_MODE, 26, -1, "･", 0, 26, "71 A6 FB EF 69 40 EC", "ECI-26 B3 (UTF-8)" },
-        /* 38*/ { DATA_MODE, 0, -1, "･", 0, 0, "6F BE F6 94 00", "B3 (UTF-8)" },
-        /* 39*/ { UNICODE_MODE, 0, -1, "¿", 0, 0, "66 FC 00 EC 11", "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 40*/ { UNICODE_MODE, 3, -1, "¿", 0, 3, "70 36 6F C0 EC", "ECI-3 B1 (ISO 8859-1)" },
-        /* 41*/ { UNICODE_MODE, 20, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "¿ not in Shift JIS" },
-        /* 42*/ { UNICODE_MODE, 26, -1, "¿", 0, 26, "71 A6 B0 AF C0", "ECI-26 B2 (UTF-8)" },
-        /* 43*/ { DATA_MODE, 0, -1, "¿", 0, 0, "6B 0A FC 00 EC", "B2 (UTF-8)" },
-        /* 44*/ { UNICODE_MODE, 0, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 FC 00 EC 11", "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 45*/ { UNICODE_MODE, 3, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
-        /* 46*/ { UNICODE_MODE, 20, -1, "ｿ", 0, 20, "71 46 6F C0 EC", "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
-        /* 47*/ { UNICODE_MODE, 26, -1, "ｿ", 0, 26, "71 A6 FB EF 6F C0 EC", "ECI-26 B3 (UTF-8)" },
-        /* 48*/ { DATA_MODE, 0, -1, "ｿ", 0, 0, "6F BE F6 FC 00", "B3 (UTF-8)" },
-        /* 49*/ { UNICODE_MODE, 0, -1, "~", 0, 0, "65 F8 00 EC 11", "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 50*/ { UNICODE_MODE, 3, -1, "~", 0, 3, "70 36 5F 80 EC", "ECI-3 B1 (ASCII)" },
-        /* 51*/ { UNICODE_MODE, 20, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", "tilde not in Shift JIS (codepoint used for overline)" },
-        /* 52*/ { UNICODE_MODE, 0, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 65 F8 00 EC 11", "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 53*/ { UNICODE_MODE, 3, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
-        /* 54*/ { UNICODE_MODE, 20, -1, "‾", 0, 20, "71 46 5F 80 EC", "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
-        /* 55*/ { UNICODE_MODE, 26, -1, "‾", 0, 26, "71 A6 F8 A0 2F 80 EC", "ECI-26 B3 (UTF-8)" },
-        /* 56*/ { DATA_MODE, 0, -1, "‾", 0, 0, "6F 8A 02 F8 00", "B3 (UTF-8)" },
-        /* 57*/ { UNICODE_MODE, 0, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8B 67 C0 EC 11", "K1 (Shift JIS)" },
-        /* 58*/ { UNICODE_MODE, 3, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
-        /* 59*/ { UNICODE_MODE, 20, -1, "点", 0, 20, "71 48 B6 7C 00", "ECI-20 K1 (Shift JIS)" },
-        /* 60*/ { UNICODE_MODE, 26, -1, "点", 0, 26, "71 A6 F9 E0 AE 40 EC", "ECI-26 B3 (UTF-8)" },
-        /* 61*/ { DATA_MODE, 0, -1, "点", 0, 0, "6F 9E 0A E4 00", "B3 (UTF-8)" },
-        /* 62*/ { DATA_MODE, 0, -1, "\223\137", 0, 0, "6A 4D 7C 00 EC", "B2 (Shift JIS) (not full multibyte)" },
-        /* 63*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "8B 67 C0 EC 11", "K1 (Shift JIS)" },
-        /* 64*/ { UNICODE_MODE, 0, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 71 72 96 4D 7C", "B4 (Shift JIS) (optimized to byte mode only)" },
-        /* 65*/ { UNICODE_MODE, 3, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 564: Invalid character in input data for ECI 3", "" },
-        /* 66*/ { UNICODE_MODE, 20, -1, "¥･点", 0, 20, "71 47 17 29 64 D7 C0", "ECI-20 B4 (Shift JIS)" },
-        /* 67*/ { UNICODE_MODE, 26, -1, "¥･点", 0, 26, "71 A7 18 54 BD F7 B4 BC F0 57 20 EC", "ECI-26 B8 (UTF-8)" },
-        /* 68*/ { DATA_MODE, 0, -1, "\134\245\223\137", 0, 0, "71 72 96 4D 7C", "B8 (Shift JIS)" },
-        /* 69*/ { DATA_MODE, 0, -1, "¥･点", 0, 0, "71 85 4B DF 7B 4B CF 05 72 00 EC 11", "B8 (UTF-8)" },
-        /* 70*/ { UNICODE_MODE, 0, -1, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 93 67 F5 54 00", "K2 (Shift JIS)" },
-        /* 71*/ { UNICODE_MODE, 0, -1, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", "K6 B1 (Shift JIS)" },
-        /* 72*/ { DATA_MODE, 0, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "6D 93 5F E4 AA 83 65 93 5F E4 AA 83 65 BF 00 EC 11 EC 11", "B13 (Shift JIS)" },
-        /* 73*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", "K6 B1 (Shift JIS) (full multibyte)" },
-        /* 74*/ { UNICODE_MODE, 0, -1, "áA", 0, 0, "6B 85 04 00 EC", "B2 (ISO 8859-1)" },
-        /* 75*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "8E 00 40 EC 11", "K1 (ISO 8859-1) (full multibyte)" },
-        /* 76*/ { UNICODE_MODE, 0, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(33) 56 9C 23 E0 87 92 62 7A 55 0B 59 82 33 26 C0 E6 5F AC 51 95 B4 26 B2 DC 1C 3B 9E 76", "A45" },
-        /* 77*/ { UNICODE_MODE, 0, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 46 68 80 EC", "ECI-4 B1 (ISO 8859-2)" },
-        /* 78*/ { UNICODE_MODE, 4, -1, "˘", 0, 4, "70 46 68 80 EC", "ECI-4 B1 (ISO 8859-2)" },
-        /* 79*/ { UNICODE_MODE, 0, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning 70 56 68 40 EC", "ECI-5 B1 (ISO 8859-3)" },
-        /* 80*/ { UNICODE_MODE, 5, -1, "Ħ", 0, 5, "70 56 68 40 EC", "ECI-5 B1 (ISO 8859-3)" },
-        /* 81*/ { UNICODE_MODE, 0, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning 70 66 68 80 EC", "ECI-6 B1 (ISO 8859-4)" },
-        /* 82*/ { UNICODE_MODE, 6, -1, "ĸ", 0, 6, "70 66 68 80 EC", "ECI-6 B1 (ISO 8859-4)" },
-        /* 83*/ { UNICODE_MODE, 0, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning 71 26 6A 80 EC", "ECI-18 B1 (ISO 8859-16)" },
-        /* 84*/ { UNICODE_MODE, 18, -1, "Ș", 0, 18, "71 26 6A 80 EC", "ECI-18 B1 (ISO 8859-16)" },
-        /* 85*/ { UNICODE_MODE, 0, -1, "テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 69 40 EC 11", "K1 (SHIFT JIS)" },
-        /* 86*/ { UNICODE_MODE, 20, -1, "テ", 0, 20, "71 48 86 94 00", "ECI-20 K1 (SHIFT JIS)" },
-        /* 87*/ { UNICODE_MODE, 20, -1, "テテ", 0, 20, "71 49 06 94 34 A0 EC", "ECI-20 K2 (SHIFT JIS)" },
-        /* 88*/ { UNICODE_MODE, 20, -1, "\\\\", 0, 20, "71 49 00 7C 03 E0 EC", "ECI-20 K2 (SHIFT JIS)" },
-        /* 89*/ { UNICODE_MODE, 0, -1, "…", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 08 C0 EC 11", "K1 (SHIFT JIS)" },
-        /* 90*/ { UNICODE_MODE, 21, -1, "…", 0, 21, "71 56 61 40 EC", "ECI-21 B1 (Win 1250)" },
-        /* 91*/ { UNICODE_MODE, 0, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 66 69 40 EC", "ECI-22 B1 (Win 1251)" },
-        /* 92*/ { UNICODE_MODE, 22, -1, "Ґ", 0, 22, "71 66 69 40 EC", "ECI-22 B1 (Win 1251)" },
-        /* 93*/ { UNICODE_MODE, 0, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning 71 76 66 00 EC", "ECI-23 B1 (Win 1252)" },
-        /* 94*/ { UNICODE_MODE, 23, -1, "˜", 0, 23, "71 76 66 00 EC", "ECI-23 B1 (Win 1252)" },
-        /* 95*/ { UNICODE_MODE, 24, -1, "پ", 0, 24, "71 86 60 40 EC", "ECI-24 B1 (Win 1256)" },
-        /* 96*/ { UNICODE_MODE, 0, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 F8 60 20 00 EC", "ECI-26 B3 (UTF-8)" },
-        /* 97*/ { UNICODE_MODE, 25, -1, "က", 0, 25, "71 96 84 00 00", "ECI-25 B2 (UCS-2BE)" },
-        /* 98*/ { UNICODE_MODE, 25, -1, "ကက", 0, 25, "71 97 04 00 04 00 00", "ECI-25 B4 (UCS-2BE)" },
-        /* 99*/ { UNICODE_MODE, 25, -1, "12", 0, 25, "71 97 00 0C 40 0C 80", "ECI-25 B4 (UCS-2BE ASCII)" },
-        /*100*/ { UNICODE_MODE, 27, -1, "@", 0, 27, "71 B6 50 00 EC", "ECI-27 B1 (ASCII)" },
-        /*101*/ { UNICODE_MODE, 0, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA 6F A6 00 EC", "ECI-26 B3 (UTF-8)" },
-        /*102*/ { UNICODE_MODE, 28, -1, "龘", 0, 28, "71 C6 BE 75 40", "ECI-28 B2 (Big5)" },
-        /*103*/ { UNICODE_MODE, 28, -1, "龘龘", 0, 28, "71 C7 3E 75 7E 75 40", "ECI-28 B4 (Big5)" },
-        /*104*/ { UNICODE_MODE, 0, -1, "齄", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA 6F 61 00 EC", "ECI-26 B3 (UTF-8)" },
-        /*105*/ { UNICODE_MODE, 29, -1, "齄", 0, 29, "71 D6 BD FF 80", "ECI-29 B2 (GB 2312)" },
-        /*106*/ { UNICODE_MODE, 29, -1, "齄齄", 0, 29, "71 D7 3D FF BD FF 80", "ECI-29 B4 (GB 2312)" },
-        /*107*/ { UNICODE_MODE, 0, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning 71 A6 FA AC 20 00 EC", "ECI-26 B3 (UTF-8)" },
-        /*108*/ { UNICODE_MODE, 30, -1, "가", 0, 30, "71 E6 AC 28 40", "ECI-30 B2 (EUC-KR)" },
-        /*109*/ { UNICODE_MODE, 30, -1, "가가", 0, 30, "71 E7 2C 28 6C 28 40", "ECI-30 B4 (EUC-KR)" },
-        /*110*/ { UNICODE_MODE, 170, -1, "?", 0, 170, "78 0A A6 4F C0", "ECI-170 B1 (ASCII invariant)" },
-        /*111*/ { DATA_MODE, 899, -1, "\200", 0, 899, "78 38 36 60 00", "ECI-899 B1 (8-bit binary)" },
-        /*112*/ { UNICODE_MODE, 900, -1, "é", 0, 900, "78 38 46 B0 EA 40 EC", "ECI-900 B2 (no conversion)" },
-        /*113*/ { UNICODE_MODE, 16384, -1, "é", 0, 16384, "7C 04 00 06 B0 EA 40", "ECI-16384 B2 (no conversion)" },
+        /*  0*/ { UNICODE_MODE, 0, 4, 11, -1, "é", 0, 0, "67 A4 00 EC 11", 1, "B1 (ISO 8859-1)" },
+        /*  1*/ { UNICODE_MODE, 3, 4, 11, -1, "é", 0, 3, "E0 6C F4 80 EC", 1, "ECI-3 B1 (ISO 8859-1)" },
+        /*  2*/ { UNICODE_MODE, 20, -1, -1, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, "é not in Shift JIS" },
+        /*  3*/ { UNICODE_MODE, 26, 4, 11, -1, "é", 0, 26, "E3 4D 61 D4 80", 1, "ECI-26 B2 (UTF-8)" },
+        /*  4*/ { DATA_MODE, 0, 4, 11, -1, "é", 0, 0, "6B 0E A4 00 EC", 1, "B2 (UTF-8)" },
+        /*  5*/ { DATA_MODE, 0, 4, 11, -1, "\351", 0, 0, "67 A4 00 EC 11", 1, "B1 (ISO 8859-1)" },
+        /*  6*/ { UNICODE_MODE, 0, 4, 11, -1, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 80 00 EC 11", 1, "K1 (Shift JIS)" },
+        /*  7*/ { UNICODE_MODE, 9, 4, 11, -1, "β", 0, 9, "E1 2C F1 00 EC", 1, "ECI-9 B1 (ISO 8859-7)" },
+        /*  8*/ { UNICODE_MODE, 20, 4, 11, -1, "β", 0, 20, "E2 91 10 00 EC", 1, "ECI-20 K1 (Shift JIS)" },
+        /*  9*/ { UNICODE_MODE, 26, 4, 11, -1, "β", 0, 26, "E3 4D 67 59 00", 1, "ECI-26 B2 (UTF-8)" },
+        /* 10*/ { DATA_MODE, 0, 4, 11, -1, "β", 0, 0, "6B 3A C8 00 EC", 1, "B2 (UTF-8)" },
+        /* 11*/ { UNICODE_MODE, 0, 4, 11, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning E1 AC D0 80 EC", 1, "ECI-13 B1 (ISO 8859-11)" },
+        /* 12*/ { UNICODE_MODE, 13, 4, 11, -1, "ก", 0, 13, "E1 AC D0 80 EC", 1, "ECI-13 B1 (ISO 8859-11)" },
+        /* 13*/ { UNICODE_MODE, 20, -1, -1, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, "ก not in Shift JIS" },
+        /* 14*/ { UNICODE_MODE, 26, 2, 11, -1, "ก", 0, 26, "E3 4D F0 5C 40 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 15*/ { DATA_MODE, 0, 4, 11, -1, "ก", 0, 0, "6F 82 E2 04 00", 1, "B3 (UTF-8)" },
+        /* 16*/ { UNICODE_MODE, 0, 4, 11, -1, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 91 C0 EC 11", 1, "K1 (Shift JIS)" },
+        /* 17*/ { UNICODE_MODE, 7, 4, 11, -1, "Ж", 0, 7, "E0 EC DB 00 EC", 1, "ECI-7 B1 (ISO 8859-5)" },
+        /* 18*/ { UNICODE_MODE, 20, 4, 11, -1, "Ж", 0, 20, "E2 91 12 38 EC", 1, "ECI-20 K1 (Shift JIS)" },
+        /* 19*/ { UNICODE_MODE, 26, 4, 11, -1, "Ж", 0, 26, "E3 4D 68 4B 00", 1, "ECI-26 B2 (UTF-8)" },
+        /* 20*/ { DATA_MODE, 0, 4, 11, -1, "Ж", 0, 0, "6B 42 58 00 EC", 1, "B2 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, 0, 2, 11, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F0 5D 40 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 22*/ { UNICODE_MODE, 20, -1, -1, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, "ກ not in Shift JIS" },
+        /* 23*/ { UNICODE_MODE, 26, 2, 11, -1, "ກ", 0, 26, "E3 4D F0 5D 40 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 24*/ { DATA_MODE, 0, 4, 11, -1, "ກ", 0, 0, "6F 82 EA 04 00", 1, "B3 (UTF-8)" },
+        /* 25*/ { UNICODE_MODE, 0, 4, 11, -1, "\\", 0, 0, "65 70 00 EC 11", 1, "B1 (ASCII)" },
+        /* 26*/ { UNICODE_MODE, 20, 4, 11, -1, "\\", 0, 20, "E2 91 00 F8 EC", 1, "ECI-20 K1 (Shift JIS)" },
+        /* 27*/ { UNICODE_MODE, 20, 4, 11, -1, "[", 0, 20, "E2 8C AD 80 EC", 1, "B1 (ASCII)" },
+        /* 28*/ { UNICODE_MODE, 20, 4, 11, -1, "\177", 0, 20, "E2 8C BF 80 EC", 1, "ECI-20 B1 (ASCII)" },
+        /* 29*/ { UNICODE_MODE, 0, 4, 11, -1, "¥", 0, 0, "66 94 00 EC 11", 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /* 30*/ { UNICODE_MODE, 3, 4, 11, -1, "¥", 0, 3, "E0 6C D2 80 EC", 1, "ECI-3 B1 (ISO 8859-1)" },
+        /* 31*/ { UNICODE_MODE, 20, 4, 11, -1, "¥", 0, 20, "E2 8C AE 00 EC", 1, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode)" },
+        /* 32*/ { UNICODE_MODE, 26, 4, 11, -1, "¥", 0, 26, "E3 4D 61 52 80", 1, "ECI-26 B2 (UTF-8)" },
+        /* 33*/ { DATA_MODE, 0, 4, 11, -1, "¥", 0, 0, "6B 0A 94 00 EC", 1, "B2 (UTF-8)" },
+        /* 34*/ { UNICODE_MODE, 0, 4, 11, -1, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 94 00 EC 11", 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /* 35*/ { UNICODE_MODE, 3, -1, -1, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, "" },
+        /* 36*/ { UNICODE_MODE, 20, 4, 11, -1, "･", 0, 20, "E2 8C D2 80 EC", 1, "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
+        /* 37*/ { UNICODE_MODE, 26, 2, 11, -1, "･", 0, 26, "E3 4D F7 DE D2 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 38*/ { DATA_MODE, 0, 4, 11, -1, "･", 0, 0, "6F BE F6 94 00", 1, "B3 (UTF-8)" },
+        /* 39*/ { UNICODE_MODE, 0, 4, 11, -1, "¿", 0, 0, "66 FC 00 EC 11", 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 40*/ { UNICODE_MODE, 3, 4, 11, -1, "¿", 0, 3, "E0 6C DF 80 EC", 1, "ECI-3 B1 (ISO 8859-1)" },
+        /* 41*/ { UNICODE_MODE, 20, 4, 11, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, "¿ not in Shift JIS" },
+        /* 42*/ { UNICODE_MODE, 26, 4, 11, -1, "¿", 0, 26, "E3 4D 61 5F 80", 1, "ECI-26 B2 (UTF-8)" },
+        /* 43*/ { DATA_MODE, 0, 4, 11, -1, "¿", 0, 0, "6B 0A FC 00 EC", 1, "B2 (UTF-8)" },
+        /* 44*/ { UNICODE_MODE, 0, 4, 11, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 FC 00 EC 11", 1, "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 45*/ { UNICODE_MODE, 3, 4, 11, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, "" },
+        /* 46*/ { UNICODE_MODE, 20, 4, 11, -1, "ｿ", 0, 20, "E2 8C DF 80 EC", 1, "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
+        /* 47*/ { UNICODE_MODE, 26, 2, 11, -1, "ｿ", 0, 26, "E3 4D F7 DE DF 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 48*/ { DATA_MODE, 0, 4, 11, -1, "ｿ", 0, 0, "6F BE F6 FC 00", 1, "B3 (UTF-8)" },
+        /* 49*/ { UNICODE_MODE, 0, 4, 11, -1, "~", 0, 0, "65 F8 00 EC 11", 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 50*/ { UNICODE_MODE, 3, 4, 11, -1, "~", 0, 3, "E0 6C BF 00 EC", 1, "ECI-3 B1 (ASCII)" },
+        /* 51*/ { UNICODE_MODE, 20, 4, 11, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input data", 1, "tilde not in Shift JIS (codepoint used for overline)" },
+        /* 52*/ { UNICODE_MODE, 0, 4, 11, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 65 F8 00 EC 11", 1, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous)" },
+        /* 53*/ { UNICODE_MODE, 3, 4, 11, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, "" },
+        /* 54*/ { UNICODE_MODE, 20, 4, 11, -1, "‾", 0, 20, "E2 8C BF 00 EC", 1, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode)" },
+        /* 55*/ { UNICODE_MODE, 26, 2, 11, -1, "‾", 0, 26, "E3 4D F1 40 5F 00 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 56*/ { DATA_MODE, 0, 4, 11, -1, "‾", 0, 0, "6F 8A 02 F8 00", 1, "B3 (UTF-8)" },
+        /* 57*/ { UNICODE_MODE, 0, 4, 11, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8B 67 C0 EC 11", 1, "K1 (Shift JIS)" },
+        /* 58*/ { UNICODE_MODE, 3, 4, 11, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, "" },
+        /* 59*/ { UNICODE_MODE, 20, 4, 11, -1, "点", 0, 20, "E2 91 6C F8 EC", 1, "ECI-20 K1 (Shift JIS)" },
+        /* 60*/ { UNICODE_MODE, 26, 2, 11, -1, "点", 0, 26, "E3 4D F3 C1 5C 80 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 61*/ { DATA_MODE, 0, 4, 11, -1, "点", 0, 0, "6F 9E 0A E4 00", 1, "B3 (UTF-8)" },
+        /* 62*/ { DATA_MODE, 0, 4, 11, -1, "\223\137", 0, 0, "6A 4D 7C 00 EC", 0, "B2 (Shift JIS) (not full multibyte); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 63*/ { DATA_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "8B 67 C0 EC 11", 1, "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, 4, 11, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 71 72 96 4D 7C", 1, "B4 (Shift JIS) (optimized to byte mode only)" },
+        /* 65*/ { UNICODE_MODE, 3, -1, -1, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input data for ECI 3", 1, "" },
+        /* 66*/ { UNICODE_MODE, 20, 2, 11, -1, "¥･点", 0, 20, "E2 8E 2E 52 C9 AF 80", 1, "ECI-20 B4 (Shift JIS)" },
+        /* 67*/ { UNICODE_MODE, 26, 2, 17, -1, "¥･点", 0, 26, "E3 4E 30 A9 7B EF 69 79 E0 AE 40 EC", 1, "ECI-26 B8 (UTF-8)" },
+        /* 68*/ { DATA_MODE, 0, 4, 11, -1, "\134\245\223\137", 0, 0, "71 72 96 4D 7C", 1, "B8 (Shift JIS)" },
+        /* 69*/ { DATA_MODE, 0, 2, 17, -1, "¥･点", 0, 0, "71 85 4B DF 7B 4B CF 05 72 00 EC 11", 1, "B8 (UTF-8)" },
+        /* 70*/ { UNICODE_MODE, 0, 4, 11, -1, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 93 67 F5 54 00", 1, "K2 (Shift JIS)" },
+        /* 71*/ { UNICODE_MODE, 0, 2, 12, -1, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", 1, "K6 B1 (Shift JIS)" },
+        /* 72*/ { DATA_MODE, 0, 2, 12, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "6D 93 5F E4 AA 83 65 93 5F E4 AA 83 65 BF 00 EC 11 EC 11", 0, "B13 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 73*/ { DATA_MODE, 0, 2, 12, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", 1, "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 74*/ { UNICODE_MODE, 0, 4, 11, -1, "áA", 0, 0, "6B 85 04 00 EC", 0, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 75*/ { UNICODE_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "8E 00 40 EC 11", 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /* 76*/ { UNICODE_MODE, 0, 2, 23, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(33) 56 9C 23 E0 87 92 62 7A 55 0B 59 82 33 26 C0 E6 5F AC 51 95 B4 26 B2 DC 1C 3B 9E 76", 1, "A45" },
+        /* 77*/ { UNICODE_MODE, 0, 4, 11, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning E0 8C D1 00 EC", 1, "ECI-4 B1 (ISO 8859-2)" },
+        /* 78*/ { UNICODE_MODE, 4, 4, 11, -1, "˘", 0, 4, "E0 8C D1 00 EC", 1, "ECI-4 B1 (ISO 8859-2)" },
+        /* 79*/ { UNICODE_MODE, 0, 4, 11, -1, "Ħ", ZINT_WARN_USES_ECI, 5, "Warning E0 AC D0 80 EC", 1, "ECI-5 B1 (ISO 8859-3)" },
+        /* 80*/ { UNICODE_MODE, 5, 4, 11, -1, "Ħ", 0, 5, "E0 AC D0 80 EC", 1, "ECI-5 B1 (ISO 8859-3)" },
+        /* 81*/ { UNICODE_MODE, 0, 4, 11, -1, "ĸ", ZINT_WARN_USES_ECI, 6, "Warning E0 CC D1 00 EC", 1, "ECI-6 B1 (ISO 8859-4)" },
+        /* 82*/ { UNICODE_MODE, 6, 4, 11, -1, "ĸ", 0, 6, "E0 CC D1 00 EC", 1, "ECI-6 B1 (ISO 8859-4)" },
+        /* 83*/ { UNICODE_MODE, 0, 4, 11, -1, "Ș", ZINT_WARN_USES_ECI, 18, "Warning E2 4C D5 00 EC", 1, "ECI-18 B1 (ISO 8859-16)" },
+        /* 84*/ { UNICODE_MODE, 18, 4, 11, -1, "Ș", 0, 18, "E2 4C D5 00 EC", 1, "ECI-18 B1 (ISO 8859-16)" },
+        /* 85*/ { UNICODE_MODE, 0, 4, 11, -1, "テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 69 40 EC 11", 1, "K1 (SHIFT JIS)" },
+        /* 86*/ { UNICODE_MODE, 20, 4, 11, -1, "テ", 0, 20, "E2 91 0D 28 EC", 1, "ECI-20 K1 (SHIFT JIS)" },
+        /* 87*/ { UNICODE_MODE, 20, 2, 11, -1, "テテ", 0, 20, "E2 92 0D 28 69 40 EC", 1, "ECI-20 K2 (SHIFT JIS)" },
+        /* 88*/ { UNICODE_MODE, 20, 2, 11, -1, "\\\\", 0, 20, "E2 92 00 F8 07 C0 EC", 1, "ECI-20 K2 (SHIFT JIS)" },
+        /* 89*/ { UNICODE_MODE, 0, 4, 11, -1, "…", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 08 C0 EC 11", 1, "K1 (SHIFT JIS)" },
+        /* 90*/ { UNICODE_MODE, 21, 4, 11, -1, "…", 0, 21, "E2 AC C2 80 EC", 1, "ECI-21 B1 (Win 1250)" },
+        /* 91*/ { UNICODE_MODE, 0, 4, 11, -1, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning E2 CC D2 80 EC", 1, "ECI-22 B1 (Win 1251)" },
+        /* 92*/ { UNICODE_MODE, 22, 4, 11, -1, "Ґ", 0, 22, "E2 CC D2 80 EC", 1, "ECI-22 B1 (Win 1251)" },
+        /* 93*/ { UNICODE_MODE, 0, 4, 11, -1, "˜", ZINT_WARN_USES_ECI, 23, "Warning E2 EC CC 00 EC", 1, "ECI-23 B1 (Win 1252)" },
+        /* 94*/ { UNICODE_MODE, 23, 4, 11, -1, "˜", 0, 23, "E2 EC CC 00 EC", 1, "ECI-23 B1 (Win 1252)" },
+        /* 95*/ { UNICODE_MODE, 24, 4, 11, -1, "پ", 0, 24, "E3 0C C0 80 EC", 1, "ECI-24 B1 (Win 1256)" },
+        /* 96*/ { UNICODE_MODE, 0, 2, 11, -1, "က", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F0 C0 40 00 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /* 97*/ { UNICODE_MODE, 25, 4, 11, -1, "က", 0, 25, "E3 2D 08 00 00", 1, "ECI-25 B2 (UCS-2BE)" },
+        /* 98*/ { UNICODE_MODE, 25, 2, 11, -1, "ကက", 0, 25, "E3 2E 08 00 08 00 00", 1, "ECI-25 B4 (UCS-2BE)" },
+        /* 99*/ { UNICODE_MODE, 25, 2, 11, -1, "12", 0, 25, "E3 2E 00 18 80 19 00", 1, "ECI-25 B4 (UCS-2BE ASCII)" },
+        /*100*/ { UNICODE_MODE, 27, 4, 11, -1, "@", 0, 27, "E3 6C A0 00 EC", 1, "ECI-27 B1 (ASCII)" },
+        /*101*/ { UNICODE_MODE, 0, 2, 11, -1, "龘", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F4 DF 4C 00 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /*102*/ { UNICODE_MODE, 28, 4, 11, -1, "龘", 0, 28, "E3 8D 7C EA 80", 1, "ECI-28 B2 (Big5)" },
+        /*103*/ { UNICODE_MODE, 28, 2, 11, -1, "龘龘", 0, 28, "E3 8E 7C EA FC EA 80", 1, "ECI-28 B4 (Big5)" },
+        /*104*/ { UNICODE_MODE, 0, 2, 11, -1, "齄", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F4 DE C2 00 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /*105*/ { UNICODE_MODE, 29, 4, 11, -1, "齄", 0, 29, "E3 AD 7B FF 00", 1, "ECI-29 B2 (GB 2312)" },
+        /*106*/ { UNICODE_MODE, 29, 2, 11, -1, "齄齄", 0, 29, "E3 AE 7B FF 7B FF 00", 1, "ECI-29 B4 (GB 2312)" },
+        /*107*/ { UNICODE_MODE, 0, 2, 11, -1, "가", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F5 58 40 00 EC", 1, "ECI-26 B3 (UTF-8)" },
+        /*108*/ { UNICODE_MODE, 30, 4, 11, -1, "가", 0, 30, "E3 CD 58 50 80", 1, "ECI-30 B2 (EUC-KR)" },
+        /*109*/ { UNICODE_MODE, 30, 2, 11, -1, "가가", 0, 30, "E3 CE 58 50 D8 50 80", 1, "ECI-30 B4 (EUC-KR)" },
+        /*110*/ { UNICODE_MODE, 170, 4, 11, -1, "?", 0, 170, "F0 15 4C 9F 80", 1, "ECI-170 B1 (ASCII invariant)" },
+        /*111*/ { DATA_MODE, 899, 4, 11, -1, "\200", 0, 899, "F0 70 6C C0 00", 1, "ECI-899 B1 (8-bit binary)" },
+        /*112*/ { UNICODE_MODE, 900, 2, 11, -1, "é", 0, 900, "F0 70 8D 61 D4 80 EC", 1, "ECI-900 B2 (no conversion)" },
+        /*113*/ { UNICODE_MODE, 16384, 2, 11, -1, "é", 0, 16384, "F8 08 00 0D 61 D4 80", 1, "ECI-16384 B2 (no conversion)" },
+        /*114*/ { UNICODE_MODE, 3, 2, 14, -1, "Google Pixel 4a 128 GB Black;price:$439.97", 0, 3, "(43) E0 6C F4 76 F6 F6 76 C6 52 05 06 97 86 56 C2 03 46 14 4E 55 0C 59 91 09 96 CA 6C 61", 0, "ECI-3 B15 A9 B10 A8; BWIPP different encodation (B42) & doesn't fit)" },
+        /*115*/ { UNICODE_MODE, 29, 2, 20, -1, "Google 谷歌 Pixel 4a 128 GB黑色;零售价:￥3149.79", 0, 29, "(53) E3 AE 94 76 F6 F6 76 C6 52 0B 9C 8B 8E 82 05 06 97 86 56 C2 03 46 12 03 13 23 82 04", 0, "ECI-29 B41 A7; BWIPP different encodation (B48) & doesn't fit)" },
+        /*116*/ { UNICODE_MODE, 17, 2, 24, -1, "Google Pixel 4a 128 GB Schwarz;Preis:444,90 €", 0, 17, "(48) E2 2C F4 76 F6 F6 76 C6 52 05 06 97 86 56 C2 03 46 14 27 2A 86 2C C8 84 DC 6A B1 B4", 0, "ECI-17 B15 A9 B21; BWIPP different encodation (B46)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_rmqr_input");
 
@@ -4429,21 +5709,40 @@ static void test_rmqr_input(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(data[i].option_3),
+            printf("        /*%3d*/ { %s, %d, %d, %d, %s, \"%s\", %s, %d, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci,
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1,
+                    symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (ret < ZINT_ERROR) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        char modules_dump[17 * 139 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                    }
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -4515,41 +5814,47 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
 
     struct item {
         int input_mode;
-        char *data;
         int option_1;
+        int option_2;
+        char *data;
         int ret;
         char *expected;
+        int bwipp_cmp;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "1", -1, 0, "22 20 EC 11 EC", "N1" },
-        /*  1*/ { UNICODE_MODE, "AAA", -1, 0, "46 73 0A 00 EC", "A3" },
-        /*  2*/ { UNICODE_MODE, "0123456789", -1, 0, "34 06 2B 35 34 80 EC", "N10 (nayuki.io - pure numeric)" },
-        /*  3*/ { UNICODE_MODE, "ABCDEF", -1, 0, "4C 73 51 4A 85 00 EC", "A6 (nayuki.io - pure alphanumeric)" },
-        /*  4*/ { UNICODE_MODE, "wxyz", -1, 0, "71 DD E1 E5 E8", "B4 (nayuki.io - pure byte)" },
-        /*  5*/ { UNICODE_MODE, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", -1, ZINT_WARN_NONCOMPLIANT, "Warning (53) 8E 80 D6 00 4F C0 57 6A B5 C2 B8 14 70 94 81 64 37 A1 8D 0C 50 0D 82 82 14 40 00 80", "K29 (nayuki.io - pure kanji)" },
-        /*  6*/ { UNICODE_MODE, "012A", -1, 0, "48 00 43 20 EC", "A4" },
-        /*  7*/ { UNICODE_MODE, "0123A", -1, 0, "28 06 1A 12 80", "N4 A1 (nayuki.io - alpha/numeric)" },
-        /*  8*/ { UNICODE_MODE, "0a", -1, 0, "68 C1 84 00 EC", "B2 (nayuki.io - numeric/byte)" },
-        /*  9*/ { UNICODE_MODE, "01a", -1, 0, "24 05 96 10 EC", "N2 B1 (nayuki.io - numeric/byte)" },
-        /* 10*/ { UNICODE_MODE, "ABCa", -1, 0, "71 05 09 0D 84", "B4 (nayuki.io - alphanumeric/byte)" },
-        /* 11*/ { UNICODE_MODE, "ABCDa", -1, 0, "48 73 51 4B 2C 20 EC", "A4 B1 (same bits as B5)" },
-        /* 12*/ { UNICODE_MODE, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", -1, 0, "(48) 46 A9 52 9A A0 D5 42 66 E6 F8 A1 4F 62 3E 56 CC D4 40 2B 98 2C F1 AB 19 2E A2 F8 61", " A26 N65 (nayuki.io - alpha/numeric)" },
-        /* 13*/ { UNICODE_MODE, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", -1, ZINT_WARN_NONCOMPLIANT, "Warning (73) 65 11 DB DB 19 19 5B 88 1C 98 5D 1A 5B C8 20 F4 C8 0F 48 0C 4B 8B 24 D4 10 FB 97 6E", "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
-        /* 14*/ { UNICODE_MODE, "こんにちwa、世界！ αβγδ", -1, ZINT_WARN_NONCOMPLIANT, "Warning 84 09 88 5C 42 92 13 F6 B7 76 18 14 19 0A 28 A4 58 14 92 08 40 FF 88 00 40 22 02", "K4 B7 K4 (nayuki.io - kanji/european)" },
-        /* 15*/ { UNICODE_MODE, "6547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www05303790265903SG.COM.NETS46967004B2AE13344004SG.SGQR209710339382.6359SG8236HELLO FOO2517Singapore3272B815", -1, 0, "(152) 20 AA 3B 12 29 8D 97 B1 B7 B6 97 30 B1 B6 B2 99 9A 9A 9C 1A 30 B3 1A 99 33 30 99 96", "N10 B47 N9 B15 N14 A38 N12 A25 B8 A8 (nayuki.io - SGQR alpha/numeric/byte)" },
-        /* 16*/ { UNICODE_MODE, "2004年大西洋颶風季是有以来造成人失惨重的大季之一，于2004年6月1日正式始，同年11月30日束，上的日期界定了一年中大多数气旋在大西洋形成的段lll ku", -1, ZINT_WARN_NONCOMPLIANT, "Warning (127) 20 43 21 21 87 27 32 95 77 90 AD F0 33 D5 CF 0E BA 58 46 17 22 19 0C 62 5D 62 DB 14", "N4 K24 N4 B6 K7 B6 K26 B6 (nayuki.io - kanji/byte/numeric, non-Shift JIS removed)" },
-        /* 17*/ { UNICODE_MODE, "AB1234567A", -1, 0, "4A 39 A0 BC 45 8E 72 8A 00 EC 11 EC", "A10" },
-        /* 18*/ { UNICODE_MODE, "AB12345678A", -1, 0, "42 39 A5 03 DB 91 39 04 A0 EC 11 EC", "A2 N8 A1" },
-        /* 19*/ { UNICODE_MODE, "テaA1", -1, ZINT_WARN_NONCOMPLIANT, "Warning 76 0D 95 85 04 C4 00", "B4" },
-        /* 20*/ { UNICODE_MODE, "テaAB1", -1, ZINT_WARN_NONCOMPLIANT, "Warning 6E 0D 95 85 19 CD 04", "B3 A3" },
-        /* 21*/ { UNICODE_MODE, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機", -1, ZINT_WARN_NONCOMPLIANT, "Warning (152) 82 0E A2 16 20 97 28 BD 02 C1 4F 09 12 61 08 04 A0 83 AA 3E 3D 43 4C 13 0D 68 73 1F", "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K7" },
+        /*  0*/ { UNICODE_MODE, 4, 11, "1", 0, "22 20 EC 11 EC", 1, "N1" },
+        /*  1*/ { UNICODE_MODE, 4, 11, "AAA", 0, "46 73 0A 00 EC", 1, "A3" },
+        /*  2*/ { UNICODE_MODE, 2, 11, "0123456789", 0, "34 06 2B 35 34 80 EC", 1, "N10 (nayuki.io - pure numeric)" },
+        /*  3*/ { UNICODE_MODE, 2, 11, "ABCDEF", 0, "4C 73 51 4A 85 00 EC", 1, "A6 (nayuki.io - pure alphanumeric)" },
+        /*  4*/ { UNICODE_MODE, 4, 11, "wxyz", 0, "71 DD E1 E5 E8", 1, "B4 (nayuki.io - pure byte)" },
+        /*  5*/ { UNICODE_MODE, 2, 20, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", ZINT_WARN_NONCOMPLIANT, "Warning (53) 8E 80 D6 00 4F C0 57 6A B5 C2 B8 14 70 94 81 64 37 A1 8D 0C 50 0D 82 82 14 40 00 80", 1, "K29 (nayuki.io - pure kanji)" },
+        /*  6*/ { UNICODE_MODE, 4, 11, "012A", 0, "48 00 43 20 EC", 1, "A4" },
+        /*  7*/ { UNICODE_MODE, 4, 11, "0123A", 0, "28 06 1A 12 80", 1, "N4 A1 (nayuki.io - alpha/numeric)" },
+        /*  8*/ { UNICODE_MODE, 4, 11, "0a", 0, "68 C1 84 00 EC", 1, "B2 (nayuki.io - numeric/byte)" },
+        /*  9*/ { UNICODE_MODE, 4, 11, "01a", 0, "24 05 96 10 EC", 1, "N2 B1 (nayuki.io - numeric/byte)" },
+        /* 10*/ { UNICODE_MODE, 4, 11, "ABCa", 0, "71 05 09 0D 84", 1, "B4 (nayuki.io - alphanumeric/byte)" },
+        /* 11*/ { UNICODE_MODE, 2, 11, "ABCDa", 0, "48 73 51 4B 2C 20 EC", 1, "A4 B1 (same bits as B5)" },
+        /* 12*/ { UNICODE_MODE, 2, 24, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", 0, "(48) 46 A9 52 9A A0 D5 42 66 E6 F8 A1 4F 62 3E 56 CC D4 40 2B 98 2C F1 AB 19 2E A2 F8 61", 1, " A26 N65 (nayuki.io - alpha/numeric)" },
+        /* 13*/ { UNICODE_MODE, 2, 21, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", ZINT_WARN_NONCOMPLIANT, "Warning (73) 65 11 DB DB 19 19 5B 88 1C 98 5D 1A 5B C8 20 F4 C8 0F 48 0C 4B 8B 24 D4 10 FB 97 6E", 1, "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
+        /* 14*/ { UNICODE_MODE, 2, 18, "こんにちwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning 84 09 88 5C 42 92 13 F6 B7 76 18 14 19 0A 28 A4 58 14 92 08 40 FF 88 00 40 22 02", 1, "K4 B7 K4 (nayuki.io - kanji/european)" },
+        /* 15*/ { UNICODE_MODE, 2, 32, "6547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www05303790265903SG.COM.NETS46967004B2AE13344004SG.SGQR209710339382.6359SG8236HELLO FOO2517Singapore3272B815", 0, "(152) 20 AA 3B 12 29 8D 97 B1 B7 B6 97 30 B1 B6 B2 99 9A 9A 9C 1A 30 B3 1A 99 33 30 99 96", 0, "N10 B47 N9 B15 N14 A38 N12 A25 B8 A8 (nayuki.io - SGQR alpha/numeric/byte); BWIPP different encodation (N10 B47 N9 B15 N14 A38 N12 A25 B13 A3) & doesn't fit" },
+        /* 16*/ { UNICODE_MODE, 2, 27, "2004年大西洋颶風季是有以来造成人失惨重的大季之一，于2004年6月1日正式始，同年11月30日束，上的日期界定了一年中大多数气旋在大西洋形成的段lll ku", ZINT_WARN_NONCOMPLIANT, "Warning (127) 20 43 21 21 87 27 32 95 77 90 AD F0 33 D5 CF 0E BA 58 46 17 22 19 0C 62 5D 62 DB 14", 0, "N4 K24 N4 B6 K7 B6 K26 B6 (nayuki.io - kanji/byte/numeric, non-Shift JIS removed; BWIPP different encodation (N4 K24 N4 B26 K26 B6)" },
+        /* 17*/ { UNICODE_MODE, 2, 17, "AB1234567A", 0, "4A 39 A0 BC 45 8E 72 8A 00 EC 11 EC", 1, "A10" },
+        /* 18*/ { UNICODE_MODE, 2, 17, "AB12345678A", 0, "42 39 A5 03 DB 91 39 04 A0 EC 11 EC", 1, "A2 N8 A1" },
+        /* 19*/ { UNICODE_MODE, 2, 11, "テaA1", ZINT_WARN_NONCOMPLIANT, "Warning 76 0D 95 85 04 C4 00", 1, "B4" },
+        /* 20*/ { UNICODE_MODE, 2, 11, "テaAB1", ZINT_WARN_NONCOMPLIANT, "Warning 6E 0D 95 85 19 CD 04", 0, "B3 A3; BWIPP different encodation (B6)" },
+        /* 21*/ { UNICODE_MODE, 2, 32, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機", ZINT_WARN_NONCOMPLIANT, "Warning (152) 82 0E A2 16 20 97 28 BD 02 C1 4F 09 12 61 08 04 A0 83 AA 3E 3D 43 4C 13 0D 68 73 1F", 1, "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K7" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
 
     testStart("test_rmqr_optimize");
 
@@ -4562,17 +5867,33 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
 
         debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %d, %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].option_1,
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[17 * 139 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);
@@ -4611,7 +5932,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "101010100110010100111010001"
                     "111010101010101010101011111"
                 },
-        /*  1*/ { UNICODE_MODE, 2, 17, "12345678901234567890123456", 0, 13, 27, 1, "Draft ISO 2019-6-24 6.2 Figure 1, R13x27-M, same (note data as here not as given in draft)",
+        /*  1*/ { UNICODE_MODE, 2, 17, "12345678901234567890123456", 0, 13, 27, 1, "Draft ISO 2019-6-24 6.2 Figure 1, R13x27-M, same",
                     "111111101010101010101010111"
                     "100000100001001100010011001"
                     "101110101100000011001110001"
@@ -5009,12 +6330,212 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
                                        i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rmqr_encode_segs(int index, int generate, int debug) {
+
+    struct item {
+        int input_mode;
+        int option_1;
+        int option_2;
+        int option_3;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        int bwipp_cmp;
+        char *comment;
+        char *expected;
+    };
+    struct item data[] = {
+        /*  0*/ { UNICODE_MODE, 2, 11, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, 1, "Standard example",
+                    "111111101010101010101010111"
+                    "100000101110110001100111101"
+                    "101110100111000001110101111"
+                    "101110100010010000000110000"
+                    "101110100000011010001111001"
+                    "100000100110100000101110110"
+                    "111111101001011111100111111"
+                    "000000001011110111101010001"
+                    "111010111010001000110110101"
+                    "101111001111110001001010001"
+                    "111010101010101010101011111"
+                },
+        /*  1*/ { UNICODE_MODE, 2, 11, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 11, 27, 1, "Standard example auto-ECI",
+                    "111111101010101010101010111"
+                    "100000101110110001100111101"
+                    "101110100111000001110101111"
+                    "101110100010010000000110000"
+                    "101110100000011010001111001"
+                    "100000100110100000101110110"
+                    "111111101001011111100111111"
+                    "000000001011110111101010001"
+                    "111010111010001000110110101"
+                    "101111001111110001001010001"
+                    "111010101010101010101011111"
+                },
+        /*  2*/ { UNICODE_MODE, 2, 11, -1, { { TU("Ж"), -1, 7 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, 0, 11, 27, 1, "Standard example inverted",
+                    "111111101010101010101010111"
+                    "100000101110111000010111101"
+                    "101110100111011111110010001"
+                    "101110100010111111001100000"
+                    "101110100001001011110100001"
+                    "100000100111111101101110100"
+                    "111111100001000001000111111"
+                    "000000001111000000101010001"
+                    "111001110101001100010110101"
+                    "101010011111101111101010001"
+                    "111010101010101010101011111"
+                },
+        /*  3*/ { UNICODE_MODE, 2, 11, -1, { { TU("Ж"), -1, 0 }, { TU("¶"), -1, 0 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 11, 27, 1, "Standard example inverted auto-ECI",
+                    "111111101010101010101010111"
+                    "100000101110111000010111101"
+                    "101110100111011111110010001"
+                    "101110100010111111001100000"
+                    "101110100001001011110100001"
+                    "100000100111111101101110100"
+                    "111111100001000001000111111"
+                    "000000001111000000101010001"
+                    "111001110101001100010110101"
+                    "101010011111101111101010001"
+                    "111010101010101010101011111"
+                },
+        /*  4*/ { UNICODE_MODE, 2, 32, -1, { { TU("Google Pixel 4a 128 GB Black;price:$439.97"), -1, 3 }, { TU("Google 谷歌 Pixel 4a 128 GB黑色;零售价:￥3149.79"), -1, 29 }, { TU("Google Pixel 4a 128 GB Schwarz;Preis:444,90 €"), -1, 17 } }, 0, 17, 139, 0, "AIM ITS/04-023:2022 Annex A example (shortened); BWIPP different encodation",
+                    "1111111010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101010111"
+                    "1000001001000010100111001110100000111100110111111110001010100010000110011100101000101101010100111001001101110110110010000011110000101100101"
+                    "1011101011101011111110110011100101100111101000001011111111110000100000111001000110111011000011100011000000100011101101100100110100110011011"
+                    "1011101001001110000110100100001111011110111110111101000000100101001111110100111010000000011000101101110100000100011001000010001010101111110"
+                    "1011101000010000111010100101101000100010100100110100011110111110001100101010001111110110111000000000101011100001101000001000110000000110111"
+                    "1000001000001001100011001110100010110001011011011100110000111111011101011110010000000000000010001110010111000010001001110111010101011000110"
+                    "1111111010100010010100110101101010100010001110001000100100011111111001000000111011111000110011111010000011011111100111011001000000011010001"
+                    "0000000010010110010000100000000010101010110111110011010010110001100100001000010011000000110101111100010001000000100101100111011000011011110"
+                    "1101110011111001110010000111111111101100100101001110001111101110010110101100001110110110001110100100111100000111111011110100100101011111001"
+                    "0111111100100011001110011010010100110111101101010111000011001111100011011100001100100110011110110101111010101100010101100000010010110101000"
+                    "1011000010101000110000001001010011101001100001111011001100010011011010010000101101110011000011010011011111110101101101100101110101100001001"
+                    "0001110000010011000000110000010111111010010001010100100000101010000111111001110000000101100101110001010001010010011010001110101101111011100"
+                    "1000101101011001001010000001111011100111100000100110101100101100110100100101001101110111101001100111001101111001111010001011011000110111111"
+                    "0110100001110101010110010010100000111110011101011100100010111011000010010110001010000001001001001111000010011100111110010011000110100110001"
+                    "1001000001100110110011100011111101010111100110100101011110010011101010100011101001111010100111010100110100011111110111100101000101010110101"
+                    "1010011110111011011111000010111011001001010001011111011011101000100101110000010011101110110100011010110111010110110011110110000001000110001"
+                    "1110101010101010101010101011101010101010101010101010101110101010101010101010101010111010101010101010101010101011101010101010101010101011111"
+                },
+        /*  5*/ { DATA_MODE, 4, 3, -1, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, 0, 7, 77, 1, "Standard example + extra seg, data mode",
+                    "11111110101010101010101011101010101010101010101010111010101010101010101010111"
+                    "10000010000101011111110110101011011101110110100011101011010110001000110000001"
+                    "10111010000101001001111111110011100001100010110011111100010111010001101011111"
+                    "10111010001111110101010000111011110111000111100010101100011110001110101010001"
+                    "10111010100010101100010111101010000111111001010110111000010010000000100110101"
+                    "10000010011011101100010110100010100010101101100001101010000100011011101010001"
+                    "11111110101010101010101011101010101010101010101010111010101010101010101011111"
+                },
+        /*  6*/ { UNICODE_MODE, 2, 4, -1, { { TU("¿é"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("φχψω"), -1, 0 } }, ZINT_WARN_USES_ECI, 7, 99, 1, "Auto-ECI",
+                    "111111101010101010101011101010101010101010101010111010101010101010101010101110101010101010101010111"
+                    "100000100111110000101010111000010110100100000100101011100110111000000110101010111110010111111100101"
+                    "101110100101001001110111111010010100110101100100111110111100100111111111101110010010111000100011111"
+                    "101110100100110100000110011111110011101110010000000100000110000101011000100000111111001101100110001"
+                    "101110101000100010000111100101110011010000111010111010110011110101110111101111111011111010100110101"
+                    "100000101010100100010010111001101101000001111001101100011000001111001110111011001101000110110010001"
+                    "111111101010101010101011101010101010101010101010111010101010101010101010101110101010101010101011111"
+                },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+
+    testStart("test_rmqr_encode_segs");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/,
+                            data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (generate) {
+            char escaped1[4096];
+            char escaped2[4096];
+            int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+            int length1 = data[i].segs[1].length == -1 ? (int) ustrlen(data[i].segs[1].source) : data[i].segs[1].length;
+            int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
+            printf("        /*%3d*/ { %s, %d, %d, %d, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilInputModeName(data[i].input_mode),
+                    data[i].option_1, data[i].option_2, data[i].option_3,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+            testUtilModulesPrint(symbol, "                    ", "\n");
+            printf("                },\n");
+        } else {
+            if (ret < ZINT_ERROR) {
+                int width, row;
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+                ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                    }
+                }
+                if (do_zxingcpp) {
+                    if ((symbol->input_mode & 0x07) == DATA_MODE) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n", i, testUtilBarcodeName(symbol->symbology));
+                    } else {
+                        int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
+                        if (testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length, debug)) {
+                            int cmp_len, ret_len;
+                            char modules_dump[32768];
+                            assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                            ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length,
+                                    modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                            assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                            ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
+                                    NULL /*primary*/, escaped, &ret_len);
+                            assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                        }
                     }
                 }
             }
@@ -5034,6 +6555,7 @@ int main(int argc, char *argv[]) {
         { "test_qr_gs1", test_qr_gs1, 1, 1, 1 },
         { "test_qr_optimize", test_qr_optimize, 1, 1, 1 },
         { "test_qr_encode", test_qr_encode, 1, 1, 1 },
+        { "test_qr_encode_segs", test_qr_encode_segs, 1, 1, 1 },
         { "test_qr_perf", test_qr_perf, 1, 0, 1 },
 
         { "test_microqr_options", test_microqr_options, 1, 0, 1 },
@@ -5051,6 +6573,7 @@ int main(int argc, char *argv[]) {
         { "test_rmqr_gs1", test_rmqr_gs1, 1, 1, 1 },
         { "test_rmqr_optimize", test_rmqr_optimize, 1, 1, 1 },
         { "test_rmqr_encode", test_rmqr_encode, 1, 1, 1 },
+        { "test_rmqr_encode_segs", test_rmqr_encode_segs, 1, 1, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

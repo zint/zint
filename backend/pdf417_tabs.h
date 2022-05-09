@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
 
     Redistribution and use in source and binary forms, with or without
@@ -30,15 +30,14 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 /* this file contains the character table, the pre-calculated coefficients and the
    codeword patterns taken from lines 416 to 454 of pdf417.frm */
 
 /* See "pdf417.h" for declarations */
 
-#ifndef __PDF417_TABS_H
-#define __PDF417_TABS_H
+#ifndef Z_PDF417_TABS_H
+#define Z_PDF417_TABS_H
 
 /* PDF417 error correction coefficients from Grand Zebu */
 INTERNAL_DATA const unsigned short pdf_coefrs[1022] = {
@@ -511,4 +510,5 @@ INTERNAL_DATA const unsigned short pdf_rap_centre[52] = {
     0x2DC, 0x2DE
 };
 
-#endif /* __PDF417_TABS_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_PDF417_TABS_H */

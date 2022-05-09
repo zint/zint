@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,11 +29,11 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
-#ifndef __AZTEC_H
-#define __AZTEC_H
 
-static const short CompactAztecMap[] = {
+#ifndef Z_AZTEC_H
+#define Z_AZTEC_H
+
+static const short AztecCompactMap[] = {
     /* 27 x 27 data grid */
     609, 608, 411, 413, 415, 417, 419, 421,  423, 425,  427,  429,  431,  433,  435,  437,  439, 441,  443, 445, 447, 449, 451, 453, 455, 457, 459, // 0
     607, 606, 410, 412, 414, 416, 418, 420,  422, 424,  426,  428,  430,  432,  434,  436,  438, 440,  442, 444, 446, 448, 450, 452, 454, 456, 458, // 1
@@ -164,4 +164,5 @@ static const short AztecMapGridYOffsets[] = {
     27, 43, 59, 75, 91, 107, 123, 139
 };
 
-#endif /* __AZTEC_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_AZTEC_H */

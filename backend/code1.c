@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "common.h"
 #include "code1.h"
@@ -42,7 +41,7 @@
 #endif
 
 /* Add solid bar */
-static void horiz(struct zint_symbol *symbol, const int row_no, const int full) {
+static void c1_horiz(struct zint_symbol *symbol, const int row_no, const int full) {
     int i;
 
     if (full) {
@@ -57,15 +56,15 @@ static void horiz(struct zint_symbol *symbol, const int row_no, const int full) 
 }
 
 /* Central recognition pattern for Versions A-H */
-static void central_finder(struct zint_symbol *symbol, const int start_row, const int row_count,
+static void c1_central_finder(struct zint_symbol *symbol, const int start_row, const int row_count,
             const int full_rows) {
     int i;
 
     for (i = 0; i < row_count; i++) {
         if (i < full_rows) {
-            horiz(symbol, start_row + (i * 2), 1);
+            c1_horiz(symbol, start_row + (i * 2), 1);
         } else {
-            horiz(symbol, start_row + (i * 2), 0);
+            c1_horiz(symbol, start_row + (i * 2), 0);
             if (i != row_count - 1) {
                 set_module(symbol, start_row + (i * 2) + 1, 1);
                 set_module(symbol, start_row + (i * 2) + 1, symbol->width - 2);
@@ -75,7 +74,7 @@ static void central_finder(struct zint_symbol *symbol, const int start_row, cons
 }
 
 /* Add solid column */
-static void vert(struct zint_symbol *symbol, const int column, const int height, const int top) {
+static void c1_vert(struct zint_symbol *symbol, const int column, const int height, const int top) {
     int i;
 
     if (top) {
@@ -90,7 +89,7 @@ static void vert(struct zint_symbol *symbol, const int column, const int height,
 }
 
 /* Add bump to the right of the vertical recognition pattern column (Versions A-H) */
-static void spigot(struct zint_symbol *symbol, const int row_no) {
+static void c1_spigot(struct zint_symbol *symbol, const int row_no) {
     int i;
 
     for (i = symbol->width - 1; i > 0; i--) {
@@ -101,7 +100,7 @@ static void spigot(struct zint_symbol *symbol, const int row_no) {
 }
 
 /* Is basic (non-shifted) C40? */
-static int isc40(const unsigned char input) {
+static int c1_isc40(const unsigned char input) {
     if ((input >= '0' && input <= '9') || (input >= 'A' && input <= 'Z') || input == ' ') {
         return 1;
     }
@@ -109,7 +108,7 @@ static int isc40(const unsigned char input) {
 }
 
 /* Is basic (non-shifted) TEXT? */
-static int istext(const unsigned char input) {
+static int c1_istext(const unsigned char input) {
     if ((input >= '0' && input <= '9') || (input >= 'a' && input <= 'z') || input == ' ') {
         return 1;
     }
@@ -117,14 +116,14 @@ static int istext(const unsigned char input) {
 }
 
 /* Is basic (non-shifted) C40/TEXT? */
-static int isc40text(const int current_mode, const unsigned char input) {
-    return current_mode == C1_C40 ? isc40(input) : istext(input);
+static int c1_isc40text(const int current_mode, const unsigned char input) {
+    return current_mode == C1_C40 ? c1_isc40(input) : c1_istext(input);
 }
 
 /* EDI characters are uppercase alphanumerics plus space plus EDI terminator (CR) plus 2 EDI separator chars */
-static int isedi(const unsigned char input) {
+static int c1_isedi(const unsigned char input) {
 
-    if (isc40(input)) {
+    if (c1_isc40(input)) {
         return 1;
     }
     if (input == 13 || input == '*' || input == '>') {
@@ -135,10 +134,10 @@ static int isedi(const unsigned char input) {
 }
 
 /* Whether Step Q4bi applies, i.e. if one of the 3 EDI terminator/separator chars appears before a non-EDI char */
-static int is_step_Q4bi_applicable(const unsigned char source[], const int sourcelen, const int position) {
+static int c1_is_step_Q4bi_applicable(const unsigned char source[], const int length, const int position) {
     int i;
 
-    for (i = position; i < sourcelen && isedi(source[i]); i++) {
+    for (i = position; i < length && c1_isedi(source[i]); i++) {
         if (source[i] == 13 || source[i] == '*' || source[i] == '>') {
             return 1;
         }
@@ -164,7 +163,7 @@ static int is_step_Q4bi_applicable(const unsigned char source[], const int sourc
 #define C1_MULT_CEIL(n)     ((((n) + C1_MULT_MINUS_1) / C1_MULT) * C1_MULT)
 
 /* AIM USS Code One Annex D Steps J-R */
-static int c1_look_ahead_test(const unsigned char source[], const int sourcelen, const int position,
+static int c1_look_ahead_test(const unsigned char source[], const int length, const int position,
             const int current_mode, const int gs1) {
     int ascii_count, c40_count, text_count, edi_count, byte_count;
     int ascii_rnded, c40_rnded, text_rnded, edi_rnded, byte_rnded;
@@ -197,9 +196,9 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
             break;
     }
 
-    for (sp = position; sp < sourcelen; sp++) {
-        unsigned char c = source[sp];
-        int is_extended = c & 0x80;
+    for (sp = position; sp < length; sp++) {
+        const unsigned char c = source[sp];
+        const int is_extended = c & 0x80;
 
         /* Step L */
         if ((c >= '0') && (c <= '9')) {
@@ -213,7 +212,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
         }
 
         /* Step M */
-        if (isc40(c)) {
+        if (c1_isc40(c)) {
             c40_count += C1_MULT_2_DIV_3; /* Step M1 */
         } else if (is_extended) {
             c40_count += C1_MULT_8_DIV_3; /* Step M2 */
@@ -222,7 +221,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
         }
 
         /* Step N */
-        if (istext(c)) {
+        if (c1_istext(c)) {
             text_count += C1_MULT_2_DIV_3; /* Step N1 */
         } else if (is_extended) {
             text_count += C1_MULT_8_DIV_3; /* Step N2 */
@@ -231,7 +230,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
         }
 
         /* Step O */
-        if (isedi(c)) {
+        if (c1_isedi(c)) {
             edi_count += C1_MULT_2_DIV_3; /* Step O1 */
         } else if (is_extended) {
             edi_count += C1_MULT_13_DIV_3; /* Step O2 */
@@ -277,7 +276,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
                 }
                 if (c40_rnded == edi_rnded) {
                     /* Step Q4b */
-                    if (is_step_Q4bi_applicable(source, sourcelen, sp + 1)) {
+                    if (c1_is_step_Q4bi_applicable(source, length, sp + 1)) {
                         return C1_EDI; /* Step Q4bi */
                     }
                     return C1_C40; /* Step Q4bii */
@@ -315,18 +314,18 @@ static int c1_look_ahead_test(const unsigned char source[], const int sourcelen,
 }
 
 /* Whether can fit last character or characters in a single ASCII codeword */
-static int is_last_single_ascii(const unsigned char string[], const int length, const int sp) {
-    if (length - sp == 1 && string[sp] <= 127) {
+static int c1_is_last_single_ascii(const unsigned char source[], const int length, const int sp) {
+    if (length - sp == 1 && source[sp] <= 127) {
         return 1;
     }
-    if (length - sp == 2 && is_twodigits(string, length, sp)) {
+    if (length - sp == 2 && is_twodigits(source, length, sp)) {
         return 1;
     }
     return 0;
 }
 
 /* Initialize number of digits array (taken from BWIPP) */
-static void set_num_digits(const unsigned char source[], const int length, int *num_digits) {
+static void c1_set_num_digits(const unsigned char source[], const int length, int num_digits[]) {
     int i;
     for (i = length - 1; i >= 0; i--) {
         if (source[i] >= '0' && source[i] <= '9') {
@@ -335,8 +334,8 @@ static void set_num_digits(const unsigned char source[], const int length, int *
     }
 }
 
-/* Copy C40/TEXT/EDI triplets from buffer to target. Returns elements left in buffer (< 3) */
-static int cte_buffer_transfer(int cte_buffer[6], int cte_p, unsigned target[], int *p_tp) {
+/* Copy C40/TEXT/EDI triplets from buffer to `target`. Returns elements left in buffer (< 3) */
+static int c1_cte_buffer_transfer(int cte_buffer[6], int cte_p, unsigned target[], int *p_tp) {
     int cte_i, cte_e;
     int tp = *p_tp;
 
@@ -359,8 +358,8 @@ static int cte_buffer_transfer(int cte_buffer[6], int cte_p, unsigned target[], 
     return cte_p;
 }
 
-/* Copy DECIMAL bytes to target. Returns bits left in buffer (< 8) */
-static int decimal_binary_transfer(char decimal_binary[24], int db_p, unsigned int target[], int *p_tp) {
+/* Copy DECIMAL bytes to `target`. Returns bits left in buffer (< 8) */
+static int c1_decimal_binary_transfer(char decimal_binary[24], int db_p, unsigned int target[], int *p_tp) {
     int b_i, b_e, p;
     int tp = *p_tp;
 
@@ -388,14 +387,14 @@ static int decimal_binary_transfer(char decimal_binary[24], int db_p, unsigned i
 }
 
 /* Unlatch to ASCII from DECIMAL mode using 6 ones flag. DECIMAL binary buffer will be empty */
-static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int target[], int *p_tp,
-            const int decimal_count, const unsigned char *source, int *p_sp) {
+static int c1_decimal_unlatch(char decimal_binary[24], int db_p, unsigned int target[], int *p_tp,
+            const int decimal_count, const unsigned char source[], int *p_sp) {
     int sp = *p_sp;
     int bits_left;
 
     db_p = bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
     if (db_p >= 8) {
-        db_p = decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
+        db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
     }
     bits_left = (8 - db_p) & 0x07;
     if (decimal_count >= 1 && bits_left >= 4) {
@@ -404,7 +403,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
         if (bits_left == 6) {
             db_p = bin_append_posn(1, 2, decimal_binary, db_p);
         }
-        (void) decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
+        (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
 
     } else if (bits_left) {
         if (bits_left >= 4) {
@@ -413,7 +412,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
         if (bits_left == 2 || bits_left == 6) {
             db_p = bin_append_posn(1, 2, decimal_binary, db_p);
         }
-        (void) decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
+        (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, p_tp);
     }
 
     *p_sp = sp;
@@ -422,7 +421,7 @@ static int decimal_unlatch(char decimal_binary[24], int db_p, unsigned int targe
 }
 
 /* Number of codewords remaining in a particular version (may be negative) */
-static int codewords_remaining(struct zint_symbol *symbol, const int tp) {
+static int c1_codewords_remaining(struct zint_symbol *symbol, const int tp) {
     int i;
 
     if (symbol->option_2 == 10) { /* Version T */
@@ -444,7 +443,7 @@ static int codewords_remaining(struct zint_symbol *symbol, const int tp) {
 }
 
 /* Number of C40/TEXT elements needed to encode `input` */
-static int c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
+static int c1_c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
     int cnt;
 
     if (gs1 && input == '[') {
@@ -459,7 +458,7 @@ static int c40text_cnt(const int current_mode, const int gs1, unsigned char inpu
 }
 
 /* Copy `source` to `eci_buf` with "\NNNNNN" ECI indicator at start and backslashes escaped */
-static void eci_escape(const int eci, unsigned char *source, const int length, unsigned char *eci_buf,
+static void c1_eci_escape(const int eci, unsigned char source[], const int length, unsigned char eci_buf[],
             const int eci_length) {
     int i, j;
 
@@ -475,10 +474,12 @@ static void eci_escape(const int eci, unsigned char *source, const int length, u
 }
 
 /* Convert to codewords */
-static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigned int target[], int length,
-            int *p_last_mode) {
+static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int length, const int eci,
+            const int seg_count, const int gs1, unsigned int target[], int *p_tp, int *p_last_mode) {
     int current_mode, next_mode;
-    int sp, tp, gs1, i;
+    int sp = 0;
+    int tp = *p_tp;
+    int i;
     int cte_buffer[6], cte_p = 0; /* C1_C40/TEXT/EDI buffer and index */
     char decimal_binary[24]; /* C1_DECIMAL buffer */
     int db_p = 0;
@@ -493,69 +494,76 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     int *num_digits = (int *) _alloca(sizeof(int) * (eci_length + 1));
 #endif
 
-    sp = 0;
-    tp = 0;
     memset(num_digits, 0, sizeof(int) * (eci_length + 1));
 
     /* Step A */
     current_mode = C1_ASCII;
     next_mode = C1_ASCII;
 
-    if ((symbol->input_mode & 0x07) == GS1_MODE) {
-        gs1 = 1;
-    } else {
-        gs1 = 0;
-    }
-    if (gs1) {
-        set_num_digits(source, length, num_digits);
+    if (gs1 && tp == 0) {
+        c1_set_num_digits(source, length, num_digits);
         if (length >= 15 && num_digits[0] >= 15) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
+            if (debug_print) printf("FNC1Dec ");
         } else if (length >= 7 && num_digits[0] == length) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
+            if (debug_print) printf("FNC1Dec ");
         } else {
             target[tp++] = 232; /* FNC1 */
+            if (debug_print) printf("FNC1 ");
         }
         /* Note ignoring Structured Append and ECI if GS1 mode (up to caller to warn/error) */
     } else {
-        if (symbol->structapp.count) {
+        if (symbol->structapp.count && tp == 0) {
             if (symbol->structapp.count < 16) { /* Group mode */
-                if (symbol->eci && symbol->structapp.index == 1) { /* Initial pad indicator for 1st symbol only */
+                if ((eci || seg_count > 1) && symbol->structapp.index == 1) {
+                    /* Initial pad indicator for 1st symbol only */
                     target[tp++] = 129; /* Pad */
                     target[tp++] = 233; /* FNC2 */
                     target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
                     target[tp++] = '\\' + 1; /* Escape char */
+                    if (debug_print) printf("SAGrp ");
                 } else {
                     target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
                     target[tp++] = 233; /* FNC2 */
+                    if (debug_print) printf("FNC2 ");
                 }
             } else { /* Extended Group mode */
-                if (symbol->eci && symbol->structapp.index == 1) { /* Initial pad indicator for 1st symbol only */
+                if ((eci || seg_count > 1) && symbol->structapp.index == 1) {
+                    /* Initial pad indicator for 1st symbol only */
                     target[tp++] = 129; /* Pad */
                     target[tp++] = '\\' + 1; /* Escape char */
                     target[tp++] = 233; /* FNC2 */
                     target[tp++] = symbol->structapp.index;
                     target[tp++] = symbol->structapp.count;
+                    if (debug_print) printf("SAExGrp ");
                 } else {
                     target[tp++] = symbol->structapp.index;
                     target[tp++] = symbol->structapp.count;
                     target[tp++] = 233; /* FNC2 */
+                    if (debug_print) printf("FNC2 ");
                 }
             }
-            if (symbol->eci) {
-                eci_escape(symbol->eci, source, length, eci_buf, eci_length);
+            if (eci) {
+                c1_eci_escape(eci, source, length, eci_buf, eci_length);
                 source = eci_buf;
                 length = eci_length;
             }
-        } else if (symbol->eci) {
-            target[tp++] = 129; /* Pad */
-            target[tp++] = '\\' + 1; /* Escape char */
-            eci_escape(symbol->eci, source, length, eci_buf, eci_length);
-            source = eci_buf;
-            length = eci_length;
+        } else if (eci || seg_count > 1) {
+            if (tp == 0) {
+                target[tp++] = 129; /* Pad */
+                target[tp++] = '\\' + 1; /* Escape char */
+                if (debug_print) printf("PADEsc ");
+            }
+            if (eci) {
+                c1_eci_escape(eci, source, length, eci_buf, eci_length);
+                source = eci_buf;
+                length = eci_length;
+            }
         }
-        set_num_digits(source, length, num_digits);
+        c1_set_num_digits(source, length, num_digits);
     }
 
     do {
@@ -563,12 +571,16 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             /* Change mode */
             switch (next_mode) {
                 case C1_C40: target[tp++] = 230;
+                    if (debug_print) printf("->C40 ");
                     break;
                 case C1_TEXT: target[tp++] = 239;
+                    if (debug_print) printf("->Text ");
                     break;
                 case C1_EDI: target[tp++] = 238;
+                    if (debug_print) printf("->EDI ");
                     break;
                 case C1_BYTE: target[tp++] = 231;
+                    if (debug_print) printf("->Byte ");
                     byte_start = tp;
                     target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
                     break;
@@ -592,21 +604,22 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
 
             if (next_mode == C1_ASCII) {
                 if (is_twodigits(source, length, sp)) {
-                    if (debug_print) printf("ASCII double-digits ");
-
                     /* Step B3 */
                     target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                    if (debug_print) printf("ASCDD(%.2s) ", source + sp);
                     sp += 2;
                 } else {
                     if ((gs1) && (source[sp] == '[')) {
                         if (length - (sp + 1) >= 15 && num_digits[sp + 1] >= 15) {
                             /* Step B4 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
+                            if (debug_print) printf("FNC1 ");
                             sp++;
                             next_mode = C1_DECIMAL;
                         } else if (length - (sp + 1) >= 7 && num_digits[sp + 1] == length - (sp + 1)) {
                             /* Step B5 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
+                            if (debug_print) printf("FNC1 ");
                             sp++;
                             next_mode = C1_DECIMAL;
                         }
@@ -618,18 +631,21 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                         next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
 
                         if (next_mode == C1_ASCII) {
-                            if (debug_print) printf("ASCII ");
+                            if (debug_print) printf("ASC(%d) ", source[sp]);
 
                             if (source[sp] & 0x80) {
                                 /* Step B7 */
                                 target[tp++] = 235; /* FNC4 (Upper Shift) */
                                 target[tp++] = (source[sp] - 128) + 1;
+                                if (debug_print) printf("UpSh(%d) ", source[sp]);
                             } else if ((gs1) && (source[sp] == '[')) {
                                 /* Step B8 */
                                 target[tp++] = 232; /* FNC1 */
+                                if (debug_print) printf("FNC1 ");
                             } else {
                                 /* Step B8 */
                                 target[tp++] = source[sp] + 1;
+                                if (debug_print) printf("ASC(%d) ", source[sp]);
                             }
                             sp++;
                         }
@@ -657,6 +673,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             if (next_mode != current_mode) {
                 /* Step C/D1c */
                 target[tp++] = 255; /* Unlatch */
+                if (debug_print) printf("Unlatch ");
             } else {
                 /* Step C/D2 */
                 const char *ct_shift, *ct_value;
@@ -688,7 +705,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
 
                 if (cte_p >= 3) {
-                    cte_p = cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
+                    cte_p = c1_cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
                 }
                 sp++;
             }
@@ -705,8 +722,8 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 } else if ((length - sp) >= 8 && num_digits[sp] == (length - sp)) {
                     /* Step E1b */
                     next_mode = C1_ASCII;
-                } else if ((length - sp) < 3 || !isedi(source[sp]) || !isedi(source[sp + 1])
-                        || !isedi(source[sp + 2])) {
+                } else if ((length - sp) < 3 || !c1_isedi(source[sp]) || !c1_isedi(source[sp + 1])
+                        || !c1_isedi(source[sp + 2])) {
                     /* Step E1c */
                     /* This ensures ASCII switch if don't have EDI triplet, so cte_p will be zero on loop exit */
                     next_mode = C1_ASCII;
@@ -714,10 +731,11 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             }
 
             if (next_mode != C1_EDI) {
-                if (is_last_single_ascii(source, length, sp) && codewords_remaining(symbol, tp) == 1) {
+                if (c1_is_last_single_ascii(source, length, sp) && c1_codewords_remaining(symbol, tp) == 1) {
                     /* No unlatch needed if data fits as ASCII in last data codeword */
                 } else {
                     target[tp++] = 255; /* Unlatch */
+                    if (debug_print) printf("Unlatch ");
                 }
             } else {
                 /* Step E2 */
@@ -734,7 +752,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 }
 
                 if (cte_p >= 3) {
-                    cte_p = cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
+                    cte_p = c1_cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
                 }
                 sp++;
             }
@@ -742,22 +760,25 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         } else if (current_mode == C1_DECIMAL) {
             /* Step F - Decimal encodation */
 
-            if (debug_print) printf("DECIMAL ");
+            if (debug_print) printf("DEC ");
 
             next_mode = C1_DECIMAL;
 
             if (length - sp < 3) {
                 /* Step F1 */
-                int bits_left = 8 - db_p;
-                int can_ascii = bits_left == 8 && is_last_single_ascii(source, length, sp);
-                if (codewords_remaining(symbol, tp) == 1 && (can_ascii || (num_digits[sp] == 1 && bits_left >= 4))) {
+                const int bits_left = 8 - db_p;
+                const int can_ascii = bits_left == 8 && c1_is_last_single_ascii(source, length, sp);
+                if (c1_codewords_remaining(symbol, tp) == 1
+                        && (can_ascii || (num_digits[sp] == 1 && bits_left >= 4))) {
                     if (can_ascii) {
                         /* Encode last character or last 2 digits as ASCII */
                         if (is_twodigits(source, length, sp)) {
                             target[tp++] = (10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130;
+                            if (debug_print) printf("ASCDD(%.2s) ", source + sp);
                             sp += 2;
                         } else {
                             target[tp++] = source[sp] + 1;
+                            if (debug_print) printf("ASC(%d) ", source[sp]);
                             sp++;
                         }
                     } else {
@@ -767,10 +788,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                         if (bits_left == 6) {
                             db_p = bin_append_posn(1, 2, decimal_binary, db_p);
                         }
-                        db_p = decimal_binary_transfer(decimal_binary, db_p, target, &tp);
+                        db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
                     }
                 } else {
-                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
+                    db_p = c1_decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
                     current_mode = C1_ASCII; /* Note need to set current_mode also in case exit loop */
                 }
                 next_mode = C1_ASCII;
@@ -778,7 +799,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
             } else {
                 if (num_digits[sp] < 3) {
                     /* Step F2 */
-                    db_p = decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
+                    db_p = c1_decimal_unlatch(decimal_binary, db_p, target, &tp, num_digits[sp], source, &sp);
                     current_mode = next_mode = C1_ASCII; /* Note need to set current_mode also in case exit loop */
                 } else {
                     /* Step F3 */
@@ -786,7 +807,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                     int value = (100 * ctoi(source[sp])) + (10 * ctoi(source[sp + 1])) + ctoi(source[sp + 2]) + 1;
                     db_p = bin_append_posn(value, 10, decimal_binary, db_p);
                     if (db_p >= 8) {
-                        db_p = decimal_binary_transfer(decimal_binary, db_p, target, &tp);
+                        db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
                     }
                     sp += 3;
                 }
@@ -816,7 +837,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                     tp++;
                 }
             } else {
-                if (debug_print) printf("BYTE ");
+                if (debug_print) printf("BYTE(%d) ", source[sp]);
 
                 target[tp++] = source[sp];
                 sp++;
@@ -837,10 +858,10 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     /* Empty buffers (note cte_buffer will be empty if current_mode C1_EDI) */
     if (current_mode == C1_C40 || current_mode == C1_TEXT) {
         if (cte_p >= 1) {
-            int cws_remaining = codewords_remaining(symbol, tp);
+            const int cws_remaining = c1_codewords_remaining(symbol, tp);
 
             /* Note doing strict interpretation of spec here (same as BWIPP), as now also done in Data Matrix case */
-            if (cws_remaining == 1 && cte_p == 1 && isc40text(current_mode, source[sp - 1])) {
+            if (cws_remaining == 1 && cte_p == 1 && c1_isc40text(current_mode, source[sp - 1])) {
                 /* 2.2.2.2 "...except when a single symbol character is left at the end before the first
                    error correction character. This single character is encoded in the ASCII code set." */
                 target[tp++] = source[sp - 1] + 1; /* As ASCII */
@@ -849,14 +870,14 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 /* 2.2.2.2 "Two characters may be encoded in C40 mode in the last two data symbol characters of the
                    symbol as two C40 values followed by one of the C40 shift characters." */
                 cte_buffer[cte_p++] = 0; /* Shift 0 */
-                cte_p = cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
+                cte_p = c1_cte_buffer_transfer(cte_buffer, cte_p, target, &tp);
             }
             if (cte_p >= 1) {
                 int cnt, total_cnt = 0;
                 /* Backtrack to last complete triplet (same technique as BWIPP) */
                 while (sp > 0 && cte_p % 3) {
                     sp--;
-                    cnt = c40text_cnt(current_mode, gs1, source[sp]);
+                    cnt = c1_c40text_cnt(current_mode, gs1, source[sp]);
                     total_cnt += cnt;
                     cte_p -= cnt;
                 }
@@ -884,12 +905,12 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
         int bits_left;
 
         /* Finish Decimal mode and go back to ASCII unless only one codeword remaining */
-        if (codewords_remaining(symbol, tp) > 1) {
+        if (c1_codewords_remaining(symbol, tp) > 1) {
             db_p = bin_append_posn(63, 6, decimal_binary, db_p); /* Unlatch */
         }
 
         if (db_p >= 8) {
-            db_p = decimal_binary_transfer(decimal_binary, db_p, target, &tp);
+            db_p = c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
         }
 
         bits_left = (8 - db_p) & 0x07;
@@ -904,13 +925,13 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
                 db_p = bin_append_posn(1, 2, decimal_binary, db_p);
             }
 
-            (void) decimal_binary_transfer(decimal_binary, db_p, target, &tp);
+            (void) c1_decimal_binary_transfer(decimal_binary, db_p, target, &tp);
         }
         current_mode = C1_ASCII;
 
     } else if (current_mode == C1_BYTE) {
         /* Update byte field length unless no codewords remaining */
-        if (codewords_remaining(symbol, tp) > 0) {
+        if (c1_codewords_remaining(symbol, tp) > 0) {
             int byte_count = tp - (byte_start + 1);
             if (byte_count <= 249) {
                 target[byte_start] = byte_count;
@@ -943,9 +964,22 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], unsigne
     return tp;
 }
 
+/* Call `c1_encode()` for each segment */
+static int c1_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count, const int gs1,
+            unsigned int target[], int *p_last_mode) {
+    int i;
+    int tp = 0;
+
+    for (i = 0; i < seg_count; i++) {
+        tp = c1_encode(symbol, segs[i].source, segs[i].length, segs[i].eci, seg_count, gs1, target, &tp, p_last_mode);
+    }
+
+    return tp;
+}
+
 /* Set symbol from datagrid */
-static void block_copy(struct zint_symbol *symbol, char datagrid[136][120], const int start_row, const int start_col,
-            const int height, const int width, const int row_offset, const int col_offset) {
+static void c1_block_copy(struct zint_symbol *symbol, char datagrid[136][120], const int start_row,
+            const int start_col, const int height, const int width, const int row_offset, const int col_offset) {
     int i, j;
 
     for (i = start_row; i < (start_row + height); i++) {
@@ -957,14 +991,30 @@ static void block_copy(struct zint_symbol *symbol, char datagrid[136][120], cons
     }
 }
 
-INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int size = 1, i, j;
+/* Get total length allowing for ECIs and escaping backslashes */
+static int c1_total_length_segs(struct zint_seg segs[], const int seg_count) {
+    int total_len = 0;
+    int i;
 
+    if (segs[0].eci || seg_count > 1) {
+        for (i = 0; i < seg_count; i++) {
+            total_len += segs[i].length + 7 + chr_cnt(segs[i].source, segs[i].length, '\\');
+        }
+    } else {
+        total_len = segs[0].length;
+    }
+
+    return total_len;
+}
+
+INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+    int size = 1, i, j;
     char datagrid[136][120];
     int row, col;
     int sub_version = 0;
     rs_t rs;
     int error_number = 0;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 10)) {
@@ -977,7 +1027,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             strcpy(symbol->errtxt, "714: Structured Append not available for Version S");
             return ZINT_ERROR_INVALID_OPTION;
         }
-        if ((symbol->input_mode & 0x07) == GS1_MODE) {
+        if (gs1) {
             strcpy(symbol->errtxt, "710: Cannot have Structured Append and GS1 mode at the same time");
             return ZINT_ERROR_INVALID_OPTION;
         }
@@ -999,25 +1049,29 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         /* Version S */
         int codewords;
         large_int elreg;
-        unsigned int data[30], ecc[15];
+        unsigned int target[30], ecc[15];
         int block_width;
 
-        if (length > 18) {
+        if (seg_count > 1) {
+            strcpy(symbol->errtxt, "715: Multiple segments not supported for Version S");
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (segs[0].length > 18) {
             strcpy(symbol->errtxt, "514: Input data too long for Version S");
             return ZINT_ERROR_TOO_LONG;
         }
-        if (!is_sane(NEON_F, source, length)) {
+        if (!is_sane(NEON_F, segs[0].source, segs[0].length)) {
             strcpy(symbol->errtxt, "515: Invalid input data (Version S encodes numeric input only)");
             return ZINT_ERROR_INVALID_DATA;
         }
 
         size = 9;
-        if (length <= 6) {
+        if (segs[0].length <= 6) {
             /* Version S-10 */
             sub_version = 1;
             codewords = 4;
             block_width = 2;
-        } else if (length <= 12) {
+        } else if (segs[0].length <= 12) {
             /* Version S-20 */
             sub_version = 2;
             codewords = 8;
@@ -1034,37 +1088,37 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         }
 
         /* Convert value plus one to binary */
-        large_load_str_u64(&elreg, source, length);
+        large_load_str_u64(&elreg, segs[0].source, segs[0].length);
         large_add_u64(&elreg, 1);
-        large_uint_array(&elreg, data, codewords, 5 /*bits*/);
+        large_uint_array(&elreg, target, codewords, 5 /*bits*/);
 
         rs_init_gf(&rs, 0x25);
         rs_init_code(&rs, codewords, 0);
-        rs_encode_uint(&rs, codewords, data, ecc);
+        rs_encode_uint(&rs, codewords, target, ecc);
 
         for (i = 0; i < codewords; i++) {
-            data[i + codewords] = ecc[codewords - i - 1];
+            target[i + codewords] = ecc[codewords - i - 1];
         }
 
         if (debug_print) {
             printf("Codewords (%d): ", codewords);
-            for (i = 0; i < codewords * 2; i++) printf(" %d", (int) data[i]);
+            for (i = 0; i < codewords * 2; i++) printf(" %d", (int) target[i]);
             printf("\n");
         }
 
         i = 0;
         for (row = 0; row < 2; row++) {
             for (col = 0; col < block_width; col++) {
-                datagrid[row * 2][col * 5] = data[i] & 0x10;
-                datagrid[row * 2][(col * 5) + 1] = data[i] & 0x08;
-                datagrid[row * 2][(col * 5) + 2] = data[i] & 0x04;
-                datagrid[(row * 2) + 1][col * 5] = data[i] & 0x02;
-                datagrid[(row * 2) + 1][(col * 5) + 1] = data[i] & 0x01;
-                datagrid[row * 2][(col * 5) + 3] = data[i + 1] & 0x10;
-                datagrid[row * 2][(col * 5) + 4] = data[i + 1] & 0x08;
-                datagrid[(row * 2) + 1][(col * 5) + 2] = data[i + 1] & 0x04;
-                datagrid[(row * 2) + 1][(col * 5) + 3] = data[i + 1] & 0x02;
-                datagrid[(row * 2) + 1][(col * 5) + 4] = data[i + 1] & 0x01;
+                datagrid[row * 2][col * 5] = target[i] & 0x10;
+                datagrid[row * 2][(col * 5) + 1] = target[i] & 0x08;
+                datagrid[row * 2][(col * 5) + 2] = target[i] & 0x04;
+                datagrid[(row * 2) + 1][col * 5] = target[i] & 0x02;
+                datagrid[(row * 2) + 1][(col * 5) + 1] = target[i] & 0x01;
+                datagrid[row * 2][(col * 5) + 3] = target[i + 1] & 0x10;
+                datagrid[row * 2][(col * 5) + 4] = target[i + 1] & 0x08;
+                datagrid[(row * 2) + 1][(col * 5) + 2] = target[i + 1] & 0x04;
+                datagrid[(row * 2) + 1][(col * 5) + 3] = target[i + 1] & 0x02;
+                datagrid[(row * 2) + 1][(col * 5) + 4] = target[i + 1] & 0x01;
                 i += 2;
             }
         }
@@ -1074,18 +1128,18 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
 
     } else if (symbol->option_2 == 10) {
         /* Version T */
-        unsigned int data[90 + 2]; /* Allow for 90 BYTE mode (+ latch and byte count) */
+        unsigned int target[90 + 2]; /* Allow for 90 BYTE mode (+ latch and byte count) */
         unsigned int ecc[22];
         int data_length;
         int data_cw, ecc_cw, block_width;
         int last_mode;
 
-        if (length > 90 || (symbol->eci && length + 7 + chr_cnt(source, length, '\\') > 90)) {
+        if (c1_total_length_segs(segs, seg_count) > 90) {
             strcpy(symbol->errtxt, "519: Input data too long for Version T");
             return ZINT_ERROR_TOO_LONG;
         }
 
-        data_length = c1_encode(symbol, source, data, length, &last_mode);
+        data_length = c1_encode_segs(symbol, segs, seg_count, gs1, target, &last_mode);
 
         if (data_length == 0 || data_length > 38) {
             strcpy(symbol->errtxt, "516: Input data too long for Version T");
@@ -1118,39 +1172,39 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         if (data_cw > data_length) {
             /* If did not finish in ASCII or BYTE mode, switch to ASCII */
             if (last_mode != C1_ASCII && last_mode != C1_BYTE) {
-                data[data_length++] = 255; /* Unlatch */
+                target[data_length++] = 255; /* Unlatch */
             }
             for (i = data_length; i < data_cw; i++) {
-                data[i] = 129; /* Pad */
+                target[i] = 129; /* Pad */
             }
         }
 
         /* Calculate error correction data */
         rs_init_gf(&rs, 0x12d);
         rs_init_code(&rs, ecc_cw, 0);
-        rs_encode_uint(&rs, data_cw, data, ecc);
+        rs_encode_uint(&rs, data_cw, target, ecc);
 
         for (i = 0; i < ecc_cw; i++) {
-            data[data_cw + i] = ecc[ecc_cw - i - 1];
+            target[data_cw + i] = ecc[ecc_cw - i - 1];
         }
 
         if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_cw);
-            for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", (int) data[i]);
+            for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", (int) target[i]);
             printf("\n");
         }
 
         i = 0;
         for (row = 0; row < 5; row++) {
             for (col = 0; col < block_width; col++) {
-                datagrid[row * 2][col * 4] = data[i] & 0x80;
-                datagrid[row * 2][(col * 4) + 1] = data[i] & 0x40;
-                datagrid[row * 2][(col * 4) + 2] = data[i] & 0x20;
-                datagrid[row * 2][(col * 4) + 3] = data[i] & 0x10;
-                datagrid[(row * 2) + 1][col * 4] = data[i] & 0x08;
-                datagrid[(row * 2) + 1][(col * 4) + 1] = data[i] & 0x04;
-                datagrid[(row * 2) + 1][(col * 4) + 2] = data[i] & 0x02;
-                datagrid[(row * 2) + 1][(col * 4) + 3] = data[i] & 0x01;
+                datagrid[row * 2][col * 4] = target[i] & 0x80;
+                datagrid[row * 2][(col * 4) + 1] = target[i] & 0x40;
+                datagrid[row * 2][(col * 4) + 2] = target[i] & 0x20;
+                datagrid[row * 2][(col * 4) + 3] = target[i] & 0x10;
+                datagrid[(row * 2) + 1][col * 4] = target[i] & 0x08;
+                datagrid[(row * 2) + 1][(col * 4) + 1] = target[i] & 0x04;
+                datagrid[(row * 2) + 1][(col * 4) + 2] = target[i] & 0x02;
+                datagrid[(row * 2) + 1][(col * 4) + 3] = target[i] & 0x01;
                 i++;
             }
         }
@@ -1160,14 +1214,14 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
 
     } else {
         /* Versions A to H */
-        unsigned int data[1480 + 560];
+        unsigned int target[1480 + 560];
         unsigned int sub_data[185], sub_ecc[70];
         int data_length;
         int data_cw;
         int blocks, data_blocks, ecc_blocks, ecc_length;
         int last_mode;
 
-        data_length = c1_encode(symbol, source, data, length, &last_mode);
+        data_length = c1_encode_segs(symbol, segs, seg_count, gs1, target, &last_mode);
 
         if (data_length == 0) {
             strcpy(symbol->errtxt, "517: Input data is too long");
@@ -1194,13 +1248,13 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         if (data_cw > data_length) {
             /* If did not finish in ASCII or BYTE mode, switch to ASCII */
             if (last_mode != C1_ASCII && last_mode != C1_BYTE) {
-                data[data_length++] = 255; /* Unlatch */
+                target[data_length++] = 255; /* Unlatch */
             }
             if (debug_print) {
                 printf("Padding: %d\n", data_cw - data_length);
             }
             for (i = data_length; i < data_cw; i++) {
-                data[i] = 129; /* Pad */
+                target[i] = 129; /* Pad */
             }
         } else if (debug_print) {
             printf("No padding\n");
@@ -1216,31 +1270,31 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
         rs_init_code(&rs, ecc_blocks, 0);
         for (i = 0; i < blocks; i++) {
             for (j = 0; j < data_blocks; j++) {
-                sub_data[j] = data[j * blocks + i];
+                sub_data[j] = target[j * blocks + i];
             }
             rs_encode_uint(&rs, data_blocks, sub_data, sub_ecc);
             for (j = 0; j < ecc_blocks; j++) {
-                data[data_cw + j * blocks + i] = sub_ecc[ecc_blocks - 1 - j];
+                target[data_cw + j * blocks + i] = sub_ecc[ecc_blocks - 1 - j];
             }
         }
 
         if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_length);
-            for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", (int) data[i]);
+            for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", (int) target[i]);
             printf("\n");
         }
 
         i = 0;
         for (row = 0; row < c1_grid_height[size - 1]; row++) {
             for (col = 0; col < c1_grid_width[size - 1]; col++) {
-                datagrid[row * 2][col * 4] = data[i] & 0x80;
-                datagrid[row * 2][(col * 4) + 1] = data[i] & 0x40;
-                datagrid[row * 2][(col * 4) + 2] = data[i] & 0x20;
-                datagrid[row * 2][(col * 4) + 3] = data[i] & 0x10;
-                datagrid[(row * 2) + 1][col * 4] = data[i] & 0x08;
-                datagrid[(row * 2) + 1][(col * 4) + 1] = data[i] & 0x04;
-                datagrid[(row * 2) + 1][(col * 4) + 2] = data[i] & 0x02;
-                datagrid[(row * 2) + 1][(col * 4) + 3] = data[i] & 0x01;
+                datagrid[row * 2][col * 4] = target[i] & 0x80;
+                datagrid[row * 2][(col * 4) + 1] = target[i] & 0x40;
+                datagrid[row * 2][(col * 4) + 2] = target[i] & 0x20;
+                datagrid[row * 2][(col * 4) + 3] = target[i] & 0x10;
+                datagrid[(row * 2) + 1][col * 4] = target[i] & 0x08;
+                datagrid[(row * 2) + 1][(col * 4) + 1] = target[i] & 0x04;
+                datagrid[(row * 2) + 1][(col * 4) + 2] = target[i] & 0x02;
+                datagrid[(row * 2) + 1][(col * 4) + 3] = target[i] & 0x01;
                 i++;
             }
         }
@@ -1255,194 +1309,194 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
 
     switch (size) {
         case 1: /* Version A */
-            central_finder(symbol, 6, 3, 1);
-            vert(symbol, 4, 6, 1);
-            vert(symbol, 12, 5, 0);
+            c1_central_finder(symbol, 6, 3, 1);
+            c1_vert(symbol, 4, 6, 1);
+            c1_vert(symbol, 12, 5, 0);
             set_module(symbol, 5, 12);
-            spigot(symbol, 0);
-            spigot(symbol, 15);
-            block_copy(symbol, datagrid, 0, 0, 5, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 5, 12, 0, 2);
-            block_copy(symbol, datagrid, 5, 0, 5, 12, 6, 0);
-            block_copy(symbol, datagrid, 5, 12, 5, 4, 6, 2);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 15);
+            c1_block_copy(symbol, datagrid, 0, 0, 5, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 5, 12, 0, 2);
+            c1_block_copy(symbol, datagrid, 5, 0, 5, 12, 6, 0);
+            c1_block_copy(symbol, datagrid, 5, 12, 5, 4, 6, 2);
             break;
         case 2: /* Version B */
-            central_finder(symbol, 8, 4, 1);
-            vert(symbol, 4, 8, 1);
-            vert(symbol, 16, 7, 0);
+            c1_central_finder(symbol, 8, 4, 1);
+            c1_vert(symbol, 4, 8, 1);
+            c1_vert(symbol, 16, 7, 0);
             set_module(symbol, 7, 16);
-            spigot(symbol, 0);
-            spigot(symbol, 21);
-            block_copy(symbol, datagrid, 0, 0, 7, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 7, 16, 0, 2);
-            block_copy(symbol, datagrid, 7, 0, 7, 16, 8, 0);
-            block_copy(symbol, datagrid, 7, 16, 7, 4, 8, 2);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 21);
+            c1_block_copy(symbol, datagrid, 0, 0, 7, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 7, 16, 0, 2);
+            c1_block_copy(symbol, datagrid, 7, 0, 7, 16, 8, 0);
+            c1_block_copy(symbol, datagrid, 7, 16, 7, 4, 8, 2);
             break;
         case 3: /* Version C */
-            central_finder(symbol, 11, 4, 2);
-            vert(symbol, 4, 11, 1);
-            vert(symbol, 26, 13, 1);
-            vert(symbol, 4, 10, 0);
-            vert(symbol, 26, 10, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 27);
-            block_copy(symbol, datagrid, 0, 0, 10, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 10, 20, 0, 2);
-            block_copy(symbol, datagrid, 0, 24, 10, 4, 0, 4);
-            block_copy(symbol, datagrid, 10, 0, 10, 4, 8, 0);
-            block_copy(symbol, datagrid, 10, 4, 10, 20, 8, 2);
-            block_copy(symbol, datagrid, 10, 24, 10, 4, 8, 4);
+            c1_central_finder(symbol, 11, 4, 2);
+            c1_vert(symbol, 4, 11, 1);
+            c1_vert(symbol, 26, 13, 1);
+            c1_vert(symbol, 4, 10, 0);
+            c1_vert(symbol, 26, 10, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 27);
+            c1_block_copy(symbol, datagrid, 0, 0, 10, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 10, 20, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 24, 10, 4, 0, 4);
+            c1_block_copy(symbol, datagrid, 10, 0, 10, 4, 8, 0);
+            c1_block_copy(symbol, datagrid, 10, 4, 10, 20, 8, 2);
+            c1_block_copy(symbol, datagrid, 10, 24, 10, 4, 8, 4);
             break;
         case 4: /* Version D */
-            central_finder(symbol, 16, 5, 1);
-            vert(symbol, 4, 16, 1);
-            vert(symbol, 20, 16, 1);
-            vert(symbol, 36, 16, 1);
-            vert(symbol, 4, 15, 0);
-            vert(symbol, 20, 15, 0);
-            vert(symbol, 36, 15, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 12);
-            spigot(symbol, 27);
-            spigot(symbol, 39);
-            block_copy(symbol, datagrid, 0, 0, 15, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 15, 14, 0, 2);
-            block_copy(symbol, datagrid, 0, 18, 15, 14, 0, 4);
-            block_copy(symbol, datagrid, 0, 32, 15, 4, 0, 6);
-            block_copy(symbol, datagrid, 15, 0, 15, 4, 10, 0);
-            block_copy(symbol, datagrid, 15, 4, 15, 14, 10, 2);
-            block_copy(symbol, datagrid, 15, 18, 15, 14, 10, 4);
-            block_copy(symbol, datagrid, 15, 32, 15, 4, 10, 6);
+            c1_central_finder(symbol, 16, 5, 1);
+            c1_vert(symbol, 4, 16, 1);
+            c1_vert(symbol, 20, 16, 1);
+            c1_vert(symbol, 36, 16, 1);
+            c1_vert(symbol, 4, 15, 0);
+            c1_vert(symbol, 20, 15, 0);
+            c1_vert(symbol, 36, 15, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 12);
+            c1_spigot(symbol, 27);
+            c1_spigot(symbol, 39);
+            c1_block_copy(symbol, datagrid, 0, 0, 15, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 15, 14, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 18, 15, 14, 0, 4);
+            c1_block_copy(symbol, datagrid, 0, 32, 15, 4, 0, 6);
+            c1_block_copy(symbol, datagrid, 15, 0, 15, 4, 10, 0);
+            c1_block_copy(symbol, datagrid, 15, 4, 15, 14, 10, 2);
+            c1_block_copy(symbol, datagrid, 15, 18, 15, 14, 10, 4);
+            c1_block_copy(symbol, datagrid, 15, 32, 15, 4, 10, 6);
             break;
         case 5: /* Version E */
-            central_finder(symbol, 22, 5, 2);
-            vert(symbol, 4, 22, 1);
-            vert(symbol, 26, 24, 1);
-            vert(symbol, 48, 22, 1);
-            vert(symbol, 4, 21, 0);
-            vert(symbol, 26, 21, 0);
-            vert(symbol, 48, 21, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 12);
-            spigot(symbol, 39);
-            spigot(symbol, 51);
-            block_copy(symbol, datagrid, 0, 0, 21, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 21, 20, 0, 2);
-            block_copy(symbol, datagrid, 0, 24, 21, 20, 0, 4);
-            block_copy(symbol, datagrid, 0, 44, 21, 4, 0, 6);
-            block_copy(symbol, datagrid, 21, 0, 21, 4, 10, 0);
-            block_copy(symbol, datagrid, 21, 4, 21, 20, 10, 2);
-            block_copy(symbol, datagrid, 21, 24, 21, 20, 10, 4);
-            block_copy(symbol, datagrid, 21, 44, 21, 4, 10, 6);
+            c1_central_finder(symbol, 22, 5, 2);
+            c1_vert(symbol, 4, 22, 1);
+            c1_vert(symbol, 26, 24, 1);
+            c1_vert(symbol, 48, 22, 1);
+            c1_vert(symbol, 4, 21, 0);
+            c1_vert(symbol, 26, 21, 0);
+            c1_vert(symbol, 48, 21, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 12);
+            c1_spigot(symbol, 39);
+            c1_spigot(symbol, 51);
+            c1_block_copy(symbol, datagrid, 0, 0, 21, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 21, 20, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 24, 21, 20, 0, 4);
+            c1_block_copy(symbol, datagrid, 0, 44, 21, 4, 0, 6);
+            c1_block_copy(symbol, datagrid, 21, 0, 21, 4, 10, 0);
+            c1_block_copy(symbol, datagrid, 21, 4, 21, 20, 10, 2);
+            c1_block_copy(symbol, datagrid, 21, 24, 21, 20, 10, 4);
+            c1_block_copy(symbol, datagrid, 21, 44, 21, 4, 10, 6);
             break;
         case 6: /* Version F */
-            central_finder(symbol, 31, 5, 3);
-            vert(symbol, 4, 31, 1);
-            vert(symbol, 26, 35, 1);
-            vert(symbol, 48, 31, 1);
-            vert(symbol, 70, 35, 1);
-            vert(symbol, 4, 30, 0);
-            vert(symbol, 26, 30, 0);
-            vert(symbol, 48, 30, 0);
-            vert(symbol, 70, 30, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 12);
-            spigot(symbol, 24);
-            spigot(symbol, 45);
-            spigot(symbol, 57);
-            spigot(symbol, 69);
-            block_copy(symbol, datagrid, 0, 0, 30, 4, 0, 0);
-            block_copy(symbol, datagrid, 0, 4, 30, 20, 0, 2);
-            block_copy(symbol, datagrid, 0, 24, 30, 20, 0, 4);
-            block_copy(symbol, datagrid, 0, 44, 30, 20, 0, 6);
-            block_copy(symbol, datagrid, 0, 64, 30, 4, 0, 8);
-            block_copy(symbol, datagrid, 30, 0, 30, 4, 10, 0);
-            block_copy(symbol, datagrid, 30, 4, 30, 20, 10, 2);
-            block_copy(symbol, datagrid, 30, 24, 30, 20, 10, 4);
-            block_copy(symbol, datagrid, 30, 44, 30, 20, 10, 6);
-            block_copy(symbol, datagrid, 30, 64, 30, 4, 10, 8);
+            c1_central_finder(symbol, 31, 5, 3);
+            c1_vert(symbol, 4, 31, 1);
+            c1_vert(symbol, 26, 35, 1);
+            c1_vert(symbol, 48, 31, 1);
+            c1_vert(symbol, 70, 35, 1);
+            c1_vert(symbol, 4, 30, 0);
+            c1_vert(symbol, 26, 30, 0);
+            c1_vert(symbol, 48, 30, 0);
+            c1_vert(symbol, 70, 30, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 12);
+            c1_spigot(symbol, 24);
+            c1_spigot(symbol, 45);
+            c1_spigot(symbol, 57);
+            c1_spigot(symbol, 69);
+            c1_block_copy(symbol, datagrid, 0, 0, 30, 4, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 4, 30, 20, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 24, 30, 20, 0, 4);
+            c1_block_copy(symbol, datagrid, 0, 44, 30, 20, 0, 6);
+            c1_block_copy(symbol, datagrid, 0, 64, 30, 4, 0, 8);
+            c1_block_copy(symbol, datagrid, 30, 0, 30, 4, 10, 0);
+            c1_block_copy(symbol, datagrid, 30, 4, 30, 20, 10, 2);
+            c1_block_copy(symbol, datagrid, 30, 24, 30, 20, 10, 4);
+            c1_block_copy(symbol, datagrid, 30, 44, 30, 20, 10, 6);
+            c1_block_copy(symbol, datagrid, 30, 64, 30, 4, 10, 8);
             break;
         case 7: /* Version G */
-            central_finder(symbol, 47, 6, 2);
-            vert(symbol, 6, 47, 1);
-            vert(symbol, 27, 49, 1);
-            vert(symbol, 48, 47, 1);
-            vert(symbol, 69, 49, 1);
-            vert(symbol, 90, 47, 1);
-            vert(symbol, 6, 46, 0);
-            vert(symbol, 27, 46, 0);
-            vert(symbol, 48, 46, 0);
-            vert(symbol, 69, 46, 0);
-            vert(symbol, 90, 46, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 12);
-            spigot(symbol, 24);
-            spigot(symbol, 36);
-            spigot(symbol, 67);
-            spigot(symbol, 79);
-            spigot(symbol, 91);
-            spigot(symbol, 103);
-            block_copy(symbol, datagrid, 0, 0, 46, 6, 0, 0);
-            block_copy(symbol, datagrid, 0, 6, 46, 19, 0, 2);
-            block_copy(symbol, datagrid, 0, 25, 46, 19, 0, 4);
-            block_copy(symbol, datagrid, 0, 44, 46, 19, 0, 6);
-            block_copy(symbol, datagrid, 0, 63, 46, 19, 0, 8);
-            block_copy(symbol, datagrid, 0, 82, 46, 6, 0, 10);
-            block_copy(symbol, datagrid, 46, 0, 46, 6, 12, 0);
-            block_copy(symbol, datagrid, 46, 6, 46, 19, 12, 2);
-            block_copy(symbol, datagrid, 46, 25, 46, 19, 12, 4);
-            block_copy(symbol, datagrid, 46, 44, 46, 19, 12, 6);
-            block_copy(symbol, datagrid, 46, 63, 46, 19, 12, 8);
-            block_copy(symbol, datagrid, 46, 82, 46, 6, 12, 10);
+            c1_central_finder(symbol, 47, 6, 2);
+            c1_vert(symbol, 6, 47, 1);
+            c1_vert(symbol, 27, 49, 1);
+            c1_vert(symbol, 48, 47, 1);
+            c1_vert(symbol, 69, 49, 1);
+            c1_vert(symbol, 90, 47, 1);
+            c1_vert(symbol, 6, 46, 0);
+            c1_vert(symbol, 27, 46, 0);
+            c1_vert(symbol, 48, 46, 0);
+            c1_vert(symbol, 69, 46, 0);
+            c1_vert(symbol, 90, 46, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 12);
+            c1_spigot(symbol, 24);
+            c1_spigot(symbol, 36);
+            c1_spigot(symbol, 67);
+            c1_spigot(symbol, 79);
+            c1_spigot(symbol, 91);
+            c1_spigot(symbol, 103);
+            c1_block_copy(symbol, datagrid, 0, 0, 46, 6, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 6, 46, 19, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 25, 46, 19, 0, 4);
+            c1_block_copy(symbol, datagrid, 0, 44, 46, 19, 0, 6);
+            c1_block_copy(symbol, datagrid, 0, 63, 46, 19, 0, 8);
+            c1_block_copy(symbol, datagrid, 0, 82, 46, 6, 0, 10);
+            c1_block_copy(symbol, datagrid, 46, 0, 46, 6, 12, 0);
+            c1_block_copy(symbol, datagrid, 46, 6, 46, 19, 12, 2);
+            c1_block_copy(symbol, datagrid, 46, 25, 46, 19, 12, 4);
+            c1_block_copy(symbol, datagrid, 46, 44, 46, 19, 12, 6);
+            c1_block_copy(symbol, datagrid, 46, 63, 46, 19, 12, 8);
+            c1_block_copy(symbol, datagrid, 46, 82, 46, 6, 12, 10);
             break;
         case 8: /* Version H */
-            central_finder(symbol, 69, 6, 3);
-            vert(symbol, 6, 69, 1);
-            vert(symbol, 26, 73, 1);
-            vert(symbol, 46, 69, 1);
-            vert(symbol, 66, 73, 1);
-            vert(symbol, 86, 69, 1);
-            vert(symbol, 106, 73, 1);
-            vert(symbol, 126, 69, 1);
-            vert(symbol, 6, 68, 0);
-            vert(symbol, 26, 68, 0);
-            vert(symbol, 46, 68, 0);
-            vert(symbol, 66, 68, 0);
-            vert(symbol, 86, 68, 0);
-            vert(symbol, 106, 68, 0);
-            vert(symbol, 126, 68, 0);
-            spigot(symbol, 0);
-            spigot(symbol, 12);
-            spigot(symbol, 24);
-            spigot(symbol, 36);
-            spigot(symbol, 48);
-            spigot(symbol, 60);
-            spigot(symbol, 87);
-            spigot(symbol, 99);
-            spigot(symbol, 111);
-            spigot(symbol, 123);
-            spigot(symbol, 135);
-            spigot(symbol, 147);
-            block_copy(symbol, datagrid, 0, 0, 68, 6, 0, 0);
-            block_copy(symbol, datagrid, 0, 6, 68, 18, 0, 2);
-            block_copy(symbol, datagrid, 0, 24, 68, 18, 0, 4);
-            block_copy(symbol, datagrid, 0, 42, 68, 18, 0, 6);
-            block_copy(symbol, datagrid, 0, 60, 68, 18, 0, 8);
-            block_copy(symbol, datagrid, 0, 78, 68, 18, 0, 10);
-            block_copy(symbol, datagrid, 0, 96, 68, 18, 0, 12);
-            block_copy(symbol, datagrid, 0, 114, 68, 6, 0, 14);
-            block_copy(symbol, datagrid, 68, 0, 68, 6, 12, 0);
-            block_copy(symbol, datagrid, 68, 6, 68, 18, 12, 2);
-            block_copy(symbol, datagrid, 68, 24, 68, 18, 12, 4);
-            block_copy(symbol, datagrid, 68, 42, 68, 18, 12, 6);
-            block_copy(symbol, datagrid, 68, 60, 68, 18, 12, 8);
-            block_copy(symbol, datagrid, 68, 78, 68, 18, 12, 10);
-            block_copy(symbol, datagrid, 68, 96, 68, 18, 12, 12);
-            block_copy(symbol, datagrid, 68, 114, 68, 6, 12, 14);
+            c1_central_finder(symbol, 69, 6, 3);
+            c1_vert(symbol, 6, 69, 1);
+            c1_vert(symbol, 26, 73, 1);
+            c1_vert(symbol, 46, 69, 1);
+            c1_vert(symbol, 66, 73, 1);
+            c1_vert(symbol, 86, 69, 1);
+            c1_vert(symbol, 106, 73, 1);
+            c1_vert(symbol, 126, 69, 1);
+            c1_vert(symbol, 6, 68, 0);
+            c1_vert(symbol, 26, 68, 0);
+            c1_vert(symbol, 46, 68, 0);
+            c1_vert(symbol, 66, 68, 0);
+            c1_vert(symbol, 86, 68, 0);
+            c1_vert(symbol, 106, 68, 0);
+            c1_vert(symbol, 126, 68, 0);
+            c1_spigot(symbol, 0);
+            c1_spigot(symbol, 12);
+            c1_spigot(symbol, 24);
+            c1_spigot(symbol, 36);
+            c1_spigot(symbol, 48);
+            c1_spigot(symbol, 60);
+            c1_spigot(symbol, 87);
+            c1_spigot(symbol, 99);
+            c1_spigot(symbol, 111);
+            c1_spigot(symbol, 123);
+            c1_spigot(symbol, 135);
+            c1_spigot(symbol, 147);
+            c1_block_copy(symbol, datagrid, 0, 0, 68, 6, 0, 0);
+            c1_block_copy(symbol, datagrid, 0, 6, 68, 18, 0, 2);
+            c1_block_copy(symbol, datagrid, 0, 24, 68, 18, 0, 4);
+            c1_block_copy(symbol, datagrid, 0, 42, 68, 18, 0, 6);
+            c1_block_copy(symbol, datagrid, 0, 60, 68, 18, 0, 8);
+            c1_block_copy(symbol, datagrid, 0, 78, 68, 18, 0, 10);
+            c1_block_copy(symbol, datagrid, 0, 96, 68, 18, 0, 12);
+            c1_block_copy(symbol, datagrid, 0, 114, 68, 6, 0, 14);
+            c1_block_copy(symbol, datagrid, 68, 0, 68, 6, 12, 0);
+            c1_block_copy(symbol, datagrid, 68, 6, 68, 18, 12, 2);
+            c1_block_copy(symbol, datagrid, 68, 24, 68, 18, 12, 4);
+            c1_block_copy(symbol, datagrid, 68, 42, 68, 18, 12, 6);
+            c1_block_copy(symbol, datagrid, 68, 60, 68, 18, 12, 8);
+            c1_block_copy(symbol, datagrid, 68, 78, 68, 18, 12, 10);
+            c1_block_copy(symbol, datagrid, 68, 96, 68, 18, 12, 12);
+            c1_block_copy(symbol, datagrid, 68, 114, 68, 6, 12, 14);
             break;
         case 9: /* Version S */
-            horiz(symbol, 5, 1);
-            horiz(symbol, 7, 1);
+            c1_horiz(symbol, 5, 1);
+            c1_horiz(symbol, 7, 1);
             set_module(symbol, 6, 0);
             set_module(symbol, 6, symbol->width - 1);
             unset_module(symbol, 7, 1);
@@ -1450,28 +1504,28 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
             switch (sub_version) {
                 case 1: /* Version S-10 */
                     set_module(symbol, 0, 5);
-                    block_copy(symbol, datagrid, 0, 0, 4, 5, 0, 0);
-                    block_copy(symbol, datagrid, 0, 5, 4, 5, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 4, 5, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 5, 4, 5, 0, 1);
                     break;
                 case 2: /* Version S-20 */
                     set_module(symbol, 0, 10);
                     set_module(symbol, 4, 10);
-                    block_copy(symbol, datagrid, 0, 0, 4, 10, 0, 0);
-                    block_copy(symbol, datagrid, 0, 10, 4, 10, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 4, 10, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 10, 4, 10, 0, 1);
                     break;
                 case 3: /* Version S-30 */
                     set_module(symbol, 0, 15);
                     set_module(symbol, 4, 15);
                     set_module(symbol, 6, 15);
-                    block_copy(symbol, datagrid, 0, 0, 4, 15, 0, 0);
-                    block_copy(symbol, datagrid, 0, 15, 4, 15, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 4, 15, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 15, 4, 15, 0, 1);
                     break;
             }
             break;
         case 10: /* Version T */
-            horiz(symbol, 11, 1);
-            horiz(symbol, 13, 1);
-            horiz(symbol, 15, 1);
+            c1_horiz(symbol, 11, 1);
+            c1_horiz(symbol, 13, 1);
+            c1_horiz(symbol, 15, 1);
             set_module(symbol, 12, 0);
             set_module(symbol, 12, symbol->width - 1);
             set_module(symbol, 14, 0);
@@ -1484,23 +1538,23 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
                 case 1: /* Version T-16 */
                     set_module(symbol, 0, 8);
                     set_module(symbol, 10, 8);
-                    block_copy(symbol, datagrid, 0, 0, 10, 8, 0, 0);
-                    block_copy(symbol, datagrid, 0, 8, 10, 8, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 10, 8, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 8, 10, 8, 0, 1);
                     break;
                 case 2: /* Version T-32 */
                     set_module(symbol, 0, 16);
                     set_module(symbol, 10, 16);
                     set_module(symbol, 12, 16);
-                    block_copy(symbol, datagrid, 0, 0, 10, 16, 0, 0);
-                    block_copy(symbol, datagrid, 0, 16, 10, 16, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 10, 16, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 16, 10, 16, 0, 1);
                     break;
                 case 3: /* Verion T-48 */
                     set_module(symbol, 0, 24);
                     set_module(symbol, 10, 24);
                     set_module(symbol, 12, 24);
                     set_module(symbol, 14, 24);
-                    block_copy(symbol, datagrid, 0, 0, 10, 24, 0, 0);
-                    block_copy(symbol, datagrid, 0, 24, 10, 24, 0, 1);
+                    c1_block_copy(symbol, datagrid, 0, 0, 10, 24, 0, 0);
+                    c1_block_copy(symbol, datagrid, 0, 24, 10, 24, 0, 1);
                     break;
             }
             break;
@@ -1512,17 +1566,17 @@ INTERNAL int codeone(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->height = symbol->rows;
 
     if (symbol->option_2 == 9) { /* Version S */
-        if (symbol->eci || (symbol->input_mode & 0x07) == GS1_MODE) {
+        if (symbol->eci || gs1) {
             sprintf(symbol->errtxt, "511: %s ignored for Version S",
-                    symbol->eci && (symbol->input_mode & 0x07) == GS1_MODE
-                        ? "ECI and GS1 mode"
-                        : symbol->eci ? "ECI" : "GS1 mode");
+                    symbol->eci && gs1 ? "ECI and GS1 mode" : symbol->eci ? "ECI" : "GS1 mode");
             error_number = ZINT_WARN_INVALID_OPTION;
         }
-    } else if (symbol->eci && (symbol->input_mode & 0x07) == GS1_MODE) {
+    } else if (symbol->eci && gs1) {
         strcpy(symbol->errtxt, "512: ECI ignored for GS1 mode");
         error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

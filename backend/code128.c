@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -30,7 +30,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -103,7 +102,7 @@ INTERNAL int c128_parunmodd(const unsigned char llyth) {
 /**
  * bring together same type blocks
  */
-static void grwp(int list[2][C128_MAX], int *indexliste) {
+static void c128_grwp(int list[2][C128_MAX], int *indexliste) {
 
     /* bring together same type blocks */
     if (*(indexliste) > 1) {
@@ -220,7 +219,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
         } /* Rule 2 is implemented elsewhere, Rule 6 is implied */
     }
 
-    grwp(list, indexliste);
+    c128_grwp(list, indexliste);
 }
 
 /**
@@ -342,11 +341,11 @@ INTERNAL void c128_put_in_set(int list[2][C128_MAX], const int indexliste, char 
 }
 
 /* Treats source as ISO 8859-1 and copies into symbol->text, converting to UTF-8. Returns length of symbol->text */
-STATIC_UNLESS_ZINT_TEST int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char *source,
-                            const int source_len) {
+STATIC_UNLESS_ZINT_TEST int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[],
+                            const int length) {
     int i, j;
 
-    for (i = 0, j = 0; i < source_len && j < (int) sizeof(symbol->text); i++) {
+    for (i = 0, j = 0; i < length && j < (int) sizeof(symbol->text); i++) {
         if (source[i] < 0x80) {
             symbol->text[j++] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
         } else if (source[i] < 0xC0) {
@@ -724,7 +723,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* ISO/IEC 15417:2007 leaves dimensions/height as application specification */
 
-    hrt_cpy_iso8859_1(symbol, source, length);
+    c128_hrt_cpy_iso8859_1(symbol, source, length);
 
     return error_number;
 }
@@ -1146,3 +1145,5 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */
