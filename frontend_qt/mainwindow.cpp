@@ -44,6 +44,17 @@ static const int tempMessageTimeout = 2000;
 
 static const QKeySequence quitKeySeq(Qt::CTRL | Qt::Key_Q); // Use on Windows also (i.e. not using QKeySequence::Quit)
 
+static const QKeySequence openCLISeq(Qt::SHIFT | Qt::CTRL | Qt::Key_C);
+
+static const QKeySequence copyBMPSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_B);
+static const QKeySequence copyEMFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_E);
+static const QKeySequence copyGIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_G);
+#ifndef NO_PNG
+static const QKeySequence copyPNGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_P);
+#endif
+static const QKeySequence copySVGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_S);
+static const QKeySequence copyTIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_T);
+
 struct bstyle_item {
     const QString text;
     int symbology;
@@ -124,7 +135,8 @@ static const struct bstyle_item bstyle_items[] = {
 };
 
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
-        : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0), m_saveAsShortcut(nullptr), m_menu(nullptr),
+        : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0),
+          m_menu(nullptr),
           m_lblHeightPerRow(nullptr), m_spnHeightPerRow(nullptr),
           m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr)
 {
@@ -263,8 +275,26 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(errtxtBar, SIGNAL(customContextMenuRequested(const QPoint &)), this,
             SLOT(errtxtBar_context_menu(const QPoint &)));
 
-    m_saveAsShortcut = new QShortcut(QKeySequence::Save, this); // Will enable/disable this on error
+    // Will enable/disable these on error
+    m_saveAsShortcut = new QShortcut(QKeySequence::Save, this);
     connect(m_saveAsShortcut, SIGNAL(activated()), SLOT(save()));
+    m_openCLIShortcut = new QShortcut(openCLISeq, this);
+    connect(m_openCLIShortcut, SIGNAL(activated()), SLOT(open_cli_dialog()));
+    m_copyBMPShortcut = new QShortcut(copyBMPSeq, this);
+    connect(m_copyBMPShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_bmp()));
+    m_copyEMFShortcut = new QShortcut(copyEMFSeq, this);
+    connect(m_copyEMFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_emf()));
+    m_copyGIFShortcut = new QShortcut(copyGIFSeq, this);
+    connect(m_copyGIFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_gif()));
+#ifndef NO_PNG
+    m_copyPNGShortcut = new QShortcut(copyPNGSeq, this);
+    connect(m_copyPNGShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_png()));
+#endif
+    m_copySVGShortcut = new QShortcut(copySVGSeq, this);
+    connect(m_copySVGShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_svg()));
+    m_copyTIFShortcut = new QShortcut(copyTIFSeq, this);
+    connect(m_copyTIFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_tif()));
+
     QShortcut *helpShortcut = new QShortcut(QKeySequence::HelpContents, this);
     connect(helpShortcut, SIGNAL(activated()), SLOT(help()));
     QShortcut *quitShortcut = new QShortcut(quitKeySeq, this);
@@ -594,7 +624,8 @@ void MainWindow::open_cli_dialog()
 void MainWindow::on_fgcolor_clicked()
 {
     QColor temp = m_fgcolor;
-    m_fgcolor = QColorDialog::getColor(m_fgcolor, this, tr("Set foreground colour"), QColorDialog::ShowAlphaChannel);
+    m_fgcolor = QColorDialog::getColor(m_fgcolor, this, tr("Set foreground colour"),
+                    QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
     if (m_fgcolor.isValid()) {
         update_preview();
     } else {
@@ -605,7 +636,8 @@ void MainWindow::on_fgcolor_clicked()
 void MainWindow::on_bgcolor_clicked()
 {
     QColor temp = m_bgcolor;
-    m_bgcolor = QColorDialog::getColor(m_bgcolor, this, tr("Set background colour"), QColorDialog::ShowAlphaChannel);
+    m_bgcolor = QColorDialog::getColor(m_bgcolor, this, tr("Set background colour"),
+                    QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
     if (m_bgcolor.isValid()) {
         update_preview();
     } else {
@@ -983,7 +1015,7 @@ void MainWindow::view_context_menu(const QPoint &pos)
         menu.addAction(m_copySVGAct);
         menu.addAction(m_copyTIFAct);
         menu.addSeparator();
-        menu.addAction(m_CLIAct);
+        menu.addAction(m_openCLIAct);
         menu.addSeparator();
         menu.addAction(m_saveAsAct);
 
@@ -1340,6 +1372,16 @@ void MainWindow::change_options()
         connect(get_widget(QSL("cmbQRStructAppCount")), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
         connect(get_widget(QSL("cmbQRStructAppIndex")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnQRStructAppID")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
+
+    } else if (symbology == BARCODE_UPNQR) {
+        QFile file(QSL(":/grpUPNQR.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            tabMain->insertTab(1, m_optionWidget, tr("UP&NQR"));
+            connect(get_widget(QSL("cmbUPNQRMask")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+        }
 
     } else if (symbology == BARCODE_RMQR) {
         QFile file(QSL(":/grpRMQR.ui"));
@@ -2228,6 +2270,17 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_UPNQR:
+            m_bc.bc.setSymbol(BARCODE_UPNQR);
+            //eci_not_set = false;
+            cmbECI->setCurrentIndex(2 /*ECI 4*/);
+            //cmbECI->setEnabled(false);
+            //lblECI->setEnabled(false);
+            if ((item_val = get_cmb_index(QSL("cmbUPNQRMask"))) != 0) {
+                m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
+            break;
+
         case BARCODE_RMQR:
             m_bc.bc.setSymbol(BARCODE_RMQR);
 
@@ -2449,10 +2502,12 @@ void MainWindow::createActions()
 
     m_copyBMPAct = new QAction(copyIcon, tr("Copy as &BMP"), this);
     m_copyBMPAct->setStatusTip(tr("Copy to clipboard as BMP"));
+    m_copyBMPAct->setShortcut(copyBMPSeq);
     connect(m_copyBMPAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_bmp()));
 
     m_copyEMFAct = new QAction(copyIcon, tr("Copy as E&MF"), this);
     m_copyEMFAct->setStatusTip(tr("Copy to clipboard as EMF"));
+    m_copyEMFAct->setShortcut(copyEMFSeq);
     connect(m_copyEMFAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_emf()));
 
 #ifdef MAINWINDOW_COPY_EPS /* TODO: see if can get this to work */
@@ -2463,6 +2518,7 @@ void MainWindow::createActions()
 
     m_copyGIFAct = new QAction(copyIcon, tr("Copy as &GIF"), this);
     m_copyGIFAct->setStatusTip(tr("Copy to clipboard as GIF"));
+    m_copyGIFAct->setShortcut(copyGIFSeq);
     connect(m_copyGIFAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_gif()));
 
 #ifdef MAINWINDOW_COPY_PCX /* TODO: see if can get this to work */
@@ -2474,20 +2530,24 @@ void MainWindow::createActions()
 #ifndef NO_PNG
     m_copyPNGAct = new QAction(copyIcon, tr("Copy as &PNG"), this);
     m_copyPNGAct->setStatusTip(tr("Copy to clipboard as PNG"));
+    m_copyPNGAct->setShortcut(copyPNGSeq);
     connect(m_copyPNGAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_png()));
 #endif
 
     m_copySVGAct = new QAction(copyIcon, tr("Copy as S&VG"), this);
     m_copySVGAct->setStatusTip(tr("Copy to clipboard as SVG"));
+    m_copySVGAct->setShortcut(copySVGSeq);
     connect(m_copySVGAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_svg()));
 
     m_copyTIFAct = new QAction(copyIcon, tr("Copy as &TIF"), this);
     m_copyTIFAct->setStatusTip(tr("Copy to clipboard as TIF"));
+    m_copyTIFAct->setShortcut(copyTIFSeq);
     connect(m_copyTIFAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_tif()));
 
-    m_CLIAct = new QAction(cliIcon, tr("C&LI equivalent..."), this);
-    m_CLIAct->setStatusTip(tr("Generate CLI equivalent"));
-    connect(m_CLIAct, SIGNAL(triggered()), this, SLOT(open_cli_dialog()));
+    m_openCLIAct = new QAction(cliIcon, tr("C&LI Equivalent..."), this);
+    m_openCLIAct->setStatusTip(tr("Generate CLI equivalent"));
+    m_openCLIAct->setShortcut(openCLISeq);
+    connect(m_openCLIAct, SIGNAL(triggered()), this, SLOT(open_cli_dialog()));
 
     m_saveAsAct = new QAction(saveIcon, tr("&Save As..."), this);
     m_saveAsAct->setStatusTip(tr("Output image to file"));
@@ -2533,7 +2593,7 @@ void MainWindow::createMenu()
     m_menu->addAction(m_copyTIFAct);
     m_menu->addSeparator();
 
-    m_menu->addAction(m_CLIAct);
+    m_menu->addAction(m_openCLIAct);
     m_menu->addSeparator();
     m_menu->addAction(m_saveAsAct);
     m_menu->addSeparator();
@@ -2563,10 +2623,19 @@ void MainWindow::enableActions(bool enabled)
 #endif
     m_copySVGAct->setEnabled(enabled);
     m_copyTIFAct->setEnabled(enabled);
-    m_CLIAct->setEnabled(enabled);
+    m_openCLIAct->setEnabled(enabled);
     m_saveAsAct->setEnabled(enabled);
 
     m_saveAsShortcut->setEnabled(enabled);
+    m_openCLIShortcut->setEnabled(enabled);
+    m_copyBMPShortcut->setEnabled(enabled);
+    m_copyEMFShortcut->setEnabled(enabled);
+    m_copyGIFShortcut->setEnabled(enabled);
+#ifndef NO_PNG
+    m_copyPNGShortcut->setEnabled(enabled);
+#endif
+    m_copySVGShortcut->setEnabled(enabled);
+    m_copyTIFShortcut->setEnabled(enabled);
 }
 
 void MainWindow::copy_to_clipboard(const QString &filename, const QString& name, const char *mimeType)
@@ -3061,6 +3130,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/qrcode/structapp_id"), get_spn_val(QSL("spnQRStructAppID")));
             break;
 
+        case BARCODE_UPNQR:
+            settings.setValue(QSL("studio/bc/upnqr/mask"), get_cmb_index(QSL("cmbUPNQRMask")));
+            break;
+
         case BARCODE_RMQR:
             settings.setValue(QSL("studio/bc/rmqr/size"), get_cmb_index(QSL("cmbRMQRSize")));
             settings.setValue(QSL("studio/bc/rmqr/ecc"), get_cmb_index(QSL("cmbRMQRECC")));
@@ -3443,6 +3516,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/structapp_count"), QSL("cmbQRStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/structapp_index"), QSL("cmbQRStructAppIndex"));
             set_spn_from_setting(settings, QSL("studio/bc/qrcode/structapp_id"), QSL("spnQRStructAppID"), 0);
+            break;
+
+        case BARCODE_UPNQR:
+            set_cmb_from_setting(settings, QSL("studio/bc/upnqr/mask"), QSL("cmbUPNQRMask"));
             break;
 
         case BARCODE_RMQR:

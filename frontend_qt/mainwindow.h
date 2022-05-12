@@ -159,8 +159,17 @@ private:
     QWidget *m_optionWidget;
     QGraphicsScene *scene;
     int m_symbology;
-    QShortcut *m_saveAsShortcut;
     QMenu *m_menu;
+    QShortcut *m_saveAsShortcut;
+    QShortcut *m_openCLIShortcut;
+    QShortcut *m_copyBMPShortcut;
+    QShortcut *m_copyEMFShortcut;
+    QShortcut *m_copyGIFShortcut;
+#ifndef NO_PNG
+    QShortcut *m_copyPNGShortcut;
+#endif
+    QShortcut *m_copySVGShortcut;
+    QShortcut *m_copyTIFShortcut;
     QAction *m_copyBMPAct;
     QAction *m_copyEMFAct;
     QAction *m_copyEPSAct;
@@ -169,7 +178,7 @@ private:
     QAction *m_copyPNGAct;
     QAction *m_copySVGAct;
     QAction *m_copyTIFAct;
-    QAction *m_CLIAct;
+    QAction *m_openCLIAct;
     QAction *m_saveAsAct;
     QAction *m_aboutAct;
     QAction *m_helpAct;

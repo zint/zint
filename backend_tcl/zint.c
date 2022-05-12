@@ -145,6 +145,8 @@
 - Added -segN options
 - Added "invariant" and "binary" ECIs
 - Tcl_GetIndexFromObj() flags arg -> 0
+2022-05-12 GL
+- -vers maximum changed to 999 (DAFT)
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -521,6 +523,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -structapp {index count ?id?}: set Structured Append info\n"
     /* cli option --types not supported */
     "   -vers integer: Symbology option\n"
+    /* cli option --version not supported */
     "   -vwhitesp integer: vertical quiet zone in modules\n"
     "   -whitesp integer: horizontal quiet zone in modules\n"
     "   -werror bool: Convert all warnings into errors\n"
@@ -1033,6 +1036,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFG:
             strncpy(my_symbol->fgcolour, pStr, lStr);
             my_symbol->fgcolour[lStr]='\0';
+            printf("my_symbol->fgcolour %s\n", my_symbol->fgcolour);
             break;
         case iBG:
             strncpy(my_symbol->bgcolour, pStr, lStr);
@@ -1138,7 +1142,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             /* >> Int in Option 2 */
             if (intValue < 1
                 || (optionIndex==iCols && intValue > 200)
-                || (optionIndex==iVers && intValue > 47))
+                || (optionIndex==iVers && intValue > 999))
             {
                 Tcl_SetObjResult(interp,
                     Tcl_NewStringObj("cols/vers out of range", -1));

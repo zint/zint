@@ -32,6 +32,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <stdio.h>
 #include "common.h"
 #include "output.h"
 #include "font.h"
@@ -44,11 +45,11 @@ INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
     int bg_len = (int) strlen(symbol->bgcolour);
 
     if ((fg_len != 6) && (fg_len != 8)) {
-        strcpy(symbol->errtxt, "651: Malformed foreground colour target");
+        strcpy(symbol->errtxt, "651: Malformed foreground colour (6 or 8 characters only)");
         return ZINT_ERROR_INVALID_OPTION;
     }
     if ((bg_len != 6) && (bg_len != 8)) {
-        strcpy(symbol->errtxt, "652: Malformed background colour target");
+        strcpy(symbol->errtxt, "652: Malformed background colour (6 or 8 characters only)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -56,12 +57,12 @@ INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
     to_upper((unsigned char *) symbol->bgcolour, bg_len);
 
     if (!is_sane(SSET_F, (unsigned char *) symbol->fgcolour, fg_len)) {
-        strcpy(symbol->errtxt, "653: Malformed foreground colour target");
+        sprintf(symbol->errtxt, "653: Malformed foreground colour '%s' (hexadecimal only)", symbol->fgcolour);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (!is_sane(SSET_F, (unsigned char *) symbol->bgcolour, bg_len)) {
-        strcpy(symbol->errtxt, "654: Malformed background colour target");
+        sprintf(symbol->errtxt, "654: Malformed background colour '%s' (hexadecimal only)", symbol->bgcolour);
         return ZINT_ERROR_INVALID_OPTION;
     }
 

@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,6 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-/* vim: set ts=4 sw=4 et : */
 
 //#include <QDebug>
 #include <QSettings>
@@ -50,11 +49,14 @@ CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double height
 #endif
     if (index == 1) {
         radCLIWin->setChecked(true);
+        chkCLINoEXE->setEnabled(true);
     } else {
         radCLIUnix->setChecked(true);
+        chkCLINoEXE->setEnabled(false);
     }
     chkCLILongOpts->setChecked(settings.value(QSL("studio/cli/chk_long_opts"), 0).toInt() ? true : false);
     chkCLIBarcodeName->setChecked(settings.value(QSL("studio/cli/chk_barcode_name"), 0).toInt() ? true : false);
+    chkCLINoEXE->setChecked(settings.value(QSL("studio/cli/chk_no_exe"), 0).toInt() ? true : false);
 
     QIcon copyIcon(QIcon::fromTheme(QSL("edit-copy"), QIcon(QSL(":res/copy.svg"))));
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
@@ -67,6 +69,7 @@ CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double height
     connect(radCLIWin, SIGNAL(toggled( bool )), SLOT(generate_cli()));
     connect(chkCLILongOpts, SIGNAL(toggled( bool )), SLOT(generate_cli()));
     connect(chkCLIBarcodeName, SIGNAL(toggled( bool )), SLOT(generate_cli()));
+    connect(chkCLINoEXE, SIGNAL(toggled( bool )), SLOT(generate_cli()));
 
     generate_cli();
 }
@@ -81,6 +84,7 @@ CLIWindow::~CLIWindow()
     settings.setValue(QSL("studio/cli/rad_unix_win"), radCLIWin->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/cli/chk_long_opts"), chkCLILongOpts->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/cli/chk_barcode_name"), chkCLIBarcodeName->isChecked() ? 1 : 0);
+    settings.setValue(QSL("studio/cli/chk_no_exe"), chkCLINoEXE->isChecked() ? 1 : 0);
 }
 
 void CLIWindow::copy_to_clipboard()
@@ -94,9 +98,18 @@ void CLIWindow::copy_to_clipboard()
 
 void CLIWindow::generate_cli()
 {
+    bool noEXE = false;
+    if (radCLIWin->isChecked()) {
+        noEXE = chkCLINoEXE->isChecked();
+        chkCLINoEXE->setEnabled(true);
+    } else {
+        chkCLINoEXE->setEnabled(false);
+    }
     QString cmd = m_bc->bc.getAsCLI(radCLIWin->isChecked(), chkCLILongOpts->isChecked(),
-                    chkCLIBarcodeName->isChecked(), m_autoHeight, m_heightPerRow);
+                    chkCLIBarcodeName->isChecked(), noEXE, m_autoHeight, m_heightPerRow);
 
     txtCLICmd->setPlainText(cmd);
     statusBarCLI->clearMessage();
 }
+
+/* vim: set ts=4 sw=4 et : */

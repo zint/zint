@@ -113,6 +113,20 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QCheckBox" name="chkCLINoEXE">
+       <property name="text">
+        <string>&amp;No .exe (Windows)</string>
+       </property>
+       <property name="toolTip">
+        <string>Do not add &quot;.exe&quot; extension to zint command
+(Windows only, ignored is disabled)</string>
+       </property>
+       <property name="checked">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

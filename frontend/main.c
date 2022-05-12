@@ -96,8 +96,8 @@ static void types(void) {
             );
 }
 
-/* Output usage information */
-static void usage(void) {
+/* Output version information */
+static void version(void) {
     const int zint_version = ZBarcode_Version();
     const int version_major = zint_version / 10000;
     const int version_minor = (zint_version % 10000) / 100;
@@ -113,6 +113,11 @@ static void usage(void) {
         /* This is a stable release */
         printf("Zint version %d.%d.%d\n", version_major, version_minor, version_release);
     }
+}
+
+/* Output usage information */
+static void usage(void) {
+    version();
 
     printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
             "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
@@ -172,6 +177,7 @@ static void usage(void) {
             "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
+            "  --version             Display Zint version\n"
             "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
             "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
             "  --werror              Convert all warnings into errors\n"
@@ -900,7 +906,7 @@ int main(int argc, char **argv) {
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
             OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
-            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
+            OPT_VERBOSE, OPT_VERS, OPT_VERSION, OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
         static const struct option long_options[] = {
@@ -971,6 +977,7 @@ int main(int argc, char **argv) {
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, // Currently undocumented, output some debug info
             {"vers", 1, NULL, OPT_VERS},
+            {"version", 0, NULL, OPT_VERSION},
             {"vwhitesp", 1, NULL, OPT_VWHITESP},
             {"werror", 0, NULL, OPT_WERROR},
             {"whitesp", 1, NULL, 'w'},
@@ -1335,10 +1342,10 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error 133: Invalid version value (digits only)\n");
                     return do_exit(1);
                 }
-                if ((val >= 1) && (val <= 84)) {
+                if ((val >= 1) && (val <= 999)) {
                     my_symbol->option_2 = val;
                 } else {
-                    fprintf(stderr, "Warning 113: Version value out of range (1 to 84), ignoring\n");
+                    fprintf(stderr, "Warning 113: Version value out of range (1 to 999), ignoring\n");
                     fflush(stderr);
                 }
                 break;
@@ -1360,6 +1367,11 @@ int main(int argc, char **argv) {
 
             case 'h':
                 usage();
+                help = 1;
+                break;
+
+            case OPT_VERSION:
+                version();
                 help = 1;
                 break;
 

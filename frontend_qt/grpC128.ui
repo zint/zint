@@ -51,8 +51,8 @@
          <string>Subset &amp;C Suppression</string>
         </property>
         <property name="toolTip">
-         <string>Do not begin in Subset C mode,
-even if initial data is numeric</string>
+         <string>Do not use Subset C mode
+(numeric compression)</string>
         </property>
        </widget>
       </item>

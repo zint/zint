@@ -1439,15 +1439,17 @@ static int qr_blockLength(const int start, const char mode[], const int length) 
 }
 
 /* Calculate the actual bitlength of the proposed binary string */
-static int qr_calc_binlen(const int version, char mode[], const unsigned int ddata[], const int length, const int gs1,
-            const int eci, const int debug_print) {
+static int qr_calc_binlen(const int version, char mode[], const unsigned int ddata[], const int length,
+            const int mode_preset, const int gs1, const int eci, const int debug_print) {
     int i, j;
     char currentMode;
     int count = 0;
     int alphalength;
     int blocklength;
 
-    qr_define_mode(mode, ddata, length, gs1, version, debug_print);
+    if (!mode_preset) {
+        qr_define_mode(mode, ddata, length, gs1, version, debug_print);
+    }
 
     currentMode = ' '; // Null
 
@@ -1525,7 +1527,7 @@ static int qr_calc_binlen(const int version, char mode[], const unsigned int dda
 /* Call `qr_calc_binlen()` on each segment */
 static int qr_calc_binlen_segs(const int version, char mode[], const unsigned int ddata[],
             const struct zint_seg segs[], const int seg_count, const struct zint_structapp *p_structapp,
-            const int gs1, const int debug_print) {
+            const int mode_preset, const int gs1, const int debug_print) {
     int i;
     int count = 0;
     const unsigned int *dd = ddata;
@@ -1544,7 +1546,7 @@ static int qr_calc_binlen_segs(const int version, char mode[], const unsigned in
     }
 
     for (i = 0; i < seg_count; i++) {
-        count += qr_calc_binlen(version, m, dd, segs[i].length, gs1, segs[i].eci, debug_print);
+        count += qr_calc_binlen(version, m, dd, segs[i].length, mode_preset, gs1, segs[i].eci, debug_print);
         m += segs[i].length;
         dd += segs[i].length;
     }
@@ -1671,7 +1673,8 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         p_structapp = &symbol->structapp;
     }
 
-    est_binlen = qr_calc_binlen_segs(40, mode, ddata, local_segs, seg_count, p_structapp, gs1, debug_print);
+    est_binlen = qr_calc_binlen_segs(40, mode, ddata, local_segs, seg_count, p_structapp, 0 /*mode_preset*/, gs1,
+                    debug_print);
 
     ecc_level = QR_LEVEL_L;
     max_cw = 2956;
@@ -1722,7 +1725,8 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         }
     }
     if (autosize != 40) {
-        est_binlen = qr_calc_binlen_segs(autosize, mode, ddata, local_segs, seg_count, p_structapp, gs1, debug_print);
+        est_binlen = qr_calc_binlen_segs(autosize, mode, ddata, local_segs, seg_count, p_structapp, 0 /*mode_preset*/,
+                        gs1, debug_print);
     }
 
     // Now see if the optimised binary will fit in a smaller symbol.
@@ -1734,8 +1738,8 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         } else {
             prev_est_binlen = est_binlen;
             memcpy(prev_mode, mode, eci_length_segs);
-            est_binlen = qr_calc_binlen_segs(autosize - 1, mode, ddata, local_segs, seg_count, p_structapp, gs1,
-                            debug_print);
+            est_binlen = qr_calc_binlen_segs(autosize - 1, mode, ddata, local_segs, seg_count, p_structapp,
+                            0 /*mode_preset*/, gs1, debug_print);
 
             switch (ecc_level) {
                 case QR_LEVEL_L:
@@ -1780,8 +1784,8 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
          */
         if (symbol->option_2 > version) {
             version = symbol->option_2;
-            est_binlen = qr_calc_binlen_segs(symbol->option_2, mode, ddata, local_segs, seg_count, p_structapp, gs1,
-                            debug_print);
+            est_binlen = qr_calc_binlen_segs(symbol->option_2, mode, ddata, local_segs, seg_count, p_structapp,
+                            0 /*mode_preset*/, gs1, debug_print);
         }
 
         if (symbol->option_2 < version) {
@@ -2573,7 +2577,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     for (i = 0; i < 4; i++) {
         if (version_valid[i]) {
             binary_count[i] = qr_calc_binlen_segs(MICROQR_VERSION + i, mode, ddata, segs, seg_count,
-                                NULL /*p_structapp*/, 0 /*gs1*/, debug_print);
+                                NULL /*p_structapp*/, 0 /*mode_preset*/, 0 /*gs1*/, debug_print);
         } else {
             binary_count[i] = 128 + 1;
         }
@@ -2797,6 +2801,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     int i, j, r, est_binlen;
     int ecc_level, version, target_codewords, blocks, size;
     int bitmask, error_number;
+    int user_mask;
     int size_squared;
     struct zint_seg segs[1];
     const int seg_count = 1;
@@ -2820,6 +2825,11 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
 #endif
 
     symbol->eci = 4; /* Set before any processing */
+
+    user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 8 */
+    if (user_mask > 8) {
+        user_mask = 0; /* Ignore */
+    }
 
     switch (symbol->input_mode & 0x07) {
         case DATA_MODE:
@@ -2850,7 +2860,8 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     segs[0].length = length;
     segs[0].eci = 4;
 
-    est_binlen = qr_calc_binlen_segs(15, mode, ddata, segs, seg_count, NULL /*p_structapp*/, 0, debug_print);
+    est_binlen = qr_calc_binlen_segs(15, mode, ddata, segs, seg_count, NULL /*p_structapp*/, 1 /*mode_preset*/, 0,
+                    debug_print);
 
     ecc_level = QR_LEVEL_M;
 
@@ -2893,7 +2904,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     qr_add_version_info(grid, size, version);
 
-    bitmask = qr_apply_bitmask(grid, size, ecc_level, 0 /*user_mask*/, debug_print);
+    bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, debug_print);
 
     qr_add_format_info(grid, size, ecc_level, bitmask);
 
@@ -3061,8 +3072,8 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
         return warn_number;
     }
 
-    est_binlen = qr_calc_binlen_segs(RMQR_VERSION + 31, mode, ddata, local_segs, seg_count, NULL /*p_structapp*/, gs1,
-                    debug_print);
+    est_binlen = qr_calc_binlen_segs(RMQR_VERSION + 31, mode, ddata, local_segs, seg_count, NULL /*p_structapp*/,
+                    0 /*mode_preset*/, gs1, debug_print);
 
     ecc_level = QR_LEVEL_M;
     max_cw = 152;
@@ -3099,7 +3110,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
         best_footprint = rmqr_height[31] * rmqr_width[31];
         for (version = 30; version >= 0; version--) {
             est_binlen = qr_calc_binlen_segs(RMQR_VERSION + version, mode, ddata, local_segs, seg_count,
-                            NULL /*p_structapp*/, gs1, debug_print);
+                            NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
             footprint = rmqr_height[version] * rmqr_width[version];
             if (ecc_level == QR_LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[version] >= est_binlen) {
@@ -3119,14 +3130,14 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
         }
         version = autosize;
         est_binlen = qr_calc_binlen_segs(RMQR_VERSION + version, mode, ddata, local_segs, seg_count,
-                        NULL /*p_structapp*/, gs1, debug_print);
+                        NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
     }
 
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 32)) {
         // User specified symbol size
         version = symbol->option_2 - 1;
         est_binlen = qr_calc_binlen_segs(RMQR_VERSION + version, mode, ddata, local_segs, seg_count,
-                        NULL /*p_structapp*/, gs1, debug_print);
+                        NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
     }
 
     if (symbol->option_2 >= 33) {
@@ -3134,7 +3145,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
         version = rmqr_fixed_height_upper_bound[symbol->option_2 - 32];
         for (i = version - 1; i > rmqr_fixed_height_upper_bound[symbol->option_2 - 33]; i--) {
             est_binlen = qr_calc_binlen_segs(RMQR_VERSION + i, mode, ddata, local_segs, seg_count,
-                            NULL /*p_structapp*/, gs1, debug_print);
+                            NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
             if (ecc_level == QR_LEVEL_M) {
                 if (8 * rmqr_data_codewords_M[i] >= est_binlen) {
                     version = i;
@@ -3146,7 +3157,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
             }
         }
         est_binlen = qr_calc_binlen_segs(RMQR_VERSION + version, mode, ddata, local_segs, seg_count,
-                        NULL /*p_structapp*/, gs1, debug_print);
+                        NULL /*p_structapp*/, 0 /*mode_preset*/, gs1, debug_print);
     }
 
     if (symbol->option_1 == -1) {

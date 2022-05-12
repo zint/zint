@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,6 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include <stdio.h>
 #include "common.h"
@@ -55,7 +54,7 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
        commonly used one-dimensional barcode schemes, pharmacode does not store the data in a
        form corresponding to the human-readable digits; the number is encoded in binary, rather
        than decimal. Pharmacode is read from right to left: with n as the bar position starting
-       at 0 on the right, each narrow bar adds 2n to the value and each wide bar adds 2(2^n).
+       at 0 on the right, each narrow bar adds 2^n to the value and each wide bar adds 2(2^n).
        The minimum barcode is 2 bars and the maximum 16, so the smallest number that could
        be encoded is 3 (2 narrow bars) and the biggest is 131070 (16 wide bars)."
        - http://en.wikipedia.org/wiki/Pharmacode */
@@ -379,3 +378,5 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

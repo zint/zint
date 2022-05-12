@@ -342,7 +342,7 @@ extern "C" {
 /* Maximum number of segments allowed for (`seg_count`) */
 #define ZINT_MAX_SEG_COUNT      256
 
-/* Debug flags (debug) */
+/* Debug flags (`symbol->debug`) */
 #define ZINT_DEBUG_PRINT        0x0001  /* Print debug info (if any) to stdout */
 #define ZINT_DEBUG_TEST         0x0002  /* For internal test use only */
 

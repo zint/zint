@@ -2008,7 +2008,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "channelcode", BARCODE_CHANNEL, 140, 0, 0, 0, 0, 0, },
         { "codeone", BARCODE_CODEONE, 141, 0, 1, 0, 0, 0, },
         { "", BARCODE_GRIDMATRIX, 142, 0, 0, 0, 0, 0, },
-        { "", BARCODE_UPNQR, 143, 0, 0, 0, 0, 0, },
+        { "qrcode", BARCODE_UPNQR, 143, 0, 0, 1, 0, 0, },
         { "ultracode", BARCODE_ULTRA, 144, 1, 1, 0, 0, 0, },
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 1, 0, 0, },
     };
@@ -2244,14 +2244,23 @@ static char *testUtilBwippUtf8Convert(const int index, const int symbology, cons
     int eci = *p_eci;
 
     if (eci == 0 && try_sjis
-            && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR)) {
-        if (utf8_to_eci(0, data, converted, p_data_len) != 0) {
-            if (utf8_to_eci(20, data, converted, p_data_len) != 0) {
-                fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 0/20\n",
+            && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_RMQR || symbology == BARCODE_UPNQR)) {
+        if (symbology == BARCODE_UPNQR) { // Note need to add "force binary mode" to BWIPP for this to work
+            if (utf8_to_eci(4, data, converted, p_data_len) != 0) {
+                fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 4\n",
                         index, testUtilBarcodeName(symbology));
                 return NULL;
             }
-            // NOTE: not setting *p_eci = 20
+            *p_eci = 4;
+        } else {
+            if (utf8_to_eci(0, data, converted, p_data_len) != 0) {
+                if (utf8_to_eci(20, data, converted, p_data_len) != 0) {
+                    fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, ECI 0/20\n",
+                            index, testUtilBarcodeName(symbology));
+                    return NULL;
+                }
+                // NOTE: not setting *p_eci = 20
+            }
         }
         return (char *) converted;
     }
@@ -3322,7 +3331,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_CHANNEL, 140, },
         { "", BARCODE_CODEONE, 141, },
         { "", BARCODE_GRIDMATRIX, 142, },
-        { "", BARCODE_UPNQR, 143, },
+        { "QRCode", BARCODE_UPNQR, 143, },
         { "", BARCODE_ULTRA, 144, },
         { "", BARCODE_RMQR, 145, },
     };

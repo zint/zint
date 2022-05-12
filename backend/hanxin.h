@@ -122,7 +122,7 @@ static const char hx_module_m[] = {
 };
 
 /* Error correction block sizes from Table D1 */
-static const unsigned short hx_table_d1[] = {
+static const unsigned char hx_table_d1[] = {
     /* #blocks, k, 2t, #blocks, k, 2t, #blocks, k, 2t */
     1, 21, 4, 0, 0, 0, 0, 0, 0, // version 1
     1, 17, 8, 0, 0, 0, 0, 0, 0,

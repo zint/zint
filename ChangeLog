@@ -65,6 +65,10 @@ Changes
   GRIDMATRIX, HANXIN, MAXICODE, MICROPDF417, PDF417, QRCODE, RMQR, ULTRA
 - MICROQR: check versions M1 and M2 for allowed characters so as to give better
   error messages
+- UPNQR: allow mask to be manually specified
+- GUI: use non-native QColorDialog on Unix also; no noEXE for CLI equivalent;
+  add shortcuts for copy-to-clipboard and CLI equivalent
+- CLI: new --version option to print Zint version
 
 Bugs
 ----
@@ -91,6 +95,8 @@ Bugs
 - HANXIN: fix gate-posts on codeword limits
 - GUI: cater for HiDPI display, props bitaround (#257)
 - RMQR: fix ECI encoding (wrong bit length for indicator)
+- CLI/tcl: fix version check (need <= 999 for DAFT permille)
+- UPNQR: fix required binary mode using mode_preset
 
 
 Version 2.10.0 2021-08-14

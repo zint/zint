@@ -878,9 +878,9 @@ namespace Zint {
        If `autoHeight` set then `--height=` option will not be emitted.
        If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
        height */
-    QString QZint::getAsCLI(const bool win, const bool longOptOnly, const bool barcodeNames,
+    QString QZint::getAsCLI(const bool win, const bool longOptOnly, const bool barcodeNames, const bool noEXE,
                     const bool autoHeight, const float heightPerRow, const QString& outfile) const {
-        QString cmd(win ? QSL("zint.exe") : QSL("zint"));
+        QString cmd(win && !noEXE ? QSL("zint.exe") : QSL("zint"));
 
         char name_buf[32];
         if (barcodeNames && ZBarcode_BarcodeName(m_symbol, name_buf) == 0) {
@@ -898,11 +898,28 @@ namespace Zint {
             arg_color(cmd, "--bg=", bgColor());
         }
 
+        bool default_bind = false, default_box = false, default_border = false;
+        if (m_symbol == BARCODE_ITF14) {
+            if ((borderType() & BARCODE_BOX) && borderWidth() == 5) {
+                default_bind = default_box = default_border = true;
+            }
+        } else if (m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_CODE16K || m_symbol == BARCODE_CODE49) {
+            if ((borderType() & BARCODE_BIND) && borderWidth() == 1) {
+                default_bind = default_border = true;
+            }
+        }
+
         arg_bool(cmd, "--binary", (inputMode() & 0x07) == DATA_MODE);
-        arg_bool(cmd, "--bind", (borderType() & BARCODE_BIND) && !(borderType() & BARCODE_BOX));
+        if (!default_bind) {
+            arg_bool(cmd, "--bind", (borderType() & BARCODE_BIND) && !(borderType() & BARCODE_BOX));
+        }
         arg_bool(cmd, "--bold", fontSetting() & BOLD_TEXT);
-        arg_int(cmd, "--border=", borderWidth());
-        arg_bool(cmd, "--box", borderType() & BARCODE_BOX);
+        if (!default_border) {
+            arg_int(cmd, "--border=", borderWidth());
+        }
+        if (!default_box) {
+            arg_bool(cmd, "--box", borderType() & BARCODE_BOX);
+        }
         arg_bool(cmd, "--cmyk", cmyk());
 
         if (m_symbol == BARCODE_DBAR_EXPSTK || m_symbol == BARCODE_DBAR_EXPSTK_CC

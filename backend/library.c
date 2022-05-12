@@ -1730,6 +1730,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
         switch (symbol_id) {
             case BARCODE_QRCODE:
             case BARCODE_MICROQR:
+            case BARCODE_UPNQR:
             case BARCODE_HANXIN:
             case BARCODE_DOTCODE:
                 result |= ZINT_CAP_MASK;

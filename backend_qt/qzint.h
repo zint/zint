@@ -202,7 +202,8 @@ public:
        If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
        height */
     QString getAsCLI(const bool win, const bool longOptOnly = false, const bool barcodeNames = false,
-                const bool autoHeight = false, const float heightPerRow = 0.0f, const QString& outfile = "") const;
+                const bool noEXE = false, const bool autoHeight = false, const float heightPerRow = 0.0f,
+                const QString& outfile = "") const;
 
 signals:
     void encoded();

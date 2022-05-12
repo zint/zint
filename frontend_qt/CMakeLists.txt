@@ -17,8 +17,8 @@ else()
     qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extSequence.ui extExport.ui)
 endif()
 
-#               grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMaxicode.ui  grpQR.ui      grpVIN.ui
-#               grpC11.ui    grpC49.ui      grpCodeOne.ui     grpGrid.ui     grpMicroPDF.ui  grpRMQR.ui
+#               grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMaxicode.ui  grpQR.ui      grpUPNQR.ui
+#               grpC11.ui    grpC49.ui      grpCodeOne.ui     grpGrid.ui     grpMicroPDF.ui  grpRMQR.ui    grpVIN.ui
 #               grpC128.ui   grpC93.ui      grpDAFT.ui        grpHX.ui       grpMQR.ui       grpUltra.ui
 #               grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpITF14.ui    grpMSICheck.ui  grpUPCA.ui
 #               grpC25.ui    grpCodabar.ui  grpDM.ui          grpLOGMARS.ui  grpPDF417.ui    grpUPCEAN.ui
