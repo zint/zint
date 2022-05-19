@@ -23,7 +23,7 @@ endif()
 
 install(TARGETS ${PROJECT_NAME} DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)
 if(UNIX)
-    install(FILES "${CMAKE_SOURCE_DIR}/docs/zint.1.gz" DESTINATION "${MAN_INSTALL_DIR}/man1" COMPONENT doc)
+    install(FILES "${CMAKE_SOURCE_DIR}/docs/zint.1" DESTINATION "${MAN_INSTALL_DIR}/man1" COMPONENT doc)
 endif()
 
 if(ZINT_TEST)

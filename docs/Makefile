@@ -156,4 +156,3 @@ $(OUT_MAN) : $(SOURCE_MAN) Makefile
 	pandoc $(SOURCE_MAN) -f markdown \
 			$(MAN_OPTS) \
 			-o $(OUT_MAN)
-	gzip -c -9 $(OUT_MAN) > $(OUT_MAN).gz
