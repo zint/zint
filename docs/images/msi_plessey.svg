@@ -1,0 +1,43 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="95" height="72" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="95" height="72" fill="#FFFFFF" />
+      <rect x="0.00" y="0.00" width="2.40" height="60.00" />
+      <rect x="3.60" y="0.00" width="1.20" height="60.00" />
+      <rect x="7.20" y="0.00" width="2.40" height="60.00" />
+      <rect x="10.80" y="0.00" width="2.40" height="60.00" />
+      <rect x="14.40" y="0.00" width="1.20" height="60.00" />
+      <rect x="18.00" y="0.00" width="1.20" height="60.00" />
+      <rect x="21.60" y="0.00" width="2.40" height="60.00" />
+      <rect x="25.20" y="0.00" width="1.20" height="60.00" />
+      <rect x="28.80" y="0.00" width="2.40" height="60.00" />
+      <rect x="32.40" y="0.00" width="1.20" height="60.00" />
+      <rect x="36.00" y="0.00" width="1.20" height="60.00" />
+      <rect x="39.60" y="0.00" width="1.20" height="60.00" />
+      <rect x="43.20" y="0.00" width="1.20" height="60.00" />
+      <rect x="46.80" y="0.00" width="1.20" height="60.00" />
+      <rect x="50.40" y="0.00" width="1.20" height="60.00" />
+      <rect x="54.00" y="0.00" width="2.40" height="60.00" />
+      <rect x="57.60" y="0.00" width="1.20" height="60.00" />
+      <rect x="61.20" y="0.00" width="2.40" height="60.00" />
+      <rect x="64.80" y="0.00" width="1.20" height="60.00" />
+      <rect x="68.40" y="0.00" width="1.20" height="60.00" />
+      <rect x="72.00" y="0.00" width="2.40" height="60.00" />
+      <rect x="75.60" y="0.00" width="1.20" height="60.00" />
+      <rect x="79.20" y="0.00" width="1.20" height="60.00" />
+      <rect x="82.80" y="0.00" width="1.20" height="60.00" />
+      <rect x="86.40" y="0.00" width="2.40" height="60.00" />
+      <rect x="90.00" y="0.00" width="1.20" height="60.00" />
+      <rect x="93.60" y="0.00" width="1.20" height="60.00" />
+      <text x="47.40" y="69.24" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="8.4" >
+         650291
+      </text>
+   </g>
+</svg>

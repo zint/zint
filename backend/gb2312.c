@@ -1589,7 +1589,7 @@ INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int
             return error_number;
         }
 
-        gb2312_cpy(converted, p_length, ddata, full_multibyte);
+        gb2312_cpy(converted, p_length, ddata, full_multibyte || eci == 29);
     } else {
         gb2312_cpy(source, p_length, ddata, full_multibyte);
     }

@@ -579,7 +579,7 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
 #endif
 
         /* Prior check ensures ECI only set for those that support it */
-        segs_cpy(segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
+        segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
         preprocessed = preprocessed_buf;
         for (i = 0; i < seg_count; i++) {
             if (convertible[i]) {
@@ -605,7 +605,7 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
         }
     } else {
         if (supports_eci(symbol->symbology) || is_hibc(symbol->symbology)) {
-            segs_cpy(segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
+            segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
             error_number = (*(barcode_segs_func_t)barcode_funcs[symbol->symbology])(symbol, local_segs, seg_count);
         } else {
             error_number = (*(barcode_func_t)barcode_funcs[symbol->symbology])(symbol, segs[0].source,

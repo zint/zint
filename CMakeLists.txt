@@ -24,7 +24,7 @@ option(ZINT_TEST     "Set test compile flag"           OFF)
 option(ZINT_COVERAGE "Set code coverage flags"         OFF)
 option(ZINT_STATIC   "Build static library"            OFF)
 option(ZINT_USE_PNG  "Build with PNG support"          ON)
-option(ZINT_USE_QT   "Build with QT support"           ON)
+option(ZINT_USE_QT   "Build with Qt support"           ON)
 
 include(SetPaths.cmake)
 

@@ -391,7 +391,7 @@ or import from file</string>
                   </item>
                   <item>
                    <property name="text">
-                    <string>27: ISO 646 ASCII</string>
+                    <string>27: ASCII (ISO 646 IRV)</string>
                    </property>
                   </item>
                   <item>
@@ -823,7 +823,7 @@ Extended Channel Interpretation (ECI)</string>
                   </item>
                   <item>
                    <property name="text">
-                    <string>27: ISO 646 ASCII</string>
+                    <string>27: ASCII (ISO 646 IRV)</string>
                    </property>
                   </item>
                   <item>
@@ -1068,7 +1068,7 @@ or import from file</string>
                   </item>
                   <item>
                    <property name="text">
-                    <string>27: ISO 646 ASCII</string>
+                    <string>27: ASCII (ISO 646 IRV)</string>
                    </property>
                   </item>
                   <item>
@@ -1313,7 +1313,7 @@ or import from file</string>
                   </item>
                   <item>
                    <property name="text">
-                    <string>27: ISO 646 ASCII</string>
+                    <string>27: ASCII (ISO 646 IRV)</string>
                    </property>
                   </item>
                   <item>

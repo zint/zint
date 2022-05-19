@@ -2921,7 +2921,8 @@ INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], in
             return error_number;
         }
 
-        gb18030_cpy(converted, p_length, ddata, full_multibyte);
+        /* GB 18030 (ECI 32) superset of GB 2312 (ECI 29) and GBK (ECI 31) */
+        gb18030_cpy(converted, p_length, ddata, full_multibyte || eci == 32 || eci == 29 || eci == 31);
     } else {
         gb18030_cpy(source, p_length, ddata, full_multibyte);
     }

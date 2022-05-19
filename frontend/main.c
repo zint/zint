@@ -97,7 +97,8 @@ static void types(void) {
 }
 
 /* Output version information */
-static void version(void) {
+static void version(int no_png) {
+    const char *no_png_lib = no_png ? " (no libpng)" : "";
     const int zint_version = ZBarcode_Version();
     const int version_major = zint_version / 10000;
     const int version_minor = (zint_version % 10000) / 100;
@@ -108,18 +109,21 @@ static void version(void) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = zint_version % 10;
-        printf("Zint version %d.%d.%d.%d (dev)\n", version_major, version_minor, version_release, version_build);
+        printf("Zint version %d.%d.%d.%d (dev)%s\n", version_major, version_minor, version_release, version_build, no_png_lib);
     } else {
         /* This is a stable release */
-        printf("Zint version %d.%d.%d\n", version_major, version_minor, version_release);
+        printf("Zint version %d.%d.%d%s\n", version_major, version_minor, version_release, no_png_lib);
     }
 }
 
 /* Output usage information */
-static void usage(void) {
-    version();
+static void usage(int no_png) {
+    const char *no_png_type = no_png ? "" : "/PNG";
+    const char *no_png_ext = no_png ? "gif" : "png";
 
-    printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n\n"
+    version(no_png);
+
+    printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n"
             "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
             "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
             "  --batch               Treat each line of input file as a separate data set\n"
@@ -143,7 +147,7 @@ static void usage(void) {
             "  --esc                 Process escape characters in input data\n"
             "  --fast                Use faster encodation (Data Matrix)\n"
             "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n"
-            "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT\n"
+            "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n"
             "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
             "  --gs1                 Treat input as GS1 compatible data\n"
             "  --gs1nocheck          Do not check validity of GS1 data\n"
@@ -158,10 +162,10 @@ static void usage(void) {
             "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
-            "  --nobackground        Remove background (EMF/EPS/GIF/PNG/SVG/TIF only)\n"
+            "  --nobackground        Remove background (EMF/EPS/GIF%s/SVG/TIF only)\n"
             "  --noquietzones        Disable default quiet zones\n"
             "  --notext              Remove human readable text\n"
-            "  -o, --output=FILE     Send output to FILE. Default is out.png\n"
+            "  -o, --output=FILE     Send output to FILE. Default is out.%s\n"
             "  --primary=STRING      Set primary message (MaxiCode/Composite)\n"
             "  --quietzones          Add compliant quiet zones\n"
             "  -r, --reverse         Reverse colours (white on black)\n"
@@ -170,17 +174,18 @@ static void usage(void) {
             "  --scale=NUMBER        Adjust size of X-dimension\n"
             "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
             "  --secure=NUMBER       Set error correction level (ECC)\n"
-            "  --segN=ECI,DATA       Set the ECI & data content for segment N where N is 1 to 9\n"
+            "  --segN=ECI,DATA       Set the ECI & data content for segment N, where N 1 to 9\n"
             "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
             "  --small               Use small text\n"
             "  --square              Force Data Matrix symbols to be square\n"
             "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
             "  -t, --types           Display table of barcode types\n"
             "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
-            "  --version             Display Zint version\n"
+            "  -v, --version         Display Zint version\n"
             "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
             "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
-            "  --werror              Convert all warnings into errors\n"
+            "  --werror              Convert all warnings into errors\n",
+            no_png_type, no_png_type, no_png_type, no_png_ext
             );
 }
 
@@ -207,8 +212,8 @@ static void show_eci(void) {
             " 23: Windows 1252 - Latin 1\n"
             " 24: Windows 1256 - Arabic\n"
             " 25: UTF-16BE (High order byte first)\n"
-            " 26: UTF-8 (Unicode)\n"
-            " 27: ISO/IEC 646:1991 7-bit ASCII\n"
+            " 26: UTF-8\n"
+            " 27: ASCII (ISO/IEC 646 IRV)\n"
             " 28: Big5 (Taiwan) Chinese Character Set\n"
             " 29: GB 2312 (PRC) Chinese Character Set\n"
             " 30: Korean Character Set EUC-KR (KS X 1001:2002)\n"
@@ -217,7 +222,7 @@ static void show_eci(void) {
             " 33: UTF-16LE (Low order byte first)\n"
             " 34: UTF-32BE (High order bytes first)\n"
             " 35: UTF-32LE (Low order bytes first)\n"
-            "170: ISO/IEC 646:1991 7-bit Invariant\n"
+            "170: ISO/IEC 646 Invariant (ASCII subset)\n"
             "899: 8-bit binary data\n"
     );
 }
@@ -280,6 +285,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_C25IND, "c25ind" },
         { BARCODE_C25INTER, "c25inter" },
         { BARCODE_C25LOGIC, "c25logic" },
+        { BARCODE_C25STANDARD, "c25matrix" },
         { BARCODE_C25STANDARD, "c25standard" },
         { BARCODE_CHANNEL, "channel" },
         { BARCODE_CODABAR, "codabar" },
@@ -312,6 +318,8 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DPIDENT, "dpident" },
         { BARCODE_DPLEIT, "dpleit" },
         { BARCODE_EANX, "ean" }, /* Synonym */
+        { BARCODE_GS1_128, "ean128" }, /* Synonym */
+        { BARCODE_GS1_128_CC, "ean128cc" }, /* Synonym */
         { BARCODE_EAN14, "ean14" },
         { BARCODE_EANX_CC, "eancc" }, /* Synonym */
         { BARCODE_EANX_CHK, "eanchk" }, /* Synonym */
@@ -354,8 +362,10 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_MSI_PLESSEY, "msi" }, /* Synonym */
         { BARCODE_MSI_PLESSEY, "msiplessey" },
         { BARCODE_NVE18, "nve18" },
+        { BARCODE_USPS_IMAIL, "onecode" }, /* Synonym */
         { BARCODE_PDF417, "pdf417" },
         { BARCODE_PDF417COMP, "pdf417comp" },
+        { BARCODE_PDF417COMP, "pdf417trunc" }, /* Synonym */
         { BARCODE_PHARMA, "pharma" },
         { BARCODE_PHARMA_TWO, "pharmatwo" },
         { BARCODE_PLANET, "planet" },
@@ -366,6 +376,18 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_QRCODE, "qrcode" },
         { BARCODE_RM4SCC, "rm4scc" },
         { BARCODE_RMQR, "rmqr" },
+        { BARCODE_DBAR_OMN, "rss14" }, /* Synonym */
+        { BARCODE_DBAR_OMN_CC, "rss14cc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "rss14omnicc" }, /* Synonym */
+        { BARCODE_DBAR_STK, "rss14stack" }, /* Synonym */
+        { BARCODE_DBAR_STK_CC, "rss14stackcc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "rss14stackomni" }, /* Synonym */
+        { BARCODE_DBAR_EXP, "rssexp" }, /* Synonym */
+        { BARCODE_DBAR_EXP_CC, "rssexpcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "rssexpstack" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "rssexpstackcc" }, /* Synonym */
+        { BARCODE_DBAR_LTD, "rssltd" }, /* Synonym */
+        { BARCODE_DBAR_LTD_CC, "rssltdcc" }, /* Synonym */
         { BARCODE_TELEPEN, "telepen" },
         { BARCODE_TELEPEN_NUM, "telepennum" },
         { BARCODE_ULTRA, "ultra" },
@@ -878,17 +900,18 @@ int main(int argc, char **argv) {
 #endif
     int no_getopt_error = 1;
 
-    if (argc == 1) {
-        usage();
-        exit(1);
-    }
-
     my_symbol = ZBarcode_Create();
     if (!my_symbol) {
         fprintf(stderr, "Error 151: Memory failure\n");
         exit(1);
     }
     no_png = strcmp(my_symbol->outfile, "out.gif") == 0;
+
+    if (argc == 1) {
+        ZBarcode_Delete(my_symbol);
+        usage(no_png);
+        exit(1);
+    }
     my_symbol->input_mode = UNICODE_MODE;
 
 #ifdef _WIN32
@@ -906,7 +929,7 @@ int main(int argc, char **argv) {
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
             OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
-            OPT_VERBOSE, OPT_VERS, OPT_VERSION, OPT_VWHITESP, OPT_WERROR,
+            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
         };
         int option_index = 0;
         static const struct option long_options[] = {
@@ -977,13 +1000,13 @@ int main(int argc, char **argv) {
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, // Currently undocumented, output some debug info
             {"vers", 1, NULL, OPT_VERS},
-            {"version", 0, NULL, OPT_VERSION},
+            {"version", 0, NULL, 'v'},
             {"vwhitesp", 1, NULL, OPT_VWHITESP},
             {"werror", 0, NULL, OPT_WERROR},
             {"whitesp", 1, NULL, 'w'},
             {NULL, 0, NULL, 0}
         };
-        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtw:", long_options, &option_index);
+        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
@@ -1366,12 +1389,12 @@ int main(int argc, char **argv) {
                 break;
 
             case 'h':
-                usage();
+                usage(no_png);
                 help = 1;
                 break;
 
-            case OPT_VERSION:
-                version();
+            case 'v':
+                version(no_png);
                 help = 1;
                 break;
 
@@ -1551,6 +1574,12 @@ int main(int argc, char **argv) {
                     if (seg_count) {
                         ret = ZBarcode_Encode_Segs(my_symbol, segs, seg_count);
                     } else {
+                        if (i == 1 && (ZBarcode_Cap(symbology, ZINT_CAP_STACKABLE) & ZINT_CAP_STACKABLE) == 0) {
+                            fprintf(stderr, "Error 173: Symbology must be stackable if multiple data arguments given\n");
+                            fflush(stderr);
+                            error_number = ZINT_ERROR_INVALID_DATA;
+                            break;
+                        }
                         ret = ZBarcode_Encode(my_symbol, (unsigned char *) arg_opts[i].arg,
                                 (int) strlen(arg_opts[i].arg));
                     }

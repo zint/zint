@@ -1,0 +1,53 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="161" height="72" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#00FF00">
+      <rect x="0" y="0" width="161" height="72" fill="#FFFFFF" />
+      <rect x="0.00" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="3.60" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="7.20" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="13.20" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="16.80" y="0.00" width="3.60" height="60.00" opacity="0.333" />
+      <rect x="24.00" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="26.40" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="30.00" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="37.20" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="39.60" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="45.60" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="49.20" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="52.80" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="55.20" y="0.00" width="4.80" height="60.00" opacity="0.333" />
+      <rect x="62.40" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="66.00" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="69.60" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="74.40" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="79.20" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="82.80" y="0.00" width="3.60" height="60.00" opacity="0.333" />
+      <rect x="90.00" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="92.40" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="94.80" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="99.60" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="105.60" y="0.00" width="4.80" height="60.00" opacity="0.333" />
+      <rect x="112.80" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="116.40" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="118.80" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="122.40" y="0.00" width="4.80" height="60.00" opacity="0.333" />
+      <rect x="128.40" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="132.00" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="135.60" y="0.00" width="3.60" height="60.00" opacity="0.333" />
+      <rect x="140.40" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="145.20" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <rect x="151.20" y="0.00" width="3.60" height="60.00" opacity="0.333" />
+      <rect x="156.00" y="0.00" width="1.20" height="60.00" opacity="0.333" />
+      <rect x="158.40" y="0.00" width="2.40" height="60.00" opacity="0.333" />
+      <text x="80.40" y="69.24" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="8.4" opacity="0.333" >
+         This Text
+      </text>
+   </g>
+</svg>

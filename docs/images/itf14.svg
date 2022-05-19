@@ -1,0 +1,59 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="199" height="101" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="199" height="101" fill="#FFFFFF" />
+      <rect x="18.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="20.40" y="6.00" width="1.20" height="76.97" />
+      <rect x="22.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="25.20" y="6.00" width="3.60" height="76.97" />
+      <rect x="32.40" y="6.00" width="1.20" height="76.97" />
+      <rect x="34.80" y="6.00" width="3.60" height="76.97" />
+      <rect x="39.60" y="6.00" width="1.20" height="76.97" />
+      <rect x="44.40" y="6.00" width="3.60" height="76.97" />
+      <rect x="49.20" y="6.00" width="1.20" height="76.97" />
+      <rect x="54.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="56.40" y="6.00" width="1.20" height="76.97" />
+      <rect x="58.80" y="6.00" width="3.60" height="76.97" />
+      <rect x="66.00" y="6.00" width="3.60" height="76.97" />
+      <rect x="70.80" y="6.00" width="3.60" height="76.97" />
+      <rect x="78.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="80.40" y="6.00" width="1.20" height="76.97" />
+      <rect x="82.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="87.60" y="6.00" width="1.20" height="76.97" />
+      <rect x="90.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="94.80" y="6.00" width="3.60" height="76.97" />
+      <rect x="99.60" y="6.00" width="3.60" height="76.97" />
+      <rect x="106.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="109.20" y="6.00" width="1.20" height="76.97" />
+      <rect x="111.60" y="6.00" width="3.60" height="76.97" />
+      <rect x="116.40" y="6.00" width="3.60" height="76.97" />
+      <rect x="121.20" y="6.00" width="1.20" height="76.97" />
+      <rect x="126.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="130.80" y="6.00" width="3.60" height="76.97" />
+      <rect x="135.60" y="6.00" width="1.20" height="76.97" />
+      <rect x="138.00" y="6.00" width="1.20" height="76.97" />
+      <rect x="142.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="145.20" y="6.00" width="3.60" height="76.97" />
+      <rect x="152.40" y="6.00" width="3.60" height="76.97" />
+      <rect x="157.20" y="6.00" width="1.20" height="76.97" />
+      <rect x="162.00" y="6.00" width="3.60" height="76.97" />
+      <rect x="166.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="171.60" y="6.00" width="1.20" height="76.97" />
+      <rect x="174.00" y="6.00" width="3.60" height="76.97" />
+      <rect x="178.80" y="6.00" width="1.20" height="76.97" />
+      <rect x="0.00" y="0.00" width="198.00" height="6.00" />
+      <rect x="0.00" y="82.97" width="198.00" height="6.00" />
+      <rect x="0.00" y="6.00" width="6.00" height="76.97" />
+      <rect x="192.00" y="6.00" width="6.00" height="76.97" />
+      <text x="99.00" y="98.21" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="8.4" >
+         92123209671459
+      </text>
+   </g>
+</svg>

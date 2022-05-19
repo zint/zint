@@ -1,0 +1,82 @@
+%% For pandoc --include-in-header
+%%
+%% Start sections on new pages
+\usepackage{sectsty}
+\sectionfont{\clearpage}
+
+%% Place figures "here" (i.e. immediately, don't move them around)
+\usepackage{graphicx}
+\usepackage{float}
+\floatplacement{figure}{H}
+
+%% For glossary definition list
+%% https://github.com/jgm/pandoc/wiki/Pandoc-Tricks#definition-list-terms-on-their-own-line-in-latex
+\let\originalitem\item
+\makeatletter
+\renewcommand{\item}[1][\@nil]{
+    \def\tmp{#1}
+    \ifx\tmp\@nnil\originalitem\else\originalitem[#1]\hfill\par\fi}
+\makeatother
+
+%% Text and background color for inline code
+\usepackage{xcolor}
+\usepackage{fvextra}
+\definecolor{icfg}{HTML}{331a33}
+\let\oldtexttt\texttt
+\renewcommand{\texttt}[1]{\textcolor{icfg}{\oldtexttt{#1}}}
+%% Unfortunately this messes up wrapping TODO: fix
+%% Background color for inline code https://tex.stackexchange.com/a/507116
+%\definecolor{icbg}{HTML}{fafafa} % Same as modified pygments.theme
+%\newcommand{\code}[1]{
+    %\begingroup\setlength{\fboxsep}{1pt}
+    %\colorbox{icbg}{\oldtexttt{\hspace*{0.1pt}\vphantom{A}#1\hspace*{0.1pt}}}\endgroup}
+%\renewcommand{\texttt}[1]{\textcolor{icfg}{\code{\oldtexttt{#1}}}}
+
+%% Make level-4 headings standalone (not run-in) - for some reason "-V block-headings" doesn't seem to work, so do
+%% what it does manually here
+\let\oldparagraph\paragraph
+\renewcommand{\paragraph}[1]{\oldparagraph{#1}\mbox{}}
+
+%% https://github.com/tomduck/pandoc-tablenos
+%% As using --include-in-header (this file), need to manually include the following (displayed by setting
+%% "-M tablenos-warning-level=2"):
+
+%% PDF metadata - the values are set in "docs/inc_before_body.tex" (otherwise may get overridden)
+\usepackage{hyperref}
+
+%% pandoc-tablenos: required package
+\usepackage{caption}
+
+%% pandoc-tablenos: environment to disable table caption prefixes
+\makeatletter
+\newcounter{tableno}
+\newenvironment{tablenos:no-prefix-table-caption}{
+  \caption@ifcompatibility{}{
+    \let\oldthetable\thetable
+    \let\oldtheHtable\theHtable
+    \renewcommand{\thetable}{tableno:\thetableno}
+    \renewcommand{\theHtable}{tableno:\thetableno}
+    \stepcounter{tableno}
+    \captionsetup{labelformat=empty}
+  }
+}{
+  \caption@ifcompatibility{}{
+    \captionsetup{labelformat=default}
+    \let\thetable\oldthetable
+    \let\theHtable\oldtheHtable
+    \addtocounter{table}{-1}
+  }
+}
+\makeatother
+
+%% pandoc-tablenos: environment for tagged tables
+\newenvironment{tablenos:tagged-table}[1][]{
+  \let\oldthetable\thetable
+  \let\oldtheHtable\theHtable
+  \renewcommand{\thetable}{#1}
+  \renewcommand{\theHtable}{#1}
+}{
+  \let\thetable\oldthetable
+  \let\theHtable\oldtheHtable
+  \addtocounter{table}{-1}
+}

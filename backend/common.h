@@ -185,7 +185,8 @@ extern "C" {
     INTERNAL float stripf(const float arg);
 
     INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count);
-    INTERNAL void segs_cpy(const struct zint_seg segs[], const int seg_count, struct zint_seg local_segs[]);
+    INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
+                struct zint_seg local_segs[]);
 
     INTERNAL int colour_to_red(const int colour);
     INTERNAL int colour_to_green(const int colour);

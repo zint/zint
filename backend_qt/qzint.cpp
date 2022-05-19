@@ -1074,7 +1074,7 @@ namespace Zint {
     void QZint::arg_str(QString& cmd, const char *const opt, const QString& val) {
         if (!val.isEmpty()) {
             QByteArray bstr = val.toUtf8();
-            cmd += QString::asprintf(" %s%.*s", opt, bstr.length(), bstr.data());
+            cmd += QString::asprintf(" %s%.*s", opt, (int) bstr.length(), bstr.data());
         }
     }
 
@@ -1119,11 +1119,11 @@ namespace Zint {
             text.replace("\\\\", "\\\\\\\\"); // Double-up backslashed backslash `\\` -> `\\\\`
             text.replace("\"", "\\\""); // Backslash quote `"` -> `\"`
             QByteArray bstr = text.toUtf8();
-            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, (int) bstr.length(), bstr.data(), delim);
         } else {
             text.replace("'", "'\\''"); // Single quote `'` -> `'\''`
             QByteArray bstr = text.toUtf8();
-            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, bstr.length(), bstr.data(), delim);
+            cmd += QString::asprintf(" %s%c%.*s%c", opt, delim, (int) bstr.length(), bstr.data(), delim);
         }
     }
 
@@ -1140,7 +1140,8 @@ namespace Zint {
                 cmd += QString::asprintf(" %s%d,%d", opt, index, count);
             } else {
                 QByteArray bstr = id.toUtf8();
-                arg_data(cmd, opt, QString::asprintf("%d,%d,%.*s", index, count, bstr.length(), bstr.data()), win);
+                arg_data(cmd, opt, QString::asprintf("%d,%d,%.*s", index, count, (int) bstr.length(), bstr.data()),
+                                                        win);
             }
         }
     }

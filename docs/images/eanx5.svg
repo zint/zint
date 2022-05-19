@@ -1,0 +1,32 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="59" height="75" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="59" height="75" fill="#FFFFFF" />
+      <rect x="7.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="9.00" y="0.00" width="2.00" height="66.36" />
+      <rect x="12.00" y="0.00" width="3.00" height="66.36" />
+      <rect x="17.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="19.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="21.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="25.00" y="0.00" width="2.00" height="66.36" />
+      <rect x="28.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="30.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="35.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="37.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="40.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="43.00" y="0.00" width="2.00" height="66.36" />
+      <rect x="46.00" y="0.00" width="1.00" height="66.36" />
+      <rect x="49.00" y="0.00" width="2.00" height="66.36" />
+      <rect x="53.00" y="0.00" width="1.00" height="66.36" />
+      <text x="30.50" y="74.36" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="10.0" >
+         54321
+      </text>
+   </g>
+</svg>

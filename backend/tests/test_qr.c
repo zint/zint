@@ -4523,6 +4523,7 @@ static void test_microqr_input(int index, int generate, int debug) {
         int ret;
         char *expected;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         char *comment;
     };
     // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
@@ -4539,47 +4540,47 @@ static void test_microqr_input(int index, int generate, int debug) {
     // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
     // Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 2, 1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, 2, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", 1, "B2 (UTF-8)" },
-        /*  2*/ { UNICODE_MODE, 2, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
-        /*  3*/ { UNICODE_MODE, 2, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, "ก not in Shift JIS" },
-        /*  4*/ { UNICODE_MODE, 2, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
-        /*  5*/ { UNICODE_MODE, 2, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, "ກ not in Shift JIS" },
-        /*  6*/ { UNICODE_MODE, 2, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", 1, "B1 (ASCII)" },
-        /*  7*/ { UNICODE_MODE, 2, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
-        /*  8*/ { UNICODE_MODE, 2, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /*  9*/ { UNICODE_MODE, 2, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
-        /* 10*/ { UNICODE_MODE, 2, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
-        /* 11*/ { UNICODE_MODE, 2, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 12*/ { UNICODE_MODE, 2, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous)" },
-        /* 13*/ { UNICODE_MODE, 2, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
-        /* 14*/ { DATA_MODE, 2, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00", 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 15*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, "K1 (Shift JIS) (full multibyte)" },
-        /* 16*/ { DATA_MODE, 2, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", 1, "B3 (UTF-8)" },
-        /* 17*/ { UNICODE_MODE, 2, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", 1, "K1 (Shift JIS)" },
-        /* 18*/ { DATA_MODE, 2, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00", 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 19*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", 1, "K1 (Shift JIS) (full multibyte)" },
-        /* 20*/ { DATA_MODE, 2, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", 1, "B3 (UTF-8)" },
-        /* 21*/ { UNICODE_MODE, 2, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 22*/ { DATA_MODE, 2, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, "B3 (Shift JIS) (optimized from B1 K1)" },
-        /* 23*/ { DATA_MODE, 2, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", 1, "B5 (UTF-8)" },
-        /* 24*/ { UNICODE_MODE, 2, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, "K2 (Shift JIS)" },
-        /* 25*/ { DATA_MODE, 2, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00", 0, "B4 (Shift JIS; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below))" },
-        /* 26*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, "K2 (Shift JIS) (full multibyte)" },
-        /* 27*/ { DATA_MODE, 2, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, "B6 (UTF-8)" },
-        /* 28*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, "B6 (UTF-8)" },
-        /* 29*/ { UNICODE_MODE, 2, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, "K2 B1 (Shift JIS)" },
-        /* 30*/ { DATA_MODE, 2, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00", 0, "B5 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 31*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, "K2 B1 (Shift JIS) (full multibyte)" },
-        /* 32*/ { DATA_MODE, 1, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", 1, "B9 (UTF-8)" },
-        /* 33*/ { UNICODE_MODE, 2, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", 1, "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 34*/ { DATA_MODE, 2, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", 1, "B6 (Shift JIS) (optimized from B1 K2 B1)" },
-        /* 35*/ { DATA_MODE, 2, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", 1, "B11 (UTF-8)" },
-        /* 36*/ { DATA_MODE, 2, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, "B12 (UTF-8); BWIPP different encodation (B1 K5 B1)" },
-        /* 37*/ { DATA_MODE, 1, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, "B14 (UTF-8); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 38*/ { DATA_MODE, 1, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00", 1, "B1 K6 B1 (UTF-8) (full multibyte)" },
-        /* 39*/ { UNICODE_MODE, 2, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", 0, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 40*/ { UNICODE_MODE, 2, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /*  0*/ { UNICODE_MODE, 2, 1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00", 1, 1, "B1 (ISO 8859-1)" },
+        /*  1*/ { DATA_MODE, 2, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /*  2*/ { UNICODE_MODE, 2, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS)" },
+        /*  3*/ { UNICODE_MODE, 2, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, 1, "ก not in Shift JIS" },
+        /*  4*/ { UNICODE_MODE, 2, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS)" },
+        /*  5*/ { UNICODE_MODE, 2, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input data", 1, 1, "ກ not in Shift JIS" },
+        /*  6*/ { UNICODE_MODE, 2, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00", 1, 1, "B1 (ASCII)" },
+        /*  7*/ { UNICODE_MODE, 2, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00", 1, 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /*  8*/ { UNICODE_MODE, 2, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00", 1, 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
+        /*  9*/ { UNICODE_MODE, 2, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 10*/ { UNICODE_MODE, 2, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00", 1, 1, "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
+        /* 11*/ { UNICODE_MODE, 2, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
+        /* 12*/ { UNICODE_MODE, 2, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00", 1, 0, "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 13*/ { UNICODE_MODE, 2, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS)" },
+        /* 14*/ { DATA_MODE, 2, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00", 0, 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 15*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS) (full multibyte)" },
+        /* 16*/ { DATA_MODE, 2, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 17*/ { UNICODE_MODE, 2, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS)" },
+        /* 18*/ { DATA_MODE, 2, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00", 0, 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below; ZXing-C++ test can't handle DATA_MODE for certain inputs)" },
+        /* 19*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00", 1, 1, "K1 (Shift JIS) (full multibyte)" },
+        /* 20*/ { DATA_MODE, 2, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 21*/ { UNICODE_MODE, 2, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 22*/ { DATA_MODE, 2, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 23*/ { DATA_MODE, 2, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00", 1, 0, "B5 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 24*/ { UNICODE_MODE, 2, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, 1, "K2 (Shift JIS)" },
+        /* 25*/ { DATA_MODE, 2, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00", 0, 0, "B4 (Shift JIS; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 26*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00", 1, 1, "K2 (Shift JIS) (full multibyte)" },
+        /* 27*/ { DATA_MODE, 2, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, 0, "B6 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 28*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00", 1, 1, "B6 (UTF-8)" },
+        /* 29*/ { UNICODE_MODE, 2, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, 1, "K2 B1 (Shift JIS)" },
+        /* 30*/ { DATA_MODE, 2, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00", 0, 0, "B5 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 31*/ { DATA_MODE, 2, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00", 1, 1, "K2 B1 (Shift JIS) (full multibyte)" },
+        /* 32*/ { DATA_MODE, 1, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00", 1, 0, "B9 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 33*/ { UNICODE_MODE, 2, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 34*/ { DATA_MODE, 2, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 35*/ { DATA_MODE, 2, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00", 1, 0, "B11 (UTF-8); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 36*/ { DATA_MODE, 2, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, 0, "B12 (UTF-8); BWIPP different encodation (B1 K5 B1); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 37*/ { DATA_MODE, 1, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 0, 0, "B14 (UTF-8); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 38*/ { DATA_MODE, 1, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00", 1, 1, "B1 K6 B1 (UTF-8) (full multibyte)" },
+        /* 39*/ { UNICODE_MODE, 2, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00", 0, 1, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 40*/ { UNICODE_MODE, 2, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00", 1, 1, "K1 (ISO 8859-1) (full multibyte)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4590,6 +4591,7 @@ static void test_microqr_input(int index, int generate, int debug) {
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_microqr_input");
 
@@ -4609,10 +4611,10 @@ static void test_microqr_input(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
 
@@ -4629,6 +4631,21 @@ static void test_microqr_input(int index, int generate, int debug) {
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
                                        i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    if (!data[i].zxingcpp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        int cmp_len, ret_len;
+                        char modules_dump[17 * 17 + 1];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                     }
                 }
             }
@@ -4692,6 +4709,10 @@ static void test_microqr_padding(int index, int generate, int debug) {
     struct zint_symbol *symbol;
 
     char escaped[4096];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_microqr_padding");
 
@@ -4722,8 +4743,19 @@ static void test_microqr_padding(int index, int generate, int debug) {
                     testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
-        }
 
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[17 * 17 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+            }
+        }
         ZBarcode_Delete(symbol);
     }
 
@@ -4741,22 +4773,23 @@ static void test_microqr_optimize(int index, int generate, int debug) {
         int ret;
         char *expected;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, -1, "1", 0, "22 00 00", 1, "N1" },
-        /*  1*/ { UNICODE_MODE, 1, 2, -1, "A123", 0, "92 86 3D 80 EC", 1, "A1 N3" },
-        /*  2*/ { UNICODE_MODE, 1, -1, -1, "AAAAAA", 0, "E3 98 73 0E 60", 1, "A6" },
-        /*  3*/ { UNICODE_MODE, 1, -1, -1, "AA123456", 0, "A3 98 61 ED C8", 1, "A2 N6" },
-        /*  4*/ { UNICODE_MODE, 1, 3, -1, "01a", 0, "04 06 16 10 00 EC 11 EC 11 EC 00", 1, "N3 B1" },
-        /*  5*/ { UNICODE_MODE, 1, 4, -1, "01a", 0, "43 30 31 61 00 00 EC 11 EC 11 EC 11 EC 11 EC 11", 1, "B3" },
-        /*  6*/ { UNICODE_MODE, 1, -1, -1, "こんwa、αβ", 0, "46 82 B1 82 F1 77 61 66 00 10 FF 88 00 00 EC 11", 1, "B6 K3" },
-        /*  7*/ { UNICODE_MODE, 1, -1, -1, "こんにwa、αβ", 0, "66 13 10 B8 85 25 09 DD 85 98 00 43 FE 20 00 00", 1, "K3 B2 K3" },
-        /*  8*/ { UNICODE_MODE, 1, 3, -1, "こんAB123\177", 0, "D0 4C 42 E2 91 CD 06 3D C2 FE 00", 0, "K2 A2 N3 B1; BWIPP different encodation (K2 A5 B1)" },
-        /*  9*/ { UNICODE_MODE, 1, 4, -1, "こんAB123\177", 0, "64 13 10 B8 92 9C D0 5E 1A 0B F8 00 EC 11 EC 11", 1, "K2 A5 B1" },
-        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00", 0, "B2; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, "K1" },
-        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, "K1" },
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "1", 0, "22 00 00", 1, 1, "N1" },
+        /*  1*/ { UNICODE_MODE, 1, 2, -1, "A123", 0, "92 86 3D 80 EC", 1, 1, "A1 N3" },
+        /*  2*/ { UNICODE_MODE, 1, -1, -1, "AAAAAA", 0, "E3 98 73 0E 60", 1, 1, "A6" },
+        /*  3*/ { UNICODE_MODE, 1, -1, -1, "AA123456", 0, "A3 98 61 ED C8", 1, 1, "A2 N6" },
+        /*  4*/ { UNICODE_MODE, 1, 3, -1, "01a", 0, "04 06 16 10 00 EC 11 EC 11 EC 00", 1, 1, "N3 B1" },
+        /*  5*/ { UNICODE_MODE, 1, 4, -1, "01a", 0, "43 30 31 61 00 00 EC 11 EC 11 EC 11 EC 11 EC 11", 1, 1, "B3" },
+        /*  6*/ { UNICODE_MODE, 1, -1, -1, "こんwa、αβ", 0, "46 82 B1 82 F1 77 61 66 00 10 FF 88 00 00 EC 11", 1, 1, "B6 K3" },
+        /*  7*/ { UNICODE_MODE, 1, -1, -1, "こんにwa、αβ", 0, "66 13 10 B8 85 25 09 DD 85 98 00 43 FE 20 00 00", 1, 1, "K3 B2 K3" },
+        /*  8*/ { UNICODE_MODE, 1, 3, -1, "こんAB123\177", 0, "D0 4C 42 E2 91 CD 06 3D C2 FE 00", 0, 1, "K2 A2 N3 B1; BWIPP different encodation (K2 A5 B1)" },
+        /*  9*/ { UNICODE_MODE, 1, 4, -1, "こんAB123\177", 0, "64 13 10 B8 92 9C D0 5E 1A 0B F8 00 EC 11 EC 11", 1, 1, "K2 A5 B1" },
+        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00", 0, 0, "B2; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, 1, "K1" },
+        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00", 1, 1, "K1" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4767,6 +4800,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_microqr_optimize");
 
@@ -4785,10 +4819,10 @@ static void test_microqr_optimize(int index, int generate, int debug) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
 
@@ -4804,6 +4838,21 @@ static void test_microqr_optimize(int index, int generate, int debug) {
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                if (!data[i].zxingcpp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    int cmp_len, ret_len;
+                    char modules_dump[17 * 17 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                 }
             }
         }
@@ -5118,6 +5167,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
 
     testStart("test_microqr_encode");
 
@@ -5160,6 +5210,17 @@ static void test_microqr_encode(int index, int generate, int debug) {
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
                                        i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
                     }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[17 * 17 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                 }
             }
         }

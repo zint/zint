@@ -528,15 +528,17 @@ INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count) {
 }
 
 /* Shallow copy segments, adjusting default ECIs */
-INTERNAL void segs_cpy(const struct zint_seg segs[], const int seg_count, struct zint_seg local_segs[]) {
+INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
+            struct zint_seg local_segs[]) {
+    const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;
     int i;
 
     local_segs[0] = segs[0];
     for (i = 1; i < seg_count; i++) {
         local_segs[i] = segs[i];
         /* Ensure default ECI set if follows non-default ECI */
-        if (local_segs[i].eci == 0 && local_segs[i - 1].eci > 3) {
-            local_segs[i].eci = 3;
+        if (local_segs[i].eci == 0 && local_segs[i - 1].eci != 0 && local_segs[i - 1].eci != default_eci) {
+            local_segs[i].eci = default_eci;
         }
     }
 }

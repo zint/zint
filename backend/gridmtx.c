@@ -510,6 +510,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                         glyph = (0x60 * (c1 - 0xb0 + 9)) + (c2 - 0xa0);
                     }
                     done = 1; /* GB 2312 always within above ranges */
+                    /* Note not using the unallocated glyphs 7776 to 8191 mentioned in AIMD014 section 6.3.1.2 */
                 }
                 if (!(done)) {
                     if (sp != (length - 1)) {
@@ -1055,7 +1056,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     char *grid;
 #endif
 
-    segs_cpy(segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
+    segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
 
     /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
@@ -1066,13 +1067,13 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
             int done = 0;
-            if (local_segs[i].eci != 29 || seg_count > 1) { /* Unless ECI 29 (GB 2312) or have multiple segments */
-                /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
+            if (local_segs[i].eci != 0 && local_segs[i].eci != 29) { /* Unless default or ECI 29 (GB 2312) */
+                /* Try other conversions */
                 error_number = gb2312_utf8_to_eci(local_segs[i].eci, local_segs[i].source, &local_segs[i].length,
                                                     dd, full_multibyte);
                 if (error_number == 0) {
                     done = 1;
-                } else if (local_segs[i].eci || seg_count > 1) {
+                } else {
                     sprintf(symbol->errtxt, "535: Invalid character in input data for ECI %d", local_segs[i].eci);
                     return error_number;
                 }
@@ -1082,10 +1083,6 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
                 error_number = gb2312_utf8(symbol, local_segs[i].source, &local_segs[i].length, dd);
                 if (error_number != 0) {
                     return error_number;
-                }
-                if (local_segs[i].eci != 29) {
-                    strcpy(symbol->errtxt, "540: Converted to GB 2312 but no ECI specified");
-                    warn_number = ZINT_WARN_NONCOMPLIANT;
                 }
             }
             dd += local_segs[i].length;

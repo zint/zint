@@ -1,0 +1,17 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="76" height="61" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="76" height="61" fill="#FFFFFF" />
+      <rect x="0.00" y="0.00" width="1.20" height="60.00" />
+      <rect x="13.20" y="0.00" width="1.20" height="60.00" />
+      <rect x="36.00" y="0.00" width="1.20" height="60.00" />
+      <rect x="58.80" y="0.00" width="1.20" height="60.00" />
+      <rect x="70.80" y="0.00" width="1.20" height="60.00" />
+   </g>
+</svg>

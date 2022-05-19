@@ -1,0 +1,58 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="113" height="78" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="113" height="78" fill="#FFFFFF" />
+      <rect x="9.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="11.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="13.00" y="0.00" width="3.00" height="74.24" />
+      <rect x="17.00" y="0.00" width="2.00" height="74.24" />
+      <rect x="21.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="24.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="27.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="32.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="35.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="38.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="41.00" y="0.00" width="3.00" height="69.24" />
+      <rect x="45.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="49.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="52.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="55.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="57.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="59.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="63.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="66.00" y="0.00" width="3.00" height="69.24" />
+      <rect x="71.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="73.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="76.00" y="0.00" width="2.00" height="69.24" />
+      <rect x="80.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="84.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="87.00" y="0.00" width="3.00" height="69.24" />
+      <rect x="92.00" y="0.00" width="1.00" height="69.24" />
+      <rect x="94.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="99.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="101.00" y="0.00" width="1.00" height="74.24" />
+      <rect x="103.00" y="0.00" width="1.00" height="74.24" />
+      <text x="4.00" y="77.24" text-anchor="end"
+         font-family="Helvetica, sans-serif" font-size="7.0" >
+         7
+      </text>
+      <text x="36.00" y="77.24" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="10.0" >
+         25272
+      </text>
+      <text x="76.00" y="77.24" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="10.0" >
+         70270
+      </text>
+      <text x="109.00" y="77.24" text-anchor="start"
+         font-family="Helvetica, sans-serif" font-size="7.0" >
+         3
+      </text>
+   </g>
+</svg>

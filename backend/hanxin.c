@@ -1518,7 +1518,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     unsigned char *grid;
 #endif
 
-    segs_cpy(segs, seg_count, local_segs); /* Shallow copy (needed to set default ECI & protect lengths) */
+    segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECI & protect lengths) */
 
     /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 18030 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;

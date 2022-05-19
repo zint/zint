@@ -10,8 +10,10 @@
  *
  * e.g. before release
  *      php tools/update_version.php 3 4 5
+ *      cd docs; make
  * after release
  *      php tools/update_version.php 3 4 5 9
+ *      cd docs; make
  */
 /* vim: set ts=4 sw=4 et : */
 
@@ -232,9 +234,17 @@ version_replace(1, $data_dirname . 'backend_qt/backend_vc8.pro', '/^VERSION[ \t]
 version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/ZINT_VERSION="/', '/[0-9.]+/', $v_str);
 version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/^VERSION[ \t]*=/', '/[0-9.]+/', $v_str);
 
-// docs/manual.txt
+// docs/manual.pmd
 
-version_replace(1, $data_dirname . 'docs/manual.txt', '/^The current version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_str);
+version_replace(1, $data_dirname . 'docs/manual.pmd', '/^% Version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
+if ($build !== 9) { // Don't update if marking version as dev
+    version_replace(1, $data_dirname . 'docs/manual.pmd', '/^The current stable version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_str);
+}
+version_replace(1, $data_dirname . 'docs/manual.pmd', '/^Zint version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
+
+// docs/zint.1.pmd
+
+version_replace(1, $data_dirname . 'docs/zint.1.pmd', '/^% zint\(1\) Version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
 
 // frontend_qt/res/qtZint.rc
 
@@ -290,6 +300,7 @@ version_replace(2, $data_dirname . 'win32/vs2019/zint.vcxproj', '/ZINT_VERSION="
 
 print PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;
+print '!!!  REMEMBER: cd docs; make                                      !!!' . PHP_EOL;
 print '!!!  REMEMBER: run "autoconf" and "./configure" in "backend_tcl/" !!!' . PHP_EOL;
 print '!!!  REMEMBER: update version and date in "ChangeLog"             !!!' . PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;

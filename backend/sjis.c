@@ -1554,11 +1554,11 @@ INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *
 
         error_number = utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
-            // Note not setting `symbol->errtxt`, up to caller
+            /* Note not setting `symbol->errtxt`, up to caller */
             return error_number;
         }
 
-        sjis_cpy(converted, p_length, ddata, full_multibyte);
+        sjis_cpy(converted, p_length, ddata, full_multibyte || eci == 20);
     } else {
         sjis_cpy(source, p_length, ddata, full_multibyte);
     }

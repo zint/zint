@@ -7,7 +7,6 @@ build/
 *.pro.user
 .directory
 CMakeLists.txt.user*
-Makefile
 backend/Makefile
 frontend/Makefile
 build-*

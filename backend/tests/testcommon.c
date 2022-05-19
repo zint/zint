@@ -3285,7 +3285,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 94, },
         { "", -1, 95, },
         { "Code128", BARCODE_DPD, 96, },
-        { "", BARCODE_MICROQR, 97, },
+        { "MicroQRCode", BARCODE_MICROQR, 97, },
         { "Code128", BARCODE_HIBC_128, 98, },
         { "Code39", BARCODE_HIBC_39, 99, },
         { "", -1, 100, },
@@ -3425,7 +3425,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
     }
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && symbol->eci == 0
-            && (symbology == BARCODE_QRCODE || symbology == BARCODE_HANXIN)) {
+            && (symbology == BARCODE_QRCODE || symbology == BARCODE_MICROQR || symbology == BARCODE_HANXIN)) {
         int converted_len = length;
         unsigned char *converted_buf = (unsigned char *) testutil_alloca(converted_len + 1);
         if (symbology == BARCODE_HANXIN) {

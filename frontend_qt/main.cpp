@@ -21,7 +21,7 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resources);
 
-#if QT_VERSION >= 0x50600
+#if QT_VERSION >= 0x50600 && QT_VERSION < 0x60100
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 #endif
 #if QT_VERSION >= 0x50400

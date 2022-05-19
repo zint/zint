@@ -1,0 +1,76 @@
+Prerequisites for building zint
+-------------------------------
+
+Prerequisites are git, cmake, make, gcc and gcc-c++, e.g. Ubuntu/Debian
+
+    sudo apt install git cmake build-essential
+
+or Fedora (git, make and gcc should already be installed)
+
+    sudo dnf install cmake gcc-c++
+
+libpng is optional but necessary for PNG support, e.g. Ubuntu/Debian
+
+    sudo apt install libpng-dev
+
+or Fedora
+
+    sudo dnf install libpng-devel
+
+Prerequisites for building zint-qt
+----------------------------------
+
+Sign up and download the Qt Maintenance Tool from
+    https://www.qt.io/download-qt-installer
+
+On Ubuntu/Debian you may need to install xinerama to run the tool:
+
+    sudo apt install libxcb-xinerama0
+
+Launch the tool and install the "Desktop gcc 64-bit" component for either Qt
+5.15.2 or Qt 6 (>= 6.1).
+
+Once Qt is installed you may need to tell CMake where it is:
+
+    export CMAKE_PREFIX_PATH=<qt-version-dir>/gcc_64
+
+e.g. export CMAKE_PREFIX_PATH=/opt/Qt/5.15.2/gcc_64
+
+To build zint-qt you also need to install mesa (for OpenGL), e.g. Ubuntu/Debian
+
+    sudo apt install mesa-common-dev libglu1-mesa-dev
+
+or Fedora
+
+    sudo dnf install mesa-libGL mesa-libGL-devel
+
+Build
+-----
+
+The rest is standard CMake
+
+    git clone https://git.code.sf.net/p/zint/code zint
+
+    cd zint
+    mkdir build
+    cd build
+    cmake ..
+    make
+    sudo make install
+
+CMake options
+-------------
+
+A number of options are available:
+
+ZINT_COVERAGE:BOOL=OFF # Set code coverage flags
+ZINT_DEBUG:BOOL=OFF    # Set debug compile flags
+ZINT_NOOPT:BOOL=OFF    # Set no optimize compile flags
+ZINT_SANITIZE:BOOL=OFF # Set sanitize compile/link flags
+ZINT_STATIC:BOOL=OFF   # Build static library
+ZINT_TEST:BOOL=ON      # Set test compile flag
+ZINT_USE_PNG:BOOL=ON   # Build with PNG support
+ZINT_USE_QT:BOOL=ON    # Build with Qt support
+
+For details on ZINT_TEST and building the zint test suite, see
+"backend/tests/README".

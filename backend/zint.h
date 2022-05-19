@@ -205,7 +205,7 @@ extern "C" {
 #define BARCODE_MICROPDF417     84  /* MicroPDF417 */
 #define BARCODE_USPS_IMAIL      85  /* USPS Intelligent Mail (OneCode) */
 #define BARCODE_ONECODE         85  /* Legacy */
-#define BARCODE_PLESSEY         86  /* Plessey Code */
+#define BARCODE_PLESSEY         86  /* UK Plessey */
 
     /* Tbarcode 8 codes */
 #define BARCODE_TELEPEN_NUM     87  /* Telepen Numeric */

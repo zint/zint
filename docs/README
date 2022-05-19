@@ -1,0 +1,34 @@
+For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" using a recent version of pandoc
+
+On Ubuntu/Debian (tested on Ubuntu 22.04)
+
+    wget https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-1-amd64.deb
+    sudo dpkg -i pandoc-2.18-1-amd64.deb
+    sudo apt install python3-pip
+    pip install pandoc-tablenos --user
+    export PATH=~/.local/bin:"$PATH"
+    sudo apt install librsvg2-bin
+    sudo apt install texlive-xetex
+    sudo apt install texlive-lang-cjk
+    sudo apt install fonts-wqy-microhei
+    make
+
+On Windows
+
+Install https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-windows-x86_64.msi
+
+From command prompt run as administrator
+
+    choco install make
+    choco install rsvg-convert
+    choco install python
+    choco install miktex
+
+    pip install pandoc-tablenos --user
+
+From normal command prompt run from zint "docs" directory
+
+    set "PATH=<location-of-pandoc-tablenos>:%PATH%"
+
+TODO
+??? On make, get various font errors Helvetica, TeX Gyre Pagella which miktex can't handle ???

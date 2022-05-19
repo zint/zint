@@ -4,8 +4,13 @@
 set -e
 
 function run_zxingcpp_test() {
-    echo -e "\n$1 -f $2"
-    backend/tests/$1 -f "$2" -d $(expr 512 + 16 + 32) || exit 1
+    if [ -z "$2" ]; then
+        echo -e "\n$1"
+        backend/tests/$1 -d $(expr 512 + 16 + 32) || exit 1
+    else
+        echo -e "\n$1 -f $2"
+        backend/tests/$1 -f "$2" -d $(expr 512 + 16 + 32) || exit 1
+    fi
 }
 
 run_zxingcpp_test "test_2of5" "encode"
@@ -28,11 +33,7 @@ run_zxingcpp_test "test_maxicode" "encode_segs"
 run_zxingcpp_test "test_medical" "encode"
 run_zxingcpp_test "test_pdf417" "encode"
 run_zxingcpp_test "test_pdf417" "encode_segs"
-run_zxingcpp_test "test_qr" "qr_input"
-run_zxingcpp_test "test_qr" "qr_optimize"
-run_zxingcpp_test "test_qr" "qr_encode"
-run_zxingcpp_test "test_qr" "qr_encode_segs"
-run_zxingcpp_test "test_qr" "upnqr_encode"
+run_zxingcpp_test "test_qr"
 run_zxingcpp_test "test_rss" "binary_div_modulo_divisor"
 run_zxingcpp_test "test_rss" "examples"
 run_zxingcpp_test "test_upcean" "upce_input"

@@ -66,9 +66,9 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Australia Post Routing Code"), BARCODE_AUSROUTE },
     { QSL("Australia Post Standard Customer"), BARCODE_AUSPOST },
     { QSL("Aztec Code (ISO 24778) (and HIBC)"), BARCODE_AZTEC },
-    { QSL("Aztec Runes"), BARCODE_AZRUNE },
+    { QSL("Aztec Runes (ISO 24778)"), BARCODE_AZRUNE },
     { QSL("Channel Code"), BARCODE_CHANNEL },
-    { QSL("Codabar"), BARCODE_CODABAR },
+    { QSL("Codabar (EN 798)"), BARCODE_CODABAR },
     { QSL("Codablock-F (and HIBC)"), BARCODE_CODABLOCKF },
     { QSL("Code 11"), BARCODE_CODE11 },
     { QSL("Code 128 (ISO 15417) (and GS1-128 and HIBC)"), BARCODE_CODE128 },
@@ -92,17 +92,17 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("DPD Code"), BARCODE_DPD },
     { QSL("Dutch Post KIX"), BARCODE_KIX },
     { QSL("EAN-14"), BARCODE_EAN14 },
-    { QSL("European Article Number (EAN)"), BARCODE_EANX },
+    { QSL("European Article Number (EAN) (ISO 15420)"), BARCODE_EANX },
     { QSL("Facing Identification Mark (FIM)"), BARCODE_FIM },
     { QSL("Flattermarken"), BARCODE_FLAT },
     { QSL("Grid Matrix"), BARCODE_GRIDMATRIX },
-    { QSL("GS1 DataBar Expanded"), BARCODE_DBAR_EXP },
-    { QSL("GS1 DataBar Expanded Stacked"), BARCODE_DBAR_EXPSTK },
-    { QSL("GS1 DataBar Limited"), BARCODE_DBAR_LTD },
-    { QSL("GS1 DataBar Omnidirectional (and Truncated)"), BARCODE_DBAR_OMN },
-    { QSL("GS1 DataBar Stacked"), BARCODE_DBAR_STK },
-    { QSL("GS1 DataBar Stacked Omnidirectional"), BARCODE_DBAR_OMNSTK },
-    { QSL("Han Xin (Chinese Sensible) Code"), BARCODE_HANXIN },
+    { QSL("GS1 DataBar Expanded (ISO 24724)"), BARCODE_DBAR_EXP },
+    { QSL("GS1 DataBar Expanded Stacked (ISO 24724)"), BARCODE_DBAR_EXPSTK },
+    { QSL("GS1 DataBar Limited (ISO 24724)"), BARCODE_DBAR_LTD },
+    { QSL("GS1 DataBar Omnidirectional (and Truncated) (ISO 24724)"), BARCODE_DBAR_OMN },
+    { QSL("GS1 DataBar Stacked (ISO 24724)"), BARCODE_DBAR_STK },
+    { QSL("GS1 DataBar Stacked Omnidirectional (ISO 24724)"), BARCODE_DBAR_OMNSTK },
+    { QSL("Han Xin (Chinese Sensible) Code (ISO 20830)"), BARCODE_HANXIN },
     { QSL("International Standard Book Number (ISBN)"), BARCODE_ISBNX },
     { QSL("ITF-14"), BARCODE_ITF14 },
     { QSL("Japanese Postal Barcode"), BARCODE_JAPANPOST },
@@ -110,7 +110,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("LOGMARS"), BARCODE_LOGMARS },
     { QSL("MaxiCode (ISO 16023)"), BARCODE_MAXICODE },
     { QSL("MicroPDF417 (ISO 24728) (and HIBC)"), BARCODE_MICROPDF417 },
-    { QSL("Micro QR Code"), BARCODE_MICROQR },
+    { QSL("Micro QR Code (ISO 18004)"), BARCODE_MICROQR },
     { QSL("MSI Plessey"), BARCODE_MSI_PLESSEY },
     { QSL("NVE-18 (SSCC-18)"), BARCODE_NVE18 },
     { QSL("PDF417 (ISO 15438) (and Compact and HIBC)"), BARCODE_PDF417 },
@@ -127,8 +127,8 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Telepen Numeric"), BARCODE_TELEPEN_NUM },
     { QSL("UK Plessey"), BARCODE_PLESSEY },
     { QSL("Ultracode"), BARCODE_ULTRA },
-    { QSL("Universal Product Code (UPC-A)"), BARCODE_UPCA },
-    { QSL("Universal Product Code (UPC-E)"), BARCODE_UPCE },
+    { QSL("Universal Product Code (UPC-A) (ISO 15420)"), BARCODE_UPCA },
+    { QSL("Universal Product Code (UPC-E) (ISO 15420)"), BARCODE_UPCE },
     { QSL("UPNQR"), BARCODE_UPNQR },
     { QSL("USPS Intelligent Mail (OneCode)"), BARCODE_USPS_IMAIL },
     { QSL("VIN (Vehicle Identification Number)"), BARCODE_VIN },
@@ -532,7 +532,7 @@ void MainWindow::about()
            "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
            "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
-           "EN 797:1996, EN 798:1996, EN 12323:2005, ISO/IEC 15417:2007,<br>"
+           "EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007,<br>"
            "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
            "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,<br>"
            "ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,<br>"
@@ -2272,10 +2272,7 @@ void MainWindow::update_preview()
 
         case BARCODE_UPNQR:
             m_bc.bc.setSymbol(BARCODE_UPNQR);
-            //eci_not_set = false;
             cmbECI->setCurrentIndex(2 /*ECI 4*/);
-            //cmbECI->setEnabled(false);
-            //lblECI->setEnabled(false);
             if ((item_val = get_cmb_index(QSL("cmbUPNQRMask"))) != 0) {
                 m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
             }

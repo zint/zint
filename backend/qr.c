@@ -1634,7 +1634,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         user_mask = 0; /* Ignore */
     }
 
-    segs_cpy(segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
+    segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
 
     warn_number = qr_prep_data(symbol, local_segs, seg_count, ddata);
     if (warn_number >= ZINT_ERROR) {
@@ -3065,7 +3065,7 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
 
     gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
 
-    segs_cpy(segs, seg_count, local_segs);
+    segs_cpy(symbol, segs, seg_count, local_segs);
 
     warn_number = qr_prep_data(symbol, local_segs, seg_count, ddata);
     if (warn_number >= ZINT_ERROR) {

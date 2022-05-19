@@ -18,8 +18,9 @@ Version 2.10.0.9 (dev) not released yet
   NOTE: previously appeared inside vertical whitespace
 - ECI 29 now GB 2312 only; GB 18030 is new ECI 32
   NOTE: previously ECI 29 was GB 18030 for HANXIN, GB 2312 otherwise
-- GRIDMATRIX, HANXIN, QRCODE/RMQR now warn when convert to GB 2312, GB 18030,
-  Shift JIS resp. and no ECI given
+- HANXIN, QRCODE/RMQR now warn when convert to GB 18030, Shift JIS resp.
+  and no ECI given
+- GRIDMATRIX no longer attempts Latin-1 conversion when no ECI given
 
 Changes
 -------
@@ -69,6 +70,10 @@ Changes
 - GUI: use non-native QColorDialog on Unix also; no noEXE for CLI equivalent;
   add shortcuts for copy-to-clipboard and CLI equivalent
 - CLI: new --version option to print Zint version
+- manual: one true source now manual.pmd from which manual.txt is generated
+- CLI: man page moved from frontend/zint.1.gz to docs/zint.1.gz, now
+  generated from docs/zint.1.pmd
+- add README.linux to root dir
 
 Bugs
 ----
@@ -97,6 +102,8 @@ Bugs
 - RMQR: fix ECI encoding (wrong bit length for indicator)
 - CLI/tcl: fix version check (need <= 999 for DAFT permille)
 - UPNQR: fix required binary mode using mode_preset
+- GRIDMATRIX: default char set is GB 2312 only, not Latin-1 with GB 2312 alt
+- HANXIN/QRCODE: use Hanzi/Kanji modes when compatible ECIs given
 
 
 Version 2.10.0 2021-08-14

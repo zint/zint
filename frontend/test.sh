@@ -1,5 +1,5 @@
-mkdir test_out
-cd test_out
+mkdir test_sh_out
+cd test_sh_out
 echo testing Code 11
 zint -o bar01.txt -b 1 -d 87654321
 zint -o bar01.gif -b 1 --height=50 --border=10 -d 87654321

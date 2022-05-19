@@ -1,0 +1,336 @@
+% zint(1) Version 2.10.0.9
+% Robin Stuart <robin@zint.org.uk>
+% May 2022
+
+# NAME
+
+`zint` - Encode data as a barcode image
+
+# SYNOPSIS
+
+| `zint` [`-h` | `--help`]
+| `zint` [*options*]
+
+# DESCRIPTION
+
+zint takes input data from the command line or a file to encode in a barcode which is then output to an image file.
+
+The output image file (specified with `-o` or `--output`) may be in one of these formats: Windows Bitmap (`BMP`),
+Enhanced Metafile Format (`EMF`), Encapsulated PostScript (`EPS`), Graphics Interchange Format (`GIF`), ZSoft
+Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`SVG`), or Tagged Image File Format
+(`TIF`).
+
+# OPTIONS
+
+`-h`, `--help`
+:   Print usage information summarizing command line options.
+
+`-b TYPE`, `--barcode=TYPE`
+:   Set the barcode symbology that will be used to encode the data. *TYPE* is the number or name of the barcode
+    symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t`
+    or `--types` option. Type names are case-insensitive, and non-alphanumerics are ignored.
+
+`--addongap=INTEGER`
+:   For UPC/EAN symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
+    the X-dimension. The maximum gap that can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
+
+`--batch`
+:   Treat each line of an input file specified with `-i` or `--input` as a separate data set and produce a barcode
+    image for each one. The barcode images are outputted by default to numbered filenames starting with "00001.png",
+    "00002.png" etc., which can be changed by using the `-o` or `--output` option.
+
+`--bg=COLOUR`
+:   Specify a background (paper) colour where *COLOUR* is in hex RRGGBB or RRGGGAA format.
+
+`--binary`
+:   Treat input data as raw 8-bit binary data instead of the default UTF-8. Automatic code page translation to an ECI
+    page is disabled, and no validation of the data's encodation takes place.
+
+`--bind`
+:   Add horizontal boundary bars, aka bearer bars, to the symbol. The width of the boundary bars must be specified by
+    the `--border` option. `--bind` can also be used to add row separator bars to symbols stacked with multiple `-d`
+    or `--data` inputs, in which case the width of the separator bars must be specified with the `--separator` option.
+
+`--bold`
+:   Use bold text for the Human Readable Text.
+
+`--border=INTEGER`
+:   Set the width of boundary bars (`--bind`) or box borders (`--box`), where *INTEGER* is in integral multiples of
+    the X-dimension.
+
+`--box`
+:   Add a box around the symbol. The width of the borders must be specified by the `--border` option.
+
+`--cmyk`
+:   Use the CMYK colour space when outputting to Encapsulated PostScript (EPS) or TIF files.
+
+`--cols=INTEGER`
+:   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, PDF417, MicroPDF417, GS1 DataBar
+    Expanded Stacked (DBar_ExpStk) and DotCode symbols.
+
+`--compliantheight`
+
+:   Warn if the height specified by the `--height` option is not compliant with the barcode's specification, or if
+    `--height` is not given, default to the height specified by the specification (if any).
+
+`-d`, `--data=DATA`
+
+:   Specify the input *DATA* to encode. The `--esc` option may be used to enter non-printing characters using escape
+    sequences.
+
+`--direct`
+
+:   Send output to stdout, which in most cases should be re-directed via a pipe.
+
+`--dmre`
+
+:   For Data Matrix symbols, allow Data Matrix Rectangular Extended (RMRE) sizes when considering automatic sizes.
+
+`--dotsize=NUMBER`
+
+:   Set the radius of the dots in dotty mode (`--dotty`). *NUMBER* is in multiples of the X-dimension, and may be
+    floating-point.
+
+`--dotty`
+
+:   Use dots instead of squares for matrix symbols. DotCode is always in dotty mode.
+
+`--dump`
+
+:   Dump a hexadecimal representation of the symbol's encodation to stdout.
+
+`-e`, `--ecinos`
+
+:   Display the table of ECIs (Extended Channel Interpretations).
+
+`--eci=INTEGER`
+
+:   Set the ECI code for the input data to *INTEGER*. See `-e` or `--ecinos` for a list of the ECIs available.
+
+`--esc`
+
+:   Process escape characters in the input data. The escape sequences are:
+
+    - `\0`      (0x00)        `NUL`   Null character
+    - `\E`      (0x04)        `EOT`   End of Transmission
+    - `\a`      (0x07)        `BEL`   Bell
+    - `\b`      (0x08)        `BS`    Backspace
+    - `\t`      (0x09)        `HT`    Horizontal Tab
+    - `\n`      (0x0A)        `LF`    Line Feed
+    - `\v`      (0x0B)        `VT`    Vertical Tab
+    - `\f`      (0x0C)        `FF`    Form Feed
+    - `\r`      (0x0D)        `CR`    Carriage Return
+    - `\e`      (0x1B)        `ESC`   Escape
+    - `\G`      (0x1D)        `GS`    Group Separator
+    - `\R`      (0x1E)        `RS`    Record Separator
+    - `\\`      (0x5C)        `\`     Backslash
+    - `\xNN`    (0xNN)                Any 8-bit character where NN is hexadecimal
+    - `\uNNNN`  (U+NNNN)              Any 16-bit Unicode BMP character where NNNN is hexadecimal
+
+`--fast`
+
+:   Use faster if less optimal encodation (currently affects Data Matrix only).
+
+`--fg=COLOUR`
+
+:   Specify a foreground (ink) colour where *COLOUR* is in hex RRGGBB or RRGGGAA format.
+
+`--filetype=TYPE`
+
+:   Set the output file type to *TYPE*, which is one of `BMP`, `EMF`, `EPS`, `GIF`, `PCX`, `PNG`, `SVG`, `TIF`, `TXT`.
+
+`--fullmultibyte`
+
+:   Use the multibyte modes of QR Code, Han Xin, and Grid Matrix for non-ASCII data.
+
+`--gs1`
+
+:   Treat input as GS1 compatible data. Application Identifiers (AIs) should be placed in square brackets `"[]"` (but
+    see `--gs1parens`).
+
+`--gs1nocheck`
+
+:   Do not check the validity of GS1 data.
+
+`--gs1parens`
+
+:   Process parentheses `"()"` as GS1 AI delimiters, rather than square brackets `"[]"`. The input data must not
+    contain parentheses.
+
+`--gssep`
+
+:   For Data Matrix in GS1 mode, use `GS` (0x1D) as the GS1 data separator instead of `FNC1`.
+
+`--guarddescent=INTEGER`
+
+:   For UPC/EAN symbols, set the height of the guard bars' descent, where *INTEGER* is in integral multiples of the
+    X-dimension.
+
+`--height=NUMBER`
+
+:   Set the height of the symbol in multiples of the X-dimension. *NUMBER* may be floating-point. Increments of 0.5
+    are recommended for raster output (BMP, GIF, PCX, PNG and TIF).
+
+`--heightperrow`
+
+:   Treat height as per-row. Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked (DBar_ExpStk),
+    MicroPDF417 and PDF417.
+
+`-i`, `--input=FILE`
+
+:   Read the input data from *FILE*.
+
+`--init`
+
+:   Create a reader initialisation/programming symbol.
+
+`--mask=INTEGER`
+
+:   Set the masking pattern to use for QR Code, Han Xin or DotCode to *INTEGER*, overriding the automatic selection.
+
+`--mirror`
+
+:   Use the batch data to determine the filename in batch mode (`--batch`).
+
+`--mode=INTEGER`
+
+:   For MaxiCode and composite symbols, set the encoding mode to *INTEGER*. The meaning is symbol-specific.
+
+`--nobackground`
+
+:   Remove the background colour (EMF, EPS, GIF, PNG, SVG and TIF only).
+
+`--noquietzones`
+
+:   Disable any quiet zones for symbols that define them by default.
+
+`--notext`
+
+:   Remove the Human Readable Text.
+
+`-o`, `--output=FILE`
+
+:   Send the output to *FILE*. When not in batch mode, the default is "out.png" (or "out.gif" if zint built without
+    PNG support). When in batch mode (`--batch`), special characters can be used to format the output filenames:
+
+    - `~`                  Insert a number or 0
+    - `#`                  Insert a number or space
+    - `@`                  Insert a number or `*`
+    - Any other            Insert literally
+
+`--primary=STRING`
+
+:   For MaxiCode, set the content of the primary message. For Composite symbols, set the content of the linear symbol.
+
+`--quietzones`
+
+:   Add compliant quiet zones for symbols that specify one.
+
+`-r`, `--reverse`
+
+:   Reverse the foreground and background colours (white on black).
+
+`--rotate=INTEGER`
+
+:   Rotate the symbol by *INTEGER* degrees, where *INTEGER* can be 0, 90, 270 or 360.
+
+`--rows=INTEGER`
+
+:   Set the number of rows for Codablock-F or PDF417 to *INTEGER*.
+
+`--scale=NUMBER`
+
+:   Set the X-dimension. *NUMBER* may be floating-point.
+
+`--scmvv=INTEGER`
+
+:   For MaxiCode, prefix the Structured Carrier Message (SCM) with `"[)>\R01\Gvv"`, where vv is a 2-digit *INTEGER*.
+
+`--secure=INTEGER`
+
+:   Set the error correction level (ECC) or check character options to *INTEGER*. The meaning is symbol-specific.
+
+`--segN=ECI,DATA`
+
+:   Set the *ECI* & *DATA* content for segment N, where N is 1 to 9. `-d` or `--data` must still be given, and counts
+    as segment 0, its ECI given by `--eci`. Segments must be consecutive.
+
+`--separator=INTEGER`
+
+:   Set the height of row separator bars for stacked symbologies, where *INTEGER* is in integral multiples of the
+    X-dimension.
+
+`--small`
+
+:   Use small text for Human Readable Text.
+
+`--square`
+
+:   For Data Matrix symbols, exclude rectangular sizes when considering automatic sizes.
+
+`--structapp=I,C[,ID]`
+
+:   Set Structured Append info, where `I` is the 1-based index, `C` is the count of total symbols in the sequence, and
+    `ID`, which is optional, is the identifier that all symbols in the sequence share.
+
+`-t`, `--types`
+
+:   Display the table of barcode types (symbologies).
+
+`--vers=INTEGER`
+
+:   Set the symbol version (size, check digits, other options) to *INTEGER*. The meaning is symbol-specific.
+
+`-v`, `--version`
+
+:   Display the zint version.
+
+`--vwhitesp=INTEGER`
+
+:   Set the height of vertical whitespace either side of the barcode, where *INTEGER* is in integral multiples of the
+    X-dimension.
+
+`-w`, `--whitesp=INTEGER`
+
+:   Set the width of horizontal whitespace above and below the barcode, where *INTEGER* is in integral multiples of
+    the X-dimension.
+
+`--werror`
+
+:   Convert all warnings into errors.
+
+# EXAMPLES
+
+Create "out.png" (or "out.gif" if zint built without PNG support) in the current directory, as a Code 128 symbol.
+
+```bash
+zint -d 'This Text'
+```
+
+Create "qr.svg" in the current directory, as a QR Code symbol.
+
+```bash
+zint -b QRCode -d 'This Text' -o 'qr.svg'
+```
+
+# BUGS
+
+Please send bug reports to https://sourceforge.net/p/zint/tickets/
+
+# SEE ALSO
+
+Full documention for `zint` (and the API `libzint` and the GUI `zint-qt`) is available from
+http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manual.pmd.
+
+# STANDARDS
+
+Zint is designed to be compliant with a number of international standards, including:
+
+- EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007,
+- ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,
+- ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,
+- ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,
+- ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019,
+- ANSI-HIBC 2.6-2016, ANSI/AIM BC12-1998, ANSI/AIM BC6-2000,
+- ANSI/AIM BC5-1995, AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200,
+- USS Code One (1994), GS1 22.0 (2022), AIM ITS/04-023 (2022)
