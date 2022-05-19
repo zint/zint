@@ -47,9 +47,9 @@ stacked:
     correction data. Examples include PDF417.
 
 matrix:
-:   A matrix or two-dimensional symbol is one based on a (usually square) grid
-    of elements called modules. Examples include Data Matrix, but MaxiCode and
-    DotCode are also considered matrix symbologies.
+:   A matrix symbol is one based on a (usually square) grid of elements called
+    modules. Examples include Data Matrix, but MaxiCode and DotCode are also
+    considered matrix symbologies.
 
 composite:
 :   A composite symbology is one which is made up of elements which are both
@@ -3232,7 +3232,7 @@ A-Z and dash (`-`). A modulo 19 check digit is added by Zint.
 
 \clearpage
 
-## 6.6 Two-Dimensional Matrix Symbols
+## 6.6 Matrix Symbols
 
 ### 6.6.1 Data Matrix (ISO 16022)
 

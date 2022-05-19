@@ -150,7 +150,7 @@ $(OUT_TXT) : $(SOURCE) $(INCLUDES_TXT) Makefile
 			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) \
 			$(TXT_OPTS) \
 			-o $(OUT_TXT)
-	sed -i -e 's/ *$//' $(OUT_TXT)
+	sed -i -e 's/  *$$//' $(OUT_TXT)
 
 $(OUT_MAN) : $(SOURCE_MAN) Makefile
 	pandoc $(SOURCE_MAN) -f markdown \

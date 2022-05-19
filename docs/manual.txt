@@ -148,7 +148,7 @@ May 2022
         -   6.5.4 Royal Mail 4-State Mailmark
         -   6.5.5 USPS Intelligent Mail
         -   6.5.6 Japanese Postal Code
-    -   6.6 Two-Dimensional Matrix Symbols
+    -   6.6 Matrix Symbols
         -   6.6.1 Data Matrix (ISO 16022)
         -   6.6.2 QR Code (ISO 18004)
         -   6.6.3 Micro QR Code (ISO 18004)
@@ -222,9 +222,9 @@ stacked:
     correction data. Examples include PDF417.
 
 matrix:
-    A matrix or two-dimensional symbol is one based on a (usually square) grid
-    of elements called modules. Examples include Data Matrix, but MaxiCode and
-    DotCode are also considered matrix symbologies.
+    A matrix symbol is one based on a (usually square) grid of elements called
+    modules. Examples include Data Matrix, but MaxiCode and DotCode are also
+    considered matrix symbologies.
 
 composite:
     A composite symbology is one which is made up of elements which are both
@@ -3149,7 +3149,7 @@ all of the following inputs are valid data entries:
 Used for address data on mail items for Japan Post. Accepted values are 0-9, A-Z
 and dash (-). A modulo 19 check digit is added by Zint.
 
-6.6 Two-Dimensional Matrix Symbols
+6.6 Matrix Symbols
 
 6.6.1 Data Matrix (ISO 16022)
 
