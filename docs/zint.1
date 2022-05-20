@@ -73,7 +73,7 @@ RRGGBB or RRGGGAA format.
 \f[V]--binary\f[R]
 Treat input data as raw 8-bit binary data instead of the default UTF-8.
 Automatic code page translation to an ECI page is disabled, and no
-validation of the data\[cq]s encodation takes place.
+validation of the data\[cq]s character encoding takes place.
 .TP
 \f[V]--bind\f[R]
 Add horizontal boundary bars, aka bearer bars, to the symbol.
@@ -104,7 +104,7 @@ Use the CMYK colour space when outputting to Encapsulated PostScript
 \f[V]--cols=INTEGER\f[R]
 Set the number of data columns in the symbol to \f[I]INTEGER\f[R].
 Affects Codablock-F, PDF417, MicroPDF417, GS1 DataBar Expanded Stacked
-(DBar_ExpStk) and DotCode symbols.
+(DBAR_EXPSTK) and DotCode symbols.
 .TP
 \f[V]--compliantheight\f[R]
 Warn if the height specified by the \f[V]--height\f[R] option is not
@@ -116,10 +116,12 @@ any).
 Specify the input \f[I]DATA\f[R] to encode.
 The \f[V]--esc\f[R] option may be used to enter non-printing characters
 using escape sequences.
+The \f[I]DATA\f[R] should be UTF-8, unless the \f[V]--binary\f[R] option
+is given, in which case it can be anything.
 .TP
 \f[V]--direct\f[R]
-Send output to stdout, which in most cases should be re-directed via a
-pipe.
+Send output to stdout, which in most cases should be re-directed to a
+pipe or a file.
 .TP
 \f[V]--dmre\f[R]
 For Data Matrix symbols, allow Data Matrix Rectangular Extended (RMRE)
@@ -129,6 +131,7 @@ sizes when considering automatic sizes.
 Set the radius of the dots in dotty mode (\f[V]--dotty\f[R]).
 \f[I]NUMBER\f[R] is in multiples of the X-dimension, and may be
 floating-point.
+The default is 0.8.
 .TP
 \f[V]--dotty\f[R]
 Use dots instead of squares for matrix symbols.
@@ -230,7 +233,7 @@ and TIF).
 \f[V]--heightperrow\f[R]
 Treat height as per-row.
 Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked
-(DBar_ExpStk), MicroPDF417 and PDF417.
+(DBAR_EXPSTK), MicroPDF417 and PDF417.
 .TP
 \f[V]-i\f[R], \f[V]--input=FILE\f[R]
 Read the input data from \f[I]FILE\f[R].
@@ -293,6 +296,9 @@ can be 0, 90, 270 or 360.
 .TP
 \f[V]--rows=INTEGER\f[R]
 Set the number of rows for Codablock-F or PDF417 to \f[I]INTEGER\f[R].
+It will also set the minimum number of rows for Code 16k or Code 49, and
+the maximum number of rows for GS1 DataBar Expanded Stacked
+(DBAR_EXPSTK).
 .TP
 \f[V]--scale=NUMBER\f[R]
 Set the X-dimension.
@@ -334,22 +340,27 @@ the sequence share.
 .TP
 \f[V]-t\f[R], \f[V]--types\f[R]
 Display the table of barcode types (symbologies).
+The numbers or names can be used with \f[V]-b\f[R] or
+\f[V]--barcode\f[R].
 .TP
 \f[V]--vers=INTEGER\f[R]
 Set the symbol version (size, check digits, other options) to
 \f[I]INTEGER\f[R].
 The meaning is symbol-specific.
+For most matrix symbols, it specifies size.
+For a number of linear symbols, it specifies check character options.
+For a few other symbologies, it specifies other characteristics.
 .TP
 \f[V]-v\f[R], \f[V]--version\f[R]
 Display the zint version.
 .TP
 \f[V]--vwhitesp=INTEGER\f[R]
-Set the height of vertical whitespace either side of the barcode, where
+Set the height of vertical whitespace above and below the barcode, where
 \f[I]INTEGER\f[R] is in integral multiples of the X-dimension.
 .TP
 \f[V]-w\f[R], \f[V]--whitesp=INTEGER\f[R]
-Set the width of horizontal whitespace above and below the barcode,
-where \f[I]INTEGER\f[R] is in integral multiples of the X-dimension.
+Set the width of horizontal whitespace either side of the barcode, where
+\f[I]INTEGER\f[R] is in integral multiples of the X-dimension.
 .TP
 \f[V]--werror\f[R]
 Convert all warnings into errors.
@@ -379,7 +390,7 @@ Please send bug reports to https://sourceforge.net/p/zint/tickets/
 Full documention for \f[V]zint\f[R] (and the API \f[V]libzint\f[R] and
 the GUI \f[V]zint-qt\f[R]) is available from
 http://zint.org.uk/Manual.aspx, and at
-https://sourceforge.net/p/zint/docs/manual.pmd.
+https://sourceforge.net/p/zint/docs/manual.txt.
 .SH STANDARDS
 .PP
 Zint is designed to be compliant with a number of international

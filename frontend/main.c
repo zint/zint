@@ -45,7 +45,8 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 
 /* Print list of supported symbologies */
 static void types(void) {
-    printf( " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
+    printf( " # Name        Description               # Name           Description\n"
+            " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
             " 2 C25STANDARD Standard 2 of 5          75 NVE18          NVE-18\n"
             " 3 C25INTER    Interleaved 2 of 5       76 JAPANPOST      Japanese Post\n"
             " 4 C25IATA     IATA 2 of 5              77 KOREAPOST      Korea Post\n"

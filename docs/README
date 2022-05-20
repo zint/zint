@@ -13,6 +13,26 @@ On Ubuntu/Debian (tested on Ubuntu 22.04)
     sudo apt install fonts-wqy-microhei
     make
 
+On Fedora (tested on Fedora Linux 36 (Workstation Edition))
+
+    wget https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-linux-amd64.tar.gz
+    tar xf pandoc-2.18-linux-amd64.tar.gz
+    sudo mv -i pandoc-2.18/bin/pandoc /usr/local/bin
+    sudo dnf install python3-pip
+    pip install pandoc-tablenos --user
+    export PATH=~/.local/bin:"$PATH"
+    sudo dnf install librsvg2-tools.x86_64
+    sudo dnf install texlive-xetex
+    sudo dnf install texlive-ctex.noarch
+    sudo dnf install texlive-framed.noarch
+    sudo dnf install texlive-fvextra.noarch
+    sudo dnf install texlive-mdwtools.noarch
+    sudo dnf install texlive-sectsty.noarch
+    sudo dnf install texlive-xecjk.noarch
+    sudo dnf install texlive-tex-gyre.noarch
+    sudo dnf install wqy-microhei-fonts.noarch
+    make
+
 On Windows
 
 Install https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-windows-x86_64.msi
@@ -29,6 +49,8 @@ From command prompt run as administrator
 From normal command prompt run from zint "docs" directory
 
     set "PATH=<location-of-pandoc-tablenos>:%PATH%"
+    # e.g. set "PATH=%userprofile%\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts:%PATH%"
 
 TODO
-??? On make, get various font errors Helvetica, TeX Gyre Pagella which miktex can't handle ???
+??? Various font errors Helvetica, TeX Gyre Pagella which miktex can't handle (ok may be non-activated Windows issue) ???
+??? pandoc-tablenos filter craps out ???

@@ -44,7 +44,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--binary`
 :   Treat input data as raw 8-bit binary data instead of the default UTF-8. Automatic code page translation to an ECI
-    page is disabled, and no validation of the data's encodation takes place.
+    page is disabled, and no validation of the data's character encoding takes place.
 
 `--bind`
 :   Add horizontal boundary bars, aka bearer bars, to the symbol. The width of the boundary bars must be specified by
@@ -66,7 +66,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--cols=INTEGER`
 :   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, PDF417, MicroPDF417, GS1 DataBar
-    Expanded Stacked (DBar_ExpStk) and DotCode symbols.
+    Expanded Stacked (DBAR_EXPSTK) and DotCode symbols.
 
 `--compliantheight`
 
@@ -76,11 +76,11 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `-d`, `--data=DATA`
 
 :   Specify the input *DATA* to encode. The `--esc` option may be used to enter non-printing characters using escape
-    sequences.
+    sequences. The *DATA* should be UTF-8, unless the `--binary` option is given, in which case it can be anything.
 
 `--direct`
 
-:   Send output to stdout, which in most cases should be re-directed via a pipe.
+:   Send output to stdout, which in most cases should be re-directed to a pipe or a file.
 
 `--dmre`
 
@@ -89,7 +89,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--dotsize=NUMBER`
 
 :   Set the radius of the dots in dotty mode (`--dotty`). *NUMBER* is in multiples of the X-dimension, and may be
-    floating-point.
+    floating-point. The default is 0.8.
 
 `--dotty`
 
@@ -173,7 +173,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--heightperrow`
 
-:   Treat height as per-row. Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked (DBar_ExpStk),
+:   Treat height as per-row. Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked (DBAR_EXPSTK),
     MicroPDF417 and PDF417.
 
 `-i`, `--input=FILE`
@@ -236,7 +236,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--rows=INTEGER`
 
-:   Set the number of rows for Codablock-F or PDF417 to *INTEGER*.
+:   Set the number of rows for Codablock-F or PDF417 to *INTEGER*. It will also set the minimum number of rows for
+    Code 16k or Code 49, and the maximum number of rows for GS1 DataBar Expanded Stacked (DBAR_EXPSTK).
 
 `--scale=NUMBER`
 
@@ -275,11 +276,13 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `-t`, `--types`
 
-:   Display the table of barcode types (symbologies).
+:   Display the table of barcode types (symbologies). The numbers or names can be used with `-b` or `--barcode`.
 
 `--vers=INTEGER`
 
-:   Set the symbol version (size, check digits, other options) to *INTEGER*. The meaning is symbol-specific.
+:   Set the symbol version (size, check digits, other options) to *INTEGER*. The meaning is symbol-specific. For most
+    matrix symbols, it specifies size. For a number of linear symbols, it specifies check character options. For a
+    few other symbologies, it specifies other characteristics.
 
 `-v`, `--version`
 
@@ -287,13 +290,13 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--vwhitesp=INTEGER`
 
-:   Set the height of vertical whitespace either side of the barcode, where *INTEGER* is in integral multiples of the
+:   Set the height of vertical whitespace above and below the barcode, where *INTEGER* is in integral multiples of the
     X-dimension.
 
 `-w`, `--whitesp=INTEGER`
 
-:   Set the width of horizontal whitespace above and below the barcode, where *INTEGER* is in integral multiples of
-    the X-dimension.
+:   Set the width of horizontal whitespace either side of the barcode, where *INTEGER* is in integral multiples of the
+    X-dimension.
 
 `--werror`
 
@@ -320,7 +323,7 @@ Please send bug reports to https://sourceforge.net/p/zint/tickets/
 # SEE ALSO
 
 Full documention for `zint` (and the API `libzint` and the GUI `zint-qt`) is available from
-http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manual.pmd.
+http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manual.txt.
 
 # STANDARDS
 

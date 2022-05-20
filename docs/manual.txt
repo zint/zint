@@ -117,7 +117,7 @@ May 2022
             -   6.1.11.3 GS1 DataBar Expanded
         -   6.1.12 Korea Post Barcode
         -   6.1.13 Channel Code
-    -   6.2 Stacked Symbologies
+    -   6.2 Stacked Symbols
         -   6.2.1 Basic Symbol Stacking
         -   6.2.2 Codablock-F
         -   6.2.3 Code 16K (EN 12323)
@@ -2736,7 +2736,7 @@ the table below:
 
   : {#tbl:channel_maxima tag=“: Channel Maximum Values”}
 
-6.2 Stacked Symbologies
+6.2 Stacked Symbols
 
 6.2.1 Basic Symbol Stacking
 

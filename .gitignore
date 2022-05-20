@@ -9,6 +9,7 @@ build/
 CMakeLists.txt.user*
 backend/Makefile
 frontend/Makefile
+docs/manual.pdf
 build-*
 win32/*.VC.opendb
 win32/*.VC.db
