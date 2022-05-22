@@ -120,7 +120,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("PLANET"), BARCODE_PLANET },
     { QSL("POSTNET"), BARCODE_POSTNET },
     { QSL("QR Code (ISO 18004) (and HIBC)"), BARCODE_QRCODE },
-    { QSL("Rectangular Micro QR (rMQR)"), BARCODE_RMQR },
+    { QSL("Rectangular Micro QR (rMQR) (ISO 23941)"), BARCODE_RMQR },
     { QSL("Royal Mail 4-state Barcode (RM4SCC)"), BARCODE_RM4SCC },
     { QSL("Royal Mail 4-state Mailmark"), BARCODE_MAILMARK },
     { QSL("Telepen"), BARCODE_TELEPEN },
@@ -532,13 +532,14 @@ void MainWindow::about()
            "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
            "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
-           "EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007,<br>"
-           "ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,<br>"
-           "ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,<br>"
-           "ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,<br>"
-           "ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019,<br>"
-           "ANSI-HIBC 2.6-2016, ANSI/AIM BC12-1998, ANSI/AIM BC6-2000,<br>"
-           "ANSI/AIM BC5-1995, AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200"
+           "EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009,<br>"
+           "ISO/IEC 15417:2007, ISO/IEC 15438:2015, ISO/IEC 16022:2006,<br>"
+           "ISO/IEC 16023:2000, ISO/IEC 16388:2007, ISO/IEC 18004:2015,<br>"
+           "ISO/IEC 20830:2021, ISO/IEC 24723:2010, ISO/IEC 24724:2011,<br>"
+           "ISO/IEC 24728:2006, ISO/IEC 24778:2008, ISO/IEC 16390:2007,<br>"
+           "ISO/IEC 21471:2019, AIM USS Code One (1994), ANSI-HIBC 2.6-2016,<br>"
+           "ANSI/AIM BC12-1998, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
+           "AIM ISS-X-24, AIMD014 (v 1.63), AIM ITS/04-023 (2022)"
            "</small></td></tr></table></p>").arg(zint_version).arg(QT_VERSION_STR));
 }
 

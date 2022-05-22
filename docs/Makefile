@@ -14,6 +14,9 @@ INCLUDES_PDF = $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PDF)
 INC_PDF = --include-in-header $(INC_HEADER_PDF) --include-before-body $(INC_BEFORE_BODY_PDF)
 INCLUDES_TXT = inc_header_txt.tex
 INC_TXT = --include-in-header $(INCLUDES_TXT)
+SOURCE_MAN_PAGE = zint.1.pmd
+OUT_MAN_PAGE = zint.1
+INC_HEADER_TEX_MAN = inc_header_man.tex
 IMAGES = \
 	images/zint.png \
 	images/zint-qt.png \
@@ -130,29 +133,55 @@ IMAGES = \
 MAIN_FONT = mainfont="TeX Gyre Pagella"
 MONO_FONT = monofont="Liberation Mono"
 CJK_FONT = CJKmainfont="WenQuanYi Micro Hei Mono"
-PDF_OPTS = --pdf-engine=xelatex --filter pandoc-tablenos --highlight-style=$(HIGHLIGHT_THEME) -V block-headings \
-			-V colorlinks -V geometry:margin=20mm -V papersize=a4 --dpi=300 -M tablenos-warning-level=0
+PDF_OPTS = --pdf-engine=xelatex --filter pandoc-tablenos -M tablenos-warning-level=0 \
+			--highlight-style=$(HIGHLIGHT_THEME) -V colorlinks -V geometry:margin=20mm -V papersize=a4 --dpi=300
+TEX_MAN_PAGE = zint.1.tex
 TXT_OPTS = --columns 80 --eol=lf -t plain
-SOURCE_MAN = zint.1.pmd
-OUT_MAN = zint.1
-MAN_OPTS = -t man -s
+MAN_PAGE_OPTS = -s -t man
 
-all : $(OUT_PDF) $(OUT_TXT) $(OUT_MAN)
+all : $(OUT_PDF) $(OUT_TXT) $(OUT_MAN_PAGE)
 
-$(OUT_PDF) : $(SOURCE) $(HIGHLIGHT_THEME) $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PDF) $(IMAGES) Makefile
-	pandoc $(SOURCE) -f markdown $(INC_PDF) --toc --toc-depth=4 \
-			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) \
+$(OUT_PDF) : $(SOURCE) $(SOURCE_MAN_PAGE) $(HIGHLIGHT_THEME) $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PDF) $(IMAGES) Makefile
+	pandoc $(SOURCE_MAN_PAGE) -f markdown \
 			$(PDF_OPTS) \
+			-o $(TEX_MAN_PAGE)
+	sed -i -e 's/section{/subsection{/' $(TEX_MAN_PAGE) # Convert man page sections to subsections
+	pandoc $(SOURCE) -f markdown $(INC_PDF) --toc --toc-depth=4 \
+			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) -V block-headings \
+			$(PDF_OPTS) \
+			--include-after-body $(TEX_MAN_PAGE) \
 			-o $(OUT_PDF)
 
-$(OUT_TXT) : $(SOURCE) $(INCLUDES_TXT) Makefile
-	pandoc $(SOURCE) -f markdown $(INC_TXT) --toc --toc-depth=4 \
+$(OUT_TXT) : $(SOURCE) $(SOURCE_MAN_PAGE) $(INCLUDES_TXT) Makefile
+	pandoc $(SOURCE) $(SOURCE_MAN_PAGE) -f markdown $(INC_TXT) --toc --toc-depth=4 \
 			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) \
 			$(TXT_OPTS) \
 			-o $(OUT_TXT)
-	sed -i -e 's/  *$$//' $(OUT_TXT)
+	# Indent Man Page sections in TOC and remove trailing spaces
+	sed -i \
+		-e 's/^\(-   [A-Z][A-Z ]*\)$$/    \1/' \
+		-e 's/  *$$//' \
+		$(OUT_TXT)
 
-$(OUT_MAN) : $(SOURCE_MAN) Makefile
-	pandoc $(SOURCE_MAN) -f markdown \
-			$(MAN_OPTS) \
-			-o $(OUT_MAN)
+$(OUT_MAN_PAGE) : $(SOURCE_MAN_PAGE) Makefile
+	pandoc $(SOURCE_MAN_PAGE) -f markdown \
+			$(MAN_PAGE_OPTS) \
+			-o $(OUT_MAN_PAGE)
+
+# HTML demo
+
+OUT_HTML = manual.html
+HTML_OPTS = --filter pandoc-tablenos -M tablenos-warning-level=0 --highlight-style=$(HIGHLIGHT_THEME) \
+			--eol=lf -s -t html
+
+$(OUT_HTML) : $(SOURCE) $(SOURCE_MAN_PAGE) Makefile
+	pandoc $(SOURCE) $(SOURCE_MAN_PAGE) -f markdown --toc --toc-depth=4 \
+			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) \
+			$(HTML_OPTS) \
+			-o $(OUT_HTML)
+	# Indent Man Page sections in TOC & change Man Page sections h1 -> h2
+	sed -i \
+		-e 's/\(Man Page<\/a>\)<\/li>/\1<ul>/' \
+		-e 's/\(AUTHORS<\/a><\/li>\)/\1<\/ul><\/li>/' \
+		-e 's/^<h1\([^>]*>[A-Z][A-Z ]*<\/\)h1>$$/<h2\1h2>/' \
+		$(OUT_HTML)

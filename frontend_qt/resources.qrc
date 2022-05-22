@@ -28,9 +28,9 @@
         <file>grpQR.ui</file>
         <file>grpRMQR.ui</file>
         <file>grpUltra.ui</file>
-        <file>grpUPNQR.ui</file>
         <file>grpUPCA.ui</file>
         <file>grpUPCEAN.ui</file>
+        <file>grpUPNQR.ui</file>
         <file>grpVIN.ui</file>
         <file>res/zint-qt.ico</file>
         <file>res/zint_black.ico</file>

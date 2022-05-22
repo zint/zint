@@ -1,5 +1,5 @@
 % zint(1) Version 2.10.0.9
-% Robin Stuart <robin@zint.org.uk>
+%
 % May 2022
 
 # NAME
@@ -15,6 +15,10 @@
 
 zint takes input data from the command line or a file to encode in a barcode which is then output to an image file.
 
+Input data is UTF-8, unless `--binary` is specified.
+
+Human Readable Text (HRT) is displayed by default for those barcodes that support HRT, unless `--notext` is specified.
+
 The output image file (specified with `-o` or `--output`) may be in one of these formats: Windows Bitmap (`BMP`),
 Enhanced Metafile Format (`EMF`), Encapsulated PostScript (`EPS`), Graphics Interchange Format (`GIF`), ZSoft
 Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`SVG`), or Tagged Image File Format
@@ -27,8 +31,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `-b TYPE`, `--barcode=TYPE`
 :   Set the barcode symbology that will be used to encode the data. *TYPE* is the number or name of the barcode
-    symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t`
-    or `--types` option. Type names are case-insensitive, and non-alphanumerics are ignored.
+    symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t` or
+    `--types` option. Type names are case-insensitive, and non-alphanumerics are ignored.
 
 `--addongap=INTEGER`
 :   For UPC/EAN symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
@@ -47,12 +51,13 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     page is disabled, and no validation of the data's character encoding takes place.
 
 `--bind`
-:   Add horizontal boundary bars, aka bearer bars, to the symbol. The width of the boundary bars must be specified by
-    the `--border` option. `--bind` can also be used to add row separator bars to symbols stacked with multiple `-d`
-    or `--data` inputs, in which case the width of the separator bars must be specified with the `--separator` option.
+:   Add horizontal boundary bars (also known as bearer bars) to the symbol. The width of the boundary bars must be
+    specified by the `--border` option.  `--bind` can also be used to add row separator bars to symbols stacked with
+    multiple `-d` or `--data` inputs, in which case the width of the separator bars must be specified with the
+    `--separator` option.
 
 `--bold`
-:   Use bold text for the Human Readable Text.
+:   Use bold text for the Human Readable Text (HRT).
 
 `--border=INTEGER`
 :   Set the width of boundary bars (`--bind`) or box borders (`--box`), where *INTEGER* is in integral multiples of
@@ -65,8 +70,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 :   Use the CMYK colour space when outputting to Encapsulated PostScript (EPS) or TIF files.
 
 `--cols=INTEGER`
-:   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, PDF417, MicroPDF417, GS1 DataBar
-    Expanded Stacked (DBAR_EXPSTK) and DotCode symbols.
+:   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, DotCode, GS1 DataBar Expanded
+    Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 
 `--compliantheight`
 
@@ -80,7 +85,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--direct`
 
-:   Send output to stdout, which in most cases should be re-directed to a pipe or a file.
+:   Send output to stdout, which in most cases should be re-directed to a pipe or a file. Use `--filetype` to specify
+    output format.
 
 `--dmre`
 
@@ -97,7 +103,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--dump`
 
-:   Dump a hexadecimal representation of the symbol's encodation to stdout.
+:   Dump a hexadecimal representation of the symbol's encodation to stdout. The same representation may be outputted
+    to a file by using a `.txt` extension with `-o` or `--output` or by specifying `--filetype=txt`.
 
 `-e`, `--ecinos`
 
@@ -105,27 +112,31 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--eci=INTEGER`
 
-:   Set the ECI code for the input data to *INTEGER*. See `-e` or `--ecinos` for a list of the ECIs available.
+:   Set the ECI code for the input data to *INTEGER*. See `-e` or `--ecinos` for a list of the ECIs available. ECIs
+    are supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417,
+    PDF417, QR Code, rMQR and Ultracode
 
 `--esc`
 
 :   Process escape characters in the input data. The escape sequences are:
 
-    - `\0`      (0x00)        `NUL`   Null character
-    - `\E`      (0x04)        `EOT`   End of Transmission
-    - `\a`      (0x07)        `BEL`   Bell
-    - `\b`      (0x08)        `BS`    Backspace
-    - `\t`      (0x09)        `HT`    Horizontal Tab
-    - `\n`      (0x0A)        `LF`    Line Feed
-    - `\v`      (0x0B)        `VT`    Vertical Tab
-    - `\f`      (0x0C)        `FF`    Form Feed
-    - `\r`      (0x0D)        `CR`    Carriage Return
-    - `\e`      (0x1B)        `ESC`   Escape
-    - `\G`      (0x1D)        `GS`    Group Separator
-    - `\R`      (0x1E)        `RS`    Record Separator
-    - `\\`      (0x5C)        `\`     Backslash
-    - `\xNN`    (0xNN)                Any 8-bit character where NN is hexadecimal
-    - `\uNNNN`  (U+NNNN)              Any 16-bit Unicode BMP character where NNNN is hexadecimal
+        \0      (0x00)    NUL  Null character
+        \E      (0x04)    EOT  End of Transmission
+        \a      (0x07)    BEL  Bell
+        \b      (0x08)    BS   Backspace
+        \t      (0x09)    HT   Horizontal Tab
+        \n      (0x0A)    LF   Line Feed
+        \v      (0x0B)    VT   Vertical Tab
+        \f      (0x0C)    FF   Form Feed
+        \r      (0x0D)    CR   Carriage Return
+        \e      (0x1B)    ESC  Escape
+        \G      (0x1D)    GS   Group Separator
+        \R      (0x1E)    RS   Record Separator
+        \\      (0x5C)    \    Backslash
+        \xNN    (0xNN)         Any 8-bit character where NN is
+                               hexadecimal
+        \uNNNN  (U+NNNN)       Any 16-bit Unicode BMP character
+                               where NNNN is hexadecimal
 
 `--fast`
 
@@ -141,7 +152,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--fullmultibyte`
 
-:   Use the multibyte modes of QR Code, Han Xin, and Grid Matrix for non-ASCII data.
+:   Use the multibyte modes of Grid Matrix, Han Xin and QR Code for non-ASCII data.
 
 `--gs1`
 
@@ -155,7 +166,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--gs1parens`
 
 :   Process parentheses `"()"` as GS1 AI delimiters, rather than square brackets `"[]"`. The input data must not
-    contain parentheses.
+    otherwise contain parentheses.
 
 `--gssep`
 
@@ -182,11 +193,11 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--init`
 
-:   Create a reader initialisation/programming symbol.
+:   Create a Reader Initialisation (Programming) symbol.
 
 `--mask=INTEGER`
 
-:   Set the masking pattern to use for QR Code, Han Xin or DotCode to *INTEGER*, overriding the automatic selection.
+:   Set the masking pattern to use for DotCode, Han Xin or QR Code to *INTEGER*, overriding the automatic selection.
 
 `--mirror`
 
@@ -194,7 +205,22 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--mode=INTEGER`
 
-:   For MaxiCode and composite symbols, set the encoding mode to *INTEGER*. The meaning is symbol-specific.
+:   For MaxiCode and Composite symbols, set the encoding mode to *INTEGER*.
+
+    For MaxiCode (SCM is Structured Carrier Message, with 3 fields: postcode, 3-digit ISO 3166-1 country code, 3-digit
+    service code):
+
+        2   SCM with 9-digit numeric postcode
+        3   SCM with 6-character alphanumeric postcode
+        4   Enhanced ECC for the primary part of the message
+        5   Enhanced ECC for all of the message
+        6   Reader Initialisation (Programming)
+
+    For Composite symbols (names end in `_CC`, i.e. EANX_CC, GS1_128_CC, DBAR_OMN_CC etc.):
+
+        1   CC-A
+        2   CC-B
+        3   CC-C (GS1_128_CC only)
 
 `--nobackground`
 
@@ -206,17 +232,17 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--notext`
 
-:   Remove the Human Readable Text.
+:   Remove the Human Readable Text (HRT).
 
 `-o`, `--output=FILE`
 
 :   Send the output to *FILE*. When not in batch mode, the default is "out.png" (or "out.gif" if zint built without
     PNG support). When in batch mode (`--batch`), special characters can be used to format the output filenames:
 
-    - `~`                  Insert a number or 0
-    - `#`                  Insert a number or space
-    - `@`                  Insert a number or `*`
-    - Any other            Insert literally
+        ~           Insert a number or 0
+        #           Insert a number or space
+        @           Insert a number or *
+        Any other   Insert literally
 
 `--primary=STRING`
 
@@ -224,7 +250,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--quietzones`
 
-:   Add compliant quiet zones for symbols that specify one.
+:   Add compliant quiet zones for symbols that specify one. This is in addition to any whitespace specified by `-w` or
+    `--whitesp` or `--vwhitesp`.
 
 `-r`, `--reverse`
 
@@ -249,7 +276,16 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--secure=INTEGER`
 
-:   Set the error correction level (ECC) or check character options to *INTEGER*. The meaning is symbol-specific.
+:   Set the error correction level (ECC) to *INTEGER*. The meaning is specific to the following matrix symbols:
+
+        Aztec Code  1 to 4 (10%, 23%, 36%, 50%) (approx.)
+        Grid Matrix 1 to 5 (10% to 50%) (approx.)
+        Han Xin     1 to 4 (8%, 15%, 23%, 30%) (approx.)
+        Micro QR    1 to 3 (L, M, Q)
+        PDF417      0 to 8 (2^(INTEGER + 1) codewords)
+        QR Code     1 to 4 (L, M, Q, H)
+        rMQR        2 or 4 (M, H)
+        Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%) (approx.)
 
 `--segN=ECI,DATA`
 
@@ -263,7 +299,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--small`
 
-:   Use small text for Human Readable Text.
+:   Use small text for Human Readable Text (HRT).
 
 `--square`
 
@@ -272,7 +308,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--structapp=I,C[,ID]`
 
 :   Set Structured Append info, where `I` is the 1-based index, `C` is the count of total symbols in the sequence, and
-    `ID`, which is optional, is the identifier that all symbols in the sequence share.
+    `ID`, which is optional, is the identifier that all symbols in the sequence share. Structured Append is supported
+    by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and Ultracode.
 
 `-t`, `--types`
 
@@ -280,13 +317,47 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--vers=INTEGER`
 
-:   Set the symbol version (size, check digits, other options) to *INTEGER*. The meaning is symbol-specific. For most
-    matrix symbols, it specifies size. For a number of linear symbols, it specifies check character options. For a
-    few other symbologies, it specifies other characteristics.
+:   Set the symbol version (size, check digits, other options) to *INTEGER*. The meaning is symbol-specific.
+
+    For most matrix symbols, it specifies size:
+
+        Aztec Code      1 to 36 (1 to 4 compact)
+        Code One        1 to 10
+        Data Matrix     1 to 48 (31 to 48 DMRE)
+        Grid Matrix     1 to 13
+        Han Xin         1 to 84
+        Micro QR        1 to 4  (M1, M2, M3, M4)
+        QR Code         1 to 40
+        rMQR            1 to 38 (33 to 38 automatic width)
+
+    For a number of linear symbols, it specifies check character options ("hide" or "hidden" means don't show in HRT,
+    "show" or "visible" means do display in HRT):
+
+        C25IATA         1 or 2 (add visible or hidden check digit)
+        C25IND          ditto
+        C25INTER        ditto
+        C25LOGIC        ditto
+        C25STANDARD     ditto
+        Codabar         1 or 2 (add hidden or visible check digit)
+        Code 11         0 or 1 (no or 1 check digit only)
+                               (has 2 check digits by default)
+        Code 39         1      (add visible check digit)
+        Code 93         1      (hide the default check characters)
+        EXCODE39        1      (add visible check digit)
+        LOGMARS         1      (add visible check digit)
+        MSI Plessey     0 to 6 (various check digit options)
+                        +10    (hide)
+
+    For a few other symbologies, it specifies other characteristics:
+
+        Channel Code    3 to 8    (no. of channels)
+        DAFT            50 to 900 (permille tracker ratio)
+        Ultracode       2         (revision 2)
+        VIN             1         (add international prefix)
 
 `-v`, `--version`
 
-:   Display the zint version.
+:   Display zint version.
 
 `--vwhitesp=INTEGER`
 
@@ -302,6 +373,51 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   Convert all warnings into errors.
 
+# EXIT STATUS
+
+`0`
+:   Success (including when given informational options `-h`, `--help`, `-e`, `--ecinos`, `-t`, `--types`, `-v`,
+    `--version`).
+
+`2`
+:    Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)
+
+`3`
+:    Automatic ECI inserted by Zint (`ZINT_WARN_USES_ECI`)
+
+`4`
+:    Symbol created not compliant with standards (`ZINT_WARN_NONCOMPLIANT`)
+
+`5`
+:    Input data wrong length (`ZINT_ERROR_TOO_LONG`)
+
+`6`
+:    Input data incorrect (`ZINT_ERROR_INVALID_DATA`)
+
+`7`
+:    Input check digit incorrect (`ZINT_ERROR_INVALID_CHECK`)
+
+`8`
+:    Incorrect option given (`ZINT_ERROR_INVALID_OPTION`)
+
+`9`
+:    Internal error (should not happen) (`ZINT_ERROR_ENCODING_PROBLEM`)
+
+`10`
+:    Error opening output file (`ZINT_ERROR_FILE_ACCESS`)
+
+`11`
+:    Memory allocation (malloc) failure (`ZINT_ERROR_MEMORY`)
+
+`12`
+:    Error writing to output file (`ZINT_ERROR_FILE_WRITE`)
+
+`13`
+:   Error counterpart of warning if `--werror` given (`ZINT_ERROR_USES_ECI`)
+
+`14`
+:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_NONCOMPLIANT`)
+
 # EXAMPLES
 
 Create "out.png" (or "out.gif" if zint built without PNG support) in the current directory, as a Code 128 symbol.
@@ -316,24 +432,35 @@ Create "qr.svg" in the current directory, as a QR Code symbol.
 zint -b QRCode -d 'This Text' -o 'qr.svg'
 ```
 
+Use batch mode to read from an input file "ean_nos.txt" containing 13-digit GTINs, to create a series of EAN-13
+barcodes, formatting the output filenames to "ean001.gif", "ean002.gif" etc. using the special character "~".
+
+```bash
+zint -b EANX --batch -i 'ean_nos.txt' -o 'ean~~~.gif'
+```
+
 # BUGS
 
-Please send bug reports to https://sourceforge.net/p/zint/tickets/
+Please send bug reports to https://sourceforge.net/p/zint/tickets/.
 
 # SEE ALSO
 
 Full documention for `zint` (and the API `libzint` and the GUI `zint-qt`) is available from
 http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manual.txt.
 
-# STANDARDS
+# CONFORMING TO
 
 Zint is designed to be compliant with a number of international standards, including:
 
-- EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007,
-- ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,
-- ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,
-- ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,
-- ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019,
-- ANSI-HIBC 2.6-2016, ANSI/AIM BC12-1998, ANSI/AIM BC6-2000,
-- ANSI/AIM BC5-1995, AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200,
-- USS Code One (1994), GS1 22.0 (2022), AIM ITS/04-023 (2022)
+EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009,
+ISO/IEC 15417:2007, ISO/IEC 15438:2015, ISO/IEC 16022:2006,
+ISO/IEC 16023:2000, ISO/IEC 16388:2007, ISO/IEC 18004:2015,
+ISO/IEC 20830:2021, ISO/IEC 24723:2010, ISO/IEC 24724:2011,
+ISO/IEC 24728:2006, ISO/IEC 24778:2008, ISO/IEC 16390:2007,
+ISO/IEC 21471:2019, AIM USS Code One (1994), ANSI/AIM BC12-1998,
+ANSI/AIM BC6-2000, ANSI/AIM BC5-1995, AIM ISS-X-24 (1995),
+AIMD014 (v 1.63) (2008), ANSI-HIBC 2.6-2016, AIM ITS/04-023 (2022)
+
+# AUTHORS
+
+Robin Stuart <robin@zint.org.uk>

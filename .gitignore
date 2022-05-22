@@ -10,6 +10,7 @@ CMakeLists.txt.user*
 backend/Makefile
 frontend/Makefile
 docs/manual.pdf
+docs/zint.1.tex
 build-*
 win32/*.VC.opendb
 win32/*.VC.db

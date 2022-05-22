@@ -31,6 +31,11 @@
 zint takes input data from the command line or a file to encode in a
 barcode which is then output to an image file.
 .PP
+Input data is UTF-8, unless \f[V]--binary\f[R] is specified.
+.PP
+Human Readable Text (HRT) is displayed by default for those barcodes
+that support HRT, unless \f[V]--notext\f[R] is specified.
+.PP
 The output image file (specified with \f[V]-o\f[R] or
 \f[V]--output\f[R]) may be in one of these formats: Windows Bitmap
 (\f[V]BMP\f[R]), Enhanced Metafile Format (\f[V]EMF\f[R]), Encapsulated
@@ -76,7 +81,7 @@ Automatic code page translation to an ECI page is disabled, and no
 validation of the data\[cq]s character encoding takes place.
 .TP
 \f[V]--bind\f[R]
-Add horizontal boundary bars, aka bearer bars, to the symbol.
+Add horizontal boundary bars (also known as bearer bars) to the symbol.
 The width of the boundary bars must be specified by the
 \f[V]--border\f[R] option.
 \f[V]--bind\f[R] can also be used to add row separator bars to symbols
@@ -85,7 +90,7 @@ case the width of the separator bars must be specified with the
 \f[V]--separator\f[R] option.
 .TP
 \f[V]--bold\f[R]
-Use bold text for the Human Readable Text.
+Use bold text for the Human Readable Text (HRT).
 .TP
 \f[V]--border=INTEGER\f[R]
 Set the width of boundary bars (\f[V]--bind\f[R]) or box borders
@@ -103,8 +108,8 @@ Use the CMYK colour space when outputting to Encapsulated PostScript
 .TP
 \f[V]--cols=INTEGER\f[R]
 Set the number of data columns in the symbol to \f[I]INTEGER\f[R].
-Affects Codablock-F, PDF417, MicroPDF417, GS1 DataBar Expanded Stacked
-(DBAR_EXPSTK) and DotCode symbols.
+Affects Codablock-F, DotCode, GS1 DataBar Expanded Stacked
+(DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 .TP
 \f[V]--compliantheight\f[R]
 Warn if the height specified by the \f[V]--height\f[R] option is not
@@ -122,6 +127,7 @@ is given, in which case it can be anything.
 \f[V]--direct\f[R]
 Send output to stdout, which in most cases should be re-directed to a
 pipe or a file.
+Use \f[V]--filetype\f[R] to specify output format.
 .TP
 \f[V]--dmre\f[R]
 For Data Matrix symbols, allow Data Matrix Rectangular Extended (RMRE)
@@ -140,6 +146,9 @@ DotCode is always in dotty mode.
 \f[V]--dump\f[R]
 Dump a hexadecimal representation of the symbol\[cq]s encodation to
 stdout.
+The same representation may be outputted to a file by using a
+\f[V].txt\f[R] extension with \f[V]-o\f[R] or \f[V]--output\f[R] or by
+specifying \f[V]--filetype=txt\f[R].
 .TP
 \f[V]-e\f[R], \f[V]--ecinos\f[R]
 Display the table of ECIs (Extended Channel Interpretations).
@@ -147,42 +156,36 @@ Display the table of ECIs (Extended Channel Interpretations).
 \f[V]--eci=INTEGER\f[R]
 Set the ECI code for the input data to \f[I]INTEGER\f[R].
 See \f[V]-e\f[R] or \f[V]--ecinos\f[R] for a list of the ECIs available.
+ECIs are supported by Aztec Code, Code One, Data Matrix, DotCode, Grid
+Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417, QR Code, rMQR and
+Ultracode
 .TP
 \f[V]--esc\f[R]
 Process escape characters in the input data.
 The escape sequences are:
 .RS
-.IP \[bu] 2
-\f[V]\[rs]0\f[R] (0x00) \f[V]NUL\f[R] Null character
-.IP \[bu] 2
-\f[V]\[rs]E\f[R] (0x04) \f[V]EOT\f[R] End of Transmission
-.IP \[bu] 2
-\f[V]\[rs]a\f[R] (0x07) \f[V]BEL\f[R] Bell
-.IP \[bu] 2
-\f[V]\[rs]b\f[R] (0x08) \f[V]BS\f[R] Backspace
-.IP \[bu] 2
-\f[V]\[rs]t\f[R] (0x09) \f[V]HT\f[R] Horizontal Tab
-.IP \[bu] 2
-\f[V]\[rs]n\f[R] (0x0A) \f[V]LF\f[R] Line Feed
-.IP \[bu] 2
-\f[V]\[rs]v\f[R] (0x0B) \f[V]VT\f[R] Vertical Tab
-.IP \[bu] 2
-\f[V]\[rs]f\f[R] (0x0C) \f[V]FF\f[R] Form Feed
-.IP \[bu] 2
-\f[V]\[rs]r\f[R] (0x0D) \f[V]CR\f[R] Carriage Return
-.IP \[bu] 2
-\f[V]\[rs]e\f[R] (0x1B) \f[V]ESC\f[R] Escape
-.IP \[bu] 2
-\f[V]\[rs]G\f[R] (0x1D) \f[V]GS\f[R] Group Separator
-.IP \[bu] 2
-\f[V]\[rs]R\f[R] (0x1E) \f[V]RS\f[R] Record Separator
-.IP \[bu] 2
-\f[V]\[rs]\[rs]\f[R] (0x5C) \f[V]\[rs]\f[R] Backslash
-.IP \[bu] 2
-\f[V]\[rs]xNN\f[R] (0xNN) Any 8-bit character where NN is hexadecimal
-.IP \[bu] 2
-\f[V]\[rs]uNNNN\f[R] (U+NNNN) Any 16-bit Unicode BMP character where
-NNNN is hexadecimal
+.IP
+.nf
+\f[C]
+\[rs]0      (0x00)    NUL  Null character
+\[rs]E      (0x04)    EOT  End of Transmission
+\[rs]a      (0x07)    BEL  Bell
+\[rs]b      (0x08)    BS   Backspace
+\[rs]t      (0x09)    HT   Horizontal Tab
+\[rs]n      (0x0A)    LF   Line Feed
+\[rs]v      (0x0B)    VT   Vertical Tab
+\[rs]f      (0x0C)    FF   Form Feed
+\[rs]r      (0x0D)    CR   Carriage Return
+\[rs]e      (0x1B)    ESC  Escape
+\[rs]G      (0x1D)    GS   Group Separator
+\[rs]R      (0x1E)    RS   Record Separator
+\[rs]\[rs]      (0x5C)    \[rs]    Backslash
+\[rs]xNN    (0xNN)         Any 8-bit character where NN is
+                       hexadecimal
+\[rs]uNNNN  (U+NNNN)       Any 16-bit Unicode BMP character
+                       where NNNN is hexadecimal
+\f[R]
+.fi
 .RE
 .TP
 \f[V]--fast\f[R]
@@ -200,7 +203,7 @@ Set the output file type to \f[I]TYPE\f[R], which is one of
 \f[V]TXT\f[R].
 .TP
 \f[V]--fullmultibyte\f[R]
-Use the multibyte modes of QR Code, Han Xin, and Grid Matrix for
+Use the multibyte modes of Grid Matrix, Han Xin and QR Code for
 non-ASCII data.
 .TP
 \f[V]--gs1\f[R]
@@ -214,7 +217,7 @@ Do not check the validity of GS1 data.
 \f[V]--gs1parens\f[R]
 Process parentheses \f[V]\[dq]()\[dq]\f[R] as GS1 AI delimiters, rather
 than square brackets \f[V]\[dq][]\[dq]\f[R].
-The input data must not contain parentheses.
+The input data must not otherwise contain parentheses.
 .TP
 \f[V]--gssep\f[R]
 For Data Matrix in GS1 mode, use \f[V]GS\f[R] (0x1D) as the GS1 data
@@ -239,10 +242,10 @@ Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked
 Read the input data from \f[I]FILE\f[R].
 .TP
 \f[V]--init\f[R]
-Create a reader initialisation/programming symbol.
+Create a Reader Initialisation (Programming) symbol.
 .TP
 \f[V]--mask=INTEGER\f[R]
-Set the masking pattern to use for QR Code, Han Xin or DotCode to
+Set the masking pattern to use for DotCode, Han Xin or QR Code to
 \f[I]INTEGER\f[R], overriding the automatic selection.
 .TP
 \f[V]--mirror\f[R]
@@ -250,9 +253,34 @@ Use the batch data to determine the filename in batch mode
 (\f[V]--batch\f[R]).
 .TP
 \f[V]--mode=INTEGER\f[R]
-For MaxiCode and composite symbols, set the encoding mode to
+For MaxiCode and Composite symbols, set the encoding mode to
 \f[I]INTEGER\f[R].
-The meaning is symbol-specific.
+.RS
+.PP
+For MaxiCode (SCM is Structured Carrier Message, with 3 fields:
+postcode, 3-digit ISO 3166-1 country code, 3-digit service code):
+.IP
+.nf
+\f[C]
+2   SCM with 9-digit numeric postcode
+3   SCM with 6-character alphanumeric postcode
+4   Enhanced ECC for the primary part of the message
+5   Enhanced ECC for all of the message
+6   Reader Initialisation (Programming)
+\f[R]
+.fi
+.PP
+For Composite symbols (names end in \f[V]_CC\f[R], i.e.\ EANX_CC,
+GS1_128_CC, DBAR_OMN_CC etc.):
+.IP
+.nf
+\f[C]
+1   CC-A
+2   CC-B
+3   CC-C (GS1_128_CC only)
+\f[R]
+.fi
+.RE
 .TP
 \f[V]--nobackground\f[R]
 Remove the background colour (EMF, EPS, GIF, PNG, SVG and TIF only).
@@ -261,7 +289,7 @@ Remove the background colour (EMF, EPS, GIF, PNG, SVG and TIF only).
 Disable any quiet zones for symbols that define them by default.
 .TP
 \f[V]--notext\f[R]
-Remove the Human Readable Text.
+Remove the Human Readable Text (HRT).
 .TP
 \f[V]-o\f[R], \f[V]--output=FILE\f[R]
 Send the output to \f[I]FILE\f[R].
@@ -270,14 +298,15 @@ When not in batch mode, the default is \[lq]out.png\[rq] (or
 When in batch mode (\f[V]--batch\f[R]), special characters can be used
 to format the output filenames:
 .RS
-.IP \[bu] 2
-\f[V]\[ti]\f[R] Insert a number or 0
-.IP \[bu] 2
-\f[V]#\f[R] Insert a number or space
-.IP \[bu] 2
-\f[V]\[at]\f[R] Insert a number or \f[V]*\f[R]
-.IP \[bu] 2
-Any other Insert literally
+.IP
+.nf
+\f[C]
+\[ti]           Insert a number or 0
+#           Insert a number or space
+\[at]           Insert a number or *
+Any other   Insert literally
+\f[R]
+.fi
 .RE
 .TP
 \f[V]--primary=STRING\f[R]
@@ -286,6 +315,8 @@ For Composite symbols, set the content of the linear symbol.
 .TP
 \f[V]--quietzones\f[R]
 Add compliant quiet zones for symbols that specify one.
+This is in addition to any whitespace specified by \f[V]-w\f[R] or
+\f[V]--whitesp\f[R] or \f[V]--vwhitesp\f[R].
 .TP
 \f[V]-r\f[R], \f[V]--reverse\f[R]
 Reverse the foreground and background colours (white on black).
@@ -310,9 +341,23 @@ For MaxiCode, prefix the Structured Carrier Message (SCM) with
 \f[I]INTEGER\f[R].
 .TP
 \f[V]--secure=INTEGER\f[R]
-Set the error correction level (ECC) or check character options to
-\f[I]INTEGER\f[R].
-The meaning is symbol-specific.
+Set the error correction level (ECC) to \f[I]INTEGER\f[R].
+The meaning is specific to the following matrix symbols:
+.RS
+.IP
+.nf
+\f[C]
+Aztec Code  1 to 4 (10%, 23%, 36%, 50%) (approx.)
+Grid Matrix 1 to 5 (10% to 50%) (approx.)
+Han Xin     1 to 4 (8%, 15%, 23%, 30%) (approx.)
+Micro QR    1 to 3 (L, M, Q)
+PDF417      0 to 8 (2\[ha](INTEGER + 1) codewords)
+QR Code     1 to 4 (L, M, Q, H)
+rMQR        2 or 4 (M, H)
+Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%) (approx.)
+\f[R]
+.fi
+.RE
 .TP
 \f[V]--segN=ECI,DATA\f[R]
 Set the \f[I]ECI\f[R] & \f[I]DATA\f[R] content for segment N, where N is
@@ -326,7 +371,7 @@ Set the height of row separator bars for stacked symbologies, where
 \f[I]INTEGER\f[R] is in integral multiples of the X-dimension.
 .TP
 \f[V]--small\f[R]
-Use small text for Human Readable Text.
+Use small text for Human Readable Text (HRT).
 .TP
 \f[V]--square\f[R]
 For Data Matrix symbols, exclude rectangular sizes when considering
@@ -337,6 +382,9 @@ Set Structured Append info, where \f[V]I\f[R] is the 1-based index,
 \f[V]C\f[R] is the count of total symbols in the sequence, and
 \f[V]ID\f[R], which is optional, is the identifier that all symbols in
 the sequence share.
+Structured Append is supported by Aztec Code, Code One, Data Matrix,
+DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and
+Ultracode.
 .TP
 \f[V]-t\f[R], \f[V]--types\f[R]
 Display the table of barcode types (symbologies).
@@ -347,12 +395,60 @@ The numbers or names can be used with \f[V]-b\f[R] or
 Set the symbol version (size, check digits, other options) to
 \f[I]INTEGER\f[R].
 The meaning is symbol-specific.
-For most matrix symbols, it specifies size.
-For a number of linear symbols, it specifies check character options.
-For a few other symbologies, it specifies other characteristics.
+.RS
+.PP
+For most matrix symbols, it specifies size:
+.IP
+.nf
+\f[C]
+Aztec Code      1 to 36 (1 to 4 compact)
+Code One        1 to 10
+Data Matrix     1 to 48 (31 to 48 DMRE)
+Grid Matrix     1 to 13
+Han Xin         1 to 84
+Micro QR        1 to 4  (M1, M2, M3, M4)
+QR Code         1 to 40
+rMQR            1 to 38 (33 to 38 automatic width)
+\f[R]
+.fi
+.PP
+For a number of linear symbols, it specifies check character options
+(\[lq]hide\[rq] or \[lq]hidden\[rq] means don\[cq]t show in HRT,
+\[lq]show\[rq] or \[lq]visible\[rq] means do display in HRT):
+.IP
+.nf
+\f[C]
+C25IATA         1 or 2 (add visible or hidden check digit)
+C25IND          ditto
+C25INTER        ditto
+C25LOGIC        ditto
+C25STANDARD     ditto
+Codabar         1 or 2 (add hidden or visible check digit)
+Code 11         0 or 1 (no or 1 check digit only)
+                       (has 2 check digits by default)
+Code 39         1      (add visible check digit)
+Code 93         1      (hide the default check characters)
+EXCODE39        1      (add visible check digit)
+LOGMARS         1      (add visible check digit)
+MSI Plessey     0 to 6 (various check digit options)
+                +10    (hide)
+\f[R]
+.fi
+.PP
+For a few other symbologies, it specifies other characteristics:
+.IP
+.nf
+\f[C]
+Channel Code    3 to 8    (no. of channels)
+DAFT            50 to 900 (permille tracker ratio)
+Ultracode       2         (revision 2)
+VIN             1         (add international prefix)
+\f[R]
+.fi
+.RE
 .TP
 \f[V]-v\f[R], \f[V]--version\f[R]
-Display the zint version.
+Display zint version.
 .TP
 \f[V]--vwhitesp=INTEGER\f[R]
 Set the height of vertical whitespace above and below the barcode, where
@@ -364,6 +460,56 @@ Set the width of horizontal whitespace either side of the barcode, where
 .TP
 \f[V]--werror\f[R]
 Convert all warnings into errors.
+.SH EXIT STATUS
+.TP
+\f[V]0\f[R]
+Success (including when given informational options \f[V]-h\f[R],
+\f[V]--help\f[R], \f[V]-e\f[R], \f[V]--ecinos\f[R], \f[V]-t\f[R],
+\f[V]--types\f[R], \f[V]-v\f[R], \f[V]--version\f[R]).
+.TP
+\f[V]2\f[R]
+Invalid option given but overridden by Zint
+(\f[V]ZINT_WARN_INVALID_OPTION\f[R])
+.TP
+\f[V]3\f[R]
+Automatic ECI inserted by Zint (\f[V]ZINT_WARN_USES_ECI\f[R])
+.TP
+\f[V]4\f[R]
+Symbol created not compliant with standards
+(\f[V]ZINT_WARN_NONCOMPLIANT\f[R])
+.TP
+\f[V]5\f[R]
+Input data wrong length (\f[V]ZINT_ERROR_TOO_LONG\f[R])
+.TP
+\f[V]6\f[R]
+Input data incorrect (\f[V]ZINT_ERROR_INVALID_DATA\f[R])
+.TP
+\f[V]7\f[R]
+Input check digit incorrect (\f[V]ZINT_ERROR_INVALID_CHECK\f[R])
+.TP
+\f[V]8\f[R]
+Incorrect option given (\f[V]ZINT_ERROR_INVALID_OPTION\f[R])
+.TP
+\f[V]9\f[R]
+Internal error (should not happen)
+(\f[V]ZINT_ERROR_ENCODING_PROBLEM\f[R])
+.TP
+\f[V]10\f[R]
+Error opening output file (\f[V]ZINT_ERROR_FILE_ACCESS\f[R])
+.TP
+\f[V]11\f[R]
+Memory allocation (malloc) failure (\f[V]ZINT_ERROR_MEMORY\f[R])
+.TP
+\f[V]12\f[R]
+Error writing to output file (\f[V]ZINT_ERROR_FILE_WRITE\f[R])
+.TP
+\f[V]13\f[R]
+Error counterpart of warning if \f[V]--werror\f[R] given
+(\f[V]ZINT_ERROR_USES_ECI\f[R])
+.TP
+\f[V]14\f[R]
+Error counterpart of warning if \f[V]--werror\f[R] given
+(\f[V]ZINT_ERROR_NONCOMPLIANT\f[R])
 .SH EXAMPLES
 .PP
 Create \[lq]out.png\[rq] (or \[lq]out.gif\[rq] if zint built without PNG
@@ -382,34 +528,39 @@ Create \[lq]qr.svg\[rq] in the current directory, as a QR Code symbol.
 zint -b QRCode -d \[aq]This Text\[aq] -o \[aq]qr.svg\[aq]
 \f[R]
 .fi
+.PP
+Use batch mode to read from an input file \[lq]ean_nos.txt\[rq]
+containing 13-digit GTINs, to create a series of EAN-13 barcodes,
+formatting the output filenames to \[lq]ean001.gif\[rq],
+\[lq]ean002.gif\[rq] etc.
+using the special character \[lq]\[ti]\[rq].
+.IP
+.nf
+\f[C]
+zint -b EANX --batch -i \[aq]ean_nos.txt\[aq] -o \[aq]ean\[ti]\[ti]\[ti].gif\[aq]
+\f[R]
+.fi
 .SH BUGS
 .PP
-Please send bug reports to https://sourceforge.net/p/zint/tickets/
+Please send bug reports to https://sourceforge.net/p/zint/tickets/.
 .SH SEE ALSO
 .PP
 Full documention for \f[V]zint\f[R] (and the API \f[V]libzint\f[R] and
 the GUI \f[V]zint-qt\f[R]) is available from
 http://zint.org.uk/Manual.aspx, and at
 https://sourceforge.net/p/zint/docs/manual.txt.
-.SH STANDARDS
+.SH CONFORMING TO
 .PP
 Zint is designed to be compliant with a number of international
 standards, including:
-.IP \[bu] 2
+.PP
 EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007,
-.IP \[bu] 2
-ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000,
-.IP \[bu] 2
-ISO/IEC 16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021,
-.IP \[bu] 2
-ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC 24728:2006,
-.IP \[bu] 2
-ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019,
-.IP \[bu] 2
-ANSI-HIBC 2.6-2016, ANSI/AIM BC12-1998, ANSI/AIM BC6-2000,
-.IP \[bu] 2
-ANSI/AIM BC5-1995, AIM ISS-X-24, AIMD014 (v 1.63), USPS-B-3200,
-.IP \[bu] 2
-USS Code One (1994), GS1 22.0 (2022), AIM ITS/04-023 (2022)
+ISO/IEC 15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000, ISO/IEC
+16388:2007, ISO/IEC 18004:2015, ISO/IEC 20830:2021, ISO/IEC 24723:2010,
+ISO/IEC 24724:2011, ISO/IEC 24728:2006, ISO/IEC 24778:2008, ISO/IEC
+16390:2007, ISO/IEC 21471:2019, AIM USS Code One (1994), ANSI/AIM
+BC12-1998, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995, AIM ISS-X-24 (1995),
+AIMD014 (v 1.63) (2008), ANSI-HIBC 2.6-2016, AIM ITS/04-023 (2022)
 .SH AUTHORS
-Robin Stuart <robin@zint.org.uk>.
+.PP
+Robin Stuart <robin@zint.org.uk>

@@ -21,6 +21,9 @@ Version 2.10.0.9 (dev) not released yet
 - HANXIN, QRCODE/RMQR now warn when convert to GB 18030, Shift JIS resp.
   and no ECI given
 - GRIDMATRIX no longer attempts Latin-1 conversion when no ECI given
+- CLI now returns ZINT_ERROR_INVALID_OPTION (8) on its failed option checks
+  and ZINT_WARN_INVALID_OPTION (2) on ignored options
+  NOTE: previously returned 1 and 0 respectively
 
 Changes
 -------
@@ -74,6 +77,8 @@ Changes
 - CLI: man page moved from frontend/zint.1.gz to docs/zint.1.gz, now
   generated from docs/zint.1.pmd
 - add README.linux to root dir
+- CLI: return ZINT_ERROR_INVALID_OPTION instead of 1 on bad option and
+  ZINT_WARN_INVALID_OPTION instead of 0 on ignored option
 
 Bugs
 ----

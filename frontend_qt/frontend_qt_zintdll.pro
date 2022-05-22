@@ -43,6 +43,7 @@ FORMS += extCLI.ui \
          grpUltra.ui \
          grpUPCA.ui \
          grpUPCEAN.ui \
+         grpUPNQR.ui \
          grpVIN.ui \
          mainWindow.ui
 

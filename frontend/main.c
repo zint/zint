@@ -159,7 +159,7 @@ static void usage(int no_png) {
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
             "  --heightperrow        Treat height as per-row\n"
             "  -i, --input=FILE      Read input data from FILE\n"
-            "  --init                Create reader initialisation/programming symbol\n"
+            "  --init                Create Reader Initialisation (Programming) symbol\n"
             "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
             "  --mirror              Use batch data to determine filename\n"
             "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
@@ -274,33 +274,84 @@ static void to_lower(char source[]) {
 static int get_barcode_name(const char *barcode_name) {
     struct name { const int symbology; const char *n; };
     static const struct name names[] = { /* Must be sorted for binary search to work */
+        { BARCODE_C25LOGIC, "2of5datalogic" }, /* Synonym */
+        { BARCODE_C25IATA, "2of5iata" }, /* Synonym */
+        { BARCODE_C25IND, "2of5ind" }, /* Synonym */
+        { BARCODE_C25IND, "2of5industrial" }, /* Synonym */
+        { BARCODE_C25INTER, "2of5inter" }, /* Synonym */
+        { BARCODE_C25INTER, "2of5interleaved" }, /* Synonym */
+        { BARCODE_C25LOGIC, "2of5logic" }, /* Synonym */
+        { BARCODE_C25STANDARD, "2of5matrix" }, /* Synonym */
+        { BARCODE_C25STANDARD, "2of5standard" }, /* Synonym */
         { BARCODE_AUSPOST, "auspost" },
         { BARCODE_AUSREDIRECT, "ausredirect" },
         { BARCODE_AUSREPLY, "ausreply" },
         { BARCODE_AUSROUTE, "ausroute" },
         { BARCODE_AZRUNE, "azrune" },
         { BARCODE_AZTEC, "aztec" },
+        { BARCODE_AZTEC, "azteccode" }, /* Synonym */
         { BARCODE_AZRUNE, "aztecrune" }, /* Synonym */
         { BARCODE_AZRUNE, "aztecrunes" }, /* Synonym */
+        { BARCODE_C25LOGIC, "c25datalogic" }, /* Synonym */
         { BARCODE_C25IATA, "c25iata" },
         { BARCODE_C25IND, "c25ind" },
+        { BARCODE_C25IND, "c25industrial" }, /* Synonym */
         { BARCODE_C25INTER, "c25inter" },
+        { BARCODE_C25INTER, "c25interleaved" }, /* Synonym */
         { BARCODE_C25LOGIC, "c25logic" },
         { BARCODE_C25STANDARD, "c25matrix" },
         { BARCODE_C25STANDARD, "c25standard" },
         { BARCODE_CHANNEL, "channel" },
+        { BARCODE_CHANNEL, "channelcode" }, /* Synonym */
         { BARCODE_CODABAR, "codabar" },
         { BARCODE_CODABLOCKF, "codablockf" },
         { BARCODE_CODE11, "code11" },
         { BARCODE_CODE128, "code128" },
         { BARCODE_CODE128B, "code128b" },
         { BARCODE_CODE16K, "code16k" },
+        { BARCODE_C25LOGIC, "code2of5datalogic" }, /* Synonym */
+        { BARCODE_C25IATA, "code2of5iata" }, /* Synonym */
+        { BARCODE_C25IND, "code2of5ind" }, /* Synonym */
+        { BARCODE_C25IND, "code2of5industrial" }, /* Synonym */
+        { BARCODE_C25INTER, "code2of5inter" }, /* Synonym */
+        { BARCODE_C25INTER, "code2of5interleaved" }, /* Synonym */
+        { BARCODE_C25LOGIC, "code2of5logic" }, /* Synonym */
+        { BARCODE_C25STANDARD, "code2of5matrix" }, /* Synonym */
+        { BARCODE_C25STANDARD, "code2of5standard" }, /* Synonym */
         { BARCODE_CODE32, "code32" },
         { BARCODE_CODE39, "code39" },
         { BARCODE_CODE49, "code49" },
         { BARCODE_CODE93, "code93" },
         { BARCODE_CODEONE, "codeone" },
         { BARCODE_DAFT, "daft" },
+        { BARCODE_DBAR_EXP, "databarexp" }, /* Synonym */
+        { BARCODE_DBAR_EXP, "databarexpanded" }, /* Synonym */
+        { BARCODE_DBAR_EXP_CC, "databarexpandedcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "databarexpandedstacked" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "databarexpandedstackedcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "databarexpandedstk" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "databarexpandedstkcc" }, /* Synonym */
+        { BARCODE_DBAR_EXP_CC, "databarexpcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "databarexpstk" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "databarexpstkcc" }, /* Synonym */
+        { BARCODE_DBAR_LTD, "databarlimited" }, /* Synonym */
+        { BARCODE_DBAR_LTD_CC, "databarlimitedcc" }, /* Synonym */
+        { BARCODE_DBAR_LTD, "databarltd" }, /* Synonym */
+        { BARCODE_DBAR_LTD_CC, "databarltdcc" }, /* Synonym */
+        { BARCODE_DBAR_OMN, "databaromn" }, /* Synonym */
+        { BARCODE_DBAR_OMN_CC, "databaromncc" }, /* Synonym */
+        { BARCODE_DBAR_OMN, "databaromni" }, /* Synonym */
+        { BARCODE_DBAR_OMN_CC, "databaromnicc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "databaromnstk" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "databaromnstkcc" }, /* Synonym */
+        { BARCODE_DBAR_STK, "databarstacked" }, /* Synonym */
+        { BARCODE_DBAR_STK_CC, "databarstackedcc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "databarstackedomn" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "databarstackedomncc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "databarstackedomni" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "databarstackedomnicc" }, /* Synonym */
+        { BARCODE_DBAR_STK, "databarstk" }, /* Synonym */
+        { BARCODE_DBAR_STK_CC, "databarstkcc" }, /* Synonym */
         { BARCODE_DATAMATRIX, "datamatrix" },
         { BARCODE_DBAR_EXP, "dbarexp" },
         { BARCODE_DBAR_EXP_CC, "dbarexpcc" },
@@ -328,6 +379,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_EANX_CC, "eanxcc" },
         { BARCODE_EANX_CHK, "eanxchk" },
         { BARCODE_EXCODE39, "excode39" },
+        { BARCODE_EXCODE39, "extendedcode39" }, /* Synonym */
         { BARCODE_FIM, "fim" },
         { BARCODE_FLAT, "flat" },
         { BARCODE_GRIDMATRIX, "gridmatrix" },
@@ -350,6 +402,12 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_HIBC_PDF, "hibcpdf417" }, /* Synonym */
         { BARCODE_HIBC_QR, "hibcqr" },
         { BARCODE_HIBC_QR, "hibcqrcode" }, /* Synonym */
+        { BARCODE_C25IATA, "iata2of5" }, /* Synonym */
+        { BARCODE_C25IATA, "iatacode2of5" }, /* Synonym */
+        { BARCODE_C25IND, "industrial2of5" }, /* Synonym */
+        { BARCODE_C25IND, "industrialcode2of5" }, /* Synonym */
+        { BARCODE_C25INTER, "interleaved2of5" }, /* Synonym */
+        { BARCODE_C25INTER, "interleavedcode2of5" }, /* Synonym */
         { BARCODE_ISBNX, "isbnx" },
         { BARCODE_ITF14, "itf14" },
         { BARCODE_JAPANPOST, "japanpost" },
@@ -360,6 +418,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_MAXICODE, "maxicode" },
         { BARCODE_MICROPDF417, "micropdf417" },
         { BARCODE_MICROQR, "microqr" },
+        { BARCODE_MICROQR, "microqrcode" }, /* Synonym */
         { BARCODE_MSI_PLESSEY, "msi" }, /* Synonym */
         { BARCODE_MSI_PLESSEY, "msiplessey" },
         { BARCODE_NVE18, "nve18" },
@@ -389,6 +448,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DBAR_EXPSTK_CC, "rssexpstackcc" }, /* Synonym */
         { BARCODE_DBAR_LTD, "rssltd" }, /* Synonym */
         { BARCODE_DBAR_LTD_CC, "rssltdcc" }, /* Synonym */
+        { BARCODE_C25STANDARD, "standardcode2of5" },
         { BARCODE_TELEPEN, "telepen" },
         { BARCODE_TELEPEN_NUM, "telepennum" },
         { BARCODE_ULTRA, "ultra" },
@@ -619,7 +679,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     FILE *file;
     unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; // Maximum HanXin input
     unsigned char character = 0;
-    int buf_posn = 0, error_number = 0, line_count = 1;
+    int buf_posn = 0, error_number = 0, warn_number = 0, line_count = 1;
     char output_file[256];
     char number[12], reverse_number[12];
     int inpos, local_line_count;
@@ -790,9 +850,13 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     if (character != '\n') {
         fprintf(stderr, "Warning 104: No newline at end of file\n");
         fflush(stderr);
+        warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
     }
 
     fclose(file);
+    if (error_number == 0) {
+        error_number = warn_number;
+    }
     return error_number;
 }
 
@@ -873,6 +937,7 @@ int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
     struct zint_seg segs[10] = {0};
     int error_number = 0;
+    int warn_number = 0;
     int rotate_angle = 0;
     int help = 0;
     int data_cnt = 0;
@@ -1014,13 +1079,14 @@ int main(int argc, char **argv) {
             case OPT_ADDONGAP:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 139: Invalid add-on gap value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val >= 7 && val <= 12) {
                     addon_gap = val;
                 } else {
                     fprintf(stderr, "Warning 140: Add-on gap out of range (7 to 12), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_BATCH:
@@ -1030,6 +1096,7 @@ int main(int argc, char **argv) {
                 } else {
                     fprintf(stderr, "Warning 141: Can't use batch mode if data given, ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_BG:
@@ -1047,13 +1114,14 @@ int main(int argc, char **argv) {
             case OPT_BORDER:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 107: Invalid border width value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->border_width = val;
                 } else {
                     fprintf(stderr, "Warning 108: Border width out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_BOX:
@@ -1065,13 +1133,14 @@ int main(int argc, char **argv) {
             case OPT_COLS:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 131: Invalid columns value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if ((val >= 1) && (val <= 200)) {
                     my_symbol->option_2 = val;
                 } else {
                     fprintf(stderr, "Warning 111: Number of columns out of range (1 to 200), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_COMPLIANTHEIGHT:
@@ -1092,6 +1161,7 @@ int main(int argc, char **argv) {
                     /* Zero and negative values are not permitted */
                     fprintf(stderr, "Warning 106: Invalid dot radius value (less than 0.01), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                     my_symbol->dot_size = 4.0f / 5.0f;
                 }
                 break;
@@ -1105,13 +1175,14 @@ int main(int argc, char **argv) {
             case OPT_ECI:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 138: Invalid ECI value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 999999) { /* `val` >= 0 always */
                     my_symbol->eci = val;
                 } else {
                     fprintf(stderr, "Warning 118: ECI code out of range (0 to 999999), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_ESC:
@@ -1132,6 +1203,7 @@ int main(int argc, char **argv) {
                         fprintf(stderr, "Warning 142: File type '%s' not supported, ignoring\n", optarg);
                     }
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 } else {
                     strncpy(filetype, optarg, (size_t) 3);
                 }
@@ -1139,13 +1211,14 @@ int main(int argc, char **argv) {
             case OPT_FONTSIZE:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 130: Invalid font size value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 100) { /* `val` >= 0 always */
                     my_symbol->fontsize = val;
                 } else {
                     fprintf(stderr, "Warning 126: Font size out of range (0 to 100), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_FULLMULTIBYTE:
@@ -1171,6 +1244,7 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Warning 155: Guard bar descent '%g' out of range (0 to 50), ignoring\n",
                             float_opt);
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_HEIGHT:
@@ -1181,6 +1255,7 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 2000), ignoring\n",
                             float_opt);
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_HEIGHTPERROW:
@@ -1196,12 +1271,13 @@ int main(int argc, char **argv) {
             case OPT_MASK:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 148: Invalid mask value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val > 7) { /* `val` >= 0 always */
                     /* mask pattern >= 0 and <= 7 (i.e. values >= 1 and <= 8) only permitted */
                     fprintf(stderr, "Warning 147: Mask value out of range (0 to 7), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 } else {
                     mask = val + 1;
                 }
@@ -1209,13 +1285,14 @@ int main(int argc, char **argv) {
             case OPT_MODE:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 136: Invalid mode value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 6) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
                     fprintf(stderr, "Warning 116: Mode value out of range (0 to 6), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_NOBACKGROUND:
@@ -1233,6 +1310,7 @@ int main(int argc, char **argv) {
                 } else {
                     fprintf(stderr, "Warning 115: Primary data string too long (127 character maximum), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_QUIETZONES:
@@ -1242,7 +1320,7 @@ int main(int argc, char **argv) {
                 /* Only certain inputs allowed */
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 117: Invalid rotation value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 switch (val) {
                     case 90: rotate_angle = 90;
@@ -1257,19 +1335,21 @@ int main(int argc, char **argv) {
                         fprintf(stderr,
                                 "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring\n");
                         fflush(stderr);
+                        warn_number = ZINT_WARN_INVALID_OPTION;
                         break;
                 }
                 break;
             case OPT_ROWS:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 132: Invalid rows value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if ((val >= 1) && (val <= 90)) {
                     rows = val;
                 } else {
                     fprintf(stderr, "Warning 112: Number of rows out of range (1 to 90), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_SCALE:
@@ -1278,13 +1358,14 @@ int main(int argc, char **argv) {
                     /* Zero and negative values are not permitted */
                     fprintf(stderr, "Warning 105: Invalid scale value (less than 0.01), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                     my_symbol->scale = 1.0f;
                 }
                 break;
             case OPT_SCMVV:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 149: Invalid Structured Carrier Message version value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 99) { /* `val` >= 0 always */
                     my_symbol->option_2 = val + 1;
@@ -1293,18 +1374,20 @@ int main(int argc, char **argv) {
                     fprintf(stderr,
                             "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_SECURE:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 134: Invalid ECC value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 8) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
                     fprintf(stderr, "Warning 114: ECC level out of range (0 to 8), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_SEG1:
@@ -1320,10 +1403,10 @@ int main(int argc, char **argv) {
                     val = c - OPT_SEG1 + 1; /* Segment number */
                     if (segs[val].source) {
                         fprintf(stderr, "Error 164: Duplicate segment %d\n", val);
-                        return do_exit(1);
+                        return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
                     if (!validate_seg(optarg, c - OPT_SEG1 + 1, segs)) {
-                        return do_exit(1);
+                        return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
                     if (val >= seg_count) {
                         seg_count = val + 1;
@@ -1331,12 +1414,13 @@ int main(int argc, char **argv) {
                 } else {
                     fprintf(stderr, "Warning 165: Can't define segments in batch mode, ignoring '%s'\n", optarg);
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_SEPARATOR:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 128: Invalid separator value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 4) { /* `val` >= 0 always */
                     separator = val;
@@ -1344,6 +1428,7 @@ int main(int argc, char **argv) {
                     /* Greater than 4 values are not permitted */
                     fprintf(stderr, "Warning 127: Separator value out of range (0 to 4), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_SMALL:
@@ -1355,7 +1440,7 @@ int main(int argc, char **argv) {
             case OPT_STRUCTAPP:
                 memset(&my_symbol->structapp, 0, sizeof(my_symbol->structapp));
                 if (!validate_structapp(optarg, &my_symbol->structapp)) {
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 break;
             case OPT_VERBOSE:
@@ -1364,25 +1449,27 @@ int main(int argc, char **argv) {
             case OPT_VERS:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 133: Invalid version value (digits only)\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if ((val >= 1) && (val <= 999)) {
                     my_symbol->option_2 = val;
                 } else {
                     fprintf(stderr, "Warning 113: Version value out of range (1 to 999), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_VWHITESP:
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 153: Invalid vertical whitespace value '%s' (digits only)\n", optarg);
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->whitespace_height = val;
                 } else {
                     fprintf(stderr, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
             case OPT_WERROR:
@@ -1412,7 +1499,7 @@ int main(int argc, char **argv) {
             case 'b':
                 if (!validate_int(optarg, &val) && !(val = get_barcode_name(optarg))) {
                     fprintf(stderr, "Error 119: Invalid barcode type '%s'\n", optarg);
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 my_symbol->symbology = val;
                 break;
@@ -1420,13 +1507,14 @@ int main(int argc, char **argv) {
             case 'w':
                 if (!validate_int(optarg, &val)) {
                     fprintf(stderr, "Error 120: Invalid horizontal whitespace value '%s' (digits only)\n", optarg);
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->whitespace_width = val;
                 } else {
                     fprintf(stderr, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring\n");
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
 
@@ -1439,6 +1527,7 @@ int main(int argc, char **argv) {
                 } else {
                     fprintf(stderr, "Warning 122: Can't define data in batch mode, ignoring '%s'\n", optarg);
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
 
@@ -1452,6 +1541,7 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Warning 143: Can only define one input file in batch mode, ignoring '%s'\n",
                         optarg);
                     fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
 
@@ -1515,10 +1605,12 @@ int main(int argc, char **argv) {
             if (data_arg_num > 1) {
                 fprintf(stderr, "Warning 144: Processing first input file '%s' only\n", arg_opts[0].arg);
                 fflush(stderr);
+                warn_number = ZINT_WARN_INVALID_OPTION;
             }
             if (seg_count) {
                 fprintf(stderr, "Warning 169: Ignoring segment arguments\n");
                 fflush(stderr);
+                warn_number = ZINT_WARN_INVALID_OPTION;
             }
             if (filetype[0] == '\0') {
                 outfile_extension = get_extension(my_symbol->outfile);
@@ -1534,21 +1626,18 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Warning 145: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
                     filetype);
                 fflush(stderr);
+                warn_number = ZINT_WARN_INVALID_OPTION;
             }
             error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, rotate_angle);
-            if (error_number != 0) {
-                fprintf(stderr, "%s\n", my_symbol->errtxt);
-                fflush(stderr);
-            }
         } else {
             if (seg_count) {
                 if (data_arg_num > 1) {
                     fprintf(stderr, "Error 170: Cannot specify segments and multiple data arguments together\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 if (arg_opts[0].opt != 'd') { /* For simplicity disallow input args for now */
                     fprintf(stderr, "Error 171: Cannot use input argument with segment arguments\n");
-                    return do_exit(1);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 segs[0].eci = my_symbol->eci;
                 segs[0].source = (unsigned char *) arg_opts[0].arg;
@@ -1556,7 +1645,7 @@ int main(int argc, char **argv) {
                 for (i = 0; i < seg_count; i++) {
                     if (segs[i].source == NULL) {
                         fprintf(stderr, "Error 172: Segments must be consecutive - segment %d missing\n", i);
-                        return do_exit(1);
+                        return do_exit(ZINT_ERROR_INVALID_OPTION);
                     }
                 }
             }
@@ -1569,6 +1658,7 @@ int main(int argc, char **argv) {
                 fprintf(stderr, "Warning 146: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
                     get_extension(my_symbol->outfile));
                 fflush(stderr);
+                warn_number = ZINT_WARN_INVALID_OPTION;
             }
             for (i = 0; i < data_arg_num; i++) {
                 if (arg_opts[i].opt == 'd') {
@@ -1607,11 +1697,12 @@ int main(int argc, char **argv) {
     } else if (help == 0) {
         fprintf(stderr, "Warning 124: No data received, no symbol generated\n");
         fflush(stderr);
+        warn_number = ZINT_WARN_INVALID_OPTION;
     }
 
     ZBarcode_Delete(my_symbol);
 
-    return do_exit(error_number);
+    return do_exit(error_number ? error_number : warn_number);
 }
 
 /* vim: set ts=4 sw=4 et : */

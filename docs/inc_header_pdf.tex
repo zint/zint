@@ -13,7 +13,7 @@
 %% https://github.com/jgm/pandoc/wiki/Pandoc-Tricks#definition-list-terms-on-their-own-line-in-latex
 \let\originalitem\item
 \makeatletter
-\renewcommand{\item}[1][\@nil]{
+\renewcommand{\item}[1][\@nil]{%
     \def\tmp{#1}
     \ifx\tmp\@nnil\originalitem\else\originalitem[#1]\hfill\par\fi}
 \makeatother
@@ -27,7 +27,7 @@
 %% Unfortunately this messes up wrapping TODO: fix
 %% Background color for inline code https://tex.stackexchange.com/a/507116
 %\definecolor{icbg}{HTML}{fafafa} % Same as modified pygments.theme
-%\newcommand{\code}[1]{
+%\newcommand{\code}[1]{%
     %\begingroup\setlength{\fboxsep}{1pt}
     %\colorbox{icbg}{\oldtexttt{\hspace*{0.1pt}\vphantom{A}#1\hspace*{0.1pt}}}\endgroup}
 %\renewcommand{\texttt}[1]{\textcolor{icfg}{\code{\oldtexttt{#1}}}}
