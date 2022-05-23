@@ -240,7 +240,6 @@ version_replace(1, $data_dirname . 'docs/manual.pmd', '/^% Version /', '/[0-9]+\
 if ($build !== 9) { // Don't update if marking version as dev
     version_replace(1, $data_dirname . 'docs/manual.pmd', '/^The current stable version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_str);
 }
-version_replace(1, $data_dirname . 'docs/manual.pmd', '/^Zint version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
 
 // docs/zint.1.pmd
 

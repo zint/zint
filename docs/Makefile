@@ -136,7 +136,7 @@ CJK_FONT = CJKmainfont="WenQuanYi Micro Hei Mono"
 PDF_OPTS = --pdf-engine=xelatex --filter pandoc-tablenos -M tablenos-warning-level=0 \
 			--highlight-style=$(HIGHLIGHT_THEME) -V colorlinks -V geometry:margin=20mm -V papersize=a4 --dpi=300
 TEX_MAN_PAGE = zint.1.tex
-TXT_OPTS = --columns 80 --eol=lf -t plain
+TXT_OPTS = --filter pandoc-tablenos -M tablenos-warning-level=0 --columns 80 --eol=lf -t plain
 MAN_PAGE_OPTS = -s -t man
 
 all : $(OUT_PDF) $(OUT_TXT) $(OUT_MAN_PAGE)
