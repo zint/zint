@@ -175,7 +175,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--guarddescent=NUMBER`
 
 :   For UPC/EAN symbols, set the height of the guard bars' descent, where *NUMBER* is in multiples of the X-dimension.
-	*NUMBER* may be floating-point.
+    *NUMBER* may be floating-point.
 
 `--height=NUMBER`
 
