@@ -8,9 +8,9 @@ project(zint-package)
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 set(ZINT_VERSION_MAJOR 2)
-set(ZINT_VERSION_MINOR 10)
+set(ZINT_VERSION_MINOR 11)
 set(ZINT_VERSION_RELEASE 0)
-set(ZINT_VERSION_BUILD 9) # Set to 0 before release, set to 9 after release
+set(ZINT_VERSION_BUILD 0) # Set to 0 before release, set to 9 after release
 set(ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_RELEASE}.${ZINT_VERSION_BUILD}")
 
 add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
