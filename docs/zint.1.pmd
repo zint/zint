@@ -172,10 +172,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   For Data Matrix in GS1 mode, use `GS` (0x1D) as the GS1 data separator instead of `FNC1`.
 
-`--guarddescent=INTEGER`
+`--guarddescent=NUMBER`
 
-:   For UPC/EAN symbols, set the height of the guard bars' descent, where *INTEGER* is in integral multiples of the
-    X-dimension.
+:   For UPC/EAN symbols, set the height of the guard bars' descent, where *NUMBER* is in multiples of the X-dimension.
+	*NUMBER* may be floating-point.
 
 `--height=NUMBER`
 

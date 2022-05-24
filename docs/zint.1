@@ -223,9 +223,10 @@ The input data must not otherwise contain parentheses.
 For Data Matrix in GS1 mode, use \f[V]GS\f[R] (0x1D) as the GS1 data
 separator instead of \f[V]FNC1\f[R].
 .TP
-\f[V]--guarddescent=INTEGER\f[R]
+\f[V]--guarddescent=NUMBER\f[R]
 For UPC/EAN symbols, set the height of the guard bars\[cq] descent,
-where \f[I]INTEGER\f[R] is in integral multiples of the X-dimension.
+where \f[I]NUMBER\f[R] is in multiples of the X-dimension.
+\f[I]NUMBER\f[R] may be floating-point.
 .TP
 \f[V]--height=NUMBER\f[R]
 Set the height of the symbol in multiples of the X-dimension.
