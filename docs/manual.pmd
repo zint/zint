@@ -908,8 +908,11 @@ followed by the angle of rotation as shown below.
 ## 4.9 Adjusting Image Size
 
 The scale of the image can be altered using the `--scale` option followed by a
-multiple of the default X-dimension. The scale is multiplied by 2 before being
-applied. The default scale is 1.
+multiple of the default X-dimension. The scale is multiplied by 2 (with the
+exception of MaxiCode) before being applied. The default scale is 1.
+
+For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for EMF
+vector output, and by 2 otherwise (non-EMF vector output).
 
 For raster output, the default X-dimension is 2 pixels (except for MaxiCode, see
 [4.9.2 MaxiCode Raster Scaling] below). For example for PNG images a scale of 5
@@ -3690,7 +3693,7 @@ A matrix symbology developed by Ted Williams in 1992 which encodes data in a
 way similar to Data Matrix, Code One is able to encode the Latin-1 character
 set or GS1 data, and also supports the ECI mechanism. There are two types of
 Code One symbol - fixed-ratio symbols which are roughly square (versions A
-through to H) and variable-width versions (version S and T). These can be
+through to H) and variable-width versions (versions S and T). These can be
 selected by using `--vers` (API `option_2`) as shown in the table below:
 
 ------------------------------------------------------------

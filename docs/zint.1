@@ -334,7 +334,11 @@ the maximum number of rows for GS1 DataBar Expanded Stacked
 .TP
 \f[V]--scale=NUMBER\f[R]
 Set the X-dimension.
-\f[I]NUMBER\f[R] may be floating-point.
+\f[I]NUMBER\f[R] may be floating-point, and is multiplied by 2 (except
+for MaxiCode) before being applied.
+For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for
+EMF vector output, and by 2 otherwise.
+The default scale is 1.
 .TP
 \f[V]--scmvv=INTEGER\f[R]
 For MaxiCode, prefix the Structured Carrier Message (SCM) with

@@ -44,6 +44,7 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data) : m_bc(b
     linDestPath->setText(settings.value(QSL("studio/export/destination"),
                         QDir::toNativeSeparators(QDir::homePath())).toString());
     linPrefix->setText(settings.value(QSL("studio/export/file_prefix"), QSL("bcs_")).toString());
+    linPostfix->setText(settings.value(QSL("studio/export/file_postfix"), QSL("")).toString());
     cmbFileName->setCurrentIndex(settings.value(QSL("studio/export/name_format"), 0).toInt());
     cmbFileFormat->setCurrentIndex(settings.value(QSL("studio/export/filetype"), 0).toInt());
 
@@ -65,6 +66,7 @@ ExportWindow::~ExportWindow()
 
     settings.setValue(QSL("studio/export/destination"), linDestPath->text());
     settings.setValue(QSL("studio/export/file_prefix"), linPrefix->text());
+    settings.setValue(QSL("studio/export/file_postfix"), linPostfix->text());
     settings.setValue(QSL("studio/export/name_format"), cmbFileName->currentIndex());
     settings.setValue(QSL("studio/export/filetype"), cmbFileFormat->currentIndex());
 }
@@ -139,6 +141,7 @@ void ExportWindow::process()
     }
 
     QString filePathPrefix = linDestPath->text() % QDir::separator() % linPrefix->text();
+    QString postfix = linPostfix->text();
 
     QStringList Feedback;
     int successCount = 0, errorCount = 0;
@@ -168,9 +171,9 @@ void ExportWindow::process()
                             default: url_escaped += name_qchar; break;
                         }
                     }
-                    fileName = filePathPrefix % url_escaped % suffix;
+                    fileName = filePathPrefix % url_escaped % postfix % suffix;
                 } else {
-                    fileName = filePathPrefix % dataString % suffix;
+                    fileName = filePathPrefix % dataString % postfix % suffix;
                 }
                 break;
             case 1: { /* Formatted Serial Number */
@@ -180,7 +183,7 @@ void ExportWindow::process()
 
                     pad.fill('0', biggest.length() - this_val.length());
 
-                    fileName = filePathPrefix % pad % this_val % suffix;
+                    fileName = filePathPrefix % pad % this_val % postfix % suffix;
                 }
                 break;
         }

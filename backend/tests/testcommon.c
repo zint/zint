@@ -3474,7 +3474,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
 
     testutil_pclose(fp);
 
-    if (data_mode && (is_eci_convertible(symbol->eci) || symbol->eci >= 899)) {
+    if ((data_mode && is_eci_convertible(symbol->eci)) || symbol->eci >= 899) {
         const int eci = symbol->eci >= 899 ? 3 : symbol->eci;
         int error_number;
         const int eci_length = get_eci_length(eci, (const unsigned char *) buffer, cnt);
@@ -3621,7 +3621,6 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             sprintf(maxi + maxi_len, "%.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
                     3, primary + primary_len - 6, 3, primary + primary_len - 3);
             #endif
-            printf("primary %s, primary_len %d\n", primary, primary_len);
             maxi_len = (int) strlen(maxi);
             memcpy(maxi + maxi_len, expected, expected_len);
             expected = maxi;
