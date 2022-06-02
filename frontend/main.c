@@ -842,7 +842,10 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
             fprintf(stderr, "On line %d: Error 103: Input data too long\n", line_count);
             fflush(stderr);
             do {
-                character = fgetc(file);
+                if ((intChar = fgetc(file)) == EOF) {
+                    break;
+                }
+                character = (unsigned char) intChar;
             } while ((!feof(file)) && (character != '\n'));
         }
     } while ((!feof(file)) && (line_count < 2000000000));

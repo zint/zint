@@ -321,8 +321,6 @@
     <ClCompile Include="..\..\backend\dotcode.c" />
     <ClCompile Include="..\..\backend\eci.c" />
     <ClCompile Include="..\..\backend\emf.c" />
-    <ClCompile Include="..\..\backend\gb18030.c" />
-    <ClCompile Include="..\..\backend\gb2312.c" />
     <ClCompile Include="..\..\backend\general_field.c" />
     <ClCompile Include="..\..\backend\gif.c" />
     <ClCompile Include="..\..\backend\gridmtx.c" />
@@ -345,7 +343,6 @@
     <ClCompile Include="..\..\backend\raster.c" />
     <ClCompile Include="..\..\backend\reedsol.c" />
     <ClCompile Include="..\..\backend\rss.c" />
-    <ClCompile Include="..\..\backend\sjis.c" />
     <ClCompile Include="..\..\backend\svg.c" />
     <ClCompile Include="..\..\backend\telepen.c" />
     <ClCompile Include="..\..\backend\tif.c" />
@@ -371,6 +368,7 @@
     <ClInclude Include="..\..\backend\font.h" />
     <ClInclude Include="..\..\backend\gb18030.h" />
     <ClInclude Include="..\..\backend\gb2312.h" />
+    <ClInclude Include="..\..\backend\gbk.h" />
     <ClInclude Include="..\..\backend\general_field.h" />
     <ClInclude Include="..\..\backend\gridmtx.h" />
     <ClInclude Include="..\..\backend\gs1.h" />

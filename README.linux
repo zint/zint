@@ -68,9 +68,13 @@ ZINT_DEBUG:BOOL=OFF    # Set debug compile flags
 ZINT_NOOPT:BOOL=OFF    # Set no optimize compile flags
 ZINT_SANITIZE:BOOL=OFF # Set sanitize compile/link flags
 ZINT_STATIC:BOOL=OFF   # Build static library
-ZINT_TEST:BOOL=ON      # Set test compile flag
+ZINT_TEST:BOOL=OFF     # Set test compile flag
 ZINT_USE_PNG:BOOL=ON   # Build with PNG support
 ZINT_USE_QT:BOOL=ON    # Build with Qt support
+
+which can be set by doing e.g.
+
+    cmake -DZINT_SANITIZE=ON ..
 
 For details on ZINT_TEST and building the zint test suite, see
 "backend/tests/README".

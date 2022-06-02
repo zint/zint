@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,67 +27,120 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
 
 #include "testcommon.h"
 #include "test_gb2312_tab.h"
-#include "../gb2312.h"
+#include "../eci.h"
+/* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
+//#define TEST_JUST_SAY_GNO
+#ifdef TEST_JUST_SAY_GNO
+#include "../just_say_gno/gb2312_gnu.c"
+#endif
+
+INTERNAL int u_gb2312_int_test(const unsigned int u, unsigned int *d);
 
 // As control convert to GB 2312 using simple table generated from unicode.org GB2312.TXT plus simple processing
 // GB2312.TXT no longer on unicode.org site but available from https://haible.de/bruno/charsets/conversion-tables/GB2312.html
-static int gb2312_wctomb_zint2(unsigned int *r, unsigned int wc) {
+static int u_gb2312_int2(unsigned int u, unsigned int *d) {
     int tab_length, start_i, end_i;
     int i;
 
+    if (u < 0x80) {
+        *d = (unsigned char) u;
+        return 1;
+    }
     // Shortcut
-    if ((wc > 0x0451 && wc < 0x2015) || (wc > 0x3229 && wc < 0x4E00) || (wc > 0x9FA0 && wc < 0xFF01) || wc > 0xFFE5) {
+    if ((u > 0x0451 && u < 0x2015) || (u > 0x3229 && u < 0x4E00) || (u > 0x9FA0 && u < 0xFF01) || u > 0xFFE5) {
         return 0;
     }
     tab_length = ARRAY_SIZE(test_gb2312_tab);
-    start_i = test_gb2312_tab_ind[wc >> 10];
+    start_i = test_gb2312_tab_ind[u >> 10];
     end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
     for (i = start_i; i < end_i; i += 2) {
-        if (test_gb2312_tab[i + 1] == wc) {
-            *r = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
+        if (test_gb2312_tab[i + 1] == u) {
+            *d = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
             return 2;
         }
     }
     return 0;
 }
 
-static void test_gb2312_wctomb_zint(void) {
+#include <time.h>
+
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
+#define TEST_PERF_RATIO(a1, a2) (a2 ? TEST_PERF_TIME(a1) / TEST_PERF_TIME(a2) : 0)
+
+#ifdef TEST_JUST_SAY_GNO
+#define TEST_INT_PERF_ITERATIONS    250
+#endif
+
+static void test_u_gb2312_int(int debug) {
 
     int ret, ret2;
     unsigned int val, val2;
     unsigned int i;
 
-    testStart("test_gb2312_wctomb_zint");
+#ifdef TEST_JUST_SAY_GNO
+    int j;
+    clock_t start;
+    clock_t total = 0, total_gno = 0;
+#else
+    (void)debug;
+#endif
+
+    testStart("test_u_gb2312_int");
+
+#ifdef TEST_JUST_SAY_GNO
+    if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        printf("test_u_gb2312_int perf iterations: %d\n", TEST_INT_PERF_ITERATIONS);
+    }
+#endif
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i < 0x80) { // ASCII is straight through and not dealt with by gb2312_wctomb_zint()
-            continue;
-        }
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }
         val = val2 = 0;
-        ret = gb2312_wctomb_zint(&val, i);
-        ret2 = gb2312_wctomb_zint2(&val2, i);
-        if (i == 0xB7) { // Extra mapping middle dot U+00B7 to 0xA1A4, duplicate of U+30FB (Katakana middle dot)
-            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", (int) i, i, ret, val);
-            assert_equal(val, 0xA1A4, "i:%d 0x%04X val 0x%04X != 0xA1A4\n", (int) i, i, val);
-            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", (int) i, i, ret2, val2);
-        } else if (i == 0x2014) { // Extra mapping em dash U+2014 to 0xA1AA, duplicate of U+2015 (horizontal bar)
-            assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val 0x%04X\n", (int) i, i, ret, val);
-            assert_equal(val, 0xA1AA, "i:%d 0x%04X val 0x%04X != 0xA1AA\n", (int) i, i, val);
-            assert_zero(ret2, "i:%d 0x%04X ret2 %d != 0, val2 0x%04X\n", (int) i, i, ret2, val2);
-        } else {
-            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
-        }
+        ret = u_gb2312_int_test(i, &val);
+        ret2 = u_gb2312_int2(i, &val2);
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
+#ifdef TEST_JUST_SAY_GNO
+        // `gb2312_wctomb_zint()` doesn't handle ASCII; and ignore duplicate mappings, no longer done
+        if (i >= 0x80 && i != 0xB7 && i != 0x2014) {
+            if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+                val2 = 0;
+                ret2 = gb2312_wctomb_zint(&val2, i);
+            } else {
+                for (j = 0; j < TEST_INT_PERF_ITERATIONS; j++) {
+                    val = val2 = 0;
+
+                    start = clock();
+                    ret = u_gb2312_int_test(i, &val);
+                    total += clock() - start;
+
+                    start = clock();
+                    ret2 = gb2312_wctomb_zint(&val2, i);
+                    total_gno += clock() - start;
+                }
+            }
+
+            assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
+            if (ret2) {
+                assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
+            }
+        }
+#endif
     }
+
+#ifdef TEST_JUST_SAY_GNO
+    if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        printf("test_u_gb2312_int perf totals: new % 8gms, gno % 8gms ratio %g\n",
+                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno));
+    }
+#endif
 
     testFinish();
 }
@@ -117,11 +170,12 @@ static void test_gb2312_utf8(int index) {
         /*  2*/ { "¤", -1, 0, 1, { 0xA1E8 }, "" },
         /*  3*/ { "¥", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
         /*  4*/ { "・", -1, 0, 1, { 0xA1A4 }, "GB2312.TXT mapping" },
-        /*  5*/ { "·", -1, 0, 1, { 0xA1A4 }, "GB 18030 subset mapping" },
+        /*  5*/ { "·", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "No longer does GB 18030 subset mapping" },
         /*  6*/ { "―", -1, 0, 1, { 0xA1AA }, "GB2312.TXT mapping" },
-        /*  7*/ { "—", -1, 0, 1, { 0xA1AA }, "GB 18030 subset mapping" },
-        /*  8*/ { "aβc・·—é—Z", -1, 0, 9, { 'a', 0xA6C2, 'c', 0xA1A4, 0xA1A4, 0xA1AA, 0xA8A6, 0xA1AA, 'Z' }, "" },
-        /*  9*/ { "\200", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Invalid UTF-8" },
+        /*  7*/ { "—", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "No longer does GB 18030 subset mapping" },
+        /*  8*/ { "aβc・―é―Z", -1, 0, 8, { 'a', 0xA6C2, 'c', 0xA1A4, 0xA1AA, 0xA8A6, 0xA1AA, 'Z' }, "" },
+        /*  9*/ { "aβc・·—é—Z", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "No longer does GB 18030 mappings" },
+        /* 10*/ { "\200", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Invalid UTF-8" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -253,6 +307,9 @@ static void test_gb2312_utf8_to_eci(int index) {
     testFinish();
 }
 
+INTERNAL void gb2312_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte);
+
 static void test_gb2312_cpy(int index) {
 
     struct item {
@@ -293,7 +350,7 @@ static void test_gb2312_cpy(int index) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        gb2312_cpy((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        gb2312_cpy_test((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
         for (j = 0; j < (int) ret_length; j++) {
             assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
@@ -303,13 +360,110 @@ static void test_gb2312_cpy(int index) {
     testFinish();
 }
 
+#define TEST_PERF_ITER_MILLES   100
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+
+// Not a real test, just performance indicator
+static void test_perf(int index, int debug) {
+
+    struct item {
+        char *data;
+        int ret;
+
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "1234567890", 0, "10 numerics" },
+        /*  1*/ { "条码北京條碼པེ་ཅིང།バーコード바코드", 0, "Small various code pages" },
+        /*  2*/ { "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", 0, "Small mixed ASCII/Hanzi" },
+        /*  3*/ { "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", 0, "Bigger mixed" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    struct zint_symbol symbol = {0};
+    int ret_length, ret_length2;
+    unsigned int ddata[8192];
+    unsigned char dest[8192];
+    int ret2 = 0;
+#ifdef TEST_JUST_SAY_GNO
+    unsigned int ddata2[8192];
+    unsigned char dest2[8192];
+#endif
+
+    clock_t start;
+    clock_t total = 0, total_gno = 0, total_eci = 0, total_eci_gno = 0;
+    clock_t diff, diff_gno, diff_eci, diff_eci_gno;
+    int comment_max = 0;
+
+    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
+
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (index != -1 && i != index) continue;
+
+        length = (int) strlen(data[i].data);
+
+        diff = diff_gno = diff_eci = diff_eci_gno = 0;
+
+        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            ret_length = ret_length2 = length;
+
+            start = clock();
+            ret = gb2312_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
+            diff += clock() - start;
+
+#ifdef TEST_JUST_SAY_GNO
+            start = clock();
+            ret2 = gb2312_utf8_wctomb(&symbol, (unsigned char *) data[i].data, &ret_length2, ddata2);
+            diff_gno += clock() - start;
+#endif
+
+            ret_length = ret_length2 = length;
+
+            start = clock();
+            (void)utf8_to_eci(29, (unsigned char *) data[i].data, dest, &ret_length);
+            diff_eci += clock() - start;
+
+#ifdef TEST_JUST_SAY_GNO
+            start = clock();
+            (void)utf8_to_eci_wctomb(29, (unsigned char *) data[i].data, dest2, &ret_length2);
+            diff_eci_gno += clock() - start;
+#endif
+        }
+        assert_equal(ret, ret2, "i:%d ret %d != ret2 %d\n", (int) i, ret, ret2);
+
+        printf("%*s: new % 8gms, gno % 8gms ratio % 9g | eci % 8gms, gno % 8gms ratio %g\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff), TEST_PERF_TIME(diff_gno), TEST_PERF_RATIO(diff, diff_gno),
+                TEST_PERF_TIME(diff_eci), TEST_PERF_TIME(diff_eci_gno), TEST_PERF_RATIO(diff_eci, diff_eci_gno));
+
+        total += diff;
+        total_gno += diff_gno;
+        total_eci += diff_eci;
+        total_eci_gno += diff_eci_gno;
+    }
+    if (index == -1) {
+        printf("%*s: new % 8gms, gno % 8gms ratio % 9g | eci % 8gms, gno % 8gms ratio %g\n", comment_max, "totals",
+                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno),
+                TEST_PERF_TIME(total_eci), TEST_PERF_TIME(total_eci_gno), TEST_PERF_RATIO(total_eci, total_eci_gno));
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_gb2312_wctomb_zint", test_gb2312_wctomb_zint, 0, 0, 0 },
+        { "test_u_gb2312_int", test_u_gb2312_int, 0, 0, 1 },
         { "test_gb2312_utf8", test_gb2312_utf8, 1, 0, 0 },
         { "test_gb2312_utf8_to_eci", test_gb2312_utf8_to_eci, 1, 0, 0 },
         { "test_gb2312_cpy", test_gb2312_cpy, 1, 0, 0 },
+        { "test_perf", test_perf, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -318,3 +472,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

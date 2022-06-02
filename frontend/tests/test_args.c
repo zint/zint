@@ -112,18 +112,22 @@ static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index
         fprintf(stderr, "exec: failed to read full stream (%s)\n", cmd);
         exit_status = testutil_pclose(fp);
         if (p_exit_status) {
+#ifndef _WIN32
             if (WIFEXITED(exit_status)) {
                 exit_status = WEXITSTATUS(exit_status);
             }
+#endif
             *p_exit_status = exit_status;
         }
         return NULL;
     }
     exit_status = testutil_pclose(fp);
     if (p_exit_status) {
+#ifndef _WIN32
         if (WIFEXITED(exit_status)) {
             exit_status = WEXITSTATUS(exit_status);
         }
+#endif
         *p_exit_status = exit_status;
     }
 

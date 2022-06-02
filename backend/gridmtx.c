@@ -39,7 +39,6 @@
 #include "common.h"
 #include "reedsol.h"
 #include "gridmtx.h"
-#include "gb2312.h"
 #include "eci.h"
 
 static const char EUROPIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz ";

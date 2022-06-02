@@ -790,8 +790,11 @@ static void test_utf8_to_eci_utf16be(void) {
         /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
         /*  8*/ { "\356\200\200", -1, 0, 2, "\340\000" }, // U+E000 (ee8080)
         /*  9*/ { "\360\220\200\200", -1, 0, 4, "\330\000\334\000" }, // U+10000 maps to surrogate pair
-        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\333\377\337\377" }, // U+10FFFF maps to surrogate pair
-        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
+        /* 10*/ { "\360\220\217\277", -1, 0, 4, "\330\000\337\377" }, // U+103FF maps to surrogate pair
+        /* 11*/ { "\364\200\200\200", -1, 0, 4, "\333\300\334\000" }, // U+100000 maps to surrogate pair
+        /* 12*/ { "\364\217\260\200", -1, 0, 4, "\333\377\334\000" }, // U+10FC00 maps to surrogate pair
+        /* 13*/ { "\364\217\277\277", -1, 0, 4, "\333\377\337\377" }, // U+10FFFF maps to surrogate pair
+        /* 14*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -848,8 +851,11 @@ static void test_utf8_to_eci_utf16le(void) {
         /*  7*/ { "\355\277\277", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // U+DFFF (edbfbf) surrogate half not allowed
         /*  8*/ { "\356\200\200", -1, 0, 2, "\000\340" }, // U+E000 (ee8080)
         /*  9*/ { "\360\220\200\200", -1, 0, 4, "\000\330\000\334" }, // U+10000 maps to surrogate pair
-        /* 10*/ { "\364\217\277\277", -1, 0, 4, "\377\333\377\337" }, // U+10FFFF maps to surrogate pair
-        /* 11*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
+        /* 10*/ { "\360\220\217\277", -1, 0, 4, "\000\330\377\337" }, // U+103FF maps to surrogate pair
+        /* 11*/ { "\364\200\200\200", -1, 0, 4, "\300\333\000\334" }, // U+100000 maps to surrogate pair
+        /* 12*/ { "\364\217\260\200", -1, 0, 4, "\377\333\000\334" }, // U+10FC00 maps to surrogate pair
+        /* 13*/ { "\364\217\277\277", -1, 0, 4, "\377\333\377\337" }, // U+10FFFF maps to surrogate pair
+        /* 14*/ { "\364\220\200\200", -1, ZINT_ERROR_INVALID_DATA, -1, NULL }, // Non-Unicode 0x110000 not allowed
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -340,14 +340,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gb18030.c"
-				>
-			</File>
-			<File
-				RelativePath="..\backend\gb2312.c"
-				>
-			</File>
-			<File
 				RelativePath="..\backend\general_field.c"
 				>
 			</File>
@@ -433,10 +425,6 @@
 			</File>
 			<File
 				RelativePath="..\backend\rss.c"
-				>
-			</File>
-			<File
-				RelativePath="..\backend\sjis.c"
 				>
 			</File>
 			<File
@@ -535,6 +523,10 @@
 			</File>
 			<File
 				RelativePath="..\backend\gb2312.h"
+				>
+			</File>
+			<File
+				RelativePath="..\backend\gbk.h"
 				>
 			</File>
 			<File

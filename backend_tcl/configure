@@ -5581,8 +5581,6 @@ done
 	../backend/dotcode.c
 	../backend/eci.c
 	../backend/emf.c
-	../backend/gb18030.c
-	../backend/gb2312.c
 	../backend/general_field.c
 	../backend/gif.c
 	../backend/gridmtx.c
@@ -5605,7 +5603,6 @@ done
 	../backend/raster.c
 	../backend/reedsol.c
 	../backend/rss.c
-	../backend/sjis.c
 	../backend/svg.c
 	../backend/telepen.c
 	../backend/tif.c

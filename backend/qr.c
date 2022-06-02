@@ -36,7 +36,6 @@
 #include "common.h"
 #include <stdio.h>
 #include "eci.h"
-#include "sjis.h"
 #include "qr.h"
 #include "reedsol.h"
 #include <assert.h>

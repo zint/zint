@@ -1911,7 +1911,7 @@ To treat all warnings as errors, set `symbol->warn_level` to `WARN_FAIL_ALL`.
 
 ## 5.8 Specifying a Symbology
 
-Symbologies can be specified by number or by name as shown in the Table :
+Symbologies can be specified by number or by name as shown in the Table
 {@tbl:barcode_types}. For example
 
 ```c
@@ -2275,18 +2275,16 @@ check digit but not show it in the Human Readable Text, set `--vers=2` (API
 
 Used for baggage handling in the air-transport industry by the International
 Air Transport Agency, this self-checking code will encode numeric input (digits
-0-9) up to a maximum of 45 digits. No check digit is added by default. To add a
-check digit, set `--vers=1` (API `option_2 = 1`). To add a check digit but not
-show it in the Human Readable Text, set `--vers=2` (API `option_2 = 2`).
+0-9) up to a maximum of 45 digits. No check digit is added by default. Check
+digit options are the same as for [6.1.2.1 Standard Code 2 of 5].
 
 #### 6.1.2.3 Industrial Code 2 of 5
 
 ![`zint -b C25IND -d "9212320967"`](images/c25ind.svg)
 
 Industrial Code 2 of 5 can encode numeric input (digits 0-9) up to a maximum of
-45 digits. No check digit is added by default. To add a check digit, set
-`--vers=1` (API `option_2 = 1`). To add a check digit but not show it in the
-Human Readable Text, set `--vers=2` (API `option_2 = 2`).
+45 digits. No check digit is added by default. Check digit options are the same
+as for [6.1.2.1 Standard Code 2 of 5].
 
 #### 6.1.2.4 Interleaved Code 2 of 5 (ISO 16390)
 
@@ -2295,18 +2293,16 @@ Human Readable Text, set `--vers=2` (API `option_2 = 2`).
 This self-checking symbology encodes pairs of numbers, and so can only encode
 an even number of digits (0-9). If an odd number of digits is entered a leading
 zero is added by Zint. A maximum of 45 pairs (90 digits) can be encoded. No
-check digit is added by default. To add a check digit, set `--vers=1` (API
-`option_2 = 1`). To add a check digit but not show it in the Human Readable
-Text, set `--vers=2` (API `option_2 = 2`).
+check digit is added by default. Check digit options are the same as for
+[6.1.2.1 Standard Code 2 of 5].
 
 #### 6.1.2.5 Code 2 of 5 Data Logic
 
 ![`zint -b C25LOGIC -d "9212320967"`](images/c25logic.svg)
 
 Data Logic does not include a check digit by default and can encode numeric
-input (digits 0-9) up to a maximum of 80 digits. To add a check digit, set
-`--vers=1` (API `option_2 = 1`). To add a check digit but not show it in the
-Human Readable Text, set `--vers=2` (API `option_2 = 2`).
+input (digits 0-9) up to a maximum of 80 digits. Check digit options are the
+same as for [6.1.2.1 Standard Code 2 of 5].
 
 #### 6.1.2.6 ITF-14
 
@@ -2454,11 +2450,8 @@ If you are encoding an EAN-8 or EAN-13 symbol and your data already includes
 the check digit then you can use symbology `BARCODE_EANX_CHK` (14) which takes
 an 8 or 13-digit input and validates the check digit before encoding.
 
-You can adjust the gap between the main symbol and an add-on in multiples of
-the X-dimension by setting `--addongap` (API `option_2`) to a value between 7
-(default) and 12. The height in X-dimensions that the guard bars descend below
-the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
-to a value between 0 and 20 (default 5).
+Options to adjust the add-on gap and the descent height of guard bars are the
+same as for [6.1.3.2 UPC Version E].
 
 #### 6.1.4.2 SBN, ISBN and ISBN-13
 
@@ -2468,10 +2461,8 @@ EAN-13 symbols (also known as Bookland EAN-13) can also be produced from
 9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit
 needs to be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
-character as with UPC symbols, and the gap set with `--addongap` (API
-`option_2`) to between 7 (default) and 12. The height that the guard bars
-descend can be adjusted by setting `--guarddescent` (API `guard_descent`) to a
-value between 0 and 20 (default 5).
+character as with UPC symbols, and there are options to adjust the add-on gap
+and the descent height of guard bars - see [6.1.3.2 UPC Version E].
 
 ### 6.1.5 Plessey
 
@@ -2848,7 +2839,7 @@ zint --bind --notext --separator=2 -d "This" -d "That"
 "That"`](images/code128_stacked_sep2.svg)
 
 A more sophisticated method is to use some type of line indexing which indicates
-to the barcode reader which order the symbols should be read. This is
+to the barcode reader which order the symbols should be read in. This is
 demonstrated by the symbologies below.
 
 ### 6.2.2 Codablock-F
@@ -4102,7 +4093,7 @@ international standards:
      Interpretations Part 3: Register (Version 2, February 2022)
 
 
-# A. Character Encoding
+# Annex A. Character Encoding
 
 This section is intended as a quick reference to the character sets used by
 Zint. All symbologies use standard ASCII input as shown in section A.1, but
@@ -4164,4 +4155,4 @@ F                     `¯`     `¿`     `Ï`     `ß`     `ï`     `ÿ`
 
 Table: {#tbl:iso_iec_8869_1 tag=": ISO/IEC 8859-1"}
 
-# B. zint(1) Man Page
+# Annex B. zint(1) Man Page

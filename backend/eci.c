@@ -29,143 +29,595 @@
     SUCH DAMAGE.
  */
 
+#include <assert.h>
 #ifdef _MSC_VER
 #include <malloc.h>
 #endif
 #include "common.h"
 #include "eci.h"
 #include "eci_sb.h"
-#include "sjis.h"
 #include "big5.h"
-#include "gb2312.h"
-#include "ksx1001.h"
 #include "gb18030.h"
+#include "gb2312.h"
+#include "gbk.h"
+#include "ksx1001.h"
+#include "sjis.h"
 
-/* ECI 20 Shift JIS */
-static int sjis_wctomb(unsigned char *r, const unsigned int wc) {
-    int ret;
-    unsigned int c;
+/* Single-byte stuff */
 
-    ret = sjis_wctomb_zint(&c, wc);
-    if (ret == 0) {
+/* Base ISO/IEC 8859 routine to convert Unicode codepoint `u` */
+static int u_iso8859(const unsigned int u, const unsigned short *tab_s, const unsigned short *tab_u,
+            const unsigned char *tab_sb, int e, unsigned char *dest) {
+    int s;
+    if (u < 0xA0) {
+        if (u >= 0x80) { /* U+0080-9F fail */
+            return 0;
+        }
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    if (u <= 0xFF) {
+        const unsigned int u2 = u - 0xA0;
+        if (tab_s[u2 >> 4] & ((unsigned short) 1 << (u2 & 0xF))) {
+            *dest = (unsigned char) u; /* Straight-thru */
+            return 1;
+        }
+    }
+
+    s = 0;
+    while (s <= e) {
+        const int m = (s + e) / 2;
+        if (tab_u[m] < u) {
+            s = m + 1;
+        } else if (tab_u[m] > u) {
+            e = m - 1;
+        } else {
+            *dest = tab_sb[m];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Base Windows-125x routine to convert Unicode codepoint `u` */
+static int u_cp125x(const unsigned int u, const unsigned short *tab_s, const unsigned short *tab_u,
+            const unsigned char *tab_sb, int e, unsigned char *dest) {
+    int s;
+    if (u < 0x80) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    if (u <= 0xFF && u >= 0xA0) {
+        const unsigned int u2 = u - 0xA0;
+        if (tab_s[u2 >> 4] & ((unsigned short) 1 << (u2 & 0xF))) {
+            *dest = (unsigned char) u; /* Straight-thru */
+            return 1;
+        }
+    }
+
+    s = 0;
+    while (s <= e) {
+        const int m = (s + e) / 2;
+        if (tab_u[m] < u) {
+            s = m + 1;
+        } else if (tab_u[m] > u) {
+            e = m - 1;
+        } else {
+            *dest = tab_sb[m];
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* ECI 27 ASCII (ISO/IEC 646:1991 IRV (US)) */
+static int u_ascii(const unsigned int u, unsigned char *dest) {
+    if (u < 0x80) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    return 0;
+}
+
+/* ECI 170 ASCII subset (ISO/IEC 646:1991 Invariant), excludes 12 chars that historically had national variants,
+    namely "#$@[\]^`{|}~" */
+static int u_ascii_inv(const unsigned int u, unsigned char *dest) {
+    if (u == 0x7F || (u <= 'z' && u != '#' && u != '$' && u != '@' && (u <= 'Z' || u == '_' || u >= 'a'))) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    return 0;
+}
+
+/* ECI 25 UTF-16 Big Endian (ISO/IEC 10646) - assumes valid Unicode */
+static int u_utf16be(const unsigned int u, unsigned char *dest) {
+    unsigned int u2, v;
+    if (u < 0x10000) {
+        dest[0] = (unsigned char) (u >> 8);
+        dest[1] = (unsigned char) u;
+        return 2;
+    }
+    u2 = u - 0x10000;
+    v = u2 >> 10;
+    dest[0] = (unsigned char) (0xD8 + (v >> 8));
+    dest[1] = (unsigned char) v;
+    v = u2 & 0x3FF;
+    dest[2] = (unsigned char) (0xDC + (v >> 8));
+    dest[3] = (unsigned char) v;
+    return 4;
+}
+
+/* ECI 33 UTF-16 Little Endian (ISO/IEC 10646) - assumes valid Unicode */
+static int u_utf16le(const unsigned int u, unsigned char *dest) {
+    unsigned int u2, v;
+    if (u < 0x10000) {
+        dest[0] = (unsigned char) u;
+        dest[1] = (unsigned char) (u >> 8);
+        return 2;
+    }
+    u2 = u - 0x10000;
+    v = u2 >> 10;
+    dest[0] = (unsigned char) v;
+    dest[1] = (unsigned char) (0xD8 + (v >> 8));
+    v = u2 & 0x3FF;
+    dest[2] = (unsigned char) v;
+    dest[3] = (unsigned char) (0xDC + (v >> 8));
+    return 4;
+}
+
+/* ECI 34 UTF-32 Big Endian (ISO/IEC 10646) - assumes valid Unicode */
+static int u_utf32be(const unsigned int u, unsigned char *dest) {
+    dest[0] = 0;
+    dest[1] = (unsigned char) (u >> 16);
+    dest[2] = (unsigned char) (u >> 8);
+    dest[3] = (unsigned char) u;
+    return 4;
+}
+
+/* ECI 35 UTF-32 Little Endian (ISO/IEC 10646) - assumes valid Unicode */
+static int u_utf32le(const unsigned int u, unsigned char *dest) {
+    dest[0] = (unsigned char) u;
+    dest[1] = (unsigned char) (u >> 8);
+    dest[2] = (unsigned char) (u >> 16);
+    dest[3] = 0;
+    return 4;
+}
+
+/* Multibyte stuff */
+
+/* Acknowledgements to Bruno Haible <bruno@clisp.org> for a no. of techniques used here */
+
+/* Helper to lookup Unicode codepoint `u` in the URO (Unified Repertoire and Ordering) block (U+4E00-9FFF) */
+static int eci_u_lookup_uro_int(const unsigned int u, const unsigned short *tab_u, const unsigned short *tab_mb_ind,
+            const unsigned short *tab_mb, unsigned int *d) {
+    unsigned int u2 = (u - 0x4E00) >> 4; /* Blocks of 16 */
+    unsigned int v = (unsigned int) 1 << (u & 0xF);
+    if ((tab_u[u2] & v) == 0) {
         return 0;
     }
-    if (ret == 2) {
-        r[0] = (unsigned char) (c >> 8);
-        r[1] = (unsigned char) (c & 0xff);
-    } else {
-        *r = (unsigned char) c;
+    v = tab_u[u2] & (v - 1); /* Mask to bits prior to this one */
+    /* Count bits set (http://graphics.stanford.edu/~seander/bithacks.html#CountBitsSetParallel) */
+    v = v - ((v >> 1) & 0x55555555);
+    v = (v & 0x33333333) + ((v >> 2) & 0x33333333);
+    v = (((v + (v >> 4)) & 0xF0F0F0F) * 0x1010101) >> 24;
+    *d = tab_mb[tab_mb_ind[u2] + v];
+    return 2;
+}
+
+/* Version of `eci_u_lookup_uro_int()` taking unsigned char destination */
+static int eci_u_lookup_uro(const unsigned int u, const unsigned short *tab_u, const unsigned short *tab_mb_ind,
+            const unsigned short *tab_mb, unsigned char *dest) {
+    unsigned int d;
+    int ret = eci_u_lookup_uro_int(u, tab_u, tab_mb_ind, tab_mb, &d);
+    if (ret) {
+        dest[0] = (unsigned char) (d >> 8);
+        dest[1] = (unsigned char) d;
     }
     return ret;
 }
 
-/* ECI 27 ASCII (ISO/IEC 646:1991 IRV (US)) */
-static int ascii_wctosb(unsigned char *r, const unsigned int wc) {
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
+/* ECI 20 Shift JIS */
+static int u_sjis_int(const unsigned int u, unsigned int *d) {
+    unsigned int u2, dv, md;
+    int s, e;
+
+    if (u < 0x80 && u != 0x5C && u != 0x7E) { /* Backslash & tilde re-mapped according to JIS X 0201 Roman */
+        *d = u;
         return 1;
+    }
+    /* Special case URO block sequential mappings (considerably lessens size of `sjis_u[]` array) */
+    if (u >= 0x4E00 && u <= 0xDFFF) { /* 0xE000 next used value >= 0x4E00 */
+        if (u >= 0x9FB0) {
+            return 0;
+        }
+        return eci_u_lookup_uro_int(u, sjis_uro_u, sjis_uro_mb_ind, sjis_mb, d);
+    }
+    /* PUA to user-defined (Table 4-86, Lunde, 2nd ed.) */
+    if (u >= 0xE000 && u <= 0xE757) {
+        u2 = u - 0xE000;
+        dv = u2 / 188;
+        md = u2 - dv * 188;
+        *d = ((dv + 0xF0) << 8) | (md + 0x40 + (md >= 0x3F));
+        return 2;
+    }
+    if (u >= sjis_u[0] && u <= sjis_u[ARRAY_SIZE(sjis_u) - 1]) {
+        s = 0;
+        e = ARRAY_SIZE(sjis_u) - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (sjis_u[m] < u) {
+                s = m + 1;
+            } else if (sjis_u[m] > u) {
+                e = m - 1;
+            } else {
+                *d = sjis_mb[u >= 0x4E00 ? m + 6356 : m]; /* Adjust for URO block */
+                return 1 + (*d > 0xFF);
+            }
+        }
     }
     return 0;
 }
 
-/* ECI 170 ASCII subset (ISO/IEC 646:1991 Invariant, excludes chars that historically had national variants) */
-static int ascii_invariant_wctosb(unsigned char *r, const unsigned int wc) {
-    if (wc == 0x7f || (wc <= 'z' && wc != '#' && wc != '$' && wc != '@' && (wc <= 'Z' || wc == '_' || wc >= 'a'))) {
-        *r = (unsigned char) wc;
-        return 1;
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_sjis_int_test(const unsigned int u, unsigned int *d) {
+    return u_sjis_int(u, d);
+}
+#endif
+
+/* Version of `u_sjis_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+static int u_sjis(const unsigned int u, unsigned char *dest) {
+    unsigned int d;
+    int ret = u_sjis_int(u, &d);
+    if (ret) {
+        if (ret == 1) {
+            dest[0] = (unsigned char) d;
+        } else {
+            dest[0] = (unsigned char) (d >> 8);
+            dest[1] = (unsigned char) d;
+        }
     }
-    return 0;
+    return ret;
 }
 
 /* ECI 28 Big5 Chinese (Taiwan) */
-static int big5_wctomb(unsigned char *r, const unsigned int wc) {
-    unsigned int c;
+static int u_big5(const unsigned int u, unsigned char *dest) {
+    int s, e;
 
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
+    if (u < 0x80) {
+        *dest = (unsigned char) u;
         return 1;
     }
-    if (big5_wctomb_zint(&c, wc)) {
-        r[0] = (unsigned char) (c >> 8);
-        r[1] = (unsigned char) (c & 0xff);
-        return 2;
+    /* Special case URO block sequential mappings (considerably lessens size of `big5_u[]` array) */
+    if (u >= 0x4E00 && u <= 0xFA0B) { /* 0xFA0C next used value >= 0x4E00 */
+        if (u >= 0x9FB0) {
+            return 0;
+        }
+        return eci_u_lookup_uro(u, big5_uro_u, big5_uro_mb_ind, big5_mb, dest);
+    }
+    if (u >= big5_u[0] && u <= big5_u[ARRAY_SIZE(big5_u) - 1]) {
+        s = 0;
+        e = ARRAY_SIZE(big5_u) - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (big5_u[m] < u) {
+                s = m + 1;
+            } else if (big5_u[m] > u) {
+                e = m - 1;
+            } else {
+                const unsigned short mb = big5_mb[u >= 0x4E00 ? m + 13061 : m]; /* Adjust for URO block */
+                dest[0] = (unsigned char) (mb >> 8);
+                dest[1] = (unsigned char) mb;
+                return 2;
+            }
+        }
     }
     return 0;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_big5_test(const unsigned int u, unsigned char *dest) {
+    return u_big5(u, dest);
+}
+#endif
+
+/* ECI 30 EUC-KR (KS X 1001, formerly KS C 5601) Korean */
+static int u_ksx1001(const unsigned int u, unsigned char *dest) {
+    int s, e;
+
+    if (u < 0x80) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    /* Special case URO block sequential mappings (considerably lessens size of `ksx1001_u[]` array) */
+    if (u >= 0x4E00 && u <= 0xABFF) { /* 0xAC00 next used value >= 0x4E00 */
+        if (u >= 0x9FA0) {
+            return 0;
+        }
+        return eci_u_lookup_uro(u, ksx1001_uro_u, ksx1001_uro_mb_ind, ksx1001_mb, dest);
+    }
+    if (u >= ksx1001_u[0] && u <= ksx1001_u[ARRAY_SIZE(ksx1001_u) - 1]) {
+        s = ksx1001_u_ind[(u - ksx1001_u[0]) >> 8];
+        e = s + 0x100 > ARRAY_SIZE(ksx1001_u) ? ARRAY_SIZE(ksx1001_u) - 1 : s + 0x100 - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (ksx1001_u[m] < u) {
+                s = m + 1;
+            } else if (ksx1001_u[m] > u) {
+                e = m - 1;
+            } else {
+                const unsigned short mb = ksx1001_mb[u >= 0x4E00 ? m + 4620 : m]; /* Adjust for URO block */
+                dest[0] = (unsigned char) (mb >> 8);
+                dest[1] = (unsigned char) mb;
+                return 2;
+            }
+        }
+    }
+    return 0;
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_ksx1001_test(const unsigned int u, unsigned char *dest) {
+    return u_ksx1001(u, dest);
+}
+#endif
 
 /* ECI 29 GB 2312 Chinese (PRC) */
-static int gb2312_wctomb(unsigned char *r, const unsigned int wc) {
-    unsigned int c;
+static int u_gb2312_int(const unsigned int u, unsigned int *d) {
+    int s, e;
 
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
+    if (u < 0x80) {
+        *d = u;
         return 1;
     }
-    if (gb2312_wctomb_zint(&c, wc)) {
-        r[0] = (unsigned char) (c >> 8);
-        r[1] = (unsigned char) (c & 0xff);
-        return 2;
+    /* Special case URO block sequential mappings (considerably lessens size of `gb2312_u[]` array) */
+    if (u >= 0x4E00 && u <= 0x9E1E) { /* 0x9E1F next used value >= 0x4E00 */
+        if (u >= 0x9CF0) {
+            return 0;
+        }
+        return eci_u_lookup_uro_int(u, gb2312_uro_u, gb2312_uro_mb_ind, gb2312_mb, d);
+    }
+    if (u >= gb2312_u[0] && u <= gb2312_u[ARRAY_SIZE(gb2312_u) - 1]) {
+        s = gb2312_u_ind[(u - gb2312_u[0]) >> 8];
+        e = s + 0x100 > ARRAY_SIZE(gb2312_u) ? ARRAY_SIZE(gb2312_u) - 1 : s + 0x100 - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (gb2312_u[m] < u) {
+                s = m + 1;
+            } else if (gb2312_u[m] > u) {
+                e = m - 1;
+            } else {
+                *d = gb2312_mb[u > 0x4E00 ? m + 6627 : m]; /* Adjust for URO block */
+                return 2;
+            }
+        }
     }
     return 0;
 }
 
-/* ECI 30 EUC-KR (KS X 1001, formerly KS C 5601) Korean
- * See euc_kr_wctomb() in libiconv-1.16/lib/euc_kr.h */
-static int euc_kr_wctomb(unsigned char *r, const unsigned int wc) {
-    unsigned int c;
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_gb2312_int_test(const unsigned int u, unsigned int *d) {
+    return u_gb2312_int(u, d);
+}
+#endif
 
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
-        return 1;
+/* Version of `u_gb2312_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+static int u_gb2312(const unsigned int u, unsigned char *dest) {
+    unsigned int d;
+    int ret = u_gb2312_int(u, &d);
+    if (ret) {
+        if (ret == 1) {
+            dest[0] = (unsigned char) d;
+        } else {
+            dest[0] = (unsigned char) (d >> 8);
+            dest[1] = (unsigned char) d;
+        }
     }
-    if (ksx1001_wctomb_zint(&c, wc)) {
-        r[0] = (unsigned char) ((c >> 8) + 0x80);
-        r[1] = (unsigned char) ((c & 0xff) + 0x80);
-        return 2;
-    }
-    return 0;
+    return ret;
 }
 
 /* ECI 31 GBK Chinese */
-static int gbk_wctomb(unsigned char *r, const unsigned int wc) {
-    unsigned int c;
+static int u_gbk_int(const unsigned int u, unsigned int *d) {
+    int s, e;
 
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
+    if (u < 0x80) {
+        *d = u;
         return 1;
     }
-    if (gbk_wctomb_zint(&c, wc)) {
-        r[0] = (unsigned char) (c >> 8);
-        r[1] = (unsigned char) (c & 0xff);
+
+    /* Check GB 2312 first */
+    if (u == 0x30FB) {
+        /* KATAKANA MIDDLE DOT, mapped by GB 2312 but not by GBK (U+00B7 MIDDLE DOT mapped to 0xA1A4 instead) */
+        return 0;
+    }
+    if (u == 0x2015) {
+        /* HORIZONTAL BAR, mapped to 0xA844 by GBK rather than 0xA1AA (U+2014 EM DASH mapped there instead) */
+        *d = 0xA844;
         return 2;
+    }
+    if (u_gb2312_int(u, d)) { /* Includes the 2 GB 6345.1-86 corrections given in Table 3-22, Lunde, 2nd ed. */
+        return 2;
+    }
+
+    /* Special case URO block sequential mappings (considerably lessens size of `gbk_u[]` array) */
+    if (u >= 0x4E00 && u <= 0xF92B) { /* 0xF92C next used value >= 0x4E00 */
+        if (u >= 0x9FB0) {
+            return 0;
+        }
+        return eci_u_lookup_uro_int(u, gbk_uro_u, gbk_uro_mb_ind, gbk_mb, d);
+    }
+    if (u >= gbk_u[0] && u <= gbk_u[ARRAY_SIZE(gbk_u) - 1]) {
+        s = 0;
+        e = ARRAY_SIZE(gbk_u) - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (gbk_u[m] < u) {
+                s = m + 1;
+            } else if (gbk_u[m] > u) {
+                e = m - 1;
+            } else {
+                *d = gbk_mb[u >= 0x4E00 ? m + 14139 : m]; /* Adjust for URO block */
+                return 2;
+            }
+        }
     }
     return 0;
 }
 
-/* ECI 32 GB 18030 Chinese */
-static int gb18030_wctomb(unsigned char *r, const unsigned int wc) {
-    unsigned int c1, c2;
-    int ret;
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_gbk_int_test(const unsigned int u, unsigned int *d) {
+    return u_gbk_int(u, d);
+}
+#endif
 
-    if (wc < 0x80) {
-        *r = (unsigned char) wc;
+/* Version of `u_gbk_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+static int u_gbk(const unsigned int u, unsigned char *dest) {
+    unsigned int d;
+    int ret = u_gbk_int(u, &d);
+    if (ret) {
+        if (ret == 1) {
+            dest[0] = (unsigned char) d;
+        } else {
+            dest[0] = (unsigned char) (d >> 8);
+            dest[1] = (unsigned char) d;
+        }
+    }
+    return ret;
+}
+
+/* Helper for `u_gb18030_int()` to output 4-byte sequential blocks */
+static int u_gb18030_4_sequential_int(unsigned int u2, unsigned int mb_lead, unsigned int *d1, unsigned int *d2) {
+    unsigned int dv;
+
+    dv = u2 / 10;
+    *d2 = u2 - dv * 10 + 0x30;
+    u2 = dv;
+    dv = u2 / 126;
+    *d2 |= (u2 - dv * 126 + 0x81) << 8;
+    u2 = dv;
+    dv = u2 / 10;
+    *d1 = ((dv + mb_lead) << 8) | (u2 - dv * 10 + 0x30);
+    return 4;
+}
+
+/* ECI 32 GB 18030 Chinese - assumes valid Unicode */
+static int u_gb18030_int(const unsigned int u, unsigned int *d1, unsigned int *d2) {
+    unsigned int u2, dv;
+    int s, e;
+
+    if (u < 0x80) {
+        *d1 = u;
         return 1;
     }
-    ret = gb18030_wctomb_zint(&c1, &c2, wc);
-    if (ret == 2) {
-        r[0] = (unsigned char) (c1 >> 8);
-        r[1] = (unsigned char) (c1 & 0xff);
+
+    /* Check GBK first */
+    if (u_gbk_int(u, d1)) {
         return 2;
     }
-    if (ret == 4) {
-        r[0] = (unsigned char) (c1 >> 8);
-        r[1] = (unsigned char) (c1 & 0xff);
-        r[2] = (unsigned char) (c2 >> 8);
-        r[3] = (unsigned char) (c2 & 0xff);
+
+    if (u >= 0x10000) {
+        /* Non-PUA, non-BMP, see Table 3-37, Lunde, 2nd ed. */
+        if (u == 0x20087) {
+            *d1 = 0xFE51;
+            return 2;
+        }
+        if (u == 0x20089) {
+            *d1 = 0xFE52;
+            return 2;
+        }
+        if (u == 0x200CC) {
+            *d1 = 0xFE53;
+            return 2;
+        }
+        if (u == 0x215D7) {
+            *d1 = 0xFE6C;
+            return 2;
+        }
+        if (u == 0x2298F) {
+            *d1 = 0xFE76;
+            return 2;
+        }
+        if (u == 0x241FE) {
+            *d1 = 0xFE91;
+            return 2;
+        }
+        /* All other non-BMP U+10000-10FFFF */
+        return u_gb18030_4_sequential_int(u - 0x10000, 0x90, d1, d2);
+    }
+    if (u >= 0xE000 && u <= 0xE765) { /* PUA to user-defined */
+        if (u <= 0xE4C5) {
+            u2 = u - 0xE000;
+            dv = u2 / 94;
+            *d1 = ((dv + (dv < 6 ? 0xAA : 0xF2)) << 8) | (u2 - dv * 94 + 0xA1);
+        } else {
+            unsigned int md;
+            u2 = u - 0xE4C6;
+            dv = u2 / 96;
+            md = u2 - dv * 96;
+            *d1 = ((dv + 0xA1) << 8) | (md + 0x40 + (md >= 0x3F));
+        }
+        return 2;
+    }
+    if (u >= gb18030_2_u[0] && u <= gb18030_2_u[ARRAY_SIZE(gb18030_2_u) - 1]) {
+        s = 0;
+        e = ARRAY_SIZE(gb18030_2_u) - 1;
+        while (s <= e) {
+            const int m = (s + e) / 2;
+            if (gb18030_2_u[m] < u) {
+                s = m + 1;
+            } else if (gb18030_2_u[m] > u) {
+                e = m - 1;
+            } else {
+                *d1 = gb18030_2_mb[m];
+                return 2;
+            }
+        }
+    }
+    /* All other BMP U+0080-FFFF */
+    if (u == 0xE7C7) { /* PUA change to non-PUA, see Table 3-39, Lunde, 2nd ed. */
+        *d1 = 0x8135;
+        *d2 = 0xF437;
         return 4;
     }
-    return 0;
+    s = 0;
+    e = ARRAY_SIZE(gb18030_4_u_e) - 1;
+    while (s < e) { /* Lower bound */
+        const int m = (s + e) / 2;
+        if (gb18030_4_u_e[m] < u) {
+            s = m + 1;
+        } else {
+            e = m;
+        }
+    }
+    assert(s < ARRAY_SIZE(gb18030_4_u_e));
+    return u_gb18030_4_sequential_int(u - gb18030_4_mb_o[s] - 0x80, 0x81, d1, d2);
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *d1, unsigned int *d2) {
+    return u_gb18030_int(u, d1, d2);
+}
+#endif
+
+/* Version of `u_gb18030_int()` taking unsigned char destination, for use by `utf8_to_eci()` */
+static int u_gb18030(const unsigned int u, unsigned char *dest) {
+    unsigned int d1, d2;
+    int ret = u_gb18030_int(u, &d1, &d2);
+    if (ret) {
+        if (ret == 1) {
+            dest[0] = (unsigned char) d1;
+        } else {
+            dest[0] = (unsigned char) (d1 >> 8);
+            dest[1] = (unsigned char) d1;
+            if (ret == 4) {
+                dest[2] = (unsigned char) (d2 >> 8);
+                dest[3] = (unsigned char) d2;
+            }
+        }
+    }
+    return ret;
+}
+
+/* Main ECI stuff */
 
 /* Helper to count the number of chars in a string within a range */
 static int chr_range_cnt(const unsigned char string[], const int length, const unsigned char c1,
@@ -246,32 +698,28 @@ INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_cou
     return length;
 }
 
-/* Convert UTF-8 Unicode to other character encodings */
+/* Convert UTF-8 to other character encodings */
 INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
 
-    typedef int (*eci_func_t)(unsigned char *r, const unsigned int wc);
+    typedef int (*eci_func_t)(const unsigned int u, unsigned char *dest);
     static const eci_func_t eci_funcs[36] = {
-                     NULL,              NULL,              NULL,              NULL,  iso8859_2_wctosb, /*0-4*/
-         iso8859_3_wctosb,  iso8859_4_wctosb,  iso8859_5_wctosb,  iso8859_6_wctosb,  iso8859_7_wctosb, /*5-9*/
-         iso8859_8_wctosb,  iso8859_9_wctosb, iso8859_10_wctosb, iso8859_11_wctosb,              NULL, /*10-14*/
-        iso8859_13_wctosb, iso8859_14_wctosb, iso8859_15_wctosb, iso8859_16_wctosb,              NULL, /*15-19*/
-              sjis_wctomb,     cp1250_wctosb,     cp1251_wctosb,     cp1252_wctosb,     cp1256_wctosb, /*20-24*/
-           utf16be_wctomb,              NULL,      ascii_wctosb,       big5_wctomb,     gb2312_wctomb, /*25-29*/
-            euc_kr_wctomb,        gbk_wctomb,    gb18030_wctomb,    utf16le_wctomb,    utf32be_wctomb, /*30-34*/
-           utf32le_wctomb,
+                NULL,         NULL,         NULL,         NULL,  u_iso8859_2, /*0-4*/
+         u_iso8859_3,  u_iso8859_4,  u_iso8859_5,  u_iso8859_6,  u_iso8859_7, /*5-9*/
+         u_iso8859_8,  u_iso8859_9, u_iso8859_10, u_iso8859_11,         NULL, /*10-14*/
+        u_iso8859_13, u_iso8859_14, u_iso8859_15, u_iso8859_16,         NULL, /*15-19*/
+              u_sjis,     u_cp1250,     u_cp1251,     u_cp1252,     u_cp1256, /*20-24*/
+           u_utf16be,         NULL,      u_ascii,       u_big5,     u_gb2312, /*25-29*/
+           u_ksx1001,        u_gbk,    u_gb18030,    u_utf16le,    u_utf32be, /*30-34*/
+           u_utf32le,
     };
     eci_func_t eci_func;
-    unsigned int codepoint, state;
-    int in_posn;
-    int out_posn;
+    unsigned int codepoint, state = 0;
+    int in_posn = 0;
+    int out_posn = 0;
     int length = *p_length;
-
-    in_posn = 0;
-    out_posn = 0;
 
     /* Special case ISO/IEC 8859-1 */
     if (eci == 0 || eci == 3) { /* Default ECI 0 to ISO/IEC 8859-1 */
-        state = 0;
         while (in_posn < length) {
             do {
                 decode_utf8(&state, &codepoint, source[in_posn++]);
@@ -279,7 +727,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
             if (state != 0) {
                 return ZINT_ERROR_INVALID_DATA;
             }
-            if (codepoint >= 0x80 && (codepoint < 0x00a0 || codepoint >= 0x0100)) {
+            if (codepoint >= 0x80 && (codepoint < 0xA0 || codepoint >= 0x100)) {
                 return ZINT_ERROR_INVALID_DATA;
             }
             dest[out_posn++] = (unsigned char) codepoint;
@@ -290,7 +738,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
     }
 
     if (eci == 170) { /* ASCII Invariant (archaic subset) */
-        eci_func = ascii_invariant_wctosb;
+        eci_func = u_ascii_inv;
     } else {
         eci_func = eci_funcs[eci];
         if (eci_func == NULL) {
@@ -298,7 +746,6 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
         }
     }
 
-    state = 0;
     while (in_posn < length) {
         int incr;
         do {
@@ -307,7 +754,7 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
         if (state != 0) {
             return ZINT_ERROR_INVALID_DATA;
         }
-        incr = (*eci_func)(dest + out_posn, codepoint);
+        incr = (*eci_func)(codepoint, dest + out_posn);
         if (incr == 0) {
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -346,10 +793,10 @@ INTERNAL int get_best_eci(const unsigned char source[], int length) {
         return 0;
     }
 
-    return 26; // If all of these fail, use Unicode!
+    return 26; // If all of these fail, use UTF-8!
 }
 
-/* Return 0 on failure, first ECI set on success */
+/* Call `get_best_eci()` for each segment. Returns 0 on failure, first ECI set on success */
 INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;
     int first_eci_set = 0;
@@ -381,6 +828,345 @@ INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[
     }
 
     return first_eci_set;
+}
+
+/* QRCODE Shift JIS helpers */
+
+/* Convert UTF-8 string to Shift JIS and place in array of ints */
+INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+                unsigned int *ddata) {
+    int error_number;
+    unsigned int i, length;
+#ifndef _MSC_VER
+    unsigned int utfdata[*p_length + 1];
+#else
+    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
+#endif
+
+    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
+    if (error_number != 0) {
+        return error_number;
+    }
+
+    for (i = 0, length = *p_length; i < length; i++) {
+        if (!u_sjis_int(utfdata[i], ddata + i)) {
+            strcpy(symbol->errtxt, "800: Invalid character in input data");
+            return ZINT_ERROR_INVALID_DATA;
+        }
+    }
+
+    return 0;
+}
+
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in
+ * a single entry. If `full_multibyte` not set, do a straight copy */
+INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte) {
+    unsigned int i, j, jis, length;
+    unsigned char c;
+
+    if (full_multibyte) {
+        for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
+            c = source[i];
+            if (((c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xEB)) && length - i >= 2) {
+                jis = (c << 8) | source[i + 1];
+                if ((jis >= 0x8140 && jis <= 0x9FFC) || (jis >= 0xE040 && jis <= 0xEBBF)) {
+                    /* This may or may not be valid Shift JIS, but don't care as long as it can be encoded in
+                     * QR Kanji mode */
+                    ddata[j] = jis;
+                    i++;
+                } else {
+                    ddata[j] = c;
+                }
+            } else {
+                ddata[j] = c;
+            }
+        }
+        *p_length = j;
+    } else {
+        /* Straight copy */
+        for (i = 0, length = *p_length; i < length; i++) {
+            ddata[i] = source[i];
+        }
+    }
+}
+
+/* Call `sjis_cpy()` for each segment */
+INTERNAL void sjis_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
+    int i;
+    unsigned int *dd = ddata;
+
+    for (i = 0; i < seg_count; i++) {
+        sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        dd += segs[i].length;
+    }
+}
+
+/* Convert UTF-8 string to ECI and place in array of ints using `sjis_cpy()` */
+INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+
+    if (is_eci_convertible(eci)) {
+        int error_number;
+        const int eci_length = get_eci_length(eci, source, *p_length);
+#ifndef _MSC_VER
+        unsigned char converted[eci_length + 1];
+#else
+        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
+#endif
+
+        error_number = utf8_to_eci(eci, source, converted, p_length);
+        if (error_number != 0) {
+            /* Note not setting `symbol->errtxt`, up to caller */
+            return error_number;
+        }
+
+        sjis_cpy(converted, p_length, ddata, full_multibyte || eci == 20);
+    } else {
+        sjis_cpy(source, p_length, ddata, full_multibyte);
+    }
+
+    return 0;
+}
+
+/* GRIDMATRIX GB 2312 helpers */
+
+/* Convert UTF-8 string to GB 2312 (EUC-CN) and place in array of ints */
+INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+                unsigned int *ddata) {
+    int error_number;
+    unsigned int i, length;
+#ifndef _MSC_VER
+    unsigned int utfdata[*p_length + 1];
+#else
+    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
+#endif
+
+    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
+    if (error_number != 0) {
+        return error_number;
+    }
+
+    for (i = 0, length = *p_length; i < length; i++) {
+        if (utfdata[i] < 0x80) {
+            ddata[i] = utfdata[i];
+        } else {
+            if (!u_gb2312_int(utfdata[i], ddata + i)) {
+                strcpy(symbol->errtxt, "810: Invalid character in input data");
+                return ZINT_ERROR_INVALID_DATA;
+            }
+        }
+    }
+
+    return 0;
+}
+
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match GRIDMATRIX
+ * Chinese mode in a single entry. If `full_multibyte` not set, do a straight copy */
+static void gb2312_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+    unsigned int i, j, length;
+    unsigned char c1, c2;
+
+    if (full_multibyte) {
+        for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
+            if (length - i >= 2) {
+                c1 = source[i];
+                c2 = source[i + 1];
+                if (((c1 >= 0xA1 && c1 <= 0xA9) || (c1 >= 0xB0 && c1 <= 0xF7)) && c2 >= 0xA1 && c2 <= 0xFE) {
+                    /* This may or may not be valid GB 2312 (EUC-CN), but don't care as long as it can be encoded in
+                     * GRIDMATRIX Chinese mode */
+                    ddata[j] = (c1 << 8) | c2;
+                    i++;
+                } else {
+                    ddata[j] = c1;
+                }
+            } else {
+                ddata[j] = source[i];
+            }
+        }
+        *p_length = j;
+    } else {
+        /* Straight copy */
+        for (i = 0, length = *p_length; i < length; i++) {
+            ddata[i] = source[i];
+        }
+    }
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL void gb2312_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+    gb2312_cpy(source, p_length, ddata, full_multibyte);
+}
+#endif
+
+/* Call `gb2312_cpy()` for each segment */
+INTERNAL void gb2312_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
+    int i;
+    unsigned int *dd = ddata;
+
+    for (i = 0; i < seg_count; i++) {
+        gb2312_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        dd += segs[i].length;
+    }
+}
+
+/* Convert UTF-8 string to ECI and place in array of ints using `gb2312_cpy()` */
+INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+
+    if (is_eci_convertible(eci)) {
+        int error_number;
+        const int eci_length = get_eci_length(eci, source, *p_length);
+#ifndef _MSC_VER
+        unsigned char converted[eci_length + 1];
+#else
+        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
+#endif
+
+        error_number = utf8_to_eci(eci, source, converted, p_length);
+        if (error_number != 0) {
+            /* Note not setting `symbol->errtxt`, up to caller */
+            return error_number;
+        }
+
+        gb2312_cpy(converted, p_length, ddata, full_multibyte || eci == 29);
+    } else {
+        gb2312_cpy(source, p_length, ddata, full_multibyte);
+    }
+
+    return 0;
+}
+
+/* HANXIN GB 18030 helpers */
+
+/* Convert UTF-8 string to GB 18030 and place in array of ints */
+INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source[], int *p_length,
+                unsigned int *ddata) {
+    int error_number, ret;
+    unsigned int i, j, length;
+#ifndef _MSC_VER
+    unsigned int utfdata[*p_length + 1];
+#else
+    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
+#endif
+
+    error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
+    if (error_number != 0) {
+        return error_number;
+    }
+
+    for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
+        if (utfdata[i] < 0x80) {
+            ddata[j] = utfdata[i];
+        } else {
+            ret = u_gb18030_int(utfdata[i], ddata + j, ddata + j + 1);
+            if (ret == 0) { /* Should never happen, as GB 18030 is a UTF i.e. maps all Unicode codepoints */
+                strcpy(symbol->errtxt, "820: Invalid character in input data"); /* Not reached */
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            if (ret == 4) {
+                j++;
+            }
+        }
+    }
+
+    *p_length = j;
+
+    return 0;
+}
+
+/* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match HANXIN
+ * Chinese mode in single entry, and quad-bytes in 2 entries. If `full_multibyte` not set, do a straight copy */
+static void gb18030_cpy(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+    unsigned int i, j, length;
+    int done;
+    unsigned char c1, c2, c3, c4;
+
+    if (full_multibyte) {
+        for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
+            done = 0;
+            c1 = source[i];
+            if (length - i >= 2) {
+                if (c1 >= 0x81 && c1 <= 0xFE) {
+                    c2 = source[i + 1];
+                    if ((c2 >= 0x40 && c2 <= 0x7E) || (c2 >= 0x80 && c2 <= 0xFE)) {
+                        ddata[j] = (c1 << 8) | c2;
+                        i++;
+                        done = 1;
+                    } else if (length - i >= 4 && (c2 >= 0x30 && c2 <= 0x39)) {
+                        c3 = source[i + 2];
+                        c4 = source[i + 3];
+                        if ((c3 >= 0x81 && c3 <= 0xFE) && (c4 >= 0x30 && c4 <= 0x39)) {
+                            ddata[j++] = (c1 << 8) | c2;
+                            ddata[j] = (c3 << 8) | c4;
+                            i += 3;
+                            done = 1;
+                        }
+                    }
+                }
+            }
+            if (!done) {
+                ddata[j] = c1;
+            }
+        }
+        *p_length = j;
+    } else {
+        /* Straight copy */
+        for (i = 0, length = *p_length; i < length; i++) {
+            ddata[i] = source[i];
+        }
+    }
+}
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+    gb18030_cpy(source, p_length, ddata, full_multibyte);
+}
+#endif
+
+/* Call `gb18030_cpy()` for each segment */
+INTERNAL void gb18030_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
+                const int full_multibyte) {
+    int i;
+    unsigned int *dd = ddata;
+
+    for (i = 0; i < seg_count; i++) {
+        gb18030_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        dd += segs[i].length;
+    }
+}
+
+/* Convert UTF-8 string to ECI and place in array of ints using `gb18030_cpy()` */
+INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte) {
+
+    if (is_eci_convertible(eci)) {
+        int error_number;
+        const int eci_length = get_eci_length(eci, source, *p_length);
+#ifndef _MSC_VER
+        unsigned char converted[eci_length + 1];
+#else
+        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
+#endif
+
+        error_number = utf8_to_eci(eci, source, converted, p_length);
+        if (error_number != 0) {
+            /* Note not setting `symbol->errtxt`, up to caller */
+            return error_number;
+        }
+
+        /* GB 18030 (ECI 32) superset of GB 2312 (ECI 29) and GBK (ECI 31) */
+        gb18030_cpy(converted, p_length, ddata, full_multibyte || eci == 32 || eci == 29 || eci == 31);
+    } else {
+        gb18030_cpy(source, p_length, ddata, full_multibyte);
+    }
+
+    return 0;
 }
 
 /* vim: set ts=4 sw=4 et : */

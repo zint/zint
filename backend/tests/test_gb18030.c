@@ -30,105 +30,123 @@
 
 #include "testcommon.h"
 #include "test_gb18030_tab.h"
-#include "../gb18030.h"
+#include "test_gbk_tab.h"
+#include "../eci.h"
+/* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
+//#define TEST_JUST_SAY_GNO
+#ifdef TEST_JUST_SAY_GNO
+#include "../just_say_gno/gb18030_gnu.c"
+#include "../just_say_gno/gb2312_gnu.c"
+#endif
+
+INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
 
 // As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
 // The version of GB18030.TXT is libiconv-1.11/GB18030.TXT taken from https://haible.de/bruno/charsets/conversion-tables/GB18030.html
 // The generated file backend/tests/test_gb18030_tab.h does not include U+10000..10FFFF codepoints to save space.
 // See also backend/tests/tools/data/GB18030.TXT.README and backend/tests/tools/gen_test_tab.php.
-static int gb18030_wctomb_zint2(unsigned int *r1, unsigned int *r2, unsigned int wc) {
+static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *dest2) {
     unsigned int c;
     int tab_length, start_i, end_i;
     int i;
 
     // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
-    if (wc == 0x1E3F) { // GB 18030-2005 change, was PUA U+E7C7 below, see Table 3-39, p.111, Lunde 2nd ed.
-        *r1 = 0xA8BC;
+    if (u == 0x1E3F) { // GB 18030-2005 change, was PUA U+E7C7 below, see Table 3-39, p.111, Lunde 2nd ed.
+        *dest1 = 0xA8BC;
         return 2;
     }
     // GB18030 four-byte extension (libiconv-1.16/lib/gb18030uni.h)
-    if (wc == 0xE7C7) { // PUA
-        *r1 = 0x8135;
-        *r2 = 0xF437;
+    if (u == 0xE7C7) { // PUA
+        *dest1 = 0x8135;
+        *dest2 = 0xF437;
         return 4;
     }
     // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
-    if (wc >= 0x9FB4 && wc <= 0x9FBB) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
-        if (wc == 0x9FB4) {
-            *r1 = 0xFE59;
-        } else if (wc == 0x9FB5) {
-            *r1 = 0xFE61;
-        } else if (wc == 0x9FB6 || wc == 0x9FB7) {
-            *r1 = 0xFE66 + (wc - 0x9FB6);
-        } else if (wc == 0x9FB8) {
-            *r1 = 0xFE6D;
-        } else if (wc == 0x9FB9) {
-            *r1 = 0xFE7E;
-        } else if (wc == 0x9FBA) {
-            *r1 = 0xFE90;
+    if (u >= 0x9FB4 && u <= 0x9FBB) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
+        if (u == 0x9FB4) {
+            *dest1 = 0xFE59;
+        } else if (u == 0x9FB5) {
+            *dest1 = 0xFE61;
+        } else if (u == 0x9FB6 || u == 0x9FB7) {
+            *dest1 = 0xFE66 + (u - 0x9FB6);
+        } else if (u == 0x9FB8) {
+            *dest1 = 0xFE6D;
+        } else if (u == 0x9FB9) {
+            *dest1 = 0xFE7E;
+        } else if (u == 0x9FBA) {
+            *dest1 = 0xFE90;
         } else {
-            *r1 = 0xFEA0;
+            *dest1 = 0xFEA0;
         }
         return 2;
     }
     // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
-    if (wc >= 0xFE10 && wc <= 0xFE19) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
-        if (wc == 0xFE10) {
-            *r1 = 0xA6D9;
-        } else if (wc == 0xFE11) {
-            *r1 = 0xA6DB;
-        } else if (wc == 0xFE12) {
-            *r1 = 0xA6DA;
-        } else if (wc >= 0xFE13 && wc <= 0xFE16) {
-            *r1 = 0xA6DC + (wc - 0xFE13);
-        } else if (wc == 0xFE17 || wc == 0xFE18) {
-            *r1 = 0xA6EC + (wc - 0xFE17);
+    if (u >= 0xFE10 && u <= 0xFE19) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
+        if (u == 0xFE10) {
+            *dest1 = 0xA6D9;
+        } else if (u == 0xFE11) {
+            *dest1 = 0xA6DB;
+        } else if (u == 0xFE12) {
+            *dest1 = 0xA6DA;
+        } else if (u >= 0xFE13 && u <= 0xFE16) {
+            *dest1 = 0xA6DC + (u - 0xFE13);
+        } else if (u == 0xFE17 || u == 0xFE18) {
+            *dest1 = 0xA6EC + (u - 0xFE17);
         } else {
-            *r1 = 0xA6F3;
+            *dest1 = 0xA6F3;
         }
         return 2;
     }
     // GB18030 four-byte extension (libiconv-1.16/lib/gb18030uni.h)
-    if (wc >= 0xFE1A && wc <= 0xFE2F) { // These are Vertical Forms (U+FE1A..FE1F unassigned) and Combining Half Marks (U+FE20..FE2F)
-        if (wc >= 0xFE1A && wc <= 0xFE1D) {
-            c = 0x84318336 + (wc - 0xFE1A);
-        } else if (wc >= 0xFE1E && wc <= 0xFE27) {
-            c = 0x84318430 + (wc - 0xFE1E);
+    if (u >= 0xFE1A && u <= 0xFE2F) { // These are Vertical Forms (U+FE1A..FE1F unassigned) and Combining Half Marks (U+FE20..FE2F)
+        if (u >= 0xFE1A && u <= 0xFE1D) {
+            c = 0x84318336 + (u - 0xFE1A);
+        } else if (u >= 0xFE1E && u <= 0xFE27) {
+            c = 0x84318430 + (u - 0xFE1E);
         } else {
-            c = 0x84318530 + (wc - 0xFE28);
+            c = 0x84318530 + (u - 0xFE28);
         }
-        *r1 = c >> 16;
-        *r2 = c & 0xFFFF;
+        *dest1 = c >> 16;
+        *dest2 = c & 0xFFFF;
         return 4;
     }
     // GB18030 (libiconv-1.16/lib/gb18030.h)
     // Code set 3 (Unicode U+10000..U+10FFFF)
-    if (wc >= 0x10000 /*&& wc < 0x10400*/) { // Not being called for U+10400..U+10FFFF
-        c = wc - 0x10000;
-        *r1 = 0x9030;
-        *r2 = 0x8130 + (c % 10) + 0x100 * (c / 10);
+    if (u >= 0x10000 /*&& u < 0x10400*/) { // Not being called for U+10400..U+10FFFF
+        c = u - 0x10000;
+        *dest1 = 0x9030;
+        *dest2 = 0x8130 + (c % 10) + 0x100 * (c / 10);
         return 4;
     }
 
     tab_length = ARRAY_SIZE(test_gb18030_tab);
-    start_i = test_gb18030_tab_ind[wc >> 10];
+    start_i = test_gb18030_tab_ind[u >> 10];
     end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
     for (i = start_i; i < end_i; i += 2) {
-        if (test_gb18030_tab[i + 1] == wc) {
+        if (test_gb18030_tab[i + 1] == u) {
             c = test_gb18030_tab[i];
             if (c <= 0xFFFF) {
-                *r1 = c;
+                *dest1 = c;
                 return c <= 0xFF ? 1 : 2;
             }
-            *r1 = c >> 16;
-            *r2 = c & 0xFFFF;
+            *dest1 = c >> 16;
+            *dest2 = c & 0xFFFF;
             return 4;
         }
     }
     return 0;
 }
 
-static void test_gb18030_wctomb_zint(void) {
+#include <time.h>
+
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
+#define TEST_PERF_RATIO(a1, a2) (a2 ? TEST_PERF_TIME(a1) / TEST_PERF_TIME(a2) : 0)
+
+#ifdef TEST_JUST_SAY_GNO
+#define TEST_INT_PERF_ITERATIONS    250
+#endif
+
+static void test_u_gb18030_int(int debug) {
 
     int ret, ret2;
     unsigned int val1_1, val1_2, val2_1, val2_2;
@@ -141,33 +159,79 @@ static void test_gb18030_wctomb_zint(void) {
         0xFE51, 0xFE52, 0xFE53, 0xFE6C, 0xFE76, 0xFE91
     };
 
-    testStart("test_gb18030_wctomb_zint");
+#ifdef TEST_JUST_SAY_GNO
+    int j;
+    clock_t start;
+    clock_t total = 0, total_gno = 0;
+#else
+    (void)debug;
+#endif
+
+    testStart("test_u_gb18030_int");
+
+#ifdef TEST_JUST_SAY_GNO
+    if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        printf("test_u_gb18030_int perf iterations: %d\n", TEST_INT_PERF_ITERATIONS);
+    }
+#endif
 
     for (i = 0; i < 0x10400; i++) { // Don't bother with U+10400..U+10FFFF, programmatically filled
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }
         val1_1 = val1_2 = val2_1 = val2_2 = 0;
-        ret = gb18030_wctomb_zint(&val1_1, &val1_2, i);
-        ret2 = gb18030_wctomb_zint2(&val2_1, &val2_2, i);
+        ret = u_gb18030_int_test(i, &val1_1, &val1_2);
+        ret2 = u_gb18030_int2(i, &val2_1, &val2_2);
         assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
         if (ret2) {
             assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
             assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
         }
+#ifdef TEST_JUST_SAY_GNO
+        if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+            val2_1 = val2_2 = 0;
+            ret2 = gb18030_wctomb_zint(&val2_1, &val2_2, i);
+        } else {
+            for (j = 0; j < TEST_INT_PERF_ITERATIONS; j++) {
+                val1_1 = val1_2 = val2_1 = val2_2 = 0;
+
+                start = clock();
+                ret = u_gb18030_int_test(i, &val1_1, &val1_2);
+                total += clock() - start;
+
+                start = clock();
+                ret2 = gb18030_wctomb_zint(&val2_1, &val2_2, i);
+                total_gno += clock() - start;
+            }
+        }
+
+        assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val1_1 0x%04X, val2_1 0x%04X, val1_2 0x%04X, val2_2 0x%04X\n", (int) i, i, ret, ret2, val1_1, val2_1, val1_2, val2_2);
+        if (ret2) {
+            assert_equal(val1_1, val2_1, "i:%d 0x%04X val1_1 0x%04X != val2_1 0x%04X\n", (int) i, i, val1_1, val2_1);
+            assert_equal(val1_2, val2_2, "i:%d 0x%04X val1_2 0x%04X != val2_2 0x%04X\n", (int) i, i, val1_2, val2_2);
+        }
+#endif
     }
 
+    // u_gb18030() assumes valid Unicode so now returns a nonsense value here
     val1_1 = val1_2 = 0;
-    ret = gb18030_wctomb_zint(&val1_1, &val1_2, 0x110000); /* Invalid Unicode codepoint */
-    assert_zero(ret, "0x110000 ret %d != 0, val1_1 0x%04X, val1_2 0x%04X\n", ret, val1_1, val1_2);
+    ret = u_gb18030_int_test(0x110000, &val1_1, &val1_2); /* Invalid Unicode codepoint */
+    assert_equal(ret, 4, "0x110000 ret %d != 4, val1_1 0x%04X, val1_2 0x%04X\n", ret, val1_1, val1_2);
 
     for (i = 0; i < ARRAY_SIZE(nonpua_nonbmp); i++) {
         val1_1 = val1_2 = 0;
-        ret = gb18030_wctomb_zint(&val1_1, &val1_2, nonpua_nonbmp[i]);
+        ret = u_gb18030_int_test(nonpua_nonbmp[i], &val1_1, &val1_2);
         assert_equal(ret, 2, "i:%d 0x%04X ret %d != 2, val1_1 0x%04X, val1_2 0x%04X\n", (int) i, nonpua_nonbmp[i], ret, val1_1, val1_2);
         assert_equal(val1_1, nonpua_nonbmp_vals[i], "i:%d 0x%04X val1_1 0x%04X != 0x%04X\n", (int) i, nonpua_nonbmp[i], val1_1, nonpua_nonbmp_vals[i]);
         assert_zero(val1_2, "i:%d 0x%04X val1_2 0x%04X != 0\n", (int) i, nonpua_nonbmp[i], val1_2);
     }
+
+#ifdef TEST_JUST_SAY_GNO
+    if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        printf("test_u_gb18030_int perf totals: new % 8gms, gno % 8gms ratio %g\n",
+                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno));
+    }
+#endif
 
     testFinish();
 }
@@ -350,6 +414,9 @@ static void test_gb18030_utf8_to_eci(int index) {
     testFinish();
 }
 
+INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
+                const int full_multibyte);
+
 static void test_gb18030_cpy(int index) {
 
     struct item {
@@ -390,7 +457,7 @@ static void test_gb18030_cpy(int index) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        gb18030_cpy((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
+        gb18030_cpy_test((unsigned char *) data[i].data, &ret_length, gbdata, data[i].full_multibyte);
         assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
         for (j = 0; j < (int) ret_length; j++) {
             assert_equal(gbdata[j], data[i].expected_gbdata[j], "i:%d gbdata[%d] %04X != %04X\n", i, j, gbdata[j], data[i].expected_gbdata[j]);
@@ -400,35 +467,22 @@ static void test_gb18030_cpy(int index) {
     testFinish();
 }
 
-/* For testing GBK, to exclude GB 18030 extensions */
-STATIC_UNLESS_ZINT_TEST int gb18030ext_wctomb(unsigned int *r, const unsigned int wc);
-STATIC_UNLESS_ZINT_TEST int gb18030uni_wctomb(unsigned int *r1, unsigned int *r2, const unsigned int wc);
+INTERNAL int u_gbk_int_test(const unsigned int u, unsigned int *dest);
 
 /* Control for GBK */
-static int gbk_wctomb_zint2(unsigned int *r, unsigned int wc) {
+static int u_gbk_int2(unsigned int u, unsigned int *dest) {
     unsigned int c;
     int tab_length, start_i, end_i;
     int i;
-    unsigned int r1, r2;
 
-    if (gb18030ext_wctomb(&r1, wc)) {
-        return 0;
-    }
-    if (wc >= 0xe000 && wc <= 0xe864) {
-        return 0;
-    }
-    if (gb18030uni_wctomb(&r1, &r2, wc)) {
-        return 0;
-    }
-
-    tab_length = ARRAY_SIZE(test_gb18030_tab);
-    start_i = test_gb18030_tab_ind[wc >> 10];
+    tab_length = ARRAY_SIZE(test_gbk_tab);
+    start_i = test_gbk_tab_ind[u >> 10];
     end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
     for (i = start_i; i < end_i; i += 2) {
-        if (test_gb18030_tab[i + 1] == wc) {
-            c = test_gb18030_tab[i];
+        if (test_gbk_tab[i + 1] == u) {
+            c = test_gbk_tab[i];
             if (c <= 0xFFFF) {
-                *r = c;
+                *dest = c;
                 return c <= 0xFF ? 1 : 2;
             }
             return 0;
@@ -437,24 +491,21 @@ static int gbk_wctomb_zint2(unsigned int *r, unsigned int wc) {
     return 0;
 }
 
-static void test_gbk_wctomb_zint(void) {
+static void test_u_gbk_int(void) {
 
     int ret, ret2;
     unsigned int val, val2;
     unsigned int i;
 
-    testStart("test_gbk_wctomb_zint");
+    testStart("test_u_gbk_int");
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i < 0x80) { // ASCII is straight through and not dealt with by gbk_wctomb_zint()
-            continue;
-        }
         if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
             continue;
         }
         val = val2 = 0;
-        ret = gbk_wctomb_zint(&val, i);
-        ret2 = gbk_wctomb_zint2(&val2, i);
+        ret = u_gbk_int_test(i, &val);
+        ret2 = u_gbk_int2(i, &val2);
         assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
         if (ret2) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
@@ -464,14 +515,102 @@ static void test_gbk_wctomb_zint(void) {
     testFinish();
 }
 
+#define TEST_PERF_ITER_MILLES   50
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+
+// Not a real test, just performance indicator
+static void test_perf(int index, int debug) {
+
+    struct item {
+        char *data;
+        int ret;
+
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "1234567890", 0, "10 numerics" },
+        /*  1*/ { "条码北京條碼པེ་ཅིང།バーコード바코드", 0, "Small various code pages" },
+        /*  2*/ { "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", 0, "Small mixed ASCII/Hanzi" },
+        /*  3*/ { "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", 0, "Bigger mixed" },
+        /*  4*/ { "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012", 0, "Bigger mixed" },
+        /*  5*/ { "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法RS、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术   122", 0, "Medium mixed" },
+        /*  6*/ { "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方", 0, "Bigger mixed" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+
+    struct zint_symbol symbol = {0};
+    int ret_length, ret_length2;
+    unsigned int ddata[8192];
+    unsigned char dest[8192];
+    int ret2 = 0;
+#ifdef TEST_JUST_SAY_GNO
+    unsigned int ddata2[8192];
+#endif
+
+    clock_t start;
+    clock_t total = 0, total_gno = 0, total_eci = 0;
+    clock_t diff, diff_gno, diff_eci;
+    int comment_max = 0;
+
+    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
+
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (index != -1 && i != index) continue;
+
+        length = (int) strlen(data[i].data);
+
+        diff = diff_gno = diff_eci = 0;
+
+        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            ret_length = ret_length2 = length;
+
+            start = clock();
+            ret = gb18030_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
+            diff += clock() - start;
+
+#ifdef TEST_JUST_SAY_GNO
+            start = clock();
+            ret2 = gb18030_utf8_wctomb(&symbol, (unsigned char *) data[i].data, &ret_length2, ddata2);
+            diff_gno += clock() - start;
+#endif
+            ret_length = length;
+
+            start = clock();
+            (void)utf8_to_eci(32, (unsigned char *) data[i].data, dest, &ret_length);
+            diff_eci += clock() - start;
+        }
+        assert_equal(ret, ret2, "i:%d ret %d != ret2 %d\n", (int) i, ret, ret2);
+
+        printf("%*s: new % 8gms, gno % 8gms ratio % 9g, eci %gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff), TEST_PERF_TIME(diff_gno), TEST_PERF_RATIO(diff, diff_gno), TEST_PERF_TIME(diff_eci));
+
+        total += diff;
+        total_gno += diff_gno;
+    }
+    if (index == -1) {
+        printf("%*s: new % 8gms, gno % 8gms ratio % 9g, eci %gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno), TEST_PERF_TIME(total_eci));
+    }
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_gb18030_wctomb_zint", test_gb18030_wctomb_zint, 0, 0, 0 },
+        { "test_u_gb18030_int", test_u_gb18030_int, 0, 0, 1 },
         { "test_gb18030_utf8", test_gb18030_utf8, 1, 0, 0 },
         { "test_gb18030_utf8_to_eci", test_gb18030_utf8_to_eci, 1, 0, 0 },
         { "test_gb18030_cpy", test_gb18030_cpy, 1, 0, 0 },
-        { "test_gbk_wctomb_zint", test_gbk_wctomb_zint, 0, 0, 0 },
+        { "test_u_gbk_int", test_u_gbk_int, 0, 0, 0 },
+        { "test_perf", test_perf, 1, 0, 1 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

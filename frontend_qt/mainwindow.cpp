@@ -1227,16 +1227,19 @@ void MainWindow::change_options()
         connect(get_widget(QSL("radC39Stand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC39Check")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC39HIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        QRadioButton *radC39HIBC = m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"));
         if (symbology == BARCODE_EXCODE39) {
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
-            if (m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"))->isChecked()) {
-                m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"))->setChecked(false);
+            if (radC39HIBC->isChecked()) {
+                radC39HIBC->setChecked(false);
                 m_optionWidget->findChild<QRadioButton*>(QSL("radC39Stand"))->setChecked(true);
             }
-            m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"))->setEnabled(false);
+            radC39HIBC->setEnabled(false);
+            radC39HIBC->hide();
         } else {
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39"));
-            m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"))->setEnabled(true);
+            radC39HIBC->setEnabled(true);
+            radC39HIBC->show();
         }
 
     } else if (symbology == BARCODE_LOGMARS) {

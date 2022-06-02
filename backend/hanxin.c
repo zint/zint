@@ -39,8 +39,6 @@
 #include "common.h"
 #include "reedsol.h"
 #include "hanxin.h"
-#include "gb2312.h"
-#include "gb18030.h"
 #include "eci.h"
 #include <assert.h>
 

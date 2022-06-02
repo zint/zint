@@ -1,6 +1,17 @@
 Version 2.11.0.9 (dev) not released yet
 =======================================
 
+Changes
+-------
+- GUI: sequence export dialog: add Postfix field for filename (#252)
+- eci.c: replace libiconv-adapted code with own implementations so
+  as to fully comply with libzint's BSD license
+- GUI: CODE39/EXCODE39: show/hide HIBC check digit option
+
+Bugs
+----
+- frontend/test_args.c: don't use WIFEXITED(), WEXITSTATUS() on Windows
+
 
 Version 2.11.0 (2022-05-24)
 ===========================
