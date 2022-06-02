@@ -44,7 +44,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     "00002.png" etc., which can be changed by using the `-o` or `--output` option.
 
 `--bg=COLOUR`
-:   Specify a background (paper) colour where *COLOUR* is in hex RRGGBB or RRGGGAA format.
+:   Specify a background (paper) colour where *COLOUR* is in hex RRGGBB or RRGGBBAA format.
 
 `--binary`
 :   Treat input data as raw 8-bit binary data instead of the default UTF-8. Automatic code page translation to an ECI
@@ -144,7 +144,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--fg=COLOUR`
 
-:   Specify a foreground (ink) colour where *COLOUR* is in hex RRGGBB or RRGGGAA format.
+:   Specify a foreground (ink) colour where *COLOUR* is in hex RRGGBB or RRGGBBAA format.
 
 `--filetype=TYPE`
 
