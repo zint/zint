@@ -2,7 +2,7 @@
 
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* `large_mul_u64()` and `large_div_u64()` are adapted from articles by F. W. Jacob
  *   https://www.codeproject.com/Tips/618570/UInt-Multiplication-Squaring
@@ -133,7 +133,7 @@ INTERNAL void large_mul_u64(large_int *t, const uint64_t s) {
 }
 
 /* Count leading zeroes. See Hickman `r128__clz64()` */
-STATIC_UNLESS_ZINT_TEST int clz_u64(uint64_t x) {
+static int clz_u64(uint64_t x) {
    uint64_t n = 64, y;
    y = x >> 32; if (y) { n -= 32; x = y; }
    y = x >> 16; if (y) { n -= 16; x = y; }
@@ -144,7 +144,13 @@ STATIC_UNLESS_ZINT_TEST int clz_u64(uint64_t x) {
    return (int) (n - x);
 }
 
-/* Divide 128-bit dividend `t` by 64-bit divisor `v`
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int clz_u64_test(uint64_t x) {
+    return clz_u64(x);
+}
+#endif
+
+/* Divide 128-bit dividend `t` by 64-bit divisor `v`, returning 64-bit remainder
  * See Jacob `divmod128by128/64()` and Warren Section 9–2 (divmu64.c.txt)
  * Note digits are 32-bit parts */
 INTERNAL uint64_t large_div_u64(large_int *t, uint64_t v) {
@@ -294,13 +300,6 @@ INTERNAL void large_uchar_array(const large_int *t, unsigned char *uchar_array, 
     }
 }
 
-/* Output formatted large_int to stdout */
-INTERNAL void large_print(const large_int *t) {
-    char buf[35]; /* 2 (0x) + 32 (hex) + 1 */
-
-    puts(large_dump(t, buf));
-}
-
 /* Format large_int into buffer, which should be at least 35 chars in size */
 INTERNAL char *large_dump(const large_int *t, char *buf) {
     unsigned int tlo1 = (unsigned int) (large_lo(t) >> 32);
@@ -319,3 +318,12 @@ INTERNAL char *large_dump(const large_int *t, char *buf) {
     }
     return buf;
 }
+
+/* Output formatted large_int to stdout */
+INTERNAL void large_print(const large_int *t) {
+    char buf[35]; /* 2 (0x) + 32 (hex) + 1 */
+
+    puts(large_dump(t, buf));
+}
+
+/* vim: set ts=4 sw=4 et : */

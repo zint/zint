@@ -4,6 +4,7 @@
     libzint - the open source barcode library
     Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
 */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * To create "backend/eci_mb.h" (from project root directory):
  *
@@ -42,6 +43,7 @@ $copyright_text = <<<'EOD'
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 EOD;
 
@@ -202,11 +204,13 @@ for ($u_i = 0, $cnt = count($sort); $u_i < $cnt && $sort[$u_i] < 0x4E00; $u_i++)
 
 $start_u_i = $u_i;
 $big5_uro_u = $big5_uro_mb_ind = array();
+$sort_search = array_flip($sort);
 for ($u = 0x4E00; $u <= 0x9FAF; $u += 16) {
     $used = 0;
     $next_u_i = $u_i;
     for ($j = 0; $j < 16; $j++) {
-        if (($i = array_search($u + $j, $sort)) !== false) {
+        if (isset($sort_search[$u + $j])) {
+            $i = $sort_search[$u + $j];
             $used |= 1 << $j;
             $next_u_i = $i + 1;
             $end_u_i = $i;
@@ -286,11 +290,13 @@ for ($u_i = 0, $cnt = count($sort); $u_i < $cnt && $sort[$u_i] < 0x4E00; $u_i++)
 
 $start_u_i = $u_i;
 $ksx1001_uro_u = $ksx1001_uro_mb_ind = array();
+$sort_search = array_flip($sort);
 for ($u = 0x4E00; $u <= 0x9F9F; $u += 16) {
     $used = 0;
     $next_u_i = $u_i;
     for ($j = 0; $j < 16; $j++) {
-        if (($i = array_search($u + $j, $sort)) !== false) {
+        if (isset($sort_search[$u + $j])) {
+            $i = $sort_search[$u + $j];
             $used |= 1 << $j;
             $next_u_i = $i + 1;
             $end_u_i = $i;
@@ -366,11 +372,13 @@ for ($u_i = 0, $cnt = count($sort); $u_i < $cnt && $sort[$u_i] < 0x4E00; $u_i++)
 
 $start_u_i = $u_i;
 $sjis_uro_u = $sjis_uro_mb_ind = array();
+$sort_search = array_flip($sort);
 for ($u = 0x4E00; $u <= 0x9FAF; $u += 16) {
     $used = 0;
     $next_u_i = $u_i;
     for ($j = 0; $j < 16; $j++) {
-        if (($i = array_search($u + $j, $sort)) !== false) {
+        if (isset($sort_search[$u + $j])) {
+            $i = $sort_search[$u + $j];
             $used |= 1 << $j;
             $next_u_i = $i + 1;
             $end_u_i = $i;
@@ -444,11 +452,13 @@ for ($u_i = 0, $cnt = count($sort); $u_i < $cnt && $sort[$u_i] < 0x4E00; $u_i++)
 
 $start_u_i = $u_i;
 $gb2312_uro_u = $gb2312_uro_mb_ind = array();
+$sort_search = array_flip($sort);
 for ($u = 0x4E00; $u <= 0x9CEF; $u += 16) {
     $used = 0;
     $next_u_i = $u_i;
     for ($j = 0; $j < 16; $j++) {
-        if (($i = array_search($u + $j, $sort)) !== false) {
+        if (isset($sort_search[$u + $j])) {
+            $i = $sort_search[$u + $j];
             $used |= 1 << $j;
             $next_u_i = $i + 1;
             $end_u_i = $i;
@@ -524,11 +534,13 @@ for ($u_i = 0, $cnt = count($sort); $u_i < $cnt && $sort[$u_i] < 0x4E00; $u_i++)
 
 $start_u_i = $u_i;
 $gbk_uro_u = $gbk_uro_mb_ind = array();
+$sort_search = array_flip($sort);
 for ($u = 0x4E00; $u <= 0x9FAF; $u += 16) {
     $used = 0;
     $next_u_i = $u_i;
     for ($j = 0; $j < 16; $j++) {
-        if (($i = array_search($u + $j, $sort)) !== false) {
+        if (isset($sort_search[$u + $j])) {
+            $i = $sort_search[$u + $j];
             $used |= 1 << $j;
             $next_u_i = $i + 1;
             $end_u_i = $i;

@@ -56,6 +56,7 @@ $head = <<<'EOD'
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_ECI_SB_H
 #define Z_ECI_SB_H

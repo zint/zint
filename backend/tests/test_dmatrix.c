@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "../gs1.h"
@@ -655,8 +656,8 @@ static void test_reader_init(int index, int generate, int debug) {
 
 #define ZINT_TEST_ENCODING
 #ifdef ZINT_TEST_ENCODING
-STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned char source[],
-            const int length, const int eci, const int gs1, unsigned char target[], int *p_tp);
+INTERNAL int dm_encode_test(struct zint_symbol *symbol, const unsigned char source[], const int length, const int eci,
+            const int gs1, unsigned char target[], int *p_tp);
 #endif
 
 static void test_input(int index, int generate, int debug) {
@@ -1019,7 +1020,7 @@ static void test_input(int index, int generate, int debug) {
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode(symbol, text, length, symbol->eci, gs1, binary[0], &binlen);
+                    ret = dm_encode_test(symbol, text, length, symbol->eci, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
@@ -1027,7 +1028,7 @@ static void test_input(int index, int generate, int debug) {
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode(symbol, text, length, symbol->eci, gs1, binary[1], &binlen);
+                    ret = dm_encode_test(symbol, text, length, symbol->eci, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -5261,7 +5262,7 @@ static void test_encode(int index, int generate, int debug) {
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
+                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
@@ -5269,7 +5270,7 @@ static void test_encode(int index, int generate, int debug) {
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
+                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -6627,7 +6628,7 @@ static void test_minimalenc(int index, int debug) {
         binlen = 0;
         symbol->input_mode |= FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
+        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() FAST_MODE ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[0] = binlen;
@@ -6635,7 +6636,7 @@ static void test_minimalenc(int index, int debug) {
         binlen = 0;
         symbol->input_mode &= ~FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
+        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() minimal ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[1] = binlen;

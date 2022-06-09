@@ -37,6 +37,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #include <assert.h>
@@ -1483,8 +1484,8 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
 
 /* Encodes data using ASCII, C40, Text, X12, EDIFACT or Base 256 modes as appropriate
    Supports encoding FNC1 in supporting systems */
-STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned char source[],
-            const int length, const int eci, const int gs1, unsigned char target[], int *p_tp) {
+static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], const int length, const int eci,
+            const int gs1, unsigned char target[], int *p_tp) {
     int sp = 0;
     int tp = *p_tp;
     int current_mode = DM_ASCII;
@@ -1657,6 +1658,13 @@ STATIC_UNLESS_ZINT_TEST int dm_encode(struct zint_symbol *symbol, const unsigned
 
     return 0;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int dm_encode_test(struct zint_symbol *symbol, const unsigned char source[], const int length, const int eci,
+            const int gs1, unsigned char target[], int *p_tp) {
+    return dm_encode(symbol, source, length, eci, gs1, target, p_tp);
+}
+#endif
 
 /* Call `dm_encode()` for each segment, dealing with Structured Append, GS1, READER_INIT and macro headers
    beforehand */

@@ -30,6 +30,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -341,8 +342,7 @@ INTERNAL void c128_put_in_set(int list[2][C128_MAX], const int indexliste, char 
 }
 
 /* Treats source as ISO 8859-1 and copies into symbol->text, converting to UTF-8. Returns length of symbol->text */
-STATIC_UNLESS_ZINT_TEST int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[],
-                            const int length) {
+static int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
     int i, j;
 
     for (i = 0, j = 0; i < length && j < (int) sizeof(symbol->text); i++) {
@@ -373,6 +373,12 @@ STATIC_UNLESS_ZINT_TEST int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, c
 
     return j;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+	return c128_hrt_cpy_iso8859_1(symbol, source, length);
+}
+#endif
 
 /* Handle Code 128, 128B and HIBC 128 */
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {

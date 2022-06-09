@@ -18,6 +18,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -126,7 +127,7 @@ static void usage(int no_png) {
 
     printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n"
             "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
-            "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for UPC/EAN\n"
+            "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for EAN/UPC\n"
             "  --batch               Treat each line of input file as a separate data set\n"
             "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
             "  --binary              Treat input as raw binary data\n"
@@ -154,7 +155,7 @@ static void usage(int no_png) {
             "  --gs1nocheck          Do not check validity of GS1 data\n"
             "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
             "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
-            "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (UPC/EAN)\n"
+            "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (EAN/UPC)\n"
             "  -h, --help            Display help message\n"
             "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
             "  --heightperrow        Treat height as per-row\n"

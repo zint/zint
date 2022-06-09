@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
 #include <errno.h>
@@ -125,6 +126,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     free(symbol);
 }
 
+/* Symbology handlers */
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length); /* EAN system barcodes */
 INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length); /* Code 3 from 9 (or Code 39) */
 INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length); /* Pharmazentral Nummer (PZN) */
@@ -197,11 +199,12 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 
+/* Output handlers */
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
 
 /* Prefix error message with Error/Warning */
-STATIC_UNLESS_ZINT_TEST int error_tag(struct zint_symbol *symbol, int error_number, const char *error_string) {
+static int error_tag(struct zint_symbol *symbol, int error_number, const char *error_string) {
 
     if (error_number != 0) {
         static const char error_fmt[] = "Error %.93s"; /* Truncate if too long */
@@ -226,6 +229,12 @@ STATIC_UNLESS_ZINT_TEST int error_tag(struct zint_symbol *symbol, int error_numb
 
     return error_number;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int error_tag_test(struct zint_symbol *symbol, int error_number, const char *error_string) {
+    return error_tag(symbol, error_number, error_string);
+}
+#endif
 
 /* Output a hexadecimal representation of the rendered symbol */
 static int dump_plot(struct zint_symbol *symbol) {
@@ -286,6 +295,7 @@ static int dump_plot(struct zint_symbol *symbol) {
     return 0;
 }
 
+/* Permitted HIBC characters */
 static const char TECHNETIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"; /* Same as SILVER (CODE39) */
 
 /* Process health industry bar code data */
@@ -532,6 +542,8 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
 
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 
+/* Main dispatch, checking for barcodes which handle ECIs/character sets themselves, otherwise calling
+   `reduced_charset()` */
 static int extended_or_reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int error_number = 0;
 
@@ -620,7 +632,8 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
 #pragma GCC diagnostic pop
 #endif
 
-STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length) {
+/* Remove Unicode BOM at start of data */
+static void strip_bom(unsigned char *source, int *input_length) {
     int i;
 
     /* Note if BOM is only data then not stripped */
@@ -633,11 +646,51 @@ STATIC_UNLESS_ZINT_TEST void strip_bom(unsigned char *source, int *input_length)
     }
 }
 
-STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
-            int *length) {
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL void strip_bom_test(unsigned char *source, int *input_length) {
+    strip_bom(source, input_length);
+}
+#endif
+
+/* Helper to convert base octal, decimal, hexadecimal escape sequence */
+static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int length, int in_posn, int base) {
+    int c1, c2, c3;
+    int min_len = base == 'x' ? 2 : 3;
+
+    if (in_posn + min_len > length) {
+        sprintf(symbol->errtxt, "232: Incomplete '\\%c' escape sequence in input data", base);
+        return -1;
+    }
+    c1 = ctoi(input_string[in_posn]);
+    c2 = ctoi(input_string[in_posn + 1]);
+    if (base == 'd') {
+        c3 = ctoi(input_string[in_posn + 2]);
+        if ((c1 >= 0 && c1 <= 9) && (c2 >= 0 && c2 <= 9) && (c3 >= 0 && c3 <= 9)) {
+            return c1 * 100 + c2 * 10 + c3;
+        }
+    } else if (base == 'o') {
+        c3 = ctoi(input_string[in_posn + 2]);
+        if ((c1 >= 0 && c1 <= 7) && (c2 >= 0 && c2 <= 7) && (c3 >= 0 && c3 <= 7)) {
+            return (c1 << 6) | (c2 << 3) | c3;
+        }
+    } else {
+        if ((c1 >= 0) && (c2 >= 0)) {
+            return (c1 << 4) | c2;
+        }
+    }
+
+    sprintf(symbol->errtxt, "233: Invalid character for '\\%c' escape sequence in input data (%s only)",
+            base, base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal" );
+    return -1;
+}
+
+/* Helper to parse escape sequences */
+static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
     int in_posn, out_posn;
-    int hex1, hex2;
-    int i, unicode;
+    int ch;
+    int val;
+    int i;
+    unsigned long unicode;
 
 #ifndef _MSC_VER
     unsigned char escaped_string[*length + 1];
@@ -654,7 +707,9 @@ STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsi
                 strcpy(symbol->errtxt, "236: Incomplete escape character in input data");
                 return ZINT_ERROR_INVALID_DATA;
             }
-            switch (input_string[in_posn + 1]) {
+            ch = input_string[in_posn + 1];
+            /* NOTE: if add escape character, must also update regex in "frontend_qt/datawindow.php" */
+            switch (ch) {
                 case '0': escaped_string[out_posn] = 0x00; /* Null */
                     in_posn += 2;
                     break;
@@ -691,43 +746,47 @@ STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsi
                 case 'R': escaped_string[out_posn] = 0x1e; /* Record Separator */
                     in_posn += 2;
                     break;
-                case 'x': if (in_posn + 4 > *length) {
-                        strcpy(symbol->errtxt, "232: Incomplete escape character in input data");
+                case 'd':
+                case 'o': /* Undocumented (as not very useful for most people) */
+                case 'x':
+                    if ((val = esc_base(symbol, input_string, *length, in_posn + 2, ch)) == -1) {
                         return ZINT_ERROR_INVALID_DATA;
                     }
-                    hex1 = ctoi(input_string[in_posn + 2]);
-                    hex2 = ctoi(input_string[in_posn + 3]);
-                    if ((hex1 >= 0) && (hex2 >= 0)) {
-                        escaped_string[out_posn] = (hex1 << 4) + hex2;
-                        in_posn += 4;
-                    } else {
-                        strcpy(symbol->errtxt, "233: Corrupt escape character in input data");
-                        return ZINT_ERROR_INVALID_DATA;
-                    }
+                    escaped_string[out_posn] = val;
+                    in_posn += 4 + (ch != 'x');
                     break;
                 case '\\': escaped_string[out_posn] = '\\';
                     in_posn += 2;
                     break;
                 case 'u':
-                    if (in_posn + 6 > *length) {
-                        strcpy(symbol->errtxt, "209: Incomplete Unicode escape character in input data");
+                case 'U':
+                    if (in_posn + 6 > *length || (ch == 'U' && in_posn + 8 > *length)) {
+                        sprintf(symbol->errtxt, "209: Incomplete '\\%c' escape sequence in input data", ch);
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     unicode = 0;
-                    for (i = 0; i < 4; i++) {
-                        if (ctoi(input_string[in_posn + i + 2]) == -1) {
-                            strcpy(symbol->errtxt, "211: Corrupt Unicode escape character in input data");
+                    for (i = 0; i < 6; i++) {
+                        if ((val = ctoi(input_string[in_posn + i + 2])) == -1) {
+                            sprintf(symbol->errtxt,
+                                "211: Invalid character for '\\%c' escape sequence in input data (hexadecimal only)",
+                                ch);
                             return ZINT_ERROR_INVALID_DATA;
                         }
-                        unicode = unicode << 4;
-                        unicode += ctoi(input_string[in_posn + i + 2]);
+                        unicode = (unicode << 4) | val;
+                        if (i == 3 && ch == 'u') {
+                            break;
+                        }
                     }
-                    /* Exclude reversed BOM and surrogates */
-                    if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000)) {
-                        strcpy(symbol->errtxt, "246: Invalid Unicode BMP escape character in input data");
+                    /* Exclude reversed BOM and surrogates and out-of-range */
+                    if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000) || unicode > 0x10ffff) {
+                        sprintf(symbol->errtxt, "246: Invalid value for '\\%c' escape sequence in input data", ch);
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     if (unicode >= 0x800) {
+                        if (unicode >= 0x10000) {
+                            escaped_string[out_posn] = 0xf0 + (unsigned char) (unicode >> 16);
+                            out_posn++;
+                        }
                         escaped_string[out_posn] = 0xe0 + ((unicode & 0xf000) >> 12);
                         out_posn++;
                         escaped_string[out_posn] = 0x80 + ((unicode & 0x0fc0) >> 6);
@@ -740,9 +799,9 @@ STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsi
                     } else {
                         escaped_string[out_posn] = unicode & 0x7f;
                     }
-                    in_posn += 6;
+                    in_posn += 6 + (ch == 'U') * 2;
                     break;
-                default: strcpy(symbol->errtxt, "234: Unrecognised escape character in input data");
+                default: sprintf(symbol->errtxt, "234: Unrecognised escape character '\\%c' in input data", ch);
                     return ZINT_ERROR_INVALID_DATA;
                     break;
             }
@@ -759,6 +818,12 @@ STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsi
 
     return 0;
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
+    return escape_char_process(symbol, input_string, length);
+}
+#endif
 
 /* Encode a barcode. If `length` is 0, `source` must be NUL-terminated. */
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length) {
@@ -793,11 +858,13 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (segs == NULL) {
         return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "200: Input segments NULL");
     }
-    if (seg_count <= 0) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "205: Input segment count 0");
-    }
+    /* `seg_count` zero dealt with via `total_len` zero below */
     if (seg_count > ZINT_MAX_SEG_COUNT) {
         return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "771: Too many input segments (max 256)");
+    }
+
+    if ((symbol->input_mode & 0x07) > 2) {
+        symbol->input_mode = DATA_MODE; /* Reset completely TODO: in future, warn/error */
     }
 
     /* Check segment lengths */
@@ -811,13 +878,28 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             local_segs[i].length = (int) ustrlen(local_segs[i].source);
         }
         if (local_segs[i].length <= 0) {
-            sprintf(symbol->errtxt, "773: Input segment %d length zero", i);
+            if (i == 0) {
+                /* Note: should really be referencing the symbology only after the symbology check switch below */
+                if (is_composite(symbol->symbology) &&
+                        ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology))) {
+                    strcpy(symbol->errtxt, "779: No composite data in 2D component");
+                } else {
+                    sprintf(symbol->errtxt, "778: No input data%s",
+                            supports_eci(symbol->symbology) ? " (segment 0 empty)" : "");
+                }
+            } else {
+                sprintf(symbol->errtxt, "773: Input segment %d empty", i);
+            }
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
         }
         if (local_segs[i].length > ZINT_MAX_DATA_LEN) {
             return error_tag(symbol, ZINT_ERROR_TOO_LONG, "777: Input data too long");
         }
         total_len += local_segs[i].length;
+    }
+
+    if (total_len == 0) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "205: No input data");
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -1007,10 +1089,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         return error_tag(symbol, ZINT_ERROR_TOO_LONG, "770: Too many stacked symbols");
     }
 
-    if ((symbol->input_mode & 0x07) > 2) {
-        symbol->input_mode = DATA_MODE; /* Reset completely TODO: in future, warn/error */
-    }
-
     if ((symbol->input_mode & 0x07) == GS1_MODE && !gs1_compliant(symbol->symbology)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "220: Selected symbology does not support GS1 mode");
     }
@@ -1058,7 +1136,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     if (((symbol->input_mode & 0x07) == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
-        if (gs1_compliant(symbol->symbology) == 1) {
+        if (gs1_compliant(symbol->symbology)) {
             // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will
             // handle it themselves
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include <sys/stat.h>
@@ -180,7 +180,7 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
-void ps_convert(const unsigned char *string, unsigned char *ps_string);
+INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_string);
 
 static void test_ps_convert(int index) {
 
@@ -202,7 +202,7 @@ static void test_ps_convert(int index) {
 
         if (index != -1 && i != index) continue;
 
-        ps_convert((unsigned char *) data[i].data, converted);
+        ps_convert_test((unsigned char *) data[i].data, converted);
         assert_zero(strcmp((char *) converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n", i, data[i].data, converted, data[i].expected);
     }
 
@@ -253,3 +253,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

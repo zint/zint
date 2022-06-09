@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.11.0.9
-May 2022
+June 2022
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -148,6 +148,7 @@ May 2022
         -   6.5.4 Royal Mail 4-State Mailmark
         -   6.5.5 USPS Intelligent Mail
         -   6.5.6 Japanese Postal Code
+        -   6.5.7 DAFT Code
     -   6.6 Matrix Symbols
         -   6.6.1 Data Matrix (ISO 16022)
         -   6.6.2 QR Code (ISO 18004)
@@ -165,17 +166,18 @@ May 2022
     -   6.7 Other Barcode-Like Markings
         -   6.7.1 Facing Identification Mark (FIM)
         -   6.7.2 Flattermarken
-        -   6.7.3 DAFT Code
 -   7. Legal and Version Information
     -   7.1 License
     -   7.2 Patent Issues
     -   7.3 Version Information
     -   7.4 Sources of Information
     -   7.5 Standards Compliance
+        -   7.5.1 Symbology Standards
+        -   7.5.2 General Standards
 -   Annex A. Character Encoding
     -   A.1 ASCII Standard
     -   A.2 Latin Alphabet No. 1 (ISO/IEC 8859-1)
--   Annex B. zint(1) Man Page
+-   Annex B. Man Page ZINT(1)
     -   NAME
     -   SYNOPSIS
     -   DESCRIPTION
@@ -185,7 +187,8 @@ May 2022
     -   BUGS
     -   SEE ALSO
     -   CONFORMING TO
-    -   AUTHORS
+    -   COPYRIGHT
+    -   AUTHOR
 
 1. Introduction
 
@@ -213,35 +216,35 @@ used in the symbol and the orientation of the image.
 Some of the words and phrases used in this document are specific to barcoding,
 and so a brief explanation is given to help understanding:
 
-symbol:
+symbol
 
     A symbol is an image which encodes data according to one of the standards.
     This encompasses barcodes (linear symbols) as well as any of the other
     methods of representing data used in this program.
 
-symbology:
+symbology
 
     A method of encoding data to create a certain type of symbol.
 
-linear:
+linear
 
     A linear or one-dimensional symbol is one which consists of bars and spaces,
     and is what most people associate with the term ‘barcode’. Examples include
     Code 128.
 
-stacked:
+stacked
 
     A stacked symbol consists of multiple linear symbols placed one above
     another and which together hold the message, usually alongside some error
     correction data. Examples include PDF417.
 
-matrix:
+matrix
 
     A matrix symbol is one based on a (usually square) grid of elements called
     modules. Examples include Data Matrix, but MaxiCode and DotCode are also
     considered matrix symbologies.
 
-composite:
+composite
 
     A composite symbology is one which is made up of elements which are both
     linear and stacked. Those currently supported are made up of a linear
@@ -249,7 +252,7 @@ composite:
     PDF417 symbology. These symbols also have a separator which separates the
     linear and the stacked components.
 
-X-dimension:
+X-dimension
 
     The X-dimension of a symbol is the size (usually the width) of the smallest
     element. For a linear symbology this is the width of the smallest bar. For
@@ -259,13 +262,13 @@ X-dimension:
     most matrix symbologies have a fixed width-to-height ratio where the height
     is determined by the width.
 
-GS1 data:
+GS1 data
 
     This is a structured way of representing information which consists of
     ‘chunks’ of data, each of which starts with an Application Identifier (AI).
     The AI identifies what type of information is being encoded.
 
-Reader Initialisation (Programming):
+Reader Initialisation (Programming)
 
     Some symbologies allow a special character to be included which can be
     detected by the scanning equipment as signifying that the data is used to
@@ -274,7 +277,7 @@ Reader Initialisation (Programming):
     should only be used if you are familiar with the programming codes relevant
     to your scanner.
 
-ECI:
+ECI
 
     The Extended Channel Interpretations (ECI) mechanism allows for
     multi-language data to be encoded in symbols which would usually support
@@ -284,12 +287,12 @@ ECI:
 
 Two other concepts that are important are raster and vector.
 
-raster:
+raster
 
     A low level bitmap representation of an image. BMP, GIF, PCX, PNG and TIF
     are raster file formats.
 
-vector:
+vector
 
     A high level command- or data-based representation of an image. EMF, EPS and
     SVG are vector file formats. They require renderers to turn them into
@@ -410,8 +413,8 @@ contain "mail" or "post" (or both).
 The "BMP" and "SVG" buttons at the bottom will copy the image to the clipboard
 in BMP format and SVG format respectively. Further copy-to-clipboard formats are
 available by clicking the "Menu" button, along with "CLI Equivalent", "Save As",
-"Help", "About" and "Quit" options. Most of the options are also available in a
-context menu by right-clicking the preview.
+"Factory Reset", "Help", "About" and "Quit" options. Most of the options are
+also available in a context menu by right-clicking the preview.
 
 [Zint Barcode Studio main menu (left) and context menu (right)]
 
@@ -453,16 +456,17 @@ The Appearance tab can be used to adjust the dimensions and other properties of
 the symbol. The "Height" value affects the height of symbologies which do not
 have a fixed width-to-height ratio, i.e. those other than matrix symbologies.
 Boundary bars ("Border Type") can be added and adjusted ("Border Width") and the
-size of the saved image ("Printing Scale") can be determined.
+size of the saved image ("Printing Scale") can be specified.
 
 3.6 Colour Dialog
 
 [The colour picker tool]
 
 A colour dialog is used to adjust the colour of the foreground and background of
-the generated image. In the Appearance tab click on the "Foreground" or
-"Background" button respectively. The colours can be reset to black-on-white
-using the "Reset" button.
+the generated image. In the Appearance tab click on the foreground eye [eye] or
+background eye [eye] button respectively. The colours can be reset to
+black-on-white using the "Reset" button, and exchanged one for the other using
+the swap [swap] button next to it.
 
 3.7 Data Dialog
 
@@ -576,41 +580,47 @@ Non-printing characters can be entered on the command line using backslash (\)
 as an escape character in combination with the --esc switch. Permissible
 sequences are shown in the table below.
 
-  ---------------------------------------------------------------------------
-  Escape     ASCII        Name    Interpretation
-  Sequence   Equivalent
-  ---------- ------------ ------- -------------------------------------------
-  \0         0x00         NUL     Null character
+  ----------------------------------------------------------------------------
+  Escape      ASCII        Name    Interpretation
+  Sequence    Equivalent
+  ----------- ------------ ------- -------------------------------------------
+  \0          0x00         NUL     Null character
 
-  \E         0x04         EOT     End of Transmission
+  \E          0x04         EOT     End of Transmission
 
-  \a         0x07         BEL     Bell
+  \a          0x07         BEL     Bell
 
-  \b         0x08         BS      Backspace
+  \b          0x08         BS      Backspace
 
-  \t         0x09         HT      Horizontal Tab
+  \t          0x09         HT      Horizontal Tab
 
-  \n         0x0A         LF      Line Feed
+  \n          0x0A         LF      Line Feed
 
-  \v         0x0B         VT      Vertical Tab
+  \v          0x0B         VT      Vertical Tab
 
-  \f         0x0C         FF      Form Feed
+  \f          0x0C         FF      Form Feed
 
-  \r         0x0D         CR      Carriage Return
+  \r          0x0D         CR      Carriage Return
 
-  \e         0x1B         ESC     Escape
+  \e          0x1B         ESC     Escape
 
-  \G         0x1D         GS      Group Separator
+  \G          0x1D         GS      Group Separator
 
-  \R         0x1E         RS      Record Separator
+  \R          0x1E         RS      Record Separator
 
-  \\         0x5C         \       Backslash
+  \\          0x5C         \       Backslash
 
-  \xNN       0xNN                 Any 8-bit character where NN is hexadecimal
+  \dNNN       NNN                  Any 8-bit character where NNN is decimal
+                                   (0-255)
 
-  \uNNNN                          Any 16-bit Unicode BMP[1] character where
-                                  NNNN is hexadecimal
-  ---------------------------------------------------------------------------
+  \xNN        0xNN                 Any 8-bit character where NN is hexadecimal
+
+  \uNNNN                           Any 16-bit Unicode BMP[1] character where
+                                   NNNN is hexadecimal
+
+  \UNNNNNN                         Any 20-bit Unicode character where NNNNNN
+                                   is hexadecimal (maximum 0x10FFFF)
+  ----------------------------------------------------------------------------
 
   : Table : Escape Sequences:
 
@@ -957,7 +967,7 @@ ITF-14 - see 6.1.2.6 ITF-14 for that symbology.
 The default colours of a symbol are a black symbol on a white background. Zint
 allows you to change this. The -r or --reverse switch allows the default colours
 to be inverted so that a white symbol is shown on a black background (known as
-reflectance reversal). For example the command
+“reflectance reversal” or “reversed reflectance”). For example the command
 
     zint -r -d "This Text"
 
@@ -1177,8 +1187,8 @@ by the default character set then you should check that the resulting barcode
 can be understood by your target barcode reader.
 
 The ECI value may be specified with the --eci switch, followed by the value in
-the column "ECI Code". The input data should be UTF-8 formatted. Zint
-automatically translates the data into the target encoding.
+the column "ECI Code" in the table below. The input data should be UTF-8
+formatted. Zint automatically translates the data into the target encoding.
 
   ECI Code   Character Encoding Scheme (ISO/IEC 8859 schemes include ASCII)
   ---------- ----------------------------------------------------------------
@@ -1745,7 +1755,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
 
   option_3              integer      Symbol specific options.     0
 
-  show_hrt              integer      Set to 0 to hide text        1
+  show_hrt              integer      Set to 0 to hide text.       1
 
   input_mode            integer      Set encoding of input data   DATA_MODE
                                      (see 5.10 Setting the Input
@@ -1758,7 +1768,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
                                      dotty mode.
 
   guard_descent         float        Height of guard bar descent  5.0
-                                     (UPC/EAN only)
+                                     (EAN/UPC only).
 
   structapp             Structured   Mark a symbol as part of a   count 0
                         Append       sequence of symbols.         (disabled)
@@ -1807,7 +1817,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
   alphamap              pointer to   Pointer to array             (output only)
                         unsigned     representing alpha channel
                         character    (or NULL if no alpha channel
-                        array        needed)
+                        array        needed).
 
   bitmap_byte_length    integer      Size of BMP bitmap data.     (output only)
 
@@ -2170,7 +2180,7 @@ see which are set.
   ZINT_CAP_STACKABLE          Is the symbology stackable?
 
   ZINT_CAP_EXTENDABLE         Is the symbology extendable with add-on data? (i.e.
-                              is it UPC/EAN?)
+                              is it EAN/UPC?)
 
   ZINT_CAP_COMPOSITE          Does the symbology support composite data? (see 6.3
                               GS1 Composite Symbols (ISO 24723) below)
@@ -2253,11 +2263,11 @@ before using these standards.
 
 [zint -b C25STANDARD -d "9212320967"]
 
-Also known as Code 2 of 5 Matrix this is a self-checking code used in industrial
-applications and photo development. Standard Code 2 of 5 will encode numeric
-input (digits 0-9) up to a maximum of 80 digits. No check digit is added by
-default. To add a check digit, set --vers=1 (API option_2 = 1). To add a check
-digit but not show it in the Human Readable Text, set --vers=2 (API
+Also known as Code 2 of 5 Matrix, this is a self-checking code used in
+industrial applications and photo development. Standard Code 2 of 5 will encode
+numeric input (digits 0-9) up to a maximum of 80 digits. No check digit is added
+by default. To add a check digit, set --vers=1 (API option_2 = 1). To add a
+check digit but not show it in the Human Readable Text, set --vers=2 (API
 option_2 = 2).
 
 6.1.2.2 IATA Code 2 of 5
@@ -2342,10 +2352,9 @@ the data 12345 use the command:
 
     zint -b UPCA -d 72527270270+12345
 
-or encode a data string with the + character included:
+or using the API encode a data string with the + character included:
 
     my_symbol->symbology = BARCODE_UPCA;
-
     error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
 
 [zint -b UPCA --compliantheight -d "72527270270+12345"]
@@ -2375,7 +2384,6 @@ by entering a 7-digit article number stating with the digit 1. For example:
 or
 
     my_symbol->symbology = BARCODE_UPCE;
-
     error = ZBarcode_Encode_and_Print(my_symbol, "1123456", 0, 0);
 
 If your input data already includes the check digit symbology BARCODE_UPCE_CHK
@@ -2555,8 +2563,9 @@ Zint.
 
 [zint -b HIBC_39 --compliantheight -d "14352312"]
 
-This option adds a leading '+' character and a trailing modulo-49 check digit to
-a standard Code 39 symbol as required by the Health Industry Barcode standards.
+This variant adds a leading '+' character and a trailing modulo-49 check digit
+to a standard Code 39 symbol as required by the Health Industry Barcode
+standards.
 
 6.1.7.8 Vehicle Identification Number (VIN)
 
@@ -2666,12 +2675,12 @@ a standard Code 128 symbol as required by the Health Industry Barcode standards.
 [zint -b DPD --compliantheight -d "%000393206219912345678101040"]
 
 Another variation of Code 128 as used by DPD (Deutsher Paket Dienst). Requires a
-28 character alphanumeric input. Zint formats Human Readable Text as specified
-by DPD and adds a modulo-36 check character.
+28 character alphanumeric input. Zint formats the Human Readable Text as
+specified by DPD and adds a modulo-36 check character.
 
 6.1.11 GS1 DataBar (ISO 24724)
 
-Previously known as RSS (Reduced Spaced Symbology) these symbols are due to
+Previously known as RSS (Reduced Spaced Symbology), these symbols are due to
 replace GS1-128 symbols in accordance with the GS1 General Specifications. If a
 GS1 DataBar symbol is to be printed with a 2D component as specified in ISO/IEC
 24723 set --mode=2 (API option_1 = 2). See 6.3 GS1 Composite Symbols (ISO 24723)
@@ -2684,10 +2693,11 @@ to find out how to generate DataBar symbols with 2D components.
 Previously known as RSS-14 this standard encodes a 13-digit item code. A check
 digit and Application Identifier of (01) are added by Zint. (A 14-digit code
 that appends the check digit may be given, in which case the check digit will be
-verified.) To produce a truncated symbol set the symbol height to a value
-between 13 and 32. Truncated symbols may not be scannable by omnidirectional
-scanners. Normal DataBar Omnidirectional symbols should have a height of 33 or
-greater.
+verified.)
+
+GS1 DataBar Omnidirectional symbols should have a height of 33 or greater. To
+produce a GS1 DataBar Truncated symbol set the symbol height to a value between
+13 and 32. Truncated symbols may not be scannable by omnidirectional scanners.
 
 [zint -b DBAR_OMN -d "0950110153001" --height=13]
 
@@ -2696,11 +2706,11 @@ greater.
 [zint -b DBAR_LTD --compliantheight -d "0950110153001"]
 
 Previously known as RSS Limited this standard encodes a 13-digit item code and
-can be used in the same way as DataBar Omnidirectional above. DataBar Limited,
-however, is limited to data starting with digits 0 and 1 (i.e. numbers in the
-range 0 to 1999999999999). As with DataBar Omnidirectional a check digit and
-Application Identifier of (01) are added by Zint, and a 14-digit code may be
-given in which case the check digit will be verified.
+can be used in the same way as GS1 DataBar Omnidirectional above. GS1 DataBar
+Limited, however, is limited to data starting with digits 0 and 1 (i.e. numbers
+in the range 0 to 1999999999999). As with GS1 DataBar Omnidirectional a check
+digit and Application Identifier of (01) are added by Zint, and a 14-digit code
+may be given in which case the check digit will be verified.
 
 6.1.11.3 GS1 DataBar Expanded
 
@@ -2708,8 +2718,8 @@ given in which case the check digit will be verified.
 
 Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
-[square brackets] in the input data. This will be converted to parentheses
-(round brackets) before it is included in the Human Readable Text attached to
+[square brackets] in the input data, which will be converted to parentheses
+(round brackets) before being included in the Human Readable Text attached to
 the symbol. This method allows the inclusion of parentheses in the data to be
 encoded. If the data does not include parentheses, the AIs may alternatively be
 encased in parentheses using the --gs1parens switch. See 6.1.10.3 GS1-128.
@@ -2717,7 +2727,7 @@ encased in parentheses using the --gs1parens switch. See 6.1.10.3 GS1-128.
 GTIN data AI (01) should also include the check digit data as this is not
 calculated by Zint when this symbology is encoded. Fixed length data should be
 entered at the appropriate length for correct encoding. The following is an
-example of a valid DataBar Expanded input:
+example of a valid GS1 DataBar Expanded input:
 
     zint -b 31 -d "[01]98898765432106[3202]012345[15]991231"
 
@@ -2790,7 +2800,7 @@ set by --separator (API option_3):
 [zint --notext --bind --separator=2 -d "This" -d "That"]
 
 A more sophisticated method is to use some type of line indexing which indicates
-to the barcode reader which order the symbols should be read in. This is
+to the barcode reader which order the stacked symbols should be read in. This is
 demonstrated by the symbologies below.
 
 6.2.2 Codablock-F
@@ -2862,7 +2872,7 @@ above.
 
 A variation of the PDF417 standard, MicroPDF417 is intended for applications
 where symbol size needs to be kept to a minimum. 34 predefined symbol sizes are
-available with 1 - 4 columns and 4 - 44 rows. The maximum size a MicroPDF417
+available with 1 - 4 columns and 4 - 44 rows. The maximum amount a MicroPDF417
 symbol can hold is 250 alphanumeric characters or 366 digits. The amount of
 error correction used is dependent on symbol size. The number of columns used
 can be determined using the --cols switch (API option_2) as with PDF417.
@@ -2880,7 +2890,7 @@ Structured Append the same as PDF417, for which see details.
 
 A stacked variation of the GS1 DataBar Truncated symbol requiring the same input
 (see 6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated), this
-symbol is the same as the following DataBar Stacked Omnidirectional symbol
+symbol is the same as the following GS1 DataBar Stacked Omnidirectional symbol
 except that its height is reduced, making it suitable for small items when
 omnidirectional scanning is not required. It can be generated with a
 two-dimensional component to make a composite symbol.
@@ -2926,10 +2936,10 @@ Composite symbols employ a mixture of components to give more comprehensive
 information about a product. The permissible contents of a composite symbol is
 determined by the terms of the GS1 General Specifications. Composite symbols
 consist of a linear component which can be an EAN, UPC, GS1-128 or GS1 DataBar
-symbol, a 2D component which is based on PDF417 or MicroPDF417, and a separator
-pattern. The type of linear component to be used is determined using the -b or
---barcode switch (API symbology) as with other encoding methods. Valid values
-are shown below.
+symbol, a two-dimensional (2D) component which is based on PDF417 or
+MicroPDF417, and a separator pattern. The type of linear component to be used is
+determined using the -b or --barcode switch (API symbology) as with other
+encoding methods. Valid values are shown below.
 
   --------------------------------------------------------------------------------
   Numeric   Name                      Barcode Name
@@ -3041,7 +3051,8 @@ used for encoding zip-codes on mail items. POSTNET uses numerical input data and
 includes a modulo-10 check digit. While Zint will encode POSTNET symbols of up
 to 38 digits in length, standard lengths as used by USPS were PostNet6 (5-digit
 ZIP input), PostNet10 (5-digit ZIP + 4-digit user data) and PostNet12 (5-digit
-ZIP + 6-digit user data).
+ZIP + 6-digit user data), and a warning will be issued if the input length is
+not one of these.
 
 6.4.3 PLANET
 
@@ -3052,7 +3063,8 @@ Numeric Encoding Technique) barcode was used for encoding routing data on mail
 items. PLANET uses numerical input data and includes a modulo-10 check digit.
 While Zint will encode PLANET symbols of up to 38 digits in length, standard
 lengths used by USPS were Planet12 (11-digit input) and Planet14 (13-digit
-input).
+input), and as with POSTNET a warning will be issued if the length is not one of
+these.
 
 6.5 4-State Postal Codes
 
@@ -3134,9 +3146,23 @@ Zint.
 Developed in 2014 as a replacement for RM4SCC this 4-state symbol includes Reed
 Solomon error correction. Input is a pre-formatted alphanumeric string of 22
 (for Barcode C) or 26 (for Barcode L) characters, producing a symbol with 66 or
-78 bars respectively. Some of the permitted inputs include a number of trailing
-space characters - these will be appended by Zint if not included in the input
-data.
+78 bars respectively. The rules for the input data are complex, as summarized in
+the following table.
+
+  Format    Version ID   Class         Supply Chain ID   Item ID    Destination+DPS
+  --------- ------------ ------------- ----------------- ---------- -------------------
+  1 digit   1 digit      1 alphanum.   2 digits (C) or   8 digits   9 alphanumerics
+  (0-4)     (0-3)        (0-9A-E)      6 digits (L)                 (1 of 6 patterns)
+
+  : Table : Royal Mail Mailmark Input Fields:
+
+The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
+patterns are 'FNFNLLNLS', 'FFNNLLNLS', 'FFNNNLLNL', 'FFNFNLLNL', 'FNNLLNLSS' and
+'FNNNLLNLS', where 'F' stands for full alphabetic (A-Z), 'L' for limited
+alphabetic (A-Z less 'CIKMOV'), 'N' for numeric (0-9), and 'S' for space.
+
+Four of the permitted patterns include a number of trailing space characters -
+these will be appended by Zint if not included in the input data.
 
 6.5.5 USPS Intelligent Mail
 
@@ -3150,13 +3176,10 @@ consists of a 20-digit tracking code, followed by a dash (-), followed by a
 delivery point zip-code which can be 0, 5, 9 or 11 digits in length. For example
 all of the following inputs are valid data entries:
 
-    "01234567094987654321"
-
-    "01234567094987654321-01234"
-
-    "01234567094987654321-012345678"
-
-    "01234567094987654321-01234567891"
+-   "01234567094987654321"
+-   "01234567094987654321-01234"
+-   "01234567094987654321-012345678"
+-   "01234567094987654321-01234567891"
 
 6.5.6 Japanese Postal Code
 
@@ -3164,6 +3187,27 @@ all of the following inputs are valid data entries:
 
 Used for address data on mail items for Japan Post. Accepted values are 0-9, A-Z
 and dash (-). A modulo 19 check digit is added by Zint.
+
+6.5.7 DAFT Code
+
+[zint -b DAFT -d "AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF" --height=8.494 --vers=256]
+
+This is a method for creating 4-state codes where the data encoding is provided
+by an external program. Input data should consist of the letters 'D', 'A', 'F'
+and 'T' where these refer to descender, ascender, full (ascender and descender)
+and tracker (neither ascender nor descender) respectively. All other characters
+are invalid. The ratio of the tracker size to full height can be given in
+thousandths (permille) using the --vers option (API option_2). The default value
+is 250 (25%).
+
+For example the following
+
+    zint -b DAFT -d AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF --height=8.494 --vers=256
+
+produces the same barcode (see 6.5.3 Royal Mail 4-State Customer Code (RM4SCC))
+as
+
+    zint -b RM4SCC --compliantheight -d "W1J0TR01"
 
 6.6 Matrix Symbols
 
@@ -3175,11 +3219,11 @@ Also known as Semacode this symbology was developed in 1989 by Acuity CiMatrix
 in partnership with the US DoD and NASA. The symbol can encode a large amount of
 data in a small area. Data Matrix encodes characters in the Latin-1 set by
 default but also supports encoding in other character sets using the ECI
-mechanism. It can also encode GS1 data. The size of the generated symbol can
-also be adjusted using the --vers option (API option_2) as shown in the table
-below. A separate symbology ID (BARCODE_HIBC_DM) can be used to encode Health
-Industry Barcode (HIBC) data. Note that only ECC200 encoding is supported, the
-older standards have now been removed from Zint.
+mechanism. It can also encode GS1 data. The size of the generated symbol can be
+adjusted using the --vers option (API option_2) as shown in the table below. A
+separate symbology ID (BARCODE_HIBC_DM) can be used to encode Health Industry
+Barcode (HIBC) data. Note that only ECC200 encoding is supported, the older
+standards have now been removed from Zint.
 
   Input   Symbol Size      Input   Symbol Size      Input   Symbol Size
   ------- ------------- -- ------- ------------- -- ------- -------------
@@ -3360,13 +3404,12 @@ option_3 = (N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set
 
 [zint -b RMQR -d "0123456"]
 
-A rectangular version of QR Code, it is still under development, so it is
-recommended it should not yet be used for a production environment. Like QR
-Code, rMQR supports encoding of GS1 data, and either Latin-1 characters or Shift
-JIS characters, and other encodings using the ECI mechanism. As with other
-symbologies data should be entered as UTF-8 with conversion being handled by
-Zint. The amount of ECC codewords can be adjusted using the --secure option (API
-option_1), however only ECC levels M and H are valid for this type of symbol.
+A rectangular version of QR Code, rMQR supports encoding of GS1 data, and either
+Latin-1 characters or Shift JIS characters, and other encodings using the ECI
+mechanism. As with other symbologies data should be entered as UTF-8 with
+conversion being handled by Zint. The amount of ECC codewords can be adjusted
+using the --secure option (API option_1), however only ECC levels M and H are
+valid for this type of symbol.
 
   Input   ECC Level   Error Correction Capacity   Recovery Capacity
   ------- ----------- --------------------------- -------------------
@@ -3835,40 +3878,22 @@ not a true barcode symbol and requires precise knowledge of the position of the
 mark on the page. The Flattermarken system can encode numeric data up to a
 maximum of 90 digits and does not include a check digit.
 
-6.7.3 DAFT Code
-
-[zint -b DAFT -d "AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF" --height=8.494 --vers=256]
-
-This is a method for creating 4-state codes where the data encoding is provided
-by an external program. Input data should consist of the letters 'D', 'A', 'F'
-and 'T' where these refer to descender, ascender, full (ascender and descender)
-and tracker (neither ascender nor descender) respectively. All other characters
-are invalid. The ratio of the tracker size to full height can be given in
-thousandths (permille) using the --vers option (API option_2). The default value
-is 250 (25%).
-
-For example the following
-
-    zint -b DAFT -d AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF --height=8.494 --vers=256
-
-produces the same barcode (see 6.5.3 Royal Mail 4-State Customer Code (RM4SCC))
-as
-
-    zint -b RM4SCC --compliantheight -d "W1J0TR01"
-
 7. Legal and Version Information
 
 7.1 License
 
 Zint, libzint and Zint Barcode Studio are Copyright © 2022 Robin Stuart. All
 historical versions are distributed under the GNU General Public License version
-3 or later. Version 2.5 (and later) is released under a dual license: the
-encoding library is released under the BSD license whereas the GUI, Zint Barcode
-Studio, is released under the GNU General Public License version 3 or later.
+3 or later. Versions 2.5 and later are released under a dual license: the
+encoding library is released under the BSD (3 clause) license whereas the GUI,
+Zint Barcode Studio, and the CLI are released under the GNU General Public
+License version 3 or later.
 
 Telepen is a trademark of SB Electronic Systems Ltd.
 
 QR Code is a registered trademark of Denso Wave Incorporated.
+
+Mailmark is a registered trademark of Royal Mail Group Ltd.
 
 Microsoft, Windows and the Windows logo are either registered trademarks or
 trademarks of Microsoft Corporation in the United States and/or other countries.
@@ -3929,63 +3954,73 @@ Below is a list of some of the sources used in rough chronological order:
 Zint was developed to provide compliance with the following British and
 international standards:
 
--   BS EN 798:1996 Bar coding - Symbology specifications - ‘Codabar’
--   BS EN 12323:2005 AIDC technologies - Symbology specifications - Code 16K
--   ISO/IEC 15420:2009 Information technology - Automatic identification and
-    data capture techniques - EAN/UPC bar code symbology specification
--   ISO/IEC 15417:2007 Information technology - Automatic identification and
-    data capture techniques - Code 128 bar code symbology specification
--   ISO/IEC 15438:2015 Information technology - Automatic identification and
-    data capture techniques - PDF417 bar code symbology specification
--   ISO/IEC 16022:2006 Information technology - Automatic identification and
-    data capture techniques - Data Matrix ECC200 bar code symbology
-    specification
--   ISO/IEC 16023:2000 Information technology - International symbology
-    specification - MaxiCode
--   ISO/IEC 16388:2007 Information technology - Automatic identification and
-    data capture techniques - Code 39 bar code symbology specification
--   ISO/IEC 18004:2015 Information technology - Automatic identification and
-    data capture techniques - QR Code bar code symbology specification
--   ISO/IEC 20830:2021 Information technology - Automatic identification and
-    data capture techniques - Han Xin Code bar code symbology specification
--   ISO/IEC 24723:2010 Information technology - Automatic identification and
-    data capture techniques - GS1 Composite bar code symbology specification
--   ISO/IEC 24724:2011 Information technology - Automatic identification and
-    data capture techniques - GS1 DataBar bar code symbology specification
--   ISO/IEC 24728:2006 Information technology - Automatic identification and
-    data capture techniques - MicroPDF417 bar code symbology specification
+7.5.1 Symbology Standards
+
 -   ISO/IEC 24778:2008 Information technology - Automatic identification and
     data capture techniques - Aztec Code bar code symbology specification
--   ISO/IEC JTC1/SC31N000 (Draft 2019-6-24) Information technology - Automatic
-    identification and data capture techniques - Rectangular Micro QR Code
-    (rMQR) bar code symbology specification
--   ISO/IEC 16390:2007 Information technology - Automatic identification and
-    data capture techniques - Interleaved 2 of 5 bar code symbology
+-   ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
+-   BS EN 798:1996 Bar coding - Symbology specifications - ‘Codabar’
+-   AIM Europe ISS-X-24 - Uniform Symbology Specification Codablock-F (1995)
+-   ISO/IEC 15417:2007 Information technology - Automatic identification and
+    data capture techniques - Code 128 bar code symbology specification
+-   BS EN 12323:2005 AIDC technologies - Symbology specifications - Code 16K
+-   ISO/IEC 16388:2007 Information technology - Automatic identification and
+    data capture techniques - Code 39 bar code symbology specification
+-   ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
+-   ANSI/AIM BC5-1995 - Uniform Symbology Specification Code 93
+-   AIM Uniform Symbology Specification Code One (1994)
+-   ISO/IEC 16022:2006 Information technology - Automatic identification and
+    data capture techniques - Data Matrix ECC200 bar code symbology
     specification
 -   ISO/IEC 21471:2020 Information technology - Automatic identification and
     data capture techniques - Extended rectangular data matrix (DMRE) bar code
     symbology specification
--   AIM Uniform Symbology Specification Code One (1994)
--   ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
--   ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
--   ANSI/AIM BC5-1995 - Uniform Symbology Specification Code 93
--   AIM Europe ISS-X-24 - Uniform Symbology Specification Codablock-F (1995)
 -   AIM TSC1705001 (v 4.0 Draft 0.15) - Information technology - Automatic
     identification and data capture techniques - Bar code symbology
     specification - DotCode (Revised 28th May 2019)
+-   ISO/IEC 15420:2009 Information technology - Automatic identification and
+    data capture techniques - EAN/UPC bar code symbology specification
 -   AIMD014 (v 1.63) - Information technology, Automatic identification and data
     capture techniques - Bar code symbology specification - Grid Matrix
     (Released 9th Dec 2008)
+-   ISO/IEC 24723:2010 Information technology - Automatic identification and
+    data capture techniques - GS1 Composite bar code symbology specification
+-   ISO/IEC 24724:2011 Information technology - Automatic identification and
+    data capture techniques - GS1 DataBar bar code symbology specification
+-   ISO/IEC 20830:2021 Information technology - Automatic identification and
+    data capture techniques - Han Xin Code bar code symbology specification
+-   ISO/IEC 16390:2007 Information technology - Automatic identification and
+    data capture techniques - Interleaved 2 of 5 bar code symbology
+    specification
+-   ISO/IEC 16023:2000 Information technology - International symbology
+    specification - MaxiCode
+-   ISO/IEC 24728:2006 Information technology - Automatic identification and
+    data capture techniques - MicroPDF417 bar code symbology specification
+-   ISO/IEC 15438:2015 Information technology - Automatic identification and
+    data capture techniques - PDF417 bar code symbology specification
+-   ISO/IEC 18004:2015 Information technology - Automatic identification and
+    data capture techniques - QR Code bar code symbology specification
+-   ISO/IEC 23941:2022 Information technology - Automatic identification and
+    data capture techniques - Rectangular Micro QR Code (rMQR) bar code
+    symbology specification
 -   AIMD/TSC15032-43 (v 0.99c) - International Technical Specification -
     Ultracode Symbology (Draft) (Released 4th Nov 2015)
--   ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
-    Standard
--   GS1 General Specifications Release 22.0 (Jan 2022)
+
+A number of other specification documents have also been referenced, such as
+MIL-STD-1189 Rev. B (1989) (LOGMARS), USPS DMM 300 2006 (2011) (POSTNET, PLANET,
+FIM) and USPS-B-3200 (2015) (IMAIL). Those not named include postal and delivery
+company references in particular.
+
+7.5.2 General Standards
+
 -   AIM ITS/04-001 International Technical Standard - Extended Channel
     Interpretations Part 1: Identification Schemes and Protocol (Released 24th
     May 2004)
 -   AIM ITS/04-023 International Technical Standard - Extended Channel
     Interpretations Part 3: Register (Version 2, February 2022)
+-   GS1 General Specifications Release 22.0 (Jan 2022)
+-   ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
+    Standard
 
 Annex A. Character Encoding
 
@@ -4049,13 +4084,13 @@ defined.
 
   : Table : ISO/IEC 8859-1:
 
-Annex B. zint(1) Man Page
+Annex B. Man Page ZINT(1)
 
-% zint(1) Version 2.11.0.9 % % May 2022
+% ZINT(1) Version 2.11.0.9 % % June 2022
 
 NAME
 
-zint - Encode data as a barcode image
+zint - encode data as a barcode image
 
 SYNOPSIS
 
@@ -4072,7 +4107,7 @@ Input data is UTF-8, unless --binary is specified.
 Human Readable Text (HRT) is displayed by default for those barcodes that
 support HRT, unless --notext is specified.
 
-The output image file (specified with -o or --output) may be in one of these
+The output image file (specified with -o | --output) may be in one of these
 formats: Windows Bitmap (BMP), Enhanced Metafile Format (EMF), Encapsulated
 PostScript (EPS), Graphics Interchange Format (GIF), ZSoft Paintbrush (PCX),
 Portable Network Format (PNG), Scalable Vector Graphic (SVG), or Tagged Image
@@ -4086,20 +4121,20 @@ OPTIONS
 -b TYPE, --barcode=TYPE
     Set the barcode symbology that will be used to encode the data. TYPE is the
     number or name of the barcode symbology. If not given, the symbology
-    defaults to 20 (Code 128). To see what types are available, use the -t or
+    defaults to 20 (Code 128). To see what types are available, use the -t |
     --types option. Type names are case-insensitive, and non-alphanumerics are
     ignored.
 
 --addongap=INTEGER
-    For UPC/EAN symbologies, set the gap between the main data and the add-on.
+    For EAN/UPC symbologies, set the gap between the main data and the add-on.
     INTEGER is in integral multiples of the X-dimension. The maximum gap that
     can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
 
 --batch
-    Treat each line of an input file specified with -i or --input as a separate
+    Treat each line of an input file specified with -i | --input as a separate
     data set and produce a barcode image for each one. The barcode images are
     outputted by default to numbered filenames starting with “00001.png”,
-    “00002.png” etc., which can be changed by using the -o or --output option.
+    “00002.png” etc., which can be changed by using the -o | --output option.
 
 --bg=COLOUR
     Specify a background (paper) colour where COLOUR is in hex RRGGBB or
@@ -4112,21 +4147,21 @@ OPTIONS
 
 --bind
     Add horizontal boundary bars (also known as bearer bars) to the symbol. The
-    width of the boundary bars must be specified by the --border option. --bind
-    can also be used to add row separator bars to symbols stacked with multiple
-    -d or --data inputs, in which case the width of the separator bars must be
-    specified with the --separator option.
+    width of the boundary bars is specified by the --border option. --bind can
+    also be used to add row separator bars to symbols stacked with multiple -d |
+    --data inputs, in which case the width of the separator bars is specified
+    with the --separator option.
 
 --bold
     Use bold text for the Human Readable Text (HRT).
 
 --border=INTEGER
     Set the width of boundary bars (--bind) or box borders (--box), where
-    INTEGER is in integral multiples of the X-dimension.
+    INTEGER is in integral multiples of the X-dimension. The default is zero.
 
 --box
-    Add a box around the symbol. The width of the borders must be specified by
-    the --border option.
+    Add a box around the symbol. The width of the borders is specified by the
+    --border option.
 
 --cmyk
     Use the CMYK colour space when outputting to Encapsulated PostScript (EPS)
@@ -4173,7 +4208,7 @@ OPTIONS
 
     Dump a hexadecimal representation of the symbol’s encodation to stdout. The
     same representation may be outputted to a file by using a .txt extension
-    with -o or --output or by specifying --filetype=txt.
+    with -o | --output or by specifying --filetype=txt.
 
 -e, --ecinos
 
@@ -4181,8 +4216,8 @@ OPTIONS
 
 --eci=INTEGER
 
-    Set the ECI code for the input data to INTEGER. See -e or --ecinos for a
-    list of the ECIs available. ECIs are supported by Aztec Code, Code One, Data
+    Set the ECI code for the input data to INTEGER. See -e | --ecinos for a list
+    of the ECIs available. ECIs are supported by Aztec Code, Code One, Data
     Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417,
     QR Code, rMQR and Ultracode
 
@@ -4190,23 +4225,27 @@ OPTIONS
 
     Process escape characters in the input data. The escape sequences are:
 
-        \0      (0x00)    NUL  Null character
-        \E      (0x04)    EOT  End of Transmission
-        \a      (0x07)    BEL  Bell
-        \b      (0x08)    BS   Backspace
-        \t      (0x09)    HT   Horizontal Tab
-        \n      (0x0A)    LF   Line Feed
-        \v      (0x0B)    VT   Vertical Tab
-        \f      (0x0C)    FF   Form Feed
-        \r      (0x0D)    CR   Carriage Return
-        \e      (0x1B)    ESC  Escape
-        \G      (0x1D)    GS   Group Separator
-        \R      (0x1E)    RS   Record Separator
-        \\      (0x5C)    \    Backslash
-        \xNN    (0xNN)         Any 8-bit character where NN is
-                               hexadecimal
-        \uNNNN  (U+NNNN)       Any 16-bit Unicode BMP character
-                               where NNNN is hexadecimal
+        \0       (0x00)    NUL  Null character
+        \E       (0x04)    EOT  End of Transmission
+        \a       (0x07)    BEL  Bell
+        \b       (0x08)    BS   Backspace
+        \t       (0x09)    HT   Horizontal Tab
+        \n       (0x0A)    LF   Line Feed
+        \v       (0x0B)    VT   Vertical Tab
+        \f       (0x0C)    FF   Form Feed
+        \r       (0x0D)    CR   Carriage Return
+        \e       (0x1B)    ESC  Escape
+        \G       (0x1D)    GS   Group Separator
+        \R       (0x1E)    RS   Record Separator
+        \\       (0x5C)    \    Backslash
+        \dNNN    (NNN)          Any 8-bit character where NNN is
+                                decimal (000-255)
+        \xNN     (0xNN)         Any 8-bit character where NN is
+                                hexadecimal
+        \uNNNN   (U+NNNN)       Any 16-bit Unicode BMP character
+                                where NNNN is hexadecimal
+        \UNNNNNN (U+NNNNNN)     Any 20-bit Unicode character
+                                where NNNNNN is hexadecimal
 
 --fast
 
@@ -4248,14 +4287,14 @@ OPTIONS
 
 --guarddescent=NUMBER
 
-    For UPC/EAN symbols, set the height of the guard bars’ descent, where NUMBER
-    is in multiples of the X-dimension. NUMBER may be floating-point.
+    For EAN/UPC symbols, set the height the guard bars descend below the main
+    bars, where NUMBER is in multiples of the X-dimension. NUMBER may be
+    floating-point.
 
 --height=NUMBER
 
     Set the height of the symbol in multiples of the X-dimension. NUMBER may be
-    floating-point. Increments of 0.5 are recommended for raster output (BMP,
-    GIF, PCX, PNG and TIF).
+    floating-point.
 
 --heightperrow
 
@@ -4281,7 +4320,7 @@ OPTIONS
 
 --mode=INTEGER
 
-    For MaxiCode and Composite symbols, set the encoding mode to INTEGER.
+    For MaxiCode and GS1 Composite symbols, set the encoding mode to INTEGER.
 
     For MaxiCode (SCM is Structured Carrier Message, with 3 fields: postcode,
     3-digit ISO 3166-1 country code, 3-digit service code):
@@ -4292,7 +4331,7 @@ OPTIONS
         5   Enhanced ECC for all of the message
         6   Reader Initialisation (Programming)
 
-    For Composite symbols (names end in _CC, i.e. EANX_CC, GS1_128_CC,
+    For GS1 Composite symbols (names end in _CC, i.e. EANX_CC, GS1_128_CC,
     DBAR_OMN_CC etc.):
 
         1   CC-A
@@ -4324,17 +4363,18 @@ OPTIONS
 
 --primary=STRING
 
-    For MaxiCode, set the content of the primary message. For Composite symbols,
-    set the content of the linear symbol.
+    For MaxiCode, set the content of the primary message. For GS1 Composite
+    symbols, set the content of the linear symbol.
 
 --quietzones
 
     Add compliant quiet zones for symbols that specify one. This is in addition
-    to any whitespace specified by -w or --whitesp or --vwhitesp.
+    to any whitespace specified by -w | --whitesp or --vwhitesp.
 
 -r, --reverse
 
-    Reverse the foreground and background colours (white on black).
+    Reverse the foreground and background colours (white on black). Known as
+    “reflectance reversal” or “reversed reflectance”.
 
 --rotate=INTEGER
 
@@ -4349,10 +4389,15 @@ OPTIONS
 
 --scale=NUMBER
 
-    Set the X-dimension. NUMBER may be floating-point, and is multiplied by 2
-    (except for MaxiCode) before being applied. For MaxiCode, the scale is
-    multiplied by 10 for raster output, by 20 for EMF vector output, and by 2
-    otherwise. The default scale is 1.
+    Adjust the size of the X-dimension. NUMBER may be floating-point, and is
+    multiplied by 2 (except for MaxiCode) before being applied. The default
+    scale is 1.
+
+    For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for EMF
+    output, and by 2 otherwise.
+
+    Increments of 0.5 (half-integers) are recommended for non-MaxiCode raster
+    output (BMP, GIF, PCX, PNG and TIF).
 
 --scmvv=INTEGER
 
@@ -4362,27 +4407,27 @@ OPTIONS
 --secure=INTEGER
 
     Set the error correction level (ECC) to INTEGER. The meaning is specific to
-    the following matrix symbols:
+    the following matrix symbols (all except PDF417 are approximate):
 
-        Aztec Code  1 to 4 (10%, 23%, 36%, 50%) (approx.)
-        Grid Matrix 1 to 5 (10% to 50%) (approx.)
-        Han Xin     1 to 4 (8%, 15%, 23%, 30%) (approx.)
-        Micro QR    1 to 3 (L, M, Q)
+        Aztec Code  1 to 4 (10%, 23%, 36%, 50%)
+        Grid Matrix 1 to 5 (10% to 50%)
+        Han Xin     1 to 4 (8%, 15%, 23%, 30%)
+        Micro QR    1 to 3 (7%, 15%, 25%) (L, M, Q)
         PDF417      0 to 8 (2^(INTEGER + 1) codewords)
-        QR Code     1 to 4 (L, M, Q, H)
-        rMQR        2 or 4 (M, H)
-        Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%) (approx.)
+        QR Code     1 to 4 (7%, 15%, 25%, 30%) (L, M, Q, H)
+        rMQR        2 or 4 (15% or 30%) (M or H)
+        Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%)
 
 --segN=ECI,DATA
 
-    Set the ECI & DATA content for segment N, where N is 1 to 9. -d or --data
+    Set the ECI & DATA content for segment N, where N is 1 to 9. -d | --data
     must still be given, and counts as segment 0, its ECI given by --eci.
     Segments must be consecutive.
 
 --separator=INTEGER
 
     Set the height of row separator bars for stacked symbologies, where INTEGER
-    is in integral multiples of the X-dimension.
+    is in integral multiples of the X-dimension. The default is zero.
 
 --small
 
@@ -4395,16 +4440,16 @@ OPTIONS
 
 --structapp=I,C[,ID]
 
-    Set Structured Append info, where I is the 1-based index, C is the count of
-    total symbols in the sequence, and ID, which is optional, is the identifier
-    that all symbols in the sequence share. Structured Append is supported by
-    Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, MaxiCode,
-    MicroPDF417, PDF417, QR Code and Ultracode.
+    Set Structured Append info, where I is the 1-based index, C is the total
+    number of symbols in the sequence, and ID, which is optional, is the
+    identifier that all symbols in the sequence share. Structured Append is
+    supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix,
+    MaxiCode, MicroPDF417, PDF417, QR Code and Ultracode.
 
 -t, --types
 
     Display the table of barcode types (symbologies). The numbers or names can
-    be used with -b or --barcode.
+    be used with -b | --barcode.
 
 --vers=INTEGER
 
@@ -4432,13 +4477,16 @@ OPTIONS
         C25LOGIC        ditto
         C25STANDARD     ditto
         Codabar         1 or 2 (add hidden or visible check digit)
-        Code 11         0 or 1 (no or 1 check digit only)
-                               (has 2 check digits by default)
+        Code 11         0 or 1 (no or 1 visible check digit only)
+                               (default is 2 visible check digits)
         Code 39         1      (add visible check digit)
         Code 93         1      (hide the default check characters)
         EXCODE39        1      (add visible check digit)
         LOGMARS         1      (add visible check digit)
-        MSI Plessey     0 to 6 (various check digit options)
+        MSI Plessey     0 to 6 (none to various visible options)
+                        1, 2   (mod-10, mod-10 + mod-10)
+                        3, 4   (mod-11 IBM, mod-11 IBM + mod-10)
+                        5, 6   (mod-11 NCR, mod-11 NCR + mod-10)
                         +10    (hide)
 
     For a few other symbologies, it specifies other characteristics:
@@ -4469,8 +4517,8 @@ OPTIONS
 EXIT STATUS
 
 0
-    Success (including when given informational options -h, --help, -e,
-    --ecinos, -t, --types, -v, --version).
+    Success (including when given informational options -h | --help, -e |
+    --ecinos, -t | --types, -v | --version).
 
 2
     Invalid option given but overridden by Zint (ZINT_WARN_INVALID_OPTION)
@@ -4543,15 +4591,19 @@ CONFORMING TO
 Zint is designed to be compliant with a number of international standards,
 including:
 
-EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009, ISO/IEC 15417:2007, ISO/IEC
-15438:2015, ISO/IEC 16022:2006, ISO/IEC 16023:2000, ISO/IEC 16388:2007, ISO/IEC
-18004:2015, ISO/IEC 20830:2021, ISO/IEC 24723:2010, ISO/IEC 24724:2011, ISO/IEC
-24728:2006, ISO/IEC 24778:2008, ISO/IEC 16390:2007, ISO/IEC 21471:2019, AIM USS
-Code One (1994), ANSI/AIM BC12-1998, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995, AIM
-ISS-X-24 (1995), AIMD014 (v 1.63) (2008), ANSI-HIBC 2.6-2016, AIM ITS/04-023
-(2022)
+ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996, AIM ISS-X-24 (1995),
+ISO/IEC 15417:2007, EN 12323:2005, ISO/IEC 16388:2007, ANSI/AIM BC6-2000,
+ANSI/AIM BC5-1995, AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC
+21471:2019, ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,
+ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007, ISO/IEC 16023:2000,
+ISO/IEC 24728:2006, ISO/IEC 15438:2015, ISO/IEC 18004:2015, ISO/IEC 23941:2022,
+AIM ITS/04-023 (2022)
 
-AUTHORS
+COPYRIGHT
+
+Copyright © 2022 Robin Stuart. Released under GNU GPL 3.0 or later.
+
+AUTHOR
 
 Robin Stuart robin@zint.org.uk
 

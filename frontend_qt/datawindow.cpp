@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
 #include <QFileDialog>
@@ -33,7 +33,8 @@
 
 static const int tempMessageTimeout = 2000;
 
-DataWindow::DataWindow(const QString &input, bool isEscaped) : Valid(false), Escaped(false)
+DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid(false), Escaped(false),
+    m_isEscaped(isEscaped), m_seg_no(seg_no)
 {
     setupUi(this);
     QSettings settings;
@@ -45,7 +46,7 @@ DataWindow::DataWindow(const QString &input, bool isEscaped) : Valid(false), Esc
     restoreGeometry(geometry);
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
-    QIcon clearIcon(QIcon::fromTheme(QSL("edit-clear"), QIcon(QSL(":res/delete.svg"))));
+    QIcon clearIcon(QSL(":res/delete.svg"));
     QIcon okIcon(QIcon(QSL(":res/check.svg")));
     btnCancel->setIcon(closeIcon);
     btnDataClear->setIcon(clearIcon);
@@ -56,7 +57,8 @@ DataWindow::DataWindow(const QString &input, bool isEscaped) : Valid(false), Esc
         QString out;
         out.reserve(input.length());
         int lastPosn = 0;
-        QRegularExpression escRE(QSL("\\\\(?:[0EabtnvfreGR\\\\]|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4})"));
+        QRegularExpression escRE(QSL("\\\\(?:[0EabtnvfreGR\\\\]|d[0-9]{3}|o[0-7]{3}|x[0-9A-Fa-f]{2}|u[0-9A-Fa-f]{4}"
+                                        "|U[0-9A-Fa-f]{6})"));
         QRegularExpressionMatchIterator matchI = escRE.globalMatch(input);
         while (matchI.hasNext()) {
             QRegularExpressionMatch match = matchI.next();
@@ -77,6 +79,9 @@ DataWindow::DataWindow(const QString &input, bool isEscaped) : Valid(false), Esc
     connect(btnDataClear, SIGNAL( clicked( bool )), SLOT(clear_data()));
     connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
     connect(btnFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
+    connect(txtDataInput, SIGNAL( textChanged() ), this, SLOT(text_changed()));
+
+    btnDataClear->setEnabled(!txtDataInput->toPlainText().isEmpty());
 }
 
 DataWindow::~DataWindow()
@@ -93,16 +98,30 @@ void DataWindow::clear_data()
     txtDataInput->clear();
 }
 
+void DataWindow::text_changed()
+{
+    bool escaped = m_isEscaped;
+    const QString &text = escapedData(escaped);
+    btnDataClear->setEnabled(!text.isEmpty());
+    emit dataChanged(text, escaped, m_seg_no);
+}
+
 void DataWindow::okay()
 {
     Valid = true;
-    DataOutput = txtDataInput->toPlainText();
-    if (DataOutput.contains('\n')) {
-        // Escape Line Feeds
-        DataOutput.replace('\n', QSL("\\n"));
-        Escaped = true;
-    }
+    DataOutput = escapedData(Escaped);
     close();
+}
+
+QString DataWindow::escapedData(bool &escaped)
+{
+    QString text = txtDataInput->toPlainText();
+    if (text.contains('\n')) {
+        // Escape Line Feeds
+        text.replace('\n', QSL("\\n"));
+        escaped = true;
+    }
+    return text;
 }
 
 void DataWindow::from_file()
@@ -160,3 +179,5 @@ void DataWindow::from_file()
 
     settings.setValue("studio/default_dir", filename.mid(0, filename.lastIndexOf(QDir::separator())));
 }
+
+/* vim: set ts=4 sw=4 et : */

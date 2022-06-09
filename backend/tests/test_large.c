@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "../large.h"
@@ -51,7 +51,7 @@
 
 #define LI(l, h) { l, h }
 
-int clz_u64(uint64_t x);
+INTERNAL int clz_u64_test(uint64_t x);
 
 static void test_clz_u64(int index) {
 
@@ -197,7 +197,7 @@ static void test_clz_u64(int index) {
 
         if (index != -1 && i != index) continue;
 
-        ret = clz_u64(data[i].s);
+        ret = clz_u64_test(data[i].s);
         assert_equal(ret, data[i].ret, "i:%d 0x%" LX_FMT "X ret %d != %d\n", i, data[i].s, ret, data[i].ret);
     }
 
@@ -904,3 +904,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

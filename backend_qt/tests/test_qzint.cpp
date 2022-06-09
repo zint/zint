@@ -12,6 +12,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #include <QtTest/QtTest>
 #include "../qzint.h" /* Don't use <qzint.h> in case it's been changed */
@@ -372,7 +373,7 @@ private slots:
 
         QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 773: Input segment 0 length zero" << 0 << 0;
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 778: No input data (segment 0 empty)" << 0 << 0;
         }
     }
 

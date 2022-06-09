@@ -1,8 +1,7 @@
 /* ps.c - Post Script output */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
 #include <locale.h>
@@ -103,7 +102,7 @@ static void colour_to_pscolor(int option, int colour, char *output) {
     }
 }
 
-STATIC_UNLESS_ZINT_TEST void ps_convert(const unsigned char *string, unsigned char *ps_string) {
+static void ps_convert(const unsigned char *string, unsigned char *ps_string) {
     const unsigned char *s;
     unsigned char *p = ps_string;
 
@@ -131,6 +130,12 @@ STATIC_UNLESS_ZINT_TEST void ps_convert(const unsigned char *string, unsigned ch
     }
     *p = '\0';
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_string) {
+	ps_convert(string, ps_string);
+}
+#endif
 
 INTERNAL int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
@@ -522,3 +527,5 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

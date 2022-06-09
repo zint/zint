@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * For version, see "zintconfig.h"
  * For documentation, see "../docs/manual.txt"
@@ -91,7 +92,7 @@ extern "C" {
     struct zint_symbol {
         int symbology;      /* Symbol to use (see BARCODE_XXX below) */
         float height;       /* Barcode height in X-dimensions (ignored for fixed-width barcodes) */
-        float scale;        /* Scale factor when printing barcode. Default 1 */
+        float scale;        /* Scale factor when printing barcode, i.e. adjusts X-dimension. Default 1 */
         int whitespace_width; /* Width in X-dimensions of whitespace to left & right of barcode */
         int whitespace_height; /* Height in X-dimensions of whitespace above & below the barcode */
         int border_width;   /* Size of border in X-dimensions */
@@ -110,7 +111,7 @@ extern "C" {
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
         float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE. Default 0.8 */
-        float guard_descent; /* Height in X-dimensions that UPC/EAN guard bars descend. Default 5 */
+        float guard_descent; /* Height in X-dimensions that EAN/UPC guard bars descend. Default 5 */
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
@@ -274,7 +275,7 @@ extern "C" {
 #define GS1_GS_SEPARATOR        0x0200  /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
 #define OUT_BUFFER_INTERMEDIATE 0x0400  /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
 #define BARCODE_QUIET_ZONES     0x0800  /* Add compliant quiet zones (additional to any specified whitespace) */
-                                        /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, UPC/EAN have default quiet zones
+                                        /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, EAN/UPC have default quiet zones
                                          */
 #define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
 #define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant and use standard height (if any) as default */
@@ -324,7 +325,7 @@ extern "C" {
 /* Capability flags (ZBarcode_Cap() `cap_flag`) */
 #define ZINT_CAP_HRT                0x0001  /* Prints Human Readable Text? */
 #define ZINT_CAP_STACKABLE          0x0002  /* Is stackable? */
-#define ZINT_CAP_EXTENDABLE         0x0004  /* Is extendable with add-on data? (Is UPC/EAN?) */
+#define ZINT_CAP_EXTENDABLE         0x0004  /* Is extendable with add-on data? (Is EAN/UPC?) */
 #define ZINT_CAP_COMPOSITE          0x0008  /* Can have composite data? */
 #define ZINT_CAP_ECI                0x0010  /* Supports Extended Channel Interpretations? */
 #define ZINT_CAP_GS1                0x0020  /* Supports GS1 data? */

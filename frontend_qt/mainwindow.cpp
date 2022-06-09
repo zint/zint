@@ -13,6 +13,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
 #include <QGraphicsScene>
@@ -54,6 +55,10 @@ static const QKeySequence copyPNGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_P);
 #endif
 static const QKeySequence copySVGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_S);
 static const QKeySequence copyTIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_T);
+
+static const QKeySequence factoryResetSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_R);
+
+static const QRegularExpression colorRE(QSL("^[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"));
 
 struct bstyle_item {
     const QString text;
@@ -159,14 +164,19 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
 
     restoreGeometry(settings.value(QSL("studio/window_geometry")).toByteArray());
 
-    m_fgcolor.setRgb(settings.value(QSL("studio/ink/red"), 0).toInt(),
-                    settings.value(QSL("studio/ink/green"), 0).toInt(),
-                    settings.value(QSL("studio/ink/blue"), 0).toInt(),
-                    settings.value(QSL("studio/ink/alpha"), 0xff).toInt());
-    m_bgcolor.setRgb(settings.value(QSL("studio/paper/red"), 0xff).toInt(),
-                    settings.value(QSL("studio/paper/green"), 0xff).toInt(),
-                    settings.value(QSL("studio/paper/blue"), 0xff).toInt(),
-                    settings.value(QSL("studio/paper/alpha"), 0xff).toInt());
+    m_fgcolor_geometry = settings.value(QSL("studio/fgcolor_geometry")).toByteArray();
+    m_bgcolor_geometry = settings.value(QSL("studio/bgcolor_geometry")).toByteArray();
+
+    fgcolor->setIcon(QIcon(QSL(":res/black-eye.svg")));
+    bgcolor->setIcon(QIcon(QSL(":res/white-eye.svg")));
+    btnReverse->setIcon(QIcon(QSL(":res/shuffle.svg")));
+
+    QRegularExpressionValidator *colorValidator = new QRegularExpressionValidator(colorRE, this);
+    txt_fgcolor->setValidator(colorValidator);
+    txt_bgcolor->setValidator(colorValidator);
+
+    connect(txt_fgcolor, SIGNAL(textEdited(QString)), this, SLOT(fgcolor_edited()));
+    connect(txt_bgcolor, SIGNAL(textEdited(QString)), this, SLOT(bgcolor_edited()));
 
     const int cnt = (int) (sizeof(bstyle_items) / sizeof(bstyle_items[0]));
     for (int i = 0; i < cnt; i++) {
@@ -182,34 +192,15 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
 
     bstyle->setCurrentIndex(settings.value(QSL("studio/symbology"), 10).toInt());
 
-    txtData->setText(settings.value(QSL("studio/data"), tr("Your Data Here!")).toString());
-    /* Don't save seg data */
-    txtComposite->setText(settings.value(QSL("studio/composite_text"), tr("Your Data Here!")).toString());
-    chkComposite->setChecked(settings.value(QSL("studio/chk_composite")).toInt() ? true : false);
-    cmbCompType->setCurrentIndex(settings.value(QSL("studio/comp_type"), 0).toInt());
-    cmbECI->setCurrentIndex(settings.value(QSL("studio/eci"), 0).toInt());
-    /* Don't save seg ECIs */
-    chkEscape->setChecked(settings.value(QSL("studio/chk_escape")).toInt() ? true : false);
-    chkData->setChecked(settings.value(QSL("studio/chk_data")).toInt() ? true : false);
-    chkRInit->setChecked(settings.value(QSL("studio/chk_rinit")).toInt() ? true : false);
-    chkGS1Parens->setChecked(settings.value(QSL("studio/chk_gs1parens")).toInt() ? true : false);
-    chkGS1NoCheck->setChecked(settings.value(QSL("studio/chk_gs1nocheck")).toInt() ? true : false);
-    chkAutoHeight->setChecked(settings.value(QSL("studio/appearance/autoheight"), 1).toInt() ? true : false);
-    chkCompliantHeight->setChecked(
-        settings.value(QSL("studio/appearance/compliantheight"), 1).toInt() ? true : false);
-    heightb->setValue(settings.value(QSL("studio/appearance/height"), 50.0f).toFloat());
-    bwidth->setValue(settings.value(QSL("studio/appearance/border"), 0).toInt());
-    spnWhitespace->setValue(settings.value(QSL("studio/appearance/whitespace"), 0).toInt());
-    spnVWhitespace->setValue(settings.value(QSL("studio/appearance/vwhitespace"), 0).toInt());
-    spnScale->setValue(settings.value(QSL("studio/appearance/scale"), 1.0).toFloat());
-    btype->setCurrentIndex(settings.value(QSL("studio/appearance/border_type"), 0).toInt());
-    cmbFontSetting->setCurrentIndex(settings.value(QSL("studio/appearance/font_setting"), 0).toInt());
-    chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), 1).toInt() ? true : false);
-    chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
-    chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
-    cmbRotate->setCurrentIndex(settings.value(QSL("studio/appearance/rotate"), 0).toInt());
-    chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
-    spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
+    load_settings(settings);
+
+    QIcon clearIcon(QSL(":res/delete.svg"));
+    btnClearData->setIcon(clearIcon);
+    btnClearDataSeg1->setIcon(clearIcon);
+    btnClearDataSeg2->setIcon(clearIcon);
+    btnClearDataSeg3->setIcon(clearIcon);
+    btnClearComposite->setIcon(clearIcon);
+    btnZap->setIcon(QIcon(QSL(":res/zap.svg")));
 
     change_options();
 
@@ -222,6 +213,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(bwidth,  SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
     connect(txtDataSeg1, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
     connect(txtDataSeg1, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
@@ -233,6 +225,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkComposite, SIGNAL(toggled( bool )), SLOT(composite_ui_set()));
     connect(chkComposite, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(cmbCompType, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(btnClearComposite, SIGNAL(clicked( bool )), SLOT(clear_composite()));
     connect(cmbECI, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbECISeg1, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbECISeg2, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -249,11 +242,17 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(spnScale, SIGNAL(valueChanged( double )), SLOT(change_print_scale()));
     connect(btnExit, SIGNAL(clicked( bool )), SLOT(quit_now()));
     connect(btnReset, SIGNAL(clicked( bool )), SLOT(reset_colours()));
+    connect(btnReverse, SIGNAL(clicked( bool )), SLOT(reverse_colours()));
     connect(btnMoreData, SIGNAL(clicked( bool )), SLOT(open_data_dialog()));
     connect(btnMoreDataSeg1, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg1()));
     connect(btnMoreDataSeg2, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg2()));
     connect(btnMoreDataSeg3, SIGNAL(clicked( bool )), SLOT(open_data_dialog_seg3()));
+    connect(btnClearData, SIGNAL(clicked( bool )), SLOT(clear_data()));
+    connect(btnClearDataSeg1, SIGNAL(clicked( bool )), SLOT(clear_data_seg1()));
+    connect(btnClearDataSeg2, SIGNAL(clicked( bool )), SLOT(clear_data_seg2()));
+    connect(btnClearDataSeg3, SIGNAL(clicked( bool )), SLOT(clear_data_seg3()));
     connect(btnSequence, SIGNAL(clicked( bool )), SLOT(open_sequence_dialog()));
+    connect(btnZap, SIGNAL(clicked( bool )), SLOT(zap()));
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(autoheight_ui_set()));
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(chkCompliantHeight, SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -295,6 +294,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     m_copyTIFShortcut = new QShortcut(copyTIFSeq, this);
     connect(m_copyTIFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_tif()));
 
+    m_factoryResetShortcut = new QShortcut(factoryResetSeq, this);
+    connect(m_factoryResetShortcut, SIGNAL(activated()), SLOT(factory_reset()));
+
     QShortcut *helpShortcut = new QShortcut(QKeySequence::HelpContents, this);
     connect(helpShortcut, SIGNAL(activated()), SLOT(help()));
     QShortcut *quitShortcut = new QShortcut(quitKeySeq, this);
@@ -305,6 +307,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     bstyle->setFocus();
 
     tabMain->installEventFilter(this);
+    txt_fgcolor->installEventFilter(this);
+    txt_bgcolor->installEventFilter(this);
 }
 
 MainWindow::~MainWindow()
@@ -315,6 +319,8 @@ MainWindow::~MainWindow()
 #endif
 
     settings.setValue(QSL("studio/window_geometry"), saveGeometry());
+    settings.setValue(QSL("studio/fgcolor_geometry"), m_fgcolor_geometry);
+    settings.setValue(QSL("studio/bgcolor_geometry"), m_bgcolor_geometry);
     settings.setValue(QSL("studio/tab_index"), tabMain->currentIndex());
     settings.setValue(QSL("studio/symbology"), bstyle->currentIndex());
     settings.setValue(QSL("studio/ink/red"), m_fgcolor.red());
@@ -354,6 +360,50 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/appearance/dot_size"), spnDotSize->value());
 
     save_sub_settings(settings, m_bc.bc.symbol());
+}
+
+void MainWindow::load_settings(QSettings &settings)
+{
+    bool initial_load = m_symbology == 0;
+    QString initialData(initial_load ? tr("Your Data Here!") : "");
+
+    m_fgcolor.setRgb(settings.value(QSL("studio/ink/red"), 0).toInt(),
+                    settings.value(QSL("studio/ink/green"), 0).toInt(),
+                    settings.value(QSL("studio/ink/blue"), 0).toInt(),
+                    settings.value(QSL("studio/ink/alpha"), 0xff).toInt());
+    m_bgcolor.setRgb(settings.value(QSL("studio/paper/red"), 0xff).toInt(),
+                    settings.value(QSL("studio/paper/green"), 0xff).toInt(),
+                    settings.value(QSL("studio/paper/blue"), 0xff).toInt(),
+                    settings.value(QSL("studio/paper/alpha"), 0xff).toInt());
+
+    txtData->setText(settings.value(QSL("studio/data"), initialData).toString());
+    /* Don't save seg data */
+    txtComposite->setText(settings.value(QSL("studio/composite_text"), initialData).toString());
+    chkComposite->setChecked(settings.value(QSL("studio/chk_composite")).toInt() ? true : false);
+    cmbCompType->setCurrentIndex(settings.value(QSL("studio/comp_type"), 0).toInt());
+    cmbECI->setCurrentIndex(settings.value(QSL("studio/eci"), 0).toInt());
+    /* Don't save seg ECIs */
+    chkEscape->setChecked(settings.value(QSL("studio/chk_escape")).toInt() ? true : false);
+    chkData->setChecked(settings.value(QSL("studio/chk_data")).toInt() ? true : false);
+    chkRInit->setChecked(settings.value(QSL("studio/chk_rinit")).toInt() ? true : false);
+    chkGS1Parens->setChecked(settings.value(QSL("studio/chk_gs1parens")).toInt() ? true : false);
+    chkGS1NoCheck->setChecked(settings.value(QSL("studio/chk_gs1nocheck")).toInt() ? true : false);
+    chkAutoHeight->setChecked(settings.value(QSL("studio/appearance/autoheight"), 1).toInt() ? true : false);
+    chkCompliantHeight->setChecked(
+        settings.value(QSL("studio/appearance/compliantheight"), 1).toInt() ? true : false);
+    heightb->setValue(settings.value(QSL("studio/appearance/height"), 50.0f).toFloat());
+    bwidth->setValue(settings.value(QSL("studio/appearance/border"), 0).toInt());
+    spnWhitespace->setValue(settings.value(QSL("studio/appearance/whitespace"), 0).toInt());
+    spnVWhitespace->setValue(settings.value(QSL("studio/appearance/vwhitespace"), 0).toInt());
+    spnScale->setValue(settings.value(QSL("studio/appearance/scale"), 1.0).toFloat());
+    btype->setCurrentIndex(settings.value(QSL("studio/appearance/border_type"), 0).toInt());
+    cmbFontSetting->setCurrentIndex(settings.value(QSL("studio/appearance/font_setting"), 0).toInt());
+    chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), 1).toInt() ? true : false);
+    chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
+    chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
+    cmbRotate->setCurrentIndex(settings.value(QSL("studio/appearance/rotate"), 0).toInt());
+    chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
+    spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
 }
 
 QString MainWindow::get_zint_version(void)
@@ -410,6 +460,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         }
     }
 
+    if ((watched == txt_fgcolor || watched == txt_bgcolor) && event->type() == QEvent::FocusOut) {
+        if (watched == txt_fgcolor) {
+            setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+        } else {
+            setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+        }
+    }
+
     return QWidget::eventFilter(watched, event);
 }
 
@@ -417,7 +475,36 @@ void MainWindow::reset_colours()
 {
     m_fgcolor.setRgb(0, 0, 0, 0xff);
     m_bgcolor.setRgb(0xff, 0xff, 0xff, 0xff);
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
     update_preview();
+}
+
+void MainWindow::reverse_colours()
+{
+    QColor temp = m_fgcolor;
+    m_fgcolor = m_bgcolor;
+    m_bgcolor = temp;
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+    update_preview();
+}
+
+QString MainWindow::getColorStr(const QColor color, bool alpha_always) {
+    QString ret;
+    if (color.alpha() != 0xFF || alpha_always) {
+        ret = QString::asprintf("%02X%02X%02X%02X", color.red(), color.green(), color.blue(), color.alpha());
+    } else {
+        ret = QString::asprintf("%02X%02X%02X", color.red(), color.green(), color.blue());
+    }
+    return ret;
+}
+
+void MainWindow::setColorTxtBtn(const QColor color, QLineEdit *txt, QPushButton* btn) {
+    int cursorPos = txt->cursorPosition();
+    txt->setText(getColorStr(color));
+    txt->setCursorPosition(cursorPos);
+    btn->setStyleSheet(QSL("QPushButton {background-color:") + color.name() + QSL(";}"));
 }
 
 bool MainWindow::save()
@@ -513,6 +600,37 @@ bool MainWindow::save()
     return true;
 }
 
+void MainWindow::factory_reset()
+{
+    QMessageBox msgBox(QMessageBox::Question, tr("Factory Reset"),
+        tr("This will clear all saved data and reset all settings for all symbologies to defaults."),
+        QMessageBox::Yes | QMessageBox::No, this);
+    msgBox.setInformativeText(tr("Do you want to continue?"));
+    msgBox.setDefaultButton(QMessageBox::Yes);
+    if (msgBox.exec() == QMessageBox::No) {
+        return;
+    }
+
+    QSettings settings;
+#if QT_VERSION < 0x60000
+    settings.setIniCodec("UTF-8");
+#endif
+    settings.clear();
+
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+
+    load_settings(settings);
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+
+    load_sub_settings(settings, symbology);
+
+    settings.sync();
+
+    txtData->setFocus(Qt::OtherFocusReason);
+    update_preview();
+}
+
 void MainWindow::about()
 {
     QString zint_version = get_zint_version();
@@ -522,24 +640,25 @@ void MainWindow::about()
         tr("<h2>Zint Barcode Studio %1</h2>"
            "<p>A free barcode generator</p>"
            "<p>Instruction manual is available at the project homepage:<br>"
-           "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>"
+           "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
            "<p>Copyright &copy; 2006-2022 Robin Stuart and others.<br>"
-           "Qt backend by BogDan Vatra</p>"
+           "Qt backend by BogDan Vatra.<br>"
+           "Released under GNU GPL 3.0 or later.</p>"
            "<p>Qt version %2</p>"
+           "<p>\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
+           "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
+           "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
            "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
                "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge.</p>"
-           "<p>Released under the GNU General Public License ver. 3 or later.<br>"
-           "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
-           "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
            "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
-           "EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009,<br>"
-           "ISO/IEC 15417:2007, ISO/IEC 15438:2015, ISO/IEC 16022:2006,<br>"
-           "ISO/IEC 16023:2000, ISO/IEC 16388:2007, ISO/IEC 18004:2015,<br>"
-           "ISO/IEC 20830:2021, ISO/IEC 24723:2010, ISO/IEC 24724:2011,<br>"
-           "ISO/IEC 24728:2006, ISO/IEC 24778:2008, ISO/IEC 16390:2007,<br>"
-           "ISO/IEC 21471:2019, AIM USS Code One (1994), ANSI-HIBC 2.6-2016,<br>"
-           "ANSI/AIM BC12-1998, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
-           "AIM ISS-X-24, AIMD014 (v 1.63), AIM ITS/04-023 (2022)"
+           "ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996,<br>"
+           "AIM ISS-X-24 (1995), ISO/IEC 15417:2007, EN 12323:2005,<br>"
+           "ISO/IEC 16388:2007, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
+           "AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC 21471:2019,<br>"
+           "ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,<br>"
+           "ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007,<br>"
+           "ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC 15438:2015,<br>"
+           "ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)"
            "</small></td></tr></table></p>").arg(zint_version).arg(QT_VERSION_STR));
 }
 
@@ -548,19 +667,86 @@ void MainWindow::help()
     QDesktopServices::openUrl(QSL("https://zint.org.uk/manual")); // TODO: manual.md
 }
 
+QLineEdit *MainWindow::get_seg_textbox(int seg_no)
+{
+    static QLineEdit *textboxes[4] = {
+        txtData, txtDataSeg1, txtDataSeg2, txtDataSeg3
+    };
+    return textboxes[seg_no];
+}
+
+QComboBox *MainWindow::get_seg_eci(int seg_no)
+{
+    static QComboBox *ecis[4] = {
+        cmbECI, cmbECISeg1, cmbECISeg2, cmbECISeg3
+    };
+    return ecis[seg_no];
+}
+
+void MainWindow::clear_data()
+{
+    if (clear_data_eci_seg(0)) {
+        update_preview();
+    }
+}
+
+void MainWindow::clear_data_seg1()
+{
+    if (clear_data_eci_seg(1)) {
+        update_preview();
+    }
+}
+
+void MainWindow::clear_data_seg2()
+{
+    if (clear_data_eci_seg(2)) {
+        update_preview();
+    }
+}
+
+void MainWindow::clear_data_seg3()
+{
+    if (clear_data_eci_seg(3)) {
+        update_preview();
+    }
+}
+
+bool MainWindow::clear_data_eci_seg(int seg_no)
+{
+    QLineEdit *txt = get_seg_textbox(seg_no);
+    QComboBox *cmb = get_seg_eci(seg_no);
+    if (!txt->text().isEmpty() || cmb->currentIndex() != 0) {
+        txt->clear();
+        cmb->setCurrentIndex(0);
+        txt->setFocus(Qt::OtherFocusReason);
+        return true;
+    }
+    return false;
+}
+
+void MainWindow::clear_composite()
+{
+    if (!txtComposite->toPlainText().isEmpty()) {
+        txtComposite->clear();
+        update_preview();
+    }
+}
+
 void MainWindow::open_data_dialog_seg(const int seg_no)
 {
     if (seg_no < 0 || seg_no > 3) {
         return;
     }
-    static QLineEdit *edits[4] = {
-        txtData, txtDataSeg1, txtDataSeg2, txtDataSeg3
-    };
-    DataWindow dlg(edits[seg_no]->text(), chkEscape->isChecked());
+    QLineEdit *seg_textbox = get_seg_textbox(seg_no);
+    QString originalText = seg_textbox->text();
+    bool originalChkEscape = chkEscape->isChecked();
+    DataWindow dlg(originalText, originalChkEscape, seg_no);
+    connect(&dlg, SIGNAL(dataChanged(const QString&, bool, int)), this,
+        SLOT(on_dataChanged(const QString&, bool, int)));
     (void) dlg.exec();
     if (dlg.Valid) {
-        const bool updated = edits[seg_no]->text() != dlg.DataOutput;
-        edits[seg_no]->setText(dlg.DataOutput);
+        const bool updated = originalText != dlg.DataOutput;
+        seg_textbox->setText(dlg.DataOutput);
         if (updated) {
             static const QString updatedEscTxts[4] = {
                 tr("Set \"Parse Escapes\", updated data"),
@@ -574,14 +760,20 @@ void MainWindow::open_data_dialog_seg(const int seg_no)
                 tr("Updated segment 2 data"),
                 tr("Updated segment 3 data"),
             };
-            if (dlg.Escaped && !chkEscape->isChecked()) {
+            if (dlg.Escaped && !originalChkEscape) {
                 chkEscape->setChecked(true);
                 statusBar->showMessage(updatedEscTxts[seg_no], tempMessageTimeout);
             } else {
+                chkEscape->setChecked(originalChkEscape);
                 statusBar->showMessage(updatedTxts[seg_no], tempMessageTimeout);
             }
         }
+    } else {
+        seg_textbox->setText(originalText); // Restore
+        chkEscape->setChecked(originalChkEscape);
     }
+    disconnect(&dlg, SIGNAL(dataChanged(const QString&, bool, int)), this,
+        SLOT(on_dataChanged(const QString&, bool, int)));
 }
 
 void MainWindow::open_data_dialog()
@@ -614,6 +806,35 @@ void MainWindow::open_sequence_dialog()
 #endif
 }
 
+void MainWindow::zap()
+{
+    QSettings settings;
+#if QT_VERSION < 0x60000
+    settings.setIniCodec("UTF-8");
+#endif
+    settings.clear();
+
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+
+    load_settings(settings);
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+
+    load_sub_settings(settings, symbology);
+
+    txtData->setFocus(Qt::OtherFocusReason);
+    update_preview();
+}
+
+void MainWindow::on_dataChanged(const QString& text, bool escaped, int seg_no)
+{
+    QLineEdit *seg_textbox = get_seg_textbox(seg_no);
+
+    chkEscape->setChecked(escaped);
+    seg_textbox->setText(text);
+    update_preview();
+}
+
 void MainWindow::open_cli_dialog()
 {
     CLIWindow dlg(&m_bc, chkAutoHeight->isEnabled() && chkAutoHeight->isChecked(),
@@ -624,26 +845,86 @@ void MainWindow::open_cli_dialog()
 
 void MainWindow::on_fgcolor_clicked()
 {
-    QColor temp = m_fgcolor;
-    m_fgcolor = QColorDialog::getColor(m_fgcolor, this, tr("Set foreground colour"),
-                    QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
-    if (m_fgcolor.isValid()) {
-        update_preview();
-    } else {
-        m_fgcolor = temp;
-    }
+    color_clicked(m_fgcolor, txt_fgcolor, fgcolor, tr("Set foreground colour"), m_fgcolor_geometry,
+                    SLOT(fgcolor_changed(const QColor&)));
 }
 
 void MainWindow::on_bgcolor_clicked()
 {
-    QColor temp = m_bgcolor;
-    m_bgcolor = QColorDialog::getColor(m_bgcolor, this, tr("Set background colour"),
-                    QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
-    if (m_bgcolor.isValid()) {
-        update_preview();
+    color_clicked(m_bgcolor, txt_bgcolor, bgcolor, tr("Set background colour"), m_bgcolor_geometry,
+                    SLOT(bgcolor_changed(const QColor&)));
+}
+
+void MainWindow::color_clicked(QColor &color, QLineEdit *txt, QPushButton *btn, const QString& title,
+                                QByteArray& geometry, const char *color_changed)
+{
+    QColor original = color;
+
+    QColorDialog color_dialog(nullptr /*parent*/);
+    color_dialog.setWindowTitle(title);
+    color_dialog.setOptions(QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
+    color_dialog.setCurrentColor(color);
+    color_dialog.restoreGeometry(geometry);
+    connect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this, color_changed);
+
+    if (color_dialog.exec() && color_dialog.selectedColor().isValid()) {
+        color = color_dialog.selectedColor();
     } else {
-        m_bgcolor = temp;
+        color = original;
     }
+    geometry = color_dialog.saveGeometry();
+    disconnect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this, color_changed);
+
+    setColorTxtBtn(color, txt, btn);
+    update_preview();
+}
+
+void MainWindow::fgcolor_changed(const QColor& color)
+{
+    if (color.isValid()) {
+        m_fgcolor = color;
+        setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+        update_preview();
+    }
+}
+
+void MainWindow::bgcolor_changed(const QColor& color)
+{
+    if (color.isValid()) {
+        m_bgcolor = color;
+        setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+        update_preview();
+    }
+}
+
+void MainWindow::fgcolor_edited()
+{
+    color_edited(m_fgcolor, txt_fgcolor, fgcolor);
+}
+
+void MainWindow::bgcolor_edited()
+{
+    color_edited(m_bgcolor, txt_bgcolor, bgcolor);
+}
+
+void MainWindow::color_edited(QColor &color, QLineEdit *txt, QPushButton *btn)
+{
+    QColor new_color;
+    QString new_text = txt->text().trimmed();
+    if (new_text.indexOf(colorRE) != 0) {
+        return;
+    }
+    int r = new_text.mid(0, 2).toInt(nullptr, 16);
+    int g = new_text.mid(2, 2).toInt(nullptr, 16);
+    int b = new_text.mid(4, 2).toInt(nullptr, 16);
+    int a = new_text.length() == 8 ? new_text.mid(6, 2).toInt(nullptr, 16) : 0xFF;
+    new_color.setRgb(r, g, b, a);
+    if (!new_color.isValid()) {
+        return;
+    }
+    color = new_color;
+    setColorTxtBtn(color, txt, btn);
+    update_preview();
 }
 
 void MainWindow::autoheight_ui_set()
@@ -1062,6 +1343,9 @@ void MainWindow::change_options()
     m_spnHeightPerRow = nullptr;
     m_btnHeightPerRowDisable = nullptr;
     m_btnHeightPerRowDefault = nullptr;
+
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
 
     if (symbology == BARCODE_CODE128) {
         QFile file(QSL(":/grpC128.ui"));
@@ -1671,6 +1955,9 @@ void MainWindow::change_options()
     chkQuietZones->setEnabled(!m_bc.bc.hasDefaultQuietZones(symbology));
     chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
 
+    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+
     data_ui_set();
     composite_ui_set();
     autoheight_ui_set();
@@ -1693,37 +1980,72 @@ void MainWindow::data_ui_set()
     if (grpSegs->isHidden()) {
         return;
     }
-    if (txtDataSeg1->text().isEmpty()) {
+
+    if (txtData->text().isEmpty()) {
+        lblSeg1->setEnabled(false);
         cmbECISeg1->setEnabled(false);
+        txtDataSeg1->setEnabled(false);
+        btnMoreDataSeg1->setEnabled(false);
+        btnClearDataSeg1->setEnabled(false);
+
         lblSeg2->setEnabled(false);
         cmbECISeg2->setEnabled(false);
         txtDataSeg2->setEnabled(false);
         btnMoreDataSeg2->setEnabled(false);
+        btnClearDataSeg2->setEnabled(false);
+
         lblSeg3->setEnabled(false);
         cmbECISeg3->setEnabled(false);
         txtDataSeg3->setEnabled(false);
         btnMoreDataSeg3->setEnabled(false);
+        btnClearDataSeg3->setEnabled(false);
+        return;
+    }
+
+    lblSeg1->setEnabled(true);
+    txtDataSeg1->setEnabled(true);
+    btnMoreDataSeg1->setEnabled(true);
+    if (txtDataSeg1->text().isEmpty()) {
+        cmbECISeg1->setEnabled(false);
+        btnClearDataSeg1->setEnabled(false);
+
+        lblSeg2->setEnabled(false);
+        cmbECISeg2->setEnabled(false);
+        txtDataSeg2->setEnabled(false);
+        btnMoreDataSeg2->setEnabled(false);
+        btnClearDataSeg2->setEnabled(false);
+
+        lblSeg3->setEnabled(false);
+        cmbECISeg3->setEnabled(false);
+        txtDataSeg3->setEnabled(false);
+        btnMoreDataSeg3->setEnabled(false);
+        btnClearDataSeg3->setEnabled(false);
     } else {
         cmbECISeg1->setEnabled(true);
+        btnClearDataSeg1->setEnabled(true);
+
         lblSeg2->setEnabled(true);
         txtDataSeg2->setEnabled(true);
         btnMoreDataSeg2->setEnabled(true);
         if (txtDataSeg2->text().isEmpty()) {
             cmbECISeg2->setEnabled(false);
+            btnClearDataSeg2->setEnabled(false);
+
             lblSeg3->setEnabled(false);
             cmbECISeg3->setEnabled(false);
             txtDataSeg3->setEnabled(false);
             btnMoreDataSeg3->setEnabled(false);
+            btnClearDataSeg3->setEnabled(false);
         } else {
             cmbECISeg2->setEnabled(true);
+            btnClearDataSeg2->setEnabled(true);
+
+            bool data_seg3_empty = txtDataSeg3->text().isEmpty();
             lblSeg3->setEnabled(true);
+            cmbECISeg3->setEnabled(!data_seg3_empty);
             txtDataSeg3->setEnabled(true);
             btnMoreDataSeg3->setEnabled(true);
-            if (txtDataSeg3->text().isEmpty()) {
-                cmbECISeg3->setEnabled(false);
-            } else {
-                cmbECISeg3->setEnabled(true);
-            }
+            btnClearDataSeg3->setEnabled(!data_seg3_empty);
         }
     }
 }
@@ -1735,6 +2057,7 @@ void MainWindow::composite_ui_set()
     lblCompType->setEnabled(enabled);
     cmbCompType->setEnabled(enabled);
     lblComposite->setEnabled(enabled);
+    btnClearComposite->setEnabled(enabled);
     txtComposite->setEnabled(enabled);
 
     if (enabled) {
@@ -1890,7 +2213,9 @@ void MainWindow::update_preview()
     if (!grpComposite->isHidden() && chkComposite->isChecked()) {
         m_bc.bc.setPrimaryMessage(txtData->text());
         m_bc.bc.setText(txtComposite->toPlainText());
+        btnClearComposite->setEnabled(!txtComposite->toPlainText().isEmpty());
     } else {
+        btnClearComposite->setEnabled(false);
         if (!grpSegs->isHidden() && !txtDataSeg1->text().isEmpty()) {
             std::vector<Zint::QZintSeg> segs;
             segs.push_back(Zint::QZintSeg(txtData->text(), cmbECI->currentIndex()));
@@ -2437,6 +2762,7 @@ void MainWindow::update_preview()
         cmbECI->setEnabled(m_bc.bc.supportsECI());
         lblECI->setEnabled(cmbECI->isEnabled());
     }
+    btnClearData->setEnabled(!txtData->text().isEmpty());
     chkGS1Parens->setEnabled(m_bc.bc.supportsGS1());
     chkGS1NoCheck->setEnabled(m_bc.bc.supportsGS1());
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
@@ -2491,6 +2817,7 @@ void MainWindow::createActions()
     QIcon copyIcon(QIcon::fromTheme(QSL("edit-copy"), QIcon(QSL(":res/copy.svg"))));
     QIcon cliIcon(QSL(":res/zint_black.ico"));
     QIcon saveIcon(QIcon::fromTheme(QSL("document-save"), QIcon(QSL(":res/download.svg"))));
+    QIcon zapIcon(QIcon(QSL(":res/zap.svg")));
     QIcon aboutIcon(QSL(":res/zint-qt.ico"));
     QIcon helpIcon(QIcon::fromTheme(QSL("help-contents"), QIcon(QSL(":res/help-circle.svg"))));
     QIcon quitIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
@@ -2555,6 +2882,11 @@ void MainWindow::createActions()
     m_saveAsAct->setShortcut(QKeySequence::Save);
     connect(m_saveAsAct, SIGNAL(triggered()), this, SLOT(save()));
 
+    m_factoryResetAct = new QAction(zapIcon, tr("Factory &Reset..."), this);
+    m_factoryResetAct->setStatusTip(tr("Clear all data & settings"));
+    m_factoryResetAct->setShortcut(factoryResetSeq);
+    connect(m_factoryResetAct, SIGNAL(triggered()), this, SLOT(factory_reset()));
+
     m_helpAct = new QAction(helpIcon, tr("&Help (online)"), this);
     m_helpAct->setStatusTip(tr("Online manual"));
     m_helpAct->setShortcut(QKeySequence::HelpContents);
@@ -2597,6 +2929,8 @@ void MainWindow::createMenu()
     m_menu->addAction(m_openCLIAct);
     m_menu->addSeparator();
     m_menu->addAction(m_saveAsAct);
+    m_menu->addSeparator();
+    m_menu->addAction(m_factoryResetAct);
     m_menu->addSeparator();
     m_menu->addAction(m_helpAct);
     m_menu->addAction(m_aboutAct);

@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * Adapted from qrencode/tests/common.c
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
@@ -3513,8 +3514,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
     return 0;
 }
 
-STATIC_UNLESS_ZINT_TEST int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string,
-            int *length);
+INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *length);
 
 #include "../gs1.h"
 
@@ -3559,7 +3559,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 
     if (is_escaped) {
         memcpy(escaped, expected, expected_len);
-        ret = escape_char_process(symbol, (unsigned char *) escaped, &expected_len);
+        ret = escape_char_process_test(symbol, (unsigned char *) escaped, &expected_len);
         if (ret != 0) {
             sprintf(msg, "escape_char_process %d != 0", ret);
             return 3;

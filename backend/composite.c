@@ -1299,7 +1299,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     pri_len = (int) strlen(symbol->primary);
     if (pri_len == 0) {
         strcpy(symbol->errtxt, "445: No primary (linear) message in 2D composite");
-        return ZINT_ERROR_INVALID_OPTION;
+        return ZINT_ERROR_INVALID_OPTION; /* TODO: change to more appropiate ZINT_ERROR_INVALID_DATA */
     }
 
     if (length > 2990) {

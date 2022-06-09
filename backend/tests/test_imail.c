@@ -27,12 +27,19 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * Intelligent Mail barcode Encoder Test Case Reference Set (csv file)
  * Copyright (C) 2009 U.S. Postal Service
  */
 
 #include "testcommon.h"
+
+#include <time.h>
+
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
+
+#define TEST_CSV_PERF_ITERATIONS    100
 
 //#define TEST_IMAIL_CSV_MAX 300
 
@@ -52,82 +59,103 @@ static void test_csv(int index, int debug) {
     int ret;
     int lc = 0;
 
+	int j;
+    clock_t start;
+    clock_t total = 0;
+	int test_performance = debug & ZINT_DEBUG_TEST_PERFORMANCE; /* -d 256 */
+    int perf_iterations = test_performance ? TEST_CSV_PERF_ITERATIONS : 1;
+
     testStart("test_csv");
+
+    if (test_performance) {
+        printf("test_csv perf iterations: %d\n", perf_iterations);
+    }
 
     assert_nonzero(testUtilDataPath(csvfile, sizeof(csvfile),
         "/backend/tests/data/imail/usps/", "uspsIMbEncoderTestCases.csv"), "testUtilDataPath == 0\n");
 
-    fd = fopen(csvfile, "r");
-    assert_nonnull(fd, "fopen(%s) == NULL", csvfile);
+	for (j = 0; j < perf_iterations; j++) {
+		fd = fopen(csvfile, "r");
+		assert_nonnull(fd, "fopen(%s) == NULL", csvfile);
 
-    while (fgets(buffer, sizeof(buffer), fd) != NULL) {
-        const char *b;
-        struct zint_symbol *symbol;
+		while (fgets(buffer, sizeof(buffer), fd) != NULL) {
+			const char *b;
+			struct zint_symbol *symbol;
 
-        lc++;
+			lc++;
 
-        if (index != -1 && lc != index + 1) continue;
+			if (index != -1 && lc != index + 1) continue;
 
-        #ifdef TEST_IMAIL_CSV_MAX
-        if (lc > TEST_IMAIL_CSV_MAX && index == -1) {
-            break;
-        }
-        #endif
+			#ifdef TEST_IMAIL_CSV_MAX
+			if (lc > TEST_IMAIL_CSV_MAX && index == -1) {
+				break;
+			}
+			#endif
 
-        id[0] = tracking_code[0] = routing_code[0] = expected_daft[0] = return_code[0] = '\0';
+			id[0] = tracking_code[0] = routing_code[0] = expected_daft[0] = return_code[0] = '\0';
 
-        b = testUtilReadCSVField(buffer, id, sizeof(id));
-        assert_nonnull(b, "lc:%d id b == NULL", lc);
-        assert_equal(*b, ',', "lc:%d id *b %c != ','", lc, *b);
+			b = testUtilReadCSVField(buffer, id, sizeof(id));
+			assert_nonnull(b, "lc:%d id b == NULL", lc);
+			assert_equal(*b, ',', "lc:%d id *b %c != ','", lc, *b);
 
-        b = testUtilReadCSVField(++b, tracking_code, sizeof(tracking_code));
-        assert_nonnull(b, "lc:%d tracking_code b == NULL", lc);
-        assert_equal(*b, ',', "lc:%d tracking_code *b %c != ','", lc, *b);
+			b = testUtilReadCSVField(++b, tracking_code, sizeof(tracking_code));
+			assert_nonnull(b, "lc:%d tracking_code b == NULL", lc);
+			assert_equal(*b, ',', "lc:%d tracking_code *b %c != ','", lc, *b);
 
-        b = testUtilReadCSVField(++b, routing_code, sizeof(routing_code));
-        assert_nonnull(b, "lc:%d routing_code b == NULL", lc);
-        assert_equal(*b, ',', "lc:%d routing_code *b %c != ','", lc, *b);
+			b = testUtilReadCSVField(++b, routing_code, sizeof(routing_code));
+			assert_nonnull(b, "lc:%d routing_code b == NULL", lc);
+			assert_equal(*b, ',', "lc:%d routing_code *b %c != ','", lc, *b);
 
-        b = testUtilReadCSVField(++b, expected_daft, sizeof(expected_daft));
-        assert_nonnull(b, "lc:%d expected_daft b == NULL", lc);
-        assert_equal(*b, ',', "lc:%d expected_daft *b %c != ','", lc, *b);
+			b = testUtilReadCSVField(++b, expected_daft, sizeof(expected_daft));
+			assert_nonnull(b, "lc:%d expected_daft b == NULL", lc);
+			assert_equal(*b, ',', "lc:%d expected_daft *b %c != ','", lc, *b);
 
-        b = testUtilReadCSVField(++b, return_code, sizeof(return_code));
-        assert_nonnull(b, "lc:%d return_code b == NULL", lc);
-        assert_equal(*b, ',', "lc:%d return_code *b %c != ','", lc, *b);
+			b = testUtilReadCSVField(++b, return_code, sizeof(return_code));
+			assert_nonnull(b, "lc:%d return_code b == NULL", lc);
+			assert_equal(*b, ',', "lc:%d return_code *b %c != ','", lc, *b);
 
-        strcpy(data, tracking_code);
-        strcat(data, "-");
-        strcat(data, routing_code);
+			strcpy(data, tracking_code);
+			strcat(data, "-");
+			strcat(data, routing_code);
 
-        assert_nonzero(strlen(data), "lc:%d strlen(data) == 0", lc);
+			assert_nonzero(strlen(data), "lc:%d strlen(data) == 0", lc);
 
-        symbol = ZBarcode_Create();
-        assert_nonnull(symbol, "Symbol not created\n");
+			symbol = ZBarcode_Create();
+			assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_USPS_IMAIL;
-        symbol->debug |= debug;
+			symbol->symbology = BARCODE_USPS_IMAIL;
+			symbol->debug |= debug;
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data, (int) strlen(data));
+			if (test_performance) {
+				start = clock();
+			}
+			ret = ZBarcode_Encode(symbol, (unsigned char *) data, (int) strlen(data));
+			if (test_performance) {
+				total += clock() - start;
+			}
 
-        if (strcmp(return_code, "00") == 0) {
+			if (strcmp(return_code, "00") == 0) {
 
-            assert_zero(ret, "lc:%d ZBarcode_Encode ret %d != 0\n", lc, ret);
+				assert_zero(ret, "lc:%d ZBarcode_Encode ret %d != 0\n", lc, ret);
 
-            assert_equal(symbol->rows, 3, "rows %d != 3", symbol->rows);
+				assert_equal(symbol->rows, 3, "rows %d != 3", symbol->rows);
 
-            ret = testUtilDAFTConvert(symbol, actual_daft, sizeof(actual_daft));
-            assert_nonzero(ret, "lc:%d testUtilDAFTConvert == 0", lc);
-            assert_zero(strcmp(actual_daft, expected_daft), "lc:%d\n  actual %s\nexpected %s\n", lc, actual_daft, expected_daft);
-        } else {
-            assert_nonzero(ret, "lc:%d ZBarcode_Encode ret %d == 0\n", lc, ret);
-        }
+				ret = testUtilDAFTConvert(symbol, actual_daft, sizeof(actual_daft));
+				assert_nonzero(ret, "lc:%d testUtilDAFTConvert == 0", lc);
+				assert_zero(strcmp(actual_daft, expected_daft), "lc:%d\n  actual %s\nexpected %s\n", lc, actual_daft, expected_daft);
+			} else {
+				assert_nonzero(ret, "lc:%d ZBarcode_Encode ret %d == 0\n", lc, ret);
+			}
 
-        ZBarcode_Delete(symbol);
-    }
+			ZBarcode_Delete(symbol);
+		}
 
-    assert_zero(fclose(fd), "fclose != 0\n");
+		assert_zero(fclose(fd), "fclose != 0\n");
+	}
 
+	if (test_performance) {
+        printf("test_csv perf total: %8gms\n", TEST_PERF_TIME(total));
+	}
     testFinish();
 }
 

@@ -1,5 +1,5 @@
-Prerequisites for building zint
--------------------------------
+1. Prerequisites for building zint
+==================================
 
 Prerequisites are git, cmake, make, gcc and gcc-c++, e.g. Ubuntu/Debian
 
@@ -17,26 +17,24 @@ or Fedora
 
     sudo dnf install libpng-devel
 
-Prerequisites for building zint-qt
-----------------------------------
+Then either download the source code tarball
 
-Sign up and download the Qt Maintenance Tool from
-    https://www.qt.io/download-qt-installer
+    wget -O zint-2.11.0-src.tar.gz \
+        https://sourceforge2.11.0net/projects/zint/files/zint/2.11.0/zint-2.11.0-src.tar.gz/download
+    tar xf zint-2.11.0-src.tar.gz
+    cd zint-2.11.0-src
 
-On Ubuntu/Debian you may need to install xinerama to run the tool:
+or clone the latest source
 
-    sudo apt install libxcb-xinerama0
+    git clone https://git.code.sf.net/p/zint/code zint
+    cd zint
 
-Launch the tool and install the "Desktop gcc 64-bit" component for either Qt
-5.15.2 or Qt 6 (>= 6.1).
 
-Once Qt is installed you may need to tell CMake where it is:
+2. Prerequisites for building zint-qt
+=====================================
 
-    export CMAKE_PREFIX_PATH=<qt-version-dir>/gcc_64
-
-e.g. export CMAKE_PREFIX_PATH=/opt/Qt/5.15.2/gcc_64
-
-To build zint-qt you also need to install mesa (for OpenGL), e.g. Ubuntu/Debian
+zint-qt can be built with either Qt5 (preferred) or Qt6. First, install mesa (for OpenGL), e.g.
+Ubuntu/Debian
 
     sudo apt install mesa-common-dev libglu1-mesa-dev
 
@@ -44,12 +42,58 @@ or Fedora
 
     sudo dnf install mesa-libGL mesa-libGL-devel
 
-Build
------
+2.1. Using Qt packages
+----------------------
+
+If packages for Qt exist for your distro, it might be easiest to use them, although knowing
+what their ever-changing names and contents are isn't. A complication is that zint-qt uses 2 Qt
+components beyond the basic setup: Qt UI Tools (for dynamically loading the symbology-specific
+tabs), and Qt SVG (for rendering icons).
+
+E.g. on Ubuntu 22.04
+
+    sudo apt install qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
+
+or Ubuntu 20.04
+
+    sudo apt install qt5-default qt5-uitools
+
+or Fedora 36 (Qt6 NOT recommended, currently uses 6.3.0 which is flaky)
+
+     sudo dnf install qt5-qtbase-devel qt5-qttools-devel qt5-qttools-static qt5-qtsvg-devel
+
+You may need to tell CMake where to find the ".cmake" modules:
+
+    export CMAKE_MODULE_PATH=<cmake-module-path>/Qt5
+
+e.g. CMAKE_MODULE_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
+
+2.2. Using the Qt Maintenance Tool
+----------------------------------
+
+Alternatively, for a more consistent, dependable, flexible experience, sign up and download the
+Qt Maintenance Tool from
+
+    https://www.qt.io/download-qt-installer
+
+On Ubuntu/Debian you may need to install xinerama to run the tool:
+
+    sudo apt install libxcb-xinerama0
+
+Launch the tool and install the "Desktop gcc 64-bit" component for either Qt 5.15.2 or Qt 6
+(>= 6.1, and not 6.3.0).
+
+Once Qt is installed you may need to tell CMake where it is:
+
+    export CMAKE_PREFIX_PATH=<qt-version-dir>/gcc_64
+
+e.g. export CMAKE_PREFIX_PATH=/opt/Qt/5.15.2/gcc_64
+
+
+3. Build
+========
 
 The rest is standard CMake
-
-    git clone https://git.code.sf.net/p/zint/code zint
 
     cd zint
     mkdir build
@@ -58,8 +102,9 @@ The rest is standard CMake
     make
     sudo make install
 
-CMake options
--------------
+
+4. CMake options
+================
 
 A number of options are available:
 
@@ -76,5 +121,4 @@ which can be set by doing e.g.
 
     cmake -DZINT_SANITIZE=ON ..
 
-For details on ZINT_TEST and building the zint test suite, see
-"backend/tests/README".
+For details on ZINT_TEST and building the zint test suite, see "backend/tests/README".

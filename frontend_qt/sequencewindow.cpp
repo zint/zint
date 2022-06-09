@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
 #include <QFile>
@@ -46,11 +46,13 @@ SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
     spnSeqEndVal->setValue(settings.value(QSL("studio/sequence/end_value"), 10).toInt());
     spnSeqIncVal->setValue(settings.value(QSL("studio/sequence/increment"), 1).toInt());
     linSeqFormat->setText(settings.value(QSL("studio/sequence/format"), QSL("$$$$$$")).toString());
+    txtSeqPreview->setPlainText(settings.value(QSL("studio/sequence/preview"), QSL("")).toString());
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
-    QIcon clearIcon(QIcon::fromTheme(QSL("edit-clear"), QIcon(QSL(":res/delete.svg"))));
+    QIcon clearIcon(QSL(":res/delete.svg"));
     btnSeqClose->setIcon(closeIcon);
     btnSeqClear->setIcon(clearIcon);
+    btnSeqClear->setEnabled(!txtSeqPreview->toPlainText().isEmpty());
 
     connect(btnSeqClose, SIGNAL( clicked( bool )), SLOT(close()));
     connect(btnSeqClear, SIGNAL( clicked( bool )), SLOT(clear_preview()));
@@ -72,6 +74,7 @@ SequenceWindow::~SequenceWindow()
     settings.setValue(QSL("studio/sequence/end_value"), spnSeqEndVal->value());
     settings.setValue(QSL("studio/sequence/increment"), spnSeqIncVal->value());
     settings.setValue(QSL("studio/sequence/format"), linSeqFormat->text());
+    settings.setValue(QSL("studio/sequence/preview"), txtSeqPreview->toPlainText());
 }
 
 void SequenceWindow::clear_preview()
@@ -166,8 +169,10 @@ void SequenceWindow::check_generate()
     preview_copy = txtSeqPreview->toPlainText();
     if (preview_copy.isEmpty()) {
         btnSeqExport->setEnabled(false);
+        btnSeqClear->setEnabled(false);
     } else {
         btnSeqExport->setEnabled(true);
+        btnSeqClear->setEnabled(true);
     }
 }
 
@@ -211,3 +216,5 @@ void SequenceWindow::generate_sequence()
     ExportWindow dlg(m_bc, txtSeqPreview->toPlainText());
     dlg.exec();
 }
+
+/* vim: set ts=4 sw=4 et : */

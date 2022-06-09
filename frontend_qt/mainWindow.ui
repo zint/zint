@@ -21,8 +21,8 @@
   </property>
   <property name="minimumSize">
    <size>
-    <width>400</width>
-    <height>435</height>
+    <width>425</width>
+    <height>440</height>
    </size>
   </property>
   <property name="windowTitle">
@@ -47,7 +47,7 @@
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>10</height>
+       <height>5</height>
       </size>
      </property>
      <property name="contextMenuPolicy">
@@ -57,6 +57,9 @@
    </item>
    <item>
     <widget class="QSplitter" name="errtxtBarContainer">
+     <property name="visible">
+      <bool>false</bool>
+     </property>
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
@@ -65,9 +68,6 @@
      </property>
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
-     </property>
-     <property name="visible">
-      <bool>false</bool>
      </property>
      <widget class="QStatusBar" name="errtxtBar">
       <property name="contextMenuPolicy">
@@ -149,13 +149,13 @@
          <property name="minimumSize">
           <size>
            <width>0</width>
-           <height>325</height>
+           <height>346</height>
           </size>
          </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>325</height>
+           <height>346</height>
           </size>
          </property>
          <property name="autoFillBackground">
@@ -180,11 +180,11 @@
                <verstretch>0</verstretch>
               </sizepolicy>
              </property>
-             <property name="title">
-              <string>Data to Enc&amp;ode</string>
-             </property>
              <property name="toolTip">
               <string>Input data</string>
+             </property>
+             <property name="title">
+              <string>Data to Enc&amp;ode</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayoutData">
               <item>
@@ -217,18 +217,18 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnSequence">
-                  <property name="toolTip">
-                   <string>Encode a sequence</string>
-                  </property>
-                  <property name="text">
-                   <string>123&amp;4..</string>
-                  </property>
+                 <widget class="QPushButton" name="btnClearData">
                   <property name="maximumSize">
                    <size>
-                    <width>60</width>
+                    <width>22</width>
                     <height>16777215</height>
                    </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Clear data and ECI (segment 0)</string>
+                  </property>
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -267,12 +267,12 @@ or import from file</string>
                     <height>0</height>
                    </size>
                   </property>
-                  <property name="maxVisibleItems">
-                   <number>34</number>
-                  </property>
                   <property name="toolTip">
                    <string>Set the ECI (Extended Channel Interpretation) code
 (ignored if disabled)</string>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
                   </property>
                   <item>
                    <property name="text">
@@ -473,6 +473,39 @@ or import from file</string>
                   </property>
                  </widget>
                 </item>
+                <item>
+                 <widget class="QPushButton" name="btnSequence">
+                  <property name="maximumSize">
+                   <size>
+                    <width>60</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Encode a sequence</string>
+                  </property>
+                  <property name="text">
+                   <string>123&amp;4..</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnZap">
+                  <property name="maximumSize">
+                   <size>
+                    <width>22</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Clear all data and ECIs and reset all settings
+for this symbology to defaults</string>
+                  </property>
+                  <property name="text">
+                   <string/>
+                  </property>
+                 </widget>
+                </item>
                </layout>
               </item>
              </layout>
@@ -501,11 +534,11 @@ or import from file</string>
                <height>400</height>
               </size>
              </property>
-             <property name="title">
-              <string>Composite Code</string>
-             </property>
              <property name="toolTip">
               <string>GS1 Composite symbol settings</string>
+             </property>
+             <property name="title">
+              <string>Composite Code</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
@@ -588,26 +621,49 @@ or import from file</string>
                </layout>
               </item>
               <item>
-               <layout class="QVBoxLayout" name="verticalLayout">
+               <layout class="QVBoxLayout" name="vertLayoutComponentData">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetMinimumSize</enum>
                 </property>
                 <item>
-                 <widget class="QLabel" name="lblComposite">
-                  <property name="enabled">
-                   <bool>false</bool>
-                  </property>
-                  <property name="toolTip">
-                   <string>Data to be encoded in 2D component
+                 <layout class="QHBoxLayout" name="horzLayoutComponentDataLabel">
+                  <item>
+                   <widget class="QLabel" name="lblComposite">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="toolTip">
+                     <string>Data to be encoded in 2D component
 Remember to place [square brackets] around AI identifiers</string>
-                  </property>
-                  <property name="text">
-                   <string>2D Co&amp;mponent Data:</string>
-                  </property>
-                  <property name="buddy">
-                   <cstring>txtComposite</cstring>
-                  </property>
-                 </widget>
+                    </property>
+                    <property name="text">
+                     <string>2D Co&amp;mponent Data</string>
+                    </property>
+                    <property name="buddy">
+                     <cstring>txtComposite</cstring>
+                    </property>
+                   </widget>
+                  </item>
+                  <item>
+                   <widget class="QPushButton" name="btnClearComposite">
+                    <property name="enabled">
+                     <bool>false</bool>
+                    </property>
+                    <property name="maximumSize">
+                     <size>
+                      <width>22</width>
+                      <height>16777215</height>
+                     </size>
+                    </property>
+                    <property name="toolTip">
+                     <string>Clear 2D Component data</string>
+                    </property>
+                    <property name="text">
+                     <string/>
+                    </property>
+                   </widget>
+                  </item>
+                 </layout>
                 </item>
                 <item>
                  <widget class="QTextEdit" name="txtComposite">
@@ -660,12 +716,12 @@ Remember to place [square brackets] around AI identifiers</string>
                <height>400</height>
               </size>
              </property>
-             <property name="title">
-              <string>Additional ECI/Data Segments</string>
-             </property>
              <property name="toolTip">
               <string>Additional data segments with their own
 Extended Channel Interpretation (ECI)</string>
+             </property>
+             <property name="title">
+              <string>Additional ECI/Data Segments</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayoutSegs">
               <item>
@@ -700,11 +756,11 @@ Extended Channel Interpretation (ECI)</string>
                     <height>16777215</height>
                    </size>
                   </property>
-                  <property name="maxVisibleItems">
-                   <number>34</number>
-                  </property>
                   <property name="toolTip">
                    <string>ECI for segment 1</string>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
                   </property>
                   <item>
                    <property name="text">
@@ -890,7 +946,7 @@ Extended Channel Interpretation (ECI)</string>
                    <string>Data for segment 1</string>
                   </property>
                   <property name="text">
-                   <string></string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -908,6 +964,22 @@ or import from file</string>
                   </property>
                   <property name="text">
                    <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnClearDataSeg1">
+                  <property name="maximumSize">
+                   <size>
+                    <width>22</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Clear segment 1 data and ECI</string>
+                  </property>
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -945,11 +1017,11 @@ or import from file</string>
                     <height>16777215</height>
                    </size>
                   </property>
-                  <property name="maxVisibleItems">
-                   <number>34</number>
-                  </property>
                   <property name="toolTip">
                    <string>ECI for segment 2</string>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
                   </property>
                   <item>
                    <property name="text">
@@ -1135,7 +1207,7 @@ or import from file</string>
                    <string>Data for segment 2</string>
                   </property>
                   <property name="text">
-                   <string></string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -1153,6 +1225,22 @@ or import from file</string>
                   </property>
                   <property name="text">
                    <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnClearDataSeg2">
+                  <property name="maximumSize">
+                   <size>
+                    <width>22</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Clear segment 2 data and ECI</string>
+                  </property>
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -1190,11 +1278,11 @@ or import from file</string>
                     <height>16777215</height>
                    </size>
                   </property>
-                  <property name="maxVisibleItems">
-                   <number>34</number>
-                  </property>
                   <property name="toolTip">
                    <string>ECI for segment 3</string>
+                  </property>
+                  <property name="maxVisibleItems">
+                   <number>34</number>
                   </property>
                   <item>
                    <property name="text">
@@ -1380,7 +1468,7 @@ or import from file</string>
                    <string>Data for segment 3</string>
                   </property>
                   <property name="text">
-                   <string></string>
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -1398,6 +1486,22 @@ or import from file</string>
                   </property>
                   <property name="text">
                    <string>...</string>
+                  </property>
+                 </widget>
+                </item>
+                <item>
+                 <widget class="QPushButton" name="btnClearDataSeg3">
+                  <property name="maximumSize">
+                   <size>
+                    <width>22</width>
+                    <height>16777215</height>
+                   </size>
+                  </property>
+                  <property name="toolTip">
+                   <string>Clear segment 3 data and ECI</string>
+                  </property>
+                  <property name="text">
+                   <string/>
                   </property>
                  </widget>
                 </item>
@@ -1451,8 +1555,10 @@ or import from file</string>
 &lt;tr&gt;&lt;td&gt;\G&amp;nbsp;&lt;/td&gt;&lt;td&gt;Group Separator (0x1D)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\R&amp;nbsp;&lt;/td&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\\&amp;nbsp;&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\dNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N decimal)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\xNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\uNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;16-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\uNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;16-bit Unicode BMP (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\UNNNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;20-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;</string>
                </property>
                <property name="text">
@@ -1841,60 +1947,159 @@ in X-dimensions</string>
                 <bool>true</bool>
                </property>
                <property name="toolTip">
-                <string>Change colour of ink or paper</string>
+                <string>Change colour of ink</string>
                </property>
                <property name="text">
-                <string>Colour:</string>
+                <string>&amp;Foreground:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
                </property>
                <property name="buddy">
-                <cstring>fgcolor</cstring>
+                <cstring>txt_fgcolor</cstring>
                </property>
               </widget>
              </item>
              <item row="0" column="3">
-              <widget class="QPushButton" name="fgcolor">
-               <property name="toolTip">
-                <string>Change ink colour</string>
+              <widget class="QLineEdit" name="txt_fgcolor">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
                </property>
-               <property name="text">
-                <string>&amp;Foreground</string>
+               <property name="toolTip">
+                <string>Change ink colour, format
+is hexadecimal &quot;RRGGBB&quot;
+or &quot;RRGGBBAA&quot; (alpha)</string>
+               </property>
+               <property name="maxLength">
+                <number>8</number>
                </property>
               </widget>
              </item>
-             <item row="1" column="2" rowspan="3">
-              <widget class="QLabel" name="label_dummyAppear12">
-               <property name="enabled">
-                <bool>false</bool>
+             <item row="0" column="4">
+              <widget class="QPushButton" name="fgcolor">
+               <property name="maximumSize">
+                <size>
+                 <width>22</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Change ink colour using picker</string>
                </property>
                <property name="text">
                 <string/>
                </property>
               </widget>
              </item>
-             <item row="1" column="3">
-              <widget class="QPushButton" name="bgcolor">
+             <item row="1" column="2">
+              <widget class="QLabel" name="label_bgcolor">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
                <property name="toolTip">
-                <string>Change paper colour</string>
+                <string>Change colour of paper</string>
                </property>
                <property name="text">
-                <string>Back&amp;ground</string>
+                <string>Back&amp;ground:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>txt_bgcolor</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="3">
+              <widget class="QLineEdit" name="txt_bgcolor">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Change paper colour, format
+is hexadecimal &quot;RRGGBB&quot;
+or &quot;RRGGBBAA&quot; (alpha)</string>
+               </property>
+               <property name="maxLength">
+                <number>8</number>
+               </property>
+              </widget>
+             </item>
+             <item row="1" column="4">
+              <widget class="QPushButton" name="bgcolor">
+               <property name="maximumSize">
+                <size>
+                 <width>22</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Change paper colour using picker</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="2" column="2">
+              <widget class="QLabel" name="label_colours">
+               <property name="enabled">
+                <bool>true</bool>
+               </property>
+               <property name="toolTip">
+                <string>Reset or reverse colours</string>
+               </property>
+               <property name="text">
+                <string>Colours:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>btnReset</cstring>
                </property>
               </widget>
              </item>
              <item row="2" column="3">
               <widget class="QPushButton" name="btnReset">
+               <property name="maximumSize">
+                <size>
+                 <width>100</width>
+                 <height>16777215</height>
+                </size>
+               </property>
                <property name="toolTip">
-                <string>Reset to black on white</string>
+                <string>Reset colours to black on white</string>
                </property>
                <property name="text">
                 <string>&amp;Reset</string>
                </property>
               </widget>
              </item>
-             <item row="3" column="3">
+             <item row="2" column="4">
+              <widget class="QPushButton" name="btnReverse">
+               <property name="maximumSize">
+                <size>
+                 <width>22</width>
+                 <height>16777215</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Swap foreground and background colours
+(reflectance reversal)</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="3" colspan="2">
               <widget class="QCheckBox" name="chkCMYK">
                <property name="toolTip">
                 <string>Use CMYK colour space in EPS/TIF output</string>
@@ -1907,7 +2112,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="4" column="3">
+             <item row="4" column="3" colspan="2">
               <widget class="QCheckBox" name="chkQuietZones">
                <property name="toolTip">
                 <string>Add compliant quiet zones to whitespace
@@ -1937,7 +2142,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="5" column="3">
+             <item row="5" column="3" colspan="2">
               <widget class="QComboBox" name="cmbRotate">
                <property name="toolTip">
                 <string>Rotate symbol by degrees</string>
@@ -1964,7 +2169,7 @@ in X-dimensions</string>
                </item>
               </widget>
              </item>
-             <item row="6" column="3">
+             <item row="6" column="3" colspan="2">
               <widget class="QCheckBox" name="chkDotty">
                <property name="toolTip">
                 <string>Use dots instead of squares for matrix symbols
@@ -1998,7 +2203,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="3">
+             <item row="7" column="3" colspan="2">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="enabled">
                 <bool>false</bool>
@@ -2051,14 +2256,14 @@ in X-dimensions</string>
      </item>
      <item row="0" column="1">
       <widget class="QStatusBar" name="statusBar">
-       <property name="sizeGripEnabled">
-        <bool>false</bool>
-       </property>
        <property name="sizeHint" stdset="0">
         <size>
-         <width>40</width>
-         <height>20</height>
+         <width>2</width>
+         <height>22</height>
         </size>
+       </property>
+       <property name="sizeGripEnabled">
+        <bool>false</bool>
        </property>
       </widget>
      </item>

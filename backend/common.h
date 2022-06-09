@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_COMMON_H
 #define Z_COMMON_H
@@ -113,12 +114,6 @@
 #else
 #  define INTERNAL_DATA_EXTERN extern
 #  define INTERNAL_DATA
-#endif
-
-#ifdef ZINT_TEST
-#define STATIC_UNLESS_ZINT_TEST INTERNAL
-#else
-#define STATIC_UNLESS_ZINT_TEST static
 #endif
 
 #define Z_COMMON_INLINE   1

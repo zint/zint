@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,11 +27,11 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-STATIC_UNLESS_ZINT_TEST int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom);
 
 static void test_quiet_zones(void) {
@@ -46,7 +46,7 @@ static void test_quiet_zones(void) {
         if (!ZBarcode_ValidID(i)) continue;
         symbol.symbology = i;
         symbol.output_options = BARCODE_QUIET_ZONES;
-        ret = out_quiet_zones(&symbol, hide_text, &left, &right, &top, &bottom);
+        ret = out_quiet_zones_test(&symbol, hide_text, &left, &right, &top, &bottom);
         if (i != BARCODE_FLAT) { // Only one which isn't marked as done
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }
@@ -67,3 +67,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

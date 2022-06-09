@@ -7,10 +7,18 @@ Changes
 - eci.c: replace libiconv-adapted code with own implementations so
   as to fully comply with libzint's BSD license
 - GUI: CODE39/EXCODE39: show/hide HIBC check digit option
+- RMQR: update to ISO/IEC 23941:2022 - R13x77 numeric cclens change 8 -> 7
+- QRCODE: use stricter interpretation of ZINT_FULL_MULTIBYTE, excluding
+  certain trailing bytes
+- GUI: foreground/background colours -> text boxes and icon buttons, add swap
+  button, independently movable picker (NULL parent), preview colour changes,
+  preview Data Window changes, add clear data (del) buttons, add zap button
+  and Factory Reset menu option, various other fixes
 
 Bugs
 ----
 - frontend/test_args.c: don't use WIFEXITED(), WEXITSTATUS() on Windows
+- libzint: fix some confusing error messages introduced by segment stuff
 
 
 Version 2.11.0 (2022-05-24)

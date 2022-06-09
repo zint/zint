@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* Note BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 also tested in test_gs1.c */
 
@@ -102,7 +103,7 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
+INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
 static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
@@ -157,7 +158,7 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = c128_hrt_cpy_iso8859_1(&symbol, (unsigned char *) data[i].data, length);
+        ret = c128_hrt_cpy_iso8859_1_test(&symbol, (unsigned char *) data[i].data, length);
         if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < ret; j++) {
                 fprintf(stderr, "symbol.text[%d] %2X\n", j, symbol.text[j]);

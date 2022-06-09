@@ -29,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_QR_H
 #define Z_QR_H
@@ -126,7 +127,7 @@ static const unsigned short rmqr_numeric_cci[] = {
     4, 5, 6, 7, 7,
     5, 6, 7, 7, 8,
     4, 6, 7, 7, 8, 8,
-    5, 6, 7, 8, 8, 8, // Note R13x77 (4th) 8 bits but max numerics 124 (7 bits)
+    5, 6, 7, 7, 8, 8,
     7, 7, 8, 8, 9,
     7, 8, 8, 8, 9
 };

@@ -14,6 +14,7 @@
  *   You should have received a copy of the GNU General Public License     *
  *   along with this program.  If not, see <http://www.gnu.org/licenses/>. *
  ***************************************************************************/
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #ifdef _MSC_VER
 #if _MSC_VER >= 1900 /* MSVC 2015 */
@@ -59,6 +60,43 @@ namespace Zint {
         }
         return ret;
     }
+
+	/* Helper to calculate max right and bottom of elements for fudging render() */
+	static void getMaxRectsRightBottom(struct zint_vector *vector, int &maxRight, int &maxBottom) {
+        struct zint_vector_rect *rect;
+        struct zint_vector_hexagon *hex;
+        struct zint_vector_circle *circle;
+
+		maxRight = maxBottom = -1;
+
+		for (rect = vector->rectangles; rect; rect = rect->next) {
+			if (rect->x + rect->width > maxRight) {
+				maxRight = rect->x + rect->width;
+			}
+			if (rect->y + rect->height > maxBottom) {
+				maxBottom = rect->y + rect->height;
+			}
+		}
+
+		for (hex = vector->hexagons; hex; hex = hex->next) {
+			if (hex->x + hex->diameter > maxRight) {
+				maxRight = hex->x + hex->diameter;
+			}
+			if (hex->y + hex->diameter > maxBottom) {
+				maxBottom = hex->y + hex->diameter;
+			}
+		}
+
+		for (circle = vector->circles; circle; circle = circle->next) {
+			if (circle->x + circle->diameter + circle->width > maxRight) {
+				maxRight = circle->x + circle->diameter + circle->width;
+			}
+			if (circle->y + circle->diameter + circle->width > maxBottom) {
+				maxBottom = circle->y + circle->diameter + circle->width;
+			}
+		}
+		// TODO: Strings?
+	}
 
     /* Segment constructors */
     QZintSeg::QZintSeg() : m_eci(0) {}
@@ -773,6 +811,10 @@ namespace Zint {
         // Plot rectangles
         rect = m_zintSymbol->vector->rectangles;
         if (rect) {
+			int maxRight = -1, maxBottom = -1; // Used for fudging below
+			if (borderWidth() && (borderType() & (BARCODE_BIND | BARCODE_BOX))) {
+				getMaxRectsRightBottom(m_zintSymbol->vector, maxRight, maxBottom);
+			}
             QBrush brush(Qt::SolidPattern);
             while (rect) {
                 if (rect->colour == -1) {
@@ -780,7 +822,10 @@ namespace Zint {
                 } else {
                     brush.setColor(colourToQtColor(rect->colour));
                 }
-                painter.fillRect(QRectF(rect->x, rect->y, rect->width, rect->height), brush);
+				// Allow for rounding errors on translation/scaling TODO: proper calc
+				float fudgeW = rect->x + rect->width == maxRight ? 0.1f : 0.0f;
+				float fudgeH = rect->y + rect->height == maxBottom ? 0.1f : 0.0f;
+				painter.fillRect(QRectF(rect->x, rect->y, rect->width + fudgeW, rect->height + fudgeH), brush);
                 rect = rect->next;
             }
         }

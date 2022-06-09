@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include <errno.h>
@@ -337,7 +337,7 @@ struct wpng_error_type {
     jmp_buf jmpbuf;
 };
 
-STATIC_UNLESS_ZINT_TEST void wpng_error_handler(png_structp png_ptr, png_const_charp msg);
+INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg);
 
 static void test_wpng_error_handler(void) {
     int ret;
@@ -363,7 +363,7 @@ static void test_wpng_error_handler(void) {
     fp = fopen(filename, "r");
     assert_nonnull(fp, "fopen(%s) for read failed\n", filename);
 
-    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler, NULL);
+    png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler_test, NULL);
     assert_nonnull(png_ptr, "png_create_write_struct failed\n");
 
     info_ptr = png_create_info_struct(png_ptr);
@@ -429,3 +429,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

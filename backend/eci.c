@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
 #ifdef _MSC_VER
@@ -66,7 +67,7 @@ static int u_iso8859(const unsigned int u, const unsigned short *tab_s, const un
 
     s = 0;
     while (s <= e) {
-        const int m = (s + e) / 2;
+        const int m = (s + e) >> 1;
         if (tab_u[m] < u) {
             s = m + 1;
         } else if (tab_u[m] > u) {
@@ -97,7 +98,7 @@ static int u_cp125x(const unsigned int u, const unsigned short *tab_s, const uns
 
     s = 0;
     while (s <= e) {
-        const int m = (s + e) / 2;
+        const int m = (s + e) >> 1;
         if (tab_u[m] < u) {
             s = m + 1;
         } else if (tab_u[m] > u) {
@@ -244,7 +245,7 @@ static int u_sjis_int(const unsigned int u, unsigned int *d) {
         s = 0;
         e = ARRAY_SIZE(sjis_u) - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (sjis_u[m] < u) {
                 s = m + 1;
             } else if (sjis_u[m] > u) {
@@ -298,7 +299,7 @@ static int u_big5(const unsigned int u, unsigned char *dest) {
         s = 0;
         e = ARRAY_SIZE(big5_u) - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (big5_u[m] < u) {
                 s = m + 1;
             } else if (big5_u[m] > u) {
@@ -339,7 +340,7 @@ static int u_ksx1001(const unsigned int u, unsigned char *dest) {
         s = ksx1001_u_ind[(u - ksx1001_u[0]) >> 8];
         e = s + 0x100 > ARRAY_SIZE(ksx1001_u) ? ARRAY_SIZE(ksx1001_u) - 1 : s + 0x100 - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (ksx1001_u[m] < u) {
                 s = m + 1;
             } else if (ksx1001_u[m] > u) {
@@ -380,7 +381,7 @@ static int u_gb2312_int(const unsigned int u, unsigned int *d) {
         s = gb2312_u_ind[(u - gb2312_u[0]) >> 8];
         e = s + 0x100 > ARRAY_SIZE(gb2312_u) ? ARRAY_SIZE(gb2312_u) - 1 : s + 0x100 - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (gb2312_u[m] < u) {
                 s = m + 1;
             } else if (gb2312_u[m] > u) {
@@ -449,7 +450,7 @@ static int u_gbk_int(const unsigned int u, unsigned int *d) {
         s = 0;
         e = ARRAY_SIZE(gbk_u) - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (gbk_u[m] < u) {
                 s = m + 1;
             } else if (gbk_u[m] > u) {
@@ -561,7 +562,7 @@ static int u_gb18030_int(const unsigned int u, unsigned int *d1, unsigned int *d
         s = 0;
         e = ARRAY_SIZE(gb18030_2_u) - 1;
         while (s <= e) {
-            const int m = (s + e) / 2;
+            const int m = (s + e) >> 1;
             if (gb18030_2_u[m] < u) {
                 s = m + 1;
             } else if (gb18030_2_u[m] > u) {
@@ -581,7 +582,7 @@ static int u_gb18030_int(const unsigned int u, unsigned int *d1, unsigned int *d
     s = 0;
     e = ARRAY_SIZE(gb18030_4_u_e) - 1;
     while (s < e) { /* Lower bound */
-        const int m = (s + e) / 2;
+        const int m = (s + e) >> 1;
         if (gb18030_4_u_e[m] < u) {
             s = m + 1;
         } else {
@@ -861,24 +862,25 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
 /* If `full_multibyte` set, copy byte input stream to array of ints, putting double-bytes that match QR Kanji mode in
  * a single entry. If `full_multibyte` not set, do a straight copy */
 INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int *ddata, const int full_multibyte) {
-    unsigned int i, j, jis, length;
-    unsigned char c;
+    unsigned int i, j, length;
+    unsigned char c1, c2;
 
     if (full_multibyte) {
         for (i = 0, j = 0, length = *p_length; i < length; i++, j++) {
-            c = source[i];
-            if (((c >= 0x81 && c <= 0x9F) || (c >= 0xE0 && c <= 0xEB)) && length - i >= 2) {
-                jis = (c << 8) | source[i + 1];
-                if ((jis >= 0x8140 && jis <= 0x9FFC) || (jis >= 0xE040 && jis <= 0xEBBF)) {
+            c1 = source[i];
+            /* Now using stricter interpretation of standard, and excluding certain trailing bytes */
+            if (((c1 >= 0x81 && c1 <= 0x9F) || (c1 >= 0xE0 && c1 <= 0xEB)) && length - i >= 2) {
+                c2 = source[i + 1];
+                if ((c2 >= 0x40 && c2 <= 0xFC) && c2 != 0x7F && (c1 != 0xEB || c2 <= 0xBF)) {
                     /* This may or may not be valid Shift JIS, but don't care as long as it can be encoded in
                      * QR Kanji mode */
-                    ddata[j] = jis;
+                    ddata[j] = (c1 << 8) | c2;
                     i++;
                 } else {
-                    ddata[j] = c;
+                    ddata[j] = c1;
                 }
             } else {
-                ddata[j] = c;
+                ddata[j] = c1;
             }
         }
         *p_length = j;

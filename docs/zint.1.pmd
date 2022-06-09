@@ -1,10 +1,10 @@
-% zint(1) Version 2.11.0.9
+% ZINT(1) Version 2.11.0.9
 %
-% May 2022
+% June 2022
 
 # NAME
 
-`zint` - Encode data as a barcode image
+`zint` - encode data as a barcode image
 
 # SYNOPSIS
 
@@ -19,7 +19,7 @@ Input data is UTF-8, unless `--binary` is specified.
 
 Human Readable Text (HRT) is displayed by default for those barcodes that support HRT, unless `--notext` is specified.
 
-The output image file (specified with `-o` or `--output`) may be in one of these formats: Windows Bitmap (`BMP`),
+The output image file (specified with `-o` | `--output`) may be in one of these formats: Windows Bitmap (`BMP`),
 Enhanced Metafile Format (`EMF`), Encapsulated PostScript (`EPS`), Graphics Interchange Format (`GIF`), ZSoft
 Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`SVG`), or Tagged Image File Format
 (`TIF`).
@@ -31,40 +31,40 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `-b TYPE`, `--barcode=TYPE`
 :   Set the barcode symbology that will be used to encode the data. *TYPE* is the number or name of the barcode
-    symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t` or
+    symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t` |
     `--types` option. Type names are case-insensitive, and non-alphanumerics are ignored.
 
 `--addongap=INTEGER`
-:   For UPC/EAN symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
+:   For EAN/UPC symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
     the X-dimension. The maximum gap that can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
 
 `--batch`
-:   Treat each line of an input file specified with `-i` or `--input` as a separate data set and produce a barcode
+:   Treat each line of an input file specified with `-i` | `--input` as a separate data set and produce a barcode
     image for each one. The barcode images are outputted by default to numbered filenames starting with "00001.png",
-    "00002.png" etc., which can be changed by using the `-o` or `--output` option.
+    "00002.png" etc., which can be changed by using the `-o` | `--output` option.
 
 `--bg=COLOUR`
-:   Specify a background (paper) colour where *COLOUR* is in hex RRGGBB or RRGGBBAA format.
+:   Specify a background (paper) colour where *COLOUR* is in hex `RRGGBB` or `RRGGBBAA` format.
 
 `--binary`
 :   Treat input data as raw 8-bit binary data instead of the default UTF-8. Automatic code page translation to an ECI
     page is disabled, and no validation of the data's character encoding takes place.
 
 `--bind`
-:   Add horizontal boundary bars (also known as bearer bars) to the symbol. The width of the boundary bars must be
+:   Add horizontal boundary bars (also known as bearer bars) to the symbol. The width of the boundary bars is
     specified by the `--border` option.  `--bind` can also be used to add row separator bars to symbols stacked with
-    multiple `-d` or `--data` inputs, in which case the width of the separator bars must be specified with the
-    `--separator` option.
+    multiple `-d` | `--data` inputs, in which case the width of the separator bars is specified with the `--separator`
+    option.
 
 `--bold`
 :   Use bold text for the Human Readable Text (HRT).
 
 `--border=INTEGER`
 :   Set the width of boundary bars (`--bind`) or box borders (`--box`), where *INTEGER* is in integral multiples of
-    the X-dimension.
+    the X-dimension. The default is zero.
 
 `--box`
-:   Add a box around the symbol. The width of the borders must be specified by the `--border` option.
+:   Add a box around the symbol. The width of the borders is specified by the `--border` option.
 
 `--cmyk`
 :   Use the CMYK colour space when outputting to Encapsulated PostScript (EPS) or TIF files.
@@ -104,7 +104,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--dump`
 
 :   Dump a hexadecimal representation of the symbol's encodation to stdout. The same representation may be outputted
-    to a file by using a `.txt` extension with `-o` or `--output` or by specifying `--filetype=txt`.
+    to a file by using a `.txt` extension with `-o` | `--output` or by specifying `--filetype=txt`.
 
 `-e`, `--ecinos`
 
@@ -112,31 +112,35 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--eci=INTEGER`
 
-:   Set the ECI code for the input data to *INTEGER*. See `-e` or `--ecinos` for a list of the ECIs available. ECIs
-    are supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417,
-    PDF417, QR Code, rMQR and Ultracode
+:   Set the ECI code for the input data to *INTEGER*. See `-e` | `--ecinos` for a list of the ECIs available. ECIs are
+    supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417,
+    QR Code, rMQR and Ultracode
 
 `--esc`
 
 :   Process escape characters in the input data. The escape sequences are:
 
-        \0      (0x00)    NUL  Null character
-        \E      (0x04)    EOT  End of Transmission
-        \a      (0x07)    BEL  Bell
-        \b      (0x08)    BS   Backspace
-        \t      (0x09)    HT   Horizontal Tab
-        \n      (0x0A)    LF   Line Feed
-        \v      (0x0B)    VT   Vertical Tab
-        \f      (0x0C)    FF   Form Feed
-        \r      (0x0D)    CR   Carriage Return
-        \e      (0x1B)    ESC  Escape
-        \G      (0x1D)    GS   Group Separator
-        \R      (0x1E)    RS   Record Separator
-        \\      (0x5C)    \    Backslash
-        \xNN    (0xNN)         Any 8-bit character where NN is
-                               hexadecimal
-        \uNNNN  (U+NNNN)       Any 16-bit Unicode BMP character
-                               where NNNN is hexadecimal
+        \0       (0x00)    NUL  Null character
+        \E       (0x04)    EOT  End of Transmission
+        \a       (0x07)    BEL  Bell
+        \b       (0x08)    BS   Backspace
+        \t       (0x09)    HT   Horizontal Tab
+        \n       (0x0A)    LF   Line Feed
+        \v       (0x0B)    VT   Vertical Tab
+        \f       (0x0C)    FF   Form Feed
+        \r       (0x0D)    CR   Carriage Return
+        \e       (0x1B)    ESC  Escape
+        \G       (0x1D)    GS   Group Separator
+        \R       (0x1E)    RS   Record Separator
+        \\       (0x5C)    \    Backslash
+        \dNNN    (NNN)          Any 8-bit character where NNN is
+                                decimal (000-255)
+        \xNN     (0xNN)         Any 8-bit character where NN is
+                                hexadecimal
+        \uNNNN   (U+NNNN)       Any 16-bit Unicode BMP character
+                                where NNNN is hexadecimal
+        \UNNNNNN (U+NNNNNN)     Any 20-bit Unicode character
+                                where NNNNNN is hexadecimal
 
 `--fast`
 
@@ -144,7 +148,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--fg=COLOUR`
 
-:   Specify a foreground (ink) colour where *COLOUR* is in hex RRGGBB or RRGGBBAA format.
+:   Specify a foreground (ink) colour where *COLOUR* is in hex `RRGGBB` or `RRGGBBAA` format.
 
 `--filetype=TYPE`
 
@@ -174,13 +178,12 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--guarddescent=NUMBER`
 
-:   For UPC/EAN symbols, set the height of the guard bars' descent, where *NUMBER* is in multiples of the X-dimension.
-    *NUMBER* may be floating-point.
+:   For EAN/UPC symbols, set the height the guard bars descend below the main bars, where *NUMBER* is in multiples of
+    the X-dimension. *NUMBER* may be floating-point.
 
 `--height=NUMBER`
 
-:   Set the height of the symbol in multiples of the X-dimension. *NUMBER* may be floating-point. Increments of 0.5
-    are recommended for raster output (BMP, GIF, PCX, PNG and TIF).
+:   Set the height of the symbol in multiples of the X-dimension. *NUMBER* may be floating-point.
 
 `--heightperrow`
 
@@ -205,7 +208,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--mode=INTEGER`
 
-:   For MaxiCode and Composite symbols, set the encoding mode to *INTEGER*.
+:   For MaxiCode and GS1 Composite symbols, set the encoding mode to *INTEGER*.
 
     For MaxiCode (SCM is Structured Carrier Message, with 3 fields: postcode, 3-digit ISO 3166-1 country code, 3-digit
     service code):
@@ -216,7 +219,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         5   Enhanced ECC for all of the message
         6   Reader Initialisation (Programming)
 
-    For Composite symbols (names end in `_CC`, i.e. EANX_CC, GS1_128_CC, DBAR_OMN_CC etc.):
+    For GS1 Composite symbols (names end in `_CC`, i.e. EANX_CC, GS1_128_CC, DBAR_OMN_CC etc.):
 
         1   CC-A
         2   CC-B
@@ -246,16 +249,18 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--primary=STRING`
 
-:   For MaxiCode, set the content of the primary message. For Composite symbols, set the content of the linear symbol.
+:   For MaxiCode, set the content of the primary message. For GS1 Composite symbols, set the content of the linear
+    symbol.
 
 `--quietzones`
 
-:   Add compliant quiet zones for symbols that specify one. This is in addition to any whitespace specified by `-w` or
+:   Add compliant quiet zones for symbols that specify one. This is in addition to any whitespace specified by `-w` |
     `--whitesp` or `--vwhitesp`.
 
 `-r`, `--reverse`
 
-:   Reverse the foreground and background colours (white on black).
+:   Reverse the foreground and background colours (white on black). Known as "reflectance reversal" or "reversed
+    reflectance".
 
 `--rotate=INTEGER`
 
@@ -268,36 +273,40 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--scale=NUMBER`
 
-:   Set the X-dimension. *NUMBER* may be floating-point, and is multiplied by 2 (except for MaxiCode) before being
-    applied. For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for EMF vector output, and by 2
-    otherwise. The default scale is 1.
+:   Adjust the size of the X-dimension. *NUMBER* may be floating-point, and is multiplied by 2 (except for MaxiCode)
+    before being applied. The default scale is 1.
+
+    For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for EMF output, and by 2 otherwise.
+
+    Increments of 0.5 (half-integers) are recommended for non-MaxiCode raster output (BMP, GIF, PCX, PNG and TIF).
 
 `--scmvv=INTEGER`
 
-:   For MaxiCode, prefix the Structured Carrier Message (SCM) with `"[)>\R01\Gvv"`, where vv is a 2-digit *INTEGER*.
+:   For MaxiCode, prefix the Structured Carrier Message (SCM) with `"[)>\R01\Gvv"`, where `vv` is a 2-digit *INTEGER*.
 
 `--secure=INTEGER`
 
-:   Set the error correction level (ECC) to *INTEGER*. The meaning is specific to the following matrix symbols:
+:   Set the error correction level (ECC) to *INTEGER*. The meaning is specific to the following matrix symbols (all
+    except PDF417 are approximate):
 
-        Aztec Code  1 to 4 (10%, 23%, 36%, 50%) (approx.)
-        Grid Matrix 1 to 5 (10% to 50%) (approx.)
-        Han Xin     1 to 4 (8%, 15%, 23%, 30%) (approx.)
-        Micro QR    1 to 3 (L, M, Q)
+        Aztec Code  1 to 4 (10%, 23%, 36%, 50%)
+        Grid Matrix 1 to 5 (10% to 50%)
+        Han Xin     1 to 4 (8%, 15%, 23%, 30%)
+        Micro QR    1 to 3 (7%, 15%, 25%) (L, M, Q)
         PDF417      0 to 8 (2^(INTEGER + 1) codewords)
-        QR Code     1 to 4 (L, M, Q, H)
-        rMQR        2 or 4 (M, H)
-        Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%) (approx.)
+        QR Code     1 to 4 (7%, 15%, 25%, 30%) (L, M, Q, H)
+        rMQR        2 or 4 (15% or 30%) (M or H)
+        Ultracode   1 to 6 (0%, 5%, 9%, 17%, 25%, 33%)
 
 `--segN=ECI,DATA`
 
-:   Set the *ECI* & *DATA* content for segment N, where N is 1 to 9. `-d` or `--data` must still be given, and counts
+:   Set the *ECI* & *DATA* content for segment N, where N is 1 to 9. `-d` | `--data` must still be given, and counts
     as segment 0, its ECI given by `--eci`. Segments must be consecutive.
 
 `--separator=INTEGER`
 
 :   Set the height of row separator bars for stacked symbologies, where *INTEGER* is in integral multiples of the
-    X-dimension.
+    X-dimension. The default is zero.
 
 `--small`
 
@@ -309,13 +318,14 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--structapp=I,C[,ID]`
 
-:   Set Structured Append info, where `I` is the 1-based index, `C` is the count of total symbols in the sequence, and
-    `ID`, which is optional, is the identifier that all symbols in the sequence share. Structured Append is supported
-    by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and Ultracode.
+:   Set Structured Append info, where `I` is the 1-based index, `C` is the total number of symbols in the sequence,
+    and `ID`, which is optional, is the identifier that all symbols in the sequence share. Structured Append is
+    supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and
+    Ultracode.
 
 `-t`, `--types`
 
-:   Display the table of barcode types (symbologies). The numbers or names can be used with `-b` or `--barcode`.
+:   Display the table of barcode types (symbologies). The numbers or names can be used with `-b` | `--barcode`.
 
 `--vers=INTEGER`
 
@@ -341,13 +351,16 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         C25LOGIC        ditto
         C25STANDARD     ditto
         Codabar         1 or 2 (add hidden or visible check digit)
-        Code 11         0 or 1 (no or 1 check digit only)
-                               (has 2 check digits by default)
+        Code 11         0 or 1 (no or 1 visible check digit only)
+                               (default is 2 visible check digits)
         Code 39         1      (add visible check digit)
         Code 93         1      (hide the default check characters)
         EXCODE39        1      (add visible check digit)
         LOGMARS         1      (add visible check digit)
-        MSI Plessey     0 to 6 (various check digit options)
+        MSI Plessey     0 to 6 (none to various visible options)
+                        1, 2   (mod-10, mod-10 + mod-10)
+                        3, 4   (mod-11 IBM, mod-11 IBM + mod-10)
+                        5, 6   (mod-11 NCR, mod-11 NCR + mod-10)
                         +10    (hide)
 
     For a few other symbologies, it specifies other characteristics:
@@ -378,7 +391,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 # EXIT STATUS
 
 `0`
-:   Success (including when given informational options `-h`, `--help`, `-e`, `--ecinos`, `-t`, `--types`, `-v`,
+:   Success (including when given informational options `-h` | `--help`, `-e` | `--ecinos`, `-t` | `--types`, `-v` |
     `--version`).
 
 `2`
@@ -454,15 +467,19 @@ http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manua
 
 Zint is designed to be compliant with a number of international standards, including:
 
-EN 798:1996, EN 12323:2005, ISO/IEC 15420:2009,
-ISO/IEC 15417:2007, ISO/IEC 15438:2015, ISO/IEC 16022:2006,
-ISO/IEC 16023:2000, ISO/IEC 16388:2007, ISO/IEC 18004:2015,
-ISO/IEC 20830:2021, ISO/IEC 24723:2010, ISO/IEC 24724:2011,
-ISO/IEC 24728:2006, ISO/IEC 24778:2008, ISO/IEC 16390:2007,
-ISO/IEC 21471:2019, AIM USS Code One (1994), ANSI/AIM BC12-1998,
-ANSI/AIM BC6-2000, ANSI/AIM BC5-1995, AIM ISS-X-24 (1995),
-AIMD014 (v 1.63) (2008), ANSI-HIBC 2.6-2016, AIM ITS/04-023 (2022)
+ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996,
+AIM ISS-X-24 (1995), ISO/IEC 15417:2007, EN 12323:2005,
+ISO/IEC 16388:2007, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,
+AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC 21471:2019,
+ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,
+ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007,
+ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC 15438:2015,
+ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)
 
-# AUTHORS
+# COPYRIGHT
+
+Copyright © 2022 Robin Stuart. Released under GNU GPL 3.0 or later.
+
+# AUTHOR
 
 Robin Stuart <robin@zint.org.uk>

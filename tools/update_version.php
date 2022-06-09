@@ -2,8 +2,9 @@
 /* Update Zint version number in various files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /* Run from project directory
  *
  *      php tools/update_version.php ZINT_VERSION_MAJOR ZINT_VERSION_MINOR ZINT_VERSION_RELEASE [ZINT_VERSION_BUILD]
@@ -15,7 +16,6 @@
  *      php tools/update_version.php 3 4 5 9
  *      cd docs; make
  */
-/* vim: set ts=4 sw=4 et : */
 
 $basename = basename(__FILE__);
 $dirname = dirname(__FILE__);
@@ -51,6 +51,7 @@ if ($build) {
 $rc_str1 = "$major,$minor,$release,$build";
 $rc_str2 = "$major.$minor.$release.$build";
 
+/* `$to_do` is no. of lines that should get replaced/changed, not no. of replacements */
 function version_replace($to_do, $file, $match_pattern, $replace_pattern, $replace_str) {
     global $basename;
 
@@ -151,6 +152,10 @@ if (!file_put_contents($file, implode("\n", $lines))) {
     exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
 }
 
+// README.linux
+
+version_replace(3, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9.]+/', $v_base_str);
+
 // zint.spec
 
 version_replace(1, $data_dirname . 'zint.spec', '/^Version:/', '/[0-9.]+/', $v_base_str);
@@ -243,7 +248,7 @@ if ($build !== 9) { // Don't update if marking version as dev
 
 // docs/zint.1.pmd
 
-version_replace(1, $data_dirname . 'docs/zint.1.pmd', '/^% zint\(1\) Version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
+version_replace(1, $data_dirname . 'docs/zint.1.pmd', '/^% ZINT\(1\) Version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
 
 // frontend_qt/res/qtZint.rc
 
@@ -304,3 +309,5 @@ print '!!!  REMEMBER: run "autoconf" and "./configure" in "backend_tcl/" !!!' . 
 print '!!!  REMEMBER: update version and date in "ChangeLog"             !!!' . PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;
 print PHP_EOL;
+
+/* vim: set ts=4 sw=4 et : */

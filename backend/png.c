@@ -1,8 +1,7 @@
 /* png.c - Handles output to PNG file */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef NO_PNG
 
@@ -52,7 +51,7 @@ struct wpng_error_type {
     jmp_buf jmpbuf;
 };
 
-STATIC_UNLESS_ZINT_TEST void wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
+static void wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
     struct wpng_error_type *wpng_error_ptr;
 
     wpng_error_ptr = (struct wpng_error_type *) png_get_error_ptr(png_ptr);
@@ -66,6 +65,12 @@ STATIC_UNLESS_ZINT_TEST void wpng_error_handler(png_structp png_ptr, png_const_c
     sprintf(wpng_error_ptr->symbol->errtxt, "635: libpng error: %.60s", msg ? msg : "<NULL>");
     longjmp(wpng_error_ptr->jmpbuf, 1);
 }
+
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg) {
+	wpng_error_handler(png_ptr, msg);
+}
+#endif
 
 /* Guestimate best compression strategy */
 static int guess_compression_strategy(struct zint_symbol *symbol, unsigned char *pixelbuf) {
@@ -349,4 +354,5 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #else
 /* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
 typedef int make_iso_compilers_happy;
+/* vim: set ts=4 sw=4 et : */
 #endif /* NO_PNG */

@@ -1,7 +1,7 @@
 /*  output.c - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
 #include <math.h>
@@ -70,7 +70,7 @@ INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
 }
 
 /* Return minimum quiet zones for each symbology */
-STATIC_UNLESS_ZINT_TEST int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom) {
     int done = 0;
 
@@ -471,6 +471,13 @@ STATIC_UNLESS_ZINT_TEST int out_quiet_zones(const struct zint_symbol *symbol, co
     return done; /* For self-checking */
 }
 
+#ifdef ZINT_TEST /* Wrapper for direct testing */
+INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
+                            float *left, float *right, float *top, float *bottom) {
+	return out_quiet_zones(symbol, hide_text, left, right, top, bottom);
+}
+#endif
+
 /* Set left (x), top (y), right and bottom offsets for whitespace */
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
@@ -722,3 +729,5 @@ INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
         textpart3[6] = '\0';
     }
 }
+
+/* vim: set ts=4 sw=4 et : */

@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
@@ -288,6 +289,23 @@ static void test_qr_input(int index, int generate, int debug) {
         /*125*/ { UNICODE_MODE, 900, 4, 8 << 8, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", 1, 1, "ECI-900 B2 (no conversion)" },
         /*126*/ { UNICODE_MODE, 16384, 4, 8 << 8, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", 1, 1, "ECI-16384 B2 (no conversion)" },
         /*127*/ { UNICODE_MODE, 3, 4, -1, "product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97", 0, 3, "(86) 70 34 39 70 72 6F 64 75 63 74 3A 47 6F 6F 67 6C 65 20 50 69 78 65 6C 20 34 61 20 2D", 0, 1, "ECI-3 B57 A8; BWIPP different encodation (B65)" },
+        /*128*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\176", 0, 0, "80 10 1F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x817E)" },
+        /*129*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\177", 0, 0, "40 28 17 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x817F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*130*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\200", 0, 0, "80 10 20 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x8180)" },
+        /*131*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\176", 0, 0, "80 1B 5F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x9F7E)" },
+        /*132*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\177", 0, 0, "40 29 F7 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x9F7F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*133*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\176", 0, 0, "80 1B BF 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xE07E)" },
+        /*134*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\177", 0, 0, "40 2E 07 F0 EC 11 EC 11 EC", 1, 1, "B2 (0xE07F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*135*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\352\244", 0, 0, "80 1F 92 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xEAA4, last valid codepoint)" },
+        /*136*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\277", 0, 0, "80 1F FF 80 EC 11 EC 11 EC", 1, 1, "K1 (0xEBBF undefined in Shift JIS but not checked and uses Kanji mode)" },
+        /*137*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\300", 0, 0, "40 2E BC 00 EC 11 EC 11 EC", 1, 1, "B2 (0xEBC0 was always excluded)" },
+        /*138*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\300", 0, 0, "80 10 40 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81C0)" },
+        /*139*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\374", 0, 0, "80 10 5E 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81FC)" },
+        /*140*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\375", 0, 0, "40 28 1F D0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FD previously used Kanji mode, now excludes trailing 0xFD)" },
+        /*141*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\376", 0, 0, "40 28 1F E0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FE previously used Kanji mode, now excludes trailing 0xFE)" },
+        /*142*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
+        /*143*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
+        /*144*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\255", 0, 0, "80 10 36 80 EC 11 EC 11 EC", 1, 1, "K1 (0x81AD undefined in Shift JIS but not checked and uses Kanji mode)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -5854,6 +5872,576 @@ static void test_upnqr_encode(int index, int generate, int debug) {
     testFinish();
 }
 
+static void test_rmqr_large(int index, int debug) {
+
+    struct item {
+        int option_1;
+        int option_2;
+        char *pattern;
+        int length;
+        int ret;
+        int expected_rows;
+        int expected_width;
+    };
+    // ISO/IEC 23941:2022 Table 6
+    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    struct item data[] = {
+        /*  0*/ { 2, 1, "1", 12, 0, 7, 43 },
+        /*  1*/ { 2, 1, "1", 13, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { 2, 1, "A", 7, 0, 7, 43 },
+        /*  3*/ { 2, 1, "A", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { 2, 1, "\200", 5, 0, 7, 43 },
+        /*  5*/ { 2, 1, "\200", 6, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { 2, 1, "\201", 6, 0, 7, 43 }, // 3 Shift JIS 0x8181
+        /*  7*/ { 2, 1, "\201", 8, ZINT_ERROR_TOO_LONG, -1, -1 }, // 4 Shift JIS 0x8181
+        /*  8*/ { 4, 1, "1", 5, 0, 7, 43 },
+        /*  9*/ { 4, 1, "1", 6, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { 4, 1, "A", 3, 0, 7, 43 },
+        /* 11*/ { 4, 1, "A", 4, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { 4, 1, "\200", 2, 0, 7, 43 },
+        /* 13*/ { 4, 1, "\200", 3, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { 4, 1, "\201", 2, 0, 7, 43 }, // 1 Shift JIS 0x8181
+        /* 15*/ { 4, 1, "\201", 4, ZINT_ERROR_TOO_LONG, -1, -1 }, // 2 Shift JIS 0x8181
+        /* 16*/ { 2, 2, "1", 26, 0, 7, 59 },
+        /* 17*/ { 2, 2, "1", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { 2, 2, "A", 16, 0, 7, 59 },
+        /* 19*/ { 2, 2, "A", 17, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 20*/ { 2, 2, "\200", 11, 0, 7, 59 },
+        /* 21*/ { 2, 2, "\200", 12, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { 2, 2, "\201", 12, 0, 7, 59 }, // 6 Shift JIS 0x8181
+        /* 23*/ { 2, 2, "\201", 14, ZINT_ERROR_TOO_LONG, -1, -1 }, // 7 Shift JIS 0x8181
+        /* 24*/ { 4, 2, "1", 14, 0, 7, 59 },
+        /* 25*/ { 4, 2, "1", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { 4, 2, "A", 8, 0, 7, 59 },
+        /* 27*/ { 4, 2, "A", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 28*/ { 4, 2, "\200", 6, 0, 7, 59 },
+        /* 29*/ { 4, 2, "\200", 7, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 30*/ { 4, 2, "\201", 6, 0, 7, 59 }, // 3 Shift JIS 0x8181
+        /* 31*/ { 4, 2, "\201", 8, ZINT_ERROR_TOO_LONG, -1, -1 }, // 4 Shift JIS 0x8181
+        /* 32*/ { 2, 3, "1", 45, 0, 7, 77 },
+        /* 33*/ { 2, 3, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 34*/ { 2, 3, "A", 27, 0, 7, 77 },
+        /* 35*/ { 2, 3, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 36*/ { 2, 3, "\200", 19, 0, 7, 77 },
+        /* 37*/ { 2, 3, "\200", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 38*/ { 2, 3, "\201", 22, 0, 7, 77 }, // 11 Shift JIS 0x8181
+        /* 39*/ { 2, 3, "\201", 24, ZINT_ERROR_TOO_LONG, -1, -1 }, // 12 Shift JIS 0x8181
+        /* 40*/ { 4, 3, "1", 21, 0, 7, 77 },
+        /* 41*/ { 4, 3, "1", 22, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 42*/ { 4, 3, "A", 13, 0, 7, 77 },
+        /* 43*/ { 4, 3, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 44*/ { 4, 3, "\200", 9, 0, 7, 77 },
+        /* 45*/ { 4, 3, "\200", 10, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 46*/ { 4, 3, "\201", 10, 0, 7, 77 }, // 5 Shift JIS 0x8181
+        /* 47*/ { 4, 3, "\201", 12, ZINT_ERROR_TOO_LONG, -1, -1 }, // 6 Shift JIS 0x8181
+        /* 48*/ { 2, 4, "1", 64, 0, 7, 99 },
+        /* 49*/ { 2, 4, "1", 65, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 50*/ { 2, 4, "A", 39, 0, 7, 99 },
+        /* 51*/ { 2, 4, "A", 40, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 52*/ { 2, 4, "\200", 27, 0, 7, 99 },
+        /* 53*/ { 2, 4, "\200", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 54*/ { 2, 4, "\201", 32, 0, 7, 99 }, // 16 Shift JIS 0x8181
+        /* 55*/ { 2, 4, "\201", 34, ZINT_ERROR_TOO_LONG, -1, -1 }, // 17 Shift JIS 0x8181
+        /* 56*/ { 4, 4, "1", 30, 0, 7, 99 },
+        /* 57*/ { 4, 4, "1", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 58*/ { 4, 4, "A", 18, 0, 7, 99 },
+        /* 59*/ { 4, 4, "A", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 60*/ { 4, 4, "\200", 13, 0, 7, 99 },
+        /* 61*/ { 4, 4, "\200", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 62*/ { 4, 4, "\201", 16, 0, 7, 99 }, // 8 Shift JIS 0x8181
+        /* 63*/ { 4, 4, "\201", 18, ZINT_ERROR_TOO_LONG, -1, -1 }, // 9 Shift JIS 0x8181
+        /* 64*/ { 2, 5, "1", 102, 0, 7, 139 },
+        /* 65*/ { 2, 5, "1", 103, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 66*/ { 2, 5, "A", 62, 0, 7, 139 },
+        /* 67*/ { 2, 5, "A", 63, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 68*/ { 2, 5, "\200", 42, 0, 7, 139 },
+        /* 69*/ { 2, 5, "\200", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 70*/ { 2, 5, "\201", 52, 0, 7, 139 }, // 26 Shift JIS 0x8181
+        /* 71*/ { 2, 5, "\201", 54, ZINT_ERROR_TOO_LONG, -1, -1 }, // 27 Shift JIS 0x8181
+        /* 72*/ { 4, 5, "1", 54, 0, 7, 139 },
+        /* 73*/ { 4, 5, "1", 55, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 74*/ { 4, 5, "A", 33, 0, 7, 139 },
+        /* 75*/ { 4, 5, "A", 34, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 76*/ { 4, 5, "\200", 22, 0, 7, 139 },
+        /* 77*/ { 4, 5, "\200", 23, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 78*/ { 4, 5, "\201", 28, 0, 7, 139 }, // 14 Shift JIS 0x8181
+        /* 79*/ { 4, 5, "\201", 30, ZINT_ERROR_TOO_LONG, -1, -1 }, // 15 Shift JIS 0x8181
+        /* 80*/ { 2, 6, "1", 26, 0, 9, 43 },
+        /* 81*/ { 2, 6, "1", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 82*/ { 2, 6, "A", 16, 0, 9, 43 },
+        /* 83*/ { 2, 6, "A", 17, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 84*/ { 2, 6, "\200", 11, 0, 9, 43 },
+        /* 85*/ { 2, 6, "\200", 12, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 86*/ { 2, 6, "\201", 12, 0, 9, 43 }, // 6 Shift JIS 0x8181
+        /* 87*/ { 2, 6, "\201", 14, ZINT_ERROR_TOO_LONG, -1, -1 }, // 7 Shift JIS 0x8181
+        /* 88*/ { 4, 6, "1", 14, 0, 9, 43 },
+        /* 89*/ { 4, 6, "1", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 90*/ { 4, 6, "A", 8, 0, 9, 43 },
+        /* 91*/ { 4, 6, "A", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 92*/ { 4, 6, "\200", 6, 0, 9, 43 },
+        /* 93*/ { 4, 6, "\200", 7, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 94*/ { 4, 6, "\201", 6, 0, 9, 43 }, // 3 Shift JIS 0x8181
+        /* 95*/ { 4, 6, "\201", 8, ZINT_ERROR_TOO_LONG, -1, -1 }, // 4 Shift JIS 0x8181
+        /* 96*/ { 2, 7, "1", 47, 0, 9, 59 },
+        /* 97*/ { 2, 7, "1", 48, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 98*/ { 2, 7, "A", 29, 0, 9, 59 },
+        /* 99*/ { 2, 7, "A", 30, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*100*/ { 2, 7, "\200", 20, 0, 9, 59 },
+        /*101*/ { 2, 7, "\200", 21, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*102*/ { 2, 7, "\201", 24, 0, 9, 59 }, // 12 Shift JIS 0x8181
+        /*103*/ { 2, 7, "\201", 26, ZINT_ERROR_TOO_LONG, -1, -1 }, // 13 Shift JIS 0x8181
+        /*104*/ { 4, 7, "1", 23, 0, 9, 59 },
+        /*105*/ { 4, 7, "1", 24, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*106*/ { 4, 7, "A", 14, 0, 9, 59 },
+        /*107*/ { 4, 7, "A", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*108*/ { 4, 7, "\200", 10, 0, 9, 59 },
+        /*109*/ { 4, 7, "\200", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*110*/ { 4, 7, "\201", 12, 0, 9, 59 }, // 6 Shift JIS 0x8181
+        /*111*/ { 4, 7, "\201", 14, ZINT_ERROR_TOO_LONG, -1, -1 }, // 7 Shift JIS 0x8181
+        /*112*/ { 2, 8, "1", 71, 0, 9, 77 },
+        /*113*/ { 2, 8, "1", 72, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*114*/ { 2, 8, "A", 43, 0, 9, 77 },
+        /*115*/ { 2, 8, "A", 44, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*116*/ { 2, 8, "\200", 30, 0, 9, 77 },
+        /*117*/ { 2, 8, "\200", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*118*/ { 2, 8, "\201", 36, 0, 9, 77 }, // 18 Shift JIS 0x8181
+        /*119*/ { 2, 8, "\201", 38, ZINT_ERROR_TOO_LONG, -1, -1 }, // 19 Shift JIS 0x8181
+        /*120*/ { 4, 8, "1", 37, 0, 9, 77 },
+        /*121*/ { 4, 8, "1", 38, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*122*/ { 4, 8, "A", 23, 0, 9, 77 },
+        /*123*/ { 4, 8, "A", 24, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*124*/ { 4, 8, "\200", 16, 0, 9, 77 },
+        /*125*/ { 4, 8, "\200", 17, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*126*/ { 4, 8, "\201", 18, 0, 9, 77 }, // 9 Shift JIS 0x8181
+        /*127*/ { 4, 8, "\201", 20, ZINT_ERROR_TOO_LONG, -1, -1 }, // 10 Shift JIS 0x8181
+        /*128*/ { 2, 9, "1", 97, 0, 9, 99 },
+        /*129*/ { 2, 9, "1", 98, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*130*/ { 2, 9, "A", 59, 0, 9, 99 },
+        /*131*/ { 2, 9, "A", 60, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*132*/ { 2, 9, "\200", 40, 0, 9, 99 },
+        /*133*/ { 2, 9, "\200", 41, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*134*/ { 2, 9, "\201", 50, 0, 9, 99 }, // 25 Shift JIS 0x8181
+        /*135*/ { 2, 9, "\201", 52, ZINT_ERROR_TOO_LONG, -1, -1 }, // 26 Shift JIS 0x8181
+        /*136*/ { 4, 9, "1", 49, 0, 9, 99 },
+        /*137*/ { 4, 9, "1", 50, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*138*/ { 4, 9, "A", 30, 0, 9, 99 },
+        /*139*/ { 4, 9, "A", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*140*/ { 4, 9, "\200", 20, 0, 9, 99 },
+        /*141*/ { 4, 9, "\200", 21, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*142*/ { 4, 9, "\201", 24, 0, 9, 99 }, // 12 Shift JIS 0x8181
+        /*143*/ { 4, 9, "\201", 26, ZINT_ERROR_TOO_LONG, -1, -1 }, // 13 Shift JIS 0x8181
+        /*144*/ { 2, 10, "1", 147, 0, 9, 139 },
+        /*145*/ { 2, 10, "1", 148, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*146*/ { 2, 10, "A", 89, 0, 9, 139 },
+        /*147*/ { 2, 10, "A", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*148*/ { 2, 10, "\200", 61, 0, 9, 139 },
+        /*149*/ { 2, 10, "\200", 62, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*150*/ { 2, 10, "\201", 76, 0, 9, 139 }, // 36 Shift JIS 0x8181
+        /*151*/ { 2, 10, "\201", 78, ZINT_ERROR_TOO_LONG, -1, -1 }, // 37 Shift JIS 0x8181
+        /*152*/ { 4, 10, "1", 75, 0, 9, 139 },
+        /*153*/ { 4, 10, "1", 76, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*154*/ { 4, 10, "A", 46, 0, 9, 139 },
+        /*155*/ { 4, 10, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*156*/ { 4, 10, "\200", 31, 0, 9, 139 },
+        /*157*/ { 4, 10, "\200", 32, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*158*/ { 4, 10, "\201", 38, 0, 9, 139 }, // 19 Shift JIS 0x8181
+        /*159*/ { 4, 10, "\201", 40, ZINT_ERROR_TOO_LONG, -1, -1 }, // 20 Shift JIS 0x8181
+        /*160*/ { 2, 11, "1", 14, 0, 11, 27 },
+        /*161*/ { 2, 11, "1", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*162*/ { 2, 11, "A", 8, 0, 11, 27 },
+        /*163*/ { 2, 11, "A", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*164*/ { 2, 11, "\200", 6, 0, 11, 27 },
+        /*165*/ { 2, 11, "\200", 7, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*166*/ { 2, 11, "\201", 6, 0, 11, 27 }, // 3 Shift JIS 0x8181
+        /*167*/ { 2, 11, "\201", 8, ZINT_ERROR_TOO_LONG, -1, -1 }, // 4 Shift JIS 0x8181
+        /*168*/ { 4, 11, "1", 9, 0, 11, 27 },
+        /*169*/ { 4, 11, "1", 10, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*170*/ { 4, 11, "A", 6, 0, 11, 27 },
+        /*171*/ { 4, 11, "A", 7, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*172*/ { 4, 11, "\200", 4, 0, 11, 27 },
+        /*173*/ { 4, 11, "\200", 5, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*174*/ { 4, 11, "\201", 4, 0, 11, 27 }, // 2 Shift JIS 0x8181
+        /*175*/ { 4, 11, "\201", 6, ZINT_ERROR_TOO_LONG, -1, -1 }, // 3 Shift JIS 0x8181
+        /*176*/ { 2, 12, "1", 42, 0, 11, 43 },
+        /*177*/ { 2, 12, "1", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*178*/ { 2, 12, "A", 26, 0, 11, 43 },
+        /*179*/ { 2, 12, "A", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*180*/ { 2, 12, "\200", 18, 0, 11, 43 },
+        /*181*/ { 2, 12, "\200", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*182*/ { 2, 12, "\201", 22, 0, 11, 43 }, // 11 Shift JIS 0x8181
+        /*183*/ { 2, 12, "\201", 24, ZINT_ERROR_TOO_LONG, -1, -1 }, // 12 Shift JIS 0x8181
+        /*184*/ { 4, 12, "1", 23, 0, 11, 43 },
+        /*185*/ { 4, 12, "1", 24, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*186*/ { 4, 12, "A", 14, 0, 11, 43 },
+        /*187*/ { 4, 12, "A", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*188*/ { 4, 12, "\200", 10, 0, 11, 43 },
+        /*189*/ { 4, 12, "\200", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*190*/ { 4, 12, "\201", 12, 0, 11, 43 }, // 6 Shift JIS 0x8181
+        /*191*/ { 4, 12, "\201", 14, ZINT_ERROR_TOO_LONG, -1, -1 }, // 7 Shift JIS 0x8181
+        /*192*/ { 2, 13, "1", 71, 0, 11, 59 },
+        /*193*/ { 2, 13, "1", 72, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*194*/ { 2, 13, "A", 43, 0, 11, 59 },
+        /*195*/ { 2, 13, "A", 44, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*196*/ { 2, 13, "\200", 30, 0, 11, 59 },
+        /*197*/ { 2, 13, "\200", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*198*/ { 2, 13, "\201", 36, 0, 11, 59 }, // 18 Shift JIS 0x8181
+        /*199*/ { 2, 13, "\201", 38, ZINT_ERROR_TOO_LONG, -1, -1 }, // 19 Shift JIS 0x8181
+        /*200*/ { 4, 13, "1", 33, 0, 11, 59 },
+        /*201*/ { 4, 13, "1", 34, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*202*/ { 4, 13, "A", 20, 0, 11, 59 },
+        /*203*/ { 4, 13, "A", 21, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*204*/ { 4, 13, "\200", 14, 0, 11, 59 },
+        /*205*/ { 4, 13, "\200", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*206*/ { 4, 13, "\201", 16, 0, 11, 59 }, // 8 Shift JIS 0x8181
+        /*207*/ { 4, 13, "\201", 18, ZINT_ERROR_TOO_LONG, -1, -1 }, // 9 Shift JIS 0x8181
+        /*208*/ { 2, 14, "1", 100, 0, 11, 77 },
+        /*209*/ { 2, 14, "1", 101, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*210*/ { 2, 14, "A", 60, 0, 11, 77 },
+        /*211*/ { 2, 14, "A", 61, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*212*/ { 2, 14, "\200", 41, 0, 11, 77 },
+        /*213*/ { 2, 14, "\200", 42, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*214*/ { 2, 14, "\201", 50, 0, 11, 77 }, // 25 Shift JIS 0x8181
+        /*215*/ { 2, 14, "\201", 52, ZINT_ERROR_TOO_LONG, -1, -1 }, // 26 Shift JIS 0x8181
+        /*216*/ { 4, 14, "1", 52, 0, 11, 77 },
+        /*217*/ { 4, 14, "1", 53, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*218*/ { 4, 14, "A", 31, 0, 11, 77 },
+        /*219*/ { 4, 14, "A", 32, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*220*/ { 4, 14, "\200", 21, 0, 11, 77 },
+        /*221*/ { 4, 14, "\200", 22, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*222*/ { 4, 14, "\201", 26, 0, 11, 77 }, // 13 Shift JIS 0x8181
+        /*223*/ { 4, 14, "\201", 28, ZINT_ERROR_TOO_LONG, -1, -1 }, // 14 Shift JIS 0x8181
+        /*224*/ { 2, 15, "1", 133, 0, 11, 99 },
+        /*225*/ { 2, 15, "1", 134, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*226*/ { 2, 15, "A", 81, 0, 11, 99 },
+        /*227*/ { 2, 15, "A", 82, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*228*/ { 2, 15, "\200", 55, 0, 11, 99 },
+        /*229*/ { 2, 15, "\200", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*230*/ { 2, 15, "\201", 68, 0, 11, 99 }, // 34 Shift JIS 0x8181
+        /*231*/ { 2, 15, "\201", 70, ZINT_ERROR_TOO_LONG, -1, -1 }, // 35 Shift JIS 0x8181
+        /*232*/ { 4, 15, "1", 66, 0, 11, 99 },
+        /*233*/ { 4, 15, "1", 67, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*234*/ { 4, 15, "A", 40, 0, 11, 99 },
+        /*235*/ { 4, 15, "A", 41, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*236*/ { 4, 15, "\200", 27, 0, 11, 99 },
+        /*237*/ { 4, 15, "\200", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*238*/ { 4, 15, "\201", 34, 0, 11, 99 }, // 17 Shift JIS 0x8181
+        /*239*/ { 4, 15, "\201", 36, ZINT_ERROR_TOO_LONG, -1, -1 }, // 18 Shift JIS 0x8181
+        /*240*/ { 2, 16, "1", 198, 0, 11, 139 },
+        /*241*/ { 2, 16, "1", 199, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*242*/ { 2, 16, "A", 120, 0, 11, 139 },
+        /*243*/ { 2, 16, "A", 121, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*244*/ { 2, 16, "\200", 82, 0, 11, 139 },
+        /*245*/ { 2, 16, "\200", 83, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*246*/ { 2, 16, "\201", 102, 0, 11, 139 }, // 51 Shift JIS 0x8181
+        /*247*/ { 2, 16, "\201", 104, ZINT_ERROR_TOO_LONG, -1, -1 }, // 52 Shift JIS 0x8181
+        /*248*/ { 4, 16, "1", 97, 0, 11, 139 },
+        /*249*/ { 4, 16, "1", 98, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*250*/ { 4, 16, "A", 59, 0, 11, 139 },
+        /*251*/ { 4, 16, "A", 60, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*252*/ { 4, 16, "\200", 40, 0, 11, 139 },
+        /*253*/ { 4, 16, "\200", 41, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*254*/ { 4, 16, "\201", 50, 0, 11, 139 }, // 25 Shift JIS 0x8181
+        /*255*/ { 4, 16, "\201", 52, ZINT_ERROR_TOO_LONG, -1, -1 }, // 26 Shift JIS 0x8181
+        /*256*/ { 2, 17, "1", 26, 0, 13, 27 },
+        /*257*/ { 2, 17, "1", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*258*/ { 2, 17, "A", 16, 0, 13, 27 },
+        /*259*/ { 2, 17, "A", 17, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*260*/ { 2, 17, "\200", 11, 0, 13, 27 },
+        /*261*/ { 2, 17, "\200", 12, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*262*/ { 2, 17, "\201", 12, 0, 13, 27 }, // 6 Shift JIS 0x8181
+        /*263*/ { 2, 17, "\201", 14, ZINT_ERROR_TOO_LONG, -1, -1 }, // 7 Shift JIS 0x8181
+        /*264*/ { 4, 17, "1", 14, 0, 13, 27 },
+        /*265*/ { 4, 17, "1", 15, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*266*/ { 4, 17, "A", 8, 0, 13, 27 },
+        /*267*/ { 4, 17, "A", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*268*/ { 4, 17, "\200", 6, 0, 13, 27 },
+        /*269*/ { 4, 17, "\200", 7, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*270*/ { 4, 17, "\201", 6, 0, 13, 27 }, // 3 Shift JIS 0x8181
+        /*271*/ { 4, 17, "\201", 8, ZINT_ERROR_TOO_LONG, -1, -1 }, // 4 Shift JIS 0x8181
+        /*272*/ { 2, 18, "1", 62, 0, 13, 43 },
+        /*273*/ { 2, 18, "1", 63, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*274*/ { 2, 18, "A", 37, 0, 13, 43 },
+        /*275*/ { 2, 18, "A", 38, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*276*/ { 2, 18, "\200", 26, 0, 13, 43 },
+        /*277*/ { 2, 18, "\200", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*278*/ { 2, 18, "\201", 32, 0, 13, 43 }, // 16 Shift JIS 0x8181
+        /*279*/ { 2, 18, "\201", 34, ZINT_ERROR_TOO_LONG, -1, -1 }, // 17 Shift JIS 0x8181
+        /*280*/ { 4, 18, "1", 28, 0, 13, 43 },
+        /*281*/ { 4, 18, "1", 29, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*282*/ { 4, 18, "A", 17, 0, 13, 43 },
+        /*283*/ { 4, 18, "A", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*284*/ { 4, 18, "\200", 12, 0, 13, 43 },
+        /*285*/ { 4, 18, "\200", 13, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*286*/ { 4, 18, "\201", 14, 0, 13, 43 }, // 7 Shift JIS 0x8181
+        /*287*/ { 4, 18, "\201", 16, ZINT_ERROR_TOO_LONG, -1, -1 }, // 8 Shift JIS 0x8181
+        /*288*/ { 2, 19, "1", 88, 0, 13, 59 },
+        /*289*/ { 2, 19, "1", 89, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*290*/ { 2, 19, "A", 53, 0, 13, 59 },
+        /*291*/ { 2, 19, "A", 54, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*292*/ { 2, 19, "\200", 36, 0, 13, 59 },
+        /*293*/ { 2, 19, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*294*/ { 2, 19, "\201", 44, 0, 13, 59 }, // 22 Shift JIS 0x8181
+        /*295*/ { 2, 19, "\201", 46, ZINT_ERROR_TOO_LONG, -1, -1 }, // 23 Shift JIS 0x8181
+        /*296*/ { 4, 19, "1", 45, 0, 13, 59 },
+        /*297*/ { 4, 19, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*298*/ { 4, 19, "A", 27, 0, 13, 59 },
+        /*299*/ { 4, 19, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*300*/ { 4, 19, "\200", 18, 0, 13, 59 },
+        /*301*/ { 4, 19, "\200", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*302*/ { 4, 19, "\201", 22, 0, 13, 59 }, // 11 Shift JIS 0x8181
+        /*303*/ { 4, 19, "\201", 24, ZINT_ERROR_TOO_LONG, -1, -1 }, // 12 Shift JIS 0x8181
+        /*304*/ { 2, 20, "1", 124, 0, 13, 77 },
+        /*305*/ { 2, 20, "1", 125, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*306*/ { 2, 20, "A", 75, 0, 13, 77 },
+        /*307*/ { 2, 20, "A", 76, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*308*/ { 2, 20, "\200", 51, 0, 13, 77 },
+        /*309*/ { 2, 20, "\200", 52, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*310*/ { 2, 20, "\201", 62, 0, 13, 77 }, // 31 Shift JIS 0x8181
+        /*311*/ { 2, 20, "\201", 64, ZINT_ERROR_TOO_LONG, -1, -1 }, // 32 Shift JIS 0x8181
+        /*312*/ { 4, 20, "1", 66, 0, 13, 77 },
+        /*313*/ { 4, 20, "1", 67, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*314*/ { 4, 20, "A", 40, 0, 13, 77 },
+        /*315*/ { 4, 20, "A", 41, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*316*/ { 4, 20, "\200", 27, 0, 13, 77 },
+        /*317*/ { 4, 20, "\200", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*318*/ { 4, 20, "\201", 34, 0, 13, 77 }, // 17 Shift JIS 0x8181
+        /*319*/ { 4, 20, "\201", 36, ZINT_ERROR_TOO_LONG, -1, -1 }, // 18 Shift JIS 0x8181
+        /*320*/ { 2, 21, "1", 171, 0, 13, 99 },
+        /*321*/ { 2, 21, "1", 172, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*322*/ { 2, 21, "A", 104, 0, 13, 99 },
+        /*323*/ { 2, 21, "A", 105, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*324*/ { 2, 21, "\200", 71, 0, 13, 99 },
+        /*325*/ { 2, 21, "\200", 72, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*326*/ { 2, 21, "\201", 88, 0, 13, 99 }, // 44 Shift JIS 0x8181
+        /*327*/ { 2, 21, "\201", 90, ZINT_ERROR_TOO_LONG, -1, -1 }, // 45 Shift JIS 0x8181
+        /*328*/ { 4, 21, "1", 80, 0, 13, 99 },
+        /*329*/ { 4, 21, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*330*/ { 4, 21, "A", 49, 0, 13, 99 },
+        /*331*/ { 4, 21, "A", 50, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*332*/ { 4, 21, "\200", 33, 0, 13, 99 },
+        /*333*/ { 4, 21, "\200", 34, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*334*/ { 4, 21, "\201", 40, 0, 13, 99 }, // 20 Shift JIS 0x8181
+        /*335*/ { 4, 21, "\201", 42, ZINT_ERROR_TOO_LONG, -1, -1 }, // 21 Shift JIS 0x8181
+        /*336*/ { 2, 22, "1", 251, 0, 13, 139 },
+        /*337*/ { 2, 22, "1", 252, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*338*/ { 2, 22, "A", 152, 0, 13, 139 },
+        /*339*/ { 2, 22, "A", 153, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*340*/ { 2, 22, "\200", 104, 0, 13, 139 },
+        /*341*/ { 2, 22, "\200", 105, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*342*/ { 2, 22, "\201", 128, 0, 13, 139 }, // 64 Shift JIS 0x8181
+        /*343*/ { 2, 22, "\201", 130, ZINT_ERROR_TOO_LONG, -1, -1 }, // 65 Shift JIS 0x8181
+        /*344*/ { 4, 22, "1", 126, 0, 13, 139 },
+        /*345*/ { 4, 22, "1", 127, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*346*/ { 4, 22, "A", 76, 0, 13, 139 },
+        /*347*/ { 4, 22, "A", 77, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*348*/ { 4, 22, "\200", 52, 0, 13, 139 },
+        /*349*/ { 4, 22, "\200", 53, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*350*/ { 4, 22, "\201", 64, 0, 13, 139 }, // 32 Shift JIS 0x8181
+        /*351*/ { 4, 22, "\201", 66, ZINT_ERROR_TOO_LONG, -1, -1 }, // 33 Shift JIS 0x8181
+        /*352*/ { 2, 23, "1", 76, 0, 15, 43 },
+        /*353*/ { 2, 23, "1", 77, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*354*/ { 2, 23, "A", 46, 0, 15, 43 },
+        /*355*/ { 2, 23, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*356*/ { 2, 23, "\200", 31, 0, 15, 43 },
+        /*357*/ { 2, 23, "\200", 32, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*358*/ { 2, 23, "\201", 38, 0, 15, 43 }, // 19 Shift JIS 0x8181
+        /*359*/ { 2, 23, "\201", 40, ZINT_ERROR_TOO_LONG, -1, -1 }, // 20 Shift JIS 0x8181
+        /*360*/ { 4, 23, "1", 33, 0, 15, 43 },
+        /*361*/ { 4, 23, "1", 34, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*362*/ { 4, 23, "A", 20, 0, 15, 43 },
+        /*363*/ { 4, 23, "A", 21, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*364*/ { 4, 23, "\200", 13, 0, 15, 43 },
+        /*365*/ { 4, 23, "\200", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*366*/ { 4, 23, "\201", 16, 0, 15, 43 }, // 8 Shift JIS 0x8181
+        /*367*/ { 4, 23, "\201", 18, ZINT_ERROR_TOO_LONG, -1, -1 }, // 9 Shift JIS 0x8181
+        /*368*/ { 2, 24, "1", 112, 0, 15, 59 },
+        /*369*/ { 2, 24, "1", 113, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*370*/ { 2, 24, "A", 68, 0, 15, 59 },
+        /*371*/ { 2, 24, "A", 69, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*372*/ { 2, 24, "\200", 46, 0, 15, 59 },
+        /*373*/ { 2, 24, "\200", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*374*/ { 2, 24, "\201", 56, 0, 15, 59 }, // 28 Shift JIS 0x8181
+        /*375*/ { 2, 24, "\201", 58, ZINT_ERROR_TOO_LONG, -1, -1 }, // 29 Shift JIS 0x8181
+        /*376*/ { 4, 24, "1", 59, 0, 15, 59 },
+        /*377*/ { 4, 24, "1", 60, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*378*/ { 4, 24, "A", 36, 0, 15, 59 },
+        /*379*/ { 4, 24, "A", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*380*/ { 4, 24, "\200", 24, 0, 15, 59 },
+        /*381*/ { 4, 24, "\200", 25, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*382*/ { 4, 24, "\201", 30, 0, 15, 59 }, // 30 Shift JIS 0x8181
+        /*383*/ { 4, 24, "\201", 32, ZINT_ERROR_TOO_LONG, -1, -1 }, // 31 Shift JIS 0x8181
+        /*384*/ { 2, 25, "1", 157, 0, 15, 77 },
+        /*385*/ { 2, 25, "1", 158, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*386*/ { 2, 25, "A", 95, 0, 15, 77 },
+        /*387*/ { 2, 25, "A", 96, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*388*/ { 2, 25, "\200", 65, 0, 15, 77 },
+        /*389*/ { 2, 25, "\200", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*390*/ { 2, 25, "\201", 80, 0, 15, 77 }, // 40 Shift JIS 0x8181
+        /*391*/ { 2, 25, "\201", 82, ZINT_ERROR_TOO_LONG, -1, -1 }, // 41 Shift JIS 0x8181
+        /*392*/ { 4, 25, "1", 71, 0, 15, 77 },
+        /*393*/ { 4, 25, "1", 72, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*394*/ { 4, 25, "A", 43, 0, 15, 77 },
+        /*395*/ { 4, 25, "A", 44, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*396*/ { 4, 25, "\200", 29, 0, 15, 77 },
+        /*397*/ { 4, 25, "\200", 30, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*398*/ { 4, 25, "\201", 36, 0, 15, 77 }, // 18 Shift JIS 0x8181
+        /*399*/ { 4, 25, "\201", 38, ZINT_ERROR_TOO_LONG, -1, -1 }, // 19 Shift JIS 0x8181
+        /*400*/ { 2, 26, "1", 207, 0, 15, 99 },
+        /*401*/ { 2, 26, "1", 208, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*402*/ { 2, 26, "A", 126, 0, 15, 99 },
+        /*403*/ { 2, 26, "A", 127, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*404*/ { 2, 26, "\200", 86, 0, 15, 99 },
+        /*405*/ { 2, 26, "\200", 87, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*406*/ { 2, 26, "\201", 106, 0, 15, 99 }, // 53 Shift JIS 0x8181
+        /*407*/ { 2, 26, "\201", 108, ZINT_ERROR_TOO_LONG, -1, -1 }, // 54 Shift JIS 0x8181
+        /*408*/ { 4, 26, "1", 111, 0, 15, 99 },
+        /*409*/ { 4, 26, "1", 112, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*410*/ { 4, 26, "A", 68, 0, 15, 99 },
+        /*411*/ { 4, 26, "A", 69, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*412*/ { 4, 26, "\200", 46, 0, 15, 99 },
+        /*413*/ { 4, 26, "\200", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*414*/ { 4, 26, "\201", 56, 0, 15, 99 }, // 28 Shift JIS 0x8181
+        /*415*/ { 4, 26, "\201", 58, ZINT_ERROR_TOO_LONG, -1, -1 }, // 29 Shift JIS 0x8181
+        /*416*/ { 2, 27, "1", 301, 0, 15, 139 },
+        /*417*/ { 2, 27, "1", 302, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*418*/ { 2, 27, "A", 182, 0, 15, 139 },
+        /*419*/ { 2, 27, "A", 183, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*420*/ { 2, 27, "\200", 125, 0, 15, 139 },
+        /*421*/ { 2, 27, "\200", 126, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*422*/ { 2, 27, "\201", 154, 0, 15, 139 }, // 77 Shift JIS 0x8181
+        /*423*/ { 2, 27, "\201", 156, ZINT_ERROR_TOO_LONG, -1, -1 }, // 78 Shift JIS 0x8181
+        /*424*/ { 4, 27, "1", 162, 0, 15, 139 },
+        /*425*/ { 4, 27, "1", 163, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*426*/ { 4, 27, "A", 98, 0, 15, 139 },
+        /*427*/ { 4, 27, "A", 99, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*428*/ { 4, 27, "\200", 67, 0, 15, 139 },
+        /*429*/ { 4, 27, "\200", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*430*/ { 4, 27, "\201", 82, 0, 15, 139 }, // 41 Shift JIS 0x8181
+        /*431*/ { 4, 27, "\201", 84, ZINT_ERROR_TOO_LONG, -1, -1 }, // 42 Shift JIS 0x8181
+        /*432*/ { 2, 28, "1", 90, 0, 17, 43 },
+        /*433*/ { 2, 28, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*434*/ { 2, 28, "A", 55, 0, 17, 43 },
+        /*435*/ { 2, 28, "A", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*436*/ { 2, 28, "\200", 37, 0, 17, 43 },
+        /*437*/ { 2, 28, "\200", 38, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*438*/ { 2, 28, "\201", 46, 0, 17, 43 }, // 23 Shift JIS 0x8181
+        /*439*/ { 2, 28, "\201", 48, ZINT_ERROR_TOO_LONG, -1, -1 }, // 24 Shift JIS 0x8181
+        /*440*/ { 4, 28, "1", 47, 0, 17, 43 },
+        /*441*/ { 4, 28, "1", 48, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*442*/ { 4, 28, "A", 28, 0, 17, 43 },
+        /*443*/ { 4, 28, "A", 29, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*444*/ { 4, 28, "\200", 19, 0, 17, 43 },
+        /*445*/ { 4, 28, "\200", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*446*/ { 4, 28, "\201", 24, 0, 17, 43 }, // 12 Shift JIS 0x8181
+        /*447*/ { 4, 28, "\201", 26, ZINT_ERROR_TOO_LONG, -1, -1 }, // 13 Shift JIS 0x8181
+        /*448*/ { 2, 29, "1", 131, 0, 17, 59 },
+        /*449*/ { 2, 29, "1", 132, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*450*/ { 2, 29, "A", 79, 0, 17, 59 },
+        /*451*/ { 2, 29, "A", 80, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*452*/ { 2, 29, "\200", 54, 0, 17, 59 },
+        /*453*/ { 2, 29, "\200", 55, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*454*/ { 2, 29, "\201", 66, 0, 17, 59 }, // 33 Shift JIS 0x8181
+        /*455*/ { 2, 29, "\201", 68, ZINT_ERROR_TOO_LONG, -1, -1 }, // 34 Shift JIS 0x8181
+        /*456*/ { 4, 29, "1", 63, 0, 17, 59 },
+        /*457*/ { 4, 29, "1", 64, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*458*/ { 4, 29, "A", 38, 0, 17, 59 },
+        /*459*/ { 4, 29, "A", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*460*/ { 4, 29, "\200", 26, 0, 17, 59 },
+        /*461*/ { 4, 29, "\200", 27, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*462*/ { 4, 29, "\201", 32, 0, 17, 59 }, // 16 Shift JIS 0x8181
+        /*463*/ { 4, 29, "\201", 34, ZINT_ERROR_TOO_LONG, -1, -1 }, // 17 Shift JIS 0x8181
+        /*464*/ { 2, 30, "1", 183, 0, 17, 77 },
+        /*465*/ { 2, 30, "1", 184, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*466*/ { 2, 30, "A", 111, 0, 17, 77 },
+        /*467*/ { 2, 30, "A", 112, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*468*/ { 2, 30, "\200", 76, 0, 17, 77 },
+        /*469*/ { 2, 30, "\200", 77, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*470*/ { 2, 30, "\201", 94, 0, 17, 77 }, // 47 Shift JIS 0x8181
+        /*471*/ { 2, 30, "\201", 96, ZINT_ERROR_TOO_LONG, -1, -1 }, // 48 Shift JIS 0x8181
+        /*472*/ { 4, 30, "1", 87, 0, 17, 77 },
+        /*473*/ { 4, 30, "1", 88, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*474*/ { 4, 30, "A", 53, 0, 17, 77 },
+        /*475*/ { 4, 30, "A", 54, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*476*/ { 4, 30, "\200", 36, 0, 17, 77 },
+        /*477*/ { 4, 30, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*478*/ { 4, 30, "\201", 44, 0, 17, 77 }, // 22 Shift JIS 0x8181
+        /*479*/ { 4, 30, "\201", 46, ZINT_ERROR_TOO_LONG, -1, -1 }, // 23 Shift JIS 0x8181
+        /*480*/ { 2, 31, "1", 236, 0, 17, 99 },
+        /*481*/ { 2, 31, "1", 237, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*482*/ { 2, 31, "A", 143, 0, 17, 99 },
+        /*483*/ { 2, 31, "A", 144, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*484*/ { 2, 31, "\200", 98, 0, 17, 99 },
+        /*485*/ { 2, 31, "\200", 99, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*486*/ { 2, 31, "\201", 120, 0, 17, 99 }, // 60 Shift JIS 0x8181
+        /*487*/ { 2, 31, "\201", 122, ZINT_ERROR_TOO_LONG, -1, -1 }, // 61 Shift JIS 0x8181
+        /*488*/ { 4, 31, "1", 131, 0, 17, 99 },
+        /*489*/ { 4, 31, "1", 132, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*490*/ { 4, 31, "A", 79, 0, 17, 99 },
+        /*491*/ { 4, 31, "A", 80, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*492*/ { 4, 31, "\200", 54, 0, 17, 99 },
+        /*493*/ { 4, 31, "\200", 55, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*494*/ { 4, 31, "\201", 66, 0, 17, 99 }, // 33 Shift JIS 0x8181
+        /*495*/ { 4, 31, "\201", 68, ZINT_ERROR_TOO_LONG, -1, -1 }, // 34 Shift JIS 0x8181
+        /*496*/ { 2, 32, "1", 361, 0, 17, 139 },
+        /*497*/ { 2, 32, "1", 362, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*498*/ { 2, 32, "A", 219, 0, 17, 139 },
+        /*499*/ { 2, 32, "A", 220, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*500*/ { 2, 32, "\200", 150, 0, 17, 139 },
+        /*501*/ { 2, 32, "\200", 151, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*502*/ { 2, 32, "\201", 184, 0, 17, 139 }, // 92 Shift JIS 0x8181
+        /*503*/ { 2, 32, "\201", 186, ZINT_ERROR_TOO_LONG, -1, -1 }, // 93 Shift JIS 0x8181
+        /*504*/ { 4, 32, "1", 178, 0, 17, 139 },
+        /*505*/ { 4, 32, "1", 179, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*506*/ { 4, 32, "A", 108, 0, 17, 139 },
+        /*507*/ { 4, 32, "A", 109, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*508*/ { 4, 32, "\200", 74, 0, 17, 139 },
+        /*509*/ { 4, 32, "\200", 75, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*510*/ { 4, 32, "\201", 92, 0, 17, 139 }, // 46 Shift JIS 0x8181
+        /*511*/ { 4, 32, "\201", 94, ZINT_ERROR_TOO_LONG, -1, -1 }, // 47 Shift JIS 0x8181
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    char data_buf[ZINT_MAX_DATA_LEN];
+
+    testStart("test_rmqr_large");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (index != -1 && i != index) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data_buf, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        symbol->input_mode |= FAST_MODE;
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_rmqr_options(int index, int debug) {
 
     struct item {
@@ -6333,9 +6921,9 @@ static void test_rmqr_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // ISO/IEC JTC1/SC31N000 (Draft 2019-6-24)
+    // ISO/IEC 23941:2022
     struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 4, 11, "0123456", 0, 11, 27, 1, "Draft ISO 2019-6-24 Annex I Figure I.2, R11x27-H, same",
+        /*  0*/ { UNICODE_MODE, 4, 11, "0123456", 0, 11, 27, 1, "ISO 23941 Annex I Figure I.2, R11x27-H, same",
                     "111111101010101010101010111"
                     "100000100110100001110100101"
                     "101110100001001111010011111"
@@ -6348,7 +6936,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "101010100110010100111010001"
                     "111010101010101010101011111"
                 },
-        /*  1*/ { UNICODE_MODE, 2, 17, "12345678901234567890123456", 0, 13, 27, 1, "Draft ISO 2019-6-24 6.2 Figure 1, R13x27-M, same",
+        /*  1*/ { UNICODE_MODE, 2, 17, "12345678901234567890123456", 0, 13, 27, 1, "ISO 23941 6.2 Figure 1, R13x27-M, same",
                     "111111101010101010101010111"
                     "100000100001001100010011001"
                     "101110101100000011001110001"
@@ -6363,7 +6951,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "100011010010010100000010001"
                     "111010101010101010101011111"
                 },
-        /*  2*/ { UNICODE_MODE, 2, 2, "0123456789012345", 0, 7, 59, 1, "Draft ISO 2019-6-24 7.4.2 Numeric mode Example, R7x59-M, same codewords",
+        /*  2*/ { UNICODE_MODE, 2, 2, "0123456789012345", 0, 7, 59, 1, "ISO 23941 7.4.2 Numeric mode Example, R7x59-M, same codewords",
                     "11111110101010101011101010101010101010111010101010101010111"
                     "10000010101111011110100001100001100001101100100101100100101"
                     "10111010100100001011110010110000011110111110111100011011111"
@@ -6372,7 +6960,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "10000010101010110110100010111110010010101111101111110010001"
                     "11111110101010101011101010101010101010111010101010101011111"
                 },
-        /*  3*/ { UNICODE_MODE, 2, 2, "AC-42", 0, 7, 59, 1, "Draft ISO 2019-6-24 7.4.3 Alphanumeric mode Example, R7x59-M, same codewords",
+        /*  3*/ { UNICODE_MODE, 2, 2, "AC-42", 0, 7, 59, 1, "ISO 23941 7.4.3 Alphanumeric mode Example, R7x59-M, same codewords",
                     "11111110101010101011101010101010101010111010101010101010111"
                     "10000010101111010010110011010101100000101011001111100100101"
                     "10111010100100100011100100111100011101111100011011111011111"
@@ -6595,19 +7183,19 @@ static void test_rmqr_encode(int index, int generate, int debug) {
                     "10001001000010011011101110100010010001101111111101101000000110010000011010001"
                     "11101010101010101010101011101010101010101010101010111010101010101010101011111"
                 },
-        /* 22*/ { UNICODE_MODE, 2, 20, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123", 0, 13, 77, 1, "R13x77-M with max 123 numerics (note 8 bit cci in draft 2019-6-24 when 7 suffices)",
+        /* 22*/ { UNICODE_MODE, 2, 20, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123", 0, 13, 77, 1, "R13x77-M with max 123 numerics (note was 8 bit cci in draft 2019-6-24 when 7 suffices - corrected in ISO/IEC 23941:2022)",
                     "11111110101010101010101011101010101010101010101010111010101010101010101010111"
-                    "10000010001111011110000010110000001101001111110110101010010010110011111011101"
-                    "10111010001010000001000011100001010010100110011011111001000001111110100011001"
-                    "10111010010011101110100110011001011011110110011101100011001010000010000010000"
-                    "10111010010010111110100011010101011101110000000101110101111110010001000110011"
-                    "10000010011110000011110100011001011101111111110110000100110010110011101011000"
-                    "11111110111010011010000011010010110010010111011011111111010101111110110011111"
-                    "00000000111011110111001110010000001000110001011101100110000110000010110101110"
-                    "11111111010011101000010001110101101101110010000101011101110010000001101111111"
-                    "01101010101001000000100000100000111110111111111011100100110100001011100110001"
-                    "10110000001110100010011011100001011011010111011110111011010101110111111110101"
-                    "10101101110110111100111010111111000100010001001101101110100100010100001010001"
+                    "10000010001100001001010010111101110110110101101001101011011001000011001101101"
+                    "10111010001011111111101011111110010001001001010111111010111100100101101011011"
+                    "10111010010011001001111000101011110101101001011100100011110111011001010011110"
+                    "10111010010010000101101011100011011110101010010010011000001101000010111011011"
+                    "10000010011110010100000110001011110110000101101001100010101000000011101101010"
+                    "11111110011111101010010101000001100001110001110111111111111000100101101011111"
+                    "00000000010000010110000110000010010100101010010100100011101011011001010101110"
+                    "11100011101100001111000101000000101100100001010010011110000001010010101111111"
+                    "01010100110000011101011010011100101101000101101111001010100000110111000110001"
+                    "10111001001100001100110011110011010111110001111111111011110000001001011110101"
+                    "10100110000111111100100010100011100000011010110100101111001000011010001010001"
                     "11101010101010101010101011101010101010101010101010111010101010101010101011111"
                 },
         /* 23*/ { UNICODE_MODE, 2, 23, "\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037", 0, 15, 43, 1, "R15x43-M with max 31 binary",
@@ -6984,6 +7572,7 @@ int main(int argc, char *argv[]) {
         { "test_upnqr_input", test_upnqr_input, 1, 1, 1 },
         { "test_upnqr_encode", test_upnqr_encode, 1, 1, 1 },
 
+        { "test_rmqr_large", test_rmqr_large, 1, 0, 1 },
         { "test_rmqr_options", test_rmqr_options, 1, 0, 1 },
         { "test_rmqr_input", test_rmqr_input, 1, 1, 1 },
         { "test_rmqr_gs1", test_rmqr_gs1, 1, 1, 1 },

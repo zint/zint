@@ -16,7 +16,6 @@ INCLUDES_TXT = inc_header_txt.tex
 INC_TXT = --include-in-header $(INCLUDES_TXT)
 SOURCE_MAN_PAGE = zint.1.pmd
 OUT_MAN_PAGE = zint.1
-INC_HEADER_TEX_MAN = inc_header_man.tex
 IMAGES = \
 	images/zint.png \
 	images/zint-qt.png \
@@ -31,6 +30,9 @@ IMAGES = \
 	images/gui_sequence.png \
 	images/gui_export.png \
 	images/gui_cli_equivalent.png \
+	images/gui_black_eye.png \
+	images/gui_white_eye.png \
+	images/gui_swap.png \
 	images/pdf417_heightperrow.svg \
 	images/code128_box.svg \
 	images/qrcode_box.svg \
