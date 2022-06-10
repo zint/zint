@@ -255,7 +255,7 @@ right-clicking the preview.
 ![Zint Barcode Studio main menu (left) and context menu
 (right)](images/gui_menus.png)
 
-## 3.2 Composite Groupbox
+## 3.2 GS1 Composite Groupbox
 
 ![Zint Barcode Studio encoding GS1 Composite data](images/gui_composite.png)
 

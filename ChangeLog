@@ -19,6 +19,8 @@ Bugs
 ----
 - frontend/test_args.c: don't use WIFEXITED(), WEXITSTATUS() on Windows
 - libzint: fix some confusing error messages introduced by segment stuff
+- GUI: remove unnecessary tabMain min size (better layout rendering on
+  Windows/Fedora)
 
 
 Version 2.11.0 (2022-05-24)

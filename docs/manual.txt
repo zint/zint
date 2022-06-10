@@ -18,7 +18,7 @@ June 2022
     -   2.4 Zint Tcl Backend
 -   3. Using Zint Barcode Studio
     -   3.1 Main Window and Data Tab
-    -   3.2 Composite Groupbox
+    -   3.2 GS1 Composite Groupbox
     -   3.3 Additional ECI/Data Segments Groupbox
     -   3.4 Symbology-specific Tab
     -   3.5 Appearance Tab
@@ -418,7 +418,7 @@ also available in a context menu by right-clicking the preview.
 
 [Zint Barcode Studio main menu (left) and context menu (right)]
 
-3.2 Composite Groupbox
+3.2 GS1 Composite Groupbox
 
 [Zint Barcode Studio encoding GS1 Composite data]
 

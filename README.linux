@@ -58,7 +58,7 @@ or Ubuntu 20.04
 
     sudo apt install qt5-default qt5-uitools
 
-or Fedora 36 (Qt6 NOT recommended, currently uses 6.3.0 which is flaky)
+or Fedora 36 (not recommended)
 
      sudo dnf install qt5-qtbase-devel qt5-qttools-devel qt5-qttools-static qt5-qtsvg-devel
 
