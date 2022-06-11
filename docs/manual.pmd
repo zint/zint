@@ -545,7 +545,7 @@ Value
 
  9       `BARCODE_EXCODE39`        Extended Code 3 of 9 (Code 39+)
 
- 13      `BARCODE_EANX`            EAN (including EAN-8 and EAN-13)
+ 13      `BARCODE_EANX`            EAN (EAN-2, EAN-5, EAN-8 and EAN-13)
 
  14      `BARCODE_EANX_CHK`        EAN + Check Digit
 
@@ -811,9 +811,9 @@ A `--quietzones` option is also available which adds quiet zones compliant with
 the symbology's specification. This is in addition to any whitespace specified
 with the `--whitesp` or `--vwhitesp` switches.
 
-Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-13, EAN-8, EAN-5, EAN-2,
-ISBN, UPC-A and UPC-E have compliant quiet zones added by default. This can be
-disabled with the option `--noquietzones`.
+Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-2 to EAN-13, ISBN, UPC-A
+and UPC-E have compliant quiet zones added by default. This can be disabled with
+the option `--noquietzones`.
 
 ## 4.6 Adding Boundary Bars and Boxes
 
@@ -1986,8 +1986,8 @@ Table: API `output_options` Values {#tbl:api_output_options tag="$ $"}
 [^6]: The `BARCODE_BIND` flag is always set for Codablock-F, Code 16K and Code
 49. Special considerations apply to ITF-14 - see [6.1.2.6 ITF-14].
 
-[^7]: Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14,
-UPC-A and UPC-E have compliant quiet zones added by default.
+[^7]: Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
+UPC-E have compliant quiet zones added by default.
 
 \clearpage
 
@@ -2346,7 +2346,7 @@ Identcode is based on Interleaved Code 2 of 5 and is used by Deutsche Post for
 mailing purposes. Identcode requires an 11-digit numerical input and includes a
 check digit.
 
-### 6.1.3 Universal Product Code (ISO 15420)
+### 6.1.3 UPC (Universal Product Code) (ISO 15420)
 
 #### 6.1.3.1 UPC Version A
 
@@ -2413,7 +2413,7 @@ the X-dimension by setting `--addongap` (API `option_2`) to a value between 7
 the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
 to a value between 0 and 20 (default 5).
 
-### 6.1.4 European Article Number (ISO 15420)
+### 6.1.4 EAN (European Article Number) (ISO 15420)
 
 #### 6.1.4.1 EAN-2, EAN-5, EAN-8 and EAN-13
 
@@ -3051,8 +3051,8 @@ ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd", 0, 0);
 ```
 
 EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols using the +
-symbol as described in sections [6.1.3 Universal Product Code (ISO 15420)] and
-[6.1.4 European Article Number (ISO 15420)].
+symbol as described in sections [6.1.3 UPC (Universal Product Code) (ISO 15420)]
+and [6.1.4 EAN (European Article Number) (ISO 15420)].
 
 The 2D component of a composite symbol can use one of three systems: CC-A, CC-B
 and CC-C, as described below. The 2D component type can be selected

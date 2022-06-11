@@ -350,7 +350,7 @@ static void test_input_data(int index, int debug) {
         /*  2*/ { BARCODE_GS1_128, -1, "", -1, "", ZINT_ERROR_INVALID_DATA, "Error 778: No input data" },
         /*  3*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", -1, "[10]121212", 0, "" },
         /*  4*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", -1, "", ZINT_ERROR_INVALID_DATA, "Error 779: No composite data in 2D component" },
-        /*  5*/ { BARCODE_GS1_128_CC, -1, "", -1, "[10]121212", ZINT_ERROR_INVALID_OPTION, "Error 445: No primary (linear) message in 2D composite" },
+        /*  5*/ { BARCODE_GS1_128_CC, -1, "", -1, "[10]121212", ZINT_ERROR_INVALID_OPTION, "Error 445: No primary (linear) message" },
         /*  6*/ { BARCODE_DATAMATRIX, -1, "", -1, "", ZINT_ERROR_INVALID_DATA, "Error 778: No input data (segment 0 empty)" },
     };
     int data_size = ARRAY_SIZE(data);

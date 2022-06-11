@@ -11,6 +11,12 @@
     <verstretch>0</verstretch>
    </sizepolicy>
   </property>
+  <property name="minimumSize">
+   <size>
+    <width>360</width>
+    <height>0</height>
+   </size>
+  </property>
   <property name="windowTitle">
    <string>Zint Barcode Studio</string>
   </property>
@@ -512,7 +518,7 @@ for this symbology to defaults</string>
               <string>GS1 Composite symbol settings</string>
              </property>
              <property name="title">
-              <string>GS1 Composite Code</string>
+              <string>GS1 Composite</string>
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_2">
               <item>
@@ -1818,7 +1824,8 @@ in X-dimensions</string>
              <item row="5" column="0">
               <widget class="QLabel" name="lblScale">
                <property name="toolTip">
-                <string>Image scale when output to file</string>
+                <string>Image scale when output to file
+(adjusts the X-dimension)</string>
                </property>
                <property name="text">
                 <string>&amp;Printing Scale:</string>
@@ -1834,7 +1841,8 @@ in X-dimensions</string>
              <item row="5" column="1">
               <widget class="QDoubleSpinBox" name="spnScale">
                <property name="toolTip">
-                <string>Image scale when output to file</string>
+                <string>Image scale when output to file
+(adjusts the X-dimension)</string>
                </property>
                <property name="suffix">
                 <string/>
