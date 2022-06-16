@@ -392,6 +392,8 @@ _getopt_initialize (int argc, char *const *argv, const char *optstring)
     }
   else
     nonoption_flags_len = 0;
+#else
+  (void)argc; (void)argv;
 #endif
 
   return optstring;

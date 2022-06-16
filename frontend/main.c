@@ -55,7 +55,7 @@ static void types(void) {
             " 7 C25IND      Industrial 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
             " 8 CODE39      Code 39                  81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
             " 9 EXCODE39    Extended Code 39         82 PLANET         USPS PLANET\n"
-            "13 EANX        EAN                      84 MICROPDF417    MicroPDF417\n"
+            "13 EANX        EAN-2 to EAN-13          84 MICROPDF417    MicroPDF417\n"
             "14 EANX_CHK    EAN + Check Digit        85 USPS_IMAIL     USPS Intelligent Mail\n"
             "16 GS1_128     GS1-128                  86 PLESSEY        UK Plessey\n"
             "18 CODABAR     Codabar                  87 TELEPEN_NUM    Telepen Numeric\n"
@@ -939,7 +939,7 @@ typedef struct { char *arg; int opt; } arg_opt;
 
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
-    struct zint_seg segs[10] = {0};
+    struct zint_seg segs[10] = {{0}};
     int error_number = 0;
     int warn_number = 0;
     int rotate_angle = 0;

@@ -685,7 +685,8 @@ static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int
 }
 
 /* Helper to parse escape sequences */
-static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
+static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *p_length) {
+    const int length = *p_length;
     int in_posn, out_posn;
     int ch;
     int val;
@@ -693,9 +694,9 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     unsigned long unicode;
 
 #ifndef _MSC_VER
-    unsigned char escaped_string[*length + 1];
+    unsigned char escaped_string[length + 1];
 #else
-    unsigned char *escaped_string = (unsigned char *) _alloca(*length + 1);
+    unsigned char *escaped_string = (unsigned char *) _alloca(length + 1);
 #endif
 
     in_posn = 0;
@@ -703,7 +704,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
 
     do {
         if (input_string[in_posn] == '\\') {
-            if (in_posn + 1 >= *length) {
+            if (in_posn + 1 >= length) {
                 strcpy(symbol->errtxt, "236: Incomplete escape character in input data");
                 return ZINT_ERROR_INVALID_DATA;
             }
@@ -749,7 +750,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                 case 'd':
                 case 'o': /* Undocumented (as not very useful for most people) */
                 case 'x':
-                    if ((val = esc_base(symbol, input_string, *length, in_posn + 2, ch)) == -1) {
+                    if ((val = esc_base(symbol, input_string, length, in_posn + 2, ch)) == -1) {
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     escaped_string[out_posn] = val;
@@ -760,7 +761,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     break;
                 case 'u':
                 case 'U':
-                    if (in_posn + 6 > *length || (ch == 'U' && in_posn + 8 > *length)) {
+                    if (in_posn + 6 > length || (ch == 'U' && in_posn + 8 > length)) {
                         sprintf(symbol->errtxt, "209: Incomplete '\\%c' escape sequence in input data", ch);
                         return ZINT_ERROR_INVALID_DATA;
                     }
@@ -810,11 +811,11 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
             in_posn++;
         }
         out_posn++;
-    } while (in_posn < *length);
+    } while (in_posn < length);
 
     memcpy(input_string, escaped_string, out_posn);
     input_string[out_posn] = '\0';
-    *length = out_posn;
+    *p_length = out_posn;
 
     return 0;
 }
@@ -1095,7 +1096,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (seg_count > 1) {
         /* Note: GS1_MODE not currently supported when using multiple segments */
         if ((symbol->input_mode & 0x07) == GS1_MODE) {
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "776: GS1_MODE not supported for multiple segments");
+            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "776: GS1 mode not supported for multiple segments");
         }
     }
 
@@ -1124,6 +1125,13 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (symbol->input_mode & ESCAPE_MODE) {
         for (i = 0; i < seg_count; i++) {
             error_number = escape_char_process(symbol, local_segs[i].source, &local_segs[i].length);
+            if (error_number != 0) { /* Only returns errors, not warnings */
+                return error_tag(symbol, error_number, NULL);
+            }
+        }
+        if (symbol->primary[0]) {
+            int primary_len = (int) strlen(symbol->primary);
+            error_number = escape_char_process(symbol, (unsigned char *) symbol->primary, &primary_len);
             if (error_number != 0) { /* Only returns errors, not warnings */
                 return error_tag(symbol, error_number, NULL);
             }

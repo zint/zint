@@ -52,7 +52,7 @@ SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
     QIcon clearIcon(QSL(":res/delete.svg"));
     btnSeqClose->setIcon(closeIcon);
     btnSeqClear->setIcon(clearIcon);
-    btnSeqClear->setEnabled(!txtSeqPreview->toPlainText().isEmpty());
+    check_generate();
 
     connect(btnSeqClose, SIGNAL( clicked( bool )), SLOT(close()));
     connect(btnSeqClear, SIGNAL( clicked( bool )), SLOT(clear_preview()));

@@ -1,8 +1,7 @@
 /* font.h - Font for PNG images */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,10 +28,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef FONT_H
-#define FONT_H
+#ifndef Z_FONT_H
+#define Z_FONT_H
 
 typedef const unsigned short font_item;
 
@@ -487,4 +486,5 @@ static font_item upcean_small_font[] = {
     /*39*/ 0x3C, 0x7E, 0xE7, 0xC3, 0xC3, 0xC3, 0xE3, 0x7E, 0x1E, 0x0C, 0x18, 0x30, 0x60, /* 9 */
 };
 
-#endif /* FONT_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_FONT_H */

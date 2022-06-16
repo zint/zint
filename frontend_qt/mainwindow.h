@@ -15,8 +15,8 @@
  ***************************************************************************/
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#ifndef Z_MAINWINDOW_H
+#define Z_MAINWINDOW_H
 
 #include <QtGui>
 #include <QGraphicsItem>
@@ -41,6 +41,12 @@ public:
     ~MainWindow();
 
     static QString get_zint_version(void);
+
+#ifdef Q_OS_MACOS
+    static void mac_hack(QWidget *win);
+    static void mac_hack_vLayouts(QWidget *win);
+    static void mac_hack_statusBars(QWidget *win, const char *name = nullptr);
+#endif
 
 public slots:
     void update_preview();
@@ -125,9 +131,9 @@ protected:
     QString getColorStr(const QColor color, bool alpha_always = false);
     void setColorTxtBtn(const QColor color, QLineEdit *txt, QPushButton* btn);
 
-    void resizeEvent(QResizeEvent *event);
-    bool event(QEvent *event) override;
-    bool eventFilter(QObject *watched, QEvent *event);
+    virtual void resizeEvent(QResizeEvent *event) override;
+    virtual bool event(QEvent *event) override;
+    virtual bool eventFilter(QObject *watched, QEvent *event) override;
 
     void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
     void upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base);

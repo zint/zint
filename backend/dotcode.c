@@ -1,5 +1,4 @@
 /* dotcode.c - Handles DotCode */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2017-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /*
  * Attempts to encode DotCode according to (AIMD013) ISS DotCode Rev. 4.0, DRAFT 0.15, TSC Pre-PR #5,
@@ -1270,6 +1270,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
             return ZINT_ERROR_INVALID_OPTION;
         }
     }
+
+    /* TODO: GS1 General Specifications 22.0 section 5.8.2 says Structured Append and ECIs not supported
+       for GS1 DotCode so should check and return ZINT_WARN_NONCOMPLIANT if either true */
 
     data_length = dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &binary_finish, structapp_array,
                     &structapp_size);

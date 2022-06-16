@@ -1,8 +1,7 @@
 /* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* The functions "rss_combins" and "getRSSwidths" are copyright BSI and are
    released with permission under the following terms:
@@ -158,18 +157,15 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
 }
 
 /* Set GTIN-14 human readable text */
-static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int src_len) {
-    int i;
+static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int length) {
     unsigned char *hrt = symbol->text + 4;
+    const int leading_zeroes = 13 - length;
 
     ustrcpy(symbol->text, "(01)");
-    for (i = 0; i < 12; i++) {
-        hrt[i] = '0';
+    if (leading_zeroes) {
+        memset(hrt, '0', leading_zeroes);
     }
-    for (i = 0; i < src_len; i++) {
-        hrt[12 - i] = source[src_len - i - 1];
-    }
-
+    memcpy(hrt + leading_zeroes, source, length);
     hrt[13] = gs1_check_digit(hrt, 13);
     hrt[14] = '\0';
 }
@@ -290,7 +286,7 @@ INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_
 }
 
 /* GS1 DataBar Omnidirectional/Truncated/Stacked, allowing for composite if `cc_rows` set */
-INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     int error_number = 0, i;
     large_int accum;
     uint64_t left_pair, right_pair;
@@ -302,22 +298,22 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     separator_row = 0;
 
-    if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
+    if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
         strcpy(symbol->errtxt, "380: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (!is_sane(NEON_F, source, src_len)) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "381: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    if (src_len == 14) { /* Verify check digit */
+    if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
             sprintf(symbol->errtxt, "388: Invalid check digit '%c', expecting '%c'",
                     source[13], gs1_check_digit(source, 13));
             return ZINT_ERROR_INVALID_CHECK;
         }
-        src_len--; /* Ignore */
+        length--; /* Ignore */
     }
 
     /* make some room for a separator row for composite symbols */
@@ -331,7 +327,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             break;
     }
 
-    large_load_str_u64(&accum, source, src_len);
+    large_load_str_u64(&accum, source, length);
 
     if (cc_rows) {
         /* Add symbol linkage flag */
@@ -490,7 +486,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows = symbol->rows + 1;
 
         /* Set human readable text */
-        dbar_set_gtin14_hrt(symbol, source, src_len);
+        dbar_set_gtin14_hrt(symbol, source, length);
 
         if (symbol->output_options & COMPLIANT_HEIGHT) {
             /* Minimum height is 13X for truncated symbol ISO/IEC 24724:2011 5.3.1
@@ -621,12 +617,12 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 }
 
 /* GS1 DataBar Omnidirectional/Truncated/Stacked */
-INTERNAL int dbar_omn(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    return dbar_omn_cc(symbol, source, src_len, 0 /*cc_rows*/);
+INTERNAL int dbar_omn(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return dbar_omn_cc(symbol, source, length, 0 /*cc_rows*/);
 }
 
 /* GS1 DataBar Limited, allowing for composite if `cc_rows` set  */
-INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     int error_number = 0, i;
     large_int accum;
     uint64_t left_character, right_character;
@@ -639,25 +635,25 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     separator_row = 0;
 
-    if (src_len > 14) { /* Allow check digit to be specified (will be verified and ignored) */
+    if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
         strcpy(symbol->errtxt, "382: Input too long (14 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (!is_sane(NEON_F, source, src_len)) {
+    if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "383: Invalid character in data (digits only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    if (src_len == 14) { /* Verify check digit */
+    if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
             sprintf(symbol->errtxt, "389: Invalid check digit '%c', expecting '%c'",
                     source[13], gs1_check_digit(source, 13));
             return ZINT_ERROR_INVALID_CHECK;
         }
-        src_len--; /* Ignore */
+        length--; /* Ignore */
     }
 
-    if (src_len == 13) {
+    if (length == 13) {
         if ((source[0] != '0') && (source[0] != '1')) {
             strcpy(symbol->errtxt, "384: Input out of range (0 to 1999999999999)");
             return ZINT_ERROR_INVALID_DATA;
@@ -671,7 +667,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows += 1;
     }
 
-    large_load_str_u64(&accum, source, src_len);
+    large_load_str_u64(&accum, source, length);
 
     if (cc_rows) {
         /* Add symbol linkage flag */
@@ -795,7 +791,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     /* Set human readable text */
-    dbar_set_gtin14_hrt(symbol, source, src_len);
+    dbar_set_gtin14_hrt(symbol, source, length);
 
     /* ISO/IEC 24724:2011 6.2 10X minimum height, use as default also */
     if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
@@ -812,8 +808,8 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 }
 
 /* GS1 DataBar Limited */
-INTERNAL int dbar_ltd(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    return dbar_ltd_cc(symbol, source, src_len, 0 /*cc_rows*/);
+INTERNAL int dbar_ltd(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return dbar_ltd_cc(symbol, source, length, 0 /*cc_rows*/);
 }
 
 /* Check and convert date to DataBar date value */
@@ -1259,8 +1255,23 @@ static void dbar_exp_separator(struct zint_symbol *symbol, int width, const int 
     }
 }
 
+/* Set HRT for DataBar Expanded */
+static void dbar_exp_hrt(struct zint_symbol *symbol, unsigned char source[], const int length) {
+    int i;
+
+    for (i = 0; i <= length; i++) { /* Include terminating NUL */
+        if (source[i] == '[') {
+            symbol->text[i] = '(';
+        } else if (source[i] == ']') {
+            symbol->text[i] = ')';
+        } else {
+            symbol->text[i] = source[i];
+        }
+    }
+}
+
 /* GS1 DataBar Expanded, setting linkage for composite if `cc_rows` set */
-INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, const int cc_rows) {
+INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     int error_number, warn_number = 0;
     int i, j, k, p, codeblocks, data_chars, vs, group, v_odd, v_even;
     int latch;
@@ -1268,7 +1279,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int check_char, c_odd, c_even, elements[235], pattern_width, reader, writer;
     int separator_row;
     /* Allow for 8 bits + 5-bit latch per char + 200 bits overhead/padding */
-    unsigned int bin_len = 13 * src_len + 200 + 1;
+    unsigned int bin_len = 13 * length + 200 + 1;
     int widths[4];
     int bp = 0;
     int cols_per_row = 0;
@@ -1276,16 +1287,16 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int stack_rows = 1;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
 #ifndef _MSC_VER
-    unsigned char reduced[src_len + 1];
+    unsigned char reduced[length + 1];
     char binary_string[bin_len];
 #else
-    unsigned char *reduced = (unsigned char *) _alloca(src_len + 1);
+    unsigned char *reduced = (unsigned char *) _alloca(length + 1);
     char *binary_string = (char *) _alloca(bin_len);
 #endif
 
     separator_row = 0;
 
-    error_number = gs1_verify(symbol, source, src_len, reduced);
+    error_number = gs1_verify(symbol, source, length, reduced);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
@@ -1466,16 +1477,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows + 1;
 
-        /* Add human readable text */
-        for (i = 0; i <= src_len; i++) {
-            if (source[i] == '[') {
-                symbol->text[i] = '(';
-            } else if (source[i] == ']') {
-                symbol->text[i] = ')';
-            } else {
-                symbol->text[i] = source[i];
-            }
-        }
+        dbar_exp_hrt(symbol, source, length);
 
     } else {
         int current_row, current_block, left_to_right;
@@ -1621,6 +1623,8 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
 }
 
 /* GS1 DataBar Expanded */
-INTERNAL int dbar_exp(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    return dbar_exp_cc(symbol, source, src_len, 0 /*cc_rows*/);
+INTERNAL int dbar_exp(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return dbar_exp_cc(symbol, source, length, 0 /*cc_rows*/);
 }
+
+/* vim: set ts=4 sw=4 et : */

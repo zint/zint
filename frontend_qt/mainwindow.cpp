@@ -139,6 +139,53 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("VIN (Vehicle Identification Number)"), BARCODE_VIN },
 };
 
+#ifdef Q_OS_MACOS
+/* Helper to make widgets look ok on macOS */
+void MainWindow::mac_hack(QWidget *win)
+{
+    if (!win) {
+        return;
+    }
+    QList<QWidget *> widgets = win->findChildren<QWidget *>();
+    for (int i = 0, cnt = widgets.size(); i < cnt; i++) {
+        widgets[i]->setAttribute(Qt::WA_MacNormalSize);
+    }
+    QList<QGroupBox *> grps = win->findChildren<QGroupBox *>();
+    for (int i = 0, cnt = grps.size(); i < cnt; i++) {
+        // TODO: top of groupbox too near to previous element - how to fix??
+        grps[i]->setAlignment(Qt::AlignHCenter); // Poor man's workaround for above
+    }
+}
+
+/* Helper to make data tab vertical layouts look ok on macOS */
+void MainWindow::mac_hack_vLayouts(QWidget *win)
+{
+    QList<QVBoxLayout *> vlayouts = win->findChildren<QVBoxLayout *>();
+    for (int i = 0, cnt = vlayouts.size(); i < cnt; i++) {
+        if (vlayouts[i]->objectName() == "vLayoutData" || vlayouts[i]->objectName() == "vLayoutComposite"
+                || vlayouts[i]->objectName() == "vLayoutSegs") {
+            vlayouts[i]->setSpacing(0);
+            // If set spacing on QVBoxLayout then it seems its QHBoxLayout children inherit this so undo
+            QList<QHBoxLayout *> hlayouts = vlayouts[i]->findChildren<QHBoxLayout *>();
+            for (int j = 0, cnt = hlayouts.size(); j < cnt; j++) {
+                hlayouts[j]->setSpacing(8);
+            }
+        }
+    }
+}
+
+/* Helper to make status bars look ok on macOS */
+void MainWindow::mac_hack_statusBars(QWidget *win, const char* name)
+{
+    QList<QStatusBar *> sbars = name ? win->findChildren<QStatusBar *>(name) : win->findChildren<QStatusBar *>();
+    QColor bgColor = QGuiApplication::palette().window().color();
+    QString sbarSS = QSL("QStatusBar {background-color:") + bgColor.name() + QSL(";}");
+    for (int i = 0, cnt = sbars.size(); i < cnt; i++) {
+        sbars[i]->setStyleSheet(sbarSS);
+    }
+}
+#endif
+
 MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0),
           m_menu(nullptr),
@@ -162,7 +209,23 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     setupUi(this);
     view->setScene(scene);
 
-    restoreGeometry(settings.value(QSL("studio/window_geometry")).toByteArray());
+    QVariant saved_geometry = settings.value(QSL("studio/window_geometry"));
+
+#ifdef Q_OS_MACOS
+    QApplication::setDesktopSettingsAware(false); // Makes group boxes use standard font (may do other stuff)
+    // Standard width 360 too narrow
+    if (saved_geometry.isNull()) {
+        // Seems this is necessary on macOS to get a reasonable initial height
+        setMinimumSize(QSize(460, (int) (QApplication::primaryScreen->availableSize().height() * 0.9f)));
+    } else {
+        setMinimumSize(QSize(460, 0));
+    }
+    mac_hack(this);
+    mac_hack_vLayouts(this);
+    mac_hack_statusBars(this, "statusBar");
+#endif
+
+    restoreGeometry(saved_geometry.toByteArray());
 
     m_fgcolor_geometry = settings.value(QSL("studio/fgcolor_geometry")).toByteArray();
     m_bgcolor_geometry = settings.value(QSL("studio/bgcolor_geometry")).toByteArray();
@@ -605,7 +668,7 @@ void MainWindow::factory_reset()
     QMessageBox msgBox(QMessageBox::Question, tr("Factory Reset"),
         tr("This will clear all saved data and reset all settings for all symbologies to defaults."),
         QMessageBox::Yes | QMessageBox::No, this);
-    msgBox.setInformativeText(tr("Do you want to continue?"));
+    msgBox.setInformativeText(tr("Do you wish to continue?"));
     msgBox.setDefaultButton(QMessageBox::Yes);
     if (msgBox.exec() == QMessageBox::No) {
         return;
@@ -637,29 +700,41 @@ void MainWindow::about()
 
     QMessageBox::about(this, tr("About Zint"),
         /*: %1 is Zint version, %2 is Qt version */
-        tr("<h2>Zint Barcode Studio %1</h2>"
-           "<p>A free barcode generator</p>"
-           "<p>Instruction manual is available at the project homepage:<br>"
-           "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
-           "<p>Copyright &copy; 2006-2022 Robin Stuart and others.<br>"
-           "Qt backend by BogDan Vatra.<br>"
-           "Released under GNU GPL 3.0 or later.</p>"
-           "<p>Qt version %2</p>"
-           "<p>\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
-           "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
-           "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
-           "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
-               "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge.</p>"
-           "<p><table border=1><tr><td><small>Currently supported standards include:<br>"
-           "ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996,<br>"
-           "AIM ISS-X-24 (1995), ISO/IEC 15417:2007, EN 12323:2005,<br>"
-           "ISO/IEC 16388:2007, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
-           "AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC 21471:2019,<br>"
-           "ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,<br>"
-           "ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007,<br>"
-           "ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC 15438:2015,<br>"
-           "ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)"
-           "</small></td></tr></table></p>").arg(zint_version).arg(QT_VERSION_STR));
+        tr(
+#ifdef Q_OS_MACOS
+            "<style>h2, p { font-size:11px; font-weight:normal; } td { font-size:8px; font-weight:normal; }</style>"
+#endif
+            "<h2>Zint Barcode Studio %1</h2>"
+            "<p>A free barcode generator</p>"
+            "<p>Instruction manual is available at the project homepage:<br>"
+            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
+            "<p>Copyright &copy; 2006-2022 Robin Stuart and others.<br>"
+            "Qt backend by BogDan Vatra.<br>"
+            "Released under GNU GPL 3.0 or later.</p>"
+            "<p>Qt version %2</p>"
+            "<p>\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
+            "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
+            "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
+            "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
+                "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge.</p>"
+            "<p><table border=1><tr><td>"
+#ifndef Q_OS_MACOS
+            "<small>"
+#endif
+            "Currently supported standards include:<br>"
+            "ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996,<br>"
+            "AIM ISS-X-24 (1995), ISO/IEC 15417:2007, EN 12323:2005,<br>"
+            "ISO/IEC 16388:2007, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
+            "AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC 21471:2019,<br>"
+            "ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,<br>"
+            "ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007,<br>"
+            "ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC 15438:2015,<br>"
+            "ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)"
+#ifndef Q_OS_MACOS
+            "</small>"
+#endif
+            "</td></tr></table></p>"
+        ).arg(zint_version).arg(QT_VERSION_STR));
 }
 
 void MainWindow::help()
@@ -741,6 +816,11 @@ void MainWindow::open_data_dialog_seg(const int seg_no)
     QString originalText = seg_textbox->text();
     bool originalChkEscape = chkEscape->isChecked();
     DataWindow dlg(originalText, originalChkEscape, seg_no);
+
+#ifdef Q_OS_MACOS
+    mac_hack_statusBars(&dlg);
+#endif
+
     connect(&dlg, SIGNAL(dataChanged(const QString&, bool, int)), this,
         SLOT(on_dataChanged(const QString&, bool, int)));
     (void) dlg.exec();
@@ -839,6 +919,10 @@ void MainWindow::open_cli_dialog()
 {
     CLIWindow dlg(&m_bc, chkAutoHeight->isEnabled() && chkAutoHeight->isChecked(),
                     m_spnHeightPerRow && m_spnHeightPerRow->isEnabled() ? m_spnHeightPerRow->value() : 0.0);
+
+#ifdef Q_OS_MACOS
+    mac_hack_statusBars(&dlg);
+#endif
 
     (void) dlg.exec();
 }
@@ -1909,8 +1993,13 @@ void MainWindow::change_options()
         connect(get_widget(QSL("chkVINImportChar")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else {
+        m_optionWidget = nullptr;
         load_sub_settings(settings, symbology);
     }
+
+#ifdef Q_OS_MACOS
+    mac_hack(m_optionWidget);
+#endif
 
     switch (symbology) {
         case BARCODE_CODE128:

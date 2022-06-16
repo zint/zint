@@ -1,0 +1,59 @@
+% Tested on macOS 12.4 Monterey VirtualBox (thanks to https://github.com/myspaghetti/macos-virtualbox)
+
+1. Prerequisites for building zint and zint-qt
+==============================================
+
+Start a terminal.
+
+First if not already installed, install the developer command line tools
+
+    xcode-select --install
+
+This can take a (very) long time. Once done, check for updates by selecting "System Preferences" > "Software Update",
+and clicking "Advanced" and "OK" (with all the checkboxes set) to trigger the check. If updates are found, install.
+This can also take a long time.
+
+With the latest versions of the command line tools, "/usr/include" no longer has the standard C include files. Set
+SDKROOT to overcome this (https://stackoverflow.com/a/60002595/664741)
+
+    export SDKROOT=$(xcrun --sdk macosx --show-sdk-path)
+
+Install Homebrew (unless already installed)
+
+    /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+Install CMake, libpng and Qt5 (git, make, cc & c++ should already be available with command line tools)
+
+    brew install cmake
+    brew install libpng
+    brew install qt5
+
+Add the Qt5 bin directory to the PATH
+
+    export PATH='/usr/local/opt/qt@5/bin':"$PATH"
+
+Clone the latest zint source
+
+    git clone https://git.code.sf.net/p/zint/code zint
+
+
+2. Build
+========
+
+The rest is standard CMake
+
+   cd zint
+   mkdir build
+   cd build
+   cmake ..
+   make
+   sudo make install
+
+This installs into "/usr/local". You can then move the GUI "/usr/local/bin/zint-qt.app" into the main "/Applications"
+folder if you wish.
+
+
+3. CMake options
+================
+
+See "README.linux".

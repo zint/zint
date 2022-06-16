@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,7 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
 #include <QUiLoader>
@@ -30,7 +30,7 @@
 // Shorthand
 #define QSL QStringLiteral
 
-ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data) : m_bc(bc), m_output_data(output_data)
+ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data) : m_bc(bc), m_output_data(output_data), m_lines(0)
 {
     setupUi(this);
     QSettings settings;
@@ -54,6 +54,14 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data) : m_bc(b
     connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
     connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));
     connect(btnDestPath, SIGNAL( clicked( bool )), SLOT(get_directory()));
+
+    m_dataList = m_output_data.split('\n');
+    m_lines = m_dataList.size();
+    if (m_lines && m_dataList[m_lines - 1].isEmpty()) {
+        m_lines--;
+    }
+    /*: %1 is number of sequences */
+    lblFeedback->setText(tr("Export Results (%1):").arg(m_lines));
 }
 
 ExportWindow::~ExportWindow()
@@ -102,18 +110,12 @@ void ExportWindow::process()
     txtFeedback->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
     QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 
-    QStringList dataList = m_output_data.split('\n');
-    int lines = dataList.size();
-    if (lines && dataList[lines - 1].isEmpty()) {
-        lines--;
-    }
-
     QString biggest;
     bool needUrlEscape = false;
 
     const int fileNameIdx = cmbFileName->currentIndex();
     if (fileNameIdx == 1) {
-        biggest = QString::number(lines + 1);
+        biggest = QString::number(m_lines + 1);
     } else {
         needUrlEscape = m_output_data.contains(urlRE);
     }
@@ -145,8 +147,8 @@ void ExportWindow::process()
 
     QStringList Feedback;
     int successCount = 0, errorCount = 0;
-    for (int i = 0; i < lines; i++) {
-        const QString &dataString = dataList[i];
+    for (int i = 0; i < m_lines; i++) {
+        const QString &dataString = m_dataList[i];
         QString fileName;
         switch (fileNameIdx) {
             case 0: /* Same as Data (URL Escaped) */
@@ -227,3 +229,5 @@ void ExportWindow::process()
     }
     txtFeedback->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 }
+
+/* vim: set ts=4 sw=4 et : */

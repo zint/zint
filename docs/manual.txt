@@ -360,15 +360,17 @@ To build Zint on Windows from source, see "win32/README".
 
 2.3 Apple macOS
 
-Zint can be installed using Homebrew. To install Homebrew input the following
-line into the macOS terminal
+The latest Zint CLI and libzint can be installed using Homebrew.[1] To install
+Homebrew input the following line into the macOS terminal
 
-    /usr/bin/ruby -e "$(curl -fsSL
-        https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    /bin/bash -c "$(curl -fsSL \
+        https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-Once Homebrew is installed use the following command to install Zint.
+Once Homebrew is installed use the following command to install the Zint.
 
     brew install zint
+
+To build from source see "README.macos" in the project root directory.
 
 2.4 Zint Tcl Backend
 
@@ -615,7 +617,7 @@ sequences are shown in the table below.
 
   \xNN        0xNN                 Any 8-bit character where NN is hexadecimal
 
-  \uNNNN                           Any 16-bit Unicode BMP[1] character where
+  \uNNNN                           Any 16-bit Unicode BMP[2] character where
                                    NNNN is hexadecimal
 
   \UNNNNNN                         Any 20-bit Unicode character where NNNNNN
@@ -664,7 +666,7 @@ Names are treated case-insensitively by the CLI, and the BARCODE_ prefix and any
 underscores are optional.
 
   --------------------------------------------------------------------------------
-  Numeric   Name[2]                   Barcode Name
+  Numeric   Name[3]                   Barcode Name
   Value
   --------- ------------------------- --------------------------------------------
   1         BARCODE_CODE11            Code 11
@@ -1122,7 +1124,7 @@ Latin-2 (ISO/IEC 8859-2 plus ASCII).
   Han Xin         Latin-1                    GB 18030 (includes ASCII)
   MaxiCode        Latin-1                    None
   MicroPDF417     Latin-1                    None
-  Micro QR Code   Latin-1                    Shift JIS (includes ASCII[3])
+  Micro QR Code   Latin-1                    Shift JIS (includes ASCII[4])
   PDF417          Latin-1                    None
   QR Code         Latin-1                    Shift JIS (see above)
   rMQR            Latin-1                    Shift JIS (see above)
@@ -1223,7 +1225,7 @@ formatted. Zint automatically translates the data into the target encoding.
   33         UTF-16LE (Low order byte first)
   34         UTF-32BE (High order bytes first)
   35         UTF-32LE (Low order bytes first)
-  170        ISO/IEC 646 Invariant[4]
+  170        ISO/IEC 646 Invariant[5]
   899        8-bit binary data
 
   : Table : ECI Codes:
@@ -1703,7 +1705,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
 
   height                float        Symbol height, excluding     Symbol dependent
                                      fixed width-to-height
-                                     symbols.[5]
+                                     symbols.[6]
 
   scale                 float        Scale factor for adjusting   1.0
                                      size of image.
@@ -1976,7 +1978,7 @@ together when adjusting this value:
   0                          No options selected.
 
   BARCODE_BIND               Boundary bars above and below the symbol and between
-                             rows if stacking multiple symbols.[6]
+                             rows if stacking multiple symbols.[7]
 
   BARCODE_BOX                Add a box surrounding the symbol and whitespace.
 
@@ -2001,7 +2003,7 @@ together when adjusting this value:
                              separate colour channels (OUT_BUFFER only).
 
   BARCODE_QUIET_ZONES        Add compliant quiet zones (additional to any
-                             specified whitespace).[7]
+                             specified whitespace).[8]
 
   BARCODE_NO_QUIET_ZONES     Disable quiet zones, notably those with defaults.
 
@@ -4026,8 +4028,8 @@ Annex A. Character Encoding
 
 This section is intended as a quick reference to the character sets used by
 Zint. All symbologies use standard ASCII input as shown in section A.1, but some
-support extended characters as shown in the subsequent A.2 Latin Alphabet No. 1
-(ISO/IEC 8859-1).
+support extended characters as shown in the subsequent section A.2 Latin
+Alphabet No. 1 (ISO/IEC 8859-1).
 
 A.1 ASCII Standard
 
@@ -4368,7 +4370,7 @@ OPTIONS
 
 --quietzones
 
-    Add compliant quiet zones for symbols that specify one. This is in addition
+    Add compliant quiet zones for symbols that specify them. This is in addition
     to any whitespace specified by -w | --whitesp or --vwhitesp.
 
 -r, --reverse
@@ -4607,30 +4609,32 @@ AUTHOR
 
 Robin Stuart robin@zint.org.uk
 
-[1] In Unicode contexts, BMP stands for Basic Multilingual Plane, the plane 0
+[1] See the Homebrew website https://brew.sh.
+
+[2] In Unicode contexts, BMP stands for Basic Multilingual Plane, the plane 0
 codeset from U+0000 to U+D7FF and U+E000 to U+FFFF (i.e. excluding surrogates).
 Not to be confused with the Windows Bitmap file format BMP!
 
-[2] The symbologies marked with an asterisk (*) in Table
+[3] The symbologies marked with an asterisk (*) in Table
 : Barcode Types (Symbologies) above used different names in Zint before version
 2.9.0. For example, symbology 29 used the name BARCODE_RSS14. These names are
 now deprecated but are still recognised by Zint and will continue to be
 supported in future versions.
 
-[3] Shift JIS (JIS X 0201 Roman) re-maps two ASCII characters: backslash (\) to
+[4] Shift JIS (JIS X 0201 Roman) re-maps two ASCII characters: backslash (\) to
 the yen sign (¥), and tilde (~) to overline (U+203E).
 
-[4] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
+[5] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
 $, @, [, \, ], ^, `, {, |, }, ~.
 
-[5] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
+[6] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
 One, Data Matrix (including HIBC), DotCode, Grid Matrix, Han Xin, MaxiCode, QR
 Code (including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which
 have a fixed width-to-height ratio (or, in the case of Code One, a fixed
 height).
 
-[6] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
+[7] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[7] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
+[8] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.

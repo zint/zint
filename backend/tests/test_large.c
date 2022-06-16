@@ -43,7 +43,7 @@
 #  elif defined(__GNUC__)
 #    pragma GCC diagnostic ignored "-Wformat" /* Unfortunately doesn't seem to be way to only avoid non-ISO warnings */
 #  endif
-#elif defined(_MSC_VER) || __WORDSIZE == 32
+#elif defined(_MSC_VER) || defined(__APPLE__) || __WORDSIZE == 32
 #  define LX_FMT "ll"
 #else
 #  define LX_FMT "l"

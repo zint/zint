@@ -254,7 +254,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--quietzones`
 
-:   Add compliant quiet zones for symbols that specify one. This is in addition to any whitespace specified by `-w` |
+:   Add compliant quiet zones for symbols that specify them. This is in addition to any whitespace specified by `-w` |
     `--whitesp` or `--vwhitesp`.
 
 `-r`, `--reverse`

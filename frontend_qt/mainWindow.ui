@@ -27,13 +27,10 @@
   <property name="autoFillBackground">
    <bool>false</bool>
   </property>
-  <property name="styleSheet">
-   <string notr="true"/>
-  </property>
   <property name="locale">
    <locale language="English" country="UnitedStates"/>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayoutMain">
+  <layout class="QVBoxLayout" name="vLayoutMain">
    <item>
     <widget class="QGraphicsView" name="view">
      <property name="minimumSize">
@@ -78,14 +75,14 @@
     </widget>
    </item>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout">
+    <layout class="QHBoxLayout" name="hLayoutMain">
      <property name="sizeConstraint">
       <enum>QLayout::SetMinimumSize</enum>
      </property>
      <item>
-      <layout class="QVBoxLayout" name="verticalLayout_6">
+      <layout class="QVBoxLayout" name="vLayoutSymbology">
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <layout class="QHBoxLayout" name="hLayoutSymbology">
          <item>
           <widget class="QLabel" name="lblSymbology">
            <property name="toolTip">
@@ -141,9 +138,6 @@
          <property name="autoFillBackground">
           <bool>false</bool>
          </property>
-         <property name="styleSheet">
-          <string notr="true"/>
-         </property>
          <property name="currentIndex">
           <number>0</number>
          </property>
@@ -151,7 +145,7 @@
           <attribute name="title">
            <string>&amp;Data</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayoutTabData">
+          <layout class="QVBoxLayout" name="vLayoutTabData">
            <item>
             <widget class="QGroupBox" name="grpData">
              <property name="sizePolicy">
@@ -166,9 +160,9 @@
              <property name="title">
               <string>Data to Enc&amp;ode</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayoutData">
+             <layout class="QVBoxLayout" name="vLayoutData">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayoutData">
+               <layout class="QHBoxLayout" name="hLayoutData">
                 <item>
                  <widget class="QLineEdit" name="txtData">
                   <property name="toolTip">
@@ -215,7 +209,7 @@ or import from file</string>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="eciLayout">
+               <layout class="QHBoxLayout" name="hLayoutECI">
                 <item>
                  <widget class="QLabel" name="lblECI">
                   <property name="maximumSize">
@@ -427,7 +421,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <spacer name="horizontalSpacer_eciLayout">
+                 <spacer name="hSpacer_hLayoutECI">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -520,9 +514,9 @@ for this symbology to defaults</string>
              <property name="title">
               <string>GS1 Composite</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayout_2">
+             <layout class="QVBoxLayout" name="vLayoutComposite">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_2">
+               <layout class="QHBoxLayout" name="hLayoutComposite">
                 <item>
                  <widget class="QCheckBox" name="chkComposite">
                   <property name="toolTip">
@@ -534,7 +528,7 @@ for this symbology to defaults</string>
                  </widget>
                 </item>
                 <item>
-                 <spacer name="horizontalSpacer">
+                 <spacer name="hSpacer_hLayoutComposite">
                   <property name="orientation">
                    <enum>Qt::Horizontal</enum>
                   </property>
@@ -601,12 +595,12 @@ for this symbology to defaults</string>
                </layout>
               </item>
               <item>
-               <layout class="QVBoxLayout" name="vertLayoutComponentData">
+               <layout class="QVBoxLayout" name="vLayoutComponentData">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetMinimumSize</enum>
                 </property>
                 <item>
-                 <layout class="QHBoxLayout" name="horzLayoutComponentDataLabel">
+                 <layout class="QHBoxLayout" name="hLayoutComponentDataLabel">
                   <item>
                    <widget class="QLabel" name="lblComposite">
                     <property name="enabled">
@@ -703,9 +697,9 @@ Extended Channel Interpretation (ECI)</string>
              <property name="title">
               <string>Additional ECI/Data Segments</string>
              </property>
-             <layout class="QVBoxLayout" name="verticalLayoutSegs">
+             <layout class="QVBoxLayout" name="vLayoutSegs">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayoutSeg1">
+               <layout class="QHBoxLayout" name="hlLayoutSeg1">
                 <item>
                  <widget class="QLabel" name="lblSeg1">
                   <property name="enabled">
@@ -966,7 +960,7 @@ or import from file</string>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayoutSeg2">
+               <layout class="QHBoxLayout" name="hLayoutSeg2">
                 <item>
                  <widget class="QLabel" name="lblSeg2">
                   <property name="enabled">
@@ -1227,7 +1221,7 @@ or import from file</string>
                </layout>
               </item>
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayoutSeg3">
+               <layout class="QHBoxLayout" name="hLayoutSeg3">
                 <item>
                  <widget class="QLabel" name="lblSeg3">
                   <property name="enabled">
@@ -1491,7 +1485,7 @@ or import from file</string>
             </widget>
            </item>
            <item>
-            <spacer name="vertSpacerData">
+            <spacer name="vSpacerData">
              <property name="orientation">
               <enum>Qt::Vertical</enum>
              </property>
@@ -1504,9 +1498,9 @@ or import from file</string>
             </spacer>
            </item>
            <item>
-            <layout class="QHBoxLayout" name="chksLayout">
+            <layout class="QHBoxLayout" name="hLayoutChks">
              <item>
-              <spacer name="horizontalSpacer_chksLayout">
+              <spacer name="hSpacer_hLayoutChks">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
                </property>
@@ -1606,11 +1600,11 @@ as delimiters for GS1 Application Identifiers
           <attribute name="title">
            <string>A&amp;ppearance</string>
           </attribute>
-          <layout class="QVBoxLayout" name="verticalLayout_4">
+          <layout class="QVBoxLayout" name="vLayoutAppearance">
            <item>
             <layout class="QGridLayout" name="gridLayout">
              <item row="0" column="0" colspan="2">
-              <layout class="QHBoxLayout" name="horizontalLayoutAutoHeight">
+              <layout class="QHBoxLayout" name="hLayoutAutoHeight">
                <item>
                 <widget class="QCheckBox" name="chkAutoHeight">
                  <property name="toolTip">
@@ -1698,7 +1692,7 @@ and use standard height (if any) for default
               </widget>
              </item>
              <item row="2" column="0">
-              <widget class="QLabel" name="label_8">
+              <widget class="QLabel" name="lblBorderWidth">
                <property name="toolTip">
                 <string>Width of boundary bars or border in X-dimensions</string>
                </property>
@@ -1733,7 +1727,7 @@ and use standard height (if any) for default
               </widget>
              </item>
              <item row="3" column="0">
-              <widget class="QLabel" name="label_9">
+              <widget class="QLabel" name="lblBorderType">
                <property name="toolTip">
                 <string>Add border or box</string>
                </property>

@@ -14,6 +14,9 @@ Changes
   button, independently movable picker (NULL parent), preview colour changes,
   preview Data Window changes, add clear data (del) buttons, add zap button
   and Factory Reset menu option, various other fixes
+- GUI: make acceptable for macOS; add iconset for macOS, install
+- manual: update macOS Homebrew install info; add README.macos
+- GUI: export window: add no. of sequences to results label
 
 Bugs
 ----
@@ -21,6 +24,9 @@ Bugs
 - libzint: fix some confusing error messages introduced by segment stuff
 - GUI: remove unnecessary tabMain min size (better layout rendering on
   Windows/Fedora)
+- library: check symbol->primary for escape sequences also
+- GUI: error message GS1_MODE -> GS1 mode
+- GUI: sequence window: fix initial clear button status
 
 
 Version 2.11.0 (2022-05-24)

@@ -1,5 +1,6 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+# SPDX-License-Identifier: GPL-3.0-or-later
 # vim: set ts=4 sw=4 et :
 
 project(zint-qt)
@@ -23,7 +24,23 @@ endif()
 #               grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpITF14.ui    grpMSICheck.ui  grpUPCA.ui
 #               grpC25.ui    grpCodabar.ui  grpDM.ui          grpLOGMARS.ui  grpPDF417.ui    grpUPCEAN.ui
 
-add_executable(${PROJECT_NAME} ${zint-qt_SRCS} resources.qrc)
+if(APPLE)
+    # https://doc.qt.io/qt-5/appicon.html
+    set(MACOSX_BUNDLE_ICON_FILE zint-qt.icns)
+    set(APP_ICON_MACOSX "${CMAKE_CURRENT_SOURCE_DIR}/zint-qt.icns")
+    set_source_files_properties(${APP_ICON_MACOSX} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+    add_executable(${PROJECT_NAME} MACOSX_BUNDLE ${zint-qt_SRCS} resources.qrc ${APP_ICON_MACOSX})
+    set_target_properties(${PROJECT_NAME} PROPERTIES
+        MACOSX_BUNDLE TRUE
+        MACOSX_BUNDLE_BUNDLE_NAME "Zint Barcode Studio"
+        MACOSX_BUNDLE_BUNDLE_VERSION ${ZINT_VERSION}
+        MACOSX_BUNDLE_COPYRIGHT "Copyright © 2006-2022 Robin Stuart and others"
+        MACOSX_BUNDLE_GUI_IDENTIFIER "uk.org.zint.zint-qt"
+        MACOSX_BUNDLE_INFO_STRING "A free barcode generator"
+        MACOSX_BUNDLE_SHORT_VERSION_STRING ${ZINT_VERSION})
+else()
+    add_executable(${PROJECT_NAME} ${zint-qt_SRCS} resources.qrc)
+endif()
 
 if(WIN32)
     target_sources(${PROJECT_NAME} PRIVATE res/qtZint.rc)

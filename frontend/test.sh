@@ -1,3 +1,5 @@
+#! /bin/bash
+# Create zint test output
 mkdir test_sh_out
 cd test_sh_out
 echo testing Code 11

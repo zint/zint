@@ -1,8 +1,7 @@
 /* composite.c - Handles GS1 Composite Symbols */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* The functions "getBit", "init928" and "encode928" are copyright BSI and are
    released with permission under the following terms:
@@ -1253,20 +1252,21 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     return 0;
 }
 
-static int linear_dummy_run(int input_mode, unsigned char *source, const int length, char *errtxt) {
-    struct zint_symbol *dummy;
+/* Calculate the width of the linear part (primary) */
+static int linear_dummy_run(int input_mode, unsigned char *source, const int length, const int debug, char *errtxt) {
+    struct zint_symbol dummy = {0};
     int error_number;
     int linear_width;
 
-    dummy = ZBarcode_Create();
-    dummy->symbology = BARCODE_GS1_128_CC;
-    dummy->input_mode = input_mode;
-    error_number = gs1_128_cc(dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
-    linear_width = dummy->width;
-    if (error_number >= ZINT_ERROR) {
-        strcpy(errtxt, dummy->errtxt);
+    dummy.symbology = BARCODE_GS1_128_CC;
+    dummy.option_1 = -1;
+    dummy.input_mode = input_mode;
+    dummy.debug = debug;
+    error_number = gs1_128_cc(&dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
+    linear_width = dummy.width;
+    if (error_number >= ZINT_ERROR || (debug & ZINT_DEBUG_TEST)) {
+        strcpy(errtxt, dummy.errtxt);
     }
-    ZBarcode_Delete(dummy);
 
     if (error_number >= ZINT_ERROR) {
         return 0;
@@ -1317,7 +1317,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
-                                        symbol->errtxt);
+                                        symbol->debug, symbol->errtxt);
         if (linear_width == 0) {
             if (strlen(symbol->errtxt) + strlen(in_linear_comp) < sizeof(symbol->errtxt)) {
                 strcat(symbol->errtxt, in_linear_comp);
@@ -1636,3 +1636,5 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     return error_number ? error_number : warn_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

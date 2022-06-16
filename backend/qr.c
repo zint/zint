@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <math.h>
 #ifdef _MSC_VER
@@ -1452,7 +1453,7 @@ static int qr_calc_binlen(const int version, char mode[], const unsigned int dda
 
     currentMode = ' '; // Null
 
-    if (eci != 0) { // RMQR and MICROQR do not support ECI
+    if (eci != 0) { /* Not applicable to MICROQR */
         count += 4;
         if (eci <= 127) {
             count += 8;
@@ -1536,7 +1537,7 @@ static int qr_calc_binlen_segs(const int version, char mode[], const unsigned in
         count += 4 + 8 + 8;
     }
 
-    if (gs1 == 1) { /* Not applicable to MICROQR */
+    if (gs1) { /* Not applicable to MICROQR */
         if (version < RMQR_VERSION) {
             count += 4;
         } else {
@@ -1671,6 +1672,9 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         }
         p_structapp = &symbol->structapp;
     }
+
+    /* TODO: GS1 General Specifications 22.0 section 5.7.3 says Structured Append and ECIs not supported
+       for GS1 QR Code so should check and return ZINT_WARN_NONCOMPLIANT if either true */
 
     est_binlen = qr_calc_binlen_segs(40, mode, ddata, local_segs, seg_count, p_structapp, 0 /*mode_preset*/, gs1,
                     debug_print);
@@ -2839,7 +2843,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
             }
             break;
         case GS1_MODE: /* Should never happen as checked before being called */
-            strcpy(symbol->errtxt, "571: UPNQR does not support GS-1 encoding"); /* Not reached */
+            strcpy(symbol->errtxt, "571: UPNQR does not support GS1 data"); /* Not reached */
             return ZINT_ERROR_INVALID_OPTION;
             break;
         case UNICODE_MODE:
