@@ -216,7 +216,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     // Standard width 360 too narrow
     if (saved_geometry.isNull()) {
         // Seems this is necessary on macOS to get a reasonable initial height
-        setMinimumSize(QSize(460, (int) (QApplication::primaryScreen->availableSize().height() * 0.9f)));
+        setMinimumSize(QSize(460, (int) (QApplication::primaryScreen()->availableSize().height() * 0.9f)));
     } else {
         setMinimumSize(QSize(460, 0));
     }
