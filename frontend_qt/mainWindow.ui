@@ -5,12 +5,6 @@
   <property name="windowModality">
    <enum>Qt::NonModal</enum>
   </property>
-  <property name="sizePolicy">
-   <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-    <horstretch>0</horstretch>
-    <verstretch>0</verstretch>
-   </sizepolicy>
-  </property>
   <property name="minimumSize">
    <size>
     <width>360</width>
@@ -31,12 +25,15 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QVBoxLayout" name="vLayoutMain">
+   <property name="sizeConstraint">
+    <enum>QLayout::SetMinimumSize</enum>
+   </property>
    <item>
     <widget class="QGraphicsView" name="view">
      <property name="minimumSize">
       <size>
        <width>0</width>
-       <height>5</height>
+       <height>35</height>
       </size>
      </property>
      <property name="contextMenuPolicy">
@@ -129,10 +126,16 @@
        </item>
        <item>
         <widget class="QTabWidget" name="tabMain">
+         <property name="minimumSize">
+          <size>
+           <width>0</width>
+           <height>346</height>
+          </size>
+         </property>
          <property name="maximumSize">
           <size>
            <width>16777215</width>
-           <height>360</height>
+           <height>346</height>
           </size>
          </property>
          <property name="autoFillBackground">

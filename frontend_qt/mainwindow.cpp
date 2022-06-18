@@ -223,6 +223,11 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     mac_hack(this);
     mac_hack_vLayouts(this);
     mac_hack_statusBars(this, "statusBar");
+    vLayoutTabData->setContentsMargins(QMargins(20, 0, 20, 0));
+#endif
+#ifdef _WIN32
+    tabMain->setMinimumSize(QSize(0, 316));
+    tabMain->setMaximumSize(QSize(16777215, 316));
 #endif
 
     restoreGeometry(saved_geometry.toByteArray());
@@ -1149,7 +1154,6 @@ void MainWindow::on_encoded()
     if (QApplication::activeModalWidget() != nullptr) { // Protect against encode in popup dialog
         return;
     }
-    this->setMinimumHeight(m_bc.bc.getError() ? 455 : 435);
     enableActions(true);
     errtxtBar_set(false /*isError*/);
 
@@ -1165,7 +1169,6 @@ void MainWindow::on_errored()
     if (QApplication::activeModalWidget() != nullptr) { // Protect against error in popup dialog (Sequence Export)
         return;
     }
-    this->setMinimumHeight(455);
     enableActions(false);
     errtxtBar_set(true /*isError*/);
 }
@@ -1585,7 +1588,7 @@ void MainWindow::change_options()
             connect(get_widget(QSL("radC25CheckHide")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
-    } else if (symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39) {
+    } else if (symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
         QFile file(QSL(":/grpC39.ui"));
         if (!file.open(QIODevice::ReadOnly))
             return;
@@ -1594,10 +1597,13 @@ void MainWindow::change_options()
         load_sub_settings(settings, symbology);
         connect(get_widget(QSL("radC39Stand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC39Check")), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(get_widget(QSL("radC39HIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         QRadioButton *radC39HIBC = m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"));
-        if (symbology == BARCODE_EXCODE39) {
-            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
+        if (symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
+            if (symbology == BARCODE_EXCODE39) {
+                tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
+            } else {
+                tabMain->insertTab(1, m_optionWidget, tr("LOGM&ARS"));
+            }
             if (radC39HIBC->isChecked()) {
                 radC39HIBC->setChecked(false);
                 m_optionWidget->findChild<QRadioButton*>(QSL("radC39Stand"))->setChecked(true);
@@ -1605,21 +1611,11 @@ void MainWindow::change_options()
             radC39HIBC->setEnabled(false);
             radC39HIBC->hide();
         } else {
+            connect(get_widget(QSL("radC39HIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
             tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39"));
             radC39HIBC->setEnabled(true);
             radC39HIBC->show();
         }
-
-    } else if (symbology == BARCODE_LOGMARS) {
-        QFile file(QSL(":/grpLOGMARS.ui"));
-        if (!file.open(QIODevice::ReadOnly))
-            return;
-        m_optionWidget = uiload.load(&file);
-        file.close();
-        load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("LOGM&ARS"));
-        connect(get_widget(QSL("radLOGMARSStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(get_widget(QSL("radLOGMARSCheck")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODE16K) {
         QFile file(QSL(":/grpC16k.ui"));
@@ -2530,7 +2526,7 @@ void MainWindow::update_preview()
             break;
         case BARCODE_LOGMARS:
             m_bc.bc.setSymbol(BARCODE_LOGMARS);
-            if (get_rad_val(QSL("radLOGMARSCheck"))) {
+            if (get_rad_val(QSL("radC39Check"))) {
                 m_bc.bc.setOption2(1);
             }
             break;
@@ -3106,7 +3102,9 @@ void MainWindow::errtxtBar_set(bool isError)
 {
     if (!m_bc.bc.hasErrors()) {
         errtxtBar_clear();
+        view->setMinimumSize(QSize(0, 35));
     } else {
+        view->setMinimumSize(QSize(0, 5));
         errtxtBar->showMessage(m_bc.bc.lastError());
         errtxtBar->setStyleSheet(isError
                     ? QSL("QStatusBar {background:white; color:#dd0000;}")
@@ -3486,10 +3484,9 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/excode39/check_digit"), get_rad_grp_index(
                 QStringList() << QSL("radC39Stand") << QSL("radC39Check")));
             break;
-
         case BARCODE_LOGMARS:
             settings.setValue(QSL("studio/bc/logmars/check_digit"), get_rad_grp_index(
-                QStringList() << QSL("radLOGMARSStand") << QSL("radLOGMARSCheck")));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check")));
             break;
 
         case BARCODE_CODE16K:
@@ -3872,10 +3869,9 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_rad_from_setting(settings, QSL("studio/bc/excode39/check_digit"),
                 QStringList() << QSL("radC39Stand") << QSL("radC39Check"));
             break;
-
         case BARCODE_LOGMARS:
             set_rad_from_setting(settings, QSL("studio/bc/logmars/check_digit"),
-                QStringList() << QSL("radLOGMARSStand") << QSL("radLOGMARSCheck"));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check"));
             break;
 
         case BARCODE_CODE16K:

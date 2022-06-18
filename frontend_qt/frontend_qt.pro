@@ -32,6 +32,7 @@ FORMS += extCLI.ui \
          grpC25.ui \
          grpC39.ui \
          grpC49.ui \
+         grpC93.ui \
          grpChannel.ui \
          grpCodabar.ui \
          grpCodablockF.ui \
@@ -42,7 +43,7 @@ FORMS += extCLI.ui \
          grpDotCode.ui \
          grpGrid.ui \
          grpHX.ui \
-         grpLOGMARS.ui \
+         grpITF14.ui \
          grpMaxicode.ui \
          grpMicroPDF.ui \
          grpMQR.ui \

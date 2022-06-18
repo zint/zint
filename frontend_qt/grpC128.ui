@@ -2,14 +2,6 @@
 <ui version="4.0">
  <class>grpC128</class>
  <widget class="QWidget" name="grpC128">
-  <property name="geometry">
-   <rect>
-    <x>0</x>
-    <y>0</y>
-    <width>317</width>
-    <height>156</height>
-   </rect>
-  </property>
   <property name="maximumSize">
    <size>
     <width>600</width>
@@ -29,9 +21,6 @@
       <string>How to process data</string>
      </property>
      <layout class="QGridLayout" name="gridLayoutC128EncodingMode">
-      <property name="sizeConstraint">
-       <enum>QLayout::SetMinimumSize</enum>
-      </property>
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC128Stand">
         <property name="text">
