@@ -968,7 +968,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     /* Verify that the data to be placed in the compressed data field is all
     numeric data before carrying out compression */
     for (i = 0; i < read_posn; i++) {
-        if ((source[i] < '0') || (source[i] > '9')) {
+        if (!z_isdigit(source[i])) {
             if (source[i] != '[') {
                 /* Something is wrong */
                 strcpy(symbol->errtxt, "385: Invalid character in Compressed Field data (digits only)");

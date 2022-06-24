@@ -1,5 +1,5 @@
-/*  hanxin.c - Han Xin Code
-
+/*  hanxin.c - Han Xin Code */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* This code attempts to implement Han Xin Code according to ISO/IEC 20830:2021
  * (previously ISO/IEC 20830 (draft 2019-10-10) and AIMD-015:2010 (Rev 0.8)) */
@@ -45,15 +46,15 @@
 /* Find which submode to use for a text character */
 static int hx_getsubmode(const unsigned int input) {
 
-    if ((input >= '0') && (input <= '9')) {
+    if (z_isdigit(input)) {
         return 1;
     }
 
-    if ((input >= 'A') && (input <= 'Z')) {
+    if (z_isupper(input)) {
         return 1;
     }
 
-    if ((input >= 'a') && (input <= 'z')) {
+    if (z_islower(input)) {
         return 1;
     }
 
@@ -253,15 +254,15 @@ static int hx_isFourByte(const unsigned int glyph, const unsigned int glyph2) {
 /* Convert Text 1 sub-mode character to encoding value, as given in table 3 */
 static int hx_lookup_text1(const unsigned int input) {
 
-    if ((input >= '0') && (input <= '9')) {
+    if (z_isdigit(input)) {
         return input - '0';
     }
 
-    if ((input >= 'A') && (input <= 'Z')) {
+    if (z_isupper(input)) {
         return input - 'A' + 10;
     }
 
-    if ((input >= 'a') && (input <= 'z')) {
+    if (z_islower(input)) {
         return input - 'a' + 36;
     }
 
@@ -310,7 +311,7 @@ static int hx_in_numeric(const unsigned int ddata[], const int length, const int
     }
 
     /* Attempt to calculate the average 'cost' of using numeric mode in number of bits (times HX_MULT) */
-    for (i = in_posn; i < length && i < in_posn + 4 && ddata[i] >= '0' && ddata[i] <= '9'; i++);
+    for (i = in_posn; i < length && i < in_posn + 4 && z_isdigit(ddata[i]); i++);
 
     digit_cnt = i - in_posn;
 

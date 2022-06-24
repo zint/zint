@@ -28,6 +28,10 @@ int main(int argc, char *argv[])
     /* Suppresses "Qt WebEngine seems to be initialized from a plugin" warning */
     QApplication::setAttribute(Qt::AA_ShareOpenGLContexts);
 #endif
+#if defined(_WIN32) && QT_VERSION >= 0x50A01
+    /* Suppresses help question mark in dialogs */
+    QApplication::setAttribute(Qt::AA_DisableWindowContextHelpButton);
+#endif
 
     QApplication app(argc, argv);
 

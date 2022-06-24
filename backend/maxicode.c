@@ -1,5 +1,4 @@
 /* maxicode.c - Handles MaxiCode */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2010-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
 #include <stdio.h>
@@ -571,7 +571,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         } else {
             mode = 2;
             for (i = 0; i < lp - 6; i++) {
-                if (((symbol->primary[i] < '0') || (symbol->primary[i] > '9')) && (symbol->primary[i] != ' ')) {
+                if (!z_isdigit(symbol->primary[i]) && (symbol->primary[i] != ' ')) {
                     mode = 3;
                     break;
                 }
@@ -615,7 +615,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                     postcode[i] = '\0';
                     postcode_len = i;
                     break;
-                } else if (postcode[i] < '0' || postcode[i] > '9') {
+                } else if (!z_isdigit(postcode[i])) {
                     strcpy(symbol->errtxt, "555: Non-numeric postcode in Primary Message");
                     return ZINT_ERROR_INVALID_DATA;
                 }

@@ -979,10 +979,10 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
         for (i = 0; i < ninety_len; i++) {
 
-            if ((ninety[i] >= 'A') && (ninety[i] <= 'Z')) {
+            if (z_isupper(ninety[i])) {
                 /* Character is alphabetic */
                 alpha += 1;
-            } else if ((ninety[i] >= '0') && (ninety[i] <= '9')) {
+            } else if (z_isdigit(ninety[i])) {
                 /* Character is numeric */
                 numeric += 1;
             } else {
@@ -993,15 +993,16 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
         /* must start with 0, 1, 2 or 3 digits followed by an uppercase character */
         test1 = -1;
         for (i = 3; i >= 0; i--) {
-            if ((ninety[i] >= 'A') && (ninety[i] <= 'Z')) {
+            if (z_isupper(ninety[i])) {
                 test1 = i;
             }
         }
 
         test2 = 0;
         for (i = 0; i < test1; i++) {
-            if (!((ninety[i] >= '0') && (ninety[i] <= '9'))) {
+            if (!z_isdigit(ninety[i])) {
                 test2 = 1;
+                break;
             }
         }
 
@@ -1108,10 +1109,10 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             if (ai90_mode == 2) {
                 /* Alpha encodation (section 5.3.3) */
                 do {
-                    if ((source[read_posn] >= 'A') && (source[read_posn] <= 'Z')) {
+                    if (z_isupper(source[read_posn])) {
                         bp = bin_append_posn(source[read_posn] - 65, 5, binary_string, bp);
 
-                    } else if ((source[read_posn] >= '0') && (source[read_posn] <= '9')) {
+                    } else if (z_isdigit(source[read_posn])) {
                         bp = bin_append_posn(source[read_posn] + 4, 6, binary_string, bp);
 
                     } else if (source[read_posn] == '[') {

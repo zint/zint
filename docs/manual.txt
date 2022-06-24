@@ -620,7 +620,7 @@ sequences are shown in the table below.
   \uNNNN                           Any 16-bit Unicode BMP[2] character where
                                    NNNN is hexadecimal
 
-  \UNNNNNN                         Any 20-bit Unicode character where NNNNNN
+  \UNNNNNN                         Any 21-bit Unicode character where NNNNNN
                                    is hexadecimal (maximum 0x10FFFF)
   ----------------------------------------------------------------------------
 
@@ -4246,7 +4246,7 @@ OPTIONS
                                 hexadecimal
         \uNNNN   (U+NNNN)       Any 16-bit Unicode BMP character
                                 where NNNN is hexadecimal
-        \UNNNNNN (U+NNNNNN)     Any 20-bit Unicode character
+        \UNNNNNN (U+NNNNNN)     Any 21-bit Unicode character
                                 where NNNNNN is hexadecimal
 
 --fast

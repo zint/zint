@@ -1,6 +1,6 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
-
-/*  Zint - A barcode generating program using libpng
+/*
+    libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
@@ -30,6 +30,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /*  This code is adapted from "Code barre PDF 417 / PDF 417 barcode" v2.5.0
     which is Copyright (C) 2004 (Grandzebu).
@@ -99,7 +100,7 @@ static const char pdf_MicroAutosize[56] = {
 /* 866 */
 
 static int pdf_quelmode(const unsigned char codeascii) {
-    if ((codeascii <= '9') && (codeascii >= '0')) {
+    if (z_isdigit(codeascii)) {
         return NUM;
     }
     if (codeascii < 127 && pdf_asciix[codeascii]) {

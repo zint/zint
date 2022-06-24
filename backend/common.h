@@ -1,5 +1,4 @@
 /* common.h - Header for all common functions in common.c */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
@@ -69,6 +68,11 @@
 
 /* The most commonly used set */
 #define NEON_F      IS_NUM_F /* NEON "0123456789" */
+
+/* Simple versions of <cctype> functions with no dependence on locale */
+#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
+#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
+#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
 
 #include "zint.h"
 #include "zintconfig.h"

@@ -2695,8 +2695,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         mode = 4;
                     } else {
                         for (i = 0; i < primary_len - 6; i++) {
-                            if (((symbol->primary[i] < '0') || (symbol->primary[i] > '9'))
-                                    && (symbol->primary[i] != ' ')) {
+                            if (!z_isdigit(symbol->primary[i]) && (symbol->primary[i] != ' ')) {
                                 mode = 3;
                                 break;
                             }
@@ -2821,7 +2820,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     memcpy(macro_eci_buf, bwipp_data + 10, 13); /* Macro */
                     memcpy(bwipp_data + 13, bwipp_data, 10); /* ECI */
                     memcpy(bwipp_data, macro_eci_buf, 13);
-                } else if (data[4] >= '0' && data[4] <= '9' && data[5] >= '0' && data[5] <= '9') {
+                } else if (z_isdigit(data[4]) && z_isdigit(data[5])) {
                     memcpy(macro_eci_buf, bwipp_data, 10); /* ECI */
                     memcpy(bwipp_data, bwipp_data + 10, 9); /* Macro */
                     memcpy(bwipp_data + 9, macro_eci_buf, 10);
@@ -3119,7 +3118,7 @@ int testUtilBwippCmp(const struct zint_symbol *symbol, char *msg, char *cmp_buf,
     if (symbol->symbology == BARCODE_ULTRA) {
         static const char map[] = { '8', '1', '2', '3', '4', '5', '6', '7', '8', '7' };
         for (i = 0; i < cmp_len; i++) {
-            if (cmp_buf[i] >= '0' && cmp_buf[i] <= '9') {
+            if (z_isdigit(cmp_buf[i])) {
                 cmp_buf[i] = map[cmp_buf[i] - '0'];
             }
         }

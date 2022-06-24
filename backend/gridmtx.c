@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* This file implements Grid Matrix as specified in
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
@@ -69,7 +70,7 @@ static int gm_in_numeral(const unsigned int ddata[], const int length, const int
        block of three numeric characters) */
     for (i = in_posn, digit_cnt = 0, nondigit = 0, nondigit_posn = 0; i < length && i < in_posn + 4 && digit_cnt < 3;
             i++) {
-        if (ddata[i] >= '0' && ddata[i] <= '9') {
+        if (z_isdigit(ddata[i])) {
             digit_cnt++;
         } else if (posn(gm_numeral_nondigits, (const char) ddata[i]) != -1) {
             if (nondigit) {
@@ -187,11 +188,11 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
         if (!double_byte) {
             space = ddata[i] == ' ';
             if (!space) {
-                numeric = ddata[i] >= '0' && ddata[i] <= '9';
+                numeric = z_isdigit(ddata[i]);
                 if (!numeric) {
-                    lower = ddata[i] >= 'a' && ddata[i] <= 'z';
+                    lower = z_islower(ddata[i]);
                     if (!lower) {
-                        upper = ddata[i] >= 'A' && ddata[i] <= 'Z';
+                        upper = z_isupper(ddata[i]);
                         if (!upper) {
                             control = ddata[i] < 0x7F; /* Exclude DEL */
                             if (control && i + 1 < length) {
@@ -200,7 +201,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
                         }
                     }
                 } else if (i + 1 < length) {
-                    double_digit = ddata[i + 1] >= '0' && ddata[i + 1] <= '9';
+                    double_digit = z_isdigit(ddata[i + 1]);
                 }
             }
         }
@@ -523,8 +524,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                 }
                 if (!(done)) {
                     if (sp != (length - 1)) {
-                        if (((ddata[sp] >= '0') && (ddata[sp] <= '9')) &&
-                                ((ddata[sp + 1] >= '0') && (ddata[sp + 1] <= '9'))) {
+                        if (z_isdigit(ddata[sp]) && z_isdigit(ddata[sp + 1])) {
                             /* Two digits */
                             glyph = 8033 + (10 * (ddata[sp] - '0')) + (ddata[sp + 1] - '0');
                             sp++;
@@ -561,7 +561,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                 numbuf[1] = '0';
                 numbuf[2] = '0';
                 do {
-                    if ((ddata[sp] >= '0') && (ddata[sp] <= '9')) {
+                    if (z_isdigit(ddata[sp])) {
                         numbuf[p] = ddata[sp];
                         p++;
                     } else if (posn(gm_numeral_nondigits, (const char) ddata[sp]) != -1) {
@@ -651,11 +651,11 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
 
             case GM_MIXED:
                 shift = 1;
-                if ((ddata[sp] >= '0') && (ddata[sp] <= '9')) {
+                if (z_isdigit(ddata[sp])) {
                     shift = 0;
-                } else if ((ddata[sp] >= 'A') && (ddata[sp] <= 'Z')) {
+                } else if (z_isupper(ddata[sp])) {
                     shift = 0;
-                } else if ((ddata[sp] >= 'a') && (ddata[sp] <= 'z')) {
+                } else if (z_islower(ddata[sp])) {
                     shift = 0;
                 } else if (ddata[sp] == ' ') {
                     shift = 0;
@@ -680,7 +680,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
 
             case GM_UPPER:
                 shift = 1;
-                if ((ddata[sp] >= 'A') && (ddata[sp] <= 'Z')) {
+                if (z_isupper(ddata[sp])) {
                     shift = 0;
                 } else if (ddata[sp] == ' ') {
                     shift = 0;
@@ -705,7 +705,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
 
             case GM_LOWER:
                 shift = 1;
-                if ((ddata[sp] >= 'a') && (ddata[sp] <= 'z')) {
+                if (z_islower(ddata[sp])) {
                     shift = 0;
                 } else if (ddata[sp] == ' ') {
                     shift = 0;

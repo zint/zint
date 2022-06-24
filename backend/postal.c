@@ -1,8 +1,7 @@
 /* postal.c - Handles PostNet, PLANET, FIM. RM4SCC and Flattermarken */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Including bug fixes by Bryan Hatton
 
     Redistribution and use in source and binary forms, with or without
@@ -30,7 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -646,7 +645,7 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     i = 0;
     inter_posn = 0;
     do {
-        if (((source[i] >= '0') && (source[i] <= '9')) || (source[i] == '-')) {
+        if (z_isdigit(source[i]) || (source[i] == '-')) {
             inter[inter_posn] = source[i];
             inter_posn++;
         } else {
@@ -732,3 +731,5 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

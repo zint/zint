@@ -207,7 +207,7 @@ static int dm_isc40(const unsigned char input) {
     if (input <= '9') {
         return input >= '0' || input == ' ';
     }
-    return input >= 'A' && input <= 'Z';
+    return z_isupper(input);
 }
 
 /* Is basic (non-shifted) TEXT? */
@@ -215,7 +215,7 @@ static int dm_istext(const unsigned char input) {
     if (input <= '9') {
         return input >= '0' || input == ' ';
     }
-    return input >= 'a' && input <= 'z';
+    return z_islower(input);
 }
 
 /* Is basic (non-shifted) C40/TEXT? */
@@ -328,7 +328,7 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
         const int is_extended = c & 0x80;
 
         /* ascii ... step (l) */
-        if ((c <= '9') && (c >= '0')) {
+        if (z_isdigit(c)) {
             ascii_count += DM_MULT_1_DIV_2; // (l)(1)
         } else {
             if (is_extended) {
@@ -721,26 +721,22 @@ static int dm_last_ascii(const unsigned char source[], const int length, const i
         if ((source[from] & 0x80) || (source[from + 1] & 0x80)) {
             return 0;
         }
-        if (source[from] <= '9' && source[from] >= '0' && source[from + 1] <= '9' && source[from + 1] >= '0') {
+        if (z_isdigit(source[from]) && z_isdigit(source[from + 1])) {
             return 1;
         }
         return 2;
     }
     if (length - from == 3) {
-        if (source[from] <= '9' && source[from] >= '0'
-                && source[from + 1] <= '9' && source[from + 1] >= '0' && !(source[from + 2] & 0x80)) {
+        if (z_isdigit(source[from]) && z_isdigit(source[from + 1]) && !(source[from + 2] & 0x80)) {
             return 2;
         }
-        if (source[from + 1] <= '9' && source[from + 1] >= '0'
-                && source[from + 2] <= '9' && source[from + 2] >= '0' && !(source[from] & 0x80)) {
+        if (z_isdigit(source[from + 1]) && z_isdigit(source[from + 2]) && !(source[from] & 0x80)) {
             return 2;
         }
         return 0;
     }
-    if (source[from] <= '9' && source[from] >= '0'
-            && source[from + 1] <= '9' && source[from + 1] >= '0'
-            && source[from + 2] <= '9' && source[from + 2] >= '0'
-            && source[from + 3] <= '9' && source[from + 3] >= '0') {
+    if (z_isdigit(source[from]) && z_isdigit(source[from + 1]) && z_isdigit(source[from + 2])
+            && z_isdigit(source[from + 3])) {
         return 2;
     }
     return 0;
@@ -939,8 +935,7 @@ static void dm_addEdges(struct zint_symbol *symbol, const unsigned char source[]
 
         static const int c40text_modes[] = { DM_C40, DM_TEXT };
 
-        if (source[from] <= '9' && source[from] >= '0' && from + 1 < length
-                && source[from + 1] <= '9' && source[from + 1] >= '0') {
+        if (z_isdigit(source[from]) && from + 1 < length && z_isdigit(source[from + 1])) {
             dm_addEdge(symbol, source, length, edges, DM_ASCII, from, 2, previous, 0);
             /* If ASCII vertex, don't bother adding other edges as this will be optimal; suggested by Alex Geller */
             if (previous && previous->mode == DM_ASCII) {
@@ -1191,9 +1186,9 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
             static const char x12_nonalphanum_chars[] = "\015*> ";
             int value = 0;
 
-            if ((source[sp] >= '0') && (source[sp] <= '9')) {
+            if (z_isdigit(source[sp])) {
                 value = (source[sp] - '0') + 4;
-            } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
+            } else if (z_isupper(source[sp])) {
                 value = (source[sp] - 'A') + 14;
             } else {
                 value = posn(x12_nonalphanum_chars, source[sp]);
@@ -1379,9 +1374,9 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                 static const char x12_nonalphanum_chars[] = "\015*> ";
                 int value = 0;
 
-                if ((source[sp] <= '9') && (source[sp] >= '0')) {
+                if (z_isdigit(source[sp])) {
                     value = (source[sp] - '0') + 4;
-                } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
+                } else if (z_isupper(source[sp])) {
                     value = (source[sp] - 'A') + 14;
                 } else {
                     value = posn(x12_nonalphanum_chars, source[sp]);

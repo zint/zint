@@ -25,9 +25,6 @@
    <locale language="English" country="UnitedStates"/>
   </property>
   <layout class="QVBoxLayout" name="vLayoutMain">
-   <property name="sizeConstraint">
-    <enum>QLayout::SetMinimumSize</enum>
-   </property>
    <item>
     <widget class="QGraphicsView" name="view">
      <property name="minimumSize">
@@ -1535,7 +1532,7 @@ or import from file</string>
 &lt;tr&gt;&lt;td&gt;\dNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N decimal)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\xNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N hex)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\uNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;16-bit Unicode BMP (N hex)&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;\UNNNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;20-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\UNNNNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;21-bit Unicode (N hex)&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;</string>
                </property>
                <property name="text">

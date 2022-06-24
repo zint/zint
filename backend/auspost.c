@@ -1,8 +1,7 @@
 /* auspost.c - Handles Australia Post 4-State Barcode */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 static const char GDSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #";
 #define GDSET_F (IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F)
@@ -124,11 +123,11 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
         if (length != 8 && length != 13 && length != 16 && length != 18 && length != 23) {
-            strcpy(symbol->errtxt, "401: Auspost input is wrong length (8, 13, 16, 18 or 23 characters only)");
+            strcpy(symbol->errtxt, "401: Input wrong length (8, 13, 16, 18 or 23 characters only)");
             return ZINT_ERROR_TOO_LONG;
         }
     } else if (length > 8) {
-        strcpy(symbol->errtxt, "403: Auspost input is too long (8 character maximum)");
+        strcpy(symbol->errtxt, "403: Input too long (8 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -280,3 +279,5 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

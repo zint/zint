@@ -1,8 +1,7 @@
 /* mailmark.c - Royal Mail 4-state Mailmark barcodes */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /*
  * Developed in accordance with "Royal Mail Mailmark barcode C encoding and deconding instructions"
@@ -206,7 +205,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     // Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L
     supply_chain_id = 0;
     for (i = 3; i < (length - 17); i++) {
-        if ((local_source[i] >= '0') && (local_source[i] <= '9')) {
+        if (z_isdigit(local_source[i])) {
             supply_chain_id *= 10;
             supply_chain_id += ctoi(local_source[i]);
         } else {
@@ -218,7 +217,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     // Item ID is 8 digits
     item_id = 0;
     for (i = length - 17; i < (length - 9); i++) {
-        if ((local_source[i] >= '0') && (local_source[i] <= '9')) {
+        if (z_isdigit(local_source[i])) {
             item_id *= 10;
             item_id += ctoi(local_source[i]);
         } else {
@@ -253,8 +252,8 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         } else {
             if (postcode[8] == ' ') {
                 // Types 1, 2 and 6
-                if ((postcode[1] >= '0') && (postcode[1] <= '9')) {
-                    if ((postcode[2] >= '0') && (postcode[2] <= '9')) {
+                if (z_isdigit(postcode[1])) {
+                    if (z_isdigit(postcode[2])) {
                         postcode_type = 6;
                     } else {
                         postcode_type = 1;
@@ -264,7 +263,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
                 }
             } else {
                 // Types 3 and 4
-                if ((postcode[3] >= '0') && (postcode[3] <= '9')) {
+                if (z_isdigit(postcode[3])) {
                     postcode_type = 3;
                 } else {
                     postcode_type = 4;
@@ -510,3 +509,5 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

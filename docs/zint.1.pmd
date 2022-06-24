@@ -139,7 +139,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                                 hexadecimal
         \uNNNN   (U+NNNN)       Any 16-bit Unicode BMP character
                                 where NNNN is hexadecimal
-        \UNNNNNN (U+NNNNNN)     Any 20-bit Unicode character
+        \UNNNNNN (U+NNNNNN)     Any 21-bit Unicode character
                                 where NNNNNN is hexadecimal
 
 `--fast`

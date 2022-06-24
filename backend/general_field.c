@@ -1,5 +1,4 @@
 /* general_field.c - Handles general field compaction (GS1 DataBar and composites) */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "common.h"
 #include "general_field.h"
@@ -39,10 +39,10 @@ static const char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ "; /* Note contains sp
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
 static int general_field_type(const char *general_field, const int i) {
-    if (general_field[i] == '[' || (general_field[i] >= '0' && general_field[i] <= '9')) {
+    if (general_field[i] == '[' || z_isdigit(general_field[i])) {
         return NUMERIC;
     }
-    if ((general_field[i] >= 'A' && general_field[i] <= 'Z') || posn(alphanum_puncs, general_field[i]) != -1) {
+    if (z_isupper(general_field[i]) || posn(alphanum_puncs, general_field[i]) != -1) {
         return ALPHANUMERIC;
     }
     if (is_sane(IS_ISOIEC_F, (const unsigned char *) general_field + i, 1)) {
@@ -150,10 +150,10 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
                     /* 7.2.5.5.2/5.4.2 d) */
                     bp = bin_append_posn(0, 3, binary_string, bp); /* Numeric latch "000" */
                     mode = NUMERIC;
-                } else if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
+                } else if (z_isdigit(general_field[i])) {
                     bp = bin_append_posn(general_field[i] - 43, 5, binary_string, bp);
                     i++;
-                } else if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
+                } else if (z_isupper(general_field[i])) {
                     bp = bin_append_posn(general_field[i] - 33, 6, binary_string, bp);
                     i++;
                 } else {
@@ -180,13 +180,13 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
                         /* Note this rule can produce longer bitstreams if most of the alphanumerics are numeric */
                         bp = bin_append_posn(4, 5, binary_string, bp); /* Alphanumeric latch "00100" */
                         mode = ALPHANUMERIC;
-                    } else if ((general_field[i] >= '0') && (general_field[i] <= '9')) {
+                    } else if (z_isdigit(general_field[i])) {
                         bp = bin_append_posn(general_field[i] - 43, 5, binary_string, bp);
                         i++;
-                    } else if ((general_field[i] >= 'A') && (general_field[i] <= 'Z')) {
+                    } else if (z_isupper(general_field[i])) {
                         bp = bin_append_posn(general_field[i] - 1, 7, binary_string, bp);
                         i++;
-                    } else if ((general_field[i] >= 'a') && (general_field[i] <= 'z')) {
+                    } else if (z_islower(general_field[i])) {
                         bp = bin_append_posn(general_field[i] - 7, 7, binary_string, bp);
                         i++;
                     } else {

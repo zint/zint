@@ -1,8 +1,7 @@
 /* code49.c - Handles Code 49 */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #include "common.h"
@@ -82,9 +81,9 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     i = 0;
     h = d - intermediate;
     do {
-        if ((intermediate[i] >= '0') && (intermediate[i] <= '9')) {
+        if (z_isdigit(intermediate[i])) {
             /* Numeric data */
-            for (j = 0; (intermediate[i + j] >= '0') && (intermediate[i + j] <= '9'); j++);
+            for (j = 0; z_isdigit(intermediate[i + j]); j++);
             if (j >= 5) {
                 /* Use Numeric Encodation Method */
                 int block_count, c;
@@ -389,3 +388,5 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

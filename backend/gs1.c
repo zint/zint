@@ -1,8 +1,7 @@
 /* gs1.c - Verifies GS1 data */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #ifdef _MSC_VER
@@ -55,7 +54,7 @@ static int numeric(const unsigned char *data, int data_len, int offset, int min,
         const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
-            if (*d < '0' || *d > '9') {
+            if (!z_isdigit(*d)) {
                 *p_err_no = 3;
                 *p_err_posn = d - data + 1;
                 sprintf(err_msg, "Non-numeric character '%c'", *d);
@@ -233,10 +232,10 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
     if (!length_only && data_len) {
         data += offset;
 
-        if (data[0] < '0' || data[0] > '9' || data[1] < '0' || data[1] > '9') {
+        if (!z_isdigit(data[0]) || !z_isdigit(data[1])) {
             *p_err_no = 3;
-            *p_err_posn = offset + (data[0] < '0' || data[0] > '9' ? 0 : 1) + 1;
-            sprintf(err_msg, "Non-numeric company prefix '%c'", data[0] < '0' || data[0] > '9' ? data[0] : data[1]);
+            *p_err_posn = offset + z_isdigit(data[0]) + 1;
+            sprintf(err_msg, "Non-numeric company prefix '%c'", data[z_isdigit(data[0])]);
             return 0;
         }
     }
@@ -750,7 +749,7 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
         int checksum = 0;
         int given_checksum;
 
-        if (d[0] < 'A' || d[0] > 'Z' || d[1] < 'A' || d[1] > 'Z') { /* 1st 2 chars alphabetic country code */
+        if (!z_isupper(d[0]) || !z_isupper(d[1])) { /* 1st 2 chars alphabetic country code */
             *p_err_no = 3;
             *p_err_posn = d - data + 1;
             sprintf(err_msg, "Non-alphabetic IBAN country code '%.2s'", d);
@@ -763,7 +762,7 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
             return 0;
         }
         d += 2;
-        if (d[0] < '0' || d[0] > '9' || d[1] < '0' || d[1] > '9') { /* 2nd 2 chars numeric checksum */
+        if (!z_isdigit(d[0]) || !z_isdigit(d[1])) { /* 2nd 2 chars numeric checksum */
             *p_err_no = 3;
             *p_err_posn = d - data + 1;
             sprintf(err_msg, "Non-numeric IBAN checksum '%.2s'", d);
@@ -863,7 +862,7 @@ static const unsigned char *coupon_vli(const unsigned char *data, const int data
         }
         de = d + vli + vli_offset;
         for (; d < de; d++) {
-            if (*d < '0' || *d > '9') {
+            if (!z_isdigit(*d)) {
                 *p_err_no = 3;
                 *p_err_posn = d - data + 1;
                 sprintf(err_msg, "Non-numeric %s '%c'", name, *d);
@@ -1256,7 +1255,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             ai_latch = 0;
         } else if (ai_latch) {
             ai_length++;
-            if ((source[i] < '0') || (source[i] > '9')) {
+            if (!z_isdigit(source[i])) {
                 ai_nonnumeric = 1;
             }
         }
@@ -1399,3 +1398,5 @@ INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
 
     return itoc((10 - (count % 10)) % 10);
 }
+
+/* vim: set ts=4 sw=4 et : */

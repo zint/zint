@@ -1,8 +1,7 @@
 /* codablock.c - Handles Codablock-F and Codablock-E */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016 - 2021 Harald Oehlmann
+    Copyright (C) 2016-2022 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #include <math.h>
@@ -81,7 +80,7 @@ static int GetPossibleCharacterSet(unsigned char C)
 {
     if (C<='\x1f')      /* Control chars */
         return CodeA;
-    if (C>='0' && C<='9')
+    if (z_isdigit(C))
         return ZTNum;   /* ZTNum=CodeA+CodeB+CodeC */
     if (C==aFNC1) /* FNC1s (GS1) not used */
         return ZTFNC1;  /* ZTFNC1=CodeA+CodeB+CodeC+CodeFNC1 */ /* Not reached */
@@ -965,3 +964,5 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

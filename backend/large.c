@@ -1,5 +1,4 @@
 /* large.c - Handles binary manipulation of large numbers */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -59,7 +58,7 @@
 INTERNAL void large_load_str_u64(large_int *t, const unsigned char *s, const int length) {
     uint64_t val = 0;
     const unsigned char *const se = s + length;
-    for (; s < se && *s >= '0' && *s <= '9'; s++) {
+    for (; s < se && z_isdigit(*s); s++) {
         val *= 10;
         val += *s - '0';
     }

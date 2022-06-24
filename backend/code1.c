@@ -1,5 +1,4 @@
 /* code1.c - USS Code One */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "common.h"
 #include "code1.h"
@@ -101,7 +101,7 @@ static void c1_spigot(struct zint_symbol *symbol, const int row_no) {
 
 /* Is basic (non-shifted) C40? */
 static int c1_isc40(const unsigned char input) {
-    if ((input >= '0' && input <= '9') || (input >= 'A' && input <= 'Z') || input == ' ') {
+    if (z_isdigit(input) || z_isupper(input) || input == ' ') {
         return 1;
     }
     return 0;
@@ -109,7 +109,7 @@ static int c1_isc40(const unsigned char input) {
 
 /* Is basic (non-shifted) TEXT? */
 static int c1_istext(const unsigned char input) {
-    if ((input >= '0' && input <= '9') || (input >= 'a' && input <= 'z') || input == ' ') {
+    if (z_isdigit(input) || z_islower(input) || input == ' ') {
         return 1;
     }
     return 0;
@@ -201,7 +201,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int length, co
         const int is_extended = c & 0x80;
 
         /* Step L */
-        if ((c >= '0') && (c <= '9')) {
+        if (z_isdigit(c)) {
             ascii_count += C1_MULT_1_DIV_2; /* Step L1 */
         } else {
             if (is_extended) {
@@ -328,7 +328,7 @@ static int c1_is_last_single_ascii(const unsigned char source[], const int lengt
 static void c1_set_num_digits(const unsigned char source[], const int length, int num_digits[]) {
     int i;
     for (i = length - 1; i >= 0; i--) {
-        if (source[i] >= '0' && source[i] <= '9') {
+        if (z_isdigit(source[i])) {
             num_digits[i] = num_digits[i + 1] + 1;
         }
     }
@@ -743,9 +743,9 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
                 if (debug_print) printf("EDI ");
 
-                if ((source[sp] >= '0') && (source[sp] <= '9')) {
+                if (z_isdigit(source[sp])) {
                     cte_buffer[cte_p++] = source[sp] - '0' + 4;
-                } else if ((source[sp] >= 'A') && (source[sp] <= 'Z')) {
+                } else if (z_isupper(source[sp])) {
                     cte_buffer[cte_p++] = source[sp] - 'A' + 14;
                 } else {
                     cte_buffer[cte_p++] = posn(edi_nonalphanum_chars, source[sp]);

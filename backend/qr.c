@@ -80,7 +80,7 @@ static int qr_in_numeric(const unsigned int ddata[], const int length, const int
     }
 
     /* Attempt to calculate the average 'cost' of using numeric mode in number of bits (times QR_MULT) */
-    for (i = in_posn; i < length && i < in_posn + 4 && ddata[i] >= '0' && ddata[i] <= '9'; i++);
+    for (i = in_posn; i < length && i < in_posn + 4 && z_isdigit(ddata[i]); i++);
 
     digit_cnt = i - in_posn;
 
@@ -2542,7 +2542,7 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Determine if alpha (excluding numerics), byte or kanji used */
     for (i = 0; i < length && (alpha_used == 0 || byte_or_kanji_used == 0); i++) {
-        if (ddata[i] < '0' || ddata[i] > '9') {
+        if (!z_isdigit(ddata[i])) {
             if (qr_is_alpha(ddata[i], 0 /*gs1*/)) {
                 alpha_used = 1;
             } else {

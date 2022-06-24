@@ -419,7 +419,7 @@ static int dc_datum_c(const unsigned char source[], const int length, const int 
 static int dc_n_digits(const unsigned char source[], const int length, const int position, const int max) {
     int i;
 
-    for (i = position; (i < length) && ((source[i] >= '0') && (source[i] <= '9') && i < position + max); i++);
+    for (i = position; (i < length) && z_isdigit(source[i]) && (i < position + max); i++);
 
     return i - position;
 }
@@ -453,7 +453,7 @@ static int dc_ahead_c(const unsigned char source[], const int length, const int 
 /* Annex F.II.F */
 static int dc_try_c(const unsigned char source[], const int length, const int position) {
 
-    if (position < length && source[position] >= '0' && source[position] <= '9') { /* dc_n_digits(position) > 0 */
+    if (position < length && z_isdigit(source[position])) { /* dc_n_digits(position) > 0 */
         const int ahead_c_position = dc_ahead_c(source, length, position);
         if (ahead_c_position > dc_ahead_c(source, length, position + 1)) {
             return ahead_c_position;
@@ -688,7 +688,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             /* Step C3 */
             if (dc_binary(source, length, position)) {
                 /* dc_n_digits(position + 1) > 0 */
-                if (position + 1 < length && source[position + 1] >= '0' && source[position + 1] <= '9') {
+                if (position + 1 < length && z_isdigit(source[position + 1])) {
                     if ((source[position] - 128) < 32) {
                         codeword_array[ap++] = 110; // Upper Shift A
                         codeword_array[ap++] = source[position] - 128 + 64;

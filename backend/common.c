@@ -1,5 +1,4 @@
 /* common.c - Contains functions needed for a number of barcodes */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,8 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
 #include <assert.h>
 #ifdef ZINT_TEST
 #include <stdio.h>
@@ -40,7 +41,7 @@
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
 INTERNAL int ctoi(const char source) {
-    if ((source >= '0') && (source <= '9'))
+    if (z_isdigit(source))
         return (source - '0');
     if ((source >= 'A') && (source <= 'F'))
         return (source - 'A' + 10);
@@ -64,7 +65,7 @@ INTERNAL int to_int(const unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
-        if (source[i] < '0' || source[i] > '9') {
+        if (!z_isdigit(source[i])) {
             return -1;
         }
         val *= 10;
@@ -79,7 +80,7 @@ INTERNAL void to_upper(unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
-        if ((source[i] >= 'a') && (source[i] <= 'z')) {
+        if (z_islower(source[i])) {
             source[i] = (source[i] - 'a') + 'A';
         }
     }
@@ -353,8 +354,7 @@ INTERNAL int is_fixed_ratio(const int symbology) {
 
 /* Whether next two characters are digits */
 INTERNAL int is_twodigits(const unsigned char source[], const int length, const int position) {
-    if ((position + 1 < length) && (source[position] >= '0') && (source[position] <= '9')
-            && (source[position + 1] >= '0') && (source[position + 1] <= '9')) {
+    if ((position + 1 < length) && z_isdigit(source[position]) && z_isdigit(source[position + 1])) {
         return 1;
     }
 
