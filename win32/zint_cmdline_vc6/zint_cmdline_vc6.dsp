@@ -100,6 +100,10 @@ SOURCE=..\..\backend\aztec.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\bc412.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\bmp.c
 # End Source File
 # Begin Source File

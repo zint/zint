@@ -767,6 +767,8 @@ static void test_utf8_to_eci_ascii(void) {
             assert_zero(memcmp(data[i].data, dest, length), "i:%d memcmp != 0\n", i);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_utf16be(void) {
@@ -828,6 +830,8 @@ static void test_utf8_to_eci_utf16be(void) {
             }
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_utf16le(void) {
@@ -889,6 +893,8 @@ static void test_utf8_to_eci_utf16le(void) {
             }
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_utf32be(void) {
@@ -949,6 +955,8 @@ static void test_utf8_to_eci_utf32be(void) {
             }
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_utf32le(void) {
@@ -1009,6 +1017,8 @@ static void test_utf8_to_eci_utf32le(void) {
             }
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_sjis(void) {
@@ -1061,6 +1071,8 @@ static void test_utf8_to_eci_sjis(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_big5(void) {
@@ -1103,6 +1115,8 @@ static void test_utf8_to_eci_big5(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_gb2312(void) {
@@ -1145,6 +1159,8 @@ static void test_utf8_to_eci_gb2312(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_euc_kr(void) {
@@ -1187,6 +1203,8 @@ static void test_utf8_to_eci_euc_kr(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_gbk(void) {
@@ -1229,6 +1247,8 @@ static void test_utf8_to_eci_gbk(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_utf8_to_eci_gb18030(void) {
@@ -1271,6 +1291,8 @@ static void test_utf8_to_eci_gb18030(void) {
             assert_nonzero(out_length <= eci_length, "i:%d out_length %d > eci_length %d\n", i, out_length, eci_length);
         }
     }
+
+    testFinish();
 }
 
 static void test_is_eci_convertible_segs(int index) {

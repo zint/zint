@@ -1,4 +1,4 @@
-# Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
@@ -40,6 +40,7 @@ endif()
 zint_add_test(2of5 test_2of5)
 zint_add_test(auspost test_auspost)
 zint_add_test(aztec test_aztec)
+zint_add_test(bc412 test_bc412)
 zint_add_test(big5 test_big5)
 zint_add_test(bmp test_bmp)
 zint_add_test(channel test_channel)

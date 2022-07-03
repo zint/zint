@@ -27,11 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * Adapted from qrencode/tests/common.c
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
  */
+/* Due to above: */
+/* SPDX-License-Identifier: LGPL-2.1+ */
 
 #include "testcommon.h"
 
@@ -2012,6 +2013,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "qrcode", BARCODE_UPNQR, 143, 0, 0, 1, 0, 0, },
         { "ultracode", BARCODE_ULTRA, 144, 1, 1, 0, 0, 0, },
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 1, 0, 0, },
+        { "bc412", BARCODE_BC412, 146, 1, 1, 0, 0, 0, },
     };
     static const int data_size = ARRAY_SIZE(data);
 
@@ -2762,6 +2764,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             itoc(symbol->structapp.count));
                     bwipp_opts = bwipp_opts_buf;
                 }
+            } else if (symbology == BARCODE_BC412) {
+                // TODO:
             }
         }
 

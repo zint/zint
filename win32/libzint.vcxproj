@@ -126,6 +126,7 @@
     <ClCompile Include="..\backend\2of5.c" />
     <ClCompile Include="..\backend\auspost.c" />
     <ClCompile Include="..\backend\aztec.c" />
+    <ClCompile Include="..\backend\bc412.c" />
     <ClCompile Include="..\backend\bmp.c" />
     <ClCompile Include="..\backend\codablock.c" />
     <ClCompile Include="..\backend\code.c" />

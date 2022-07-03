@@ -1,8 +1,7 @@
 /* bc412.c - Handles IBM BC412 (SEMI T1-95) symbology */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* A little information about this symbology can be found at
  * https://barcodeguide.seagullscientific.com/Content/Symbologies/BC412.htm
@@ -136,3 +135,5 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

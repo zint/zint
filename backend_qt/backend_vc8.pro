@@ -55,6 +55,7 @@ HEADERS +=  ../backend/aztec.h \
 SOURCES += ../backend/2of5.c \
            ../backend/auspost.c \
            ../backend/aztec.c \
+           ../backend/bc412.c \
            ../backend/bmp.c \
            ../backend/codablock.c \
            ../backend/code.c \

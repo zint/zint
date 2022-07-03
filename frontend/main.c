@@ -450,7 +450,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DBAR_EXPSTK_CC, "rssexpstackcc" }, /* Synonym */
         { BARCODE_DBAR_LTD, "rssltd" }, /* Synonym */
         { BARCODE_DBAR_LTD_CC, "rssltdcc" }, /* Synonym */
-        { BARCODE_C25STANDARD, "standardcode2of5" },
+        { BARCODE_C25STANDARD, "standardcode2of5" }, /* Synonym */
         { BARCODE_TELEPEN, "telepen" },
         { BARCODE_TELEPEN_NUM, "telepennum" },
         { BARCODE_ULTRA, "ultra" },

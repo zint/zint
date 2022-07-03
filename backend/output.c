@@ -465,6 +465,9 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* AIMD/TSC15032-43 (v 0.99c) Section 9.2 */
             *left = *right = *top = *bottom = 1.0f;
             done = 1;
+
+        case BARCODE_BC412:
+            /* TODO: Find doc */
             break;
     }
 

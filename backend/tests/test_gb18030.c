@@ -42,7 +42,8 @@
 INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
 
 // As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
-// The version of GB18030.TXT is libiconv-1.11/GB18030.TXT taken from https://haible.de/bruno/charsets/conversion-tables/GB18030.html
+// The version of GB18030.TXT is jdk-1.4.2/GB18030.TXT taken from
+// https://haible.de/bruno/charsets/conversion-tables/GB18030.html
 // The generated file backend/tests/test_gb18030_tab.h does not include U+10000..10FFFF codepoints to save space.
 // See also backend/tests/tools/data/GB18030.TXT.README and backend/tests/tools/gen_test_tab.php.
 static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *dest2) {
@@ -50,18 +51,18 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
     int tab_length, start_i, end_i;
     int i;
 
-    // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
+    // GB18030 two-byte extension
     if (u == 0x1E3F) { // GB 18030-2005 change, was PUA U+E7C7 below, see Table 3-39, p.111, Lunde 2nd ed.
         *dest1 = 0xA8BC;
         return 2;
     }
-    // GB18030 four-byte extension (libiconv-1.16/lib/gb18030uni.h)
+    // GB18030 four-byte extension
     if (u == 0xE7C7) { // PUA
         *dest1 = 0x8135;
         *dest2 = 0xF437;
         return 4;
     }
-    // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
+    // GB18030 two-byte extension
     if (u >= 0x9FB4 && u <= 0x9FBB) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
         if (u == 0x9FB4) {
             *dest1 = 0xFE59;
@@ -80,7 +81,7 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         }
         return 2;
     }
-    // GB18030 two-byte extension (libiconv-1.16/lib/gb18030ext.h)
+    // GB18030 two-byte extension
     if (u >= 0xFE10 && u <= 0xFE19) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
         if (u == 0xFE10) {
             *dest1 = 0xA6D9;
@@ -97,7 +98,7 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         }
         return 2;
     }
-    // GB18030 four-byte extension (libiconv-1.16/lib/gb18030uni.h)
+    // GB18030 four-byte extension
     if (u >= 0xFE1A && u <= 0xFE2F) { // These are Vertical Forms (U+FE1A..FE1F unassigned) and Combining Half Marks (U+FE20..FE2F)
         if (u >= 0xFE1A && u <= 0xFE1D) {
             c = 0x84318336 + (u - 0xFE1A);
@@ -110,7 +111,7 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         *dest2 = c & 0xFFFF;
         return 4;
     }
-    // GB18030 (libiconv-1.16/lib/gb18030.h)
+    // GB18030
     // Code set 3 (Unicode U+10000..U+10FFFF)
     if (u >= 0x10000 /*&& u < 0x10400*/) { // Not being called for U+10400..U+10FFFF
         c = u - 0x10000;

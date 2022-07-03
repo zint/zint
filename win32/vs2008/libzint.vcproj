@@ -276,6 +276,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\backend\bc412.c"
+				>
+			</File>
+			<File
 				RelativePath="..\backend\bmp.c"
 				>
 			</File>

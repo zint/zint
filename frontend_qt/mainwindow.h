@@ -102,9 +102,7 @@ public slots:
     void copy_to_clipboard_emf();
     void copy_to_clipboard_eps();
     void copy_to_clipboard_gif();
-#ifndef NO_PNG
-    void copy_to_clipboard_png();
-#endif
+    void copy_to_clipboard_png(); // Note Qt can't handle #ifndef NO_PNG in slots
     void copy_to_clipboard_pcx();
     void copy_to_clipboard_svg();
     void copy_to_clipboard_tif();

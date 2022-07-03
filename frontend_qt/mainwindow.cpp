@@ -1282,6 +1282,8 @@ void MainWindow::copy_to_clipboard_png()
 {
     copy_to_clipboard(QSL(".zint.png"), QSL("PNG"));
 }
+#else
+void MainWindow::copy_to_clipboard_png() {} // Workaround Qt not parsing #ifndef NO_PNG in slots
 #endif
 
 void MainWindow::copy_to_clipboard_svg()

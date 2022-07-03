@@ -47,7 +47,7 @@ static void test_quiet_zones(void) {
         symbol.symbology = i;
         symbol.output_options = BARCODE_QUIET_ZONES;
         ret = out_quiet_zones_test(&symbol, hide_text, &left, &right, &top, &bottom);
-        if (i != BARCODE_FLAT) { // Only one which isn't marked as done
+        if (i != BARCODE_FLAT && i != BARCODE_BC412) { // Only two which aren't marked as done
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }
     }

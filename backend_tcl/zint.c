@@ -310,6 +310,7 @@ static const char *s_code_list[] = {
     "UPNQR",
     "UltraCode",
     "rMQR",
+    "BC412",
     NULL};
 
 static const int s_code_number[] = {
@@ -408,6 +409,7 @@ static const int s_code_number[] = {
     BARCODE_UPNQR,
     BARCODE_ULTRA,
     BARCODE_RMQR,
+    BARCODE_BC412,
     0};
 
 /* ECI TCL encoding names.

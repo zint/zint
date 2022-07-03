@@ -31,6 +31,8 @@
  * Adapted from qrencode/tests/common.h
  * Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
  */
+/* Due to above: */
+/* SPDX-License-Identifier: LGPL-2.1+ */
 
 #ifndef Z_TESTCOMMON_H
 #define Z_TESTCOMMON_H
