@@ -72,6 +72,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Australia Post Standard Customer"), BARCODE_AUSPOST },
     { QSL("Aztec Code (ISO 24778) (and HIBC)"), BARCODE_AZTEC },
     { QSL("Aztec Runes (ISO 24778)"), BARCODE_AZRUNE },
+    { QSL("BC412 (SEMI TI-95)"), BARCODE_BC412 },
     { QSL("Channel Code"), BARCODE_CHANNEL },
     { QSL("Codabar (EN 798)"), BARCODE_CODABAR },
     { QSL("Codablock-F (and HIBC)"), BARCODE_CODABLOCKF },
@@ -258,7 +259,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     filter_bstyle->hide();
 #endif
 
-    bstyle->setCurrentIndex(settings.value(QSL("studio/symbology"), 10).toInt());
+    bstyle->setCurrentIndex(settings.value(QSL("studio/symbology"), 11).toInt());
 
     load_settings(settings);
 

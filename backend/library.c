@@ -198,6 +198,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
 INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
+INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int length); /* BC412 */
 
 /* Output handlers */
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
@@ -537,7 +538,7 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
        channel,     codeone,  gridmatrix,       upnqr,       ultra, /*140-144*/
-          rmqr,
+          rmqr,       bc412,
 };
 
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
@@ -1707,6 +1708,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "BARCODE_UPNQR", BARCODE_UPNQR, 143 },
         { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
         { "BARCODE_RMQR", BARCODE_RMQR, 145 },
+        { "BARCODE_BC412", BARCODE_BC412, 146 },
     };
 
     name[0] = '\0';

@@ -94,7 +94,7 @@ static void types(void) {
             "70 RM4SCC      Royal Mail 4SCC         143 UPNQR          UPN QR Code\n"
             "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
             "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
-            "73 VIN         Vehicle Information No.\n"
+            "73 VIN         Vehicle Information No. 146 BC412          BC412\n"
             );
 }
 
@@ -293,6 +293,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_AZTEC, "azteccode" }, /* Synonym */
         { BARCODE_AZRUNE, "aztecrune" }, /* Synonym */
         { BARCODE_AZRUNE, "aztecrunes" }, /* Synonym */
+        { BARCODE_BC412, "bc412" },
         { BARCODE_C25LOGIC, "c25datalogic" }, /* Synonym */
         { BARCODE_C25IATA, "c25iata" },
         { BARCODE_C25IND, "c25ind" },
