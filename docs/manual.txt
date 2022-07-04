@@ -502,10 +502,10 @@ format of the automatically generated sequence where characters have the
 meanings as given below:
 
   Character             Effect
-  --------------------- --------------------------
-  #                     Insert leading spaces
+  --------------------- -----------------------------------------------------
   $                     Insert leading zeroes
-  *                     Insert leading asterisks
+  #                     Insert leading spaces
+  *                     Insert leading asterisks (or plus signs on Windows)
   Any other character   Interpreted literally
 
   : Table : Sequence Format Characters:
@@ -1319,10 +1319,10 @@ By default Zint will output numbered filenames starting with 00001.png,
 below:
 
   Input Character   Interpretation
-  ----------------- --------------------------
+  ----------------- ----------------------------------------
   ~                 Insert a number or 0
   #                 Insert a number or space
-  @                 Insert a number or *
+  @                 Insert a number or * (or + on Windows)
   Any other         Insert literally
 
   : Table : Batch Filename Formatting:
@@ -1330,9 +1330,10 @@ below:
 The following table shows some examples to clarify this method:
 
   Input             Filenames Generated
-  ----------------- --------------------------------------------
+  ----------------- -----------------------------------------------
   -o file~~~.svg    file001.svg, file002.svg, file003.svg
-  -o @@@@bar.png    ***1.png, ***2.png, ***3.png
+  -o @@@@bar.png    ***1.png, ***2.png, ***3.png (except Windows)
+  -o @@@@bar.png    +++1.png, +++2.png, +++3.png (on Windows)
   -o my~~~bar.eps   my001.bar.eps, my002.bar.eps, my003bar.eps
   -o t@es~t~.png    t*es0t1.png, t*es0t2.png, t*es0t3.png
 

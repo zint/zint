@@ -341,12 +341,12 @@ each line of text in the right hand panel. The format field determines the
 format of the automatically generated sequence where characters have the
 meanings as given below:
 
-| Character          | Effect                  |
-|:-------------------|:------------------------|
-|`#`                 | Insert leading spaces   |
-|`$`                 | Insert leading zeroes   |
-|`*`                 | Insert leading asterisks|
-|Any other character | Interpreted literally   |
+| Character          | Effect                                             |
+|:-------------------|:---------------------------------------------------|
+|`$`                 | Insert leading zeroes                              |
+|`#`                 | Insert leading spaces                              |
+|`*`                 | Insert leading asterisks (or plus signs on Windows)|
+|Any other character | Interpreted literally                              |
 
 Table: {#tbl:sequence_format_characters tag=": Sequence Format Characters"}
 
@@ -1243,10 +1243,10 @@ with `--batch` using special characters in the output filename as shown in the
 table below:
 
 Input Character      Interpretation
----------------      ------------------------
+---------------      ------------------------------------------
 `~`                  Insert a number or 0
 `#`                  Insert a number or space
-`@`                  Insert a number or `*`
+`@`                  Insert a number or `*` (or `+` on Windows)
 Any other            Insert literally
 
 Table: {#tbl:batch_filename_formatting tag=": Batch Filename Formatting"}
@@ -1254,9 +1254,10 @@ Table: {#tbl:batch_filename_formatting tag=": Batch Filename Formatting"}
 The following table shows some examples to clarify this method:
 
 Input                Filenames Generated
------------------    ------------------------------------------------
+-----------------    ---------------------------------------------------
 `-o file~~~.svg`     `file001.svg`, `file002.svg`, `file003.svg`
-`-o @@@@bar.png`     `***1.png`, `***2.png`, `***3.png`
+`-o @@@@bar.png`     `***1.png`, `***2.png`, `***3.png` (except Windows)
+`-o @@@@bar.png`     `+++1.png`, `+++2.png`, `+++3.png` (on Windows)
 `-o my~~~bar.eps`    `my001.bar.eps`, `my002.bar.eps`, `my003bar.eps`
 `-o t@es~t~.png`     `t*es0t1.png`, `t*es0t2.png`, `t*es0t3.png`
 

@@ -119,9 +119,9 @@
            <widget class="QLabel" name="lblSeqFormat">
             <property name="toolTip">
              <string>Format sequence using special characters&lt;table cellspacing=&quot;3&quot;&gt;
-&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or '0'&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or '*'&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or '*' ('+' on Windows)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Other&lt;/td&gt;&lt;td&gt;Insert literally&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;</string>
             </property>
@@ -137,9 +137,9 @@
            <widget class="QLineEdit" name="linSeqFormat">
             <property name="toolTip">
              <string>Format sequence using special characters&lt;table cellspacing=&quot;3&quot;&gt;
-&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;$&lt;/td&gt;&lt;td&gt;Number or '0'&lt;/td&gt;&lt;/tr&gt;
-&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or '*'&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;#&lt;/td&gt;&lt;td&gt;Number or space&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;*&lt;/td&gt;&lt;td&gt;Number or '*' ('+' on Windows)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;Other&lt;/td&gt;&lt;td&gt;Insert literally&lt;/td&gt;&lt;/tr&gt;
 &lt;/table&gt;</string>
             </property>

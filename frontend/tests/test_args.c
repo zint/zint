@@ -469,6 +469,11 @@ static void test_input(int index, int debug) {
 
 #define TEST_INPUT_LONG "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 
+#ifndef _WIN32
+#define TEST_INPUT_AMPERSAND_EXPECTED "***1.gif\000***2.gif"
+#else
+#define TEST_INPUT_AMPERSAND_EXPECTED "+++1.gif\000+++2.gif"
+#endif
     struct item {
         int b;
         int batch;
@@ -485,7 +490,7 @@ static void test_input(int index, int debug) {
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "", 2, "00001.gif\00000002.gif" },
         /*  1*/ { BARCODE_CODE128, 1, -1, 0, "gif", "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", "~~~.gif", 10, "001.gif\000002.gif\000003.gif\000004.gif\000005.gif\000006.gif\000007.gif\000008.gif\000009.gif\000010.gif" },
-        /*  2*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "@@@@.gif", 2, "***1.gif\000***2.gif" },
+        /*  2*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "@@@@.gif", 2, TEST_INPUT_AMPERSAND_EXPECTED },
         /*  3*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n789\n", "#####.gif", 3, "    1.gif\000    2.gif\000    3.gif" },
         /*  4*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "test_batch~.gif", 2, "test_batch1.gif\000test_batch2.gif" },
         /*  5*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\n", NULL, 3, "123.gif\000456.gif\0007890123456789.gif" },

@@ -702,7 +702,8 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     } else {
         file = fopen(filename, "rb");
         if (!file) {
-            sprintf(symbol->errtxt, "102: Unable to read input file '%s'", filename);
+            fprintf(stderr, "Error 102: Unable to read input file '%s'\n", filename);
+            fflush(stderr);
             return ZINT_ERROR_INVALID_DATA;
         }
     }
@@ -765,7 +766,11 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                                 adjusted[0] = reverse_number[inpos - 1];
                                 inpos--;
                             } else {
+#ifndef _WIN32
                                 adjusted[0] = '*';
+#else
+                                adjusted[0] = '+';
+#endif
                             }
                             break;
                         default:
