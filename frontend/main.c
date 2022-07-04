@@ -677,7 +677,7 @@ static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10
 
 /* Batch mode - output symbol for each line of text in `filename` */
 static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
-            const char *filetype, const int rotate_angle) {
+            const char *filetype, const int output_given, const int rotate_angle) {
     FILE *file;
     unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; // Maximum HanXin input
     unsigned char character = 0;
@@ -689,7 +689,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     int format_len, i, o;
     char adjusted[2] = {0};
 
-    if (symbol->outfile[0] == '\0') {
+    if (symbol->outfile[0] == '\0' || !output_given) {
         strcpy(format_string, "~~~~~.");
         strncat(format_string, filetype, 3);
     } else {
@@ -955,6 +955,7 @@ int main(int argc, char **argv) {
     int addon_gap = 0;
     int rows = 0;
     char filetype[4] = {0};
+    int output_given = 0;
     int no_png;
     int png_refused;
     int val;
@@ -1552,6 +1553,7 @@ int main(int argc, char **argv) {
 
             case 'o':
                 strncpy(my_symbol->outfile, optarg, 255);
+                output_given = 1;
                 break;
 
             case 'r':
@@ -1633,7 +1635,8 @@ int main(int argc, char **argv) {
                 fflush(stderr);
                 warn_number = ZINT_WARN_INVALID_OPTION;
             }
-            error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, rotate_angle);
+            error_number = batch_process(my_symbol, arg_opts[0].arg, mirror_mode, filetype, output_given,
+                            rotate_angle);
         } else {
             if (seg_count) {
                 if (data_arg_num > 1) {
