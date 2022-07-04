@@ -585,7 +585,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
             printf("        /*%3d*/ { %s, %s, %d, \"%s\", \"%s\", %s, %d, \"%s\", %d, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
                     testUtilEscape(data[i].data, length, escaped, ARRAY_SIZE(escaped)),
-                    testUtilEscape(data[i].composite, strlen(data[i].composite), escaped_composite, ARRAY_SIZE(escaped_composite)),
+                    testUtilEscape(data[i].composite, (int) strlen(data[i].composite), escaped_composite, ARRAY_SIZE(escaped_composite)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].compare_previous, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);

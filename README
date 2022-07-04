@@ -33,17 +33,20 @@ CONTACT US
 ----------
 The home of Zint is:
 
-    <http://www.sourceforge.net/projects/zint>
+    <https://sourceforge.net/p/zint/>
 
 The code is now also mirrored at:
 
-    <https://github.com/woo-j/zint>
+    <https://github.com/zint/zint>
 
-For feature requests or bug reports please either join the mailing list at
+For feature requests or bug reports please either add a ticket on the project's
+SourceForge page
 
-    <https://lists.sourceforge.net/lists/listinfo/zint-barcode>
+    <https://sourceforge.net/p/zint/tickets/>
 
-or add a ticket on the project's SourceForge.
+or join the mailing list at
+
+    <https://sourceforge.net/projects/zint/lists/zint-barcode>
 
 
 BEFORE POSTING TO THE LIST
