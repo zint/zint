@@ -341,12 +341,12 @@ each line of text in the right hand panel. The format field determines the
 format of the automatically generated sequence where characters have the
 meanings as given below:
 
-| Character          | Effect                                             |
-|:-------------------|:---------------------------------------------------|
-|`$`                 | Insert leading zeroes                              |
-|`#`                 | Insert leading spaces                              |
-|`*`                 | Insert leading asterisks (or plus signs on Windows)|
-|Any other character | Interpreted literally                              |
+| Character          | Effect                  |
+|:-------------------|:------------------------|
+|`$`                 | Insert leading zeroes   |
+|`#`                 | Insert leading spaces   |
+|`*`                 | Insert leading asterisks|
+|Any other character | Interpreted literally   |
 
 Table: {#tbl:sequence_format_characters tag=": Sequence Format Characters"}
 

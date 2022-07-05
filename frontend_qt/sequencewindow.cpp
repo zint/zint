@@ -120,11 +120,7 @@ QString SequenceWindow::apply_format(const QString& raw_number)
                     adjusted += raw_number[inpos - 1];
                     inpos--;
                 } else {
-#ifndef _WIN32
                     adjusted += '*';
-#else
-                    adjusted += '+';
-#endif
                 }
                 break;
             default:

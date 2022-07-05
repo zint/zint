@@ -502,10 +502,10 @@ format of the automatically generated sequence where characters have the
 meanings as given below:
 
   Character             Effect
-  --------------------- -----------------------------------------------------
+  --------------------- --------------------------
   $                     Insert leading zeroes
   #                     Insert leading spaces
-  *                     Insert leading asterisks (or plus signs on Windows)
+  *                     Insert leading asterisks
   Any other character   Interpreted literally
 
   : Table : Sequence Format Characters:
