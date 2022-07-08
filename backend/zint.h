@@ -188,7 +188,7 @@ extern "C" {
 #define BARCODE_AUSROUTE        67  /* Australia Post Routing */
 #define BARCODE_AUSREDIRECT     68  /* Australia Post Redirection */
 #define BARCODE_ISBNX           69  /* ISBN */
-#define BARCODE_RM4SCC          70  /* Royal Mail 4 State */
+#define BARCODE_RM4SCC          70  /* Royal Mail 4-State Customer Code */
 #define BARCODE_DATAMATRIX      71  /* Data Matrix (ECC200) */
 #define BARCODE_EAN14           72  /* EAN-14 */
 #define BARCODE_VIN             73  /* Vehicle Identification Number */
@@ -232,7 +232,7 @@ extern "C" {
 #define BARCODE_HANXIN          116 /* Han Xin (Chinese Sensible) Code */
 
     /* Tbarcode 11 codes */
-#define BARCODE_MAILMARK        121 /* Royal Mail 4-state Mailmark */
+#define BARCODE_MAILMARK        121 /* Royal Mail 4-State Mailmark */
 
     /* Zint specific */
 #define BARCODE_AZRUNE          128 /* Aztec Runes */

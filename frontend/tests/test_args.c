@@ -474,6 +474,7 @@ static void test_input(int index, int debug) {
 #else
 #define TEST_INPUT_AMPERSAND_EXPECTED "+++1.gif\000+++2.gif"
 #endif
+
     struct item {
         int b;
         int batch;

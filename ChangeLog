@@ -17,6 +17,9 @@ Changes
 - GUI: make acceptable for macOS; add iconset for macOS, install
 - manual: update macOS Homebrew install info; add README.macos
 - GUI: export window: add no. of sequences to results label
+- frontend: batch: for @ use + instead of * on Windows as * not allowed
+  in filenames
+- Add symbology BC412 (beta)
 
 Bugs
 ----
@@ -27,6 +30,8 @@ Bugs
 - library: check symbol->primary for escape sequences also
 - GUI: error message GS1_MODE -> GS1 mode
 - GUI: sequence window: fix initial clear button status
+- GUI: NO_PNG: allow for Qt not parsing #if's in slots
+- frontend: batch mode: fix default "~~~~~" output (github issue #65)
 
 
 Version 2.11.0 (2022-05-24)

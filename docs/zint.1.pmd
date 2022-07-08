@@ -244,7 +244,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
         ~           Insert a number or 0
         #           Insert a number or space
-        @           Insert a number or *
+        @           Insert a number or * (+ on Windows)
         Any other   Insert literally
 
 `--primary=STRING`

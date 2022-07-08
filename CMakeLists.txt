@@ -25,6 +25,7 @@ option(ZINT_COVERAGE "Set code coverage flags"         OFF)
 option(ZINT_STATIC   "Build static library"            OFF)
 option(ZINT_USE_PNG  "Build with PNG support"          ON)
 option(ZINT_USE_QT   "Build with Qt support"           ON)
+option(ZINT_QT6      "If ZINT_USE_QT, use Qt6"         OFF)
 
 include(SetPaths.cmake)
 
@@ -137,7 +138,7 @@ add_subdirectory(frontend)
 
 if(NOT ZINT_USE_QT)
     message(STATUS "Qt support was disabled for this build")
-elseif($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]")
+elseif(ZINT_QT6 OR ($ENV{CMAKE_PREFIX_PATH} MATCHES "6[.][0-9][.][0-9]"))
     set(USE_QT6 TRUE)
     message(STATUS "Using Qt6")
     cmake_policy(SET CMP0012 NEW) # Recognize constants in if()

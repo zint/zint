@@ -116,6 +116,7 @@ ZINT_STATIC:BOOL=OFF   # Build static library
 ZINT_TEST:BOOL=OFF     # Set test compile flag
 ZINT_USE_PNG:BOOL=ON   # Build with PNG support
 ZINT_USE_QT:BOOL=ON    # Build with Qt support
+ZINT_QT6:BOOL=OFF      # If ZINT_USE_QT, use Qt6
 
 which can be set by doing e.g.
 

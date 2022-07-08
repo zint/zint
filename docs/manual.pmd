@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.11.0.9
-% June 2022
+% July 2022
 
 # 1. Introduction
 
@@ -622,7 +622,7 @@ Value
 
  69      `BARCODE_ISBNX`           ISBN (EAN-13 with verification stage)
 
- 70      `BARCODE_RM4SCC`          Royal Mail 4-State (RM4SCC)
+ 70      `BARCODE_RM4SCC`          Royal Mail 4-State Customer Code (RM4SCC)
 
  71      `BARCODE_DATAMATRIX`      Data Matrix (ECC200)
 
@@ -686,7 +686,7 @@ Value
 
  116     `BARCODE_HANXIN`          Han Xin (Chinese Sensible) Code
 
- 121     `BARCODE_MAILMARK`        Royal Mail 4-state Mailmark
+ 121     `BARCODE_MAILMARK`        Royal Mail 4-State Mailmark
 
  128     `BARCODE_AZRUNE`          Aztec Runes
 
