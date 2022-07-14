@@ -3,7 +3,7 @@
  */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,9 +30,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef ISO4217_H
-#define ISO4217_H
+#ifndef Z_ISO4217_H
+#define Z_ISO4217_H
 
 /* Whether ISO 4217-1 numeric */
 static int iso4217_numeric(int cc) {
@@ -51,7 +52,7 @@ static int iso4217_numeric(int cc) {
         0x45, 0x00, 0x00, 0x01, 0x00, 0x10, 0x11, 0x11,
         0x00, 0x11, 0x11, 0x00, 0x81, 0x00, 0x04, 0x04,
         0x04, 0x01, 0x00, 0x14, 0x00, 0x00, 0x44, 0x00,
-        0x20, 0x00, 0x00, 0x80, 0x7F, 0xB5, 0xFD, 0xFB,
+        0x20, 0x00, 0x00, 0xA0, 0x7F, 0xB5, 0xFD, 0xFB,
         0xBF, 0xBF, 0x3F, 0x47, 0xA4,
     };
     int b = cc >> 3;
@@ -62,4 +63,4 @@ static int iso4217_numeric(int cc) {
     return codes[b] & (1 << (cc & 0x7)) ? 1 : 0;
 }
 
-#endif /* ISO4217_H */
+#endif /* Z_ISO4217_H */

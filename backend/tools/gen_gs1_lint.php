@@ -2,8 +2,10 @@
 /* Generate GS1 verify include "backend/gs1_lint.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 <rstuart114@gmail.com>
-*/
+    Copyright (C) 2021-2022 <rstuart114@gmail.com>
+ */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
 /* To create "backend/gs1_lint.h" (from project directory):
  *
  *   php backend/tools/gen_gs1_lint.php > backend/gs1_lint.h
@@ -12,8 +14,12 @@
  *
  *   php backend/tools/gen_gs1_lint.php -f <local-path>/gs1-format-spec.txt backend/gs1_lint.h
  *
+ *************************************************************************************************
+ * NOTE: for up-to-update version requires syntax dictionary that will be available from
+ * https://github.com/gs1/gs1-syntax-dictionary
+ * on its release. For now this generator should only be run by someone with a pre-release copy!!!
+ *************************************************************************************************
  */
-/* vim: set ts=4 sw=4 et : */
 
 $basename = basename(__FILE__);
 $dirname = dirname(__FILE__);
@@ -22,8 +28,11 @@ $dirdirname = basename(dirname($dirname)) . '/' . basename($dirname);
 $opts = getopt('c:f:h:l:t:');
 
 $print_copyright = isset($opts['c']) ? (bool) $opts['c'] : true;
-$file = isset($opts['f']) ? $opts['f'] :
-        'https://raw.githubusercontent.com/bwipp/postscriptbarcode/master/contrib/development/gs1-format-spec.txt';
+if (!isset($opts['f'])) { // TODO: temporary hack
+    exit("$basename:" . __LINE__
+        . " ERROR: For now this generator must only be run locally with a pre-release syntax dictionary" . PHP_EOL);
+}
+$file = $opts['f'];
 $print_h_guard = isset($opts['h']) ? (bool) $opts['h'] : true;
 $use_length_only = isset($opts['l']) ? (bool) $opts['l'] : true;
 $tab = isset($opts['t']) ? $opts['t'] : '    ';
@@ -31,6 +40,9 @@ $tab = isset($opts['t']) ? $opts['t'] : '    ';
 if (($get = file_get_contents($file)) === false) {
     exit("$basename:" . __LINE__ . " ERROR: Could not read file \"$file\"" . PHP_EOL);
 }
+// Strip to last 2 directories TODO: temporary hack
+$stripped_dir = dirname($file);
+$stripped_file = basename(dirname($stripped_dir)) . '/' . basename($stripped_dir) . '/' . basename($file);
 
 $lines = explode("\n", $get);
 
@@ -44,12 +56,14 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXC][0-9.][ NXC0-9.,a-z=|]*)(?:# (.+))?$/', $line, $matches)) {
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXYC][0-9.][ NXYC0-9.,a-z=|\[\]]*)(?:# (.+))?$/', $line, $matches)) {
         exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
     $fixed = trim($matches[2]);
-    $spec = preg_replace('/ +dlpkey[=0-9,|]*/', '', trim($matches[3])); // Strip Digital Link primary key info
+    $spec = preg_replace('/ +req=[0-9,n]*/', '', trim($matches[3])); // Strip mandatory association info
+    $spec = preg_replace('/ +ex=[0-9,n]*/', '', $spec); // Strip invalid pairings info
+    $spec = preg_replace('/ +dlpkey[=0-9,|]*/', '', $spec); // Strip Digital Link primary key info
     $comment = isset($matches[4]) ? trim($matches[4]) : '';
 
     if (isset($spec_ais[$spec])) {
@@ -108,21 +122,37 @@ foreach ($lines as $line) {
     foreach ($parts as $part) {
         $checkers = explode(',', $part);
         $validator = array_shift($checkers);
-        if (!preg_match('/^([NXC])([0-9]+)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
+        if (preg_match('/^([NXYC])([0-9]+)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
+            if (count($matches) === 3) {
+                $min = $max = (int) $matches[2];
+            } else {
+                $min = $matches[2] === '' ? 1 : (int) $matches[2];
+                $max = (int) substr($matches[3], 2);
+            }
+            if ($matches[1] === 'N') {
+                $validator = "numeric";
+            } elseif ($matches[1] === 'X') {
+                $validator = "cset82";
+            } else {
+                $validator = "cset39";
+            }
+        } else if (preg_match('/^\[([NXYC])([1-9]+)?(\.\.[0-9|]+)?\]$/', $validator, $matches)) {
+            if (count($matches) === 3) {
+                $min = 0;
+                $max = (int) $matches[2];
+            } else {
+                $min = $matches[2] === '' ? 0 : (int) $matches[2];
+                $max = (int) substr($matches[3], 2);
+            }
+            if ($matches[1] === 'N') {
+                $validator = "numeric";
+            } elseif ($matches[1] === 'X') {
+                $validator = "cset82";
+            } else {
+                $validator = "cset39";
+            }
+        } else {
             exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
-        }
-        if (count($matches) === 3) {
-            $min = $max = (int) $matches[2];
-        } else {
-            $min = $matches[2] === '' ? 1 : (int) $matches[2];
-            $max = (int) substr($matches[3], 2);
-        }
-        if ($matches[1] === 'N') {
-            $validator = "numeric";
-        } elseif ($matches[1] === 'X') {
-            $validator = "cset82";
-        } else {
-            $validator = "cset39";
         }
         $spec_parts[$spec][] = array($min, $max, $validator, $checkers);
     }
@@ -196,7 +226,7 @@ foreach ($spec_ais as $spec => $ais) {
 print <<<EOD
 /*
  * GS1 AI checker generated by "$dirdirname/$basename" from
- * $file
+ * $stripped_file
  */
 
 EOD;
@@ -205,7 +235,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -232,6 +262,7 @@ print <<<'EOD'
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 
 EOD;
@@ -239,8 +270,8 @@ EOD;
 
 if ($print_h_guard) {
 print <<<'EOD'
-#ifndef GS1_LINT_H
-#define GS1_LINT_H
+#ifndef Z_GS1_LINT_H
+#define Z_GS1_LINT_H
 
 
 EOD;
@@ -249,7 +280,7 @@ EOD;
 // Print the spec validator/checkers functions
 
 foreach ($spec_parts as $spec => $spec_part) {
-    $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ','), '_', strtolower($spec));
+    $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ',', '[', ']'), '_', strtolower($spec));
     $comment = '';
     if (isset($spec_comments[$spec])) {
         $comment = ' (Used by';
@@ -437,7 +468,9 @@ EOD;
 if ($print_h_guard) {
 print <<<'EOD'
 
-#endif /* GS1_LINT_H */
+#endif /* Z_GS1_LINT_H */
 
 EOD;
 }
+
+/* vim: set ts=4 sw=4 et : */

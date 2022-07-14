@@ -21,6 +21,7 @@ Changes
   in filenames
 - Add symbology BC412 (beta)
 - backend: use alloca() (z_alloca()) for both Unix and Windows
+- GS1: new AI 4309 with latlong checker, new currency code 925
 
 Bugs
 ----
