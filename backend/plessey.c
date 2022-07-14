@@ -1,8 +1,7 @@
 /* plessey.c - Handles Plessey and MSI Plessey */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #include "common.h"
@@ -113,7 +112,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     expand(symbol, dest, d - dest);
 
-    // TODO: Find documentation on BARCODE_PLESSEY dimensions/height
+    /* TODO: Find documentation on BARCODE_PLESSEY dimensions/height */
 
     symbol->text[0] = '\0';
     ustrncat(symbol->text, source, length);
@@ -358,7 +357,9 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
 
     expand(symbol, dest, d - dest);
 
-    // TODO: Find documentation on BARCODE_MSI_PLESSEY dimensions/height
+    /* TODO: Find documentation on BARCODE_MSI_PLESSEY dimensions/height */
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

@@ -1,9 +1,7 @@
 /* pcx.c - Handles output to ZSoft PCX file */
-/* ZSoft PCX File Format Technical Reference Manual http://bespin.org/~qz/pc-gpe/pcx.txt */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,39 +28,30 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
 #include <stdio.h>
 #include "common.h"
 #include "pcx.h"        /* PCX header structure */
-#include <math.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
-#include <malloc.h>
 #endif
 
+/* ZSoft PCX File Format Technical Reference Manual http://bespin.org/~qz/pc-gpe/pcx.txt */
 INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
     int row, column, i, colour;
     int run_count;
     FILE *pcx_file;
     pcx_header_t header;
-    int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); // Must be even
+    int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); /* Must be even */
     unsigned char previous;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
-#ifdef _MSC_VER
-    unsigned char *rle_row;
-#endif
+    unsigned char *rle_row = (unsigned char *) z_alloca(bytes_per_line);
 
-#ifndef _MSC_VER
-    unsigned char rle_row[bytes_per_line];
-#else
-    rle_row = (unsigned char *) _alloca(bytes_per_line);
-#endif /* _MSC_VER */
-
-    rle_row[bytes_per_line - 1] = 0; // Will remain zero if bitmap_width odd
+    rle_row[bytes_per_line - 1] = 0; /* Will remain zero if bitmap_width odd */
 
     fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
     fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
@@ -71,9 +60,9 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
     bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
 
-    header.manufacturer = 10; // ZSoft
-    header.version = 5; // Version 3.0
-    header.encoding = 1; // Run length encoding
+    header.manufacturer = 10; /* ZSoft */
+    header.version = 5; /* Version 3.0 */
+    header.encoding = 1; /* Run length encoding */
     header.bits_per_pixel = 8;
     header.window_xmin = 0;
     header.window_ymin = 0;
@@ -91,7 +80,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     header.bytes_per_line = bytes_per_line;
 
-    header.palette_info = 1; // Colour
+    header.palette_info = 1; /* Colour */
     header.horiz_screen_size = 0;
     header.vert_screen_size = 0;
 
@@ -123,16 +112,16 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                 switch (colour) {
                     case 0:
                         switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
-                            case 'W': // White
-                            case 'M': // Magenta
-                            case 'R': // Red
-                            case 'Y': // Yellow
+                            case 'W': /* White */
+                            case 'M': /* Magenta */
+                            case 'R': /* Red */
+                            case 'Y': /* Yellow */
                                 rle_row[column] = 255;
                                 break;
-                            case 'C': // Cyan
-                            case 'B': // Blue
-                            case 'G': // Green
-                            case 'K': // Black
+                            case 'C': /* Cyan */
+                            case 'B': /* Blue */
+                            case 'G': /* Green */
+                            case 'K': /* Black */
                                 rle_row[column] = 0;
                                 break;
                             case '1':
@@ -145,16 +134,16 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                         break;
                     case 1:
                         switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
-                            case 'W': // White
-                            case 'C': // Cyan
-                            case 'Y': // Yellow
-                            case 'G': // Green
+                            case 'W': /* White */
+                            case 'C': /* Cyan */
+                            case 'Y': /* Yellow */
+                            case 'G': /* Green */
                                 rle_row[column] = 255;
                                 break;
-                            case 'B': // Blue
-                            case 'M': // Magenta
-                            case 'R': // Red
-                            case 'K': // Black
+                            case 'B': /* Blue */
+                            case 'M': /* Magenta */
+                            case 'R': /* Red */
+                            case 'K': /* Black */
                                 rle_row[column] = 0;
                                 break;
                             case '1':
@@ -167,16 +156,16 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                         break;
                     case 2:
                         switch (pixelbuf[(row * symbol->bitmap_width) + column]) {
-                            case 'W': // White
-                            case 'C': // Cyan
-                            case 'B': // Blue
-                            case 'M': // Magenta
+                            case 'W': /* White */
+                            case 'C': /* Cyan */
+                            case 'B': /* Blue */
+                            case 'M': /* Magenta */
                                 rle_row[column] = 255;
                                 break;
-                            case 'R': // Red
-                            case 'Y': // Yellow
-                            case 'G': // Green
-                            case 'K': // Black
+                            case 'R': /* Red */
+                            case 'Y': /* Yellow */
+                            case 'G': /* Green */
+                            case 'K': /* Black */
                                 rle_row[column] = 0;
                                 break;
                             case '1':
@@ -194,7 +183,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
              * Copyright 1999-2020 ImageMagick Studio LLC */
             previous = rle_row[0];
             run_count = 1;
-            for (column = 1; column < bytes_per_line; column++) { // Note going up to bytes_per_line
+            for (column = 1; column < bytes_per_line; column++) { /* Note going up to bytes_per_line */
                 if ((previous == rle_row[column]) && (run_count < 63)) {
                     run_count++;
                 } else {
@@ -224,3 +213,5 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

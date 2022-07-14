@@ -72,11 +72,8 @@ C library and header files needed to develop applications using %{name}-qt.
 %setup -q
 %patch0 -p1
 
-# remove BSD-licensed file required for Windows only (just to ensure that this package is plain GPLv3+)
-rm -f backend/ms_stdint.h
-
 # remove bundled getopt sources (we use the corresponding Fedora package instead)
-rm -f frontend/getopt*.*
+rm -rf getopt
 
 %build
 %cmake CMakeLists.txt

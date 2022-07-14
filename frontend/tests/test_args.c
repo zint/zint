@@ -29,6 +29,9 @@
  */
 
 #include "testcommon.h"
+#ifndef _WIN32
+#include <sys/wait.h>
+#endif
 
 #ifdef _WIN32
 /* Hacks to stop popen() mangling input on Windows */

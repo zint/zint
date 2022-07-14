@@ -63,9 +63,6 @@
  */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "large.h"
 #include "rss.h"
@@ -835,11 +832,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     int min_cols_per_row = 0;
     int length = (int) ustrlen(source);
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
-#ifndef _MSC_VER
-    char general_field[length + 1];
-#else
-    char *general_field = (char *) _alloca(length + 1);
-#endif
+    char *general_field = (char *) z_alloca(length + 1);
     int bp = *p_bp;
     int remainder, d1, d2;
     int cdf_bp_start; /* Compressed data field start - debug only */
@@ -944,8 +937,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         case 2: bp = bin_append_posn(0, 4, binary_string, bp); /* "00XX" */
             read_posn = 0;
             break;
-        case 3: // 0100
-        case 4: // 0101
+        case 3: /* 0100 */
+        case 4: /* 0101 */
             bp = bin_append_posn(4 + (encoding_method - 3), 4, binary_string, bp);
             read_posn = 26;
             break;
@@ -1091,7 +1084,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
     }
 
-    if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
+    if (characters_per_row && (symbol_characters % characters_per_row) == 1) { /* DBAR_EXPSTK */
         symbol_characters++;
     }
 
@@ -1127,7 +1120,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
             }
         }
 
-        if (characters_per_row && (symbol_characters % characters_per_row) == 1) { // DBAR_EXPSTK
+        if (characters_per_row && (symbol_characters % characters_per_row) == 1) { /* DBAR_EXPSTK */
             symbol_characters++;
         }
 
@@ -1141,7 +1134,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     }
 
     if (bp > 252) { /* 252 = (21 * 12) */
-        strcpy(symbol->errtxt, "387: Input too long"); // TODO: Better error message
+        strcpy(symbol->errtxt, "387: Input too long"); /* TODO: Better error message */
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -1286,13 +1279,8 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int max_rows = 0;
     int stack_rows = 1;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
-#ifndef _MSC_VER
-    unsigned char reduced[length + 1];
-    char binary_string[bin_len];
-#else
-    unsigned char *reduced = (unsigned char *) _alloca(length + 1);
-    char *binary_string = (char *) _alloca(bin_len);
-#endif
+    unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
+    char *binary_string = (char *) z_alloca(bin_len);
 
     separator_row = 0;
 
@@ -1461,10 +1449,10 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     if ((symbol->symbology == BARCODE_DBAR_EXP) || (symbol->symbology == BARCODE_DBAR_EXP_CC)) {
         /* Copy elements into symbol */
 
-        elements[0] = 1; // left guard
+        elements[0] = 1; /* left guard */
         elements[1] = 1;
 
-        elements[pattern_width - 2] = 1; // right guard
+        elements[pattern_width - 2] = 1; /* right guard */
         elements[pattern_width - 1] = 1;
 
         writer = 0;
@@ -1509,7 +1497,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             }
 
             /* Row Start */
-            sub_elements[0] = 1; // left guard
+            sub_elements[0] = 1; /* left guard */
             sub_elements[1] = 1;
             elements_in_sub = 2;
 
@@ -1556,7 +1544,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             } while ((reader < cols_per_row) && (current_block < codeblocks));
 
             /* Row Stop */
-            sub_elements[elements_in_sub] = 1; // right guard
+            sub_elements[elements_in_sub] = 1; /* right guard */
             sub_elements[elements_in_sub + 1] = 1;
             elements_in_sub += 2;
 

@@ -1,5 +1,5 @@
-/*  gridmtx.c - Grid Matrix
-
+/*  gridmtx.c - Grid Matrix */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -34,9 +34,6 @@
    AIM Global Document Number AIMD014 Rev. 1.63 Revised 9 Dec 2008 */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "reedsol.h"
 #include "gridmtx.h"
@@ -164,11 +161,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     char cur_mode;
     unsigned int prev_costs[GM_NUM_MODES];
     unsigned int cur_costs[GM_NUM_MODES];
-#ifndef _MSC_VER
-    char char_modes[length * GM_NUM_MODES];
-#else
-    char *char_modes = (char *) _alloca(length * GM_NUM_MODES);
-#endif
+    char *char_modes = (char *) z_alloca(length * GM_NUM_MODES);
 
     /* char_modes[i * GM_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
      * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
@@ -345,11 +338,7 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
     int byte_count = 0;
     int shift;
     int bp = *p_bp;
-#ifndef _MSC_VER
-    char mode[length];
-#else
-    char *mode = (char *) _alloca(length);
-#endif
+    char *mode = (char *) z_alloca(length);
 
     if (eci != 0) {
         /* ECI assignment according to Table 8 */
@@ -407,13 +396,13 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                     switch (p) {
                         case 1: binary[number_pad_posn] = '1';
                             binary[number_pad_posn + 1] = '0';
-                            break; // 2 pad digits
+                            break; /* 2 pad digits */
                         case 2: binary[number_pad_posn] = '0';
                             binary[number_pad_posn + 1] = '1';
-                            break; // 1 pad digits
+                            break; /* 1 pad digits */
                         case 3: binary[number_pad_posn] = '0';
                             binary[number_pad_posn + 1] = '0';
-                            break; // 0 pad digits
+                            break; /* 0 pad digits */
                     }
                     switch (next_mode) {
                         case GM_CHINESE: bp = bin_append_posn(1019, 10, binary, bp);
@@ -739,13 +728,13 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
         switch (p) {
             case 1: binary[number_pad_posn] = '1';
                 binary[number_pad_posn + 1] = '0';
-                break; // 2 pad digits
+                break; /* 2 pad digits */
             case 2: binary[number_pad_posn] = '0';
                 binary[number_pad_posn + 1] = '1';
-                break; // 1 pad digit
+                break; /* 1 pad digit */
             case 3: binary[number_pad_posn] = '0';
                 binary[number_pad_posn + 1] = '0';
-                break; // 0 pad digits
+                break; /* 0 pad digits */
         }
     }
 
@@ -979,14 +968,8 @@ static void gm_place_data_in_grid(unsigned char word[], char grid[], int modules
 /* Place the layer ID into each macromodule */
 static void gm_place_layer_id(char *grid, int size, int layers, int modules, int ecc_level) {
     int i, j, layer, start, stop;
-
-#ifndef _MSC_VER
-    int layerid[layers + 1];
-    int id[modules * modules];
-#else
-    int *layerid = (int *) _alloca((layers + 1) * sizeof(int));
-    int *id = (int *) _alloca((modules * modules) * sizeof(int));
-#endif
+    int *layerid = (int *) z_alloca(sizeof(int) * (layers + 1));
+    int *id = (int *) z_alloca(sizeof(int) * (modules * modules));
 
     /* Calculate Layer IDs */
     for (i = 0; i <= layers; i++) {
@@ -1045,15 +1028,9 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     int bin_len;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
-
-#ifndef _MSC_VER
-    struct zint_seg local_segs[seg_count];
-    unsigned int ddata[eci_length_segs];
-#else
-    struct zint_seg *local_segs = (struct zint_seg *) _alloca(sizeof(struct zint_seg) * seg_count);
-    unsigned int *ddata = (unsigned int *) _alloca(sizeof(unsigned int) * eci_length_segs);
+    struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
+    unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * eci_length_segs);
     char *grid;
-#endif
 
     segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs & protect lengths) */
 
@@ -1224,12 +1201,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     modules = 1 + (layers * 2);
     size_squared = size * size;
 
-#ifndef _MSC_VER
-    char grid[size_squared];
-#else
-    grid = (char *) _alloca(size_squared);
-#endif
-
+    grid = (char *) z_alloca(size_squared);
     memset(grid, '0', size_squared);
 
     gm_place_data_in_grid(word, grid, modules, size);

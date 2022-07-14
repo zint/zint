@@ -1,5 +1,4 @@
 /* code128.c - Handles Code 128 and derivatives */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -32,11 +31,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include <assert.h>
+#include <stdio.h>
 #include "common.h"
 #include "code128.h"
 #include "gs1.h"
@@ -746,11 +742,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     char *d = dest;
     int separator_row, linkage_flag;
     int reduced_length;
-#ifndef _MSC_VER
-    unsigned char reduced[length + 1];
-#else
-    unsigned char *reduced = (unsigned char *) _alloca(length + 1);
-#endif
+    unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
 
     linkage_flag = 0;
 
@@ -1078,7 +1070,7 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     int i, p;
     unsigned char identifier;
     const int mod = 36;
-    int cd; // Check digit
+    int cd; /* Check digit */
 
     if (length != 28) {
         strcpy(symbol->errtxt, "349: DPD input wrong length (28 characters required)");

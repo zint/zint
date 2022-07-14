@@ -20,6 +20,7 @@ Changes
 - frontend: batch: for @ use + instead of * on Windows as * not allowed
   in filenames
 - Add symbology BC412 (beta)
+- backend: use alloca() (z_alloca()) for both Unix and Windows
 
 Bugs
 ----

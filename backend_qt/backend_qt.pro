@@ -52,7 +52,6 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/ksx1001.h \
             ../backend/large.h \
             ../backend/maxicode.h \
-            ../backend/ms_stdint.h \
             ../backend/output.h \
             ../backend/pcx.h \
             ../backend/pdf417.h \
@@ -62,7 +61,6 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/reedsol_logs.h \
             ../backend/rss.h \
             ../backend/sjis.h \
-            ../backend/stdint_msvc.h \
             ../backend/tif.h \
             ../backend/tif_lzw.h \
             ../backend/zfiletypes.h \

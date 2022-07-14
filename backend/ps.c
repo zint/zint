@@ -32,69 +32,66 @@
 
 #include <errno.h>
 #include <locale.h>
-#include <stdio.h>
 #include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
+#include <stdio.h>
 #include "common.h"
 
 static void colour_to_pscolor(int option, int colour, char *output) {
     *output = '\0';
     if ((option & CMYK_COLOUR) == 0) {
-        // Use RGB colour space
+        /* Use RGB colour space */
         switch (colour) {
-            case 1: // Cyan
+            case 1: /* Cyan */
                 strcat(output, "0.00 1.00 1.00");
                 break;
-            case 2: // Blue
+            case 2: /* Blue */
                 strcat(output, "0.00 0.00 1.00");
                 break;
-            case 3: // Magenta
+            case 3: /* Magenta */
                 strcat(output, "1.00 0.00 1.00");
                 break;
-            case 4: // Red
+            case 4: /* Red */
                 strcat(output, "1.00 0.00 0.00");
                 break;
-            case 5: // Yellow
+            case 5: /* Yellow */
                 strcat(output, "1.00 1.00 0.00");
                 break;
-            case 6: // Green
+            case 6: /* Green */
                 strcat(output, "0.00 1.00 0.00");
                 break;
-            case 8: // White
+            case 8: /* White */
                 strcat(output, "1.00 1.00 1.00");
                 break;
-            default: // Black
+            default: /* Black */
                 strcat(output, "0.00 0.00 0.00");
                 break;
         }
         strcat(output, " setrgbcolor");
     } else {
-        // Use CMYK colour space
+        /* Use CMYK colour space */
         switch (colour) {
-            case 1: // Cyan
+            case 1: /* Cyan */
                 strcat(output, "1.00 0.00 0.00 0.00");
                 break;
-            case 2: // Blue
+            case 2: /* Blue */
                 strcat(output, "1.00 1.00 0.00 0.00");
                 break;
-            case 3: // Magenta
+            case 3: /* Magenta */
                 strcat(output, "0.00 1.00 0.00 0.00");
                 break;
-            case 4: // Red
+            case 4: /* Red */
                 strcat(output, "0.00 1.00 1.00 0.00");
                 break;
-            case 5: // Yellow
+            case 5: /* Yellow */
                 strcat(output, "0.00 0.00 1.00 0.00");
                 break;
-            case 6: // Green
+            case 6: /* Green */
                 strcat(output, "1.00 0.00 1.00 0.00");
                 break;
-            case 8: // White
+            case 8: /* White */
                 strcat(output, "0.00 0.00 0.00 0.00");
                 break;
-            default: // Black
+            default: /* Black */
                 strcat(output, "0.00 0.00 0.00 1.00");
                 break;
         }
@@ -161,9 +158,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int iso_latin1 = 0;
     int have_circles_with_width = 0, have_circles_without_width = 0;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
-#ifdef _MSC_VER
     unsigned char *ps_string;
-#endif
 
     if (symbol->vector == NULL) {
         strcpy(symbol->errtxt, "646: Vector header NULL");
@@ -263,11 +258,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         }
     }
 
-#ifndef _MSC_VER
-    unsigned char ps_string[ps_len + 1];
-#else
-    ps_string = (unsigned char *) _alloca(ps_len + 1);
-#endif
+    ps_string = (unsigned char *) z_alloca(ps_len + 1);
 
     /* Check for circle widths */
     for (circle = symbol->vector->circles; circle; circle = circle->next) {
@@ -314,7 +305,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     /* Now the actual representation */
 
-    // Background
+    /* Background */
     if (draw_background) {
         if ((symbol->output_options & CMYK_COLOUR) == 0) {
             fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
@@ -334,14 +325,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         }
     }
 
-    // Rectangles
+    /* Rectangles */
     if (symbol->symbology == BARCODE_ULTRA) {
         colour_rect_flag = 0;
         rect = symbol->vector->rectangles;
         while (rect) {
-            if (rect->colour == -1) { // Foreground
+            if (rect->colour == -1) { /* Foreground */
                 if (colour_rect_flag == 0) {
-                    // Set foreground colour
+                    /* Set foreground colour */
                     if ((symbol->output_options & CMYK_COLOUR) == 0) {
                         fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_ink, green_ink, blue_ink);
                     } else {
@@ -362,7 +353,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             while (rect) {
                 if (rect->colour == colour_index) {
                     if (colour_rect_flag == 0) {
-                        // Set new colour
+                        /* Set new colour */
                         colour_to_pscolor(symbol->output_options, colour_index, ps_color);
                         fprintf(feps, "%s\n", ps_color);
                         colour_rect_flag = 1;
@@ -384,7 +375,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         }
     }
 
-    // Hexagons
+    /* Hexagons */
     previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
     hex = symbol->vector->hexagons;
     while (hex) {
@@ -426,7 +417,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         hex = hex->next;
     }
 
-    // Circles
+    /* Circles */
     previous_diameter = radius = 0.0f;
     circle = symbol->vector->circles;
     while (circle) {
@@ -435,7 +426,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             radius = (float) (0.5 * previous_diameter);
         }
         if (circle->colour) {
-            // A 'white' circle
+            /* A 'white' circle */
             if ((symbol->output_options & CMYK_COLOUR) == 0) {
                 fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);
             } else {
@@ -456,7 +447,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                 }
             }
         } else {
-            // A 'black' circle
+            /* A 'black' circle */
             if (circle->width) {
                 fprintf(feps, "%.2f %.2f %.3f %.3f TC\n",
                         circle->x, (symbol->vector->height - circle->y), radius, circle->width);
@@ -467,7 +458,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         circle = circle->next;
     }
 
-    // Text
+    /* Text */
 
     string = symbol->vector->strings;
 

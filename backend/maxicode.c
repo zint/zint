@@ -32,9 +32,6 @@
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "maxicode.h"
 #include "reedsol.h"
@@ -129,7 +126,7 @@ static int maxi_bestSurroundingSet(const int index, const int length, const unsi
     int badValue = -1;
     int option1 = maxi_value_in_array(set[sp + index - 1], setval, badValue, setLength);
     if (index + 1 < length) {
-        // we have two options to check (previous & next)
+        /* we have two options to check (previous & next) */
         int option2 = maxi_value_in_array(set[sp + index + 1], setval, badValue, setLength);
         if (option2 != badValue && option1 > option2) {
             return option2;
@@ -155,11 +152,7 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
     static const unsigned char set12345[5] = { 1, 2, 3, 4, 5 };
 
     const unsigned char *source = in_source;
-#ifndef _MSC_VER
-    unsigned char source_buf[length + 9]; /* For prefixing 9-character SCM sequence */
-#else
-    unsigned char *source_buf = (unsigned char *) _alloca(length + 9);
-#endif
+    unsigned char *source_buf = (unsigned char *) z_alloca(length + 9); /* For prefixing 9-character SCM sequence */
 
     if (sp + length > 144) {
         return ZINT_ERROR_TOO_LONG;
@@ -169,7 +162,7 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
     /* Encode ECI assignment numbers according to table 3 */
     if (eci != 0) {
         if (sp + 1 + length > 144) return ZINT_ERROR_TOO_LONG;
-        character[sp++] = 27; // ECI
+        character[sp++] = 27; /* ECI */
         if (eci <= 31) {
             if (sp + 1 + length > 144) return ZINT_ERROR_TOO_LONG;
             character[sp++] = eci;
@@ -470,7 +463,7 @@ static int maxi_text_process_segs(unsigned char maxi_codeword[144], const int mo
 
     /* Insert Structured Append at beginning if needed */
     if (structapp_cw) {
-        character[sp++] = 33; // PAD
+        character[sp++] = 33; /* PAD */
         character[sp++] = structapp_cw;
     }
 
@@ -684,12 +677,12 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     maxi_do_primary_check(maxi_codeword); /* always EEC */
 
     if (mode == 5)
-        eclen = 56; // 68 data codewords , 56 error corrections
+        eclen = 56; /* 68 data codewords , 56 error corrections */
     else
-        eclen = 40; // 84 data codewords,  40 error corrections
+        eclen = 40; /* 84 data codewords,  40 error corrections */
 
-    maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); // do error correction of even
-    maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); // do error correction of odd
+    maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); /* do error correction of even */
+    maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); /* do error correction of odd */
 
     if (debug_print) {
         printf("Codewords:");
@@ -718,18 +711,18 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     }
 
     /* Add orientation markings */
-    set_module(symbol, 0, 28); // Top right filler
+    set_module(symbol, 0, 28); /* Top right filler */
     set_module(symbol, 0, 29);
-    set_module(symbol, 9, 10); // Top left marker
+    set_module(symbol, 9, 10); /* Top left marker */
     set_module(symbol, 9, 11);
     set_module(symbol, 10, 11);
-    set_module(symbol, 15, 7); // Left hand marker
+    set_module(symbol, 15, 7); /* Left hand marker */
     set_module(symbol, 16, 8);
-    set_module(symbol, 16, 20); // Right hand marker
+    set_module(symbol, 16, 20); /* Right hand marker */
     set_module(symbol, 17, 20);
-    set_module(symbol, 22, 10); // Bottom left marker
+    set_module(symbol, 22, 10); /* Bottom left marker */
     set_module(symbol, 23, 10);
-    set_module(symbol, 22, 17); // Bottom right marker
+    set_module(symbol, 22, 17); /* Bottom right marker */
     set_module(symbol, 23, 17);
 
     symbol->width = 30;

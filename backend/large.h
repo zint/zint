@@ -34,12 +34,6 @@
 #ifndef Z_LARGE_H
 #define Z_LARGE_H
 
-#ifndef _MSC_VER
-#include <stdint.h>
-#else
-#include "ms_stdint.h"
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif /* __cplusplus */

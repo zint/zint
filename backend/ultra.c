@@ -1,5 +1,5 @@
-/*  ultra.c - Ultracode
-
+/*  ultra.c - Ultracode */
+/*
     libzint - the open source barcode library
     Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -28,12 +28,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
- /* This version was developed using AIMD/TSC15032-43 v0.99c Edit 60, dated 4th Nov 2015 */
+/* This version was developed using AIMD/TSC15032-43 v0.99c Edit 60, dated 4th Nov 2015 */
 
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include <stdio.h>
 #include "common.h"
 
@@ -45,10 +43,12 @@
 
 #define ULT_GFMUL(i, j) ((((i) == 0)||((j) == 0)) ? 0 : gfPwr[(gfLog[i] + gfLog[j])])
 
-static const char ult_fragment[27][13] = {"http://", "https://", "http://www.", "https://www.",
-        "ftp://", "www.", ".com", ".edu", ".gov", ".int", ".mil", ".net", ".org",
-        ".mobi", ".coop", ".biz", ".info", "mailto:", "tel:", ".cgi", ".asp",
-        ".aspx", ".php", ".htm", ".html", ".shtml", "file:"};
+static const char *const ult_fragment[27] = {
+    "http://", "https://", "http://www.", "https://www.",
+    "ftp://", "www.", ".com", ".edu", ".gov", ".int", ".mil", ".net", ".org",
+    ".mobi", ".coop", ".biz", ".info", "mailto:", "tel:", ".cgi", ".asp",
+    ".aspx", ".php", ".htm", ".html", ".shtml", "file:"
+};
 
 static const char ult_c43_set1[] = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789 .,%";
 static const char ult_c43_set2[] = "abcdefghijklmnopqrstuvwxyz:/?#[]@=_~!.,-";
@@ -56,75 +56,75 @@ static const char ult_c43_set3[] = "{}`()\"+'<>|$;&\\^*";
 static const char ult_digit[] = "0123456789,/";
 static const char ult_colour[] = "0CBMRYGKW";
 
-// Max size and min cols adjusted to BWIPP values as updated 2021-07-14
-// https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc
+/* Max size and min cols adjusted to BWIPP values as updated 2021-07-14
+   https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc */
 static const int ult_maxsize[] = {37, 84, 161, 282};
 
 static const int ult_mincols[] = {5, 13, 22, 29};
 
-static const int ult_kec[] = {0, 1, 2, 4, 6, 8}; // Value K(EC) from Table 12
+static const int ult_kec[] = {0, 1, 2, 4, 6, 8}; /* Value K(EC) from Table 12 */
 
 /* Taken from BWIPP - change in DCCU/DCCL tiles for revision 2 2021-09-28 */
 static const unsigned short ult_dccu[2][32] = {
-    { // Revision 1
-        051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, //  0-7
-        053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, //  8-15
-        051316, 051356, 051536, 051616, 053156, 053516, 053536, 053616, // 16-23
-        053636, 053656, 056136, 056156, 056316, 056356, 056516, 056536  // 24-31
+    { /* Revision 1 */
+        051363, 051563, 051653, 053153, 053163, 053513, 053563, 053613, /*  0-7 */
+        053653, 056153, 056163, 056313, 056353, 056363, 056513, 056563, /*  8-15 */
+        051316, 051356, 051536, 051616, 053156, 053516, 053536, 053616, /* 16-23 */
+        053636, 053656, 056136, 056156, 056316, 056356, 056516, 056536  /* 24-31 */
     },
-    { // Revision 2 (inversion of DCCL Revision 1)
-        015316, 016316, 013516, 016516, 013616, 015616, 013136, 015136, //  0-7
-        016136, 013536, 016536, 013636, 013156, 016156, 015356, 013656, //  8-15
-        015313, 016313, 013513, 016513, 013613, 015613, 013153, 015153, // 16-23
-        016153, 016353, 013653, 015653, 013163, 015163, 015363, 013563  // 24-31
+    { /* Revision 2 (inversion of DCCL Revision 1) */
+        015316, 016316, 013516, 016516, 013616, 015616, 013136, 015136, /*  0-7 */
+        016136, 013536, 016536, 013636, 013156, 016156, 015356, 013656, /*  8-15 */
+        015313, 016313, 013513, 016513, 013613, 015613, 013153, 015153, /* 16-23 */
+        016153, 016353, 013653, 015653, 013163, 015163, 015363, 013563  /* 24-31 */
     },
 };
 
 static const unsigned short ult_dccl[2][32] = {
-    { // Revision 1
-        061351, 061361, 061531, 061561, 061631, 061651, 063131, 063151, //  0-7
-        063161, 063531, 063561, 063631, 065131, 065161, 065351, 065631, //  8-15
-        031351, 031361, 031531, 031561, 031631, 031651, 035131, 035151, // 16-23
-        035161, 035361, 035631, 035651, 036131, 036151, 036351, 036531  // 24-31
+    { /* Revision 1 */
+        061351, 061361, 061531, 061561, 061631, 061651, 063131, 063151, /*  0-7 */
+        063161, 063531, 063561, 063631, 065131, 065161, 065351, 065631, /*  8-15 */
+        031351, 031361, 031531, 031561, 031631, 031651, 035131, 035151, /* 16-23 */
+        035161, 035361, 035631, 035651, 036131, 036151, 036351, 036531  /* 24-31 */
     },
-    { // Revision 2 (inversion of DCCU Revision 1)
-        036315, 036515, 035615, 035135, 036135, 031535, 036535, 031635, //  0-7
-        035635, 035165, 036165, 031365, 035365, 036365, 031565, 036565, //  8-15
-        061315, 065315, 063515, 061615, 065135, 061535, 063535, 061635, // 16-23
-        063635, 065635, 063165, 065165, 061365, 065365, 061565, 063565  // 24-31
+    { /* Revision 2 (inversion of DCCU Revision 1) */
+        036315, 036515, 035615, 035135, 036135, 031535, 036535, 031635, /*  0-7 */
+        035635, 035165, 036165, 031365, 035365, 036365, 031565, 036565, /*  8-15 */
+        061315, 065315, 063515, 061615, 065135, 061535, 063535, 061635, /* 16-23 */
+        063635, 065635, 063165, 065165, 061365, 065365, 061565, 063565  /* 24-31 */
     },
 };
 
 static const int ult_tiles[] = {
-    013135, 013136, 013153, 013156, 013163, 013165, 013513, 013515, 013516, 013531, //   0-9
-    013535, 013536, 013561, 013563, 013565, 013613, 013615, 013616, 013631, 013635, //  10-19
-    013636, 013651, 013653, 013656, 015135, 015136, 015153, 015163, 015165, 015313, //  20-29
-    015315, 015316, 015351, 015353, 015356, 015361, 015363, 015365, 015613, 015615, //  30-39
-    015616, 015631, 015635, 015636, 015651, 015653, 015656, 016135, 016136, 016153, //  40-49
-    016156, 016165, 016313, 016315, 016316, 016351, 016353, 016356, 016361, 016363, //  50-59
-    016365, 016513, 016515, 016516, 016531, 016535, 016536, 016561, 016563, 016565, //  60-69
-    031315, 031316, 031351, 031356, 031361, 031365, 031513, 031515, 031516, 031531, //  70-79
-    031535, 031536, 031561, 031563, 031565, 031613, 031615, 031631, 031635, 031636, //  80-89
-    031651, 031653, 031656, 035131, 035135, 035136, 035151, 035153, 035156, 035161, //  90-99
-    035163, 035165, 035315, 035316, 035351, 035356, 035361, 035365, 035613, 035615, // 100-109
-    035616, 035631, 035635, 035636, 035651, 035653, 035656, 036131, 036135, 036136, // 110-119
-    036151, 036153, 036156, 036163, 036165, 036315, 036316, 036351, 036356, 036361, // 120-129
-    036365, 036513, 036515, 036516, 036531, 036535, 036536, 036561, 036563, 036565, // 130-139
-    051313, 051315, 051316, 051351, 051353, 051356, 051361, 051363, 051365, 051513, // 140-149
-    051516, 051531, 051536, 051561, 051563, 051613, 051615, 051616, 051631, 051635, // 150-159
-    051636, 051651, 051653, 051656, 053131, 053135, 053136, 053151, 053153, 053156, // 160-169
-    053161, 053163, 053165, 053513, 053516, 053531, 053536, 053561, 053563, 053613, // 170-179
-    053615, 053616, 053631, 053635, 053636, 053651, 053653, 053656, 056131, 056135, // 180-189
-    056136, 056151, 056153, 056156, 056161, 056163, 056165, 056313, 056315, 056316, // 190-199
-    056351, 056353, 056356, 056361, 056363, 056365, 056513, 056516, 056531, 056536, // 200-209
-    056561, 056563, 061313, 061315, 061316, 061351, 061353, 061356, 061361, 061363, // 210-219
-    061365, 061513, 061515, 061516, 061531, 061535, 061536, 061561, 061563, 061565, // 220-229
-    061615, 061631, 061635, 061651, 061653, 063131, 063135, 063136, 063151, 063153, // 230-239
-    063156, 063161, 063163, 063165, 063513, 063515, 063516, 063531, 063535, 063536, // 240-249
-    063561, 063563, 063565, 063613, 063615, 063631, 063635, 063651, 063653, 065131, // 250-259
-    065135, 065136, 065151, 065153, 065156, 065161, 065163, 065165, 065313, 065315, // 260-269
-    065316, 065351, 065353, 065356, 065361, 065363, 065365, 065613, 065615, 065631, // 270-279
-    065635, 065651, 065653, 056565, 051515                                     // 280-284
+    013135, 013136, 013153, 013156, 013163, 013165, 013513, 013515, 013516, 013531, /*   0-9 */
+    013535, 013536, 013561, 013563, 013565, 013613, 013615, 013616, 013631, 013635, /*  10-19 */
+    013636, 013651, 013653, 013656, 015135, 015136, 015153, 015163, 015165, 015313, /*  20-29 */
+    015315, 015316, 015351, 015353, 015356, 015361, 015363, 015365, 015613, 015615, /*  30-39 */
+    015616, 015631, 015635, 015636, 015651, 015653, 015656, 016135, 016136, 016153, /*  40-49 */
+    016156, 016165, 016313, 016315, 016316, 016351, 016353, 016356, 016361, 016363, /*  50-59 */
+    016365, 016513, 016515, 016516, 016531, 016535, 016536, 016561, 016563, 016565, /*  60-69 */
+    031315, 031316, 031351, 031356, 031361, 031365, 031513, 031515, 031516, 031531, /*  70-79 */
+    031535, 031536, 031561, 031563, 031565, 031613, 031615, 031631, 031635, 031636, /*  80-89 */
+    031651, 031653, 031656, 035131, 035135, 035136, 035151, 035153, 035156, 035161, /*  90-99 */
+    035163, 035165, 035315, 035316, 035351, 035356, 035361, 035365, 035613, 035615, /* 100-109 */
+    035616, 035631, 035635, 035636, 035651, 035653, 035656, 036131, 036135, 036136, /* 110-119 */
+    036151, 036153, 036156, 036163, 036165, 036315, 036316, 036351, 036356, 036361, /* 120-129 */
+    036365, 036513, 036515, 036516, 036531, 036535, 036536, 036561, 036563, 036565, /* 130-139 */
+    051313, 051315, 051316, 051351, 051353, 051356, 051361, 051363, 051365, 051513, /* 140-149 */
+    051516, 051531, 051536, 051561, 051563, 051613, 051615, 051616, 051631, 051635, /* 150-159 */
+    051636, 051651, 051653, 051656, 053131, 053135, 053136, 053151, 053153, 053156, /* 160-169 */
+    053161, 053163, 053165, 053513, 053516, 053531, 053536, 053561, 053563, 053613, /* 170-179 */
+    053615, 053616, 053631, 053635, 053636, 053651, 053653, 053656, 056131, 056135, /* 180-189 */
+    056136, 056151, 056153, 056156, 056161, 056163, 056165, 056313, 056315, 056316, /* 190-199 */
+    056351, 056353, 056356, 056361, 056363, 056365, 056513, 056516, 056531, 056536, /* 200-209 */
+    056561, 056563, 061313, 061315, 061316, 061351, 061353, 061356, 061361, 061363, /* 210-219 */
+    061365, 061513, 061515, 061516, 061531, 061535, 061536, 061561, 061563, 061565, /* 220-229 */
+    061615, 061631, 061635, 061651, 061653, 063131, 063135, 063136, 063151, 063153, /* 230-239 */
+    063156, 063161, 063163, 063165, 063513, 063515, 063516, 063531, 063535, 063536, /* 240-249 */
+    063561, 063563, 063565, 063613, 063615, 063631, 063635, 063651, 063653, 065131, /* 250-259 */
+    065135, 065136, 065151, 065153, 065156, 065161, 065163, 065165, 065313, 065315, /* 260-269 */
+    065316, 065351, 065353, 065356, 065361, 065363, 065365, 065613, 065615, 065631, /* 270-279 */
+    065635, 065651, 065653, 056565, 051515                                          /* 280-284 */
 };
 
 /* The following adapted from ECC283.C "RSEC codeword generator"
@@ -253,14 +253,14 @@ static float ult_look_ahead_eightbit(const unsigned char source[], const int len
     int letters_encoded = 0;
 
     if (current_mode != ULT_EIGHTBIT_MODE) {
-        cw[codeword_count] = 282; // Unlatch
+        cw[codeword_count] = 282; /* Unlatch */
         codeword_count += 1;
     }
 
     i = in_locn;
     while ((i < length) && (i < end_char)) {
         if ((source[i] == '[') && gs1) {
-            cw[codeword_count] = 268; // FNC1
+            cw[codeword_count] = 268; /* FNC1 */
         } else {
             cw[codeword_count] = source[i];
         }
@@ -288,15 +288,15 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
     int letters_encoded = 0;
 
     if (current_mode == ULT_EIGHTBIT_MODE) {
-        cw[codeword_count] = 267; // Latch ASCII Submode
+        cw[codeword_count] = 267; /* Latch ASCII Submode */
         codeword_count++;
     }
 
     if (current_mode == ULT_C43_MODE) {
-        cw[codeword_count] = 282; // Unlatch
+        cw[codeword_count] = 282; /* Unlatch */
         codeword_count++;
         if (symbol_mode == ULT_EIGHTBIT_MODE) {
-            cw[codeword_count] = 267; // Latch ASCII Submode
+            cw[codeword_count] = 267; /* Latch ASCII Submode */
             codeword_count++;
         }
     }
@@ -346,7 +346,7 @@ static float ult_look_ahead_ascii(unsigned char source[], const int length, cons
 
         if (!done && source[i] < 0x80) {
             if ((source[i] == '[') && gs1) {
-                cw[codeword_count] = 272; // FNC1
+                cw[codeword_count] = 272; /* FNC1 */
             } else {
                 cw[codeword_count] = source[i];
             }
@@ -452,60 +452,55 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
     int base43_value;
     int letters_encoded = 0;
     int pad;
-
-#ifndef _MSC_VER
-    int subcw[(length + 3) * 2];
-#else
-    int *subcw = (int *) _alloca((length + 3) * 2 * sizeof(int));
-#endif /* _MSC_VER */
+    int *subcw = (int *) z_alloca(sizeof(int) * (length + 3) * 2);
 
     if (current_mode == ULT_EIGHTBIT_MODE) {
         /* Check for permissable URL C43 macro sequences, otherwise encode directly */
         fragno = ult_find_fragment(source, length, sublocn);
 
         if ((fragno == 2) || (fragno == 3)) {
-            // http://www. > http://
-            // https://www. > https://
+            /* http://www. > http:// */
+            /* https://www. > https:// */
             fragno -= 2;
         }
 
         switch (fragno) {
-            case 17: // mailto:
+            case 17: /* mailto: */
                 cw[codeword_count] = 276;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
-            case 18: // tel:
+            case 18: /* tel: */
                 cw[codeword_count] = 277;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
-            case 26: // file:
+            case 26: /* file: */
                 cw[codeword_count] = 278;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
-            case 0: // http://
+            case 0: /* http:// */
                 cw[codeword_count] = 279;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
-            case 1: // https://
+            case 1: /* https:// */
                 cw[codeword_count] = 280;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
-            case 4: // ftp://
+            case 4: /* ftp:// */
                 cw[codeword_count] = 281;
                 sublocn += (int) strlen(ult_fragment[fragno]);
                 codeword_count++;
                 break;
             default:
                 if (subset == 1) {
-                    cw[codeword_count] = 260; // C43 Compaction Submode C1
+                    cw[codeword_count] = 260; /* C43 Compaction Submode C1 */
                     codeword_count++;
                 } else if ((subset == 2) || (subset == 3)) {
-                    cw[codeword_count] = 266; // C43 Compaction Submode C2
+                    cw[codeword_count] = 266; /* C43 Compaction Submode C2 */
                     codeword_count++;
                 }
                 break;
@@ -513,10 +508,10 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
 
     } else if (current_mode == ULT_ASCII_MODE) {
         if (subset == 1) {
-            cw[codeword_count] = 278; // C43 Compaction Submode C1
+            cw[codeword_count] = 278; /* C43 Compaction Submode C1 */
             codeword_count++;
         } else if ((subset == 2) || (subset == 3)) {
-            cw[codeword_count] = 280; // C43 Compaction Submode C2
+            cw[codeword_count] = 280; /* C43 Compaction Submode C2 */
             codeword_count++;
         }
     }
@@ -536,11 +531,11 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
 
         if ((new_subset != subset) && ((new_subset == 1) || (new_subset == 2))) {
             if (ult_c43_should_latch_other(source, length, sublocn, subset, gs1)) {
-                subcw[subcodeword_count] = 42; // Latch to other C43 set
+                subcw[subcodeword_count] = 42; /* Latch to other C43 set */
                 subcodeword_count++;
                 unshift_set = new_subset;
             } else {
-                subcw[subcodeword_count] = 40; // Shift to other C43 set for 1 char
+                subcw[subcodeword_count] = 40; /* Shift to other C43 set for 1 char */
                 subcodeword_count++;
                 subcw[subcodeword_count] = posn(new_subset == 1 ? ult_c43_set1 : ult_c43_set2, source[sublocn]);
                 subcodeword_count++;
@@ -560,22 +555,23 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
             subcodeword_count++;
             sublocn++;
         } else if (subset == 3) {
-            subcw[subcodeword_count] = 41; // Shift to set 3
+            subcw[subcodeword_count] = 41; /* Shift to set 3 */
             subcodeword_count++;
 
             fragno = ult_find_fragment(source, length, sublocn);
             if (fragno != -1 && fragno != 26) {
                 if (fragno <= 18) {
-                    subcw[subcodeword_count] = fragno; // C43 Set 3 codewords 0 to 18
+                    subcw[subcodeword_count] = fragno; /* C43 Set 3 codewords 0 to 18 */
                     subcodeword_count++;
                     sublocn += (int) strlen(ult_fragment[fragno]);
                 } else {
-                    subcw[subcodeword_count] = fragno + 17; // C43 Set 3 codewords 36 to 42
+                    subcw[subcodeword_count] = fragno + 17; /* C43 Set 3 codewords 36 to 42 */
                     subcodeword_count++;
                     sublocn += (int) strlen(ult_fragment[fragno]);
                 }
             } else {
-                subcw[subcodeword_count] = posn(ult_c43_set3, source[sublocn]) + 19; // C43 Set 3 codewords 19 to 35
+                /* C43 Set 3 codewords 19 to 35 */
+                subcw[subcodeword_count] = posn(ult_c43_set3, source[sublocn]) + 19;
                 subcodeword_count++;
                 sublocn++;
             }
@@ -589,7 +585,7 @@ static float ult_look_ahead_c43(const unsigned char source[], const int length, 
     }
 
     for (i = 0; i < pad; i++) {
-        subcw[subcodeword_count] = 42; // Latch to other C43 set used as pad
+        subcw[subcodeword_count] = 42; /* Latch to other C43 set used as pad */
         subcodeword_count++;
     }
 
@@ -637,16 +633,9 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
     int fragment_length;
     int ascii_encoded, c43_encoded;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
-
-#ifndef _MSC_VER
-    unsigned char crop_source[length + 1];
-    char mode[length + 1];
-    int cw_fragment[length * 2 + 1];
-#else
-    unsigned char *crop_source = (unsigned char *) _alloca(length + 1);
-    char *mode = (char *) _alloca(length + 1);
-    int *cw_fragment = (int *) _alloca((length * 2 + 1) * sizeof(int));
-#endif /* _MSC_VER */
+    unsigned char *crop_source = (unsigned char *) z_alloca(length + 1);
+    char *mode = (char *) z_alloca(length + 1);
+    int *cw_fragment = (int *) z_alloca(sizeof(int) * (length * 2 + 1));
 
     /* Check for 06 Macro Sequence and crop accordingly */
     if (length >= 9
@@ -655,9 +644,9 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
             && source[length - 2] == '\x1e' && source[length - 1] == '\x04') {
 
         if (symbol_mode == ULT_EIGHTBIT_MODE) {
-            codewords[codeword_count] = 271; // 06 Macro
+            codewords[codeword_count] = 271; /* 06 Macro */
         } else {
-            codewords[codeword_count] = 273; // 06 Macro
+            codewords[codeword_count] = 273; /* 06 Macro */
         }
         codeword_count++;
 
@@ -714,7 +703,7 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
             }
         } while (input_locn < crop_length);
     } else {
-        // Force eight-bit mode
+        /* Force eight-bit mode */
         for (input_locn = 0; input_locn < crop_length; input_locn++) {
             mode[input_locn] = '8';
         }
@@ -726,7 +715,7 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
     }
 
     if (symbol_mode == ULT_EIGHTBIT_MODE && *p_current_mode != ULT_EIGHTBIT_MODE) {
-        codewords[codeword_count++] = 282; // Unlatch to 8-bit mode
+        codewords[codeword_count++] = 282; /* Unlatch to 8-bit mode */
     }
 
     if (eci) {
@@ -822,10 +811,10 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     }
 
     if (have_eci || (symbol->option_3 != ULTRA_COMPRESSION && !gs1)) {
-        // Force eight-bit mode by default as other modes are poorly documented
+        /* Force eight-bit mode by default as other modes are poorly documented */
         symbol_mode = ULT_EIGHTBIT_MODE;
     } else {
-        // Decide start character codeword (from Table 5)
+        /* Decide start character codeword (from Table 5) */
         symbol_mode = ULT_ASCII_MODE;
         for (i = 0; i < length; i++) {
             if (source[i] >= 0x80) {
@@ -839,11 +828,11 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
         /* Reader Initialisation mode */
         codeword_count = 2;
         if (symbol_mode == ULT_ASCII_MODE) {
-            codewords[0] = 272; // 7-bit ASCII mode
-            codewords[1] = 271; // FNC3
+            codewords[0] = 272; /* 7-bit ASCII mode */
+            codewords[1] = 271; /* FNC3 */
         } else {
-            codewords[0] = 257; // 8859-1
-            codewords[1] = 269; // FNC3
+            codewords[0] = 257; /* 8859-1 */
+            codewords[1] = 269; /* FNC3 */
         }
     } else {
         /* Calculate start character codeword */
@@ -856,52 +845,52 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
             }
         } else {
             if ((eci >= 3) && (eci <= 18) && (eci != 14)) {
-                // ECI indicates use of character set within ISO/IEC 8859
+                /* ECI indicates use of character set within ISO/IEC 8859 */
                 codewords[0] = 257 + (eci - 3);
                 if (codewords[0] > 267) {
-                    // Avoids ECI 14 for non-existant ISO/IEC 8859-12
+                    /* Avoids ECI 14 for non-existant ISO/IEC 8859-12 */
                     codewords[0]--;
                 }
             } else if ((eci > 18) && (eci <= 898)) {
-                // ECI indicates use of character set outside ISO/IEC 8859
+                /* ECI indicates use of character set outside ISO/IEC 8859 */
                 codewords[0] = 275 + (eci / 256);
                 codewords[1] = eci % 256;
                 codeword_count = 2;
             } else if (eci == 899) {
-                // Non-language byte data
+                /* Non-language byte data */
                 codewords[0] = 280;
             } else if ((eci > 899) && (eci <= 9999)) {
-                // ECI beyond 899 needs to use fixed length encodable ECI invocation (section 7.6.2)
-                // Encode as 3 codewords
-                codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
-                codewords[1] = 274; // Encode ECI as 3 codewords
+                /* ECI beyond 899 needs to use fixed length encodable ECI invocation (section 7.6.2) */
+                /* Encode as 3 codewords */
+                codewords[0] = 257; /* ISO/IEC 8859-1 used to enter 8-bit mode */
+                codewords[1] = 274; /* Encode ECI as 3 codewords */
                 codewords[2] = (eci / 100) + 128;
                 codewords[3] = (eci % 100) + 128;
                 codeword_count = 4;
             } else if (eci >= 10000) {
-                // Encode as 4 codewords
-                codewords[0] = 257; // ISO/IEC 8859-1 used to enter 8-bit mode
-                codewords[1] = 275; // Encode ECI as 4 codewords
+                /* Encode as 4 codewords */
+                codewords[0] = 257; /* ISO/IEC 8859-1 used to enter 8-bit mode */
+                codewords[1] = 275; /* Encode ECI as 4 codewords */
                 codewords[2] = (eci / 10000) + 128;
                 codewords[3] = ((eci % 10000) / 100) + 128;
                 codewords[4] = (eci % 100) + 128;
                 codeword_count = 5;
             } else {
-                codewords[0] = 257; // Default is assumed to be ISO/IEC 8859-1 (ECI 3)
+                codewords[0] = 257; /* Default is assumed to be ISO/IEC 8859-1 (ECI 3) */
             }
         }
 
         if ((codewords[0] == 257) || (codewords[0] == 272)) {
             int fragno = ult_find_fragment(source, length, 0);
 
-            // Check for http:// at start of input
+            /* Check for http:// at start of input */
             if ((fragno == 0) || (fragno == 2)) {
                 codewords[0] = 281;
                 source += 7;
                 length -= 7;
                 symbol_mode = ULT_EIGHTBIT_MODE;
 
-            // Check for https:// at start of input
+            /* Check for https:// at start of input */
             } else if ((fragno == 1) || (fragno == 3)) {
                 codewords[0] = 282;
                 source += 8;
@@ -933,7 +922,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int total_cws;
     int pads;
     int cw_memalloc;
-    // Allow for 3 pads in final 57th (60th incl. clock tracks) column of 5-row symbol (57 * 5 == 285)
+    /* Allow for 3 pads in final 57th (60th incl. clock tracks) column of 5-row symbol (57 * 5 == 285) */
     int codeword[282 + 3];
     int i, j, locn;
     int total_height, total_width;
@@ -942,10 +931,8 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int dcc;
     int revision_idx = 0;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
-#ifdef _MSC_VER
     int *data_codewords;
     char *pattern;
-#endif /* _MSC_VER */
 
     (void)seg_count;
 
@@ -1002,11 +989,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         cw_memalloc = 283;
     }
 
-#ifndef _MSC_VER
-    int data_codewords[cw_memalloc];
-#else
-    data_codewords = (int *) _alloca(cw_memalloc * sizeof(int));
-#endif /* _MSC_VER */
+    data_codewords = (int *) z_alloca(sizeof(int) * cw_memalloc);
 
     data_cw_count = ult_generate_codewords_segs(symbol, segs, seg_count, data_codewords);
 
@@ -1023,7 +1006,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 #endif
 
-    data_cw_count += 2 + scr_cw_count; // 2 == MCC + ACC (data codeword count includes start char)
+    data_cw_count += 2 + scr_cw_count; /* 2 == MCC + ACC (data codeword count includes start char) */
 
     if (symbol->option_2 > 0) {
         if (symbol->option_2 > 2) {
@@ -1073,7 +1056,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 
     /* Maximum capacity is 282 codewords */
-    total_cws = data_cw_count + qcc + 3; // 3 == TCC pattern + RSEC pattern + QCC pattern
+    total_cws = data_cw_count + qcc + 3; /* 3 == TCC pattern + RSEC pattern + QCC pattern */
     if (total_cws - 3 > 282) {
         strcpy(symbol->errtxt, "591: Data too long for selected error correction capacity");
         return ZINT_ERROR_TOO_LONG;
@@ -1081,7 +1064,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     rows = 5;
     for (i = 2; i >= 0; i--) {
-        // Total codewords less 6 (+ SCR) overhead (Start + MCC + ACC (+ SCR) + 3 TCC/RSEC/QCC patterns)
+        /* Total codewords less 6 (+ SCR) overhead (Start + MCC + ACC (+ SCR) + 3 TCC/RSEC/QCC patterns) */
         if (total_cws - (6 + scr_cw_count) <= ult_maxsize[i]) {
             rows--;
         }
@@ -1094,7 +1077,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         pads = rows - (total_cws % rows);
         columns = (total_cws / rows) + 1;
     }
-    columns += columns / 15; // Secondary vertical clock tracks
+    columns += columns / 15; /* Secondary vertical clock tracks */
 
     if (debug_print) {
         printf("Calculated size is %d rows by %d columns (pads %d)\n", rows, columns, pads);
@@ -1104,9 +1087,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     for (i = 282; i > 2 + scr_cw_count; i--) {
         data_codewords[i] = data_codewords[i - (2 + scr_cw_count)];
     }
-    data_codewords[1] = data_cw_count; // MCC
-    data_codewords[2] = acc; // ACC
-    for (i = 0; i < scr_cw_count; i++) { // SCR
+    data_codewords[1] = data_cw_count; /* MCC */
+    data_codewords[2] = acc; /* ACC */
+    for (i = 0; i < scr_cw_count; i++) { /* SCR */
         data_codewords[3 + i] = scr[i];
     }
 
@@ -1124,25 +1107,25 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     /* Rearrange to make final codeword sequence */
     locn = 0;
-    codeword[locn++] = data_codewords[282 - (data_cw_count + qcc)]; // Start Character
-    codeword[locn++] = data_cw_count; // MCC
+    codeword[locn++] = data_codewords[282 - (data_cw_count + qcc)]; /* Start Character */
+    codeword[locn++] = data_cw_count; /* MCC */
     for (i = 0; i < qcc; i++) {
-        codeword[locn++] = data_codewords[(282 - qcc) + i]; // RSEC Region
+        codeword[locn++] = data_codewords[(282 - qcc) + i]; /* RSEC Region */
     }
-    codeword[locn++] = data_cw_count + qcc; // TCC = C + Q - section 6.11.4
-    codeword[locn++] = 283; // Separator
-    codeword[locn++] = acc; // ACC
-    for (i = 0; i < scr_cw_count; i++) { // SCR
+    codeword[locn++] = data_cw_count + qcc; /* TCC = C + Q - section 6.11.4 */
+    codeword[locn++] = 283; /* Separator */
+    codeword[locn++] = acc; /* ACC */
+    for (i = 0; i < scr_cw_count; i++) { /* SCR */
         codeword[locn++] = scr[i];
     }
     dr_count = data_cw_count - (3 + scr_cw_count);
     for (i = 0; i < dr_count; i++) {
-        codeword[locn++] = data_codewords[(282 - (dr_count + qcc)) + i]; // Data Region
+        codeword[locn++] = data_codewords[(282 - (dr_count + qcc)) + i]; /* Data Region */
     }
     for (i = 0; i < pads; i++) {
-        codeword[locn++] = 284; // Pad pattern
+        codeword[locn++] = 284; /* Pad pattern */
     }
-    codeword[locn++] = qcc; // QCC
+    codeword[locn++] = qcc; /* QCC */
 
     if (debug_print) {
         printf("Rearranged codewords with ECC:\n");
@@ -1156,11 +1139,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     total_width = columns + 6;
 
     /* Build symbol */
-#ifndef _MSC_VER
-    char pattern[total_height * total_width];
-#else
-    pattern = (char *) _alloca(total_height * total_width);
-#endif /* _MSC_VER */
+    pattern = (char *) z_alloca(total_height * total_width);
 
     for (i = 0; i < (total_height * total_width); i++) {
         pattern[i] = 'W';
@@ -1168,31 +1147,31 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     /* Border */
     for (i = 0; i < total_width; i++) {
-        pattern[i] = 'K'; // Top
-        pattern[(total_height * total_width) - i - 1] = 'K'; // Bottom
+        pattern[i] = 'K'; /* Top */
+        pattern[(total_height * total_width) - i - 1] = 'K'; /* Bottom */
     }
     for (i = 0; i < total_height; i++) {
-        pattern[total_width * i] = 'K'; // Left
+        pattern[total_width * i] = 'K'; /* Left */
         pattern[(total_width * i) + 3] = 'K';
-        pattern[(total_width * i) + (total_width - 1)] = 'K'; // Right
+        pattern[(total_width * i) + (total_width - 1)] = 'K'; /* Right */
     }
 
     /* Clock tracks */
     for (i = 0; i < total_height; i += 2) {
-        pattern[(total_width * i) + 1] = 'K'; // Primary vertical clock track
+        pattern[(total_width * i) + 1] = 'K'; /* Primary vertical clock track */
         if (total_width > 20) {
-            pattern[(total_width * i) + 19] = 'K'; // Secondary vertical clock track
+            pattern[(total_width * i) + 19] = 'K'; /* Secondary vertical clock track */
         }
         if (total_width > 36) {
-            pattern[(total_width * i) + 35] = 'K'; // Secondary vertical clock track
+            pattern[(total_width * i) + 35] = 'K'; /* Secondary vertical clock track */
         }
         if (total_width > 52) {
-            pattern[(total_width * i) + 51] = 'K'; // Secondary vertical clock track
+            pattern[(total_width * i) + 51] = 'K'; /* Secondary vertical clock track */
         }
     }
     for (i = 6; i < total_height; i += 6) {
         for (j = 5; j < total_width; j += 2) {
-            pattern[(total_width * i) + j] = 'K'; // Horizontal clock track
+            pattern[(total_width * i) + j] = 'K'; /* Horizontal clock track */
         }
     }
 

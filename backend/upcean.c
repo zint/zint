@@ -1,7 +1,7 @@
-/*  upcean.c - Handles UPC, EAN and ISBN
-
+/*  upcean.c - Handles UPC, EAN and ISBN */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #define SODIUM_PLS_F        (IS_NUM_F | IS_PLS_F) /* SODIUM "0123456789+" */
 #define ISBNX_SANE_F        (IS_NUM_F | IS_UX__F) /* ISBNX_SANE "0123456789X" */
@@ -228,7 +228,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (((source[2] == '0') || (source[2] == '1')) || (source[2] == '2')) {
                 /* Note 1 - "X3 shall not be equal to 0, 1 or 2" */
-                strcpy(symbol->errtxt, "271: Invalid UPC-E data"); // TODO: Better error message
+                strcpy(symbol->errtxt, "271: Invalid UPC-E data"); /* TODO: Better error message */
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -238,7 +238,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (source[3] == '0') {
                 /* Note 2 - "X4 shall not be equal to 0" */
-                strcpy(symbol->errtxt, "272: Invalid UPC-E data"); // TODO: Better error message
+                strcpy(symbol->errtxt, "272: Invalid UPC-E data"); /* TODO: Better error message */
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -253,7 +253,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = emode;
             if (source[4] == '0') {
                 /* Note 3 - "X5 shall not be equal to 0" */
-                strcpy(symbol->errtxt, "273: Invalid UPC-E data"); // TODO: Better error message
+                strcpy(symbol->errtxt, "273: Invalid UPC-E data"); /* TODO: Better error message */
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -984,3 +984,5 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
 INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     return eanx_cc(symbol, source, src_len, 0 /*cc_rows*/);
 }
+
+/* vim: set ts=4 sw=4 et : */

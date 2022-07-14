@@ -32,9 +32,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 
 static const char DAFTSET[] = "FADT";
@@ -309,7 +306,7 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
 
     ustrcpy(symbol->text, localstr);
 
-    // TODO: Find documentation on BARCODE_KOREAPOST dimensions/height
+    /* TODO: Find documentation on BARCODE_KOREAPOST dimensions/height */
 
     return error_number;
 }
@@ -614,7 +611,7 @@ INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length
 
     expand(symbol, dest, d - dest);
 
-    // TODO: Find documentation on BARCODE_FLAT dimensions/height
+    /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
 
     return error_number;
 }

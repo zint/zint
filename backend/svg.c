@@ -1,8 +1,7 @@
 /* svg.c - Scalable Vector Graphics */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,42 +28,39 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
 #include <locale.h>
-#include <stdio.h>
 #include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
+#include <stdio.h>
 
 #include "common.h"
 
 static void pick_colour(int colour, char colour_code[]) {
     switch (colour) {
-        case 1: // Cyan
+        case 1: /* Cyan */
             strcpy(colour_code, "00ffff");
             break;
-        case 2: // Blue
+        case 2: /* Blue */
             strcpy(colour_code, "0000ff");
             break;
-        case 3: // Magenta
+        case 3: /* Magenta */
             strcpy(colour_code, "ff00ff");
             break;
-        case 4: // Red
+        case 4: /* Red */
             strcpy(colour_code, "ff0000");
             break;
-        case 5: // Yellow
+        case 5: /* Yellow */
             strcpy(colour_code, "ffff00");
             break;
-        case 6: // Green
+        case 6: /* Green */
             strcpy(colour_code, "00ff00");
             break;
-        case 8: // White
+        case 8: /* White */
             strcpy(colour_code, "ffffff");
             break;
-        default: // Black
+        default: /* Black */
             strcpy(colour_code, "000000");
             break;
     }
@@ -139,9 +135,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char colour_code[7];
     int len, html_len;
 
-#ifdef _MSC_VER
     char *html_string;
-#endif
 
     for (i = 0; i < 6; i++) {
         fgcolour_string[i] = symbol->fgcolour[i];
@@ -178,11 +172,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         }
     }
 
-#ifndef _MSC_VER
-    char html_string[html_len];
-#else
-    html_string = (char *) _alloca(html_len);
-#endif
+    html_string = (char *) z_alloca(html_len);
 
     /* Check for no created vector set */
     /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164*/
@@ -298,7 +288,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
                 fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
             }
             if (bg_alpha != 0xff) {
-                // This doesn't work how the user is likely to expect - more work needed!
+                /* This doesn't work how the user is likely to expect - more work needed! */
                 fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
             }
         } else {
@@ -350,3 +340,5 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

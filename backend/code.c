@@ -1,8 +1,7 @@
 /* code.c - Handles Code 11, 39, 39+, 93, PZN, Channel and VIN */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,12 +28,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* In version 0.5 this file was 1,553 lines long! */
 
-#include <stdio.h>
 #include <assert.h>
+#include <stdio.h>
 #include "common.h"
 
 #define SODIUM_MNS_F    (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
@@ -228,7 +227,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
 
     expand(symbol, dest, d - dest);
 
-    // TODO: Find documentation on BARCODE_CODE11 dimensions/height
+    /* TODO: Find documentation on BARCODE_CODE11 dimensions/height */
 
     ustrcpy(symbol->text, source);
     if (num_check_digits) {
@@ -336,7 +335,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
             error_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f,
                                         0 /*no_errtxt*/);
         }
-        // PZN and CODE32 set their own heights
+        /* PZN and CODE32 set their own heights */
     } else {
         (void) set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
     }
@@ -569,7 +568,7 @@ typedef const struct s_channel_precalc {
     long value; unsigned char B[8]; unsigned char S[8]; unsigned char bmax[7]; unsigned char smax[7];
 } channel_precalc;
 
-//#define CHANNEL_GENERATE_PRECALCS
+/*#define CHANNEL_GENERATE_PRECALCS*/
 
 #ifdef CHANNEL_GENERATE_PRECALCS
 /* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run
@@ -803,13 +802,13 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     int i;
     static const int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
 
-    // Check length
+    /* Check length */
     if (length != 17) {
         strcpy(symbol->errtxt, "336: Input wrong length (17 characters required)");
         return ZINT_ERROR_TOO_LONG;
     }
 
-    // Check input characters, I, O and Q are not allowed
+    /* Check input characters, I, O and Q are not allowed */
     if (!is_sane(ARSENIC_F, source, length)) {
         strcpy(symbol->errtxt,
                 "337: Invalid character in data (alphanumerics only, excluding \"I\", \"O\" and \"Q\")");
@@ -818,7 +817,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     to_upper(source, length);
 
-    // Check digit only valid for North America
+    /* Check digit only valid for North America */
     if (source[0] >= '1' && source[0] <= '5') {
         input_check = source[8];
 
@@ -840,7 +839,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         output_check = '0' + (sum % 11);
 
         if (output_check == ':') {
-            // Check digit was 10
+            /* Check digit was 10 */
             output_check = 'X';
         }
 
@@ -866,7 +865,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         d += 10;
     }
 
-    // Copy glyphs to symbol
+    /* Copy glyphs to symbol */
     for (i = 0; i < 17; i++, d += 10) {
         memcpy(d, C39Table[posn(SILVER, source[i])], 10);
     }
@@ -883,3 +882,5 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

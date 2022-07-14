@@ -39,7 +39,6 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/hanxin.h \
             ../backend/large.h \
             ../backend/maxicode.h \
-            ../backend/ms_stdint.h \
             ../backend/output.h \
             ../backend/pcx.h \
             ../backend/pdf417.h \

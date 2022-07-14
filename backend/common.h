@@ -45,6 +45,26 @@
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
 
+#ifdef _MSC_VER
+#  include <malloc.h>
+#  define z_alloca(nmemb) _alloca(nmemb)
+#else
+#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L /* C89 */
+#    include <alloca.h>
+#  endif
+#  define z_alloca(nmemb) alloca(nmemb)
+#endif
+
+#ifdef _MSC_VER
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
+#endif
+
 /* `is_sane()` flags */
 #define IS_SPC_F    0x0001 /* Space */
 #define IS_HSH_F    0x0002 /* Hash sign # */
@@ -85,16 +105,19 @@
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
+/* VC6 or C89 */
+#if (defined(_MSC_VER) && _MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#  define ceilf (float) ceil
+#  define floorf (float) floor
+#  define fmodf (float) fmod
+#endif
+/* `round()` (C99) not before MSVC 2013 (C++ 12.0) */
+#if (defined(_MSC_VER) && _MSC_VER < 1800) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#  define round(arg) floor((arg) + 0.5)
+#  define roundf(arg) floorf((arg) + 0.5f)
+#endif
+
 #ifdef _MSC_VER
-#  if _MSC_VER == 1200 /* VC6 */
-#    define ceilf (float) ceil
-#    define floorf (float) floor
-#    define fmodf (float) fmod
-#  endif
-#  if _MSC_VER < 1800 /* round (C99) not before MSVC 2013 (C++ 12.0) */
-#    define round(arg) floor((arg) + 0.5)
-#    define roundf(arg) floorf((arg) + 0.5f)
-#  endif
 #  pragma warning(disable: 4244) /* conversion from int to float */
 #  if _MSC_VER != 1200 /* VC6 */
 #    pragma warning(disable: 4996) /* function or variable may be unsafe */

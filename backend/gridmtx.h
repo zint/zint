@@ -1,5 +1,5 @@
-/*  gridmtx.h - definitions for Grid Matrix
-
+/*  gridmtx.h - definitions for Grid Matrix */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_GRIDMTX_H
 #define Z_GRIDMTX_H
@@ -79,67 +80,67 @@ static const char gm_b2[] = {
 /* Values from table A.1 */
 static const char gm_ebeb[] = {
     /* E1 B3 E2 B4 */
-    0, 0, 0, 0, // version 1
+    0, 0, 0, 0, /* version 1 */
     3, 1, 0, 0,
     5, 1, 0, 0,
     7, 1, 0, 0,
     9, 1, 0, 0,
-    5, 1, 0, 0, // version 2
+    5, 1, 0, 0, /* version 2 */
     10, 1, 0, 0,
     15, 1, 0, 0,
     20, 1, 0, 0,
     25, 1, 0, 0,
-    9, 1, 0, 0, // version 3
+    9, 1, 0, 0, /* version 3 */
     19, 1, 0, 0,
     29, 1, 0, 0,
     39, 1, 0, 0,
     49, 1, 0, 0,
-    8, 2, 0, 0, // version 4
+    8, 2, 0, 0, /* version 4 */
     16, 2, 0, 0,
     24, 2, 0, 0,
     32, 2, 0, 0,
     41, 1, 40, 1,
-    12, 2, 0, 0, // version 5
+    12, 2, 0, 0, /* version 5 */
     24, 2, 0, 0,
     36, 2, 0, 0,
     48, 2, 0, 0,
     61, 1, 60, 1,
-    11, 3, 0, 0, // version 6
+    11, 3, 0, 0, /* version 6 */
     23, 1, 22, 2,
     34, 2, 33, 1,
     45, 3, 0, 0,
     57, 1, 56, 2,
-    12, 1, 11, 3, // version 7
+    12, 1, 11, 3, /* version 7 */
     23, 2, 22, 2,
     34, 3, 33, 1,
     45, 4, 0, 0,
     57, 1, 56, 3,
-    12, 2, 11, 3, // version 8
+    12, 2, 11, 3, /* version 8 */
     23, 5, 0, 0,
     35, 3, 34, 2,
     47, 1, 46, 4,
     58, 4, 57, 1,
-    12, 6, 0, 0, // version 9
+    12, 6, 0, 0, /* version 9 */
     24, 6, 0, 0,
     36, 6, 0, 0,
     48, 6, 0, 0,
     61, 1, 60, 5,
-    13, 4, 12, 3, // version 10
+    13, 4, 12, 3, /* version 10 */
     26, 1, 25, 6,
     38, 5, 37, 2,
     51, 2, 50, 5,
     63, 7, 0, 0,
-    12, 6, 11, 3, // version 11
+    12, 6, 11, 3, /* version 11 */
     24, 4, 23, 5,
     36, 2, 35, 7,
     47, 9, 0, 0,
     59, 7, 58, 2,
-    13, 5, 12, 5, // version 12
+    13, 5, 12, 5, /* version 12 */
     25, 10, 0, 0,
     38, 5, 37, 5,
     50, 10, 0, 0,
     63, 5, 62, 5,
-    13, 1, 12, 11, //version 13
+    13, 1, 12, 11, /* version 13 */
     25, 3, 24, 9,
     37, 5, 36, 7,
     49, 7, 48, 5,

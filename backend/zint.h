@@ -1,5 +1,5 @@
-/*  zint.h - definitions for libzint
-
+/*  zint.h - definitions for libzint */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -29,6 +29,7 @@
     SUCH DAMAGE.
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
+
 /*
  * For version, see "zintconfig.h"
  * For documentation, see "../docs/manual.txt"

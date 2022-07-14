@@ -31,9 +31,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "gs1.h"
 
@@ -1189,14 +1186,10 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
     char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
     int ai_max = chr_cnt(source, src_len, obracket) + 1; /* Plus 1 so non-zero */
-#ifndef _MSC_VER
-    int ai_value[ai_max], ai_location[ai_max], data_location[ai_max], data_length[ai_max];
-#else
-    int *ai_value = (int *) _alloca(ai_max * sizeof(int));
-    int *ai_location = (int *) _alloca(ai_max * sizeof(int));
-    int *data_location = (int *) _alloca(ai_max * sizeof(int));
-    int *data_length = (int *) _alloca(ai_max * sizeof(int));
-#endif
+    int *ai_value = (int *) z_alloca(sizeof(int) * ai_max);
+    int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
+    int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
+    int *data_length = (int *) z_alloca(sizeof(int) * ai_max);
 
     /* Detect extended ASCII characters */
     for (i = 0; i < src_len; i++) {
@@ -1327,8 +1320,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             }
         }
 
-        // Check for valid AI values and data lengths according to GS1 General
-        // Specifications Release 21.0.1, January 2021
+        /* Check for valid AI values and data lengths according to GS1 General
+           Specifications Release 21.0.1, January 2021 */
         for (i = 0; i < ai_count; i++) {
             int err_no, err_posn;
             char err_msg[50];

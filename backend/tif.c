@@ -1,9 +1,7 @@
 /* tif.c - Aldus Tagged Image File Format support */
-/* TIFF Revision 6.0 https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFF6.pdf */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,20 +28,17 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <errno.h>
 #include <stdio.h>
-#include <math.h>
-#include <assert.h>
-#include <limits.h>
 #include "common.h"
 #include "tif.h"
 #include "tif_lzw.h"
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
-#include <malloc.h>
 #endif
 
 /* PhotometricInterpretation */
@@ -83,6 +78,7 @@ static int is_big_endian(void) {
     return (*((const uint16_t *)"\x11\x22") == 0x1122);
 }
 
+/* TIFF Revision 6.0 https://www.adobe.io/content/dam/udp/en/open/standards/tiff/TIFF6.pdf */
 INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     unsigned char fg[4], bg[4];
     int i;
@@ -109,11 +105,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     tif_lzw_state lzw_state;
     long file_pos;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
-#ifdef _MSC_VER
-    uint32_t* strip_offset;
-    uint32_t* strip_bytes;
+    uint32_t *strip_offset;
+    uint32_t *strip_bytes;
     unsigned char *strip_buf;
-#endif
 
     tiff_header_t header;
     uint16_t entries = 0;
@@ -297,15 +291,10 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     bytes_per_strip = rows_per_strip * ((symbol->bitmap_width + pixels_per_sample - 1) / pixels_per_sample)
                         * samples_per_pixel;
 
-#ifndef _MSC_VER
-    uint32_t strip_offset[strip_count];
-    uint32_t strip_bytes[strip_count];
-    unsigned char strip_buf[bytes_per_strip + 1];
-#else
-    strip_offset = (uint32_t *) _alloca(strip_count * sizeof(uint32_t));
-    strip_bytes = (uint32_t *) _alloca(strip_count * sizeof(uint32_t));
-    strip_buf = (unsigned char *) _alloca(bytes_per_strip + 1);
-#endif
+    strip_offset = (uint32_t *) z_alloca(sizeof(uint32_t) * strip_count);
+    strip_bytes = (uint32_t *) z_alloca(sizeof(uint32_t) * strip_count);
+    strip_buf = (unsigned char *) z_alloca(bytes_per_strip + 1);
+
     free_memory = sizeof(tiff_header_t);
 
     for (i = 0; i < strip_count; i++) {
@@ -324,7 +313,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         free_memory += strip_bytes[i];
     }
     if (free_memory & 1) {
-        free_memory++; // IFD must be on word boundary
+        free_memory++; /* IFD must be on word boundary */
     }
 
     if (free_memory > 0xffff0000) {
@@ -352,9 +341,9 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* Header */
     if (is_big_endian()) {
-        header.byte_order = 0x4D4D; // "MM" big-endian
+        header.byte_order = 0x4D4D; /* "MM" big-endian */
     } else {
-        header.byte_order = 0x4949; // "II" little-endian
+        header.byte_order = 0x4949; /* "II" little-endian */
     }
     header.identity = 42;
     header.offset = free_memory;
@@ -403,7 +392,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         strip_row++;
 
         if (strip_row == rows_per_strip || (strip == strip_count - 1 && strip_row == rows_last_strip)) {
-            // End of strip
+            /* End of strip */
             if (compression == TIF_LZW) {
                 file_pos = ftell(tif_file);
                 if (!tif_lzw_encode(&lzw_state, tif_file, strip_buf, bytes_put)) { /* Only fails if can't malloc */
@@ -433,7 +422,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     if (total_bytes_put & 1) {
-        putc(0, tif_file); // IFD must be on word boundary
+        putc(0, tif_file); /* IFD must be on word boundary */
         total_bytes_put++;
     }
 
@@ -448,19 +437,19 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     /* Image File Directory */
-    tags[entries].tag = 0x0100; // ImageWidth
-    tags[entries].type = 3; // SHORT
+    tags[entries].tag = 0x0100; /* ImageWidth */
+    tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
     tags[entries++].offset = symbol->bitmap_width;
 
-    tags[entries].tag = 0x0101; // ImageLength - number of rows
-    tags[entries].type = 3; // SHORT
+    tags[entries].tag = 0x0101; /* ImageLength - number of rows */
+    tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
     tags[entries++].offset = symbol->bitmap_height;
 
     if (samples_per_pixel != 1 || bits_per_sample != 1) {
-        tags[entries].tag = 0x0102; // BitsPerSample
-        tags[entries].type = 3; // SHORT
+        tags[entries].tag = 0x0102; /* BitsPerSample */
+        tags[entries].type = 3; /* SHORT */
         tags[entries].count = samples_per_pixel;
         if (samples_per_pixel == 1) {
             tags[entries++].offset = bits_per_sample;
@@ -473,18 +462,18 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
     }
 
-    tags[entries].tag = 0x0103; // Compression
-    tags[entries].type = 3; // SHORT
+    tags[entries].tag = 0x0103; /* Compression */
+    tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
     tags[entries++].offset = compression;
 
-    tags[entries].tag = 0x0106; // PhotometricInterpretation
-    tags[entries].type = 3; // SHORT
+    tags[entries].tag = 0x0106; /* PhotometricInterpretation */
+    tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
     tags[entries++].offset = pmi;
 
-    tags[entries].tag = 0x0111; // StripOffsets
-    tags[entries].type = 4; // LONG
+    tags[entries].tag = 0x0111; /* StripOffsets */
+    tags[entries].type = 4; /* LONG */
     tags[entries].count = strip_count;
     if (strip_count == 1) {
         tags[entries++].offset = strip_offset[0];
@@ -495,19 +484,19 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
 
     if (samples_per_pixel > 1) {
-        tags[entries].tag = 0x0115; // SamplesPerPixel
-        tags[entries].type = 3; // SHORT
+        tags[entries].tag = 0x0115; /* SamplesPerPixel */
+        tags[entries].type = 3; /* SHORT */
         tags[entries].count = 1;
         tags[entries++].offset = samples_per_pixel;
     }
 
-    tags[entries].tag = 0x0116; // RowsPerStrip
-    tags[entries].type = 4; // LONG
+    tags[entries].tag = 0x0116; /* RowsPerStrip */
+    tags[entries].type = 4; /* LONG */
     tags[entries].count = 1;
     tags[entries++].offset = rows_per_strip;
 
-    tags[entries].tag = 0x0117; // StripByteCounts
-    tags[entries].type = 4; // LONG
+    tags[entries].tag = 0x0117; /* StripByteCounts */
+    tags[entries].type = 4; /* LONG */
     tags[entries].count = strip_count;
     if (strip_count == 1) {
         tags[entries++].offset = strip_bytes[0];
@@ -517,37 +506,37 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         free_memory += strip_count * 4;
     }
 
-    tags[entries].tag = 0x011a; // XResolution
-    tags[entries].type = 5; // RATIONAL
+    tags[entries].tag = 0x011a; /* XResolution */
+    tags[entries].type = 5; /* RATIONAL */
     tags[entries].count = 1;
     update_offsets[offsets++] = entries;
     tags[entries++].offset = free_memory;
     free_memory += 8;
 
-    tags[entries].tag = 0x011b; // YResolution
-    tags[entries].type = 5; // RATIONAL
+    tags[entries].tag = 0x011b; /* YResolution */
+    tags[entries].type = 5; /* RATIONAL */
     tags[entries].count = 1;
     update_offsets[offsets++] = entries;
     tags[entries++].offset = free_memory;
     free_memory += 8;
 
-    tags[entries].tag = 0x0128; // ResolutionUnit
-    tags[entries].type = 3; // SHORT
+    tags[entries].tag = 0x0128; /* ResolutionUnit */
+    tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
-    tags[entries++].offset = 2; // Inches
+    tags[entries++].offset = 2; /* Inches */
 
     if (color_map_size) {
-        tags[entries].tag = 0x0140; // ColorMap
-        tags[entries].type = 3; // SHORT
+        tags[entries].tag = 0x0140; /* ColorMap */
+        tags[entries].type = 3; /* SHORT */
         tags[entries].count = color_map_size * 3;
         update_offsets[offsets++] = entries;
         tags[entries++].offset = free_memory;
-        //free_memory += color_map_size * 3 * 2; /* Unnecessary as long as last use */
+        /* free_memory += color_map_size * 3 * 2; Unnecessary as long as last use */
     }
 
     if (extra_samples) {
-        tags[entries].tag = 0x0152; // ExtraSamples
-        tags[entries].type = 3; // SHORT
+        tags[entries].tag = 0x0152; /* ExtraSamples */
+        tags[entries].type = 3; /* SHORT */
         tags[entries].count = 1;
         tags[entries++].offset = extra_samples;
     }
@@ -622,3 +611,5 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

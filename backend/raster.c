@@ -1,8 +1,7 @@
 /* raster.c - Handles output to raster files */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,13 +28,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
 #include <math.h>
 
 #ifdef _MSC_VER
-#include <malloc.h>
 #include <fcntl.h>
 #include <io.h>
 #endif /* _MSC_VER */
@@ -287,7 +285,7 @@ static void copy_bar_line(unsigned char *pixelbuf, const int xpos, const int xle
     const int ye = ypos + ylen > image_height ? image_height : ypos + ylen; /* Defensive, should never happen */
     unsigned char *pb = pixelbuf + ((size_t) image_width * ypos) + xpos;
 
-    assert(ypos + ylen <= image_height); // Trigger assert if "should never happen" happens
+    assert(ypos + ylen <= image_height); /* Trigger assert if "should never happen" happens */
 
     for (y = ypos + 1; y < ye; y++) {
         memcpy(pixelbuf + ((size_t) image_width * y) + xpos, pb, xlen);
@@ -301,7 +299,7 @@ static void draw_bar(unsigned char *pixelbuf, const int xpos, const int xlen, co
     const int ye = ypos + ylen > image_height ? image_height : ypos + ylen; /* Defensive, should never happen */
     unsigned char *pb = pixelbuf + ((size_t) image_width * ypos) + xpos;
 
-    assert(ypos + ylen <= image_height); // Trigger assert if "should never happen" happens
+    assert(ypos + ylen <= image_height); /* Trigger assert if "should never happen" happens */
 
     for (y = ypos; y < ye; y++, pb += image_width) {
         memset(pb, fill, xlen);
@@ -361,17 +359,17 @@ static void draw_letter(unsigned char *pixelbuf, const unsigned char letter, int
             max_y = UPCEAN_FONT_HEIGHT;
         }
         glyph_no = letter - '0';
-    } else if (textflags & SMALL_TEXT) { // small font 5x9
+    } else if (textflags & SMALL_TEXT) { /* small font 5x9 */
         /* No bold for small */
         max_x = SMALL_FONT_WIDTH;
         max_y = SMALL_FONT_HEIGHT;
         font_table = small_font;
-    } else if (textflags & BOLD_TEXT) { // bold font -> regular font + 1
+    } else if (textflags & BOLD_TEXT) { /* bold font -> regular font + 1 */
         max_x = NORMAL_FONT_WIDTH + 1;
         max_y = NORMAL_FONT_HEIGHT;
         font_table = ascii_font;
         bold = 1;
-    } else { // regular font 7x14
+    } else { /* regular font 7x14 */
         max_x = NORMAL_FONT_WIDTH;
         max_y = NORMAL_FONT_HEIGHT;
         font_table = ascii_font;
@@ -437,14 +435,14 @@ static void draw_string(unsigned char *pixbuf, const unsigned char input_string[
         /* No bold for UPCEAN */
         letter_width = textflags & SMALL_TEXT ? UPCEAN_SMALL_FONT_WIDTH : UPCEAN_FONT_WIDTH;
         letter_gap = 4;
-    } else if (textflags & SMALL_TEXT) { // small font 5x9
+    } else if (textflags & SMALL_TEXT) { /* small font 5x9 */
         /* No bold for small */
         letter_width = SMALL_FONT_WIDTH;
         letter_gap = 0;
-    } else if (textflags & BOLD_TEXT) { // bold font -> width of the regular font + 1 extra dot + 1 extra space
+    } else if (textflags & BOLD_TEXT) { /* bold font -> width of the regular font + 1 extra dot + 1 extra space */
         letter_width = NORMAL_FONT_WIDTH + 1;
         letter_gap = 1;
-    } else { // regular font 7x15
+    } else { /* regular font 7x15 */
         letter_width = NORMAL_FONT_WIDTH;
         letter_gap = 0;
     }
@@ -1257,7 +1255,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         }
     }
 
-    // Separator binding for stacked barcodes
+    /* Separator binding for stacked barcodes */
     if ((symbol->output_options & BARCODE_BIND) && (symbol->rows > 1) && is_stackable(symbol->symbology)) {
         int sep_xoffset_si = xoffset_si;
         int sep_width_si = symbol->width * si;
@@ -1353,3 +1351,5 @@ INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_
 
     return error;
 }
+
+/* vim: set ts=4 sw=4 et : */

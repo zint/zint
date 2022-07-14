@@ -30,15 +30,12 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <math.h>
+#include <stdio.h>
 #include "common.h"
 #include "code1.h"
 #include "reedsol.h"
 #include "large.h"
-#include <stdio.h>
-#include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 
 /* Add solid bar */
 static void c1_horiz(struct zint_symbol *symbol, const int row_no, const int full) {
@@ -486,13 +483,8 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
     int byte_start = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length = length + 7 + chr_cnt(source, length, '\\');
-#ifndef _MSC_VER
-    unsigned char eci_buf[eci_length + 1];
-    int num_digits[eci_length + 1];
-#else
-    unsigned char *eci_buf = (unsigned char *) _alloca(eci_length + 1);
-    int *num_digits = (int *) _alloca(sizeof(int) * (eci_length + 1));
-#endif
+    unsigned char *eci_buf = (unsigned char *) z_alloca(eci_length + 1);
+    int *num_digits = (int *) z_alloca(sizeof(int) * (eci_length + 1));
 
     memset(num_digits, 0, sizeof(int) * (eci_length + 1));
 

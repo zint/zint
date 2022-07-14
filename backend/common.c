@@ -34,9 +34,6 @@
 #ifdef ZINT_TEST
 #include <stdio.h>
 #endif
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
@@ -548,10 +545,10 @@ INTERNAL int colour_to_red(const int colour) {
     int return_val = 0;
 
     switch (colour) {
-        case 8: // White
-        case 3: // Magenta
-        case 4: // Red
-        case 5: // Yellow
+        case 8: /* White */
+        case 3: /* Magenta */
+        case 4: /* Red */
+        case 5: /* Yellow */
             return_val = 255;
             break;
     }
@@ -564,10 +561,10 @@ INTERNAL int colour_to_green(const int colour) {
     int return_val = 0;
 
     switch (colour) {
-        case 8: // White
-        case 1: // Cyan
-        case 5: // Yellow
-        case 6: // Green
+        case 8: /* White */
+        case 1: /* Cyan */
+        case 5: /* Yellow */
+        case 6: /* Green */
             return_val = 255;
             break;
     }
@@ -580,10 +577,10 @@ INTERNAL int colour_to_blue(const int colour) {
     int return_val = 0;
 
     switch (colour) {
-        case 8: // White
-        case 1: // Cyan
-        case 2: // Blue
-        case 3: // Magenta
+        case 8: /* White */
+        case 1: /* Cyan */
+        case 2: /* Blue */
+        case 3: /* Magenta */
             return_val = 255;
             break;
     }

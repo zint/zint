@@ -1,7 +1,7 @@
-/*  bmp.h - header structure for Windows bitmap files
-
+/*  bmp.h - header structure for Windows bitmap files */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,19 +28,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef BMP_H
-#define BMP_H
+#ifndef Z_BMP_H
+#define Z_BMP_H
 
 #ifdef __cplusplus
 extern "C" {
-#endif
-
-#ifdef _MSC_VER
-#include <windows.h>
-#include "stdint_msvc.h"
-#else
-#include <stdint.h>
 #endif
 
 #pragma pack (1)
@@ -79,6 +73,5 @@ extern "C" {
 }
 #endif
 
-#endif /* BMP_H */
-
-
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_BMP_H */

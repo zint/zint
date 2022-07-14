@@ -1,7 +1,7 @@
-/*  emf.c - Support for Microsoft Enhanced Metafile Format
-
+/*  emf.c - Support for Microsoft Enhanced Metafile Format */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2016 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* Developed according to [MS-EMF] - v20160714, Released July 14, 2016
  * and [MS-WMF] - v20160714, Released July 14, 2016 */
@@ -40,7 +40,6 @@
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
-#include <malloc.h>
 #endif
 #include "common.h"
 #include "emf.h"
@@ -202,10 +201,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_setworldtransform_t emr_setworldtransform;
     emr_createbrushindirect_t emr_createbrushindirect_fg;
     emr_createbrushindirect_t emr_createbrushindirect_bg;
-    emr_createbrushindirect_t emr_createbrushindirect_colour[9]; // Used for colour symbols only
+    emr_createbrushindirect_t emr_createbrushindirect_colour[9]; /* Used for colour symbols only */
     emr_selectobject_t emr_selectobject_fgbrush;
     emr_selectobject_t emr_selectobject_bgbrush;
-    emr_selectobject_t emr_selectobject_colour[9]; // Used for colour symbols only
+    emr_selectobject_t emr_selectobject_colour[9]; /* Used for colour symbols only */
     emr_createpen_t emr_createpen;
     emr_selectobject_t emr_selectobject_pen;
     emr_rectangle_t background;
@@ -227,11 +226,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     float current_fsize;
     int current_halign;
 
-#ifdef _MSC_VER
     emr_rectangle_t *rectangle;
     emr_ellipse_t *circle;
     emr_polygon_t *hexagon;
-#endif
 
     if (symbol->vector == NULL) {
         strcpy(symbol->errtxt, "643: Vector header NULL");
@@ -256,18 +253,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     hexagon_count = count_hexagons(symbol);
     string_count = count_strings(symbol, &fsize, &fsize2, &halign, &halign1, &halign2);
 
-#ifndef _MSC_VER
-    // Avoid sanitize runtime error by making always non-zero
-    emr_rectangle_t rectangle[rectangle_count ? rectangle_count : 1];
-    emr_ellipse_t circle[circle_count ? circle_count : 1];
-    emr_polygon_t hexagon[hexagon_count ? hexagon_count : 1];
-#else
-    rectangle = (emr_rectangle_t *) _alloca(rectangle_count * sizeof(emr_rectangle_t));
-    circle = (emr_ellipse_t *) _alloca(circle_count * sizeof(emr_ellipse_t));
-    hexagon = (emr_polygon_t *) _alloca(hexagon_count * sizeof(emr_polygon_t));
-#endif
+    /* Avoid sanitize runtime error by making always non-zero */
+    rectangle = (emr_rectangle_t *) z_alloca(sizeof(emr_rectangle_t) * (rectangle_count ? rectangle_count : 1));
+    circle = (emr_ellipse_t *) z_alloca(sizeof(emr_ellipse_t) * (circle_count ? circle_count : 1));
+    hexagon = (emr_polygon_t *) z_alloca(sizeof(emr_polygon_t) * (hexagon_count ? hexagon_count : 1));
 
-    // Calculate how many coloured rectangles
+    /* Calculate how many coloured rectangles */
     if (symbol->symbology == BARCODE_ULTRA) {
 
         rect = symbol->vector->rectangles;
@@ -291,8 +282,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     height = (int) ceilf(symbol->vector->height);
 
     /* Header */
-    emr_header.type = 0x00000001; // EMR_HEADER
-    emr_header.size = 108; // Including extensions
+    emr_header.type = 0x00000001; /* EMR_HEADER */
+    emr_header.size = 108; /* Including extensions */
     emr_header.emf_header.bounds.left = 0;
     emr_header.emf_header.bounds.right = rotate_angle == 90 || rotate_angle == 270 ? height : width;
     emr_header.emf_header.bounds.bottom = rotate_angle == 90 || rotate_angle == 270 ? width : height;
@@ -301,10 +292,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_header.emf_header.frame.right = emr_header.emf_header.bounds.right * 30;
     emr_header.emf_header.frame.top = 0;
     emr_header.emf_header.frame.bottom = emr_header.emf_header.bounds.bottom * 30;
-    emr_header.emf_header.record_signature = 0x464d4520; // ENHMETA_SIGNATURE
+    emr_header.emf_header.record_signature = 0x464d4520; /* ENHMETA_SIGNATURE */
     emr_header.emf_header.version = 0x00010000;
     if (symbol->symbology == BARCODE_ULTRA) {
-        emr_header.emf_header.handles = 12; // Number of graphics objects
+        emr_header.emf_header.handles = 12; /* Number of graphics objects */
     } else {
         emr_header.emf_header.handles = fsize2 != 0.0f ? 5 : 4;
     }
@@ -317,23 +308,23 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_header.emf_header.millimeters.cx = 300;
     emr_header.emf_header.millimeters.cy = 300;
     /* HeaderExtension1 */
-    emr_header.emf_header.cb_pixel_format = 0x0000; // None set
-    emr_header.emf_header.off_pixel_format = 0x0000; // None set
-    emr_header.emf_header.b_open_gl = 0x0000; // OpenGL not present
+    emr_header.emf_header.cb_pixel_format = 0x0000; /* None set */
+    emr_header.emf_header.off_pixel_format = 0x0000; /* None set */
+    emr_header.emf_header.b_open_gl = 0x0000; /* OpenGL not present */
     /* HeaderExtension2 */
     emr_header.emf_header.micrometers.cx = 0;
     emr_header.emf_header.micrometers.cy = 0;
     bytecount = 108;
     recordcount = 1;
 
-    emr_mapmode.type = 0x00000011; // EMR_SETMAPMODE
+    emr_mapmode.type = 0x00000011; /* EMR_SETMAPMODE */
     emr_mapmode.size = 12;
-    emr_mapmode.mapmode = 0x01; // MM_TEXT
+    emr_mapmode.mapmode = 0x01; /* MM_TEXT */
     bytecount += 12;
     recordcount++;
 
     if (rotate_angle) {
-        emr_setworldtransform.type = 0x00000023; // EMR_SETWORLDTRANSFORM
+        emr_setworldtransform.type = 0x00000023; /* EMR_SETWORLDTRANSFORM */
         emr_setworldtransform.size = 32;
         emr_setworldtransform.m11 = rotate_angle == 90 ? 0.0f : rotate_angle == 180 ? -1.0f : 0.0f;
         emr_setworldtransform.m12 = rotate_angle == 90 ? 1.0f : rotate_angle == 180 ? 0.0f : -1.0f;
@@ -346,24 +337,24 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     /* Create Brushes */
-    emr_createbrushindirect_bg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
+    emr_createbrushindirect_bg.type = 0x00000027; /* EMR_CREATEBRUSHINDIRECT */
     emr_createbrushindirect_bg.size = 24;
     emr_createbrushindirect_bg.ih_brush = 1;
-    emr_createbrushindirect_bg.log_brush.brush_style = 0x0000; // BS_SOLID
+    emr_createbrushindirect_bg.log_brush.brush_style = 0x0000; /* BS_SOLID */
     emr_createbrushindirect_bg.log_brush.color.red = bgred;
     emr_createbrushindirect_bg.log_brush.color.green = bggrn;
     emr_createbrushindirect_bg.log_brush.color.blue = bgblu;
     emr_createbrushindirect_bg.log_brush.color.reserved = 0;
-    emr_createbrushindirect_bg.log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
+    emr_createbrushindirect_bg.log_brush.brush_hatch = 0x0006; /* HS_SOLIDCLR */
     bytecount += 24;
     recordcount++;
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
-            emr_createbrushindirect_colour[i].type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
+            emr_createbrushindirect_colour[i].type = 0x00000027; /* EMR_CREATEBRUSHINDIRECT */
             emr_createbrushindirect_colour[i].size = 24;
             emr_createbrushindirect_colour[i].ih_brush = 2 + i;
-            emr_createbrushindirect_colour[i].log_brush.brush_style = 0x0000; // BS_SOLID
+            emr_createbrushindirect_colour[i].log_brush.brush_style = 0x0000; /* BS_SOLID */
             if (i == 0) {
                 emr_createbrushindirect_colour[i].log_brush.color.red = fgred;
                 emr_createbrushindirect_colour[i].log_brush.color.green = fggrn;
@@ -374,25 +365,25 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 emr_createbrushindirect_colour[i].log_brush.color.blue = colour_to_blue(i);
             }
             emr_createbrushindirect_colour[i].log_brush.color.reserved = 0;
-            emr_createbrushindirect_colour[i].log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
+            emr_createbrushindirect_colour[i].log_brush.brush_hatch = 0x0006; /* HS_SOLIDCLR */
         }
         bytecount += colours_used * 24;
         recordcount += colours_used;
     } else {
-        emr_createbrushindirect_fg.type = 0x00000027; // EMR_CREATEBRUSHINDIRECT
+        emr_createbrushindirect_fg.type = 0x00000027; /* EMR_CREATEBRUSHINDIRECT */
         emr_createbrushindirect_fg.size = 24;
         emr_createbrushindirect_fg.ih_brush = 2;
-        emr_createbrushindirect_fg.log_brush.brush_style = 0x0000; // BS_SOLID
+        emr_createbrushindirect_fg.log_brush.brush_style = 0x0000; /* BS_SOLID */
         emr_createbrushindirect_fg.log_brush.color.red = fgred;
         emr_createbrushindirect_fg.log_brush.color.green = fggrn;
         emr_createbrushindirect_fg.log_brush.color.blue = fgblu;
         emr_createbrushindirect_fg.log_brush.color.reserved = 0;
-        emr_createbrushindirect_fg.log_brush.brush_hatch = 0x0006; // HS_SOLIDCLR
+        emr_createbrushindirect_fg.log_brush.brush_hatch = 0x0006; /* HS_SOLIDCLR */
         bytecount += 24;
         recordcount++;
     }
 
-    emr_selectobject_bgbrush.type = 0x00000025; // EMR_SELECTOBJECT
+    emr_selectobject_bgbrush.type = 0x00000025; /* EMR_SELECTOBJECT */
     emr_selectobject_bgbrush.size = 12;
     emr_selectobject_bgbrush.ih_object = 1;
     bytecount += 12;
@@ -400,14 +391,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
-            emr_selectobject_colour[i].type = 0x00000025; // EMR_SELECTOBJECT
+            emr_selectobject_colour[i].type = 0x00000025; /* EMR_SELECTOBJECT */
             emr_selectobject_colour[i].size = 12;
             emr_selectobject_colour[i].ih_object = 2 + i;
         }
         bytecount += colours_used * 12;
         recordcount += colours_used;
     } else {
-        emr_selectobject_fgbrush.type = 0x00000025; // EMR_SELECTOBJECT
+        emr_selectobject_fgbrush.type = 0x00000025; /* EMR_SELECTOBJECT */
         emr_selectobject_fgbrush.size = 12;
         emr_selectobject_fgbrush.ih_object = 2;
         bytecount += 12;
@@ -415,12 +406,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     /* Create Pens */
-    emr_createpen.type = 0x00000026; // EMR_CREATEPEN
+    emr_createpen.type = 0x00000026; /* EMR_CREATEPEN */
     emr_createpen.size = 28;
     emr_createpen.ih_pen = 11;
-    emr_createpen.log_pen.pen_style = 0x00000005; // PS_NULL
+    emr_createpen.log_pen.pen_style = 0x00000005; /* PS_NULL */
     emr_createpen.log_pen.width.x = 1;
-    emr_createpen.log_pen.width.y = 0; // ignored
+    emr_createpen.log_pen.width.y = 0; /* ignored */
     emr_createpen.log_pen.color_ref.red = 0;
     emr_createpen.log_pen.color_ref.green = 0;
     emr_createpen.log_pen.color_ref.blue = 0;
@@ -428,7 +419,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     bytecount += 28;
     recordcount++;
 
-    emr_selectobject_pen.type = 0x00000025; // EMR_SELECTOBJECT
+    emr_selectobject_pen.type = 0x00000025; /* EMR_SELECTOBJECT */
     emr_selectobject_pen.size = 12;
     emr_selectobject_pen.ih_object = 11;
     bytecount += 12;
@@ -436,7 +427,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     if (draw_background) {
         /* Make background from a rectangle */
-        background.type = 0x0000002b; // EMR_RECTANGLE
+        background.type = 0x0000002b; /* EMR_RECTANGLE */
         background.size = 24;
         background.box.top = 0;
         background.box.left = 0;
@@ -446,11 +437,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         recordcount++;
     }
 
-    // Rectangles
+    /* Rectangles */
     rect = symbol->vector->rectangles;
     this_rectangle = 0;
     while (rect) {
-        rectangle[this_rectangle].type = 0x0000002b; // EMR_RECTANGLE
+        rectangle[this_rectangle].type = 0x0000002b; /* EMR_RECTANGLE */
         rectangle[this_rectangle].size = 24;
         rectangle[this_rectangle].box.top = (int32_t) rect->y;
         rectangle[this_rectangle].box.bottom = (int32_t) stripf(rect->y + rect->height);
@@ -462,7 +453,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         rect = rect->next;
     }
 
-    // Circles
+    /* Circles */
     previous_diameter = radius = 0.0f;
     circ = symbol->vector->circles;
     this_circle = 0;
@@ -473,7 +464,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             previous_diameter = circ->diameter + circ->width;
             radius = mul3dpf(0.5, previous_diameter);
         }
-        circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
+        circle[this_circle].type = 0x0000002a; /* EMR_ELLIPSE */
         circle[this_circle].size = 24;
         circle[this_circle].box.top = (int32_t) stripf(circ->y - radius);
         circle[this_circle].box.bottom = (int32_t) stripf(circ->y + radius);
@@ -485,7 +476,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         if (symbol->symbology == BARCODE_MAXICODE) { /* Drawing MaxiCode bullseye using overlayed discs */
             float inner_radius = radius - circ->width;
-            circle[this_circle].type = 0x0000002a; // EMR_ELLIPSE
+            circle[this_circle].type = 0x0000002a; /* EMR_ELLIPSE */
             circle[this_circle].size = 24;
             circle[this_circle].box.top = (int32_t) stripf(circ->y - inner_radius);
             circle[this_circle].box.bottom = (int32_t) stripf(circ->y + inner_radius);
@@ -499,12 +490,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         circ = circ->next;
     }
 
-    // Hexagons
+    /* Hexagons */
     previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
     hex = symbol->vector->hexagons;
     this_hexagon = 0;
     while (hex) {
-        hexagon[this_hexagon].type = 0x00000003; // EMR_POLYGON
+        hexagon[this_hexagon].type = 0x00000003; /* EMR_POLYGON */
         hexagon[this_hexagon].size = 76;
         hexagon[this_hexagon].count = 6;
 
@@ -544,21 +535,21 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         bold = (symbol->output_options & BOLD_TEXT) &&
                 (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
         memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
-        emr_extcreatefontindirectw.type = 0x00000052; // EMR_EXTCREATEFONTINDIRECTW
+        emr_extcreatefontindirectw.type = 0x00000052; /* EMR_EXTCREATEFONTINDIRECTW */
         emr_extcreatefontindirectw.size = 104;
         emr_extcreatefontindirectw.ih_fonts = 12;
         emr_extcreatefontindirectw.elw.height = (int32_t) fsize;
-        emr_extcreatefontindirectw.elw.width = 0; // automatic
+        emr_extcreatefontindirectw.elw.width = 0; /* automatic */
         emr_extcreatefontindirectw.elw.weight = bold ? 700 : 400;
-        emr_extcreatefontindirectw.elw.char_set = 0x00; // ANSI_CHARSET
-        emr_extcreatefontindirectw.elw.out_precision = 0x00; // OUT_DEFAULT_PRECIS
-        emr_extcreatefontindirectw.elw.clip_precision = 0x00; // CLIP_DEFAULT_PRECIS
-        emr_extcreatefontindirectw.elw.pitch_and_family = 0x02 | (0x02 << 6); // FF_SWISS | VARIABLE_PITCH
+        emr_extcreatefontindirectw.elw.char_set = 0x00; /* ANSI_CHARSET */
+        emr_extcreatefontindirectw.elw.out_precision = 0x00; /* OUT_DEFAULT_PRECIS */
+        emr_extcreatefontindirectw.elw.clip_precision = 0x00; /* CLIP_DEFAULT_PRECIS */
+        emr_extcreatefontindirectw.elw.pitch_and_family = 0x02 | (0x02 << 6); /* FF_SWISS | VARIABLE_PITCH */
         utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char *) "sans-serif", 10);
         bytecount += 104;
         recordcount++;
 
-        emr_selectobject_font.type = 0x00000025; // EMR_SELECTOBJECT
+        emr_selectobject_font.type = 0x00000025; /* EMR_SELECTOBJECT */
         emr_selectobject_font.size = 12;
         emr_selectobject_font.ih_object = 12;
         bytecount += 12;
@@ -571,7 +562,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             bytecount += 104;
             recordcount++;
 
-            emr_selectobject_font2.type = 0x00000025; // EMR_SELECTOBJECT
+            emr_selectobject_font2.type = 0x00000025; /* EMR_SELECTOBJECT */
             emr_selectobject_font2.size = 12;
             emr_selectobject_font2.ih_object = 13;
             bytecount += 12;
@@ -580,21 +571,21 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         /* Note select aligns counted below in strings loop */
 
-        emr_settextalign.type = 0x00000016; // EMR_SETTEXTALIGN
+        emr_settextalign.type = 0x00000016; /* EMR_SETTEXTALIGN */
         emr_settextalign.size = 12;
-        emr_settextalign.text_alignment_mode = 0x0006 | 0x0018; // TA_CENTER | TA_BASELINE
+        emr_settextalign.text_alignment_mode = 0x0006 | 0x0018; /* TA_CENTER | TA_BASELINE */
         if (halign1) {
-            emr_settextalign1.type = 0x00000016; // EMR_SETTEXTALIGN
+            emr_settextalign1.type = 0x00000016; /* EMR_SETTEXTALIGN */
             emr_settextalign1.size = 12;
-            emr_settextalign1.text_alignment_mode = 0x0000 | 0x0018; // TA_LEFT | TA_BASELINE
+            emr_settextalign1.text_alignment_mode = 0x0000 | 0x0018; /* TA_LEFT | TA_BASELINE */
         }
         if (halign2) {
-            emr_settextalign2.type = 0x00000016; // EMR_SETTEXTALIGN
+            emr_settextalign2.type = 0x00000016; /* EMR_SETTEXTALIGN */
             emr_settextalign2.size = 12;
-            emr_settextalign2.text_alignment_mode = 0x0002 | 0x0018; // TA_RIGHT | TA_BASELINE
+            emr_settextalign2.text_alignment_mode = 0x0002 | 0x0018; /* TA_RIGHT | TA_BASELINE */
         }
 
-        emr_settextcolor.type = 0x0000018; // EMR_SETTEXTCOLOR
+        emr_settextcolor.type = 0x0000018; /* EMR_SETTEXTCOLOR */
         emr_settextcolor.size = 12;
         emr_settextcolor.color.red = fgred;
         emr_settextcolor.color.green = fggrn;
@@ -604,9 +595,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         recordcount++;
     }
 
-    // Text
+    /* Text */
     this_text = 0;
-    // Loop over font sizes so that they're grouped together, so only have to select font twice at most
+    /* Loop over font sizes so that they're grouped together, so only have to select font twice at most */
     for (i = 0, current_fsize = fsize; i < 2 && current_fsize; i++, current_fsize = fsize2) {
         str = symbol->vector->strings;
         current_halign = -1;
@@ -635,13 +626,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 return ZINT_ERROR_MEMORY;
             }
             memset(this_string[this_text], 0, bumped_len);
-            text[this_text].type = 0x00000054; // EMR_EXTTEXTOUTW
+            text[this_text].type = 0x00000054; /* EMR_EXTTEXTOUTW */
             text[this_text].size = 76 + bumped_len;
-            text[this_text].bounds.top = 0; // ignored
-            text[this_text].bounds.left = 0; // ignored
-            text[this_text].bounds.right = 0xffffffff; // ignored
-            text[this_text].bounds.bottom = 0xffffffff; // ignored
-            text[this_text].i_graphics_mode = 0x00000002; // GM_ADVANCED
+            text[this_text].bounds.top = 0; /* ignored */
+            text[this_text].bounds.left = 0; /* ignored */
+            text[this_text].bounds.right = 0xffffffff; /* ignored */
+            text[this_text].bounds.bottom = 0xffffffff; /* ignored */
+            text[this_text].i_graphics_mode = 0x00000002; /* GM_ADVANCED */
             text[this_text].ex_scale = 1.0f;
             text[this_text].ey_scale = 1.0f;
             text[this_text].w_emr_text.reference.x = (int32_t) str->x;
@@ -666,8 +657,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     assert(this_text == string_count);
 
     /* Create EOF record */
-    emr_eof.type = 0x0000000e; // EMR_EOF
-    emr_eof.size = 20; // Assuming no palette entries
+    emr_eof.type = 0x0000000e; /* EMR_EOF */
+    emr_eof.size = 20; /* Assuming no palette entries */
     emr_eof.n_pal_entries = 0;
     emr_eof.off_pal_entries = 0;
     emr_eof.size_last = emr_eof.size;
@@ -753,20 +744,20 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     } else {
         fwrite(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, emf_file);
 
-        // Rectangles
+        /* Rectangles */
         for (i = 0; i < rectangle_count; i++) {
             fwrite(&rectangle[i], sizeof(emr_rectangle_t), 1, emf_file);
         }
     }
 
-    // Hexagons
+    /* Hexagons */
     for (i = 0; i < hexagon_count; i++) {
         fwrite(&hexagon[i], sizeof(emr_polygon_t), 1, emf_file);
     }
 
-    // Circles
+    /* Circles */
     if (symbol->symbology == BARCODE_MAXICODE) {
-        // Bullseye needed
+        /* Bullseye needed */
         for (i = 0; i < circle_count; i++) {
             fwrite(&circle[i], sizeof(emr_ellipse_t), 1, emf_file);
             if (i < circle_count - 1) {
@@ -783,7 +774,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         }
     }
 
-    // Text
+    /* Text */
     if (string_count > 0) {
         fwrite(&emr_selectobject_font, sizeof(emr_selectobject_t), 1, emf_file);
         fwrite(&emr_settextcolor, sizeof(emr_settextcolor_t), 1, emf_file);
@@ -820,3 +811,5 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     }
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

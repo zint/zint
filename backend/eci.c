@@ -1,5 +1,5 @@
-/*  eci.c - Extended Channel Interpretations
-
+/*  eci.c - Extended Channel Interpretations */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -31,9 +31,6 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "eci.h"
 #include "eci_sb.h"
@@ -770,13 +767,8 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
 /* Find the lowest single-byte ECI mode which will encode a given set of Unicode text */
 INTERNAL int get_best_eci(const unsigned char source[], int length) {
     int eci = 3;
-
     /* Note: attempting single-byte conversions only, so get_eci_length() unnecessary */
-#ifndef _MSC_VER
-    unsigned char local_source[length + 1];
-#else
-    unsigned char *local_source = (unsigned char *) _alloca(length + 1);
-#endif
+    unsigned char *local_source = (unsigned char *) z_alloca(length + 1);
 
     do {
         if (eci == 14) { /* Reserved */
@@ -794,7 +786,7 @@ INTERNAL int get_best_eci(const unsigned char source[], int length) {
         return 0;
     }
 
-    return 26; // If all of these fail, use UTF-8!
+    return 26; /* If all of these fail, use UTF-8! */
 }
 
 /* Call `get_best_eci()` for each segment. Returns 0 on failure, first ECI set on success */
@@ -838,11 +830,7 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
                 unsigned int *ddata) {
     int error_number;
     unsigned int i, length;
-#ifndef _MSC_VER
-    unsigned int utfdata[*p_length + 1];
-#else
-    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
-#endif
+    unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
     error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
     if (error_number != 0) {
@@ -911,11 +899,7 @@ INTERNAL int sjis_utf8_to_eci(const int eci, const unsigned char source[], int *
     if (is_eci_convertible(eci)) {
         int error_number;
         const int eci_length = get_eci_length(eci, source, *p_length);
-#ifndef _MSC_VER
-        unsigned char converted[eci_length + 1];
-#else
-        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
-#endif
+        unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
         error_number = utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
@@ -938,11 +922,7 @@ INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[
                 unsigned int *ddata) {
     int error_number;
     unsigned int i, length;
-#ifndef _MSC_VER
-    unsigned int utfdata[*p_length + 1];
-#else
-    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
-#endif
+    unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
     error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 1 /*disallow_4byte*/);
     if (error_number != 0) {
@@ -1022,11 +1002,7 @@ INTERNAL int gb2312_utf8_to_eci(const int eci, const unsigned char source[], int
     if (is_eci_convertible(eci)) {
         int error_number;
         const int eci_length = get_eci_length(eci, source, *p_length);
-#ifndef _MSC_VER
-        unsigned char converted[eci_length + 1];
-#else
-        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
-#endif
+        unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
         error_number = utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {
@@ -1049,11 +1025,7 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
                 unsigned int *ddata) {
     int error_number, ret;
     unsigned int i, j, length;
-#ifndef _MSC_VER
-    unsigned int utfdata[*p_length + 1];
-#else
-    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
-#endif
+    unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
     error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
     if (error_number != 0) {
@@ -1150,11 +1122,7 @@ INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], in
     if (is_eci_convertible(eci)) {
         int error_number;
         const int eci_length = get_eci_length(eci, source, *p_length);
-#ifndef _MSC_VER
-        unsigned char converted[eci_length + 1];
-#else
-        unsigned char *converted = (unsigned char *) _alloca(eci_length + 1);
-#endif
+        unsigned char *converted = (unsigned char *) z_alloca(eci_length + 1);
 
         error_number = utf8_to_eci(eci, source, converted, p_length);
         if (error_number != 0) {

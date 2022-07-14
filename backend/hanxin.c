@@ -34,9 +34,6 @@
  * (previously ISO/IEC 20830 (draft 2019-10-10) and AIMD-015:2010 (Rev 0.8)) */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "reedsol.h"
 #include "hanxin.h"
@@ -392,11 +389,7 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     char cur_mode;
     unsigned int prev_costs[HX_NUM_MODES];
     unsigned int cur_costs[HX_NUM_MODES];
-#ifndef _MSC_VER
-    char char_modes[length * HX_NUM_MODES];
-#else
-    char *char_modes = (char *) _alloca(length * HX_NUM_MODES);
-#endif
+    char *char_modes = (char *) z_alloca(length * HX_NUM_MODES);
 
     /* char_modes[i * HX_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
      * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
@@ -526,7 +519,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
 
     if (eci != 0) {
         /* Encoding ECI assignment number, according to Table 5 */
-        bp = bin_append_posn(8, 4, binary, bp); // ECI
+        bp = bin_append_posn(8, 4, binary, bp); /* ECI */
         if (eci <= 127) {
             bp = bin_append_posn(eci, 8, binary, bp);
         } else if (eci <= 16383) {
@@ -1128,7 +1121,7 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     const int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
     rs_t rs;
 
-    rs_init_gf(&rs, 0x163); // x^8 + x^6 + x^5 + x + 1 = 0
+    rs_init_gf(&rs, 0x163); /* x^8 + x^6 + x^5 + x + 1 = 0 */
 
     for (i = 0; i < 3; i++) {
         const int batch_size = hx_table_d1[table_d1_pos + (3 * i)];
@@ -1393,14 +1386,8 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
     int best_pattern;
     int bit;
     const int size_squared = size * size;
-
-#ifndef _MSC_VER
-    unsigned char mask[size_squared];
-    unsigned char local[size_squared];
-#else
-    unsigned char *mask = (unsigned char *) _alloca(size_squared);
-    unsigned char *local = (unsigned char *) _alloca(size_squared);
-#endif
+    unsigned char *mask = (unsigned char *) z_alloca(size_squared);
+    unsigned char *local = (unsigned char *) z_alloca(size_squared);
 
     /* Perform data masking */
     memset(mask, 0, size_squared);
@@ -1428,7 +1415,7 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
     if (user_mask) {
         best_pattern = user_mask - 1;
     } else {
-        // apply data masks to grid, result in local
+        /* apply data masks to grid, result in local */
 
         /* Do null pattern 00 separately first */
         pattern = 0;
@@ -1501,21 +1488,14 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     int bin_len;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
-
-#ifndef _MSC_VER
-    struct zint_seg local_segs[seg_count];
-    unsigned int ddata[eci_length_segs];
-    char mode[eci_length_segs];
-#else
-    struct zint_seg *local_segs = (struct zint_seg *) _alloca(sizeof(struct zint_seg) * seg_count);
-    unsigned int *ddata = (unsigned int *) _alloca(sizeof(unsigned int) * eci_length_segs);
-    char *mode = (char *) _alloca(eci_length_segs);
+    struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
+    unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * eci_length_segs);
+    char *mode = (char *) z_alloca(eci_length_segs);
     char *binary;
     unsigned char *datastream;
     unsigned char *fullstream;
     unsigned char *picket_fence;
     unsigned char *grid;
-#endif
 
     segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECI & protect lengths) */
 
@@ -1562,11 +1542,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     est_binlen = hx_calc_binlen_segs(mode, ddata, local_segs, seg_count);
 
-#ifndef _MSC_VER
-    char binary[est_binlen + 1];
-#else
-    binary = (char *) _alloca((est_binlen + 1));
-#endif
+    binary = (char *) z_alloca((est_binlen + 1));
 
     if ((ecc_level <= 0) || (ecc_level >= 5)) {
         ecc_level = 1;
@@ -1655,17 +1631,10 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     size = (version * 2) + 21;
     size_squared = size * size;
 
-#ifndef _MSC_VER
-    unsigned char datastream[data_codewords];
-    unsigned char fullstream[hx_total_codewords[version - 1]];
-    unsigned char picket_fence[hx_total_codewords[version - 1]];
-    unsigned char grid[size_squared];
-#else
-    datastream = (unsigned char *) _alloca(data_codewords);
-    fullstream = (unsigned char *) _alloca(hx_total_codewords[version - 1]);
-    picket_fence = (unsigned char *) _alloca(hx_total_codewords[version - 1]);
-    grid = (unsigned char *) _alloca(size_squared);
-#endif
+    datastream = (unsigned char *) z_alloca(data_codewords);
+    fullstream = (unsigned char *) z_alloca(hx_total_codewords[version - 1]);
+    picket_fence = (unsigned char *) z_alloca(hx_total_codewords[version - 1]);
+    grid = (unsigned char *) z_alloca(size_squared);
 
     memset(datastream, 0, data_codewords);
 

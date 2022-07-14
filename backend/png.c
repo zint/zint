@@ -37,7 +37,6 @@
 #ifdef _MSC_VER
 #include <fcntl.h>
 #include <io.h>
-#include <malloc.h>
 #endif
 #include "common.h"
 
@@ -110,12 +109,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int compression_strategy;
     unsigned char *pb;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
-
-#ifndef _MSC_VER
-    unsigned char outdata[symbol->bitmap_width];
-#else
-    unsigned char *outdata = (unsigned char *) _alloca(symbol->bitmap_width);
-#endif
+    unsigned char *outdata = (unsigned char *) z_alloca(symbol->bitmap_width);
 
     wpng_error.symbol = symbol;
 

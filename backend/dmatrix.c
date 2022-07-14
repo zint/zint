@@ -1,5 +1,4 @@
 /* dmatrix.c Handles Data Matrix ECC 200 symbols */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
@@ -39,13 +38,9 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#include <stdio.h>
 #include <assert.h>
 #include <limits.h>
-#include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
+#include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
 #include "dmatrix.h"
@@ -60,14 +55,14 @@ static void dm_placementbit(int *array, const int NR, const int NC, int r, int c
         c += NC;
         r += 4 - ((NC + 4) % 8);
     }
-    // Necessary for DMRE (ISO/IEC 21471:2020 Annex E)
+    /* Necessary for DMRE (ISO/IEC 21471:2020 Annex E) */
     if (r >= NR) {
         r -= NR;
     }
-    // Check index limits
+    /* Check index limits */
     assert(r < NR);
     assert(c < NC);
-    // Check double-assignment
+    /* Check double-assignment */
     assert(0 == array[r * NC + c]);
     array[r * NC + c] = (p << 3) + b;
 }
@@ -131,12 +126,12 @@ static void dm_placementcornerD(int *array, const int NR, const int NC, const in
 /* Annex F placement algorithm main function */
 static void dm_placement(int *array, const int NR, const int NC) {
     int r, c, p;
-    // start
+    /* start */
     p = 1;
     r = 4;
     c = 0;
     do {
-        // check corner
+        /* check corner */
         if (r == NR && !c)
             dm_placementcornerA(array, NR, NC, p++);
         if (r == NR - 2 && !c && NC % 4)
@@ -145,7 +140,7 @@ static void dm_placement(int *array, const int NR, const int NC) {
             dm_placementcornerC(array, NR, NC, p++);
         if (r == NR + 4 && c == 2 && !(NC % 8))
             dm_placementcornerD(array, NR, NC, p++);
-        // up/right
+        /* up/right */
         do {
             if (r < NR && c >= 0 && !array[r * NC + c])
                 dm_placementblock(array, NR, NC, r, c, p++);
@@ -154,7 +149,7 @@ static void dm_placement(int *array, const int NR, const int NC) {
         } while (r >= 0 && c < NC);
         r++;
         c += 3;
-        // down/left
+        /* down/left */
         do {
             if (r >= 0 && c < NC && !array[r * NC + c])
                 dm_placementblock(array, NR, NC, r, c, p++);
@@ -164,7 +159,7 @@ static void dm_placement(int *array, const int NR, const int NC) {
         r += 3;
         c++;
     } while (r < NR || c < NC);
-    // unfilled corner
+    /* unfilled corner */
     if (!array[NR * NC - 1])
         array[NR * NC - 1] = array[NR * NC - NC - 2] = 1;
 }
@@ -184,7 +179,7 @@ static void dm_ecc(unsigned char *binary, const int bytes, const int datablock, 
         for (n = b; n < bytes; n += blocks)
             buf[p++] = binary[n];
         rs_encode(&rs, p, buf, ecc);
-        p = rsblock - 1; // comes back reversed
+        p = rsblock - 1; /* comes back reversed */
         for (n = b; n < rsblocks; n += blocks) {
             if (skew) {
                 /* Rotate ecc data to make 144x144 size symbols acceptable */
@@ -329,65 +324,65 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
 
         /* ascii ... step (l) */
         if (z_isdigit(c)) {
-            ascii_count += DM_MULT_1_DIV_2; // (l)(1)
+            ascii_count += DM_MULT_1_DIV_2; /* (l)(1) */
         } else {
             if (is_extended) {
-                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_2; // (l)(2)
+                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_2; /* (l)(2) */
             } else {
-                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_1; // (l)(3)
+                ascii_count = DM_MULT_CEIL(ascii_count) + DM_MULT_1; /* (l)(3) */
             }
         }
 
         /* c40 ... step (m) */
         if (dm_isc40(c)) {
-            c40_count += DM_MULT_2_DIV_3; // (m)(1)
+            c40_count += DM_MULT_2_DIV_3; /* (m)(1) */
         } else {
             if (is_extended) {
-                c40_count += DM_MULT_8_DIV_3; // (m)(2)
+                c40_count += DM_MULT_8_DIV_3; /* (m)(2) */
             } else {
-                c40_count += DM_MULT_4_DIV_3; // (m)(3)
+                c40_count += DM_MULT_4_DIV_3; /* (m)(3) */
             }
         }
 
         /* text ... step (n) */
         if (dm_istext(c)) {
-            text_count += DM_MULT_2_DIV_3; // (n)(1)
+            text_count += DM_MULT_2_DIV_3; /* (n)(1) */
         } else {
             if (is_extended) {
-                text_count += DM_MULT_8_DIV_3; // (n)(2)
+                text_count += DM_MULT_8_DIV_3; /* (n)(2) */
             } else {
-                text_count += DM_MULT_4_DIV_3; // (n)(3)
+                text_count += DM_MULT_4_DIV_3; /* (n)(3) */
             }
         }
 
         /* x12 ... step (o) */
         if (dm_isX12(c)) {
-            x12_count += DM_MULT_2_DIV_3; // (o)(1)
+            x12_count += DM_MULT_2_DIV_3; /* (o)(1) */
         } else {
             if (is_extended) {
-                x12_count += DM_MULT_13_DIV_3; // (o)(2)
+                x12_count += DM_MULT_13_DIV_3; /* (o)(2) */
             } else {
-                x12_count += DM_MULT_10_DIV_3; // (o)(3)
+                x12_count += DM_MULT_10_DIV_3; /* (o)(3) */
             }
         }
 
         /* edifact ... step (p) */
         if (dm_isedifact(c, gs1)) {
-            edf_count += DM_MULT_3_DIV_4; // (p)(1)
+            edf_count += DM_MULT_3_DIV_4; /* (p)(1) */
         } else {
             if (is_extended) {
-                edf_count += DM_MULT_17_DIV_4; // (p)(2)
+                edf_count += DM_MULT_17_DIV_4; /* (p)(2) */
             } else {
-                edf_count += DM_MULT_13_DIV_4; // (p)(3)
+                edf_count += DM_MULT_13_DIV_4; /* (p)(3) */
             }
         }
 
         /* base 256 ... step (q) */
         if ((gs1 == 1) && (c == '[')) {
             /* FNC1 separator */
-            b256_count += DM_MULT_4; // (q)(1)
+            b256_count += DM_MULT_4; /* (q)(1) */
         } else {
-            b256_count += DM_MULT_1; // (q)(2)
+            b256_count += DM_MULT_1; /* (q)(2) */
         }
 
         if (sp >= position + 3) {
@@ -763,7 +758,7 @@ static int dm_getEndMode(struct zint_symbol *symbol, const unsigned char *source
     return mode;
 }
 
-//#define DM_TRACE
+/*#define DM_TRACE*/
 #include "dmatrix_trace.h"
 
 /* Return number of C40/TEXT codewords needed to encode characters in full batches of 3 (or less if EOD).
@@ -1056,11 +1051,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
     int current_mode = *p_current_mode;
     int last_ascii, symbols_left;
     int i;
-#ifndef _MSC_VER
-    char modes[length];
-#else
-    char *modes = (char *) _alloca(length);
-#endif
+    char *modes = (char *) z_alloca(length);
 
     assert(length <= 10921); /* Can only handle (10921 + 1) * 6 = 65532 < 65536 (2*16) due to sizeof(previous) */
 
@@ -1205,7 +1196,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
 
             int value = source[sp];
 
-            if (value >= 64) { // '@'
+            if (value >= 64) { /* '@' */
                 value -= 64;
             }
 
@@ -1413,7 +1404,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
             } else {
                 int value = source[sp];
 
-                if (value >= 64) { // '@'
+                if (value >= 64) { /* '@' */
                     value -= 64;
                 }
 
@@ -1531,20 +1522,20 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         if (debug_print) printf("%s ", current_mode == DM_C40 ? "C40" : "TEX");
         if (process_p == 0) {
             if (symbols_left > 0) {
-                target[tp++] = 254; // Unlatch
+                target[tp++] = 254; /* Unlatch */
                 if (debug_print) printf("ASC ");
             }
         } else {
             if (process_p == 2 && symbols_left == 2) {
                 /* 5.2.5.2 (b) */
-                process_buffer[process_p++] = 0; // Shift 1
+                process_buffer[process_p++] = 0; /* Shift 1 */
                 (void) dm_ctx_buffer_xfer(process_buffer, process_p, target, &tp, debug_print);
 
             } else if (process_p == 1 && symbols_left <= 2 && dm_isc40text(current_mode, source[length - 1])) {
                 /* 5.2.5.2 (c)/(d) */
                 if (symbols_left > 1) {
                     /* 5.2.5.2 (c) */
-                    target[tp++] = 254; // Unlatch and encode remaining data in ascii.
+                    target[tp++] = 254; /* Unlatch and encode remaining data in ascii. */
                     if (debug_print) printf("ASC ");
                 }
                 target[tp++] = source[length - 1] + 1;
@@ -1562,7 +1553,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                 if (debug_print) printf("Mode %d, backtracked %d\n", current_mode, (total_cnt / 3) * 2);
                 tp -= (total_cnt / 3) * 2;
 
-                target[tp++] = 254; // Unlatch
+                target[tp++] = 254; /* Unlatch */
                 if (debug_print) printf("ASC ");
                 for (; sp < length; sp++) {
                     if (is_twodigits(source, length, sp)) {
@@ -1592,12 +1583,12 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
     } else if (current_mode == DM_X12) {
         if (debug_print) printf("X12 ");
         if ((symbols_left == 1) && (process_p == 1)) {
-            // Unlatch not required!
+            /* Unlatch not required! */
             target[tp++] = source[length - 1] + 1;
             if (debug_print) printf("A%02X ", target[tp - 1] - 1);
         } else {
             if (symbols_left > 0) {
-                target[tp++] = (254); // Unlatch.
+                target[tp++] = (254); /* Unlatch. */
                 if (debug_print) printf("ASC ");
             }
 
@@ -1613,7 +1604,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
 
     } else if (current_mode == DM_EDIFACT) {
         if (debug_print) printf("EDI ");
-        if (symbols_left <= 2 && process_p <= symbols_left) { // Unlatch not required!
+        if (symbols_left <= 2 && process_p <= symbols_left) { /* Unlatch not required! */
             if (process_p == 1) {
                 target[tp++] = source[length - 1] + 1;
                 if (debug_print) printf("A%02X ", target[tp - 1] - 1);
@@ -1623,7 +1614,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                 if (debug_print) printf("A%02X A%02X ", target[tp - 2] - 1, target[tp - 1] - 1);
             }
         } else {
-            // Append edifact unlatch value (31) and empty buffer
+            /* Append edifact unlatch value (31) and empty buffer */
             if (process_p <= 3) {
                 process_buffer[process_p++] = 31;
             }
@@ -1844,7 +1835,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if (binlen > dm_matrixbytes[symbolsize]) {
         if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
-            // The symbol size was given by --ver (option_2)
+            /* The symbol size was given by --ver (option_2) */
             strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
         } else {
             strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
@@ -1871,7 +1862,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
         printf("\n");
     }
 
-    // ecc code
+    /* ecc code */
     if (symbolsize == INTSYMBOL144) {
         skew = 1;
     }
@@ -1887,7 +1878,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
         debug_test_codeword_dump(symbol, binary, skew ? 1558 + 620 : bytes + rsblock * (bytes / datablock));
     }
 #endif
-    { // placement
+    { /* placement */
         const int NC = W - 2 * (W / FW);
         const int NR = H - 2 * (H / FH);
         int x, y, *places;
@@ -1909,7 +1900,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
                 set_module(symbol, (H - y) - 1, x + FW - 1);
         }
 #ifdef DM_DEBUG
-        // Print position matrix as in standard
+        /* Print position matrix as in standard */
         for (y = NR - 1; y >= 0; y--) {
             for (x = 0; x < NC; x++) {
                 const int v = places[(NR - y - 1) * NC + x];

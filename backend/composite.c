@@ -48,12 +48,9 @@
    The date of publication for these functions is 31 May 2006
  */
 
-#include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
+#include <stdio.h>
 #include "common.h"
 #include "pdf417.h"
 #include "gs1.h"
@@ -303,11 +300,7 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
 static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_width) {
     const int length = (int) strlen(source) / 8;
     int i;
-#ifndef _MSC_VER
-    unsigned char data_string[length + 3];
-#else
-    unsigned char *data_string = (unsigned char *) _alloca(length + 3);
-#endif
+    unsigned char *data_string = (unsigned char *) z_alloca(length + 3);
     int chainemc[180], mclength;
     int k, j, p, longueur, mccorrection[50] = {0}, offset;
     int total;
@@ -528,11 +521,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
 static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_width, const int ecc_level) {
     const int length = (int) strlen(source) / 8;
     int i, p;
-#ifndef _MSC_VER
-    unsigned char data_string[length + 4];
-#else
-    unsigned char *data_string = (unsigned char *) _alloca(length + 4);
-#endif
+    unsigned char *data_string = (unsigned char *) z_alloca(length + 4);
     int chainemc[1000], mclength, k;
     int offset, longueur, loop, total, j, mccorrection[520] = {0};
     int c1, c2, c3, dummy[35];
@@ -871,11 +860,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     int ai90_mode, remainder;
     char last_digit = '\0';
     int mode;
-#ifndef _MSC_VER
-    char general_field[source_len + 1];
-#else
-    char *general_field = (char *) _alloca(source_len + 1);
-#endif
+    char *general_field = (char *) z_alloca(source_len + 1);
     int target_bitsize;
     int bp = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
@@ -950,11 +935,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     } else if (encoding_method == 3) {
         /* Encodation Method field of "11" - AI 90 */
-#ifndef _MSC_VER
-        char ninety[source_len + 1];
-#else
-        char *ninety = (char *) _alloca(source_len + 1);
-#endif
+        char *ninety = (char *) z_alloca(source_len + 1);
         int ninety_len, alpha, alphanum, numeric, test1, test2, test3;
 
         /* "This encodation method may be used if an element string with an AI
@@ -1282,11 +1263,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
     const unsigned int bs = 13 * length + 1000 + 1;
-#ifndef _MSC_VER
-    char binary_string[bs];
-#else
-    char *binary_string = (char *) _alloca(bs);
-#endif
+    char *binary_string = (char *) z_alloca(bs);
     unsigned int pri_len;
     struct zint_symbol *linear;
     int top_shift, bottom_shift;

@@ -1,7 +1,7 @@
-/*  vector.c - Creates vector image objects
-
+/*  vector.c - Creates vector image objects */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2018 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,11 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
-
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "common.h"
 #include "output.h"
@@ -57,7 +53,7 @@ static struct zint_vector_rect *vector_plot_create_rect(struct zint_symbol *symb
     rect->y = y;
     rect->width = width;
     rect->height = height;
-    rect->colour = -1; // Default colour
+    rect->colour = -1; /* Default colour */
 
     return rect;
 }
@@ -67,7 +63,7 @@ static void vector_plot_add_rect(struct zint_symbol *symbol, struct zint_vector_
     if (*last_rect)
         (*last_rect)->next = rect;
     else
-        symbol->vector->rectangles = rect; // first rectangle
+        symbol->vector->rectangles = rect; /* first rectangle */
 
     *last_rect = rect;
 }
@@ -95,7 +91,7 @@ static void vector_plot_add_hexagon(struct zint_symbol *symbol, struct zint_vect
     if (*last_hexagon)
         (*last_hexagon)->next = hexagon;
     else
-        symbol->vector->hexagons = hexagon; // first hexagon
+        symbol->vector->hexagons = hexagon; /* first hexagon */
 
     *last_hexagon = hexagon;
 }
@@ -125,7 +121,7 @@ static void vector_plot_add_circle(struct zint_symbol *symbol, struct zint_vecto
     if (*last_circle)
         (*last_circle)->next = circle;
     else
-        symbol->vector->circles = circle; // first circle
+        symbol->vector->circles = circle; /* first circle */
 
     *last_circle = circle;
 }
@@ -159,7 +155,7 @@ static int vector_plot_add_string(struct zint_symbol *symbol, const unsigned cha
     if (*last_string)
         (*last_string)->next = string;
     else
-        symbol->vector->strings = string; // First text portion
+        symbol->vector->strings = string; /* First text portion */
     *last_string = string;
 
     return 1;
@@ -172,7 +168,7 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
 
-        // Free Rectangles
+        /* Free Rectangles */
         rect = symbol->vector->rectangles;
         while (rect) {
             struct zint_vector_rect *r = rect;
@@ -180,7 +176,7 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
             free(r);
         }
 
-        // Free Hexagons
+        /* Free Hexagons */
         hex = symbol->vector->hexagons;
         while (hex) {
             struct zint_vector_hexagon *h = hex;
@@ -188,7 +184,7 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
             free(h);
         }
 
-        // Free Circles
+        /* Free Circles */
         circle = symbol->vector->circles;
         while (circle) {
             struct zint_vector_circle *c = circle;
@@ -196,7 +192,7 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
             free(c);
         }
 
-        // Free Strings
+        /* Free Strings */
         string = symbol->vector->strings;
         while (string) {
             struct zint_vector_string *s = string;
@@ -205,7 +201,7 @@ INTERNAL void vector_free(struct zint_symbol *symbol) {
             free(s);
         }
 
-        // Free vector
+        /* Free vector */
         free(symbol->vector);
         symbol->vector = NULL;
     }
@@ -218,12 +214,12 @@ static void vector_scale(struct zint_symbol *symbol, const int file_type) {
     struct zint_vector_string *string;
     float scale = symbol->scale * 2.0f;
 
-    if (scale < 0.2f) { // Minimum vector scale 0.1
+    if (scale < 0.2f) { /* Minimum vector scale 0.1 */
         scale = 0.2f;
     }
 
     if ((file_type == OUT_EMF_FILE) && (symbol->symbology == BARCODE_MAXICODE)) {
-        // Increase size to overcome limitations in EMF file format
+        /* Increase size to overcome limitations in EMF file format */
         scale *= 20;
     }
 
@@ -267,7 +263,7 @@ static void vector_scale(struct zint_symbol *symbol, const int file_type) {
 }
 
 static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
-    // Rotates the image
+    /* Rotates the image */
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
@@ -275,7 +271,7 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
     float temp;
 
     if (rotate_angle == 0) {
-        // No rotation needed
+        /* No rotation needed */
         return;
     }
 
@@ -367,7 +363,7 @@ static void vector_rotate(struct zint_symbol *symbol, const int rotate_angle) {
 }
 
 static void vector_reduce_rectangles(struct zint_symbol *symbol) {
-    // Looks for vertically aligned rectangles and merges them together
+    /* Looks for vertically aligned rectangles and merges them together */
     struct zint_vector_rect *rect, *target, *prev;
 
     rect = symbol->vector->rectangles;
@@ -425,16 +421,16 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     struct zint_vector_string *last_string = NULL;
     struct zint_vector_circle *circle, *last_circle = NULL;
 
-    // Free any previous rendering structures
+    /* Free any previous rendering structures */
     vector_free(symbol);
 
-    // Sanity check colours
+    /* Sanity check colours */
     error_number = out_check_colour_options(symbol);
     if (error_number != 0) {
         return error_number;
     }
 
-    // Allocate memory
+    /* Allocate memory */
     vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector));
     if (!vector) {
         strcpy(symbol->errtxt, "696: Insufficient memory for vector header");
@@ -503,7 +499,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     vector->width = symbol->width + dot_overspill + (xoffset + roffset);
     vector->height = symbol->height + textoffset + dot_overspill + (yoffset + boffset);
 
-    // Plot Maxicode symbols
+    /* Plot Maxicode symbols */
     if (symbol->symbology == BARCODE_MAXICODE) {
         float bull_x, bull_y, bull_d_incr, bull_width;
         const float two_div_sqrt3 = 1.1547f; /* 2 / √3 */
@@ -520,7 +516,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* 32 rows drawn yposn_offset apart + final hexagon */
         vector->height = 32 * yposn_offset + hex_ydiameter + (yoffset + boffset);
 
-        // Bullseye (ISO/IEC 16023:2000 4.2.1.1 and 4.11.4)
+        /* Bullseye (ISO/IEC 16023:2000 4.2.1.1 and 4.11.4) */
         bull_x = 14.5f * hex_diameter + xoffset; /* 14W right from leftmost centre = 14.5X */
         bull_y = vector->height / 2.0f; /* 16Y above bottom-most centre = halfway */
         /* Total finder diameter is 9X, so diametric increment for 5 diameters d2 to d6 is (9X - d1) / 5 */
@@ -554,7 +550,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 }
             }
         }
-    // Dotty mode
+    /* Dotty mode */
     } else if (symbol->output_options & BARCODE_DOTTY_MODE) {
         for (r = 0; r < symbol->rows; r++) {
             for (i = 0; i < symbol->width; i++) {
@@ -566,7 +562,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 }
             }
         }
-    // Plot rectangles - most symbols created here
+    /* Plot rectangles - most symbols created here */
     } else if (symbol->symbology == BARCODE_ULTRA) {
         yposn = yoffset;
         for (r = 0; r < symbol->rows; r++) {
@@ -845,16 +841,16 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             }
         } else {
             /* Put normal human readable text at the bottom (and centered) */
-            // calculate start xoffset to center text
+            /* calculate start xoffset to center text */
             text_xposn = main_width / 2.0f + xoffset;
             if (!vector_plot_add_string(symbol, symbol->text, text_xposn, text_yposn,
                     text_height, symbol->width, 0, &last_string)) return ZINT_ERROR_MEMORY;
         }
 
-        xoffset -= comp_xoffset; // Restore xoffset
+        xoffset -= comp_xoffset; /* Restore xoffset */
     }
 
-    // Separator binding for stacked barcodes
+    /* Separator binding for stacked barcodes */
     if ((symbol->output_options & BARCODE_BIND) && (symbol->rows > 1) && is_stackable(symbol->symbology)) {
         float sep_xoffset = xoffset;
         float sep_width = symbol->width;
@@ -877,17 +873,17 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         }
     }
 
-    // Bind/box
+    /* Bind/box */
     if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
         const int horz_outside = is_fixed_ratio(symbol->symbology);
         float ybind_top = yoffset - symbol->border_width;
-        // Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE
+        /* Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE */
         float ybind_bot = vector->height - textoffset - boffset;
         if (horz_outside) {
             ybind_top = 0;
             ybind_bot = vector->height - symbol->border_width;
         }
-        // Top
+        /* Top */
         rect = vector_plot_create_rect(symbol, 0.0f, ybind_top, vector->width, symbol->border_width);
         if (!rect) return ZINT_ERROR_MEMORY;
         if (!(symbol->output_options & BARCODE_BOX)
@@ -897,7 +893,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             rect->width -= xoffset + roffset;
         }
         vector_plot_add_rect(symbol, rect, &last_rectangle);
-        // Bottom
+        /* Bottom */
         rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
         if (!rect) return ZINT_ERROR_MEMORY;
         if (!(symbol->output_options & BARCODE_BOX)
@@ -910,17 +906,17 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         if (symbol->output_options & BARCODE_BOX) {
             const float xbox_right = vector->width - symbol->border_width;
             float box_top = yoffset;
-            // Following equivalent to symbol->height except for BARCODE_MAXICODE
+            /* Following equivalent to symbol->height except for BARCODE_MAXICODE */
             float box_height = vector->height - textoffset - dot_overspill - yoffset - boffset;
             if (horz_outside) {
                 box_top = symbol->border_width;
                 box_height = vector->height - symbol->border_width * 2;
             }
-            // Left
+            /* Left */
             rect = vector_plot_create_rect(symbol, 0.0f, box_top, symbol->border_width, box_height);
             if (!rect) return ZINT_ERROR_MEMORY;
             vector_plot_add_rect(symbol, rect, &last_rectangle);
-            // Right
+            /* Right */
             rect = vector_plot_create_rect(symbol, xbox_right, box_top, symbol->border_width, box_height);
             if (!rect) return ZINT_ERROR_MEMORY;
             vector_plot_add_rect(symbol, rect, &last_rectangle);
@@ -951,3 +947,5 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

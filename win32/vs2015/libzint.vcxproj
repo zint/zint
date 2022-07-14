@@ -380,7 +380,6 @@
     <ClInclude Include="..\..\backend\ksx1001.h" />
     <ClInclude Include="..\..\backend\large.h" />
     <ClInclude Include="..\..\backend\maxicode.h" />
-    <ClInclude Include="..\..\backend\ms_stdint.h" />
     <ClInclude Include="..\..\backend\output.h" />
     <ClInclude Include="..\..\backend\pcx.h" />
     <ClInclude Include="..\..\backend\pdf417.h" />
@@ -390,7 +389,6 @@
     <ClInclude Include="..\..\backend\reedsol_logs.h" />
     <ClInclude Include="..\..\backend\rss.h" />
     <ClInclude Include="..\..\backend\sjis.h" />
-    <ClInclude Include="..\..\backend\stdint_msvc.h" />
     <ClInclude Include="..\..\backend\tif.h" />
     <ClInclude Include="..\..\backend\tif_lzw.h" />
     <ClInclude Include="..\..\backend\zfiletypes.h" />

@@ -36,15 +36,9 @@
  * Incorporating suggestions from Terry Burton at BWIPP
  */
 
-#include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#ifndef _MSC_VER
-#include <stdint.h>
-#else
-#include "ms_stdint.h"
-#include <malloc.h>
-#endif
+#include <stdio.h>
 #include "common.h"
 #include "gs1.h"
 
@@ -68,7 +62,7 @@ static const unsigned short dc_dot_patterns[113] = {
     0x1b8, 0x1c6, 0x1cc
 };
 
-// Printed() routine from Annex A adapted to char array of ASCII 1's and 0's
+/* Printed() routine from Annex A adapted to char array of ASCII 1's and 0's */
 static int dc_get_dot(const char Dots[], const int Hgt, const int Wid, const int x, const int y) {
 
     if ((x >= 0) && (x < Wid) && (y >= 0) && (y < Hgt)) {
@@ -102,7 +96,7 @@ static int dc_clr_row(const char *Dots, const int Hgt, const int Wid, const int 
     return 1;
 }
 
-// calc penalty for empty interior columns
+/* calc penalty for empty interior columns */
 static int dc_col_penalty(const char *Dots, const int Hgt, const int Wid) {
     int x, penalty = 0, penalty_local = 0;
 
@@ -124,7 +118,7 @@ static int dc_col_penalty(const char *Dots, const int Hgt, const int Wid) {
     return penalty + penalty_local;
 }
 
-// calc penalty for empty interior rows
+/* calc penalty for empty interior rows */
 static int dc_row_penalty(const char *Dots, const int Hgt, const int Wid) {
     int y, penalty = 0, penalty_local = 0;
 
@@ -151,17 +145,17 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     int x, y, worstedge, first, last, sum;
     int penalty = 0;
 
-    // first, guard against "pathelogical" gaps in the array
-    // subtract a penalty score for empty rows/columns from total code score for each mask,
-    // where the penalty is Sum(N ^ n), where N is the number of positions in a column/row,
-    // and n is the number of consecutive empty rows/columns
+    /* first, guard against "pathelogical" gaps in the array
+       subtract a penalty score for empty rows/columns from total code score for each mask,
+       where the penalty is Sum(N ^ n), where N is the number of positions in a column/row,
+       and n is the number of consecutive empty rows/columns */
     penalty = dc_row_penalty(Dots, Hgt, Wid) + dc_col_penalty(Dots, Hgt, Wid);
 
     sum = 0;
     first = -1;
     last = -1;
 
-    // across the top edge, count printed dots and measure their extent
+    /* across the top edge, count printed dots and measure their extent */
     for (x = 0; x < Wid; x += 2) {
         if (dc_get_dot(Dots, Hgt, Wid, x, 0)) {
             if (first < 0) {
@@ -172,7 +166,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
         }
     }
     if (sum == 0) {
-        return SCORE_UNLIT_EDGE;      // guard against empty top edge
+        return SCORE_UNLIT_EDGE;      /* guard against empty top edge */
     }
 
     worstedge = sum + last - first;
@@ -182,7 +176,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     first = -1;
     last = -1;
 
-    // across the bottom edge, ditto
+    /* across the bottom edge, ditto */
     for (x = Wid & 1; x < Wid; x += 2) {
         if (dc_get_dot(Dots, Hgt, Wid, x, Hgt - 1)) {
             if (first < 0) {
@@ -193,7 +187,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
         }
     }
     if (sum == 0) {
-        return SCORE_UNLIT_EDGE;      // guard against empty bottom edge
+        return SCORE_UNLIT_EDGE;      /* guard against empty bottom edge */
     }
 
     sum += last - first;
@@ -206,7 +200,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     first = -1;
     last = -1;
 
-    // down the left edge, ditto
+    /* down the left edge, ditto */
     for (y = 0; y < Hgt; y += 2) {
         if (dc_get_dot(Dots, Hgt, Wid, 0, y)) {
             if (first < 0) {
@@ -217,7 +211,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
         }
     }
     if (sum == 0) {
-        return SCORE_UNLIT_EDGE;      // guard against empty left edge
+        return SCORE_UNLIT_EDGE;      /* guard against empty left edge */
     }
 
     sum += last - first;
@@ -230,7 +224,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     first = -1;
     last = -1;
 
-    // down the right edge, ditto
+    /* down the right edge, ditto */
     for (y = Hgt & 1; y < Hgt; y += 2) {
         if (dc_get_dot(Dots, Hgt, Wid, Wid - 1, y)) {
             if (first < 0) {
@@ -241,7 +235,7 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
         }
     }
     if (sum == 0) {
-        return SCORE_UNLIT_EDGE;      // guard against empty right edge
+        return SCORE_UNLIT_EDGE;      /* guard against empty right edge */
     }
 
     sum += last - first;
@@ -250,8 +244,8 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
         worstedge = sum;
     }
 
-    // throughout the array, count the # of unprinted 5-somes (cross patterns)
-    // plus the # of printed dots surrounded by 8 unprinted neighbors
+    /* throughout the array, count the # of unprinted 5-somes (cross patterns)
+       plus the # of printed dots surrounded by 8 unprinted neighbors */
     sum = 0;
     for (y = 0; y < Hgt; y++) {
         for (x = y & 1; x < Wid; x += 2) {
@@ -268,10 +262,10 @@ static int dc_score_array(const char Dots[], const int Hgt, const int Wid) {
     return (worstedge - sum * sum - penalty);
 }
 
-//-------------------------------------------------------------------------
+/*-------------------------------------------------------------------------
 // "rsencode(nd,nc)" adds "nc" R-S check words to "nd" data words in wd[]
 // employing Galois Field GF, where GF is prime, with a prime modulus of PM
-//-------------------------------------------------------------------------
+//-------------------------------------------------------------------------*/
 
 static void dc_rsencode(const int nd, const int nc, unsigned char *wd) {
     /* Pre-calculated coefficients for GF(113) of generator polys of degree 3 to 39. To generate run
@@ -340,22 +334,22 @@ static void dc_rsencode(const int nd, const int nc, unsigned char *wd) {
     int i, j, k, nw, start, step;
     const char *c;
 
-    // Here we compute how many interleaved R-S blocks will be needed
+    /* Here we compute how many interleaved R-S blocks will be needed */
     nw = nd + nc;
     step = (nw + GF - 2) / (GF - 1);
 
-    // ...& then for each such block:
+    /* ...& then for each such block: */
     for (start = 0; start < step; start++) {
         const int ND = (nd - start + step - 1) / step;
         const int NW = (nw - start + step - 1) / step;
         const int NC = NW - ND;
         unsigned char *const e = wd + start + ND * step;
 
-        // first set the generator polynomial "c" of order "NC":
+        /* first set the generator polynomial "c" of order "NC": */
         c = coefs + cinds[NC - 3];
 
-        // & then compute the corresponding checkword values into wd[]
-        // ... (a) starting at wd[start] & (b) stepping by step
+        /* & then compute the corresponding checkword values into wd[]
+           ... (a) starting at wd[start] & (b) stepping by step */
         for (i = 0; i < NC; i++) {
             e[i * step] = 0;
         }
@@ -394,15 +388,15 @@ static int dc_datum_b(const unsigned char source[], const int length, const int 
         }
 
         switch (source[position]) {
-            case 9: // HT
-            case 28: // FS
-            case 29: // GS
-            case 30: // RS
+            case 9: /* HT */
+            case 28: /* FS */
+            case 29: /* GS */
+            case 30: /* RS */
                 return 1;
                 break;
         }
 
-        if ((position + 1 < length) && (source[position] == 13) && (source[position + 1] == 10)) { // CRLF
+        if ((position + 1 < length) && (source[position] == 13) && (source[position + 1] == 10)) { /* CRLF */
             return 2;
         }
     }
@@ -505,7 +499,7 @@ static int dc_binary(const unsigned char source[], const int length, const int p
 /* Empty binary buffer */
 static int dc_empty_bin_buf(unsigned char *codeword_array, int ap, uint64_t *p_bin_buf, int *p_bin_buf_size) {
     int i;
-    int lawrencium[6]; // Reversed radix 103 values
+    int lawrencium[6]; /* Reversed radix 103 values */
     uint64_t bin_buf = *p_bin_buf;
     int bin_buf_size = *p_bin_buf_size;
 
@@ -546,7 +540,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             const int eci, const int last_seg, const int last_EOT, const int last_RSEOT,
             int ap, unsigned char *codeword_array, char *p_encoding_mode, int *p_inside_macro,
             uint64_t *p_bin_buf, int *p_bin_buf_size, unsigned char structapp_array[], int *p_structapp_size) {
-    static const char lead_specials[] = "\x09\x1C\x1D\x1E"; // HT, FS, GS, RS
+    static const char lead_specials[] = "\x09\x1C\x1D\x1E"; /* HT, FS, GS, RS */
 
     int i;
     int position = 0;
@@ -562,19 +556,19 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
     if (first_seg) {
         if (symbol->output_options & READER_INIT) {
-            codeword_array[ap++] = 109; // FNC3
+            codeword_array[ap++] = 109; /* FNC3 */
 
         } else if (!gs1 && eci == 0 && length > 2 && is_twodigits(source, length, 0)) {
-            codeword_array[ap++] = 107; // FNC1
+            codeword_array[ap++] = 107; /* FNC1 */
 
         } else if (posn(lead_specials, source[0]) != -1) {
-            // Prevent encodation as a macro if a special character is in first position
-            codeword_array[ap++] = 101; // Latch A
+            /* Prevent encodation as a macro if a special character is in first position */
+            codeword_array[ap++] = 101; /* Latch A */
             codeword_array[ap++] = source[0] + 64;
             encoding_mode = 'A';
             position++;
 
-        } else if (length > 5) { // Note assuming macro headers don't straddle segments
+        } else if (length > 5) { /* Note assuming macro headers don't straddle segments */
             /* Step C1 */
             if (source[0] == '[' && source[1] == ')' && source[2] == '>' && source[3] == 30 /*RS*/ && last_EOT) {
                 int format_050612 = (source[4] == '0' && (source[5] == '5' || source[5] == '6'))
@@ -592,9 +586,9 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                     inside_macro = 100; /* Note no longer using for malformed 05/06/12 */
                 }
                 if (inside_macro) {
-                    codeword_array[ap++] = 106; // Latch B
+                    codeword_array[ap++] = 106; /* Latch B */
                     encoding_mode = 'B';
-                    codeword_array[ap++] = inside_macro; // Macro
+                    codeword_array[ap++] = inside_macro; /* Macro */
                     if (inside_macro == 100) {
                         codeword_array[ap++] = ctoi(source[4]) + 16;
                         codeword_array[ap++] = ctoi(source[5]) + 16;
@@ -625,12 +619,12 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 ap = dc_append_to_bin_buf(codeword_array, ap, eci & 0xFF, &bin_buf, &bin_buf_size);
             }
         } else {
-            codeword_array[ap++] = 108; // FNC2
+            codeword_array[ap++] = 108; /* FNC2 */
             if (eci <= 39) {
                 codeword_array[ap++] = eci;
             } else {
-                // the next three codewords valued A, B & C encode the ECI value of
-                // (A - 40) * 12769 + B * 113 + C + 40 (Section 5.2.1)
+                /* the next three codewords valued A, B & C encode the ECI value of
+                   (A - 40) * 12769 + B * 113 + C + 40 (Section 5.2.1) */
                 int a, b, c;
                 a = (eci - 40) / 12769;
                 b = ((eci - 40) - (12769 * a)) / 113;
@@ -646,7 +640,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
     while (position < length) {
         /* Step A */
         if (last_seg && (position == length - 2) && (inside_macro != 0) && (inside_macro != 100)) {
-            // inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT
+            /* inside_macro only gets set to 97, 98 or 99 if the last two characters are RS/EOT */
             position += 2;
             if (debug_print) printf("A ");
             continue;
@@ -654,7 +648,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
         /* Step B */
         if (last_seg && (position == length - 1) && (inside_macro == 100)) {
-            // inside_macro only gets set to 100 if the last character is EOT
+            /* inside_macro only gets set to 100 if the last character is EOT */
             position++;
             if (debug_print) printf("B ");
             continue;
@@ -664,7 +658,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             /* Step C2 */
             if (dc_seventeen_ten(source, length, position)) {
-                codeword_array[ap++] = 100; // (17)...(10)
+                codeword_array[ap++] = 100; /* (17)...(10) */
                 codeword_array[ap++] = to_int(source + position + 2, 2);
                 codeword_array[ap++] = to_int(source + position + 4, 2);
                 codeword_array[ap++] = to_int(source + position + 6, 2);
@@ -675,7 +669,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             if (dc_datum_c(source, length, position) || (source[position] == '[' && gs1)) {
                 if (source[position] == '[') {
-                    codeword_array[ap++] = 107; // FNC1
+                    codeword_array[ap++] = 107; /* FNC1 */
                     position++;
                 } else {
                     codeword_array[ap++] = to_int(source + position, 2);
@@ -690,15 +684,15 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 /* dc_n_digits(position + 1) > 0 */
                 if (position + 1 < length && z_isdigit(source[position + 1])) {
                     if ((source[position] - 128) < 32) {
-                        codeword_array[ap++] = 110; // Upper Shift A
+                        codeword_array[ap++] = 110; /* Upper Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
-                        codeword_array[ap++] = 111; // Upper Shift B
+                        codeword_array[ap++] = 111; /* Upper Shift B */
                         codeword_array[ap++] = source[position] - 128 - 32;
                     }
                     position++;
                 } else {
-                    codeword_array[ap++] = 112; // Bin Latch
+                    codeword_array[ap++] = 112; /* Bin Latch */
                     encoding_mode = 'X';
                 }
                 if (debug_print) printf("C3 ");
@@ -710,30 +704,30 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 const int m = dc_ahead_a(source, length, position);
                 const int n = dc_ahead_b(source, length, position, &nx);
                 if (m > n) {
-                    codeword_array[ap++] = 101; // Latch A
+                    codeword_array[ap++] = 101; /* Latch A */
                     encoding_mode = 'A';
                 } else {
                     if (nx >= 1 && nx <= 4) {
-                        codeword_array[ap++] = 101 + nx; // nx Shift B
+                        codeword_array[ap++] = 101 + nx; /* nx Shift B */
 
                         for (i = 0; i < nx; i++) {
                             if (source[position] >= 32) {
                                 codeword_array[ap++] = source[position] - 32;
-                            } else if (source[position] == 13) { // CR/LF
+                            } else if (source[position] == 13) { /* CR/LF */
                                 codeword_array[ap++] = 96;
                                 position++;
                             } else {
                                 switch (source[position]) {
-                                    case 9: codeword_array[ap++] = 97; break; // HT
-                                    case 28: codeword_array[ap++] = 98; break; // FS
-                                    case 29: codeword_array[ap++] = 99; break; // GS
-                                    case 30: codeword_array[ap++] = 100; break; // RS
+                                    case 9: codeword_array[ap++] = 97; break; /* HT */
+                                    case 28: codeword_array[ap++] = 98; break; /* FS */
+                                    case 29: codeword_array[ap++] = 99; break; /* GS */
+                                    case 30: codeword_array[ap++] = 100; break; /* RS */
                                 }
                             }
                             position++;
                         }
                     } else {
-                        codeword_array[ap++] = 106; // Latch B
+                        codeword_array[ap++] = 106; /* Latch B */
                         encoding_mode = 'B';
                     }
                 }
@@ -748,13 +742,13 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             if (n >= 2) {
                 if (n <= 4) {
-                    codeword_array[ap++] = 103 + (n - 2); // nx Shift C
+                    codeword_array[ap++] = 103 + (n - 2); /* nx Shift C */
                     for (i = 0; i < n; i++) {
                         codeword_array[ap++] = to_int(source + position, 2);
                         position += 2;
                     }
                 } else {
-                    codeword_array[ap++] = 106; // Latch C
+                    codeword_array[ap++] = 106; /* Latch C */
                     encoding_mode = 'C';
                 }
                 if (debug_print) printf("D1 ");
@@ -763,7 +757,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             /* Step D2 */
             if ((source[position] == '[') && gs1) {
-                codeword_array[ap++] = 107; // FNC1
+                codeword_array[ap++] = 107; /* FNC1 */
                 position++;
                 if (debug_print) printf("D2/1 ");
                 continue;
@@ -786,10 +780,10 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                     /* HT, FS, GS and RS in the first data position would be interpreted as a macro
                      * (see table 2) */
                     switch (source[position]) {
-                        case 9: codeword_array[ap++] = 97; break; // HT
-                        case 28: codeword_array[ap++] = 98; break; // FS
-                        case 29: codeword_array[ap++] = 99; break; // GS
-                        case 30: codeword_array[ap++] = 100; break; // RS
+                        case 9: codeword_array[ap++] = 97; break; /* HT */
+                        case 28: codeword_array[ap++] = 98; break; /* FS */
+                        case 29: codeword_array[ap++] = 99; break; /* GS */
+                        case 30: codeword_array[ap++] = 100; break; /* RS */
                     }
                     done = 1;
                 }
@@ -805,15 +799,15 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             if (dc_binary(source, length, position)) {
                 if (dc_datum_b(source, length, position + 1)) {
                     if ((source[position] - 128) < 32) {
-                        codeword_array[ap++] = 110; // Bin Shift A
+                        codeword_array[ap++] = 110; /* Bin Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
-                        codeword_array[ap++] = 111; // Bin Shift B
+                        codeword_array[ap++] = 111; /* Bin Shift B */
                         codeword_array[ap++] = source[position] - 128 - 32;
                     }
                     position++;
                 } else {
-                    codeword_array[ap++] = 112; // Bin Latch
+                    codeword_array[ap++] = 112; /* Bin Latch */
                     encoding_mode = 'X';
                 }
                 if (debug_print) printf("D3 ");
@@ -822,7 +816,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             /* Step D4 */
             if (dc_ahead_a(source, length, position) == 1) {
-                codeword_array[ap++] = 101; // Shift A
+                codeword_array[ap++] = 101; /* Shift A */
                 if (source[position] < 32) {
                     codeword_array[ap++] = source[position] + 64;
                 } else {
@@ -830,7 +824,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 }
                 position++;
             } else {
-                codeword_array[ap++] = 102; // Latch A
+                codeword_array[ap++] = 102; /* Latch A */
                 encoding_mode = 'A';
             }
             if (debug_print) printf("D4 ");
@@ -842,13 +836,13 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             const int n = dc_try_c(source, length, position);
             if (n >= 2) {
                 if (n <= 4) {
-                    codeword_array[ap++] = 103 + (n - 2); // nx Shift C
+                    codeword_array[ap++] = 103 + (n - 2); /* nx Shift C */
                     for (i = 0; i < n; i++) {
                         codeword_array[ap++] = to_int(source + position, 2);
                         position += 2;
                     }
                 } else {
-                    codeword_array[ap++] = 106; // Latch C
+                    codeword_array[ap++] = 106; /* Latch C */
                     encoding_mode = 'C';
                 }
                 if (debug_print) printf("E1 ");
@@ -857,8 +851,8 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             /* Step E2 */
             if ((source[position] == '[') && gs1) {
-                // Note: this branch probably never reached as no reason to be in Code Set A for GS1 data
-                codeword_array[ap++] = 107; // FNC1
+                /* Note: this branch probably never reached as no reason to be in Code Set A for GS1 data */
+                codeword_array[ap++] = 107; /* FNC1 */
                 position++;
                 if (debug_print) printf("E2/1 ");
                 continue;
@@ -878,15 +872,15 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             if (dc_binary(source, length, position)) {
                 if (dc_datum_a(source, length, position + 1)) {
                     if ((source[position] - 128) < 32) {
-                        codeword_array[ap++] = 110; // Bin Shift A
+                        codeword_array[ap++] = 110; /* Bin Shift A */
                         codeword_array[ap++] = source[position] - 128 + 64;
                     } else {
-                        codeword_array[ap++] = 111; // Bin Shift B
+                        codeword_array[ap++] = 111; /* Bin Shift B */
                         codeword_array[ap++] = source[position] - 128 - 32;
                     }
                     position++;
                 } else {
-                    codeword_array[ap++] = 112; // Bin Latch
+                    codeword_array[ap++] = 112; /* Bin Latch */
                     encoding_mode = 'X';
                 }
                 if (debug_print) printf("E3 ");
@@ -897,25 +891,25 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             dc_ahead_b(source, length, position, &nx);
 
             if (nx >= 1 && nx <= 6) {
-                codeword_array[ap++] = 95 + nx; // nx Shift B
+                codeword_array[ap++] = 95 + nx; /* nx Shift B */
                 for (i = 0; i < nx; i++) {
                     if (source[position] >= 32) {
                         codeword_array[ap++] = source[position] - 32;
-                    } else if (source[position] == 13) { // CR/LF
+                    } else if (source[position] == 13) { /* CR/LF */
                         codeword_array[ap++] = 96;
                         position++;
                     } else {
                         switch (source[position]) {
-                            case 9: codeword_array[ap++] = 97; break; // HT
-                            case 28: codeword_array[ap++] = 98; break; // FS
-                            case 29: codeword_array[ap++] = 99; break; // GS
-                            case 30: codeword_array[ap++] = 100; break; // RS
+                            case 9: codeword_array[ap++] = 97; break; /* HT */
+                            case 28: codeword_array[ap++] = 98; break; /* FS */
+                            case 29: codeword_array[ap++] = 99; break; /* GS */
+                            case 30: codeword_array[ap++] = 100; break; /* RS */
                         }
                     }
                     position++;
                 }
             } else {
-                codeword_array[ap++] = 102; // Latch B
+                codeword_array[ap++] = 102; /* Latch B */
                 encoding_mode = 'B';
             }
             if (debug_print) printf("E4 ");
@@ -930,13 +924,13 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 ap = dc_empty_bin_buf(codeword_array, ap, &bin_buf, &bin_buf_size);
 
                 if (n <= 7) {
-                    codeword_array[ap++] = 101 + n; // Interrupt for nx Shift C
+                    codeword_array[ap++] = 101 + n; /* Interrupt for nx Shift C */
                     for (i = 0; i < n; i++) {
                         codeword_array[ap++] = to_int(source + position, 2);
                         position += 2;
                     }
                 } else {
-                    codeword_array[ap++] = 111; // Terminate with Latch to C
+                    codeword_array[ap++] = 111; /* Terminate with Latch to C */
                     encoding_mode = 'C';
                 }
                 if (debug_print) printf("F1 ");
@@ -962,10 +956,10 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             ap = dc_empty_bin_buf(codeword_array, ap, &bin_buf, &bin_buf_size); /* Empty binary buffer */
 
             if (dc_ahead_a(source, length, position) > dc_ahead_b(source, length, position, NULL)) {
-                codeword_array[ap++] = 109; // Terminate with Latch to A
+                codeword_array[ap++] = 109; /* Terminate with Latch to A */
                 encoding_mode = 'A';
             } else {
-                codeword_array[ap++] = 110; // Terminate with Latch to B
+                codeword_array[ap++] = 110; /* Terminate with Latch to B */
                 encoding_mode = 'B';
             }
             if (debug_print) printf("F3 ");
@@ -1029,9 +1023,9 @@ static int dc_encode_message_segs(struct zint_symbol *symbol, const struct zint_
 
     const struct zint_seg *last_seg = &segs[seg_count - 1];
 
-    last_EOT = last_seg->source[last_seg->length - 1] == 4; // EOT
+    last_EOT = last_seg->source[last_seg->length - 1] == 4; /* EOT */
     if (last_EOT && last_seg->length > 1) {
-        last_RSEOT = last_seg->source[last_seg->length - 2] == 30; // RS
+        last_RSEOT = last_seg->source[last_seg->length - 2] == 30; /* RS */
     }
 
     for (i = 0; i < seg_count; i++) {
@@ -1120,7 +1114,7 @@ static void dc_fold_dotstream(const char dot_stream[], const int width, const in
                         dot_array[((height - row - 1) * width) + column] = dot_stream[position++];
                     }
                 } else {
-                    dot_array[((height - row - 1) * width) + column] = ' '; // Non-data position
+                    dot_array[((height - row - 1) * width) + column] = ' '; /* Non-data position */
                 }
             }
         }
@@ -1143,7 +1137,7 @@ static void dc_fold_dotstream(const char dot_stream[], const int width, const in
                         dot_array[(row * width) + column] = dot_stream[position++];
                     }
                 } else {
-                    dot_array[(row * width) + column] = ' '; // Non-data position
+                    dot_array[(row * width) + column] = ' '; /* Non-data position */
                 }
             }
         }
@@ -1200,7 +1194,7 @@ static void dc_apply_mask(const int mask, const int data_length, unsigned char *
 
 static void dc_force_corners(const int width, const int height, char *dot_array) {
     if (width & 1) {
-        // "Vertical" symbol
+        /* "Vertical" symbol */
         dot_array[0] = '1';
         dot_array[width - 1] = '1';
         dot_array[(height - 2) * width] = '1';
@@ -1208,7 +1202,7 @@ static void dc_force_corners(const int width, const int height, char *dot_array)
         dot_array[((height - 1) * width) + 1] = '1';
         dot_array[(height * width) - 2] = '1';
     } else {
-        // "Horizontal" symbol
+        /* "Horizontal" symbol */
         dot_array[0] = '1';
         dot_array[width - 2] = '1';
         dot_array[(2 * width) - 1] = '1';
@@ -1236,15 +1230,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     /* Allow 4 codewords per input + 2 (FNC) + seg_count * 4 (ECI) + 2 (special char 1st position)
        + 5 (Structured Append) + 10 (PAD) */
     const int codeword_array_len = segs_length(segs, seg_count) * 4 + 2 + seg_count * 4 + 2 + 5 + 10;
-
-#ifndef _MSC_VER
-    unsigned char codeword_array[codeword_array_len];
-#else
-    unsigned char *codeword_array = (unsigned char *) _alloca(codeword_array_len);
+    unsigned char *codeword_array = (unsigned char *) z_alloca(codeword_array_len);
     char *dot_stream;
     char *dot_array;
     unsigned char *masked_codeword_array;
-#endif /* _MSC_VER */
 
     if (symbol->eci > 811799) {
         strcpy(symbol->errtxt, "525: Invalid ECI");
@@ -1362,13 +1351,8 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     n_dots = (height * width) / 2;
 
-#ifndef _MSC_VER
-    char dot_stream[height * width * 3];
-    char dot_array[width * height];
-#else
-    dot_stream = (char *) _alloca(height * width * 3);
-    dot_array = (char *) _alloca(width * height);
-#endif
+    dot_stream = (char *) z_alloca(height * width * 3);
+    dot_array = (char *) z_alloca(width * height);
 
     /* Add pad characters */
     padding_dots = n_dots - min_dots; /* get the number of free dots available for padding */
@@ -1428,11 +1412,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     ecc_length = 3 + (data_length / 2);
 
-#ifndef _MSC_VER
-    unsigned char masked_codeword_array[data_length + 1 + ecc_length];
-#else
-    masked_codeword_array = (unsigned char *) _alloca(data_length + 1 + ecc_length);
-#endif /* _MSC_VER */
+    masked_codeword_array = (unsigned char *) z_alloca(data_length + 1 + ecc_length);
 
     if (user_mask) {
         best_mask = user_mask - 1;

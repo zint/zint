@@ -1,5 +1,5 @@
-/*  library.c - external functions of libzint
-
+/*  library.c - external functions of libzint */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -33,9 +33,6 @@
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include <stdio.h>
 #include "common.h"
 #include "eci.h"
@@ -44,7 +41,12 @@
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056 */
-typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
+typedef char static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
+
+typedef char static_assert_uint16_is_16bits[sizeof(uint16_t) != 2 ? -1 : 1];
+typedef char static_assert_int32_is_32bits[sizeof(int32_t) != 4 ? -1 : 1];
+typedef char static_assert_uint32_is_32bits[sizeof(uint32_t) != 4 ? -1 : 1];
+typedef char static_assert_uint64_at_least_64bits[sizeof(uint64_t) < 8 ? -1 : 1];
 
 /* Create and initialize a symbol structure */
 struct zint_symbol *ZBarcode_Create(void) {
@@ -65,10 +67,10 @@ struct zint_symbol *ZBarcode_Create(void) {
     strcpy(symbol->outfile, "out.png");
 #endif
     symbol->option_1 = -1;
-    symbol->show_hrt = 1; // Show human readable text
+    symbol->show_hrt = 1; /* Show human readable text */
     symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
-    symbol->eci = 0; // Default 0 uses ECI 3
+    symbol->eci = 0; /* Default 0 uses ECI 3 */
     symbol->dot_size = 4.0f / 5.0f;
     symbol->guard_descent = 5.0f;
     symbol->warn_level = WARN_DEFAULT;
@@ -107,7 +109,7 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     symbol->bitmap_height = 0;
     symbol->bitmap_byte_length = 0;
 
-    // If there is a rendered version, ensure its memory is released
+    /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
 }
 
@@ -120,7 +122,7 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->alphamap != NULL)
         free(symbol->alphamap);
 
-    // If there is a rendered version, ensure its memory is released
+    /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
 
     free(symbol);
@@ -400,9 +402,9 @@ static int gs1_compliant(const int symbology) {
         case BARCODE_CODEONE:
         case BARCODE_ULTRA:
         case BARCODE_RMQR:
-        // TODO: case BARCODE_CODABLOCKF:
-        // TODO: case BARCODE_HANXIN:
-        // TODO: case BARCODE_GRIDMATRIX:
+        /* TODO: case BARCODE_CODABLOCKF: */
+        /* TODO: case BARCODE_HANXIN: */
+        /* TODO: case BARCODE_GRIDMATRIX: */
             return 1;
             break;
     }
@@ -573,23 +575,13 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, struct zint_s
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int error_number = 0;
     int i;
-
-#ifndef _MSC_VER
-    struct zint_seg local_segs[seg_count];
-    int convertible[seg_count];
-#else
-    struct zint_seg *local_segs = (struct zint_seg *) _alloca(sizeof(struct zint_seg) * seg_count);
-    int *convertible = (int *) _alloca(sizeof(int) * seg_count);
-#endif
+    struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
+    int *convertible = (int *) z_alloca(sizeof(int) * seg_count);
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && is_eci_convertible_segs(segs, seg_count, convertible)) {
         unsigned char *preprocessed;
         const int eci_length_segs = get_eci_length_segs(segs, seg_count);
-#ifndef _MSC_VER
-        unsigned char preprocessed_buf[eci_length_segs + seg_count];
-#else
-        unsigned char *preprocessed_buf = (unsigned char *) _alloca(eci_length_segs + seg_count);
-#endif
+        unsigned char *preprocessed_buf = (unsigned char *) z_alloca(eci_length_segs + seg_count);
 
         /* Prior check ensures ECI only set for those that support it */
         segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
@@ -693,12 +685,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     int val;
     int i;
     unsigned long unicode;
-
-#ifndef _MSC_VER
-    unsigned char escaped_string[length + 1];
-#else
-    unsigned char *escaped_string = (unsigned char *) _alloca(length + 1);
-#endif
+    unsigned char *escaped_string = (unsigned char *) z_alloca(length + 1);
 
     in_posn = 0;
     out_posn = 0;
@@ -847,13 +834,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     int have_zero_eci = 0;
     int i;
     unsigned char *local_source;
-#ifndef _MSC_VER
-    struct zint_seg local_segs[seg_count > 0 ? seg_count : 1];
-#else
     struct zint_seg *local_segs;
     unsigned char *local_sources;
-    local_segs = (struct zint_seg *) _alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
-#endif
+    local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
@@ -1109,11 +1092,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         }
     }
 
-#ifndef _MSC_VER
-    unsigned char local_sources[total_len + seg_count];
-#else
-    local_sources = (unsigned char *) _alloca(total_len + seg_count);
-#endif
+    local_sources = (unsigned char *) z_alloca(total_len + seg_count);
 
     for (i = 0, local_source = local_sources; i < seg_count; i++) {
         local_segs[i].source = local_source;
@@ -1146,14 +1125,10 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     if (((symbol->input_mode & 0x07) == GS1_MODE) || (check_force_gs1(symbol->symbology))) {
         if (gs1_compliant(symbol->symbology)) {
-            // Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will
-            // handle it themselves
+            /* Reduce input for composite and non-forced symbologies, others (EAN128 and RSS_EXP based) will
+               handle it themselves */
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
-#ifndef _MSC_VER
-                unsigned char reduced[local_segs[0].length + 1];
-#else
-                unsigned char *reduced = (unsigned char *) _alloca(local_segs[0].length + 1);
-#endif
+                unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
                 error_number = gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced);
                 if (error_number) {
                     static const char in_2d_comp[] = " in 2D component";
@@ -1167,7 +1142,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                     }
                     warn_number = error_number; /* Override any previous warning (errtxt has been overwritten) */
                 }
-                ustrcpy(local_segs[0].source, reduced); // Cannot contain NUL char
+                ustrcpy(local_segs[0].source, reduced); /* Cannot contain NUL char */
                 local_segs[0].length = (int) ustrlen(reduced);
             }
         } else {
@@ -1805,8 +1780,8 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
         switch (symbol_id) {
             case BARCODE_QRCODE:
             case BARCODE_MICROQR:
-            //case BARCODE_HIBC_QR: Note character set restricted to ASCII subset
-            //case BARCODE_UPNQR: Note does not use Kanji mode
+            /* case BARCODE_HIBC_QR: Note character set restricted to ASCII subset */
+            /* case BARCODE_UPNQR: Note does not use Kanji mode */
             case BARCODE_RMQR:
             case BARCODE_HANXIN:
             case BARCODE_GRIDMATRIX:

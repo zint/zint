@@ -44,6 +44,10 @@
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 #define ZINT_DEBUG_TEST_ZXINGCPP        512
 
+#include <errno.h>
+#include <stdio.h>
+#include "../common.h"
+
 #ifdef _MSC_VER
 #define testutil_popen(command, mode) _popen(command, mode)
 #define testutil_pclose(stream) _pclose(stream)
@@ -53,14 +57,7 @@
 #define testutil_pclose(stream) pclose(stream)
 #endif
 
-#include <stdio.h>
-#include <errno.h>
-#include "../common.h"
-
-#if defined(__clang__)
-#  pragma clang diagnostic ignored "-Wpedantic"
-#  pragma clang diagnostic ignored "-Woverlength-strings"
-#elif defined(__GNUC__)
+#if defined(__clang__) || defined(__GNUC__)
 #  pragma GCC diagnostic ignored "-Wpedantic"
 #  pragma GCC diagnostic ignored "-Woverlength-strings"
 #elif defined(_MSC_VER)
@@ -91,7 +88,6 @@ typedef struct s_testFunction {
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 
 #if _MSC_VER == 1200 /* VC6 */
-#include "../ms_stdint.h"
 void assert_zero(int exp, const char *fmt, ...);
 void assert_nonzero(int exp, const char *fmt, ...);
 void assert_null(const void *exp, const char *fmt, ...);

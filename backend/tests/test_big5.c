@@ -27,18 +27,19 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "test_big5_tab.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-//#define TEST_JUST_SAY_GNO
+/* #define TEST_JUST_SAY_GNO */
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/big5_gnu.h"
 #endif
 
 INTERNAL int u_big5_test(const unsigned int u, unsigned char *dest);
 
-// Version of `u_big5()` taking unsigned int destination for backward-compatible testing
+/* Version of `u_big5()` taking unsigned int destination for backward-compatible testing */
 static int u_big5_int(unsigned int u, unsigned int *d) {
     unsigned char dest[2];
     int ret = u_big5_test(u, dest);
@@ -48,7 +49,8 @@ static int u_big5_int(unsigned int u, unsigned int *d) {
     return ret;
 }
 
-// As control convert to Big5 using simple table generated from https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT plus simple processing
+/* As control convert to Big5 using simple table generated from
+   https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT plus simple processing */
 static int u_big5_int2(unsigned int u, unsigned int *dest) {
     int tab_length = ARRAY_SIZE(test_big5_tab);
     int start_i = test_big5_tab_ind[u >> 10];
@@ -99,7 +101,7 @@ static void test_u_big5_int(int debug) {
 #endif
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i >= 0xD800 && i < 0xE000) { // UTF-16 surrogates
+        if (i >= 0xD800 && i < 0xE000) { /* UTF-16 surrogates */
             continue;
         }
         val = val2 = 0;
@@ -149,11 +151,7 @@ static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], i
                 unsigned int *b5data) {
     int error_number;
     unsigned int i, length;
-#ifndef _MSC_VER
-    unsigned int utfdata[*p_length + 1];
-#else
-    unsigned int *utfdata = (unsigned int *) _alloca((*p_length + 1) * sizeof(unsigned int));
-#endif
+    unsigned int *utfdata = (unsigned int *) z_alloca(sizeof(unsigned int) * (*p_length + 1));
 
     error_number = utf8_to_unicode(symbol, source, utfdata, p_length, 0 /*disallow_4byte*/);
     if (error_number != 0) {
@@ -179,9 +177,9 @@ static void test_big5_utf8(int index) {
         unsigned int expected_b5data[20];
         char *comment;
     };
-    // ＿ U+FF3F fullwidth low line, not in ISO/Win, in Big5 0xA1C4, UTF-8 EFBCBF
-    // ╴ U+2574 drawings box light left, not in ISO/Win, not in original Big5 but in "Big5-2003" as 0xA15A, UTF-8 E295B4
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* ＿ U+FF3F fullwidth low line, not in ISO/Win, in Big5 0xA1C4, UTF-8 EFBCBF */
+    /* ╴ U+2574 drawings box light left, not in ISO/Win, not in original Big5 but in "Big5-2003" as 0xA15A, UTF-8 E295B4 */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "＿", -1, 0, 1, { 0xA1C4 }, "" },
         /*  1*/ { "╴", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },

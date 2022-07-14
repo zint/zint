@@ -1,7 +1,7 @@
-/*  emf.h - header structure for Microsoft EMF
-
+/*  emf.h - header structure for Microsoft EMF */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2016-2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,20 +28,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef EMF_H
-#define EMF_H
+#ifndef Z_EMF_H
+#define Z_EMF_H
 
 #ifdef  __cplusplus
 extern "C" {
-#endif
-
-#ifdef _MSC_VER
-#include <windows.h>
-#include "stdint_msvc.h"
-#else
-#include <stdint.h>
 #endif
 
 #pragma pack(1)
@@ -122,11 +115,11 @@ extern "C" {
         uint32_t n_pal_entries;
         size_l_t device;
         size_l_t millimeters;
-        // HeaderExtension1 Object
+        /* HeaderExtension1 Object */
         uint32_t cb_pixel_format;
         uint32_t off_pixel_format;
         uint32_t b_open_gl;
-        // HeaderExtension2 Object
+        /* HeaderExtension2 Object */
         size_l_t micrometers;
     } emf_header_t;
 
@@ -248,4 +241,5 @@ extern "C" {
 }
 #endif
 
-#endif  /* EMF_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_EMF_H */

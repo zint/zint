@@ -1,8 +1,7 @@
 /* bmp.c - Handles output to Windows Bitmap file */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
 #include <stdio.h>
@@ -103,31 +102,31 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             for (column = 0; column < symbol->bitmap_width; column++) {
                 i = (column / 2) + (row * row_size);
                 switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
-                    case 'C': // Cyan
+                    case 'C': /* Cyan */
                         bitmap[i] += 1 << (4 * (1 - (column % 2)));
                         break;
-                    case 'B': // Blue
+                    case 'B': /* Blue */
                         bitmap[i] += 2 << (4 * (1 - (column % 2)));
                         break;
-                    case 'M': // Magenta
+                    case 'M': /* Magenta */
                         bitmap[i] += 3 << (4 * (1 - (column % 2)));
                         break;
-                    case 'R': // Red
+                    case 'R': /* Red */
                         bitmap[i] += 4 << (4 * (1 - (column % 2)));
                         break;
-                    case 'Y': // Yellow
+                    case 'Y': /* Yellow */
                         bitmap[i] += 5 << (4 * (1 - (column % 2)));
                         break;
-                    case 'G': // Green
+                    case 'G': /* Green */
                         bitmap[i] += 6 << (4 * (1 - (column % 2)));
                         break;
-                    case 'K': // Black
+                    case 'K': /* Black */
                         bitmap[i] += 7 << (4 * (1 - (column % 2)));
                         break;
-                    case 'W': // White
+                    case 'W': /* White */
                         bitmap[i] += 8 << (4 * (1 - (column % 2)));
                         break;
-                    case '1': // Foreground
+                    case '1': /* Foreground */
                         bitmap[i] += ultra_fg_index << (4 * (1 - (column % 2)));
                         break;
                 }
@@ -146,7 +145,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     symbol->bitmap_byte_length = data_size;
 
-    file_header.header_field = 0x4d42; // "BM"
+    file_header.header_field = 0x4d42; /* "BM" */
     file_header.file_size = file_size;
     file_header.reserved = 0;
     file_header.data_offset = data_offset;
@@ -156,7 +155,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     info_header.height = symbol->bitmap_height;
     info_header.colour_planes = 1;
     info_header.bits_per_pixel = bits_per_pixel;
-    info_header.compression_method = 0; // BI_RGB
+    info_header.compression_method = 0; /* BI_RGB */
     info_header.image_size = 0;
     info_header.horiz_res = 0;
     info_header.vert_res = 0;
@@ -213,3 +212,5 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     free(bitmap_file_start);
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

@@ -1,7 +1,7 @@
-/*  filetypes.h - file type flags
-
+/*  filetypes.h - file type flags */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,12 +28,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef ZFILETYPES_H
-#define ZFILETYPES_H
+#ifndef Z_ZFILETYPES_H
+#define Z_ZFILETYPES_H
 
-// File types
+/* File types */
 #define OUT_BUFFER              0
 #define OUT_SVG_FILE            10
 #define OUT_EPS_FILE            20
@@ -45,4 +45,5 @@
 #define OUT_JPG_FILE            180
 #define OUT_TIF_FILE            200
 
-#endif /* ZFILETYPES_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_ZFILETYPES_H */

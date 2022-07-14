@@ -46,9 +46,6 @@
  */
 #include <assert.h>
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "large.h"
 
@@ -286,11 +283,7 @@ INTERNAL void large_uint_array(const large_int *t, unsigned int *uint_array, con
 /* As `large_uint_array()` above, except output to unsigned char array */
 INTERNAL void large_uchar_array(const large_int *t, unsigned char *uchar_array, const int size, int bits) {
     int i;
-#ifndef _MSC_VER
-    unsigned int uint_array[size ? size : 1]; /* Avoid run-time warning if size is 0 */
-#else
-    unsigned int *uint_array = (unsigned int *) _alloca(sizeof(unsigned int) * (size ? size : 1));
-#endif
+    unsigned int *uint_array = (unsigned int *) z_alloca(sizeof(unsigned int) * (size ? size : 1));
 
     large_uint_array(t, uint_array, size, bits);
 

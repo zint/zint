@@ -1,5 +1,5 @@
-/* qr.h Data for QR Code, Micro QR Code and rMQR
-
+/* qr.h Data for QR Code, Micro QR Code and rMQR */
+/*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
     Copyright (C) 2006 Kentaro Fukuchi <fukuchi@megaui.net>
@@ -92,21 +92,21 @@ static const unsigned short rmqr_width[] = {
 };
 
 static const unsigned short rmqr_data_codewords_M[] = {
-    6, 12, 20, 28, 44, // R7x
-    12, 21, 31, 42, 63, // R9x
-    7, 19, 31, 43, 57, 84, // R11x
-    12, 27, 38, 53, 73, 106, // R13x
-    33, 48, 67, 88, 127, // R15x
-    39, 56, 78, 100, 152 // R17x
+    6, 12, 20, 28, 44, /* R7x */
+    12, 21, 31, 42, 63, /* R9x */
+    7, 19, 31, 43, 57, 84, /* R11x */
+    12, 27, 38, 53, 73, 106, /* R13x */
+    33, 48, 67, 88, 127, /* R15x */
+    39, 56, 78, 100, 152 /* R17x */
 };
 
 static const unsigned short rmqr_data_codewords_H[] = {
-    3, 7, 10, 14, 24, // R7x
-    7, 11, 17, 22, 33, // R9x
-    5, 11, 15, 23, 29, 42, // R11x
-    7, 13, 20, 29, 35, 54, // R13x
-    15, 26, 31, 48, 69, // R15x
-    21, 28, 38, 56, 76 // R17x
+    3, 7, 10, 14, 24, /* R7x */
+    7, 11, 17, 22, 33, /* R9x */
+    5, 11, 15, 23, 29, 42, /* R11x */
+    7, 13, 20, 29, 35, 54, /* R13x */
+    15, 26, 31, 48, 69, /* R15x */
+    21, 28, 38, 56, 76 /* R17x */
 };
 
 static const short rmqr_fixed_height_upper_bound[] = {
@@ -114,12 +114,12 @@ static const short rmqr_fixed_height_upper_bound[] = {
 };
 
 static const unsigned short rmqr_total_codewords[] = {
-    13, 21, 32, 44, 68, // R7x
-    21, 33, 49, 66, 99, // R9x
-    15, 31, 47, 67, 89, 132, // R11x
-    21, 41, 60, 85, 113, 166, // R13x
-    51, 74, 103, 136, 199, // R15x
-    61, 88, 122, 160, 232 // R17x
+    13, 21, 32, 44, 68, /* R7x */
+    21, 33, 49, 66, 99, /* R9x */
+    15, 31, 47, 67, 89, 132, /* R11x */
+    21, 41, 60, 85, 113, 166, /* R13x */
+    51, 74, 103, 136, 199, /* R15x */
+    61, 88, 122, 160, 232 /* R17x */
 };
 
 
@@ -180,21 +180,21 @@ static const char qr_blocks_H[] = {
 };
 
 static const char rmqr_blocks_M[] = {
-    1, 1, 1, 1, 1, // R7x
-    1, 1, 1, 1, 2, // R9x
-    1, 1, 1, 1, 2, 2, // R11x
-    1, 1, 1, 2, 2, 3, // R13x
-    1, 1, 2, 2, 3, // R15x
-    1, 2, 2, 3, 4 // R17x
+    1, 1, 1, 1, 1, /* R7x */
+    1, 1, 1, 1, 2, /* R9x */
+    1, 1, 1, 1, 2, 2, /* R11x */
+    1, 1, 1, 2, 2, 3, /* R13x */
+    1, 1, 2, 2, 3, /* R15x */
+    1, 2, 2, 3, 4 /* R17x */
 };
 
 static const char rmqr_blocks_H[] = {
-    1, 1, 1, 1, 2, // R7x
-    1, 1, 2, 2, 3, // R9x
-    1, 1, 2, 2, 2, 3, // R11x
-    1, 1, 2, 2, 3, 4, // R13x
-    2, 2, 3, 4, 5, // R15x
-    2, 2, 3, 4, 6 // R17x
+    1, 1, 1, 1, 2, /* R7x */
+    1, 1, 2, 2, 3, /* R9x */
+    1, 1, 2, 2, 2, 3, /* R11x */
+    1, 1, 2, 2, 3, 4, /* R13x */
+    2, 2, 3, 4, 5, /* R15x */
+    2, 2, 3, 4, 6 /* R17x */
 };
 
 static const unsigned short qr_sizes[] = {
@@ -210,7 +210,7 @@ static const char qr_align_loopsize[] = {
     0, 2, 2, 2, 2, 2, 3, 3, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 4, 4, 5, 5, 5, 5, 5, 5, 5, 6, 6, 6, 6, 6, 6, 6, 7, 7, 7, 7, 7, 7
 };
 
-// Table E1 - Row/column coordinates of center module of alignment patterns
+/* Table E1 - Row/column coordinates of center module of alignment patterns */
 static const unsigned short qr_table_e1[] = {
     6, 18, 0, 0, 0, 0, 0,
     6, 22, 0, 0, 0, 0, 0,
@@ -253,7 +253,7 @@ static const unsigned short qr_table_e1[] = {
     6, 30, 58, 86, 114, 142, 170
 };
 
-// Table D1 - Column coordinates of centre module of alignment patterns
+/* Table D1 - Column coordinates of centre module of alignment patterns */
 static const unsigned short rmqr_table_d1[] = {
     21, 0, 0, 0,
     19, 39, 0, 0,

@@ -41,16 +41,13 @@
  */
 
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include "common.h"
 #include "large.h"
 #include "reedsol.h"
 
 #define RUBIDIUM_F (IS_NUM_F | IS_UPR_F | IS_SPC_F) /* RUBIDIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " */
 
-// Allowed character values from Table 3
+/* Allowed character values from Table 3 */
 #define SET_F "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define SET_L "ABDEFGHJLNPQRSTUWXYZ"
 #define SET_N "0123456789"
@@ -62,7 +59,7 @@ static const char postcode_format[6][9] = {
     {'F','N','N','L','L','N','L','S','S'}, {'F','N','N','N','L','L','N','L','S'}
 };
 
-// Data/Check Symbols from Table 5
+/* Data/Check Symbols from Table 5 */
 static const unsigned char data_symbol_odd[32] = {
     0x01, 0x02, 0x04, 0x07, 0x08, 0x0B, 0x0D, 0x0E, 0x10, 0x13, 0x15, 0x16,
     0x19, 0x1A, 0x1C, 0x1F, 0x20, 0x23, 0x25, 0x26, 0x29, 0x2A, 0x2C, 0x2F,
@@ -181,28 +178,28 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    // Format is in the range 0-4
+    /* Format is in the range 0-4 */
     format = ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
         strcpy(symbol->errtxt, "582: Format (1st character) out of range (0 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    // Version ID is in the range 1-4
+    /* Version ID is in the range 1-4 */
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
         strcpy(symbol->errtxt, "583: Version ID (2nd character) out of range (1 to 4)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    // Class is in the range 0-9,A-E
+    /* Class is in the range 0-9,A-E */
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
         strcpy(symbol->errtxt, "584: Class (3rd character) out of range (0 to 9 and A to E)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    // Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L
+    /* Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L */
     supply_chain_id = 0;
     for (i = 3; i < (length - 17); i++) {
         if (z_isdigit(local_source[i])) {
@@ -214,7 +211,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Item ID is 8 digits
+    /* Item ID is 8 digits */
     item_id = 0;
     for (i = length - 17; i < (length - 9); i++) {
         if (z_isdigit(local_source[i])) {
@@ -226,13 +223,13 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Separate Destination Post Code plus DPS field
+    /* Separate Destination Post Code plus DPS field */
     for (i = 0; i < 9; i++) {
         postcode[i] = local_source[(length - 9) + i];
     }
     postcode[9] = '\0';
 
-    // Detect postcode type
+    /* Detect postcode type */
     /* postcode_type is used to select which format of postcode
      *
      * 1 = FNFNLLNLS
@@ -251,7 +248,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
             postcode_type = 5;
         } else {
             if (postcode[8] == ' ') {
-                // Types 1, 2 and 6
+                /* Types 1, 2 and 6 */
                 if (z_isdigit(postcode[1])) {
                     if (z_isdigit(postcode[2])) {
                         postcode_type = 6;
@@ -262,7 +259,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
                     postcode_type = 2;
                 }
             } else {
-                // Types 3 and 4
+                /* Types 3 and 4 */
                 if (z_isdigit(postcode[3])) {
                     postcode_type = 3;
                 } else {
@@ -272,7 +269,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Verify postcode type
+    /* Verify postcode type */
     if (postcode_type != 7) {
         if (verify_postcode(postcode, postcode_type) != 0) {
             sprintf(symbol->errtxt, "587: Invalid postcode \"%s\"", postcode);
@@ -280,7 +277,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Convert postcode to internal user field
+    /* Convert postcode to internal user field */
 
     large_load_u64(&destination_postcode, 0);
 
@@ -303,13 +300,13 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
                     large_mul_u64(&b, 10);
                     large_add_u64(&b, posn(SET_N, postcode[i]));
                     break;
-                // case 'S' ignored as value is 0
+                /* case 'S' ignored as value is 0 */
             }
         }
 
         large_load(&destination_postcode, &b);
 
-        // destination_postcode = a + b
+        /* destination_postcode = a + b */
         large_load_u64(&b, 1);
         if (postcode_type == 1) {
             large_add(&destination_postcode, &b);
@@ -336,46 +333,46 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Conversion from Internal User Fields to Consolidated Data Value
-    // Set CDV to 0
+    /* Conversion from Internal User Fields to Consolidated Data Value */
+    /* Set CDV to 0 */
     large_load_u64(&cdv, 0);
 
-    // Add Destination Post Code plus DPS
+    /* Add Destination Post Code plus DPS */
     large_add(&cdv, &destination_postcode);
 
-    // Multiply by 100,000,000
+    /* Multiply by 100,000,000 */
     large_mul_u64(&cdv, 100000000);
 
-    // Add Item ID
+    /* Add Item ID */
     large_add_u64(&cdv, item_id);
 
     if (length == 22) {
-        // Barcode C - Multiply by 100
+        /* Barcode C - Multiply by 100 */
         large_mul_u64(&cdv, 100);
     } else {
-        // Barcode L - Multiply by 1,000,000
+        /* Barcode L - Multiply by 1,000,000 */
         large_mul_u64(&cdv, 1000000);
     }
 
-    // Add Supply Chain ID
+    /* Add Supply Chain ID */
     large_add_u64(&cdv, supply_chain_id);
 
-    // Multiply by 15
+    /* Multiply by 15 */
     large_mul_u64(&cdv, 15);
 
-    // Add Class
+    /* Add Class */
     large_add_u64(&cdv, mail_class);
 
-    // Multiply by 5
+    /* Multiply by 5 */
     large_mul_u64(&cdv, 5);
 
-    // Add Format
+    /* Add Format */
     large_add_u64(&cdv, format);
 
-    // Multiply by 4
+    /* Multiply by 4 */
     large_mul_u64(&cdv, 4);
 
-    // Add Version ID
+    /* Add Version ID */
     large_add_u64(&cdv, version_id);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -394,7 +391,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         check_count = 7;
     }
 
-    // Conversion from Consolidated Data Value to Data Numbers
+    /* Conversion from Consolidated Data Value to Data Numbers */
 
     for (j = data_top; j >= (data_step + 1); j--) {
         data[j] = (unsigned char) large_div_u64(&cdv, 32);
@@ -404,12 +401,12 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         data[j] = (unsigned char) large_div_u64(&cdv, 30);
     }
 
-    // Generation of Reed-Solomon Check Numbers
+    /* Generation of Reed-Solomon Check Numbers */
     rs_init_gf(&rs, 0x25);
     rs_init_code(&rs, check_count, 1);
     rs_encode(&rs, (data_top + 1), data, check);
 
-    // Append check digits to data
+    /* Append check digits to data */
     for (i = 1; i <= check_count; i++) {
         data[data_top + i] = check[check_count - i];
     }
@@ -422,7 +419,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         printf("\n");
     }
 
-    // Conversion from Data Numbers and Check Numbers to Data Symbols and Check Symbols
+    /* Conversion from Data Numbers and Check Numbers to Data Symbols and Check Symbols */
     for (i = 0; i <= data_step; i++) {
         data[i] = data_symbol_even[data[i]];
     }
@@ -430,7 +427,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         data[i] = data_symbol_odd[data[i]];
     }
 
-    // Conversion from Data Symbols and Check Symbols to Extender Groups
+    /* Conversion from Data Symbols and Check Symbols to Extender Groups */
     for (i = 0; i < length; i++) {
         if (length == 22) {
             extender[extender_group_c[i]] = data[i];
@@ -439,7 +436,7 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
         }
     }
 
-    // Conversion from Extender Groups to Bar Identifiers
+    /* Conversion from Extender Groups to Bar Identifiers */
 
     for (i = 0; i < length; i++) {
         for (j = 0; j < 3; j++) {

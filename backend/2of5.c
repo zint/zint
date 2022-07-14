@@ -1,8 +1,7 @@
 /* 2of5.c - Handles Code 2 of 5 barcodes */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <stdio.h>
 #include "common.h"
@@ -259,7 +258,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     ustrcpy(symbol->text, localstr);
 
     if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
-        // If no option has been selected then uses default box option
+        /* If no option has been selected then uses default box option */
         symbol->output_options |= BARCODE_BOX;
         if (symbol->border_width == 0) { /* Allow override if non-zero */
             /* GS1 General Specifications 21.0.1 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
@@ -314,7 +313,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
-    // TODO: Find documentation on BARCODE_DPLEIT dimensions/height
+    /* TODO: Find documentation on BARCODE_DPLEIT dimensions/height */
 
     return error_number;
 }
@@ -351,7 +350,9 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     error_number = c25_inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
-    // TODO: Find documentation on BARCODE_DPIDENT dimensions/height
+    /* TODO: Find documentation on BARCODE_DPIDENT dimensions/height */
 
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

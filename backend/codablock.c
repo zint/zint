@@ -32,9 +32,6 @@
 
 #include <stdio.h>
 #include <math.h>
-#ifdef _MSC_VER
-#include <malloc.h>
-#endif
 #include <assert.h>
 #include "common.h"
 #include "code128.h"
@@ -423,11 +420,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
     int testColumns;    /* To enter into Width2Rows */
     int testListSize = 0;
     int pTestList[62 + 1];
-#ifndef _MSC_VER
-    int *pBackupSet[dataLength];
-#else
-    int *pBackupSet = (int *)_alloca(dataLength*sizeof(int));
-#endif
+    int *pBackupSet = (int *) z_alloca(sizeof(int) * dataLength);
 
     rowsRequested=*pRows;
     columnsRequested = *pUseColumns >= 4 ? *pUseColumns : 0;
@@ -594,12 +587,10 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     int emptyColumns;
     char dest[1000];
     int r, c;
-#ifdef _MSC_VER
     CharacterSetTable *T;
     unsigned char *data;
     int *pSet;
-    uchar * pOutput;
-#endif
+    uchar *pOutput;
     /* Suppresses clang-analyzer-core.VLASize warning */
     assert(length > 0);
 
@@ -635,11 +626,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         return ZINT_ERROR_INVALID_OPTION;
     }
 
-#ifndef _MSC_VER
-    unsigned char data[length*2+1];
-#else
-    data = (unsigned char *) _alloca(length * 2+1);
-#endif
+    data = (unsigned char *) z_alloca(length * 2 + 1);
 
     dataLength = 0;
     if (symbol->output_options & READER_INIT) {
@@ -659,13 +646,8 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     /* Build character set table */
-#ifndef _MSC_VER
-    CharacterSetTable T[dataLength];
-    int pSet[dataLength];
-#else
-    T=(CharacterSetTable *)_alloca(dataLength*sizeof(CharacterSetTable));
-    pSet = (int *)_alloca(dataLength*sizeof(int));
-#endif
+    T = (CharacterSetTable *) z_alloca(sizeof(CharacterSetTable) * dataLength);
+    pSet = (int *) z_alloca(sizeof(int) * dataLength);
     CreateCharacterSetTable(T,data,dataLength);
 
     /* Find final row and column count */
@@ -739,11 +721,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* >>> Build C128 code numbers */
     /* The C128 column count contains Start (2CW), Row ID, Checksum, Stop */
-#ifndef _MSC_VER
-    uchar pOutput[columns * rows];
-#else
-    pOutput = (unsigned char *) _alloca(columns * rows);
-#endif
+    pOutput = (unsigned char *) z_alloca(columns * rows);
     pOutPos = pOutput;
     charCur=0;
     /* >> Loop over rows */

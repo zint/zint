@@ -1,8 +1,7 @@
 /* gif.c - Handles output to gif file */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,16 +28,14 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
 #include <stdio.h>
 #include "common.h"
-#include <math.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
-#include <malloc.h>
 #endif
 
 /* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
@@ -197,7 +194,7 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
     unsigned char CodeBits;
     unsigned short Pos;
 
-    // > Get first data byte
+    /* > Get first data byte */
     if (pState->InLen == 0)
         return 0;
     PixelValueCur = NextPaletteIndex(pState);
@@ -243,7 +240,7 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
         Res = NextCode(pState, &PixelValueCur, CodeBits);
         if (Res < 0)
             return 0;
-        //* Check for end of data stream */
+        /* Check for end of data stream */
         if (!Res) {
             /* submit 'eoi' as the last item of the code stream */
             if (AddCodeToBuffer(pState, (unsigned short) (pState->ClearCode + 1), CodeBits))
@@ -253,7 +250,7 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
                 if (BufferNextByte(pState))
                     return 0;
             }
-            // > Update last bytecount byte;
+            /* > Update last bytecount byte; */
             if (pState->OutByteCountPos < pState->OutPosCur) {
                 (pState->pOut)[pState->OutByteCountPos]
                     = (unsigned char) (pState->OutPosCur - pState->OutByteCountPos - 1);
@@ -440,13 +437,13 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     transparent_index = -1;
     if (strlen(symbol->fgcolour) > 6) {
         if ((symbol->fgcolour[6] == '0') && (symbol->fgcolour[7] == '0')) {
-            // Transparent foreground
+            /* Transparent foreground */
             transparent_index = fgindex;
         }
     }
     if (strlen(symbol->bgcolour) > 6) {
         if ((symbol->bgcolour[6] == '0') && (symbol->bgcolour[7] == '0')) {
-            // Transparent background
+            /* Transparent background */
             transparent_index = bgindex;
         }
     }
@@ -616,3 +613,5 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

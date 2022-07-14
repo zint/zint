@@ -574,10 +574,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\backend\ms_stdint.h"
-				>
-			</File>
-			<File
 				RelativePath="..\backend\output.h"
 				>
 			</File>
@@ -611,10 +607,6 @@
 			</File>
 			<File
 				RelativePath="..\backend\sjis.h"
-				>
-			</File>
-			<File
-				RelativePath="..\backend\stdint_msvc.h"
 				>
 			</File>
 			<File

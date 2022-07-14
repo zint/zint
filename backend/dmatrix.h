@@ -1,8 +1,7 @@
 /* dmatrix.h - Handles Data Matrix ECC 200 */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /*
     Contains Extended Rectangular Data Matrix (DMRE)
@@ -75,10 +74,10 @@ static const char dm_text_value[] = {
     22, 23, 24, 25, 26, 0, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 27, 28, 29, 30, 31
 };
 
-// Position in option array [symbol option value - 1]
+/* Position in option array [symbol option value - 1]
 // The position in the option array is by increasing total data codewords with square first
 // The last comment value is the total data codewords value.
-// The index of this array is the --vers parameter value -1 and is given as first comment value
+// The index of this array is the --vers parameter value -1 and is given as first comment value */
 
 static const unsigned short int dm_intsymbol[] = {
 /* Standard DM */
@@ -98,13 +97,13 @@ static const unsigned short int dm_intsymbol[] = {
     32, /* 47: 26x48 , 90*/ 35, /* 48: 26x64 ,118*/
 };
 
-// Number of DM Sizes
+/* Number of DM Sizes */
 #define DMSIZESCOUNT 48
-// Number of 144x144 for special interlace
+/* Number of 144x144 for special interlace */
 #define INTSYMBOL144 47
 
-// Is the current code a DMRE code ?
-// This is the case, if dm_intsymbol index >= 30
+/* Is the current code a DMRE code ?
+   This is the case, if dm_intsymbol index >= 30 */
 
 static const char dm_isDMRE[] = {
     /* 0*/ 0, /*  10x10,  3*/ 0, /* 12x12 ,  5*/ 0, /*  8x18 ,  5*/ 0, /* 14x14 ,  8*/
@@ -121,7 +120,7 @@ static const char dm_isDMRE[] = {
     /*44*/ 0, /*104x104,816*/ 0, /*120x120,1050*/0, /*132x132,1304*/0  /*144x144,1558*/
 };
 
-// Horizontal matrix size
+/* Horizontal matrix size */
 
 static const unsigned short int dm_matrixH[] = {
     /* 0*/ 10, /* 10x10 ,  3*/ 12, /* 12x12 , 5 */  8, /*  8x18 ,  5*/ 14, /* 14x14 ,  8*/
@@ -138,7 +137,7 @@ static const unsigned short int dm_matrixH[] = {
     /*44*/104, /*104x104,816*/ 120,/*120x120,1050*/132,/*132x132,1304*/144 /*144x144,1558*/
 };
 
-// Vertical matrix sizes
+/* Vertical matrix sizes */
 
 static const unsigned short int dm_matrixW[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */ 18, /*  8x18 */ 14, /* 14x14 */
@@ -156,7 +155,7 @@ static const unsigned short int dm_matrixW[] = {
 
 };
 
-// Horizontal submodule size (including subfinder)
+/* Horizontal submodule size (including subfinder) */
 
 static const unsigned short int dm_matrixFH[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */  8, /*  8x18 */ 14, /* 14x14 */
@@ -173,7 +172,7 @@ static const unsigned short int dm_matrixFH[] = {
     /*44*/ 26, /*104x104*/ 20, /*120x120*/ 22, /*132x132*/ 24  /*144x144*/
 };
 
-// Vertical submodule size (including subfinder)
+/* Vertical submodule size (including subfinder) */
 
 static const unsigned short int dm_matrixFW[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */ 18, /*  8x18 */ 14, /* 14x14 */
@@ -190,7 +189,7 @@ static const unsigned short int dm_matrixFW[] = {
     /*44*/ 26, /*104x104*/ 20, /*120x120*/ 22, /*132x132*/ 24  /*144x144*/
 };
 
-// Total Data Codewords
+/* Total Data Codewords */
 
 static const unsigned short int dm_matrixbytes[] = {
     /* 0*/   3, /* 10x10 */   5, /* 12x12 */   5, /*  8x18 */   8, /* 14x14 */
@@ -207,7 +206,7 @@ static const unsigned short int dm_matrixbytes[] = {
     /*44*/ 816, /*104x104*/1050, /*120x120*/1304, /*132x132*/1558  /*144x144*/
 };
 
-// Data Codewords per RS-Block
+/* Data Codewords per RS-Block */
 
 static const unsigned short int dm_matrixdatablock[] = {
     /* 0*/   3, /* 10x10 */   5, /* 12x12 */   5, /*  8x18 */   8, /* 14x14 */
@@ -224,7 +223,7 @@ static const unsigned short int dm_matrixdatablock[] = {
     /*44*/ 136, /*104x104*/ 175, /*120x120*/ 163, /*132x132*/ 156 /* 144x144*/
 };
 
-// ECC Codewords per RS-Block
+/* ECC Codewords per RS-Block */
 
 static const unsigned short int dm_matrixrsblock[] = {
     /* 0*/  5, /* 10x10 */  7, /* 12x12 */  7, /*  8x18 */ 10, /* 14x14 */
@@ -241,4 +240,5 @@ static const unsigned short int dm_matrixrsblock[] = {
     /*44*/ 56, /*104x104*/ 68, /*120x120*/ 62, /*132x132*/ 62  /*144x144*/
 };
 
+/* vim: set ts=4 sw=4 et : */
 #endif /* Z_DMATRIX_H */

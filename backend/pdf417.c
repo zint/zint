@@ -44,14 +44,9 @@
 
    symbol->option_3 is used to adjust the rows of the resulting symbol */
 
-#include <stdio.h>
-#include <math.h>
-#ifndef _MSC_VER
-#include <stdint.h>
-#else
-#include "ms_stdint.h"
-#endif
 #include <assert.h>
+#include <math.h>
+#include <stdio.h>
 #include "common.h"
 #include "pdf417.h"
 #include "pdf417_tabs.h"
