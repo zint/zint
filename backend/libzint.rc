@@ -34,7 +34,7 @@ BEGIN
       VALUE "OriginalFilename",	"zint.dll\0"
       VALUE "ProductName",	"libzint\0"
       VALUE "ProductVersion",	VER_FILEVERSION_STR
-      VALUE "License",  "BSD License version 3\0"
+      VALUE "License",  "BSD-3-Clause\0"
       VALUE "WWW", "http://www.sourceforge.net/projects/zint\0"
     END
   END

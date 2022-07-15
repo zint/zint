@@ -3520,14 +3520,14 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len) {
     const int symbology = symbol->symbology;
 
-    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || is_dbar_exp;
     const int is_escaped = symbol->input_mode & ESCAPE_MODE;
     const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
     const int have_c25checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
     const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
                                 || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT
                                 || symbology == BARCODE_DPIDENT;
-    const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
     const int is_upcean = is_extendable(symbology);
 
     char *reduced = gs1 ? (char *) z_alloca(expected_len + 1) : NULL;
@@ -3537,7 +3537,6 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                     ? (char *) z_alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
     char *vin = symbology == BARCODE_VIN && (symbol->option_2 & 1) ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *c25inter = have_c25inter ? (char *) z_alloca(expected_len + 13 + 1 + 1) : NULL;
-    char *dbar_exp = is_dbar_exp ? (char *) z_alloca(expected_len + 1) : NULL;
     char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
                         ? (char *) z_alloca(expected_len + 3 + 1) : NULL;
@@ -3686,17 +3685,6 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         if (expected_len == 13) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
         }
-    } else if (is_dbar_exp) {
-        for (i = 0; i < expected_len; i++) {
-            if (expected[i] == '[') {
-                dbar_exp[i] = '(';
-            } else if (expected[i] == ']') {
-                dbar_exp[i] = ')';
-            } else {
-                dbar_exp[i] = expected[i];
-            }
-        }
-        expected = dbar_exp;
     } else if (is_upcean) {
         if (symbology == BARCODE_UPCA && (expected_len == 11 || expected_len == 14 || expected_len == 17)) {
             memcpy(upcean, expected, 11);
