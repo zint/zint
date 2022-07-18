@@ -538,10 +538,10 @@ int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const in
         }
     }
     if (b == buffer + buffer_size) {
-        return FALSE;
+        return 0;
     }
     *b = '\0';
-    return TRUE;
+    return 1;
 }
 
 /* Is string valid UTF-8? */
@@ -2379,6 +2379,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         strcat(bwipp_data, data);
         testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
 
+        /* Always set dontlint */
+        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+        bwipp_opts = bwipp_opts_buf;
+
         if (upcean) {
             if (symbology == BARCODE_EANX_CC && (primary_len <= 8 || (addon_posn && addon_posn <= 8))) {
                 bwipp_barcode = "ean8composite";
@@ -2386,7 +2390,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (addon_posn) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%saddongap=%d",
                         strlen(bwipp_opts_buf) ? " " : "", option_2 > 0 ? option_2 : upca ? 9 : 7);
-                bwipp_opts = bwipp_opts_buf;
             }
             bwipp_row_height[symbol->rows - 1] = 72;
         }
@@ -2394,17 +2397,14 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         if (option_1 > 0) {
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sccversion=%c",
                     strlen(bwipp_opts_buf) ? " " : "", option_1 == 1 ? 'a' : option_1 == 2 ? 'b' : 'c');
-            bwipp_opts = bwipp_opts_buf;
         }
         if (option_2 > 0) {
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssegments=%d",
                     strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
-            bwipp_opts = bwipp_opts_buf;
         }
 
         if (symbol->input_mode & GS1NOCHECK_MODE) {
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
-            bwipp_opts = bwipp_opts_buf;
         }
     } else {
         if (gs1_cvt) {
@@ -2413,6 +2413,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             }
             strcat(bwipp_data, data);
             testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
+
+            /* Always set dontlint */
+            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+            bwipp_opts = bwipp_opts_buf;
 
             if (upcean) {
                 if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK)
@@ -2425,7 +2429,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if (addon_posn) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%saddongap=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_2 > 0 ? option_2 : upca ? 9 : 7);
-                    bwipp_opts = bwipp_opts_buf;
                 }
             }
 
@@ -2433,13 +2436,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if (symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssegments=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_2 * 2);
-                    bwipp_opts = bwipp_opts_buf;
                 }
             }
 
             if (symbol->input_mode & GS1NOCHECK_MODE) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
-                bwipp_opts = bwipp_opts_buf;
             }
         } else {
             if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, symbol->input_mode & ESCAPE_MODE,

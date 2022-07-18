@@ -197,7 +197,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
     char bwipp_buf[8196];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_gs1_reduce");
 
@@ -268,18 +268,18 @@ static void test_hrt(int index, int debug) {
         int ret;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_GS1_128, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
+        /*  0*/ { BARCODE_GS1_128, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
         /*  1*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
         /*  2*/ { BARCODE_GS1_128, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /*  3*/ { BARCODE_GS1_128, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /*  3*/ { BARCODE_GS1_128, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
         /*  4*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[10]10[20]AB", "", 0, "(01)12345678901231(10)10(20)AB" },
         /*  5*/ { BARCODE_GS1_128, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
-        /*  6*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
+        /*  6*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
         /*  7*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "[21]12345", 0, "(01)12345678901234(20)12" },
         /*  8*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12" },
-        /*  9*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /*  9*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
         /* 10*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]12[20]AB", "[21]12345", 0, "(01)12345678901231(10)12(20)AB" },
         /* 11*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12" },
         /* 12*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12" },
@@ -292,10 +292,10 @@ static void test_hrt(int index, int debug) {
         /* 19*/ { BARCODE_NVE18, -1, "1234", "", 0, "(00)000000000000012348" },
         /* 20*/ { BARCODE_NVE18, -1, "12345", "", 0, "(00)000000000000123457" },
         /* 21*/ { BARCODE_NVE18, -1, "12340", "", 0, "(00)000000000000123402" },
-        /* 22*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, // Incorrect check digit
+        /* 22*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
         /* 23*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
         /* 24*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /* 25*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, // AI (20) should be 2 nos.
+        /* 25*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
         /* 26*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]12[20]AB", "", 0, "(01)12345678901231(10)12(20)AB" },
         /* 27*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
         /* 28*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234" },
@@ -352,7 +352,7 @@ static void test_gs1_verify(int index, int debug) {
         int ret;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "", ZINT_ERROR_INVALID_DATA, "" },
         /*  1*/ { "[", ZINT_ERROR_INVALID_DATA, "" },
@@ -1379,384 +1379,384 @@ static void test_gs1_lint(int index, int debug) {
         char *expected;
         char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { "[00]123456789012345675", 0, "00123456789012345675", "" }, // numeric
-        /*  1*/ { "[00]12345678901234567.", ZINT_WARN_NONCOMPLIANT, "0012345678901234567.", "261: AI (00) position 18: Non-numeric character '.'" }, // numeric
-        /*  2*/ { "[00]123456789012345678", ZINT_WARN_NONCOMPLIANT, "00123456789012345678", "261: AI (00) position 18: Bad checksum '8', expected '5'" }, // csum
-        /*  3*/ { "[00]1234567890123456759", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
-        /*  4*/ { "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
-        /*  5*/ { "[00]123456789012345675A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, // length
-        /*  6*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", 0, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", "" }, // cset82
-        /*  7*/ { "[91] ", ZINT_WARN_NONCOMPLIANT, "91 ", "261: AI (91) position 1: Invalid CSET 82 character ' '" }, // cset82
-        /*  8*/ { "[91]#", ZINT_WARN_NONCOMPLIANT, "91#", "261: AI (91) position 1: Invalid CSET 82 character '#'" }, // cset82
-        /*  9*/ { "[91]a^", ZINT_WARN_NONCOMPLIANT, "91a^", "261: AI (91) position 2: Invalid CSET 82 character '^'" }, // cset82
-        /* 10*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", ZINT_WARN_NONCOMPLIANT, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", "261: AI (91) position 82: Invalid CSET 82 character '{'" }, // cset82
-        /* 11*/ { "[8010]01#-/23456789ABCDEFGHIJKLMNOPQ", 0, "801001#-/23456789ABCDEFGHIJKLMNOPQ", "" }, // cset39
-        /* 12*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "80106789ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" }, // cset39
-        /* 13*/ { "[8010]01!", ZINT_WARN_NONCOMPLIANT, "801001!", "261: AI (8010) position 3: Invalid CSET 39 character '!'" }, // cset39
-        /* 14*/ { "[8010]01a", ZINT_WARN_NONCOMPLIANT, "801001a", "261: AI (8010) position 3: Invalid CSET 39 character 'a'" }, // cset39
-        /* 15*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXY}", ZINT_WARN_NONCOMPLIANT, "80106789ABCDEFGHIJKLMNOPQRSTUVWXY}", "261: AI (8010) position 30: Invalid CSET 39 character '}'" }, // cset39
-        /* 16*/ { "[8010]#-/0123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "8010#-/0123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 1: Non-numeric company prefix '#'" }, // key
-        /* 17*/ { "[8010]0#-/123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "80100#-/123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 2: Non-numeric company prefix '#'" }, // key
-        /* 18*/ { "[401]0", ZINT_WARN_NONCOMPLIANT, "4010", "259: Invalid data length for AI (401)" }, // key
-        /* 19*/ { "[8013]1987654Ad4X4bL5ttr2310c2K", 0, "80131987654Ad4X4bL5ttr2310c2K", "" }, // csumalpha
-        /* 20*/ { "[8013]12345678901234567890123NT", 0, "801312345678901234567890123NT", "" }, // csumalpha
-        /* 21*/ { "[8013]12345_ABCDEFGHIJKLMCP", 0, "801312345_ABCDEFGHIJKLMCP", "" }, // csumalpha
-        /* 22*/ { "[8013]12345_NOPQRSTUVWXYZDN", 0, "801312345_NOPQRSTUVWXYZDN", "" }, // csumalpha
-        /* 23*/ { "[8013]12345_abcdefghijklmN3", 0, "801312345_abcdefghijklmN3", "" }, // csumalpha
-        /* 24*/ { "[8013]12345_nopqrstuvwxyzP2", 0, "801312345_nopqrstuvwxyzP2", "" }, // csumalpha
-        /* 25*/ { "[8013]12345_!\"%&'()*+,-./LC", 0, "801312345_!\"%&'()*+,-./LC", "" }, // csumalpha
-        /* 26*/ { "[8013]12345_0123456789:;<=>?62", 0, "801312345_0123456789:;<=>?62", "" }, // csumalpha
-        /* 27*/ { "[8013]7907665Bm8v2AB", 0, "80137907665Bm8v2AB", "" }, // csumalpha
-        /* 28*/ { "[8013]97850l6KZm0yCD", 0, "801397850l6KZm0yCD", "" }, // csumalpha
-        /* 29*/ { "[8013]225803106GSpEF", 0, "8013225803106GSpEF", "" }, // csumalpha
-        /* 30*/ { "[8013]149512464PM+GH", 0, "8013149512464PM+GH", "" }, // csumalpha
-        /* 31*/ { "[8013]62577B8fRG7HJK", 0, "801362577B8fRG7HJK", "" }, // csumalpha
-        /* 32*/ { "[8013]515942070CYxLM", 0, "8013515942070CYxLM", "" }, // csumalpha
-        /* 33*/ { "[8013]390800494sP6NP", 0, "8013390800494sP6NP", "" }, // csumalpha
-        /* 34*/ { "[8013]386830132uO+QR", 0, "8013386830132uO+QR", "" }, // csumalpha
-        /* 35*/ { "[8013]53395376X1:nST", 0, "801353395376X1:nST", "" }, // csumalpha
-        /* 36*/ { "[8013]957813138Sb6UV", 0, "8013957813138Sb6UV", "" }, // csumalpha
-        /* 37*/ { "[8013]530790no0qOgWX", 0, "8013530790no0qOgWX", "" }, // csumalpha
-        /* 38*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
-        /* 39*/ { "[8013]23956qk1&dB!23", 0, "801323956qk1&dB!23", "" }, // csumalpha
-        /* 40*/ { "[8013]794394895ic045", 0, "8013794394895ic045", "" }, // csumalpha
-        /* 41*/ { "[8013]57453Uq3qA<H67", 0, "801357453Uq3qA<H67", "" }, // csumalpha
-        /* 42*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, // csumalpha
-        /* 43*/ { "[8013]0881063PhHvY89", 0, "80130881063PhHvY89", "" }, // csumalpha
-        /* 44*/ { "[8013]00000!HV", 0, "801300000!HV", "" }, // csumalpha
-        /* 45*/ { "[8013]99999zzzzzzzzzzzzzzzzzzT2", 0, "801399999zzzzzzzzzzzzzzzzzzT2", "" }, // csumalpha
-        /* 46*/ { "[8013]1987654Ad4X4bL5ttr2310cXK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cXK", "261: AI (8013) position 24: Bad checksum 'X', expected '2'" }, // csumalpha
-        /* 47*/ { "[8013]1987654Ad4X4bL5ttr2310c2X", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2X", "261: AI (8013) position 25: Bad checksum 'X', expected 'K'" }, // csumalpha
-        /* 48*/ { "[8013]198765£Ad4X4bL5ttr2310c2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
-        /* 49*/ { "[8013]1987654Ad4X4bL5ttr2310£2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, // csumalpha
-        /* 50*/ { "[8013]1987654Ad4X4bL5ttr2310cxK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cxK", "261: AI (8013) position 24: Bad checksum 'x', expected '2'" }, // csumalpha
-        /* 51*/ { "[8013]1987654Ad4X4bL5ttr2310c2x", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2x", "261: AI (8013) position 25: Bad checksum 'x', expected 'K'" }, // csumalpha
-        /* 52*/ { "[8013]12345678901234567890123NTX", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" }, // csumalpha
-        /* 53*/ { "[8013]1", ZINT_WARN_NONCOMPLIANT, "80131", "259: Invalid data length for AI (8013)" }, // csumalpha
-        /* 54*/ { "[8013]12", ZINT_WARN_NONCOMPLIANT, "801312", "261: AI (8013) position 1: Bad checksum '1', expected '2'" }, // csumalpha
-        /* 55*/ { "[8013]22", 0, "801322", "" }, // csumalpha
-        /* 56*/ { "[8013]123", ZINT_WARN_NONCOMPLIANT, "8013123", "261: AI (8013) position 3: Bad checksum '3', expected 'W'" }, // csumalpha
-        /* 57*/ { "[8013]12W", 0, "801312W", "" }, // csumalpha
-        /* 58*/ { "[8013]00000!HW", ZINT_WARN_NONCOMPLIANT, "801300000!HW", "261: AI (8013) position 8: Bad checksum 'W', expected 'V'" }, // csumalpha
-        /* 59*/ { "[8013]7907665Bm8v2BB", ZINT_WARN_NONCOMPLIANT, "80137907665Bm8v2BB", "261: AI (8013) position 13: Bad checksum 'B', expected 'A'" }, // csumalpha
-        /* 60*/ { "[8013]99zzzzzzzzzzzzzzzzzzzzzZ7", 0, "801399zzzzzzzzzzzzzzzzzzzzzZ7", "" }, // csumalpha
-        /* 61*/ { "[11]120100", 0, "11120100", "" }, // yymmd0
-        /* 62*/ { "[11]120131", 0, "11120131", "" }, // yymmd0
-        /* 63*/ { "[11]120132", ZINT_WARN_NONCOMPLIANT, "11120132", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 64*/ { "[11]120229", 0, "11120229", "" }, // yymmd0
-        /* 65*/ { "[11]110229", ZINT_WARN_NONCOMPLIANT, "11110229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 66*/ { "[11]000229", 0, "11000229", "" }, // yymmd0 NOTE: will be false in 2050
-        /* 67*/ { "[11]480229", 0, "11480229", "" }, // yymmd0
-        /* 68*/ { "[11]500229", ZINT_WARN_NONCOMPLIANT, "11500229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 69*/ { "[11]980229", ZINT_WARN_NONCOMPLIANT, "11980229", "261: AI (11) position 5: Invalid day '29'" }, // yymmd0
-        /* 70*/ { "[11]110228", 0, "11110228", "" }, // yymmd0
-        /* 71*/ { "[11]120230", ZINT_WARN_NONCOMPLIANT, "11120230", "261: AI (11) position 5: Invalid day '30'" }, // yymmd0
-        /* 72*/ { "[11]120331", 0, "11120331", "" }, // yymmd0
-        /* 73*/ { "[11]120332", ZINT_WARN_NONCOMPLIANT, "11120332", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 74*/ { "[11]120430", 0, "11120430", "" }, // yymmd0
-        /* 75*/ { "[11]120431", ZINT_WARN_NONCOMPLIANT, "11120431", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 76*/ { "[11]120531", 0, "11120531", "" }, // yymmd0
-        /* 77*/ { "[11]120532", ZINT_WARN_NONCOMPLIANT, "11120532", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 78*/ { "[11]120630", 0, "11120630", "" }, // yymmd0
-        /* 79*/ { "[11]120631", ZINT_WARN_NONCOMPLIANT, "11120631", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 80*/ { "[11]120731", 0, "11120731", "" }, // yymmd0
-        /* 81*/ { "[11]120732", ZINT_WARN_NONCOMPLIANT, "11120732", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 82*/ { "[11]120831", 0, "11120831", "" }, // yymmd0
-        /* 83*/ { "[11]120832", ZINT_WARN_NONCOMPLIANT, "11120832", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 84*/ { "[11]120930", 0, "11120930", "" }, // yymmd0
-        /* 85*/ { "[11]120931", ZINT_WARN_NONCOMPLIANT, "11120931", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 86*/ { "[11]121031", 0, "11121031", "" }, // yymmd0
-        /* 87*/ { "[11]121032", ZINT_WARN_NONCOMPLIANT, "11121032", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 88*/ { "[11]121130", 0, "11121130", "" }, // yymmd0
-        /* 89*/ { "[11]121131", ZINT_WARN_NONCOMPLIANT, "11121131", "261: AI (11) position 5: Invalid day '31'" }, // yymmd0
-        /* 90*/ { "[11]121200", 0, "11121200", "" }, // yymmd0
-        /* 91*/ { "[11]121231", 0, "11121231", "" }, // yymmd0
-        /* 92*/ { "[11]121232", ZINT_WARN_NONCOMPLIANT, "11121232", "261: AI (11) position 5: Invalid day '32'" }, // yymmd0
-        /* 93*/ { "[11]120031", ZINT_WARN_NONCOMPLIANT, "11120031", "261: AI (11) position 3: Invalid month '00'" }, // yymmd0
-        /* 94*/ { "[11]121331", ZINT_WARN_NONCOMPLIANT, "11121331", "261: AI (11) position 3: Invalid month '13'" }, // yymmd0
-        /* 95*/ { "[4326]121231", 0, "4326121231", "" }, // yymmdd
-        /* 96*/ { "[4326]121200", ZINT_WARN_NONCOMPLIANT, "4326121200", "261: AI (4326) position 5: Invalid day '00'" }, // yymmdd
-        /* 97*/ { "[4326]120031", ZINT_WARN_NONCOMPLIANT, "4326120031", "261: AI (4326) position 3: Invalid month '00'" }, // yymmdd
-        /* 98*/ { "[4326]129931", ZINT_WARN_NONCOMPLIANT, "4326129931", "261: AI (4326) position 3: Invalid month '99'" }, // yymmdd
-        /* 99*/ { "[4326]121299", ZINT_WARN_NONCOMPLIANT, "4326121299", "261: AI (4326) position 5: Invalid day '99'" }, // yymmdd
-        /*100*/ { "[4326]120230", ZINT_WARN_NONCOMPLIANT, "4326120230", "261: AI (4326) position 5: Invalid day '30'" }, // yymmdd
-        /*101*/ { "[4326]110229", ZINT_WARN_NONCOMPLIANT, "4326110229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
-        /*102*/ { "[4326]000229", 0, "4326000229", "" }, // yymmdd NOTE: will be false in 2050
-        /*103*/ { "[4326]940229", ZINT_WARN_NONCOMPLIANT, "4326940229", "261: AI (4326) position 5: Invalid day '29'" }, // yymmdd
-        /*104*/ { "[4324]1212310000", 0, "43241212310000", "" }, // hhmm
-        /*105*/ { "[4324]1212312359", 0, "43241212312359", "" }, // hhmm
-        /*106*/ { "[4324]1212312400", ZINT_WARN_NONCOMPLIANT, "43241212312400", "261: AI (4324) position 7: Invalid hour of day '24'" }, // hhmm
-        /*107*/ { "[4324]1212312360", ZINT_WARN_NONCOMPLIANT, "43241212312360", "261: AI (4324) position 9: Invalid minutes in the hour '60'" }, // hhmm
-        /*108*/ { "[8008]121231000000", 0, "8008121231000000", "" }, // hhoptmmss
-        /*109*/ { "[8008]1212310000", 0, "80081212310000", "" }, // hhoptmmss
-        /*110*/ { "[8008]12123100", 0, "800812123100", "" }, // hhoptmmss
-        /*111*/ { "[8008]12123123", 0, "800812123123", "" }, // hhoptmmss
-        /*112*/ { "[8008]12123124", ZINT_WARN_NONCOMPLIANT, "800812123124", "261: AI (8008) position 7: Invalid hour of day '24'" }, // hhoptmmss
-        /*113*/ { "[8008]1212312359", 0, "80081212312359", "" }, // hhoptmmss
-        /*114*/ { "[8008]1212312360", ZINT_WARN_NONCOMPLIANT, "80081212312360", "261: AI (8008) position 9: Invalid minutes in the hour '60'" }, // hhoptmmss
-        /*115*/ { "[8008]121231235959", 0, "8008121231235959", "" }, // hhoptmmss
-        /*116*/ { "[8008]121231235960", ZINT_WARN_NONCOMPLIANT, "8008121231235960", "261: AI (8008) position 11: Invalid seconds in the minute '60'" }, // hhoptmmss
-        /*117*/ { "[422]004", 0, "422004", "" }, // iso3166
-        /*118*/ { "[422]894", 0, "422894", "" }, // iso3166
-        /*119*/ { "[422]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
-        /*120*/ { "[422]0A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, // iso3166
-        /*121*/ { "[422]003", ZINT_WARN_NONCOMPLIANT, "422003", "261: AI (422) position 1: Unknown country code '003'" }, // iso3166
-        /*122*/ { "[422]895", ZINT_WARN_NONCOMPLIANT, "422895", "261: AI (422) position 1: Unknown country code '895'" }, // iso3166
-        /*123*/ { "[422]999", ZINT_WARN_NONCOMPLIANT, "422999", "261: AI (422) position 1: Unknown country code '999'" }, // iso3166
-        /*124*/ { "[423]004", 0, "423004", "" }, // iso3166list
-        /*125*/ { "[423]004894", 0, "423004894", "" }, // iso3166list
-        /*126*/ { "[423]004894004", 0, "423004894004", "" }, // iso3166list
-        /*127*/ { "[423]004894004894", 0, "423004894004894", "" }, // iso3166list
-        /*128*/ { "[423]004894004894004", 0, "423004894004894004", "" }, // iso3166list
-        /*129*/ { "[423]004894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*130*/ { "[423]123894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*131*/ { "[423]A04894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*132*/ { "[423]00489400489400489", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*133*/ { "[423]0048940048940048", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*134*/ { "[423]00489400489400", ZINT_WARN_NONCOMPLIANT, "42300489400489400", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*135*/ { "[423]0048940048940", ZINT_WARN_NONCOMPLIANT, "4230048940048940", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*136*/ { "[423]00489400489", ZINT_WARN_NONCOMPLIANT, "42300489400489", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*137*/ { "[423]0048940048", ZINT_WARN_NONCOMPLIANT, "4230048940048", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*138*/ { "[423]00489400", ZINT_WARN_NONCOMPLIANT, "42300489400", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*139*/ { "[423]0048940", ZINT_WARN_NONCOMPLIANT, "4230048940", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*140*/ { "[423]00489", ZINT_WARN_NONCOMPLIANT, "42300489", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*141*/ { "[423]0048", ZINT_WARN_NONCOMPLIANT, "4230048", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*142*/ { "[423]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*143*/ { "[423]0", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, // iso3166list
-        /*144*/ { "[423]004894004894003", ZINT_WARN_NONCOMPLIANT, "423004894004894003", "261: AI (423) position 13: Unknown country code '003'" }, // iso3166list
-        /*145*/ { "[423]004894004895004", ZINT_WARN_NONCOMPLIANT, "423004894004895004", "261: AI (423) position 10: Unknown country code '895'" }, // iso3166list
-        /*146*/ { "[423]004894004999004", ZINT_WARN_NONCOMPLIANT, "423004894004999004", "261: AI (423) position 10: Unknown country code '999'" }, // iso3166list
-        /*147*/ { "[423]004894005894004", ZINT_WARN_NONCOMPLIANT, "423004894005894004", "261: AI (423) position 7: Unknown country code '005'" }, // iso3166list
-        /*148*/ { "[423]004893004894004", ZINT_WARN_NONCOMPLIANT, "423004893004894004", "261: AI (423) position 4: Unknown country code '893'" }, // iso3166list
-        /*149*/ { "[423]004999004894004", ZINT_WARN_NONCOMPLIANT, "423004999004894004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*150*/ { "[423]003894004894004", ZINT_WARN_NONCOMPLIANT, "423003894004894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*151*/ { "[423]004894004433", ZINT_WARN_NONCOMPLIANT, "423004894004433", "261: AI (423) position 10: Unknown country code '433'" }, // iso3166list
-        /*152*/ { "[423]004894435894", ZINT_WARN_NONCOMPLIANT, "423004894435894", "261: AI (423) position 7: Unknown country code '435'" }, // iso3166list
-        /*153*/ { "[423]004433004894", ZINT_WARN_NONCOMPLIANT, "423004433004894", "261: AI (423) position 4: Unknown country code '433'" }, // iso3166list
-        /*154*/ { "[423]432894004894", ZINT_WARN_NONCOMPLIANT, "423432894004894", "261: AI (423) position 1: Unknown country code '432'" }, // iso3166list
-        /*155*/ { "[423]004894003", ZINT_WARN_NONCOMPLIANT, "423004894003", "261: AI (423) position 7: Unknown country code '003'" }, // iso3166list
-        /*156*/ { "[423]004895004", ZINT_WARN_NONCOMPLIANT, "423004895004", "261: AI (423) position 4: Unknown country code '895'" }, // iso3166list
-        /*157*/ { "[423]004999004", ZINT_WARN_NONCOMPLIANT, "423004999004", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*158*/ { "[423]003894004", ZINT_WARN_NONCOMPLIANT, "423003894004", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*159*/ { "[423]004999", ZINT_WARN_NONCOMPLIANT, "423004999", "261: AI (423) position 4: Unknown country code '999'" }, // iso3166list
-        /*160*/ { "[423]000894", ZINT_WARN_NONCOMPLIANT, "423000894", "261: AI (423) position 1: Unknown country code '000'" }, // iso3166list
-        /*161*/ { "[423]003", ZINT_WARN_NONCOMPLIANT, "423003", "261: AI (423) position 1: Unknown country code '003'" }, // iso3166list
-        /*162*/ { "[7030]999A", 0, "7030999A", "" }, // iso3166999
-        /*163*/ { "[7030]894A", 0, "7030894A", "" }, // iso3166999
-        /*164*/ { "[7030]004A", 0, "7030004A", "" }, // iso3166999
-        /*165*/ { "[7030]004", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
-        /*166*/ { "[7030]04", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, // iso3166999
-        /*167*/ { "[7030]001A", ZINT_WARN_NONCOMPLIANT, "7030001A", "261: AI (7030) position 1: Unknown country code '001'" }, // iso3166999
-        /*168*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, // iso3166999
-        /*169*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, // iso3166999
-        /*170*/ { "[4307]AD", 0, "4307AD", "" }, // iso3166alpha2
-        /*171*/ { "[4307]AC", ZINT_WARN_NONCOMPLIANT, "4307AC", "261: AI (4307) position 1: Unknown country code 'AC'" }, // iso3166alpha2
-        /*172*/ { "[3910]0081", 0, "39100081", "" }, // iso4217
-        /*173*/ { "[3910]9991", 0, "39109991", "" }, // iso4217
-        /*174*/ { "[3910]9971", 0, "39109971", "" }, // iso4217
-        /*175*/ { "[3910]9251", 0, "39109251", "" }, // iso4217
-        /*176*/ { "[3910]01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
-        /*177*/ { "[3910]001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, // iso4217
-        /*178*/ { "[3910]9981", ZINT_WARN_NONCOMPLIANT, "39109981", "261: AI (3910) position 1: Unknown currency code '998'" }, // iso4217
-        /*179*/ { "[3910]0041", ZINT_WARN_NONCOMPLIANT, "39100041", "261: AI (3910) position 1: Unknown currency code '004'" }, // iso4217
-        /*180*/ { "[3910]8941", ZINT_WARN_NONCOMPLIANT, "39108941", "261: AI (3910) position 1: Unknown currency code '894'" }, // iso4217
-        /*181*/ { "[4300]%12", 0, "4300%12", "" }, // pcenc
-        /*182*/ { "[4300]%1", ZINT_WARN_NONCOMPLIANT, "4300%1", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
-        /*183*/ { "[4300]%", ZINT_WARN_NONCOMPLIANT, "4300%", "261: AI (4300) position 1: Invalid % escape" }, // pcenc
-        /*184*/ { "[4300]12%1212", 0, "430012%1212", "" }, // pcenc
-        /*185*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid character for percent encoding" }, // pcenc
-        /*186*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", 0, "4308ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", "" }, // no pcenc
-        /*187*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (4308)" }, // no pcenc
-        /*188*/ { "[4309]02790858483015297971", 0, "430902790858483015297971", "" }, // latlong
-        /*189*/ { "[4309]18000000013015297971", ZINT_WARN_NONCOMPLIANT, "430918000000013015297971", "261: AI (4309) position 10: Invalid latitude" }, // latlong
-        /*190*/ { "[4309]02790858418000000001", ZINT_WARN_NONCOMPLIANT, "430902790858418000000001", "261: AI (4309) position 20: Invalid longitude" }, // latlong
-        /*191*/ { "[4321]1", 0, "43211", "" }, // yesno
-        /*192*/ { "[4321]0", 0, "43210", "" }, // yesno
-        /*193*/ { "[4321]2", ZINT_WARN_NONCOMPLIANT, "43212", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
-        /*194*/ { "[4321]9", ZINT_WARN_NONCOMPLIANT, "43219", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, // yesno
-        /*195*/ { "[7040]1234", 0, "70401234", "" }, // importeridx
-        /*196*/ { "[7040]123A", 0, "7040123A", "" }, // importeridx
-        /*197*/ { "[7040]123Z", 0, "7040123Z", "" }, // importeridx
-        /*198*/ { "[7040]123a", 0, "7040123a", "" }, // importeridx
-        /*199*/ { "[7040]123z", 0, "7040123z", "" }, // importeridx
-        /*200*/ { "[7040]123-", 0, "7040123-", "" }, // importeridx
-        /*201*/ { "[7040]123_", 0, "7040123_", "" }, // importeridx
-        /*202*/ { "[7040]123!", ZINT_WARN_NONCOMPLIANT, "7040123!", "261: AI (7040) position 4: Invalid importer index '!'" }, // importeridx
-        /*203*/ { "[7040]123/", ZINT_WARN_NONCOMPLIANT, "7040123/", "261: AI (7040) position 4: Invalid importer index '/'" }, // importeridx
-        /*204*/ { "[7040]123:", ZINT_WARN_NONCOMPLIANT, "7040123:", "261: AI (7040) position 4: Invalid importer index ':'" }, // importeridx
-        /*205*/ { "[7040]123?", ZINT_WARN_NONCOMPLIANT, "7040123?", "261: AI (7040) position 4: Invalid importer index '?'" }, // importeridx
-        /*206*/ { "[8001]12341234512311", 0, "800112341234512311", "" }, // nonzero
-        /*207*/ { "[8001]00010000100100", 0, "800100010000100100", "" }, // nonzero
-        /*208*/ { "[8001]00001234512311", ZINT_WARN_NONCOMPLIANT, "800100001234512311", "261: AI (8001) position 1: Zero not permitted" }, // nonzero
-        /*209*/ { "[8001]12340000012311", ZINT_WARN_NONCOMPLIANT, "800112340000012311", "261: AI (8001) position 5: Zero not permitted" }, // nonzero
-        /*210*/ { "[8001]00010000100011", ZINT_WARN_NONCOMPLIANT, "800100010000100011", "261: AI (8001) position 10: Zero not permitted" }, // nonzero
-        /*211*/ { "[8001]00010000100101", 0, "800100010000100101", "" }, // winding
-        /*212*/ { "[8001]00010000100111", 0, "800100010000100111", "" }, // winding
-        /*213*/ { "[8001]00010000100191", 0, "800100010000100191", "" }, // winding
-        /*214*/ { "[8001]00010000100121", ZINT_WARN_NONCOMPLIANT, "800100010000100121", "261: AI (8001) position 13: Invalid winding direction '2'" }, // winding
-        /*215*/ { "[8001]00010000100131", ZINT_WARN_NONCOMPLIANT, "800100010000100131", "261: AI (8001) position 13: Invalid winding direction '3'" }, // winding
-        /*216*/ { "[8001]00010000100171", ZINT_WARN_NONCOMPLIANT, "800100010000100171", "261: AI (8001) position 13: Invalid winding direction '7'" }, // winding
-        /*217*/ { "[8001]00010000100181", ZINT_WARN_NONCOMPLIANT, "800100010000100181", "261: AI (8001) position 13: Invalid winding direction '8'" }, // winding
-        /*218*/ { "[8003]01234567890128", 0, "800301234567890128", "" }, // zero
-        /*219*/ { "[8003]11234567890128", ZINT_WARN_NONCOMPLIANT, "800311234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
-        /*220*/ { "[8003]91234567890128", ZINT_WARN_NONCOMPLIANT, "800391234567890128", "261: AI (8003) position 1: Zero is required" }, // zero
-        /*221*/ { "[8006]123456789012310101", 0, "8006123456789012310101", "" }, // pieceoftotal
-        /*222*/ { "[8006]123456789012310199", 0, "8006123456789012310199", "" }, // pieceoftotal
-        /*223*/ { "[8006]123456789012319999", 0, "8006123456789012319999", "" }, // pieceoftotal
-        /*224*/ { "[8006]123456789012310001", ZINT_WARN_NONCOMPLIANT, "8006123456789012310001", "261: AI (8006) position 15: Piece number cannot be zero" }, // pieceoftotal
-        /*225*/ { "[8006]123456789012310100", ZINT_WARN_NONCOMPLIANT, "8006123456789012310100", "261: AI (8006) position 15: Total number cannot be zero" }, // pieceoftotal
-        /*226*/ { "[8006]123456789012310201", ZINT_WARN_NONCOMPLIANT, "8006123456789012310201", "261: AI (8006) position 15: Piece number '02' exceeds total '01'" }, // pieceoftotal
-        /*227*/ { "[8006]123456789012319998", ZINT_WARN_NONCOMPLIANT, "8006123456789012319998", "261: AI (8006) position 15: Piece number '99' exceeds total '98'" }, // pieceoftotal
-        /*228*/ { "[8007]GB82WEST12345698765432", 0, "8007GB82WEST12345698765432", "" }, // iban
-        /*229*/ { "[8007]GB83WEST12345698765432", ZINT_WARN_NONCOMPLIANT, "8007GB83WEST12345698765432", "261: AI (8007) position 3: Bad IBAN checksum '83', expected '82'" }, // iban
-        /*230*/ { "[8007]BE71096123456769", 0, "8007BE71096123456769", "" }, // iban
-        /*231*/ { "[8007]BE71096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE71096123456760", "261: AI (8007) position 3: Bad IBAN checksum '71', expected '23'" }, // iban
-        /*232*/ { "[8007]BE01096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE01096123456760", "261: AI (8007) position 3: Bad IBAN checksum '01', expected '23'" }, // iban
-        /*233*/ { "[8007]BE00096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE00096123456760", "261: AI (8007) position 3: Bad IBAN checksum '00', expected '23'" }, // iban
-        /*234*/ { "[8007]LC14BOSL123456789012345678901234", 0, "8007LC14BOSL123456789012345678901234", "" }, // iban
-        /*235*/ { "[8007]LC14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007LC14BOSL123456789012345678901230", "261: AI (8007) position 3: Bad IBAN checksum '14', expected '25'" }, // iban
-        /*236*/ { "[8007]A114BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007A114BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'A1'" }, // iban
-        /*237*/ { "[8007]1A14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "80071A14BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code '1A'" }, // iban
-        /*238*/ { "[8007]AA14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007AA14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'AA'" }, // iban
-        /*239*/ { "[8007]ZZ14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZZ14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'ZZ'" }, // iban
-        /*240*/ { "[8007]ZW33BOSL123456789012345678901230", 0, "8007ZW33BOSL123456789012345678901230", "" }, // iban
-        /*241*/ { "[8007]ZWA3BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZWA3BOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum 'A3'" }, // iban
-        /*242*/ { "[8007]ZW3ABOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW3ABOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum '3A'" }, // iban
-        /*243*/ { "[8007]ZW33bOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW33bOSL123456789012345678901230", "261: AI (8007) position 5: Invalid IBAN character 'b'" }, // iban
-        /*244*/ { "[8007]GB98", ZINT_WARN_NONCOMPLIANT, "8007GB98", "259: Invalid data length for AI (8007)" }, // iban
-        /*245*/ { "[8007]FR7630006000011234567890189", 0, "8007FR7630006000011234567890189", "" }, // iban
-        /*246*/ { "[8007]DE91100000000123456789", 0, "8007DE91100000000123456789", "" }, // iban
-        /*247*/ { "[8007]GR9608100010000001234567890", 0, "8007GR9608100010000001234567890", "" }, // iban
-        /*248*/ { "[8007]MU43BOMM0101123456789101000MUR", 0, "8007MU43BOMM0101123456789101000MUR", "" }, // iban
-        /*249*/ { "[8007]PL10105000997603123456789123", 0, "8007PL10105000997603123456789123", "" }, // iban
-        /*250*/ { "[8007]RO09BCYP0000001234567890", 0, "8007RO09BCYP0000001234567890", "" }, // iban
-        /*251*/ { "[8007]SA4420000001234567891234", 0, "8007SA4420000001234567891234", "" }, // iban
-        /*252*/ { "[8007]ES7921000813610123456789", 0, "8007ES7921000813610123456789", "" }, // iban
-        /*253*/ { "[8007]CH5604835012345678009", 0, "8007CH5604835012345678009", "" }, // iban
-        /*254*/ { "[8007]GB98MIDL07009312345678", 0, "8007GB98MIDL07009312345678", "" }, // iban
-        /*255*/ { "[8011]1", 0, "80111", "" }, // nozeroprefix
-        /*256*/ { "[8011]11", 0, "801111", "" }, // nozeroprefix
-        /*257*/ { "[8011]0", 0, "80110", "" }, // nozeroprefix
-        /*258*/ { "[8011]01", ZINT_WARN_NONCOMPLIANT, "801101", "261: AI (8011) position 1: Zero prefix is not permitted" }, // nozeroprefix
-        /*259*/ { "[8110]106141416543213150110120", 0, "8110106141416543213150110120", "" }, // couponcode (first part of NACAG Appendix C: Example 1 - see test_rss.c test_examples)
-        /*260*/ { "[8110]012345612345610104123", 0, "8110012345612345610104123", "" }, // couponcode
-        /*261*/ { "[8110]01234561234561010412", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412", "259: Invalid data length for AI (8110)" }, // couponcode
-        /*262*/ { "[8110]12345678901234567890", ZINT_WARN_NONCOMPLIANT, "811012345678901234567890", "259: Invalid data length for AI (8110)" }, // couponcode
-        /*263*/ { "[8110]712345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110712345612345610104123", "261: AI (8110) position 1: Invalid Primary GS1 Co. Prefix VLI '7'" }, // couponcode
-        /*264*/ { "[8110]A12345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110A12345612345610104123", "261: AI (8110) position 1: Non-numeric Primary GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*265*/ { "[8110]012345A12345610104123", ZINT_WARN_NONCOMPLIANT, "8110012345A12345610104123", "261: AI (8110) position 7: Non-numeric Primary GS1 Co. Prefix 'A'" }, // couponcode
-        /*266*/ { "[8110]012345612345A10104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345A10104123", "261: AI (8110) position 8: Non-numeric Offer Code" }, // couponcode
-        /*267*/ { "[8110]012345612345600104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345600104123", "261: AI (8110) position 14: Invalid Save Value VLI '0'" }, // couponcode
-        /*268*/ { "[8110]012345612345660104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345660104123", "261: AI (8110) position 14: Invalid Save Value VLI '6'" }, // couponcode
-        /*269*/ { "[8110]01234561234561A104123", ZINT_WARN_NONCOMPLIANT, "811001234561234561A104123", "261: AI (8110) position 15: Non-numeric Save Value 'A'" }, // couponcode
-        /*270*/ { "[8110]012345612345610004123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610004123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '0'" }, // couponcode
-        /*271*/ { "[8110]012345612345610604123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610604123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '6'" }, // couponcode
-        /*272*/ { "[8110]0123456123456101A4123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101A4123", "261: AI (8110) position 17: Non-numeric Primary Purch. Req. 'A'" }, // couponcode
-        /*273*/ { "[8110]012345612345621251234", ZINT_WARN_NONCOMPLIANT, "8110012345612345621251234", "261: AI (8110) position 18: Primary Purch. Req. incomplete" }, // couponcode
-        /*274*/ { "[8110]01234561234561010A123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010A123", "261: AI (8110) position 18: Non-numeric Primary Purch. Req. Code" }, // couponcode
-        /*275*/ { "[8110]012345612345610106123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610106123", "261: AI (8110) position 18: Invalid Primary Purch. Req. Code '6'" }, // couponcode
-        /*276*/ { "[8110]012345612345610212412", ZINT_WARN_NONCOMPLIANT, "8110012345612345610212412", "261: AI (8110) position 20: Primary Purch. Family Code incomplete" }, // couponcode
-        /*277*/ { "[8110]0123456123456103123412", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412", "261: AI (8110) position 21: Primary Purch. Family Code incomplete" }, // couponcode
-        /*278*/ { "[8110]0123456123456103123412A", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412A", "261: AI (8110) position 21: Non-numeric Primary Purch. Family Code" }, // couponcode
-        /*279*/ { "[8110]01234561234561031234123", 0, "811001234561234561031234123", "" }, // couponcode
-        /*280*/ { "[8110]612345678901212345651", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651", "261: AI (8110) position 21: Save Value incomplete" }, // couponcode
-        /*281*/ { "[8110]6123456789012123456512345", ZINT_WARN_NONCOMPLIANT, "81106123456789012123456512345", "261: AI (8110) position 26: Primary Purch. Req. VLI missing" }, // couponcode
-        /*282*/ { "[8110]61234567890121234565123455123454123", 0, "811061234567890121234565123455123454123", "" }, // couponcode
-        /*283*/ { "[8110]61234567890121234565123455123454123A", ZINT_WARN_NONCOMPLIANT, "811061234567890121234565123455123454123A", "261: AI (8110) position 36: Non-numeric Data Field 'A'" }, // couponcode
-        /*284*/ { "[8110]612345678901212345651234551234541237", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541237", "261: AI (8110) position 36: Invalid Data Field '7'" }, // couponcode
-        /*285*/ { "[8110]612345678901212345651234551234541238", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541238", "261: AI (8110) position 36: Invalid Data Field '8'" }, // couponcode
-        /*286*/ { "[8110]0123456123456101041231", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231", "261: AI (8110) position 23: Add. Purch. Rules Code incomplete" }, // couponcode
-        /*287*/ { "[8110]0123456123456101041231A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231A", "261: AI (8110) position 23: Non-numeric Add. Purch. Rules Code" }, // couponcode
-        /*288*/ { "[8110]01234561234561010412314", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412314", "261: AI (8110) position 23: Invalid Add. Purch. Rules Code '4'" }, // couponcode
-        /*289*/ { "[8110]01234561234561010412313", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313", "261: AI (8110) position 24: 2nd Purch. Req. VLI missing" }, // couponcode
-        /*290*/ { "[8110]01234561234561010412313A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313A", "261: AI (8110) position 24: Non-numeric 2nd Purch. Req. VLI 'A'" }, // couponcode
-        /*291*/ { "[8110]012345612345610104123130", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123130", "261: AI (8110) position 24: Invalid 2nd Purch. Req. VLI '0'" }, // couponcode
-        /*292*/ { "[8110]012345612345610104123131", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131", "261: AI (8110) position 25: 2nd Purch. Req. incomplete" }, // couponcode
-        /*293*/ { "[8110]012345612345610104123131A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131A", "261: AI (8110) position 25: Non-numeric 2nd Purch. Req. 'A'" }, // couponcode
-        /*294*/ { "[8110]0123456123456101041231310", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310", "261: AI (8110) position 26: 2nd Purch. Req. Code incomplete" }, // couponcode
-        /*295*/ { "[8110]0123456123456101041231310A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310A", "261: AI (8110) position 26: Non-numeric 2nd Purch. Req. Code" }, // couponcode
-        /*296*/ { "[8110]01234561234561010412313108", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313108", "261: AI (8110) position 26: Invalid 2nd Purch. Req. Code '8'" }, // couponcode
-        /*297*/ { "[8110]01234561234561010412313100", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100", "261: AI (8110) position 27: 2nd Purch. Family Code incomplete" }, // couponcode
-        /*298*/ { "[8110]01234561234561010412313100123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123", "261: AI (8110) position 30: 2nd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
-        /*299*/ { "[8110]01234561234561010412313100123A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123A", "261: AI (8110) position 30: Non-numeric 2nd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*300*/ { "[8110]012345612345610104123131001239", 0, "8110012345612345610104123131001239", "" }, // couponcode
-        /*301*/ { "[8110]01234561234561010412313100123012345", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123012345", "261: AI (8110) position 31: 2nd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*302*/ { "[8110]0123456123456101041231310012311234567", 0, "81100123456123456101041231310012311234567", "" }, // couponcode
-        /*303*/ { "[8110]0123456123456101041232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232", "261: AI (8110) position 23: 3rd Purch. Req. VLI missing" }, // couponcode
-        /*304*/ { "[8110]0123456123456101041232A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232A", "261: AI (8110) position 23: Non-numeric 3rd Purch. Req. VLI 'A'" }, // couponcode
-        /*305*/ { "[8110]01234561234561010412326", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412326", "261: AI (8110) position 23: Invalid 3rd Purch. Req. VLI '6'" }, // couponcode
-        /*306*/ { "[8110]01234561234561010412321", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321", "261: AI (8110) position 24: 3rd Purch. Req. incomplete" }, // couponcode
-        /*307*/ { "[8110]012345612345610104123210", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210", "261: AI (8110) position 25: 3rd Purch. Req. Code incomplete" }, // couponcode
-        /*308*/ { "[8110]0123456123456101041232105", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232105", "261: AI (8110) position 25: Invalid 3rd Purch. Req. Code '5'" }, // couponcode
-        /*309*/ { "[8110]0123456123456101041232104", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104", "261: AI (8110) position 26: 3rd Purch. Family Code incomplete" }, // couponcode
-        /*310*/ { "[8110]012345612345610104123210412A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210412A", "261: AI (8110) position 26: Non-numeric 3rd Purch. Family Code" }, // couponcode
-        /*311*/ { "[8110]0123456123456101041232104123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123", "261: AI (8110) position 29: 3rd Purch. GS1 Co. Prefix VLI missing" }, // couponcode
-        /*312*/ { "[8110]01234561234561010412321041230", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321041230", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*313*/ { "[8110]0123456123456101041232104123A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123A", "261: AI (8110) position 29: Non-numeric 3rd Purch. GS1 Co. Prefix VLI 'A'" }, // couponcode
-        /*314*/ { "[8110]0123456123456101041232104123012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, // couponcode
-        /*315*/ { "[8110]0123456123456101041232104123012345A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345A", "261: AI (8110) position 35: Non-numeric 3rd Purch. GS1 Co. Prefix 'A'" }, // couponcode
-        /*316*/ { "[8110]01234561234561010412321041230123456", 0, "811001234561234561010412321041230123456", "" }, // couponcode
-        /*317*/ { "[8110]0123456123456101041233", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
-        /*318*/ { "[8110]01234561234561010412332012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412332012", "261: AI (8110) position 23: Expiration Date incomplete" }, // couponcode
-        /*319*/ { "[8110]012345612345610104123320123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123320123A", "261: AI (8110) position 23: Non-numeric Expiration Date" }, // couponcode
-        /*320*/ { "[8110]0123456123456101041233201232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233201232", "261: AI (8110) position 27: Invalid day '32'" }, // couponcode
-        /*321*/ { "[8110]0123456123456101041233200031", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233200031", "261: AI (8110) position 25: Invalid month '00'" }, // couponcode
-        /*322*/ { "[8110]0123456123456101041233201231", 0, "81100123456123456101041233201231", "" }, // couponcode
-        /*323*/ { "[8110]0123456123456101041234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
-        /*324*/ { "[8110]01234561234561010412342012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412342012", "261: AI (8110) position 23: Start Date incomplete" }, // couponcode
-        /*325*/ { "[8110]012345612345610104123420123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123420123A", "261: AI (8110) position 23: Non-numeric Start Date" }, // couponcode
-        /*326*/ { "[8110]0123456123456101041234200230", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234200230", "261: AI (8110) position 27: Invalid day '30'" }, // couponcode
-        /*327*/ { "[8110]0123456123456101041234201329", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234201329", "261: AI (8110) position 25: Invalid month '13'" }, // couponcode
-        /*328*/ { "[8110]0123456123456101041234200229", 0, "81100123456123456101041234200229", "" }, // couponcode
-        /*329*/ { "[8110]0123456123456101041235", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235", "261: AI (8110) position 23: Serial Number VLI missing" }, // couponcode
-        /*330*/ { "[8110]0123456123456101041235A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235A", "261: AI (8110) position 23: Non-numeric Serial Number VLI 'A'" }, // couponcode
-        /*331*/ { "[8110]01234561234561010412350", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412350", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*332*/ { "[8110]0123456123456101041235012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235012345", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*333*/ { "[8110]0123456123456101041235912345678901234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234", "261: AI (8110) position 24: Serial Number incomplete" }, // couponcode
-        /*334*/ { "[8110]0123456123456101041235912345678901234A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234A", "261: AI (8110) position 38: Non-numeric Serial Number 'A'" }, // couponcode
-        /*335*/ { "[8110]01234561234561010412359123456789012345", 0, "811001234561234561010412359123456789012345", "" }, // couponcode
-        /*336*/ { "[8110]0123456123456101041236", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236", "261: AI (8110) position 23: Retailer ID VLI missing" }, // couponcode
-        /*337*/ { "[8110]0123456123456101041236A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236A", "261: AI (8110) position 23: Non-numeric Retailer ID VLI 'A'" }, // couponcode
-        /*338*/ { "[8110]01234561234561010412360", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412360", "261: AI (8110) position 23: Invalid Retailer ID VLI '0'" }, // couponcode
-        /*339*/ { "[8110]01234561234561010412368", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412368", "261: AI (8110) position 23: Invalid Retailer ID VLI '8'" }, // couponcode
-        /*340*/ { "[8110]01234561234561010412361", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
-        /*341*/ { "[8110]01234561234561010412361123456", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456", "261: AI (8110) position 24: Retailer ID incomplete" }, // couponcode
-        /*342*/ { "[8110]01234561234561010412361123456A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456A", "261: AI (8110) position 30: Non-numeric Retailer ID 'A'" }, // couponcode
-        /*343*/ { "[8110]012345612345610104123671234567890123", 0, "8110012345612345610104123671234567890123", "" }, // couponcode
-        /*344*/ { "[8110]0123456123456101041239", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239", "261: AI (8110) position 23: Save Value Code incomplete" }, // couponcode
-        /*345*/ { "[8110]0123456123456101041239A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239A", "261: AI (8110) position 23: Non-numeric Save Value Code" }, // couponcode
-        /*346*/ { "[8110]01234561234561010412393", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412393", "261: AI (8110) position 23: Invalid Save Value Code '3'" }, // couponcode
-        /*347*/ { "[8110]01234561234561010412394", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412394", "261: AI (8110) position 23: Invalid Save Value Code '4'" }, // couponcode
-        /*348*/ { "[8110]01234561234561010412397", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412397", "261: AI (8110) position 23: Invalid Save Value Code '7'" }, // couponcode
-        /*349*/ { "[8110]01234561234561010412390", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390", "261: AI (8110) position 24: Save Value Applies To incomplete" }, // couponcode
-        /*350*/ { "[8110]01234561234561010412390A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390A", "261: AI (8110) position 24: Non-numeric Save Value Applies To" }, // couponcode
-        /*351*/ { "[8110]012345612345610104123903", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123903", "261: AI (8110) position 24: Invalid Save Value Applies To '3'" }, // couponcode
-        /*352*/ { "[8110]012345612345610104123902", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902", "261: AI (8110) position 25: Store Coupon Flag incomplete" }, // couponcode
-        /*353*/ { "[8110]012345612345610104123902A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902A", "261: AI (8110) position 25: Non-numeric Store Coupon Flag" }, // couponcode
-        /*354*/ { "[8110]0123456123456101041239029", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029", "261: AI (8110) position 26: Don't Multiply Flag incomplete" }, // couponcode
-        /*355*/ { "[8110]0123456123456101041239029A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029A", "261: AI (8110) position 26: Non-numeric Don't Multiply Flag" }, // couponcode
-        /*356*/ { "[8110]01234561234561010412390292", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390292", "261: AI (8110) position 26: Invalid Don't Multiply Flag '2'" }, // couponcode
-        /*357*/ { "[8110]01234561234561010412390291", 0, "811001234561234561010412390291", "" }, // couponcode
-        /*358*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601522345678961345678990000", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" }, // couponcode (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
-        /*359*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601", 0, "8110177777776666663100120444101105551888888821109991222222232012314200601", "" }, // couponcode
-        /*360*/ { "[8112]017777777666666223456789", 0, "8112017777777666666223456789", "" }, // couponposoffer (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112))
-        /*361*/ { "[8112]001234561234560123456", 0, "8112001234561234560123456", "" }, // couponposoffer
-        /*362*/ { "[8112]00123456123456012345", ZINT_WARN_NONCOMPLIANT, "811200123456123456012345", "259: Invalid data length for AI (8112)" }, // couponposoffer
-        /*363*/ { "[8112]0012345612345601234561", ZINT_WARN_NONCOMPLIANT, "81120012345612345601234561", "261: AI (8112) position 22: Reserved trailing characters" }, // couponposoffer
-        /*364*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" }, // couponposoffer
-        /*365*/ { "[8112]0612345678901212345691234567890123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345691234567890123456", "259: Invalid data length for AI (8112)" }, // couponposoffer
-        /*366*/ { "[8112]06123456789012123456912345678901234A", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234A", "261: AI (8112) position 36: Non-numeric Serial Number 'A'" }, // couponposoffer
-        /*367*/ { "[8112]06123456789012123456912345678901234", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
-        /*368*/ { "[8112]06123456789012123456812345678901234", 0, "811206123456789012123456812345678901234", "" }, // couponposoffer
-        /*369*/ { "[8112]0612345678901212345681234567890123", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345681234567890123", "261: AI (8112) position 22: Serial Number incomplete" }, // couponposoffer
-        /*370*/ { "[8112]0612345678901212345A0123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345A0123456", "261: AI (8112) position 15: Non-numeric Offer Code" }, // couponposoffer
-        /*371*/ { "[8112]0612345678901A1234560123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901A1234560123456", "261: AI (8112) position 14: Non-numeric Coupon Funder ID 'A'" }, // couponposoffer
-        /*372*/ { "[8112]071234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112071234567890121234560123456", "261: AI (8112) position 2: Invalid Coupon Funder ID VLI '7'" }, // couponposoffer
-        /*373*/ { "[8112]0A1234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "81120A1234567890121234560123456", "261: AI (8112) position 2: Non-numeric Coupon Funder ID VLI 'A'" }, // couponposoffer
-        /*374*/ { "[8112]261234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112261234567890121234560123456", "261: AI (8112) position 1: Coupon Format must be 0 or 1" }, // couponposoffer
-        /*375*/ { "[8112]A61234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112A61234567890121234560123456", "261: AI (8112) position 1: Non-numeric Coupon Format" }, // couponposoffer
+        /*  0*/ { "[00]123456789012345675", 0, "00123456789012345675", "" }, /* numeric */
+        /*  1*/ { "[00]12345678901234567.", ZINT_WARN_NONCOMPLIANT, "0012345678901234567.", "261: AI (00) position 18: Non-numeric character '.'" }, /* numeric */
+        /*  2*/ { "[00]123456789012345678", ZINT_WARN_NONCOMPLIANT, "00123456789012345678", "261: AI (00) position 18: Bad checksum '8', expected '5'" }, /* csum */
+        /*  3*/ { "[00]1234567890123456759", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, /* length */
+        /*  4*/ { "[00]12345678901234567", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, /* length */
+        /*  5*/ { "[00]123456789012345675A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (00)" }, /* length */
+        /*  6*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", 0, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", "" }, /* cset82 */
+        /*  7*/ { "[91] ", ZINT_WARN_NONCOMPLIANT, "91 ", "261: AI (91) position 1: Invalid CSET 82 character ' '" }, /* cset82 */
+        /*  8*/ { "[91]#", ZINT_WARN_NONCOMPLIANT, "91#", "261: AI (91) position 1: Invalid CSET 82 character '#'" }, /* cset82 */
+        /*  9*/ { "[91]a^", ZINT_WARN_NONCOMPLIANT, "91a^", "261: AI (91) position 2: Invalid CSET 82 character '^'" }, /* cset82 */
+        /* 10*/ { "[91]!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", ZINT_WARN_NONCOMPLIANT, "91!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxy{", "261: AI (91) position 82: Invalid CSET 82 character '{'" }, /* cset82 */
+        /* 11*/ { "[8010]01#-/23456789ABCDEFGHIJKLMNOPQ", 0, "801001#-/23456789ABCDEFGHIJKLMNOPQ", "" }, /* cset39 */
+        /* 12*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "80106789ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" }, /* cset39 */
+        /* 13*/ { "[8010]01!", ZINT_WARN_NONCOMPLIANT, "801001!", "261: AI (8010) position 3: Invalid CSET 39 character '!'" }, /* cset39 */
+        /* 14*/ { "[8010]01a", ZINT_WARN_NONCOMPLIANT, "801001a", "261: AI (8010) position 3: Invalid CSET 39 character 'a'" }, /* cset39 */
+        /* 15*/ { "[8010]6789ABCDEFGHIJKLMNOPQRSTUVWXY}", ZINT_WARN_NONCOMPLIANT, "80106789ABCDEFGHIJKLMNOPQRSTUVWXY}", "261: AI (8010) position 30: Invalid CSET 39 character '}'" }, /* cset39 */
+        /* 16*/ { "[8010]#-/0123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "8010#-/0123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 1: Non-numeric company prefix '#'" }, /* key */
+        /* 17*/ { "[8010]0#-/123456789ABCDEFGHIJKLMNOPQ", ZINT_WARN_NONCOMPLIANT, "80100#-/123456789ABCDEFGHIJKLMNOPQ", "261: AI (8010) position 2: Non-numeric company prefix '#'" }, /* key */
+        /* 18*/ { "[401]0", ZINT_WARN_NONCOMPLIANT, "4010", "259: Invalid data length for AI (401)" }, /* key */
+        /* 19*/ { "[8013]1987654Ad4X4bL5ttr2310c2K", 0, "80131987654Ad4X4bL5ttr2310c2K", "" }, /* csumalpha */
+        /* 20*/ { "[8013]12345678901234567890123NT", 0, "801312345678901234567890123NT", "" }, /* csumalpha */
+        /* 21*/ { "[8013]12345_ABCDEFGHIJKLMCP", 0, "801312345_ABCDEFGHIJKLMCP", "" }, /* csumalpha */
+        /* 22*/ { "[8013]12345_NOPQRSTUVWXYZDN", 0, "801312345_NOPQRSTUVWXYZDN", "" }, /* csumalpha */
+        /* 23*/ { "[8013]12345_abcdefghijklmN3", 0, "801312345_abcdefghijklmN3", "" }, /* csumalpha */
+        /* 24*/ { "[8013]12345_nopqrstuvwxyzP2", 0, "801312345_nopqrstuvwxyzP2", "" }, /* csumalpha */
+        /* 25*/ { "[8013]12345_!\"%&'()*+,-./LC", 0, "801312345_!\"%&'()*+,-./LC", "" }, /* csumalpha */
+        /* 26*/ { "[8013]12345_0123456789:;<=>?62", 0, "801312345_0123456789:;<=>?62", "" }, /* csumalpha */
+        /* 27*/ { "[8013]7907665Bm8v2AB", 0, "80137907665Bm8v2AB", "" }, /* csumalpha */
+        /* 28*/ { "[8013]97850l6KZm0yCD", 0, "801397850l6KZm0yCD", "" }, /* csumalpha */
+        /* 29*/ { "[8013]225803106GSpEF", 0, "8013225803106GSpEF", "" }, /* csumalpha */
+        /* 30*/ { "[8013]149512464PM+GH", 0, "8013149512464PM+GH", "" }, /* csumalpha */
+        /* 31*/ { "[8013]62577B8fRG7HJK", 0, "801362577B8fRG7HJK", "" }, /* csumalpha */
+        /* 32*/ { "[8013]515942070CYxLM", 0, "8013515942070CYxLM", "" }, /* csumalpha */
+        /* 33*/ { "[8013]390800494sP6NP", 0, "8013390800494sP6NP", "" }, /* csumalpha */
+        /* 34*/ { "[8013]386830132uO+QR", 0, "8013386830132uO+QR", "" }, /* csumalpha */
+        /* 35*/ { "[8013]53395376X1:nST", 0, "801353395376X1:nST", "" }, /* csumalpha */
+        /* 36*/ { "[8013]957813138Sb6UV", 0, "8013957813138Sb6UV", "" }, /* csumalpha */
+        /* 37*/ { "[8013]530790no0qOgWX", 0, "8013530790no0qOgWX", "" }, /* csumalpha */
+        /* 38*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, /* csumalpha */
+        /* 39*/ { "[8013]23956qk1&dB!23", 0, "801323956qk1&dB!23", "" }, /* csumalpha */
+        /* 40*/ { "[8013]794394895ic045", 0, "8013794394895ic045", "" }, /* csumalpha */
+        /* 41*/ { "[8013]57453Uq3qA<H67", 0, "801357453Uq3qA<H67", "" }, /* csumalpha */
+        /* 42*/ { "[8013]62185314IvwmYZ", 0, "801362185314IvwmYZ", "" }, /* csumalpha */
+        /* 43*/ { "[8013]0881063PhHvY89", 0, "80130881063PhHvY89", "" }, /* csumalpha */
+        /* 44*/ { "[8013]00000!HV", 0, "801300000!HV", "" }, /* csumalpha */
+        /* 45*/ { "[8013]99999zzzzzzzzzzzzzzzzzzT2", 0, "801399999zzzzzzzzzzzzzzzzzzT2", "" }, /* csumalpha */
+        /* 46*/ { "[8013]1987654Ad4X4bL5ttr2310cXK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cXK", "261: AI (8013) position 24: Bad checksum 'X', expected '2'" }, /* csumalpha */
+        /* 47*/ { "[8013]1987654Ad4X4bL5ttr2310c2X", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2X", "261: AI (8013) position 25: Bad checksum 'X', expected 'K'" }, /* csumalpha */
+        /* 48*/ { "[8013]198765£Ad4X4bL5ttr2310c2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, /* csumalpha */
+        /* 49*/ { "[8013]1987654Ad4X4bL5ttr2310£2K", ZINT_ERROR_INVALID_DATA, "", "250: Extended ASCII characters are not supported by GS1" }, /* csumalpha */
+        /* 50*/ { "[8013]1987654Ad4X4bL5ttr2310cxK", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310cxK", "261: AI (8013) position 24: Bad checksum 'x', expected '2'" }, /* csumalpha */
+        /* 51*/ { "[8013]1987654Ad4X4bL5ttr2310c2x", ZINT_WARN_NONCOMPLIANT, "80131987654Ad4X4bL5ttr2310c2x", "261: AI (8013) position 25: Bad checksum 'x', expected 'K'" }, /* csumalpha */
+        /* 52*/ { "[8013]12345678901234567890123NTX", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" }, /* csumalpha */
+        /* 53*/ { "[8013]1", ZINT_WARN_NONCOMPLIANT, "80131", "259: Invalid data length for AI (8013)" }, /* csumalpha */
+        /* 54*/ { "[8013]12", ZINT_WARN_NONCOMPLIANT, "801312", "261: AI (8013) position 1: Bad checksum '1', expected '2'" }, /* csumalpha */
+        /* 55*/ { "[8013]22", 0, "801322", "" }, /* csumalpha */
+        /* 56*/ { "[8013]123", ZINT_WARN_NONCOMPLIANT, "8013123", "261: AI (8013) position 3: Bad checksum '3', expected 'W'" }, /* csumalpha */
+        /* 57*/ { "[8013]12W", 0, "801312W", "" }, /* csumalpha */
+        /* 58*/ { "[8013]00000!HW", ZINT_WARN_NONCOMPLIANT, "801300000!HW", "261: AI (8013) position 8: Bad checksum 'W', expected 'V'" }, /* csumalpha */
+        /* 59*/ { "[8013]7907665Bm8v2BB", ZINT_WARN_NONCOMPLIANT, "80137907665Bm8v2BB", "261: AI (8013) position 13: Bad checksum 'B', expected 'A'" }, /* csumalpha */
+        /* 60*/ { "[8013]99zzzzzzzzzzzzzzzzzzzzzZ7", 0, "801399zzzzzzzzzzzzzzzzzzzzzZ7", "" }, /* csumalpha */
+        /* 61*/ { "[11]120100", 0, "11120100", "" }, /* yymmd0 */
+        /* 62*/ { "[11]120131", 0, "11120131", "" }, /* yymmd0 */
+        /* 63*/ { "[11]120132", ZINT_WARN_NONCOMPLIANT, "11120132", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 64*/ { "[11]120229", 0, "11120229", "" }, /* yymmd0 */
+        /* 65*/ { "[11]110229", ZINT_WARN_NONCOMPLIANT, "11110229", "261: AI (11) position 5: Invalid day '29'" }, /* yymmd0 */
+        /* 66*/ { "[11]000229", 0, "11000229", "" }, /* yymmd0 NOTE: will be false in 2050 */
+        /* 67*/ { "[11]480229", 0, "11480229", "" }, /* yymmd0 */
+        /* 68*/ { "[11]500229", ZINT_WARN_NONCOMPLIANT, "11500229", "261: AI (11) position 5: Invalid day '29'" }, /* yymmd0 */
+        /* 69*/ { "[11]980229", ZINT_WARN_NONCOMPLIANT, "11980229", "261: AI (11) position 5: Invalid day '29'" }, /* yymmd0 */
+        /* 70*/ { "[11]110228", 0, "11110228", "" }, /* yymmd0 */
+        /* 71*/ { "[11]120230", ZINT_WARN_NONCOMPLIANT, "11120230", "261: AI (11) position 5: Invalid day '30'" }, /* yymmd0 */
+        /* 72*/ { "[11]120331", 0, "11120331", "" }, /* yymmd0 */
+        /* 73*/ { "[11]120332", ZINT_WARN_NONCOMPLIANT, "11120332", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 74*/ { "[11]120430", 0, "11120430", "" }, /* yymmd0 */
+        /* 75*/ { "[11]120431", ZINT_WARN_NONCOMPLIANT, "11120431", "261: AI (11) position 5: Invalid day '31'" }, /* yymmd0 */
+        /* 76*/ { "[11]120531", 0, "11120531", "" }, /* yymmd0 */
+        /* 77*/ { "[11]120532", ZINT_WARN_NONCOMPLIANT, "11120532", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 78*/ { "[11]120630", 0, "11120630", "" }, /* yymmd0 */
+        /* 79*/ { "[11]120631", ZINT_WARN_NONCOMPLIANT, "11120631", "261: AI (11) position 5: Invalid day '31'" }, /* yymmd0 */
+        /* 80*/ { "[11]120731", 0, "11120731", "" }, /* yymmd0 */
+        /* 81*/ { "[11]120732", ZINT_WARN_NONCOMPLIANT, "11120732", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 82*/ { "[11]120831", 0, "11120831", "" }, /* yymmd0 */
+        /* 83*/ { "[11]120832", ZINT_WARN_NONCOMPLIANT, "11120832", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 84*/ { "[11]120930", 0, "11120930", "" }, /* yymmd0 */
+        /* 85*/ { "[11]120931", ZINT_WARN_NONCOMPLIANT, "11120931", "261: AI (11) position 5: Invalid day '31'" }, /* yymmd0 */
+        /* 86*/ { "[11]121031", 0, "11121031", "" }, /* yymmd0 */
+        /* 87*/ { "[11]121032", ZINT_WARN_NONCOMPLIANT, "11121032", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 88*/ { "[11]121130", 0, "11121130", "" }, /* yymmd0 */
+        /* 89*/ { "[11]121131", ZINT_WARN_NONCOMPLIANT, "11121131", "261: AI (11) position 5: Invalid day '31'" }, /* yymmd0 */
+        /* 90*/ { "[11]121200", 0, "11121200", "" }, /* yymmd0 */
+        /* 91*/ { "[11]121231", 0, "11121231", "" }, /* yymmd0 */
+        /* 92*/ { "[11]121232", ZINT_WARN_NONCOMPLIANT, "11121232", "261: AI (11) position 5: Invalid day '32'" }, /* yymmd0 */
+        /* 93*/ { "[11]120031", ZINT_WARN_NONCOMPLIANT, "11120031", "261: AI (11) position 3: Invalid month '00'" }, /* yymmd0 */
+        /* 94*/ { "[11]121331", ZINT_WARN_NONCOMPLIANT, "11121331", "261: AI (11) position 3: Invalid month '13'" }, /* yymmd0 */
+        /* 95*/ { "[4326]121231", 0, "4326121231", "" }, /* yymmdd */
+        /* 96*/ { "[4326]121200", ZINT_WARN_NONCOMPLIANT, "4326121200", "261: AI (4326) position 5: Invalid day '00'" }, /* yymmdd */
+        /* 97*/ { "[4326]120031", ZINT_WARN_NONCOMPLIANT, "4326120031", "261: AI (4326) position 3: Invalid month '00'" }, /* yymmdd */
+        /* 98*/ { "[4326]129931", ZINT_WARN_NONCOMPLIANT, "4326129931", "261: AI (4326) position 3: Invalid month '99'" }, /* yymmdd */
+        /* 99*/ { "[4326]121299", ZINT_WARN_NONCOMPLIANT, "4326121299", "261: AI (4326) position 5: Invalid day '99'" }, /* yymmdd */
+        /*100*/ { "[4326]120230", ZINT_WARN_NONCOMPLIANT, "4326120230", "261: AI (4326) position 5: Invalid day '30'" }, /* yymmdd */
+        /*101*/ { "[4326]110229", ZINT_WARN_NONCOMPLIANT, "4326110229", "261: AI (4326) position 5: Invalid day '29'" }, /* yymmdd */
+        /*102*/ { "[4326]000229", 0, "4326000229", "" }, /* yymmdd NOTE: will be false in 2050 */
+        /*103*/ { "[4326]940229", ZINT_WARN_NONCOMPLIANT, "4326940229", "261: AI (4326) position 5: Invalid day '29'" }, /* yymmdd */
+        /*104*/ { "[4324]1212310000", 0, "43241212310000", "" }, /* hhmm */
+        /*105*/ { "[4324]1212312359", 0, "43241212312359", "" }, /* hhmm */
+        /*106*/ { "[4324]1212312400", ZINT_WARN_NONCOMPLIANT, "43241212312400", "261: AI (4324) position 7: Invalid hour of day '24'" }, /* hhmm */
+        /*107*/ { "[4324]1212312360", ZINT_WARN_NONCOMPLIANT, "43241212312360", "261: AI (4324) position 9: Invalid minutes in the hour '60'" }, /* hhmm */
+        /*108*/ { "[8008]121231000000", 0, "8008121231000000", "" }, /* hhoptmmss */
+        /*109*/ { "[8008]1212310000", 0, "80081212310000", "" }, /* hhoptmmss */
+        /*110*/ { "[8008]12123100", 0, "800812123100", "" }, /* hhoptmmss */
+        /*111*/ { "[8008]12123123", 0, "800812123123", "" }, /* hhoptmmss */
+        /*112*/ { "[8008]12123124", ZINT_WARN_NONCOMPLIANT, "800812123124", "261: AI (8008) position 7: Invalid hour of day '24'" }, /* hhoptmmss */
+        /*113*/ { "[8008]1212312359", 0, "80081212312359", "" }, /* hhoptmmss */
+        /*114*/ { "[8008]1212312360", ZINT_WARN_NONCOMPLIANT, "80081212312360", "261: AI (8008) position 9: Invalid minutes in the hour '60'" }, /* hhoptmmss */
+        /*115*/ { "[8008]121231235959", 0, "8008121231235959", "" }, /* hhoptmmss */
+        /*116*/ { "[8008]121231235960", ZINT_WARN_NONCOMPLIANT, "8008121231235960", "261: AI (8008) position 11: Invalid seconds in the minute '60'" }, /* hhoptmmss */
+        /*117*/ { "[422]004", 0, "422004", "" }, /* iso3166 */
+        /*118*/ { "[422]894", 0, "422894", "" }, /* iso3166 */
+        /*119*/ { "[422]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, /* iso3166 */
+        /*120*/ { "[422]0A", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (422)" }, /* iso3166 */
+        /*121*/ { "[422]003", ZINT_WARN_NONCOMPLIANT, "422003", "261: AI (422) position 1: Unknown country code '003'" }, /* iso3166 */
+        /*122*/ { "[422]895", ZINT_WARN_NONCOMPLIANT, "422895", "261: AI (422) position 1: Unknown country code '895'" }, /* iso3166 */
+        /*123*/ { "[422]999", ZINT_WARN_NONCOMPLIANT, "422999", "261: AI (422) position 1: Unknown country code '999'" }, /* iso3166 */
+        /*124*/ { "[423]004", 0, "423004", "" }, /* iso3166list */
+        /*125*/ { "[423]004894", 0, "423004894", "" }, /* iso3166list */
+        /*126*/ { "[423]004894004", 0, "423004894004", "" }, /* iso3166list */
+        /*127*/ { "[423]004894004894", 0, "423004894004894", "" }, /* iso3166list */
+        /*128*/ { "[423]004894004894004", 0, "423004894004894004", "" }, /* iso3166list */
+        /*129*/ { "[423]004894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*130*/ { "[423]123894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*131*/ { "[423]A04894004894004894", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*132*/ { "[423]00489400489400489", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*133*/ { "[423]0048940048940048", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*134*/ { "[423]00489400489400", ZINT_WARN_NONCOMPLIANT, "42300489400489400", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*135*/ { "[423]0048940048940", ZINT_WARN_NONCOMPLIANT, "4230048940048940", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*136*/ { "[423]00489400489", ZINT_WARN_NONCOMPLIANT, "42300489400489", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*137*/ { "[423]0048940048", ZINT_WARN_NONCOMPLIANT, "4230048940048", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*138*/ { "[423]00489400", ZINT_WARN_NONCOMPLIANT, "42300489400", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*139*/ { "[423]0048940", ZINT_WARN_NONCOMPLIANT, "4230048940", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*140*/ { "[423]00489", ZINT_WARN_NONCOMPLIANT, "42300489", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*141*/ { "[423]0048", ZINT_WARN_NONCOMPLIANT, "4230048", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*142*/ { "[423]00", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*143*/ { "[423]0", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (423)" }, /* iso3166list */
+        /*144*/ { "[423]004894004894003", ZINT_WARN_NONCOMPLIANT, "423004894004894003", "261: AI (423) position 13: Unknown country code '003'" }, /* iso3166list */
+        /*145*/ { "[423]004894004895004", ZINT_WARN_NONCOMPLIANT, "423004894004895004", "261: AI (423) position 10: Unknown country code '895'" }, /* iso3166list */
+        /*146*/ { "[423]004894004999004", ZINT_WARN_NONCOMPLIANT, "423004894004999004", "261: AI (423) position 10: Unknown country code '999'" }, /* iso3166list */
+        /*147*/ { "[423]004894005894004", ZINT_WARN_NONCOMPLIANT, "423004894005894004", "261: AI (423) position 7: Unknown country code '005'" }, /* iso3166list */
+        /*148*/ { "[423]004893004894004", ZINT_WARN_NONCOMPLIANT, "423004893004894004", "261: AI (423) position 4: Unknown country code '893'" }, /* iso3166list */
+        /*149*/ { "[423]004999004894004", ZINT_WARN_NONCOMPLIANT, "423004999004894004", "261: AI (423) position 4: Unknown country code '999'" }, /* iso3166list */
+        /*150*/ { "[423]003894004894004", ZINT_WARN_NONCOMPLIANT, "423003894004894004", "261: AI (423) position 1: Unknown country code '003'" }, /* iso3166list */
+        /*151*/ { "[423]004894004433", ZINT_WARN_NONCOMPLIANT, "423004894004433", "261: AI (423) position 10: Unknown country code '433'" }, /* iso3166list */
+        /*152*/ { "[423]004894435894", ZINT_WARN_NONCOMPLIANT, "423004894435894", "261: AI (423) position 7: Unknown country code '435'" }, /* iso3166list */
+        /*153*/ { "[423]004433004894", ZINT_WARN_NONCOMPLIANT, "423004433004894", "261: AI (423) position 4: Unknown country code '433'" }, /* iso3166list */
+        /*154*/ { "[423]432894004894", ZINT_WARN_NONCOMPLIANT, "423432894004894", "261: AI (423) position 1: Unknown country code '432'" }, /* iso3166list */
+        /*155*/ { "[423]004894003", ZINT_WARN_NONCOMPLIANT, "423004894003", "261: AI (423) position 7: Unknown country code '003'" }, /* iso3166list */
+        /*156*/ { "[423]004895004", ZINT_WARN_NONCOMPLIANT, "423004895004", "261: AI (423) position 4: Unknown country code '895'" }, /* iso3166list */
+        /*157*/ { "[423]004999004", ZINT_WARN_NONCOMPLIANT, "423004999004", "261: AI (423) position 4: Unknown country code '999'" }, /* iso3166list */
+        /*158*/ { "[423]003894004", ZINT_WARN_NONCOMPLIANT, "423003894004", "261: AI (423) position 1: Unknown country code '003'" }, /* iso3166list */
+        /*159*/ { "[423]004999", ZINT_WARN_NONCOMPLIANT, "423004999", "261: AI (423) position 4: Unknown country code '999'" }, /* iso3166list */
+        /*160*/ { "[423]000894", ZINT_WARN_NONCOMPLIANT, "423000894", "261: AI (423) position 1: Unknown country code '000'" }, /* iso3166list */
+        /*161*/ { "[423]003", ZINT_WARN_NONCOMPLIANT, "423003", "261: AI (423) position 1: Unknown country code '003'" }, /* iso3166list */
+        /*162*/ { "[7030]999A", 0, "7030999A", "" }, /* iso3166999 */
+        /*163*/ { "[7030]894A", 0, "7030894A", "" }, /* iso3166999 */
+        /*164*/ { "[7030]004A", 0, "7030004A", "" }, /* iso3166999 */
+        /*165*/ { "[7030]004", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, /* iso3166999 */
+        /*166*/ { "[7030]04", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7030)" }, /* iso3166999 */
+        /*167*/ { "[7030]001A", ZINT_WARN_NONCOMPLIANT, "7030001A", "261: AI (7030) position 1: Unknown country code '001'" }, /* iso3166999 */
+        /*168*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, /* iso3166999 */
+        /*169*/ { "[7030]998A", ZINT_WARN_NONCOMPLIANT, "7030998A", "261: AI (7030) position 1: Unknown country code '998'" }, /* iso3166999 */
+        /*170*/ { "[4307]AD", 0, "4307AD", "" }, /* iso3166alpha2 */
+        /*171*/ { "[4307]AC", ZINT_WARN_NONCOMPLIANT, "4307AC", "261: AI (4307) position 1: Unknown country code 'AC'" }, /* iso3166alpha2 */
+        /*172*/ { "[3910]0081", 0, "39100081", "" }, /* iso4217 */
+        /*173*/ { "[3910]9991", 0, "39109991", "" }, /* iso4217 */
+        /*174*/ { "[3910]9971", 0, "39109971", "" }, /* iso4217 */
+        /*175*/ { "[3910]9251", 0, "39109251", "" }, /* iso4217 */
+        /*176*/ { "[3910]01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, /* iso4217 */
+        /*177*/ { "[3910]001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (3910)" }, /* iso4217 */
+        /*178*/ { "[3910]9981", ZINT_WARN_NONCOMPLIANT, "39109981", "261: AI (3910) position 1: Unknown currency code '998'" }, /* iso4217 */
+        /*179*/ { "[3910]0041", ZINT_WARN_NONCOMPLIANT, "39100041", "261: AI (3910) position 1: Unknown currency code '004'" }, /* iso4217 */
+        /*180*/ { "[3910]8941", ZINT_WARN_NONCOMPLIANT, "39108941", "261: AI (3910) position 1: Unknown currency code '894'" }, /* iso4217 */
+        /*181*/ { "[4300]%12", 0, "4300%12", "" }, /* pcenc */
+        /*182*/ { "[4300]%1", ZINT_WARN_NONCOMPLIANT, "4300%1", "261: AI (4300) position 1: Invalid % escape" }, /* pcenc */
+        /*183*/ { "[4300]%", ZINT_WARN_NONCOMPLIANT, "4300%", "261: AI (4300) position 1: Invalid % escape" }, /* pcenc */
+        /*184*/ { "[4300]12%1212", 0, "430012%1212", "" }, /* pcenc */
+        /*185*/ { "[4300]12%1G12", ZINT_WARN_NONCOMPLIANT, "430012%1G12", "261: AI (4300) position 5: Invalid character for percent encoding" }, /* pcenc */
+        /*186*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", 0, "4308ABCDEFGHIJKLMNOPQRSTUVWXYZ%+12", "" }, /* no pcenc */
+        /*187*/ { "[4308]ABCDEFGHIJKLMNOPQRSTUVWXYZ%+123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (4308)" }, /* no pcenc */
+        /*188*/ { "[4309]02790858483015297971", 0, "430902790858483015297971", "" }, /* latlong */
+        /*189*/ { "[4309]18000000013015297971", ZINT_WARN_NONCOMPLIANT, "430918000000013015297971", "261: AI (4309) position 10: Invalid latitude" }, /* latlong */
+        /*190*/ { "[4309]02790858413600000001", ZINT_WARN_NONCOMPLIANT, "430902790858413600000001", "261: AI (4309) position 20: Invalid longitude" }, /* latlong */
+        /*191*/ { "[4321]1", 0, "43211", "" }, /* yesno */
+        /*192*/ { "[4321]0", 0, "43210", "" }, /* yesno */
+        /*193*/ { "[4321]2", ZINT_WARN_NONCOMPLIANT, "43212", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, /* yesno */
+        /*194*/ { "[4321]9", ZINT_WARN_NONCOMPLIANT, "43219", "261: AI (4321) position 1: Neither 0 nor 1 for yes or no" }, /* yesno */
+        /*195*/ { "[7040]1234", 0, "70401234", "" }, /* importeridx */
+        /*196*/ { "[7040]123A", 0, "7040123A", "" }, /* importeridx */
+        /*197*/ { "[7040]123Z", 0, "7040123Z", "" }, /* importeridx */
+        /*198*/ { "[7040]123a", 0, "7040123a", "" }, /* importeridx */
+        /*199*/ { "[7040]123z", 0, "7040123z", "" }, /* importeridx */
+        /*200*/ { "[7040]123-", 0, "7040123-", "" }, /* importeridx */
+        /*201*/ { "[7040]123_", 0, "7040123_", "" }, /* importeridx */
+        /*202*/ { "[7040]123!", ZINT_WARN_NONCOMPLIANT, "7040123!", "261: AI (7040) position 4: Invalid importer index '!'" }, /* importeridx */
+        /*203*/ { "[7040]123/", ZINT_WARN_NONCOMPLIANT, "7040123/", "261: AI (7040) position 4: Invalid importer index '/'" }, /* importeridx */
+        /*204*/ { "[7040]123:", ZINT_WARN_NONCOMPLIANT, "7040123:", "261: AI (7040) position 4: Invalid importer index ':'" }, /* importeridx */
+        /*205*/ { "[7040]123?", ZINT_WARN_NONCOMPLIANT, "7040123?", "261: AI (7040) position 4: Invalid importer index '?'" }, /* importeridx */
+        /*206*/ { "[8001]12341234512311", 0, "800112341234512311", "" }, /* nonzero */
+        /*207*/ { "[8001]00010000100100", 0, "800100010000100100", "" }, /* nonzero */
+        /*208*/ { "[8001]00001234512311", ZINT_WARN_NONCOMPLIANT, "800100001234512311", "261: AI (8001) position 1: Zero not permitted" }, /* nonzero */
+        /*209*/ { "[8001]12340000012311", ZINT_WARN_NONCOMPLIANT, "800112340000012311", "261: AI (8001) position 5: Zero not permitted" }, /* nonzero */
+        /*210*/ { "[8001]00010000100011", ZINT_WARN_NONCOMPLIANT, "800100010000100011", "261: AI (8001) position 10: Zero not permitted" }, /* nonzero */
+        /*211*/ { "[8001]00010000100101", 0, "800100010000100101", "" }, /* winding */
+        /*212*/ { "[8001]00010000100111", 0, "800100010000100111", "" }, /* winding */
+        /*213*/ { "[8001]00010000100191", 0, "800100010000100191", "" }, /* winding */
+        /*214*/ { "[8001]00010000100121", ZINT_WARN_NONCOMPLIANT, "800100010000100121", "261: AI (8001) position 13: Invalid winding direction '2'" }, /* winding */
+        /*215*/ { "[8001]00010000100131", ZINT_WARN_NONCOMPLIANT, "800100010000100131", "261: AI (8001) position 13: Invalid winding direction '3'" }, /* winding */
+        /*216*/ { "[8001]00010000100171", ZINT_WARN_NONCOMPLIANT, "800100010000100171", "261: AI (8001) position 13: Invalid winding direction '7'" }, /* winding */
+        /*217*/ { "[8001]00010000100181", ZINT_WARN_NONCOMPLIANT, "800100010000100181", "261: AI (8001) position 13: Invalid winding direction '8'" }, /* winding */
+        /*218*/ { "[8003]01234567890128", 0, "800301234567890128", "" }, /* zero */
+        /*219*/ { "[8003]11234567890128", ZINT_WARN_NONCOMPLIANT, "800311234567890128", "261: AI (8003) position 1: Zero is required" }, /* zero */
+        /*220*/ { "[8003]91234567890128", ZINT_WARN_NONCOMPLIANT, "800391234567890128", "261: AI (8003) position 1: Zero is required" }, /* zero */
+        /*221*/ { "[8006]123456789012310101", 0, "8006123456789012310101", "" }, /* pieceoftotal */
+        /*222*/ { "[8006]123456789012310199", 0, "8006123456789012310199", "" }, /* pieceoftotal */
+        /*223*/ { "[8006]123456789012319999", 0, "8006123456789012319999", "" }, /* pieceoftotal */
+        /*224*/ { "[8006]123456789012310001", ZINT_WARN_NONCOMPLIANT, "8006123456789012310001", "261: AI (8006) position 15: Piece number cannot be zero" }, /* pieceoftotal */
+        /*225*/ { "[8006]123456789012310100", ZINT_WARN_NONCOMPLIANT, "8006123456789012310100", "261: AI (8006) position 15: Total number cannot be zero" }, /* pieceoftotal */
+        /*226*/ { "[8006]123456789012310201", ZINT_WARN_NONCOMPLIANT, "8006123456789012310201", "261: AI (8006) position 15: Piece number '02' exceeds total '01'" }, /* pieceoftotal */
+        /*227*/ { "[8006]123456789012319998", ZINT_WARN_NONCOMPLIANT, "8006123456789012319998", "261: AI (8006) position 15: Piece number '99' exceeds total '98'" }, /* pieceoftotal */
+        /*228*/ { "[8007]GB82WEST12345698765432", 0, "8007GB82WEST12345698765432", "" }, /* iban */
+        /*229*/ { "[8007]GB83WEST12345698765432", ZINT_WARN_NONCOMPLIANT, "8007GB83WEST12345698765432", "261: AI (8007) position 3: Bad IBAN checksum '83', expected '82'" }, /* iban */
+        /*230*/ { "[8007]BE71096123456769", 0, "8007BE71096123456769", "" }, /* iban */
+        /*231*/ { "[8007]BE71096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE71096123456760", "261: AI (8007) position 3: Bad IBAN checksum '71', expected '23'" }, /* iban */
+        /*232*/ { "[8007]BE01096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE01096123456760", "261: AI (8007) position 3: Bad IBAN checksum '01', expected '23'" }, /* iban */
+        /*233*/ { "[8007]BE00096123456760", ZINT_WARN_NONCOMPLIANT, "8007BE00096123456760", "261: AI (8007) position 3: Bad IBAN checksum '00', expected '23'" }, /* iban */
+        /*234*/ { "[8007]LC14BOSL123456789012345678901234", 0, "8007LC14BOSL123456789012345678901234", "" }, /* iban */
+        /*235*/ { "[8007]LC14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007LC14BOSL123456789012345678901230", "261: AI (8007) position 3: Bad IBAN checksum '14', expected '25'" }, /* iban */
+        /*236*/ { "[8007]A114BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007A114BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'A1'" }, /* iban */
+        /*237*/ { "[8007]1A14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "80071A14BOSL123456789012345678901230", "261: AI (8007) position 1: Non-alphabetic IBAN country code '1A'" }, /* iban */
+        /*238*/ { "[8007]AA14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007AA14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'AA'" }, /* iban */
+        /*239*/ { "[8007]ZZ14BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZZ14BOSL123456789012345678901230", "261: AI (8007) position 1: Invalid IBAN country code 'ZZ'" }, /* iban */
+        /*240*/ { "[8007]ZW33BOSL123456789012345678901230", 0, "8007ZW33BOSL123456789012345678901230", "" }, /* iban */
+        /*241*/ { "[8007]ZWA3BOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZWA3BOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum 'A3'" }, /* iban */
+        /*242*/ { "[8007]ZW3ABOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW3ABOSL123456789012345678901230", "261: AI (8007) position 3: Non-numeric IBAN checksum '3A'" }, /* iban */
+        /*243*/ { "[8007]ZW33bOSL123456789012345678901230", ZINT_WARN_NONCOMPLIANT, "8007ZW33bOSL123456789012345678901230", "261: AI (8007) position 5: Invalid IBAN character 'b'" }, /* iban */
+        /*244*/ { "[8007]GB98", ZINT_WARN_NONCOMPLIANT, "8007GB98", "259: Invalid data length for AI (8007)" }, /* iban */
+        /*245*/ { "[8007]FR7630006000011234567890189", 0, "8007FR7630006000011234567890189", "" }, /* iban */
+        /*246*/ { "[8007]DE91100000000123456789", 0, "8007DE91100000000123456789", "" }, /* iban */
+        /*247*/ { "[8007]GR9608100010000001234567890", 0, "8007GR9608100010000001234567890", "" }, /* iban */
+        /*248*/ { "[8007]MU43BOMM0101123456789101000MUR", 0, "8007MU43BOMM0101123456789101000MUR", "" }, /* iban */
+        /*249*/ { "[8007]PL10105000997603123456789123", 0, "8007PL10105000997603123456789123", "" }, /* iban */
+        /*250*/ { "[8007]RO09BCYP0000001234567890", 0, "8007RO09BCYP0000001234567890", "" }, /* iban */
+        /*251*/ { "[8007]SA4420000001234567891234", 0, "8007SA4420000001234567891234", "" }, /* iban */
+        /*252*/ { "[8007]ES7921000813610123456789", 0, "8007ES7921000813610123456789", "" }, /* iban */
+        /*253*/ { "[8007]CH5604835012345678009", 0, "8007CH5604835012345678009", "" }, /* iban */
+        /*254*/ { "[8007]GB98MIDL07009312345678", 0, "8007GB98MIDL07009312345678", "" }, /* iban */
+        /*255*/ { "[8011]1", 0, "80111", "" }, /* nozeroprefix */
+        /*256*/ { "[8011]11", 0, "801111", "" }, /* nozeroprefix */
+        /*257*/ { "[8011]0", 0, "80110", "" }, /* nozeroprefix */
+        /*258*/ { "[8011]01", ZINT_WARN_NONCOMPLIANT, "801101", "261: AI (8011) position 1: Zero prefix is not permitted" }, /* nozeroprefix */
+        /*259*/ { "[8110]106141416543213150110120", 0, "8110106141416543213150110120", "" }, /* couponcode (first part of NACAG Appendix C: Example 1 - see test_rss.c test_examples) */
+        /*260*/ { "[8110]012345612345610104123", 0, "8110012345612345610104123", "" }, /* couponcode */
+        /*261*/ { "[8110]01234561234561010412", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412", "259: Invalid data length for AI (8110)" }, /* couponcode */
+        /*262*/ { "[8110]12345678901234567890", ZINT_WARN_NONCOMPLIANT, "811012345678901234567890", "259: Invalid data length for AI (8110)" }, /* couponcode */
+        /*263*/ { "[8110]712345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110712345612345610104123", "261: AI (8110) position 1: Invalid Primary GS1 Co. Prefix VLI '7'" }, /* couponcode */
+        /*264*/ { "[8110]A12345612345610104123", ZINT_WARN_NONCOMPLIANT, "8110A12345612345610104123", "261: AI (8110) position 1: Non-numeric Primary GS1 Co. Prefix VLI 'A'" }, /* couponcode */
+        /*265*/ { "[8110]012345A12345610104123", ZINT_WARN_NONCOMPLIANT, "8110012345A12345610104123", "261: AI (8110) position 7: Non-numeric Primary GS1 Co. Prefix 'A'" }, /* couponcode */
+        /*266*/ { "[8110]012345612345A10104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345A10104123", "261: AI (8110) position 8: Non-numeric Offer Code" }, /* couponcode */
+        /*267*/ { "[8110]012345612345600104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345600104123", "261: AI (8110) position 14: Invalid Save Value VLI '0'" }, /* couponcode */
+        /*268*/ { "[8110]012345612345660104123", ZINT_WARN_NONCOMPLIANT, "8110012345612345660104123", "261: AI (8110) position 14: Invalid Save Value VLI '6'" }, /* couponcode */
+        /*269*/ { "[8110]01234561234561A104123", ZINT_WARN_NONCOMPLIANT, "811001234561234561A104123", "261: AI (8110) position 15: Non-numeric Save Value 'A'" }, /* couponcode */
+        /*270*/ { "[8110]012345612345610004123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610004123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '0'" }, /* couponcode */
+        /*271*/ { "[8110]012345612345610604123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610604123", "261: AI (8110) position 16: Invalid Primary Purch. Req. VLI '6'" }, /* couponcode */
+        /*272*/ { "[8110]0123456123456101A4123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101A4123", "261: AI (8110) position 17: Non-numeric Primary Purch. Req. 'A'" }, /* couponcode */
+        /*273*/ { "[8110]012345612345621251234", ZINT_WARN_NONCOMPLIANT, "8110012345612345621251234", "261: AI (8110) position 18: Primary Purch. Req. incomplete" }, /* couponcode */
+        /*274*/ { "[8110]01234561234561010A123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010A123", "261: AI (8110) position 18: Non-numeric Primary Purch. Req. Code" }, /* couponcode */
+        /*275*/ { "[8110]012345612345610106123", ZINT_WARN_NONCOMPLIANT, "8110012345612345610106123", "261: AI (8110) position 18: Invalid Primary Purch. Req. Code '6'" }, /* couponcode */
+        /*276*/ { "[8110]012345612345610212412", ZINT_WARN_NONCOMPLIANT, "8110012345612345610212412", "261: AI (8110) position 20: Primary Purch. Family Code incomplete" }, /* couponcode */
+        /*277*/ { "[8110]0123456123456103123412", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412", "261: AI (8110) position 21: Primary Purch. Family Code incomplete" }, /* couponcode */
+        /*278*/ { "[8110]0123456123456103123412A", ZINT_WARN_NONCOMPLIANT, "81100123456123456103123412A", "261: AI (8110) position 21: Non-numeric Primary Purch. Family Code" }, /* couponcode */
+        /*279*/ { "[8110]01234561234561031234123", 0, "811001234561234561031234123", "" }, /* couponcode */
+        /*280*/ { "[8110]612345678901212345651", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651", "261: AI (8110) position 21: Save Value incomplete" }, /* couponcode */
+        /*281*/ { "[8110]6123456789012123456512345", ZINT_WARN_NONCOMPLIANT, "81106123456789012123456512345", "261: AI (8110) position 26: Primary Purch. Req. VLI missing" }, /* couponcode */
+        /*282*/ { "[8110]61234567890121234565123455123454123", 0, "811061234567890121234565123455123454123", "" }, /* couponcode */
+        /*283*/ { "[8110]61234567890121234565123455123454123A", ZINT_WARN_NONCOMPLIANT, "811061234567890121234565123455123454123A", "261: AI (8110) position 36: Non-numeric Data Field 'A'" }, /* couponcode */
+        /*284*/ { "[8110]612345678901212345651234551234541237", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541237", "261: AI (8110) position 36: Invalid Data Field '7'" }, /* couponcode */
+        /*285*/ { "[8110]612345678901212345651234551234541238", ZINT_WARN_NONCOMPLIANT, "8110612345678901212345651234551234541238", "261: AI (8110) position 36: Invalid Data Field '8'" }, /* couponcode */
+        /*286*/ { "[8110]0123456123456101041231", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231", "261: AI (8110) position 23: Add. Purch. Rules Code incomplete" }, /* couponcode */
+        /*287*/ { "[8110]0123456123456101041231A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231A", "261: AI (8110) position 23: Non-numeric Add. Purch. Rules Code" }, /* couponcode */
+        /*288*/ { "[8110]01234561234561010412314", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412314", "261: AI (8110) position 23: Invalid Add. Purch. Rules Code '4'" }, /* couponcode */
+        /*289*/ { "[8110]01234561234561010412313", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313", "261: AI (8110) position 24: 2nd Purch. Req. VLI missing" }, /* couponcode */
+        /*290*/ { "[8110]01234561234561010412313A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313A", "261: AI (8110) position 24: Non-numeric 2nd Purch. Req. VLI 'A'" }, /* couponcode */
+        /*291*/ { "[8110]012345612345610104123130", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123130", "261: AI (8110) position 24: Invalid 2nd Purch. Req. VLI '0'" }, /* couponcode */
+        /*292*/ { "[8110]012345612345610104123131", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131", "261: AI (8110) position 25: 2nd Purch. Req. incomplete" }, /* couponcode */
+        /*293*/ { "[8110]012345612345610104123131A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123131A", "261: AI (8110) position 25: Non-numeric 2nd Purch. Req. 'A'" }, /* couponcode */
+        /*294*/ { "[8110]0123456123456101041231310", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310", "261: AI (8110) position 26: 2nd Purch. Req. Code incomplete" }, /* couponcode */
+        /*295*/ { "[8110]0123456123456101041231310A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041231310A", "261: AI (8110) position 26: Non-numeric 2nd Purch. Req. Code" }, /* couponcode */
+        /*296*/ { "[8110]01234561234561010412313108", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313108", "261: AI (8110) position 26: Invalid 2nd Purch. Req. Code '8'" }, /* couponcode */
+        /*297*/ { "[8110]01234561234561010412313100", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100", "261: AI (8110) position 27: 2nd Purch. Family Code incomplete" }, /* couponcode */
+        /*298*/ { "[8110]01234561234561010412313100123", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123", "261: AI (8110) position 30: 2nd Purch. GS1 Co. Prefix VLI missing" }, /* couponcode */
+        /*299*/ { "[8110]01234561234561010412313100123A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123A", "261: AI (8110) position 30: Non-numeric 2nd Purch. GS1 Co. Prefix VLI 'A'" }, /* couponcode */
+        /*300*/ { "[8110]012345612345610104123131001239", 0, "8110012345612345610104123131001239", "" }, /* couponcode */
+        /*301*/ { "[8110]01234561234561010412313100123012345", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412313100123012345", "261: AI (8110) position 31: 2nd Purch. GS1 Co. Prefix incomplete" }, /* couponcode */
+        /*302*/ { "[8110]0123456123456101041231310012311234567", 0, "81100123456123456101041231310012311234567", "" }, /* couponcode */
+        /*303*/ { "[8110]0123456123456101041232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232", "261: AI (8110) position 23: 3rd Purch. Req. VLI missing" }, /* couponcode */
+        /*304*/ { "[8110]0123456123456101041232A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232A", "261: AI (8110) position 23: Non-numeric 3rd Purch. Req. VLI 'A'" }, /* couponcode */
+        /*305*/ { "[8110]01234561234561010412326", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412326", "261: AI (8110) position 23: Invalid 3rd Purch. Req. VLI '6'" }, /* couponcode */
+        /*306*/ { "[8110]01234561234561010412321", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321", "261: AI (8110) position 24: 3rd Purch. Req. incomplete" }, /* couponcode */
+        /*307*/ { "[8110]012345612345610104123210", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210", "261: AI (8110) position 25: 3rd Purch. Req. Code incomplete" }, /* couponcode */
+        /*308*/ { "[8110]0123456123456101041232105", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232105", "261: AI (8110) position 25: Invalid 3rd Purch. Req. Code '5'" }, /* couponcode */
+        /*309*/ { "[8110]0123456123456101041232104", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104", "261: AI (8110) position 26: 3rd Purch. Family Code incomplete" }, /* couponcode */
+        /*310*/ { "[8110]012345612345610104123210412A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123210412A", "261: AI (8110) position 26: Non-numeric 3rd Purch. Family Code" }, /* couponcode */
+        /*311*/ { "[8110]0123456123456101041232104123", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123", "261: AI (8110) position 29: 3rd Purch. GS1 Co. Prefix VLI missing" }, /* couponcode */
+        /*312*/ { "[8110]01234561234561010412321041230", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412321041230", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, /* couponcode */
+        /*313*/ { "[8110]0123456123456101041232104123A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123A", "261: AI (8110) position 29: Non-numeric 3rd Purch. GS1 Co. Prefix VLI 'A'" }, /* couponcode */
+        /*314*/ { "[8110]0123456123456101041232104123012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345", "261: AI (8110) position 30: 3rd Purch. GS1 Co. Prefix incomplete" }, /* couponcode */
+        /*315*/ { "[8110]0123456123456101041232104123012345A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041232104123012345A", "261: AI (8110) position 35: Non-numeric 3rd Purch. GS1 Co. Prefix 'A'" }, /* couponcode */
+        /*316*/ { "[8110]01234561234561010412321041230123456", 0, "811001234561234561010412321041230123456", "" }, /* couponcode */
+        /*317*/ { "[8110]0123456123456101041233", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233", "261: AI (8110) position 23: Expiration Date incomplete" }, /* couponcode */
+        /*318*/ { "[8110]01234561234561010412332012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412332012", "261: AI (8110) position 23: Expiration Date incomplete" }, /* couponcode */
+        /*319*/ { "[8110]012345612345610104123320123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123320123A", "261: AI (8110) position 23: Non-numeric Expiration Date" }, /* couponcode */
+        /*320*/ { "[8110]0123456123456101041233201232", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233201232", "261: AI (8110) position 27: Invalid day '32'" }, /* couponcode */
+        /*321*/ { "[8110]0123456123456101041233200031", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041233200031", "261: AI (8110) position 25: Invalid month '00'" }, /* couponcode */
+        /*322*/ { "[8110]0123456123456101041233201231", 0, "81100123456123456101041233201231", "" }, /* couponcode */
+        /*323*/ { "[8110]0123456123456101041234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234", "261: AI (8110) position 23: Start Date incomplete" }, /* couponcode */
+        /*324*/ { "[8110]01234561234561010412342012", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412342012", "261: AI (8110) position 23: Start Date incomplete" }, /* couponcode */
+        /*325*/ { "[8110]012345612345610104123420123A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123420123A", "261: AI (8110) position 23: Non-numeric Start Date" }, /* couponcode */
+        /*326*/ { "[8110]0123456123456101041234200230", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234200230", "261: AI (8110) position 27: Invalid day '30'" }, /* couponcode */
+        /*327*/ { "[8110]0123456123456101041234201329", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041234201329", "261: AI (8110) position 25: Invalid month '13'" }, /* couponcode */
+        /*328*/ { "[8110]0123456123456101041234200229", 0, "81100123456123456101041234200229", "" }, /* couponcode */
+        /*329*/ { "[8110]0123456123456101041235", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235", "261: AI (8110) position 23: Serial Number VLI missing" }, /* couponcode */
+        /*330*/ { "[8110]0123456123456101041235A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235A", "261: AI (8110) position 23: Non-numeric Serial Number VLI 'A'" }, /* couponcode */
+        /*331*/ { "[8110]01234561234561010412350", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412350", "261: AI (8110) position 24: Serial Number incomplete" }, /* couponcode */
+        /*332*/ { "[8110]0123456123456101041235012345", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235012345", "261: AI (8110) position 24: Serial Number incomplete" }, /* couponcode */
+        /*333*/ { "[8110]0123456123456101041235912345678901234", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234", "261: AI (8110) position 24: Serial Number incomplete" }, /* couponcode */
+        /*334*/ { "[8110]0123456123456101041235912345678901234A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041235912345678901234A", "261: AI (8110) position 38: Non-numeric Serial Number 'A'" }, /* couponcode */
+        /*335*/ { "[8110]01234561234561010412359123456789012345", 0, "811001234561234561010412359123456789012345", "" }, /* couponcode */
+        /*336*/ { "[8110]0123456123456101041236", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236", "261: AI (8110) position 23: Retailer ID VLI missing" }, /* couponcode */
+        /*337*/ { "[8110]0123456123456101041236A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041236A", "261: AI (8110) position 23: Non-numeric Retailer ID VLI 'A'" }, /* couponcode */
+        /*338*/ { "[8110]01234561234561010412360", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412360", "261: AI (8110) position 23: Invalid Retailer ID VLI '0'" }, /* couponcode */
+        /*339*/ { "[8110]01234561234561010412368", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412368", "261: AI (8110) position 23: Invalid Retailer ID VLI '8'" }, /* couponcode */
+        /*340*/ { "[8110]01234561234561010412361", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361", "261: AI (8110) position 24: Retailer ID incomplete" }, /* couponcode */
+        /*341*/ { "[8110]01234561234561010412361123456", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456", "261: AI (8110) position 24: Retailer ID incomplete" }, /* couponcode */
+        /*342*/ { "[8110]01234561234561010412361123456A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412361123456A", "261: AI (8110) position 30: Non-numeric Retailer ID 'A'" }, /* couponcode */
+        /*343*/ { "[8110]012345612345610104123671234567890123", 0, "8110012345612345610104123671234567890123", "" }, /* couponcode */
+        /*344*/ { "[8110]0123456123456101041239", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239", "261: AI (8110) position 23: Save Value Code incomplete" }, /* couponcode */
+        /*345*/ { "[8110]0123456123456101041239A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239A", "261: AI (8110) position 23: Non-numeric Save Value Code" }, /* couponcode */
+        /*346*/ { "[8110]01234561234561010412393", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412393", "261: AI (8110) position 23: Invalid Save Value Code '3'" }, /* couponcode */
+        /*347*/ { "[8110]01234561234561010412394", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412394", "261: AI (8110) position 23: Invalid Save Value Code '4'" }, /* couponcode */
+        /*348*/ { "[8110]01234561234561010412397", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412397", "261: AI (8110) position 23: Invalid Save Value Code '7'" }, /* couponcode */
+        /*349*/ { "[8110]01234561234561010412390", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390", "261: AI (8110) position 24: Save Value Applies To incomplete" }, /* couponcode */
+        /*350*/ { "[8110]01234561234561010412390A", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390A", "261: AI (8110) position 24: Non-numeric Save Value Applies To" }, /* couponcode */
+        /*351*/ { "[8110]012345612345610104123903", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123903", "261: AI (8110) position 24: Invalid Save Value Applies To '3'" }, /* couponcode */
+        /*352*/ { "[8110]012345612345610104123902", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902", "261: AI (8110) position 25: Store Coupon Flag incomplete" }, /* couponcode */
+        /*353*/ { "[8110]012345612345610104123902A", ZINT_WARN_NONCOMPLIANT, "8110012345612345610104123902A", "261: AI (8110) position 25: Non-numeric Store Coupon Flag" }, /* couponcode */
+        /*354*/ { "[8110]0123456123456101041239029", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029", "261: AI (8110) position 26: Don't Multiply Flag incomplete" }, /* couponcode */
+        /*355*/ { "[8110]0123456123456101041239029A", ZINT_WARN_NONCOMPLIANT, "81100123456123456101041239029A", "261: AI (8110) position 26: Non-numeric Don't Multiply Flag" }, /* couponcode */
+        /*356*/ { "[8110]01234561234561010412390292", ZINT_WARN_NONCOMPLIANT, "811001234561234561010412390292", "261: AI (8110) position 26: Invalid Don't Multiply Flag '2'" }, /* couponcode */
+        /*357*/ { "[8110]01234561234561010412390291", 0, "811001234561234561010412390291", "" }, /* couponcode */
+        /*358*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601522345678961345678990000", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" }, /* couponcode (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112)) */
+        /*359*/ { "[8110]177777776666663100120444101105551888888821109991222222232012314200601", 0, "8110177777776666663100120444101105551888888821109991222222232012314200601", "" }, /* couponcode */
+        /*360*/ { "[8112]017777777666666223456789", 0, "8112017777777666666223456789", "" }, /* couponposoffer (example from GS1 AI (8112) Coupon Data Specifications Appendix A: AI (8110) vs AI (8112)) */
+        /*361*/ { "[8112]001234561234560123456", 0, "8112001234561234560123456", "" }, /* couponposoffer */
+        /*362*/ { "[8112]00123456123456012345", ZINT_WARN_NONCOMPLIANT, "811200123456123456012345", "259: Invalid data length for AI (8112)" }, /* couponposoffer */
+        /*363*/ { "[8112]0012345612345601234561", ZINT_WARN_NONCOMPLIANT, "81120012345612345601234561", "261: AI (8112) position 22: Reserved trailing characters" }, /* couponposoffer */
+        /*364*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" }, /* couponposoffer */
+        /*365*/ { "[8112]0612345678901212345691234567890123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345691234567890123456", "259: Invalid data length for AI (8112)" }, /* couponposoffer */
+        /*366*/ { "[8112]06123456789012123456912345678901234A", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234A", "261: AI (8112) position 36: Non-numeric Serial Number 'A'" }, /* couponposoffer */
+        /*367*/ { "[8112]06123456789012123456912345678901234", ZINT_WARN_NONCOMPLIANT, "811206123456789012123456912345678901234", "261: AI (8112) position 22: Serial Number incomplete" }, /* couponposoffer */
+        /*368*/ { "[8112]06123456789012123456812345678901234", 0, "811206123456789012123456812345678901234", "" }, /* couponposoffer */
+        /*369*/ { "[8112]0612345678901212345681234567890123", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345681234567890123", "261: AI (8112) position 22: Serial Number incomplete" }, /* couponposoffer */
+        /*370*/ { "[8112]0612345678901212345A0123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901212345A0123456", "261: AI (8112) position 15: Non-numeric Offer Code" }, /* couponposoffer */
+        /*371*/ { "[8112]0612345678901A1234560123456", ZINT_WARN_NONCOMPLIANT, "81120612345678901A1234560123456", "261: AI (8112) position 14: Non-numeric Coupon Funder ID 'A'" }, /* couponposoffer */
+        /*372*/ { "[8112]071234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112071234567890121234560123456", "261: AI (8112) position 2: Invalid Coupon Funder ID VLI '7'" }, /* couponposoffer */
+        /*373*/ { "[8112]0A1234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "81120A1234567890121234560123456", "261: AI (8112) position 2: Non-numeric Coupon Funder ID VLI 'A'" }, /* couponposoffer */
+        /*374*/ { "[8112]261234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112261234567890121234560123456", "261: AI (8112) position 1: Coupon Format must be 0 or 1" }, /* couponposoffer */
+        /*375*/ { "[8112]A61234567890121234560123456", ZINT_WARN_NONCOMPLIANT, "8112A61234567890121234560123456", "261: AI (8112) position 1: Non-numeric Coupon Format" }, /* couponposoffer */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1803,7 +1803,7 @@ static void test_input_mode(int index, int debug) {
         int ret;
         int compare_previous;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE, -1 , 0, 0 },
         /*  1*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, 0, 1 },
@@ -1822,8 +1822,8 @@ static void test_input_mode(int index, int debug) {
         /* 14*/ { BARCODE_AZTEC, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, ZINT_ERROR_INVALID_OPTION, 0 },
         /* 15*/ { BARCODE_AZTEC, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
         /* 16*/ { BARCODE_AZTEC, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
-        /* 17*/ { BARCODE_AZTEC, "1234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 }, // Must still begin with AI
-        /* 18*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 }, // Codablock-F does not support GS1
+        /* 17*/ { BARCODE_AZTEC, "1234", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 }, /* Must still begin with AI */
+        /* 18*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 }, /* Codablock-F does not support GS1 */
         /* 19*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
         /* 20*/ { BARCODE_CODABLOCKF, "[01]12345678901231", GS1_MODE | ESCAPE_MODE | GS1NOCHECK_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
         /* 21*/ { BARCODE_CODABLOCKF, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_OPTION, 0 },
@@ -1905,7 +1905,7 @@ static void test_input_mode(int index, int debug) {
         /* 97*/ { BARCODE_DOTCODE, "(01)1234567890123A", GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE, -1, 0, 1 },
         /* 98*/ { BARCODE_DOTCODE, "[01]1234567890123", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
         /* 99*/ { BARCODE_DOTCODE, "[01]1234567890123", GS1_MODE | GS1NOCHECK_MODE, -1, 0, 0 },
-        /*100*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE, READER_INIT, 0, 0 }, // Reader Init permissible with default GS1 mode
+        /*100*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE, READER_INIT, 0, 0 }, /* Reader Init permissible with default GS1 mode */
         /*101*/ { BARCODE_DOTCODE, "[01]12345678901231", GS1_MODE | ESCAPE_MODE, READER_INIT, 0, 1 },
         /*102*/ { BARCODE_DOTCODE, "1234", GS1_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
         /*103*/ { BARCODE_DOTCODE, "1234", GS1_MODE | ESCAPE_MODE, -1, ZINT_ERROR_INVALID_DATA, 0 },
@@ -1969,7 +1969,7 @@ static void test_gs1nocheck_mode(int index, int debug) {
         int ret;
         char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_GS1_128, -1, "[01]12345678901231", "", 0, "" },
         /*  1*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
@@ -1990,41 +1990,41 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /* 16*/ { BARCODE_GS1_128, -1, "[01]1234567890123.", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (01) position 14: Non-numeric character '.'" },
         /* 17*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]1234567890123.", "", 0, "" },
         /* 18*/ { BARCODE_GS1_128, -1, "[01]1234567890123\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
-        /* 19*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]1234567890123\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, // Nonprintable ASCII still checked
+        /* 19*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]1234567890123\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
         /* 20*/ { BARCODE_GS1_128, -1, "[01]1234567890123\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /* 21*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]1234567890123\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, // Extended ASCII still checked
+        /* 21*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]1234567890123\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
         /* 22*/ { BARCODE_GS1_128, -1, "0112345678901231", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
-        /* 23*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "0112345678901231", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, // Format still checked
+        /* 23*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "0112345678901231", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
         /* 24*/ { BARCODE_GS1_128, -1, "[01]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data" },
-        /* 25*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]", "", 0, "" }, // Zero-length data not checked
+        /* 25*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]", "", 0, "" }, /* Zero-length data not checked */
         /* 26*/ { BARCODE_GS1_128, -1, "[01][20]12", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data" },
-        /* 27*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01][20]12", "", 0, "" }, // Zero-length data not checked
+        /* 27*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01][20]12", "", 0, "" }, /* Zero-length data not checked */
         /* 28*/ { BARCODE_GS1_128, -1, "[0]123", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 29*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[0]123", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 1 AI with no data still checked
+        /* 29*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[0]123", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 1 AI with no data still checked */
         /* 30*/ { BARCODE_GS1_128, -1, "[0]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 31*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[0]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 1 AI with no data still checked
+        /* 31*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[0]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 1 AI with no data still checked */
         /* 32*/ { BARCODE_GS1_128, -1, "[]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 33*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12", "", 0, "" }, // Length 0 AI with data not checked
+        /* 33*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12", "", 0, "" }, /* Length 0 AI with data not checked */
         /* 34*/ { BARCODE_GS1_128, -1, "[]12[01]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 35*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12[01]", "", 0, "" }, // Length 0 AI with data not checked, non-short AI with zero-length data not checked
+        /* 35*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12[01]", "", 0, "" }, /* Length 0 AI with data not checked, non-short AI with zero-length data not checked */
         /* 36*/ { BARCODE_GS1_128, -1, "[01][]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 37*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01][]12", "", 0, "" }, // Length 0 AI with data not checked, non-short AI with zero-length data not checked
+        /* 37*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01][]12", "", 0, "" }, /* Length 0 AI with data not checked, non-short AI with zero-length data not checked */
         /* 38*/ { BARCODE_GS1_128, -1, "[1]1[]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 39*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[1]1[]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 1 AI with data still checked
+        /* 39*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[1]1[]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 1 AI with data still checked */
         /* 40*/ { BARCODE_GS1_128, -1, "[]12[1]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 41*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12[1]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 1 AI with data still checked
+        /* 41*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]12[1]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 1 AI with data still checked */
         /* 42*/ { BARCODE_GS1_128, -1, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 43*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 0 AI with no data still checked
+        /* 43*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 0 AI with no data still checked */
         /* 44*/ { BARCODE_GS1_128, -1, "[01]12345678901231[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 45*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 0 AI with no data still checked
+        /* 45*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 0 AI with no data still checked */
         /* 46*/ { BARCODE_GS1_128, -1, "[01]12345678901231[][20]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 47*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[][20]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 0 AI with no data still checked
+        /* 47*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[][20]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 0 AI with no data still checked */
         /* 48*/ { BARCODE_GS1_128, -1, "[01]12345678901231[]1[20]12", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /* 49*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[]1[20]12", "", 0, "" }, // Length 0 AI with data not checked
+        /* 49*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[]1[20]12", "", 0, "" }, /* Length 0 AI with data not checked */
         /* 50*/ { BARCODE_GS1_128, -1, "[1234567890]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" },
-        /* 51*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[1234567890]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" }, // Too long still checked
+        /* 51*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[1234567890]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" }, /* Too long still checked */
         /* 52*/ { BARCODE_GS1_128, -1, "[12345]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" },
-        /* 53*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[12345]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" }, // Too long still checked
+        /* 53*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[12345]123", "", ZINT_ERROR_INVALID_DATA, "Error 255: Invalid AI in input data (AI too long)" }, /* Too long still checked */
         /* 54*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[20]12", 0, "" },
         /* 55*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[20]12", 0, "" },
         /* 56*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901234", "[20]12", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1' in linear component" },
@@ -2036,27 +2036,27 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /* 62*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (20) position 2: Non-numeric character 'A' in 2D component" },
         /* 63*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231", "[20]1A", 0, "" },
         /* 64*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" },
-        /* 65*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, // Nonprintable ASCII still checked
+        /* 65*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, /* Nonprintable ASCII still checked */
         /* 66*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in linear component" },
         /* 67*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121\200", "[20]12", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in linear component" },
         /* 68*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" },
-        /* 69*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, // Extended ASCII still checked
+        /* 69*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, /* Extended ASCII still checked */
         /* 70*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" },
-        /* 71*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, // Format still checked
+        /* 71*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, /* Format still checked */
         /* 72*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data in 2D component" },
-        /* 73*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]", 0, "" }, // Zero-length data not checked
+        /* 73*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]", 0, "" }, /* Zero-length data not checked */
         /* 74*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 75*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 1 AI still checked
+        /* 75*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 1 AI still checked */
         /* 76*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 77*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, // Length 0 AI with data not checked
+        /* 77*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
         /* 78*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 79*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 1 AI still checked
+        /* 79*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[1]2[]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 1 AI still checked */
         /* 80*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 81*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 0 AI with no data still checked
+        /* 81*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 0 AI with no data still checked */
         /* 82*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 83*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 0 AI with no data still checked
+        /* 83*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[][20]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 0 AI with no data still checked */
         /* 84*/ { BARCODE_GS1_128_CC, -1, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /* 85*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 0 AI with no data still checked
+        /* 85*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 0 AI with no data still checked */
         /* 86*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", "", 0, "" },
         /* 87*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
         /* 88*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
@@ -2066,21 +2066,21 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /* 92*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
         /* 93*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
         /* 94*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
-        /* 95*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, // Nonprintable ASCII still checked
+        /* 95*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
         /* 96*/ { BARCODE_DBAR_EXP, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /* 97*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, // Extended ASCII still checked
+        /* 97*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
         /* 98*/ { BARCODE_DBAR_EXP, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
-        /* 99*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, // Format still checked
+        /* 99*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
         /*100*/ { BARCODE_DBAR_EXP, -1, "[10]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data" },
-        /*101*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[10]", "", 0, "" }, // Zero-length data not checked
+        /*101*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[10]", "", 0, "" }, /* Zero-length data not checked */
         /*102*/ { BARCODE_DBAR_EXP, -1, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /*103*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 1 AI still checked
+        /*103*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[2]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 1 AI still checked */
         /*104*/ { BARCODE_DBAR_EXP, -1, "[]1", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /*105*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]1", "", 0, "" }, // Length 0 AI with data not checked
+        /*105*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]1", "", 0, "" }, /* Length 0 AI with data not checked */
         /*106*/ { BARCODE_DBAR_EXP, -1, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /*107*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 0 AI with no data still checked
+        /*107*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 0 AI with no data still checked */
         /*108*/ { BARCODE_DBAR_EXP, -1, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" },
-        /*109*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, // Length 0 AI with no data still checked
+        /*109*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[20]12[]", "", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short)" }, /* Length 0 AI with no data still checked */
         /*110*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
         /*111*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
         /*112*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) in linear component" },
@@ -2092,21 +2092,21 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /*118*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' in 2D component" },
         /*119*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
         /*120*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" },
-        /*121*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, // Nonprintable ASCII still checked
+        /*121*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, /* Nonprintable ASCII still checked */
         /*122*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" },
-        /*123*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, // Extended ASCII still checked
+        /*123*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, /* Extended ASCII still checked */
         /*124*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" },
-        /*125*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, // Format still checked
+        /*125*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, /* Format still checked */
         /*126*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[10]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data in 2D component" },
-        /*127*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[10]", 0, "" }, // Zero-length data not checked
+        /*127*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[10]", 0, "" }, /* Zero-length data not checked */
         /*128*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /*129*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 1 AI still checked
+        /*129*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[2]1", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 1 AI still checked */
         /*130*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]12", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /*131*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, // Length 0 AI with data not checked
+        /*131*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]12", 0, "" }, /* Length 0 AI with data not checked */
         /*132*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /*133*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 0 AI with no data still checked
+        /*133*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[]", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 0 AI with no data still checked */
         /*134*/ { BARCODE_DBAR_EXP_CC, -1, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" },
-        /*135*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, // Length 0 AI with no data still checked
+        /*135*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]12[][10]123", ZINT_ERROR_INVALID_DATA, "Error 256: Invalid AI in input data (AI too short) in 2D component" }, /* Length 0 AI with no data still checked */
         /*136*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", "", 0, "" },
         /*137*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231", "", 0, "" },
         /*138*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]1234", "", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11)" },
@@ -2116,13 +2116,13 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /*142*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[10]123[11]12345A", "", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (11) position 6: Non-numeric character 'A'" },
         /*143*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901231[10]123[11]12345A", "", 0, "" },
         /*144*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" },
-        /*145*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, // Nonprintable ASCII still checked
+        /*145*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\177", "", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1" }, /* Nonprintable ASCII still checked */
         /*146*/ { BARCODE_DBAR_EXPSTK, -1, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" },
-        /*147*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, // Extended ASCII still checked
+        /*147*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]1234567890121\200", "", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1" }, /* Extended ASCII still checked */
         /*148*/ { BARCODE_DBAR_EXPSTK, -1, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" },
-        /*149*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, // Format still checked
+        /*149*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "011234567890121", "", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI" }, /* Format still checked */
         /*150*/ { BARCODE_DBAR_EXPSTK, -1, "[01]", "", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data" },
-        /*151*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]", "", 0, "" }, // Zero-length data not checked
+        /*151*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]", "", 0, "" }, /* Zero-length data not checked */
         /*152*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
         /*153*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345", 0, "" },
         /*154*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]1234", "[21]ABC123[22]12345", ZINT_ERROR_INVALID_DATA, "Error 259: Invalid data length for AI (11) in linear component" },
@@ -2134,13 +2134,13 @@ static void test_gs1nocheck_mode(int index, int debug) {
         /*160*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", ZINT_WARN_NONCOMPLIANT, "Warning 261: AI (30) position 8: Non-numeric character 'A' in 2D component" },
         /*161*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]123456789012[01]12345678901231[10]123[11]121212", "[21]ABC123[22]12345[30]1234567A", 0, "" },
         /*162*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" },
-        /*163*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, // Nonprintable ASCII still checked
+        /*163*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\177", ZINT_ERROR_INVALID_DATA, "Error 263: DEL characters are not supported by GS1 in 2D component" }, /* Nonprintable ASCII still checked */
         /*164*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" },
-        /*165*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, // Extended ASCII still checked
+        /*165*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[20]1\200", ZINT_ERROR_INVALID_DATA, "Error 250: Extended ASCII characters are not supported by GS1 in 2D component" }, /* Extended ASCII still checked */
         /*166*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" },
-        /*167*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, // Format still checked
+        /*167*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "2012", ZINT_ERROR_INVALID_DATA, "Error 252: Data does not start with an AI in 2D component" }, /* Format still checked */
         /*168*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]1234567890121", "[235]", ZINT_ERROR_INVALID_DATA, "Error 258: Empty data field in input data in 2D component" },
-        /*169*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[235]", 0, "" }, // Zero-length data not checked
+        /*169*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]1234567890121", "[235]", 0, "" }, /* Zero-length data not checked */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

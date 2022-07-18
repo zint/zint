@@ -167,6 +167,7 @@ static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], i
 
     return 0;
 }
+
 static void test_big5_utf8(int index) {
 
     struct item {

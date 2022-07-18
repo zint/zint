@@ -144,12 +144,12 @@ static void pdf_smooth(int liste[2][PDF_MAX_LEN], int *indexliste) {
         if (i != 0) {
             last = liste[1][i - 1];
         } else {
-            last = FALSE;
+            last = 0;
         }
         if (i != *(indexliste) - 1) {
             next = liste[1][i + 1];
         } else {
-            next = FALSE;
+            next = 0;
         }
 
         if (crnt == NUM) {
@@ -194,12 +194,12 @@ static void pdf_smooth(int liste[2][PDF_MAX_LEN], int *indexliste) {
         if (i != 0) {
             last = liste[1][i - 1];
         } else {
-            last = FALSE;
+            last = 0;
         }
         if (i != *(indexliste) - 1) {
             next = liste[1][i + 1];
         } else {
-            next = FALSE;
+            next = 0;
         }
 
         if ((crnt == TEX) && (i > 0)) {

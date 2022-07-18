@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
@@ -125,8 +126,8 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
     char cmp_buf[1024];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_binary_div_modulo_divisor");
 
@@ -191,7 +192,7 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
     testFinish();
 }
 
-// Replicate examples from GS1 General Specifications 21.0.1 and ISO/IEC 24724:2011
+/* Replicate examples from GS1 General Specifications 21.0.1 and ISO/IEC 24724:2011 */
 static void test_examples(int index, int generate, int debug) {
 
     struct item {
@@ -208,7 +209,7 @@ static void test_examples(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP
+    /* Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP */
     struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, -1, -1, "0950110153001", 0, 1, 96, 1, "GGS Figure 5.5.2.1.1-1. GS1 DataBar Omnidirectional",
                      "010000010100000101000111110000010111101101011100100011011101000101100000000111001110110111001101"
@@ -866,8 +867,8 @@ static void test_examples(int index, int generate, int debug) {
     char cmp_buf[16384];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_examples");
 
@@ -931,7 +932,7 @@ static void test_examples(int index, int generate, int debug) {
     testFinish();
 }
 
-// Test general-purpose data compaction
+/* Test general-purpose data compaction */
 static void test_general_field(int index, int generate, int debug) {
 
     struct item {
@@ -943,7 +944,7 @@ static void test_general_field(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Verified via bwipp_dump.ps against BWIPP and manually against tec-it.com (some separators differ from tec-it.com where noted)
+    /* Verified via bwipp_dump.ps against BWIPP and manually against tec-it.com (some separators differ from tec-it.com where noted) */
     struct item data[] = {
         /* 0*/ { BARCODE_DBAR_EXP, "[91]1", 1, 102, "Single numeric",
                     "010100000001000101101111111100001011001000010000010110111110101100001011110000000010101111100001011101"
@@ -1297,15 +1298,15 @@ static void test_hrt(int index, int debug) {
         int ret;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, "1234567890123", 0, "(01)12345678901231" },
         /*  1*/ { BARCODE_DBAR_OMN, -1, "12345678901231", 0, "(01)12345678901231" },
         /*  4*/ { BARCODE_DBAR_OMN, -1, "1000000000009", 0, "(01)10000000000090" },
         /*  5*/ { BARCODE_DBAR_LTD, -1, "1341056790138", 0, "(01)13410567901384" },
         /*  6*/ { BARCODE_DBAR_LTD, -1, "13410567901384", 0, "(01)13410567901384" },
-        /*  9*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231" }, // See test_hrt() in "test_gs1.c" for full HRT tests
-        /* 10*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "" }, // No HRT for stacked
+        /*  9*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231" }, /* See test_hrt() in "test_gs1.c" for full HRT tests */
+        /* 10*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "" }, /* No HRT for stacked */
         /* 11*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "" },
         /* 12*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "" },
     };
@@ -1348,20 +1349,20 @@ static void test_input(int index, int debug) {
         int expected_width;
         char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, -1, -1, "1234567890123", 0, 1, 96, "" },
         /*  1*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /*  2*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /*  3*/ { BARCODE_DBAR_OMN, -1, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'" },
-        /*  4*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'" }, // Still checked
+        /*  4*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'" }, /* Still checked */
         /*  5*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /*  6*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /*  7*/ { BARCODE_DBAR_LTD, -1, -1, -1, "1234567890123", 0, 1, 79, "" },
         /*  8*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character in data (digits only)" },
         /*  9*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character in data (digits only)" },
         /* 10*/ { BARCODE_DBAR_LTD, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'" },
-        /* 11*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'" }, // Still checked
+        /* 11*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'" }, /* Still checked */
         /* 12*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input too long (14 character maximum)" },
         /* 13*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input too long (14 character maximum)" },
         /* 14*/ { BARCODE_DBAR_LTD, -1, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input out of range (0 to 1999999999999)" },
@@ -1377,23 +1378,23 @@ static void test_input(int index, int debug) {
         /* 24*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 1, 151, "" },
         /* 25*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'" },
         /* 26*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "" },
-        /* 27*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", ZINT_WARN_NONCOMPLIANT, 1, 526, "Warning 261: AI (91) position 21: Invalid CSET 82 character ' '" }, // ISOIEC punc
+        /* 27*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", ZINT_WARN_NONCOMPLIANT, 1, 526, "Warning 261: AI (91) position 21: Invalid CSET 82 character ' '" }, /* ISOIEC punc */
         /* 28*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", 0, 1, 526, "" },
-        /* 29*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "" }, // ISOIEC punc less space
+        /* 29*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "" }, /* ISOIEC punc less space */
         /* 30*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "" },
         /* 31*/ { BARCODE_DBAR_STK, -1, -1, -1, "1234567890123", 0, 3, 50, "" },
         /* 32*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /* 33*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /* 34*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /* 35*/ { BARCODE_DBAR_STK, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'" },
-        /* 36*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'" }, // Still checked
+        /* 36*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'" }, /* Still checked */
         /* 37*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /* 38*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /* 39*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "1234567890123", 0, 5, 50, "" },
         /* 40*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /* 41*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
         /* 42*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'" },
-        /* 43*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'" }, // Still checked
+        /* 43*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'" }, /* Still checked */
         /* 44*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /* 45*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
         /* 46*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'" },
@@ -1403,8 +1404,8 @@ static void test_input(int index, int debug) {
         /* 50*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)" },
         /* 51*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 259: Invalid data length for AI (01)" },
         /* 52*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 5, 102, "" },
-        /* 53*/ { BARCODE_DBAR_EXPSTK, -1, 12, -1, "[01]12345678901231", 0, 5, 102, "" }, // Cols > 11 ignored
-        /* 54*/ { BARCODE_DBAR_EXPSTK, -1, -1, 12, "[01]12345678901231", 0, 5, 102, "" }, // Rows > 11 ignored
+        /* 53*/ { BARCODE_DBAR_EXPSTK, -1, 12, -1, "[01]12345678901231", 0, 5, 102, "" }, /* Cols > 11 ignored */
+        /* 54*/ { BARCODE_DBAR_EXPSTK, -1, -1, 12, "[01]12345678901231", 0, 5, 102, "" }, /* Rows > 11 ignored */
         /* 55*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[01]12345678901231", 0, 9, 53, "" },
         /* 56*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[01]12345678901231", 0, 5, 102, "" },
         /* 57*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[01]12345678901231", 0, 1, 134, "" },

@@ -137,12 +137,12 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
         if (i != 0) {
             last = list[1][i - 1];
         } else {
-            last = FALSE;
+            last = 0;
         }
         if (i != *(indexliste) - 1) {
             next = list[1][i + 1];
         } else {
-            next = FALSE;
+            next = 0;
         }
 
         if (i == 0) { /* first block */
