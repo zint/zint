@@ -7,7 +7,7 @@
 SOURCE = manual.pmd
 OUT_PDF = manual.pdf
 OUT_TXT = manual.txt
-HIGHLIGHT_THEME = pygments.theme
+HIGHLIGHT_THEME = vs.theme
 INC_HEADER_PDF = inc_header_pdf.tex
 INC_BEFORE_BODY_PDF = inc_before_body_pdf.tex
 INCLUDES_PDF = $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PDF)
