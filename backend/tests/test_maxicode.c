@@ -27,6 +27,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
@@ -42,11 +43,11 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -1, -1, "1", 138, "", 0, 33, 30 }, // Mode 4 (138 agrees with ISO/IEC 16023:2000)
+        /*  0*/ { -1, -1, "1", 138, "", 0, 33, 30 }, /* Mode 4 (138 agrees with ISO/IEC 16023:2000) */
         /*  1*/ { -1, -1, "1", 139, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, -1, "1", 145, "", ZINT_ERROR_TOO_LONG, -1, -1 }, // Absolute max
+        /*  2*/ { -1, -1, "1", 145, "", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Absolute max */
         /*  3*/ { -1, -1, "A", 93, "", 0, 33, 30 },
         /*  4*/ { -1, -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  5*/ { -1, -1, "\001", 90, "", 0, 33, 30 },
@@ -59,18 +60,18 @@ static void test_large(int index, int debug) {
         /* 12*/ { 2, -1, "A", 85, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 13*/ { 2, 96, "1", 109, "123456789123123", 0, 33, 30 },
         /* 14*/ { 2, 96, "1", 110, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { 2, 96, "1", 136, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 }, // Absolute max with SCM vv
+        /* 15*/ { 2, 96, "1", 136, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Absolute max with SCM vv */
         /* 16*/ { 3, -1, "1", 126, "ABCDEF123123", 0, 33, 30 },
         /* 17*/ { 3, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 18*/ { 3, -1, "A", 84, "ABCDEF123123", 0, 33, 30 },
         /* 19*/ { 3, -1, "A", 85, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 20*/ { 3, 96, "1", 109, "ABCDEF123123", 0, 33, 30 },
         /* 21*/ { 3, 96, "1", 110, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { 0, -1, "1", 126, "123456789123123", 0, 33, 30 }, // Mode 2
+        /* 22*/ { 0, -1, "1", 126, "123456789123123", 0, 33, 30 }, /* Mode 2 */
         /* 23*/ { 0, -1, "1", 127, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 24*/ { 0, -1, "1", 126, "ABCDEF123123", 0, 33, 30 }, // Mode 3
+        /* 24*/ { 0, -1, "1", 126, "ABCDEF123123", 0, 33, 30 }, /* Mode 3 */
         /* 25*/ { 0, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 26*/ { 5, -1, "1", 113, "", 0, 33, 30 }, // Extra EEC
+        /* 26*/ { 5, -1, "1", 113, "", 0, 33, 30 }, /* Extra EEC */
         /* 27*/ { 5, -1, "1", 114, "", ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 28*/ { 5, -1, "A", 77, "", 0, 33, 30 },
         /* 29*/ { 5, -1, "A", 78, "", ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -192,8 +193,8 @@ static void test_input(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_input");
 
@@ -204,7 +205,7 @@ static void test_input(int index, int generate, int debug) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_MAXICODE, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
@@ -600,7 +601,77 @@ static void test_encode(int index, int generate, int debug) {
                     "011111001010000101000011000110"
                     "101111010010011100100011110010"
                 },
-        /*  9*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDabcdAabcABabcABCabcABCDaABCabABCabcABCéa", -1, "", 0, 33, 30, 1, "Mode 4 LCHB SHA 2SHA 3SHA LCHA SHB LCHB 3SHA 3SHA SHD",
+        /*  9*/ { UNICODE_MODE | ESCAPE_MODE, 4, -1, { 0, 0, "" }, "`abcdefghijklmnopqrstuvwxyz\034\\G\\R{}~\177;<=>?[\\\\]^_ ,./:@!|", -1, "", 0, 33, 30, 1, "Mode 4 Set B",
+                    "000000000000000010101010101011"
+                    "010101011111111100000000101010"
+                    "001001110010011100100111001000"
+                    "010101010101101010101010101010"
+                    "101010000000111111010101101000"
+                    "011000110100011000011000110110"
+                    "010101010101010101111111111110"
+                    "100101010111111111000000001010"
+                    "110010011100100111001001110010"
+                    "010101011111000000000101111110"
+                    "000000001101001010011000101000"
+                    "101010101000000000100110011000"
+                    "010101010000000000001001010101"
+                    "000000111000000000001000000000"
+                    "101010111100000000011010101010"
+                    "010101010000000000000101010110"
+                    "000000001000000000001000000010"
+                    "101010100000000000001010101010"
+                    "010101110100000000001101010101"
+                    "000000010100000000101100000000"
+                    "101010110100000000001010101000"
+                    "010101010000000001010001010110"
+                    "000000000010111111001000000010"
+                    "101010101010110001011110101000"
+                    "010101010101010101010010101000"
+                    "000000000000000000000101100100"
+                    "101010101010101010100010010110"
+                    "001101100000000100111111111100"
+                    "011101101001110010100010011010"
+                    "111001101111100110001001101000"
+                    "000001100000101010001100101010"
+                    "100100110011010101001011100100"
+                    "001000101111010000111000010101"
+                },
+        /* 10*/ { UNICODE_MODE | ESCAPE_MODE, 4, -1, { 0, 0, "" }, "\\rABCDEFGHIJKLMNOPQRSTUVWXYZ\034\\G\\R \"#$%&'()*+,-./0123456789:", -1, "", 0, 33, 30, 1, "Mode 4 Set A",
+                    "000000000000001010101010101011"
+                    "010101111111110000000010101010"
+                    "100111001001110010011100100101"
+                    "010101010101011010101010101010"
+                    "101010100000001111110101011011"
+                    "110110001101000110000110001110"
+                    "010101010101010110000100000011"
+                    "010101011111111111001110101100"
+                    "001001110010011111001101100110"
+                    "010101010011000000000001111100"
+                    "000000001001001010010100010100"
+                    "101010100010000000010010011010"
+                    "010101000000000000000001010100"
+                    "000000110100000000100100000000"
+                    "101010110000000000001010101011"
+                    "010101010000000000001101010100"
+                    "000000001000000000001000000010"
+                    "101010100000000000001010101000"
+                    "010101001100000000001101010100"
+                    "000000111000000000101100000000"
+                    "101010000010000000011110101001"
+                    "010101010000000000100101010110"
+                    "000000001110000001101000000001"
+                    "101010100011000001001110101000"
+                    "010101010101010101010011100001"
+                    "000000000000000000000100010110"
+                    "101010101010101010100100011110"
+                    "101100000000000010001010010000"
+                    "110010011000011000011011011001"
+                    "111000110101100100110110101000"
+                    "001001100010110011111101010101"
+                    "110111010000000001010000100110"
+                    "101001001010011101111100111011"
+                },
+        /* 11*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDabcdAabcABabcABCabcABCDaABCabABCabcABCéa", -1, "", 0, 33, 30, 1, "Mode 4 LCHB SHA 2SHA 3SHA LCHA SHB LCHB 3SHA 3SHA SHD",
                     "110000000011000000000011000011"
                     "010000000001000000000001000000"
                     "111010011100100110011110100101"
@@ -635,7 +706,7 @@ static void test_encode(int index, int generate, int debug) {
                     "110001000010011110111101111000"
                     "011010011011111110001000000010"
                 },
-        /* 10*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ1", -1, "", 0, 33, 30, 1, "Mode 4 LCKC LCHA",
+        /* 12*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ1", -1, "", 0, 33, 30, 1, "Mode 4 LCKC LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -670,7 +741,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 11*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKC NS",
+        /* 13*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ÀÁÂÃ123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKC NS",
                     "111110110101010101010101010111"
                     "111010010000000000000000000000"
                     "000010011010101010101010101000"
@@ -705,7 +776,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000000111100011110100001110000"
                     "101000000010100111001011110101"
                 },
-        /* 12*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "àáâã1", -1, "", 0, 33, 30, 1, "Mode 4 LCKD LCHA",
+        /* 14*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "àáâã1", -1, "", 0, 33, 30, 1, "Mode 4 LCKD LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -740,7 +811,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 13*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥1", -1, "", 0, 33, 30, 1, "Mode 4 LCKE LCHA",
+        /* 15*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥1", -1, "", 0, 33, 30, 1, "Mode 4 LCKE LCHA",
                     "010101010101010101010101010111"
                     "000000000000000000000000000000"
                     "101010101010101010101010101010"
@@ -775,7 +846,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010110101111010110101010111100"
                     "010100000000010110101010010100"
                 },
-        /* 14*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKE NS",
+        /* 16*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "¢£¤¥123456789", -1, "", 0, 33, 30, 1, "Mode 4 LCKE NS",
                     "111110110101010101010101010111"
                     "111010010000000000000000000000"
                     "000010011010101010101010101000"
@@ -810,7 +881,7 @@ static void test_encode(int index, int generate, int debug) {
                     "000000111100011110100001110000"
                     "101000000010100111001011110101"
                 },
-        /* 15*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 1, "Mode 4 mixed sets",
+        /* 17*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 1, "Mode 4 mixed sets",
                     "000000001111111100000000111111"
                     "000010100100111100000000111100"
                     "011100101110000000100111010100"
@@ -845,7 +916,7 @@ static void test_encode(int index, int generate, int debug) {
                     "100011000001110011101110101000"
                     "001001110010111101100100010001"
                 },
-        /* 16*/ { UNICODE_MODE, 4, -1, { 3, 7, "" }, "THIS IS A 91 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, APPENDED, MAXICODE SYMBOL...", -1, "", 0, 33, 30, 1, "Mode 4 Structured Append",
+        /* 18*/ { UNICODE_MODE, 4, -1, { 3, 7, "" }, "THIS IS A 91 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, APPENDED, MAXICODE SYMBOL...", -1, "", 0, 33, 30, 1, "Mode 4 Structured Append",
                     "010001111101000000100000100011"
                     "000000010000000100000000101000"
                     "001000101000110010011011001000"
@@ -880,7 +951,7 @@ static void test_encode(int index, int generate, int debug) {
                     "010101011101100110111011100100"
                     "011001000011110011011110111010"
                 },
-        /* 17*/ { UNICODE_MODE, 3, -1, { 1, 8, "" }, "COMMISSION FOR EUROPEAN NORMALIZATION, RUE DE STASSART 36, B-1050 BRUXELLES", -1, "B1050056999", 0, 33, 30, 1, "Mode 3 Structured Append",
+        /* 19*/ { UNICODE_MODE, 3, -1, { 1, 8, "" }, "COMMISSION FOR EUROPEAN NORMALIZATION, RUE DE STASSART 36, B-1050 BRUXELLES", -1, "B1050056999", 0, 33, 30, 1, "Mode 3 Structured Append",
                     "010000000000001010000000010011"
                     "001000111111010000011111001000"
                     "101111111010101111101101000101"
@@ -924,8 +995,8 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
@@ -1337,8 +1408,8 @@ static void test_encode_segs(int index, int generate, int debug) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode_segs");
 
@@ -1522,7 +1593,7 @@ static void test_best_supported_set(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Nico Gunkel OSS-Fuzz
+/* #181 Nico Gunkel OSS-Fuzz */
 static void test_fuzz(int index, int debug) {
 
     struct item {
@@ -1531,10 +1602,10 @@ static void test_fuzz(int index, int debug) {
         int length;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /* 0*/ { -1, "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data
-        /* 1*/ { -1, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1, ZINT_ERROR_TOO_LONG }, // Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer
+        /* 0*/ { -1, "\223\223\223\223\223\200\000\060\060\020\122\104\060\343\000\000\040\104\104\104\104\177\377\040\000\324\336\000\000\000\000\104\060\060\060\060\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\104\060\104\104\000\000\000\040\104\104\104\104\177\377\377\377\324\336\000\000\000\000\104\377\104\001\104\104\104\104\104\104\233\233\060\060\060\060\060\060\060\060\060\325\074", 107, ZINT_ERROR_TOO_LONG }, /* Original OSS-Fuzz triggering data */
+        /* 1*/ { -1, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789", -1, ZINT_ERROR_TOO_LONG }, /* Add 6 lowercase a's so 6 SHIFTS inserted so 6 + 138 (max input len) = 144 and numbers come at end of buffer */
         /* 2*/ { -1, "AaAaAaAaAaAaAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA123456789A", -1, ZINT_ERROR_TOO_LONG },
         /* 3*/ { -1, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG },
         /* 4*/ { 32768, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_ERROR_TOO_LONG },
@@ -1568,7 +1639,7 @@ static void test_fuzz(int index, int debug) {
 
 #define TEST_PERF_ITERATIONS    1000
 
-// Not a real test, just performance indicator
+/* Not a real test, just performance indicator */
 static void test_perf(int index, int debug) {
 
     struct item {
