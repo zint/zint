@@ -7,7 +7,6 @@
 SOURCE = manual.pmd
 OUT_PDF = manual.pdf
 OUT_TXT = manual.txt
-HIGHLIGHT_THEME = vs.theme
 INC_HEADER_PDF = inc_header_pdf.tex
 INC_BEFORE_BODY_PDF = inc_before_body_pdf.tex
 INCLUDES_PDF = $(INC_HEADER_PDF) $(INC_BEFORE_BODY_PDF)
@@ -136,7 +135,7 @@ MAIN_FONT = mainfont="TeX Gyre Pagella"
 MONO_FONT = monofont="Liberation Mono"
 CJK_FONT = CJKmainfont="WenQuanYi Micro Hei Mono"
 PDF_OPTS = --pdf-engine=xelatex --filter pandoc-tablenos -M tablenos-warning-level=0 \
-			--highlight-style=$(HIGHLIGHT_THEME) -V colorlinks -V geometry:margin=20mm -V papersize=a4 -V csquotes=true --dpi=300
+			--highlight-style=haddock -V colorlinks -V geometry:margin=20mm -V papersize=a4 -V csquotes=true --dpi=300
 TEX_MAN_PAGE = zint.1.tex
 TXT_OPTS = --filter pandoc-tablenos -M tablenos-warning-level=0 --columns 80 --eol=lf -t plain
 MAN_PAGE_OPTS = -s -t man
@@ -169,21 +168,3 @@ $(OUT_MAN_PAGE) : $(SOURCE_MAN_PAGE) Makefile
 	pandoc $(SOURCE_MAN_PAGE) -f markdown \
 			$(MAN_PAGE_OPTS) \
 			-o $(OUT_MAN_PAGE)
-
-# HTML demo
-
-OUT_HTML = manual.html
-HTML_OPTS = --filter pandoc-tablenos -M tablenos-warning-level=0 --highlight-style=$(HIGHLIGHT_THEME) \
-			--eol=lf -s -t html
-
-$(OUT_HTML) : $(SOURCE) $(SOURCE_MAN_PAGE) Makefile
-	pandoc $(SOURCE) $(SOURCE_MAN_PAGE) -f markdown --toc --toc-depth=4 \
-			-V $(MAIN_FONT) -V $(MONO_FONT) -V $(CJK_FONT) \
-			$(HTML_OPTS) \
-			-o $(OUT_HTML)
-	# Indent Man Page sections in TOC & change Man Page sections h1 -> h2
-	sed -i \
-		-e 's/\(Man Page<\/a>\)<\/li>/\1<ul>/' \
-		-e 's/\(AUTHORS<\/a><\/li>\)/\1<\/ul><\/li>/' \
-		-e 's/^<h1\([^>]*>[A-Z][A-Z ]*<\/\)h1>$$/<h2\1h2>/' \
-		$(OUT_HTML)

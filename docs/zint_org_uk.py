@@ -1,3 +1,10 @@
+# This script takes the output from pandoc and converts it into the format needed by
+# the website at Zint.org.uk
+#
+# Warning: This code is ugly... but it saves days of manual effort updating the website.
+#
+# Copyright (C) 2022 <rstuart114@gmail.com>
+
 # Works out which tags should influence indentation and puts them on their own line
 def isolate_tag(tag):
     global stage
