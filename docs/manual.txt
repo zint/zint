@@ -3907,7 +3907,7 @@ countries.
 Mac and macOS are trademarks of Apple Inc., registered in the U.S. and other
 countries.
 
-The Zint logo derived from “SF Planetary Orbiter” font by ShyFoundary
+The Zint logo is derived from “SF Planetary Orbiter” font by ShyFoundary.
 
 Zint.org.uk website design and hosting provided by Robert Elliott.
 
