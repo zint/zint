@@ -4212,7 +4212,7 @@ OPTIONS
 
 --dmre
 
-    For Data Matrix symbols, allow Data Matrix Rectangular Extended (RMRE) sizes
+    For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE) sizes
     when considering automatic sizes.
 
 --dotsize=NUMBER

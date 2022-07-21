@@ -90,7 +90,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--dmre`
 
-:   For Data Matrix symbols, allow Data Matrix Rectangular Extended (RMRE) sizes when considering automatic sizes.
+:   For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE) sizes when considering automatic sizes.
 
 `--dotsize=NUMBER`
 
