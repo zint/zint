@@ -56,7 +56,7 @@ static void test_checks(int index, int debug) {
         char *expected;
         int expected_symbology;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, "1234", -1, -1, 3, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching", -1 },
         /*  1*/ { BARCODE_CODE128, -1, "1234", -1, -1, 0, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", -1 },
@@ -83,11 +83,11 @@ static void test_checks(int index, int debug) {
         /* 22*/ { BARCODE_GS1_128, -1, "[21]1234", -1, GS1_MODE, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", -1 },
         /* 23*/ { 0, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range", BARCODE_CODE128 },
         /* 24*/ { 0, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
-        /* 25*/ { 0, -1, "1", -1, -1, 1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching", BARCODE_CODE128 }, // Not supporting beats invalid ECI
+        /* 25*/ { 0, -1, "1", -1, -1, 1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching", BARCODE_CODE128 }, /* Not supporting beats invalid ECI */
         /* 26*/ { 0, -1, "1", -1, -1, 1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
         /* 27*/ { 0, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, 0.009, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Dot size out of range (0.01 to 20)", BARCODE_CODE128 },
         /* 28*/ { 0, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, 0.009, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
-        /* 29*/ { 0, -1, "1", -1, -1, 1, 0, 0, 0, 0, -1, 0.009, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching", BARCODE_CODE128 }, // Invalid dot size no longer beats invalid ECI
+        /* 29*/ { 0, -1, "1", -1, -1, 1, 0, 0, 0, 0, -1, 0.009, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 217: Symbology does not support ECI switching", BARCODE_CODE128 }, /* Invalid dot size no longer beats invalid ECI */
         /* 30*/ { 0, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, 0.009, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
         /* 31*/ { 5, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", BARCODE_C25STANDARD },
         /* 32*/ { 5, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, 0, "", BARCODE_C25STANDARD },
@@ -204,15 +204,15 @@ static void test_checks(int index, int debug) {
         /*143*/ { BARCODE_QRCODE, -1, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_USES_ECI, "Error 222: Encoded data includes ECI 13", -1 },
         /*144*/ { BARCODE_CODEONE, -1, "[01]12345678901231", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 512: ECI ignored for GS1 mode", -1 },
         /*145*/ { BARCODE_CODEONE, -1, "[01]12345678901231", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 512: ECI ignored for GS1 mode", -1 },
-        /*146*/ { BARCODE_CODEONE, -1, "[01]12345678901234", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 512: ECI ignored for GS1 mode", -1 }, // Warning in encoder overrides library warnings
-        /*147*/ { BARCODE_CODEONE, -1, "[01]12345678901234", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_NONCOMPLIANT, "Error 261: AI (01) position 14: Bad checksum '4', expected '1'", -1 }, // But not errors
+        /*146*/ { BARCODE_CODEONE, -1, "[01]12345678901234", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 512: ECI ignored for GS1 mode", -1 }, /* Warning in encoder overrides library warnings */
+        /*147*/ { BARCODE_CODEONE, -1, "[01]12345678901234", -1, GS1_MODE, 3, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_NONCOMPLIANT, "Error 261: AI (01) position 14: Bad checksum '4', expected '1'", -1 }, /* But not errors */
         /*148*/ { BARCODE_AZTEC, -1, "ก", -1, UNICODE_MODE, 13, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", -1 },
         /*149*/ { BARCODE_AZTEC, -1, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_USES_ECI, "Warning 222: Encoded data includes ECI 13", -1 },
         /*150*/ { BARCODE_AZTEC, -1, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_USES_ECI, "Error 222: Encoded data includes ECI 13", -1 },
         /*151*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, 13, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 503: Invalid error correction level - using default instead", -1 },
         /*152*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, 13, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 503: Invalid error correction level - using default instead", -1 },
-        /*153*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_USES_ECI, "Warning 222: Encoded data includes ECI 13", -1 }, // ECI warning trumps all other warnings
-        /*154*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 503: Invalid error correction level - using default instead", -1 }, // But not errors
+        /*153*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_WARN_USES_ECI, "Warning 222: Encoded data includes ECI 13", -1 }, /* ECI warning trumps all other warnings */
+        /*154*/ { BARCODE_AZTEC, 6, "ก", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 503: Invalid error correction level - using default instead", -1 }, /* But not errors */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -285,7 +285,7 @@ static void test_checks_segs(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, { { NULL, 0, 0 }, { NULL, 0, 0 } }, 0, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 205: No input data" },
         /*  1*/ { BARCODE_CODE128, -1, { { NULL, 0, 0 }, { NULL, 0, 0 } }, 257, -1, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 771: Too many input segments (max 256)" },
@@ -345,7 +345,7 @@ static void test_input_data(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, "1234", -1, "", 0, "" },
         /*  1*/ { BARCODE_GS1_128, -1, "[01]12345678901231", -1, "", 0, "" },
@@ -414,7 +414,7 @@ static void test_input_mode(int index, int debug) {
 
         int expected_input_mode;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "1234", DATA_MODE, 0, DATA_MODE },
         /*  1*/ { "1234", DATA_MODE | ESCAPE_MODE, 0, DATA_MODE | ESCAPE_MODE },
@@ -422,9 +422,9 @@ static void test_input_mode(int index, int debug) {
         /*  3*/ { "1234", UNICODE_MODE | ESCAPE_MODE, 0, UNICODE_MODE | ESCAPE_MODE },
         /*  4*/ { "[01]12345678901231", GS1_MODE, 0, GS1_MODE },
         /*  5*/ { "[01]12345678901231", GS1_MODE | ESCAPE_MODE, 0, GS1_MODE | ESCAPE_MODE },
-        /*  6*/ { "1234", 4 | ESCAPE_MODE, 0, DATA_MODE }, // Unknown mode reset to bare DATA_MODE
+        /*  6*/ { "1234", 4 | ESCAPE_MODE, 0, DATA_MODE }, /* Unknown mode reset to bare DATA_MODE */
         /*  7*/ { "1234", -1, 0, DATA_MODE },
-        /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10 }, // Unknown flags kept (but ignored)
+        /*  8*/ { "1234", DATA_MODE | 0x10, 0, DATA_MODE | 0x10 }, /* Unknown flags kept (but ignored) */
         /*  9*/ { "1234", UNICODE_MODE | 0x10, 0, UNICODE_MODE | 0x10 },
         /* 10*/ { "[01]12345678901231", GS1_MODE | 0x20, 0, GS1_MODE | 0x20 },
     };
@@ -574,7 +574,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
             text = data[i].data;
         }
 
-        debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
@@ -600,7 +600,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
             memcpy(&previous_symbol, symbol, sizeof(previous_symbol));
 
             if (ret < ZINT_ERROR && !data[i].composite[0]) {
-                // Test from input file
+                /* Test from input file */
                 FILE *fp;
                 struct zint_symbol *symbol2;
 
@@ -612,7 +612,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
                 symbol2 = ZBarcode_Create();
                 assert_nonnull(symbol, "Symbol2 not created\n");
 
-                symbol2->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+                symbol2->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
                 (void) testUtilSetSymbol(symbol2, data[i].symbology, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
@@ -642,7 +642,7 @@ static void test_cap(int index) {
         unsigned cap_flag;
         unsigned int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /* 0*/ { BARCODE_CODE128, ZINT_CAP_HRT, ZINT_CAP_HRT },
         /* 1*/ { BARCODE_CODE128, ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_GS1, ZINT_CAP_HRT | ZINT_CAP_STACKABLE },
@@ -749,6 +749,7 @@ static void test_cap_compliant_height(void) {
             case BARCODE_DBAR_OMNSTK_CC:
             case BARCODE_DBAR_EXPSTK_CC:
             case BARCODE_CHANNEL:
+            case BARCODE_BC412:
                 assert_equal(ret, ZINT_CAP_COMPLIANT_HEIGHT, "symbol_id %d (%s) ret 0x%X != ZINT_CAP_COMPLIANT_HEIGHT\n", symbol_id, testUtilBarcodeName(symbol_id), ret);
                 break;
             default:
@@ -771,7 +772,7 @@ static void test_encode_file_empty(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) remove(filename); // In case junk hanging around
+    (void) remove(filename); /* In case junk hanging around */
 
     fstream = fopen(filename, "w+");
     assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
@@ -801,7 +802,7 @@ static void test_encode_file_too_large(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) remove(filename); // In case junk hanging around
+    (void) remove(filename); /* In case junk hanging around */
 
     fstream = fopen(filename, "w+");
     assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
@@ -821,7 +822,7 @@ static void test_encode_file_too_large(void) {
     testFinish();
 }
 
-// #181 Nico Gunkel OSS-Fuzz
+/* #181 Nico Gunkel OSS-Fuzz */
 static void test_encode_file_unreadable(void) {
 #ifndef _WIN32
     int ret;
@@ -841,7 +842,7 @@ static void test_encode_file_unreadable(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    // Unreadable file
+    /* Unreadable file */
     fd = creat(filename, S_IWUSR);
     assert_notequal(fd, -1, "Unreadable input file (%s) not created == -1 (%d: %s)\n", filename, errno, strerror(errno));
     ret = write(fd, buf, 1);
@@ -861,7 +862,7 @@ static void test_encode_file_unreadable(void) {
 #endif /* _WIN32 */
 }
 
-// #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method
+/* #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method */
 static void test_encode_file_directory(void) {
     int ret;
     struct zint_symbol *symbol;
@@ -872,7 +873,7 @@ static void test_encode_file_directory(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) testUtilRmDir(dirname); // In case junk hanging around
+    (void) testUtilRmDir(dirname); /* In case junk hanging around */
     ret = testUtilMkDir(dirname);
     assert_zero(ret, "testUtilMkDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));
 
@@ -897,8 +898,8 @@ static void test_encode_file(void) {
 
     testStart("test_encode_file");
 
-    (void) remove(filename); // In case junk hanging around
-    (void) remove(outfile); // In case junk hanging around
+    (void) remove(filename); /* In case junk hanging around */
+    (void) remove(outfile); /* In case junk hanging around */
 
     fp = fopen(filename, "w+");
     assert_nonnull(fp, "fopen(%s) failed (%d)\n", filename, ferror(fp));
@@ -960,7 +961,7 @@ static void test_encode_print_outfile_directory(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) testUtilRmDir(dirname); // In case junk hanging around
+    (void) testUtilRmDir(dirname); /* In case junk hanging around */
     ret = testUtilMkDir(dirname);
     assert_zero(ret, "testUtilMkDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));
 
@@ -988,7 +989,7 @@ static void test_bad_args(void) {
 
     testStart("test_bad_args");
 
-    // These just return, no error
+    /* These just return, no error */
     ZBarcode_Clear(NULL);
     ZBarcode_Delete(NULL);
 
@@ -996,14 +997,14 @@ static void test_bad_args(void) {
     assert_nonzero(ret >= 20901, "ZBarcode_Version() %d <= 20901\n", ret);
 
     assert_zero(ZBarcode_ValidID(0), "ZBarcode_ValidID(0) non-zero\n");
-    assert_zero(ZBarcode_ValidID(10), "ZBarcode_ValidID(10) non-zero\n"); // Note 10 remapped to BARCODE_EANX in ZBarcode_Encode() for tbarcode compat but not counted as valid
+    assert_zero(ZBarcode_ValidID(10), "ZBarcode_ValidID(10) non-zero\n"); /* Note 10 remapped to BARCODE_EANX in ZBarcode_Encode() for tbarcode compat but not counted as valid */
 
     ret = ZBarcode_Cap(0, ~0);
     assert_zero(ret, "ZBarcode_Cap(0, ~0) ret 0x%X != 0\n", ret);
     ret = ZBarcode_Cap(10, ~0);
     assert_zero(ret, "ZBarcode_Cap(10, ~0) ret 0x%X != 0\n", ret);
 
-    // NULL symbol
+    /* NULL symbol */
     assert_equal(ZBarcode_Encode(NULL, TU(data), 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(NULL, data, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_Segs(NULL, &seg, 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs(NULL, &seg, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Print(NULL, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Print(NULL, 0) != ZINT_ERROR_INVALID_DATA\n");
@@ -1022,7 +1023,7 @@ static void test_bad_args(void) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    // NULL data/segs/filename
+    /* NULL data/segs/filename */
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode(symbol, NULL, 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(symbol, NULL, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode(symbol, NULL, 1) no errtxt\n");
@@ -1057,7 +1058,7 @@ static void test_bad_args(void) {
     assert_equal(ZBarcode_Encode_File_and_Buffer_Vector(symbol, NULL, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer_Vector(symbol, NULL, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode_File_and_Buffer_Vector(symbol, NULL, 0) no errtxt\n");
 
-    // Empty data/segs/filename
+    /* Empty data/segs/filename */
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode(symbol, TU(empty), 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, 0) no errtxt\n");
@@ -1092,7 +1093,7 @@ static void test_bad_args(void) {
     assert_equal(ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero(strlen(symbol->errtxt), "ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0) no errtxt\n");
 
-    // Bad seg_count
+    /* Bad seg_count */
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_Segs(symbol, &seg_empty, ZINT_MAX_SEG_COUNT + 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs(symbol, &seg_empty, ZINT_MAX_SEG_COUNT + 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode_Segs(symbol, &seg_empty, ZINT_MAX_SEG_COUNT + 1) no errtxt\n");
@@ -1103,7 +1104,7 @@ static void test_bad_args(void) {
     assert_equal(ZBarcode_Encode_Segs(symbol, &seg_empty, -1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs(symbol, &seg_empty, -1) != ZINT_ERROR_INVALID_DATA\n");
     assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode_Segs(symbol, &seg_empty, -1) no errtxt\n");
 
-    // Data/seg too big
+    /* Data/seg too big */
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode(symbol, TU(empty), ZINT_MAX_DATA_LEN + 1), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) != ZINT_ERROR_TOO_LONG\n");
     assert_nonzero((int) strlen(symbol->errtxt), "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) no errtxt\n");
@@ -1151,7 +1152,7 @@ static void test_error_tag(int index) {
         int ret;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { ZINT_WARN_INVALID_OPTION, -1, "", ZINT_WARN_INVALID_OPTION, "Warning " },
         /*  1*/ { ZINT_WARN_INVALID_OPTION, WARN_FAIL_ALL, "", ZINT_ERROR_INVALID_OPTION, "Error " },
@@ -1201,8 +1202,8 @@ INTERNAL void strip_bom_test(unsigned char *source, int *input_length);
 static void test_strip_bom(void) {
 
     int length, ret;
-    char data[] = "\357\273\277A"; // U+FEFF BOM, with "A"
-    char bom_only[] = "\357\273\277"; // U+FEFF BOM only
+    char data[] = "\357\273\277A"; /* U+FEFF BOM, with "A" */
+    char bom_only[] = "\357\273\277"; /* U+FEFF BOM only */
     char buf[6];
 
     testStart("test_strip_bom");
@@ -1213,7 +1214,7 @@ static void test_strip_bom(void) {
     assert_equal(length, 1, "length %d != 1\n", length);
     assert_zero(buf[1], "buf[1] %d != 0\n", buf[1]);
 
-    // BOM not stripped if only data
+    /* BOM not stripped if only data */
 
     strcpy(buf, bom_only);
     length = (int) strlen(buf);
@@ -1275,7 +1276,7 @@ static void test_clear(void) {
     strcpy(symbol->fgcolour, "000000AA");
     strcpy(symbol->bgcolour, "FFFFFFAA");
 
-    // Raster
+    /* Raster */
 
     ret = ZBarcode_Encode(symbol, TU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
@@ -1308,7 +1309,7 @@ static void test_clear(void) {
     assert_zero(symbol->bitmap_byte_length, "ZBarcode_Buffer() bitmap_byte_length %d != 0\n", (int) symbol->bitmap_byte_length);
     assert_null(symbol->vector, "ZBarcode_Buffer() vector != NULL\n");
 
-    // Vector
+    /* Vector */
 
     ret = ZBarcode_Encode(symbol, TU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
@@ -1322,7 +1323,7 @@ static void test_clear(void) {
     assert_nonnull(symbol->vector, "ZBarcode_Buffer_Vector() vector NULL\n");
     assert_nonnull(symbol->vector->rectangles, "ZBarcode_Buffer_Vector() vector->rectangles NULL\n");
     assert_nonnull(symbol->vector->hexagons, "ZBarcode_Buffer_Vector() vector->hexagons NULL\n");
-    assert_null(symbol->vector->strings, "ZBarcode_Buffer_Vector() vector->strings != NULL\n"); // MAXICODE no text
+    assert_null(symbol->vector->strings, "ZBarcode_Buffer_Vector() vector->strings != NULL\n"); /* MAXICODE no text */
     assert_nonnull(symbol->vector->circles, "ZBarcode_Buffer_Vector() vector->circles NULL\n");
 
     assert_nonzero(symbol->rows, "ZBarcode_Buffer_Vector() rows 0\n");

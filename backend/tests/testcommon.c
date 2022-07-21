@@ -2379,7 +2379,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         strcat(bwipp_data, data);
         testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
 
-        /* Always set dontlint */
+        /* Always set dontlint for now (until support for exclusive AIs check) */
         sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
         bwipp_opts = bwipp_opts_buf;
 
@@ -2404,7 +2404,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
 
         if (symbol->input_mode & GS1NOCHECK_MODE) {
-            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+            /* sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : ""); */
         }
     } else {
         if (gs1_cvt) {
@@ -2414,7 +2414,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             strcat(bwipp_data, data);
             testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
 
-            /* Always set dontlint */
+            /* Always set dontlint for now (until support for exclusive AIs check) */
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
             bwipp_opts = bwipp_opts_buf;
 
@@ -2440,7 +2440,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             }
 
             if (symbol->input_mode & GS1NOCHECK_MODE) {
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
+                /* sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : ""); */
             }
         } else {
             if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, symbol->input_mode & ESCAPE_MODE,
@@ -2759,7 +2759,9 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_BC412) {
-                /* TODO: */
+                to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssemi", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
             }
         }
 

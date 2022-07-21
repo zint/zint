@@ -57,6 +57,7 @@ zint -b DBAR_LTD --compliantheight -d "0950110153001" --scale=0.6 -o images/dbar
 zint -b DBAR_EXP --compliantheight -d "[01]98898765432106[3202]012345[15]991231" --scale=0.6 -o images/dbar_exp.svg
 zint -b KOREAPOST -d "923457" --scale=0.6 -o images/koreapost.svg
 zint -b CHANNEL -d "453678" --compliantheight --scale=0.6 -o images/channel.svg
+zint -b BC412 -d "AQ45670" --compliantheight --scale=0.6 -o images/bc412.svg
 zint -d "This" -d "That" --scale=0.6 -o images/code128stacked.svg
 zint --notext --bind --separator=2 -d "This" -d "That" --scale=0.6 -o images/code128stacked_sep2.svg
 zint -b CODABLOCKF -d "CODABLOCK F Symbology" --rows=3 --scale=0.6 -o images/codablockf.svg

@@ -89,6 +89,7 @@ IMAGES = \
 	images/dbar_exp.svg \
 	images/koreapost.svg \
 	images/channel.svg \
+	images/bc412.svg \
 	images/code128_stacked.svg \
 	images/code128_stacked_sep2.svg \
 	images/codablockf.svg \

@@ -461,7 +461,12 @@ Please send bug reports to https://sourceforge.net/p/zint/tickets/.
 # SEE ALSO
 
 Full documention for `zint` (and the API `libzint` and the GUI `zint-qt`) is available from
-http://zint.org.uk/Manual.aspx, and at https://sourceforge.net/p/zint/docs/manual.txt.
+
+        http://zint.org.uk/Manual.aspx
+
+and at
+
+        https://sourceforge.net/p/zint/docs/manual.txt
 
 # CONFORMING TO
 

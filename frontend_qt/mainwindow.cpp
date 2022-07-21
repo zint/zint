@@ -72,7 +72,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Australia Post Standard Customer"), BARCODE_AUSPOST },
     { QSL("Aztec Code (ISO 24778) (and HIBC)"), BARCODE_AZTEC },
     { QSL("Aztec Runes (ISO 24778)"), BARCODE_AZRUNE },
-    { QSL("BC412 (SEMI TI-95)"), BARCODE_BC412 },
+    { QSL("BC412 (SEMI T1-95)"), BARCODE_BC412 },
     { QSL("Channel Code"), BARCODE_CHANNEL },
     { QSL("Codabar (EN 798)"), BARCODE_CODABAR },
     { QSL("Codablock-F (and HIBC)"), BARCODE_CODABLOCKF },

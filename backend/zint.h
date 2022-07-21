@@ -261,7 +261,7 @@ extern "C" {
 #define BARCODE_UPNQR           143 /* UPNQR (Univerzalnega Plačilnega Naloga QR) */
 #define BARCODE_ULTRA           144 /* Ultracode */
 #define BARCODE_RMQR            145 /* Rectangular Micro QR Code (rMQR) */
-#define BARCODE_BC412           146 /* IBM BC412 */
+#define BARCODE_BC412           146 /* IBM BC412 (SEMI T1-95) */
 #define BARCODE_LAST            146 /* Max barcode number marker, not barcode */
 
 /* Output options (`symbol->output_options`) */

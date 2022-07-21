@@ -1846,7 +1846,6 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
             case BARCODE_HIBC_128: /* See CODE128 */
             case BARCODE_HIBC_PDF: /* See PDF417 */
             case BARCODE_HIBC_MICPDF: /* See PDF417 */
-            case BARCODE_BC412: /* TODO: Find doc */
                 break;
             default:
                 result |= ZINT_CAP_COMPLIANT_HEIGHT;

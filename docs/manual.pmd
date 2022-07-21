@@ -730,6 +730,8 @@ Value
  144     `BARCODE_ULTRA`           Ultracode
 
  145     `BARCODE_RMQR`            Rectangular Micro QR Code (rMQR)
+
+ 140     `BARCODE_BC412`           IBM BC412 (SEMI T1-95)
 --------------------------------------------------------------------------------
 
 Table: {#tbl:barcode_types tag=": Barcode Types (Symbologies)"}
@@ -2803,6 +2805,18 @@ the table below:
 
 Table: {#tbl:channel_maxima tag=": Channel Maximum Values"}
 
+### 6.1.14 BC412 (SEMI T1-95)
+
+![`zint -b BC412 -d "AQ45670" --compliantheight`](images/bc412.svg)
+
+Designed by IBM for marking silicon wafers, each BC412 character is represented
+by 4 bars of a single size, interleaved with 4 spaces of varying sizes that
+total 8 (hence 4 bars in 12). Zint implements the SEMI T1-95 standard, where
+input must be alphanumeric, excluding the letter `O`, and must be from 7 to 18
+characters in length. A single check character is added by Zint, appearing in
+the 2nd character position. Lowercase input is automatically made uppercase.
+
+
 \clearpage
 
 ## 6.2 Stacked Symbologies
@@ -4064,6 +4078,8 @@ international standards:
 
 - ISO/IEC 24778:2008 Information technology - Automatic identification and data
      capture techniques - Aztec Code bar code symbology specification
+- SEMI T1-95 Specification for Back Surface Bar Code Marking of Silicon Wafers
+      (BC412) (1996)
 - ANSI/AIM BC12-1998 - Uniform Symbology Specification Channel Code
 - BS EN 798:1996 Bar coding - Symbology specifications - 'Codabar'
 - AIM Europe ISS-X-24 - Uniform Symbology Specification Codablock-F (1995)
