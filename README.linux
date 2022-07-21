@@ -22,7 +22,7 @@ or Fedora
 Then either download the source code tarball
 
     wget -O zint-2.11.0-src.tar.gz \
-        https://sourceforge2.11.0net/projects/zint/files/zint/2.11.0/zint-2.11.0-src.tar.gz/download
+        https://sourceforge.net/projects/zint/files/zint/2.11.0/zint-2.11.0-src.tar.gz/download
     tar xf zint-2.11.0-src.tar.gz
     cd zint-2.11.0-src
 

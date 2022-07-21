@@ -154,7 +154,7 @@ if (!file_put_contents($file, implode("\n", $lines))) {
 
 // README.linux
 
-version_replace(3, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9.]+/', $v_base_str);
+version_replace(3, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9][0-9.]+/', $v_base_str);
 
 // zint.spec
 

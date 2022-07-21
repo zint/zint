@@ -722,7 +722,7 @@ void MainWindow::about()
             "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
             "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
             "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
-                "Git Lost, Alonso Schaich, Andre Maute and many others at Sourceforge.</p>"
+                "Git Lost, Alonso Schaich, Andre Maute and many others at SourceForge.</p>"
             "<p><table border=1><tr><td>"
 #ifndef Q_OS_MACOS
             "<small>"
