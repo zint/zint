@@ -868,7 +868,7 @@ underscores are optional.
 
   145       BARCODE_RMQR              Rectangular Micro QR Code (rMQR)
 
-  140       BARCODE_BC412             IBM BC412 (SEMI T1-95)
+  146       BARCODE_BC412             IBM BC412 (SEMI T1-95)
   --------------------------------------------------------------------------------
 
   : Table : Barcode Types (Symbologies):
