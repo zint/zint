@@ -24,12 +24,6 @@ jobs:
     - name: Install libpng-dev
       run: sudo apt-get install libpng-dev
 
-    - name: Install Qt
-      uses: jurplel/install-qt-action@v3
-
-    - name: Install mesa and xcb (for Qt)
-      run: sudo apt install mesa-common-dev libglu1-mesa-dev libxcb-image0 libxcb-keysyms1 libxcb-render-util0 libxcb-xkb1 libxkbcommon-x11-0 libxcb-xinerama0
-
     - name: Create Build Environment
       # Some projects don't allow in-source building, so create a separate build directory
       # We'll use this as our working directory for all subsequent commands
@@ -40,7 +34,7 @@ jobs:
       # Use a bash shell so we can use the same syntax for environment variable
       # access regardless of the host operating system
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_USE_QT=OFF
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
