@@ -3496,12 +3496,13 @@ usually consists of address data in a data structure. The format of the primary
 message required by Zint is given in the following table:
 
   Characters   Meaning
-  ------------ ----------------------------------------------------------------
-  1 - 9        Postcode data which can consist of up to 9 digits (for mode 2)
-               or up to 6 alphanumeric characters (for mode 3). Remaining
-               unused characters can be filled with the SPACE character
-               (ASCII 32) or omitted (if omitted adjust the following
-               character positions).
+  ------------ -------------------------------------------------------------------
+  1 - 9        Postcode data which can consist of up to 9 digits (for mode 2) or
+               up to 6 alphanumeric characters (for mode 3). Remaining unused
+               characters for mode 3 can be filled with the SPACE character
+               (ASCII 32) or omitted.
+               (adjust the following character positions according to postcode
+               length)
   10 - 12      Three-digit country code according to ISO 3166-1.
   13 - 15      Three-digit service code. This depends on your parcel courier.
 

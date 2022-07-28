@@ -103,8 +103,8 @@ Mode 6 sets the scanner (Reader Initialisation/Programming)</string>
         <property name="toolTip">
          <string>Postcode of up to 9 digits for Mode 2 or
 6 alphanumerics for Mode 3 (will truncate)
-Postcodes less than maximum length will
-be padded with spaces
+Mode 3 postcodes less than maximum
+length will be padded with spaces
 (ignored if disabled)</string>
         </property>
         <property name="text">
@@ -126,8 +126,8 @@ be padded with spaces
         <property name="toolTip">
          <string>Postcode of up to 9 digits for Mode 2 or
 6 alphanumerics for Mode 3 (will truncate)
-Postcodes less than maximum length will
-be padded with spaces
+Mode 3 postcodes less than maximum
+length will be padded with spaces
 (ignored if disabled)</string>
         </property>
         <property name="sizePolicy">
