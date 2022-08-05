@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.11.0.9
-% July 2022
+% August 2022
 
 # 1. Introduction
 
@@ -559,9 +559,9 @@ Value
 
  20      `BARCODE_CODE128`         Code 128 (automatic subset switching)
 
- 21      `BARCODE_DPLEIT`          Deutshe Post Leitcode
+ 21      `BARCODE_DPLEIT`          Deutsche Post Leitcode
 
- 22      `BARCODE_DPIDENT`         Deutshe Post Identcode
+ 22      `BARCODE_DPIDENT`         Deutsche Post Identcode
 
  23      `BARCODE_CODE16K`         Code 16K
 
@@ -2714,7 +2714,7 @@ standards.
 ![`zint -b DPD --compliantheight -d
 "%000393206219912345678101040"`](images/dpd.svg)
 
-Another variation of Code 128 as used by DPD (Deutsher Paket Dienst). Requires
+Another variation of Code 128 as used by DPD (Deutscher Paketdienst). Requires
 a 28 character alphanumeric input. Zint formats the Human Readable Text as
 specified by DPD and adds a modulo-36 check character.
 

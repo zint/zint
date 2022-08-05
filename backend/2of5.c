@@ -280,7 +280,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     return error_number ? error_number : warn_number;
 }
 
-/* Deutshe Post Leitcode */
+/* Deutsche Post Leitcode */
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number;
     unsigned int count;

@@ -7,8 +7,8 @@ this capability into your own programs.
 Zint is able to encode data in the following formats:
 
 Code 11, Standard Code 2 of 5, IATA Code 2 of 5, Industrial Code 2 of 5,
-Interleaved Code 2 of 5, Code 2 of 5 Data Logic, ITF-14, Deutshe Post Leitcode,
-Deutshe Post Identcode, UPC-A, UPC-E, EAN-2, EAN-5, EAN-8, EAN-13, ISBN, UK
+Interleaved Code 2 of 5, Code 2 of 5 Data Logic, ITF-14, Deutsche Post Leitcode,
+Deutsche Post Identcode, UPC-A, UPC-E, EAN-2, EAN-5, EAN-8, EAN-13, ISBN, UK
 Plessey, MSI Plessey, Telepen Alpha, Telepen Numeric, Code 39, Extended Code 39,
 Code 93, PZN, Code 32, LOGMARS, Codabar, Pharmacode, Code 128, GS1-128, NVE-18,
 Code 16k, PDF417, MicroPDF417, Two-Track Pharmacode, POSTNET, PLANET, Australia

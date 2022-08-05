@@ -10,8 +10,8 @@ Here is a guide to which bit of source code does what.
 	Data Logic
 	Interleaved 2 of 5
 	ITF-14
-	Deutche Post Leitcode
-	Deutche Post Identcode
+	Deutsche Post Leitcode
+	Deutsche Post Identcode
 
 auspost.c:
 	Australia Post Standard Customer Barcode

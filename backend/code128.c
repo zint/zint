@@ -1062,7 +1062,7 @@ INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int lengt
     return error_number;
 }
 
-/* DPD (Deutsher Paket Dienst) Code */
+/* DPD (Deutscher Paketdienst) Code */
 /* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf
  * or https://docplayer.net/33728877-Dpd-parcel-label-specification.html */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length) {

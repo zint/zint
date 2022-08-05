@@ -133,7 +133,7 @@ zint -o bar20.png -b 20 --height=50 --border=10 -d "Code 128"
 zint -o bar20.eps -b 20 --height=50 --border=10 -d "Code 128"
 zint -o bar20.svg -b 20 --height=50 --border=10 -d "Code 128"
 
-echo testing Deutshe Post Leitcode
+echo testing Deutsche Post Leitcode
 
 zint -o bar21.png -b 21 --height=50 --border=10 -d 3210987654321
 
@@ -141,7 +141,7 @@ zint -o bar21.eps -b 21 --height=50 --border=10 -d 3210987654321
 
 zint -o bar21.svg -b 21 --height=50 --border=10 -d 3210987654321
 
-echo testing Deutche Post Identcode
+echo testing Deutsche Post Identcode
 
 zint -o bar22.png -b 22 --height=50 --border=10 -d 10987654321
 
