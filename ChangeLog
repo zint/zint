@@ -1,6 +1,10 @@
 Version 2.11.0.9 (dev) not released yet
 =======================================
 
+**Incompatible changes**
+------------------------
+ - None yet
+
 Changes
 -------
 - GUI: sequence export dialog: add Postfix field for filename (#252)
@@ -22,6 +26,8 @@ Changes
 - Add new symbology BC412 (SEMI T1-95)
 - backend: use alloca() (z_alloca()) for both Unix and Windows
 - GS1: new AI 4309 with latlong checker, new currency code 925
+- GUI: add automatic info feedback to "Automatic" combo item of size/row/height
+  comboboxes
 
 Bugs
 ----
@@ -34,6 +40,9 @@ Bugs
 - GUI: sequence window: fix initial clear button status
 - GUI: NO_PNG: allow for Qt not parsing #if's in slots
 - frontend: batch mode: fix default "~~~~~" output (github issue #65)
+- vector: ensure separators don't overlap with other rectangles so that
+  they render correctly when have RGBA alpha channel
+- GUI: update_preview() after Data Dialog return to ensure preview in sync
 
 
 Version 2.11.0 (2022-05-24)

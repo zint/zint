@@ -666,6 +666,7 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
             const int xoffset_si, const int yoffset_si, const int symbol_height_si, const int dot_overspill_si,
             const int image_width, const int image_height, const int si) {
     if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
+        const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
         const int horz_outside = is_fixed_ratio(symbol->symbology);
         const int bwidth_si = symbol->border_width * si;
         int ybind_top = yoffset_si - bwidth_si;
@@ -675,8 +676,7 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
             ybind_bot = image_height - bwidth_si;
         }
         /* Horizontal boundary bars */
-        if ((symbol->output_options & BARCODE_BOX)
-                || (symbol->symbology != BARCODE_CODABLOCKF && symbol->symbology != BARCODE_HIBC_BLOCKF)) {
+        if ((symbol->output_options & BARCODE_BOX) || !is_codablockf) {
             /* Box or not CodaBlockF */
             draw_bar(pixelbuf, 0, image_width, ybind_top, bwidth_si, image_width, image_height, DEFAULT_INK);
             draw_bar(pixelbuf, 0, image_width, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
@@ -928,6 +928,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     int text_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
+    const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
 
     int textflags = 0;
     int xoffset_si, yoffset_si, roffset_si, boffset_si;
@@ -1266,7 +1267,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         }
         sep_height_si = (int) (sep_height * si);
         sep_yoffset_si = yoffset_si + row_heights_si[0] - sep_height_si / 2;
-        if (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF) {
+        if (is_codablockf) {
             /* Avoid 11-module start and 13-module stop chars */
             sep_xoffset_si += 11 * si;
             sep_width_si -= (11 + 13) * si;

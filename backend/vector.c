@@ -405,8 +405,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int text_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
-    float addon_row_height;
+    const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
 
+    float addon_row_height;
     float large_bar_height;
     int upcae_outside_text_height = 0; /* UPC-A/E outside digits font size */
     float digit_ascent_factor = 0.25f; /* Assuming digit ascent roughly 25% less than font size */
@@ -420,6 +421,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     struct zint_vector_hexagon *hexagon, *last_hexagon = NULL;
     struct zint_vector_string *last_string = NULL;
     struct zint_vector_circle *circle, *last_circle = NULL;
+    struct zint_vector_rect **first_row_rects = z_alloca(sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
+
+    memset(first_row_rects, 0, sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
 
     /* Free any previous rendering structures */
     vector_free(symbol);
@@ -638,6 +642,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     rect = vector_plot_create_rect(symbol, i + xoffset, yposn, block_width, row_height);
                     if (!rect) return ZINT_ERROR_MEMORY;
                     vector_plot_add_rect(symbol, rect, &last_rectangle);
+                    if (i == 0) {
+                        first_row_rects[r] = rect;
+                    }
                 }
             }
             yposn += row_height;
@@ -854,15 +861,39 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if ((symbol->output_options & BARCODE_BIND) && (symbol->rows > 1) && is_stackable(symbol->symbology)) {
         float sep_xoffset = xoffset;
         float sep_width = symbol->width;
-        float sep_height = 1.0f, sep_yoffset;
+        float sep_height = 1.0f, sep_yoffset, sep_half_height;
         if (symbol->option_3 > 0 && symbol->option_3 <= 4) {
             sep_height = symbol->option_3;
         }
-        sep_yoffset = yoffset - sep_height / 2;
-        if (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF) {
+        sep_half_height = sep_height / 2.0f;
+        sep_yoffset = yoffset - sep_half_height;
+        if (is_codablockf) {
             /* Avoid 11-module start and 13-module stop chars */
             sep_xoffset += 11;
             sep_width -= 11 + 13;
+        }
+        /* Adjust original rectangles so don't overlap with separator(s) (important for RGBA) */
+        for (r = 0; r < symbol->rows; r++) {
+            for (rect = first_row_rects[r], i = 0; rect && rect != first_row_rects[r + 1]; rect = rect->next, i++) {
+                if (is_codablockf) { /* Skip start and stop chars */
+                    if (i < 3) {
+                        continue;
+                    }
+                    if ((i / 3) * 11 + 13 >= symbol->width) { /* 3 bars and 11 modules per char */
+                        break;
+                    }
+                }
+                if (r != 0) {
+                    rect->y += sep_height - sep_half_height;
+                    rect->height -= r + 1 == symbol->rows ? sep_half_height : sep_height;
+                } else {
+                    rect->height -= sep_half_height;
+                }
+                if (rect->height < 0) {
+                    rect->height = 0.0f;
+                    /* TODO: warn? */
+                }
+            }
         }
         for (r = 1; r < symbol->rows; r++) {
             const float row_height = symbol->row_height[r - 1] ? symbol->row_height[r - 1] : large_bar_height;
@@ -886,8 +917,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* Top */
         rect = vector_plot_create_rect(symbol, 0.0f, ybind_top, vector->width, symbol->border_width);
         if (!rect) return ZINT_ERROR_MEMORY;
-        if (!(symbol->output_options & BARCODE_BOX)
-                && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+        if (!(symbol->output_options & BARCODE_BOX) && is_codablockf) {
             /* CodaBlockF bind - does not extend over horizontal whitespace */
             rect->x = xoffset;
             rect->width -= xoffset + roffset;
@@ -896,8 +926,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* Bottom */
         rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
         if (!rect) return ZINT_ERROR_MEMORY;
-        if (!(symbol->output_options & BARCODE_BOX)
-                && (symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF)) {
+        if (!(symbol->output_options & BARCODE_BOX) && is_codablockf) {
             /* CodaBlockF bind - does not extend over horizontal whitespace */
             rect->x = xoffset;
             rect->width -= xoffset + roffset;

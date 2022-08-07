@@ -24,11 +24,10 @@
 
 //#include <QDebug>
 #include "qzint.h"
-#include <stdio.h>
 #include <math.h>
+#include <stdio.h>
 #include <QFontMetrics>
-/* the following include was necessary to compile with Qt 5.15 on Windows */
-/* Qt 5.7 did not require it. */
+/* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
 #include <QPainterPath>
 
 // Shorthand
@@ -61,49 +60,49 @@ namespace Zint {
         return ret;
     }
 
-	/* Helper to calculate max right and bottom of elements for fudging render() */
-	static void getMaxRectsRightBottom(struct zint_vector *vector, int &maxRight, int &maxBottom) {
+    /* Helper to calculate max right and bottom of elements for fudging render() */
+    static void getMaxRectsRightBottom(struct zint_vector *vector, int &maxRight, int &maxBottom) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
         struct zint_vector_circle *circle;
 
-		maxRight = maxBottom = -1;
+        maxRight = maxBottom = -1;
 
-		for (rect = vector->rectangles; rect; rect = rect->next) {
-			if (rect->x + rect->width > maxRight) {
-				maxRight = rect->x + rect->width;
-			}
-			if (rect->y + rect->height > maxBottom) {
-				maxBottom = rect->y + rect->height;
-			}
-		}
+        for (rect = vector->rectangles; rect; rect = rect->next) {
+            if (rect->x + rect->width > maxRight) {
+                maxRight = rect->x + rect->width;
+            }
+            if (rect->y + rect->height > maxBottom) {
+                maxBottom = rect->y + rect->height;
+            }
+        }
 
-		for (hex = vector->hexagons; hex; hex = hex->next) {
-			if (hex->x + hex->diameter > maxRight) {
-				maxRight = hex->x + hex->diameter;
-			}
-			if (hex->y + hex->diameter > maxBottom) {
-				maxBottom = hex->y + hex->diameter;
-			}
-		}
+        for (hex = vector->hexagons; hex; hex = hex->next) {
+            if (hex->x + hex->diameter > maxRight) {
+                maxRight = hex->x + hex->diameter;
+            }
+            if (hex->y + hex->diameter > maxBottom) {
+                maxBottom = hex->y + hex->diameter;
+            }
+        }
 
-		for (circle = vector->circles; circle; circle = circle->next) {
-			if (circle->x + circle->diameter + circle->width > maxRight) {
-				maxRight = circle->x + circle->diameter + circle->width;
-			}
-			if (circle->y + circle->diameter + circle->width > maxBottom) {
-				maxBottom = circle->y + circle->diameter + circle->width;
-			}
-		}
-		// TODO: Strings?
-	}
+        for (circle = vector->circles; circle; circle = circle->next) {
+            if (circle->x + circle->diameter + circle->width > maxRight) {
+                maxRight = circle->x + circle->diameter + circle->width;
+            }
+            if (circle->y + circle->diameter + circle->width > maxBottom) {
+                maxBottom = circle->y + circle->diameter + circle->width;
+            }
+        }
+        // TODO: Strings?
+    }
 
     /* Segment constructors */
     QZintSeg::QZintSeg() : m_eci(0) {}
     QZintSeg::QZintSeg(const QString& text, const int ECIIndex) : m_text(text), m_eci(ECIIndexToECI(ECIIndex)) {}
 
     QZint::QZint()
-        : m_zintSymbol(NULL), m_symbol(BARCODE_CODE128), m_input_mode(UNICODE_MODE),
+        : m_zintSymbol(nullptr), m_symbol(BARCODE_CODE128), m_input_mode(UNICODE_MODE),
             m_height(0.0f),
             m_option_1(-1), m_option_2(0), m_option_3(0),
             m_scale(1.0f),
@@ -135,16 +134,33 @@ namespace Zint {
     }
 
     void QZint::resetSymbol() {
-        if (m_zintSymbol)
-            ZBarcode_Delete(m_zintSymbol);
-
+        m_error = 0;
         m_lastError.clear();
-        m_zintSymbol = ZBarcode_Create();
-        m_zintSymbol->output_options |= m_borderType | m_fontSetting;
+
+        if (m_zintSymbol) {
+            ZBarcode_Clear(m_zintSymbol);
+        } else if (!(m_zintSymbol = ZBarcode_Create())) {
+            m_error = ZINT_ERROR_MEMORY;
+            m_lastError = QSL("Insufficient memory for Zint structure");
+            return;
+        }
+
         m_zintSymbol->symbology = m_symbol;
         m_zintSymbol->height = m_height;
+        m_zintSymbol->scale = m_scale;
         m_zintSymbol->whitespace_width = m_whitespace;
         m_zintSymbol->whitespace_height = m_vwhitespace;
+        m_zintSymbol->border_width = m_borderWidth;
+        m_zintSymbol->output_options = m_borderType | m_fontSetting;
+        if (m_dotty) {
+            m_zintSymbol->output_options |= BARCODE_DOTTY_MODE;
+        }
+        if (m_cmyk) {
+            m_zintSymbol->output_options |= CMYK_COLOUR;
+        }
+        if (m_gssep) {
+            m_zintSymbol->output_options |= GS1_GS_SEPARATOR;
+        }
         if (m_quiet_zones) {
             m_zintSymbol->output_options |= BARCODE_QUIET_ZONES;
         }
@@ -154,39 +170,9 @@ namespace Zint {
         if (m_compliant_height) {
             m_zintSymbol->output_options |= COMPLIANT_HEIGHT;
         }
-        m_zintSymbol->border_width = m_borderWidth;
-        m_zintSymbol->option_1 = m_option_1;
-        m_zintSymbol->option_2 = m_option_2;
-        m_zintSymbol->option_3 = m_option_3;
-        m_zintSymbol->input_mode = m_input_mode;
-        if (m_dotty) {
-            m_zintSymbol->output_options |= BARCODE_DOTTY_MODE;
-        }
-        m_zintSymbol->dot_size = m_dot_size;
-        m_zintSymbol->guard_descent = m_guardDescent;
-        m_zintSymbol->structapp = m_structapp;
-        m_zintSymbol->show_hrt = m_show_hrt ? 1 : 0;
-        m_zintSymbol->eci = m_eci;
-        m_zintSymbol->scale = m_scale;
-        if (m_gs1parens) {
-            m_zintSymbol->input_mode |= GS1PARENS_MODE;
-        }
-        if (m_gs1nocheck) {
-            m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
-        }
-        if (m_gssep) {
-            m_zintSymbol->output_options |= GS1_GS_SEPARATOR;
-        }
         if (m_reader_init) {
             m_zintSymbol->output_options |= READER_INIT;
         }
-        if (m_warn_level) {
-            m_zintSymbol->warn_level = m_warn_level;
-        }
-        if (m_debug) {
-            m_zintSymbol->debug |= ZINT_DEBUG_PRINT;
-        }
-
         strcpy(m_zintSymbol->fgcolour, m_fgColor.name().toLatin1().right(6));
         if (m_fgColor.alpha() != 0xFF) {
             strcat(m_zintSymbol->fgcolour, m_fgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
@@ -195,10 +181,24 @@ namespace Zint {
         if (m_bgColor.alpha() != 0xFF) {
             strcat(m_zintSymbol->bgcolour, m_bgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
         }
-        if (m_cmyk) {
-            m_zintSymbol->output_options |= CMYK_COLOUR;
-        }
         strcpy(m_zintSymbol->primary, m_primaryMessage.toLatin1().left(127));
+        m_zintSymbol->option_1 = m_option_1;
+        m_zintSymbol->option_2 = m_option_2;
+        m_zintSymbol->option_3 = m_option_3;
+        m_zintSymbol->show_hrt = m_show_hrt ? 1 : 0;
+        m_zintSymbol->input_mode = m_input_mode;
+        if (m_gs1parens) {
+            m_zintSymbol->input_mode |= GS1PARENS_MODE;
+        }
+        if (m_gs1nocheck) {
+            m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
+        }
+        m_zintSymbol->eci = m_eci;
+        m_zintSymbol->dot_size = m_dot_size;
+        m_zintSymbol->guard_descent = m_guardDescent;
+        m_zintSymbol->structapp = m_structapp;
+        m_zintSymbol->warn_level = m_warn_level;
+        m_zintSymbol->debug = m_debug ? ZINT_DEBUG_PRINT : 0;
     }
 
     void QZint::encode() {
@@ -811,10 +811,8 @@ namespace Zint {
         // Plot rectangles
         rect = m_zintSymbol->vector->rectangles;
         if (rect) {
-			int maxRight = -1, maxBottom = -1; // Used for fudging below
-			if (borderWidth() && (borderType() & (BARCODE_BIND | BARCODE_BOX))) {
-				getMaxRectsRightBottom(m_zintSymbol->vector, maxRight, maxBottom);
-			}
+            int maxRight = -1, maxBottom = -1; // Used for fudging below
+            getMaxRectsRightBottom(m_zintSymbol->vector, maxRight, maxBottom);
             QBrush brush(Qt::SolidPattern);
             while (rect) {
                 if (rect->colour == -1) {
@@ -822,10 +820,10 @@ namespace Zint {
                 } else {
                     brush.setColor(colourToQtColor(rect->colour));
                 }
-				// Allow for rounding errors on translation/scaling TODO: proper calc
-				float fudgeW = rect->x + rect->width == maxRight ? 0.1f : 0.0f;
-				float fudgeH = rect->y + rect->height == maxBottom ? 0.1f : 0.0f;
-				painter.fillRect(QRectF(rect->x, rect->y, rect->width + fudgeW, rect->height + fudgeH), brush);
+                // Allow for rounding errors on translation/scaling TODO: proper calc
+                float fudgeW = rect->x + rect->width == maxRight ? 0.1f : 0.0f;
+                float fudgeH = rect->y + rect->height == maxBottom ? 0.1f : 0.0f;
+                painter.fillRect(QRectF(rect->x, rect->y, rect->width + fudgeW, rect->height + fudgeH), brush);
                 rect = rect->next;
             }
         }

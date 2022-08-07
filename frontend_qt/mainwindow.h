@@ -144,12 +144,14 @@ protected:
 
     void createActions();
     void createMenu();
-    void enableActions(bool enabled);
+    void enableActions();
 
     void copy_to_clipboard(const QString &filename, const QString &name, const char *mimeType = nullptr);
 
     void errtxtBar_clear();
-    void errtxtBar_set(bool isError);
+    void errtxtBar_set();
+
+    void automatic_info_set();
 
     QLineEdit *get_seg_textbox(int seg_no);
     QComboBox *get_seg_eci(int seg_no);

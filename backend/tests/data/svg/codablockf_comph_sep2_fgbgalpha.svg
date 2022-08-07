@@ -1,0 +1,120 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="264" height="84" version="1.1"
+   xmlns="http://www.w3.org/2000/svg">
+   <desc>Zint Generated Symbol
+   </desc>
+
+   <g id="barcode" fill="#000000">
+      <rect x="0" y="0" width="264" height="84" fill="#FFFFFF" opacity="0.400" />
+      <rect x="20.00" y="2.00" width="4.00" height="80.00" opacity="0.200" />
+      <rect x="26.00" y="2.00" width="2.00" height="80.00" opacity="0.200" />
+      <rect x="36.00" y="2.00" width="2.00" height="80.00" opacity="0.200" />
+      <rect x="42.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="46.00" y="2.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="54.00" y="2.00" width="8.00" height="18.00" opacity="0.200" />
+      <rect x="64.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="72.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="80.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="86.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="90.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="98.00" y="2.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="108.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="116.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="120.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="130.00" y="2.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="142.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="146.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="152.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="164.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="168.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="174.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="180.00" y="2.00" width="8.00" height="18.00" opacity="0.200" />
+      <rect x="190.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="196.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="204.00" y="2.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="210.00" y="2.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="218.00" y="2.00" width="4.00" height="80.00" opacity="0.200" />
+      <rect x="228.00" y="2.00" width="6.00" height="80.00" opacity="0.200" />
+      <rect x="236.00" y="2.00" width="2.00" height="80.00" opacity="0.200" />
+      <rect x="240.00" y="2.00" width="4.00" height="80.00" opacity="0.200" />
+      <rect x="42.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="46.00" y="24.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="54.00" y="24.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="64.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="68.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="78.00" y="24.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="86.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="90.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="98.00" y="24.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="108.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="116.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="120.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="130.00" y="24.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="142.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="146.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="152.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="164.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="168.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="174.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="180.00" y="24.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="190.00" y="24.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="196.00" y="24.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="208.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="212.00" y="24.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="42.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="46.00" y="44.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="54.00" y="44.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="64.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="72.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="78.00" y="44.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="86.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="90.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="98.00" y="44.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="108.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="116.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="120.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="130.00" y="44.00" width="6.00" height="16.00" opacity="0.200" />
+      <rect x="142.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="146.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="152.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="164.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="168.00" y="44.00" width="2.00" height="16.00" opacity="0.200" />
+      <rect x="174.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="180.00" y="44.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="190.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="196.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="202.00" y="44.00" width="4.00" height="16.00" opacity="0.200" />
+      <rect x="208.00" y="44.00" width="8.00" height="16.00" opacity="0.200" />
+      <rect x="42.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="46.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="54.00" y="64.00" width="8.00" height="18.00" opacity="0.200" />
+      <rect x="64.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="68.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="76.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="86.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="90.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="98.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="108.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="116.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="120.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="130.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="134.00" y="64.00" width="8.00" height="18.00" opacity="0.200" />
+      <rect x="144.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="152.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="160.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="168.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="174.00" y="64.00" width="6.00" height="18.00" opacity="0.200" />
+      <rect x="186.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="190.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="196.00" y="64.00" width="4.00" height="18.00" opacity="0.200" />
+      <rect x="204.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="208.00" y="64.00" width="2.00" height="18.00" opacity="0.200" />
+      <rect x="42.00" y="20.00" width="176.00" height="4.00" opacity="0.200" />
+      <rect x="42.00" y="40.00" width="176.00" height="4.00" opacity="0.200" />
+      <rect x="42.00" y="60.00" width="176.00" height="4.00" opacity="0.200" />
+      <rect x="20.00" y="0.00" width="224.00" height="2.00" opacity="0.200" />
+      <rect x="20.00" y="82.00" width="224.00" height="2.00" opacity="0.200" />
+   </g>
+</svg>
