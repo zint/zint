@@ -57,7 +57,7 @@ INTERNAL_DATA_EXTERN const unsigned short pdf_rap_side[52];
 INTERNAL_DATA_EXTERN const unsigned short pdf_rap_centre[52];
 
 INTERNAL void pdf_byteprocess(int *chainemc, int *mclength, const unsigned char chaine[], int start, const int length,
-                const int debug);
+                const int lastmode, const int debug);
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_PDF417_H */

@@ -328,7 +328,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength] = 920;
     mclength++;
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, debug_print);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
 
@@ -547,7 +547,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength] = 920; /* CC-C identifier */
     mclength++;
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, debug_print);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
 
     chainemc[0] = mclength;
 
