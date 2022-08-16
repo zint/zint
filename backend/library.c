@@ -521,7 +521,7 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
           eanx,        NULL,        eanx,        eanx,        NULL, /*35-39*/
        postnet,        NULL,        NULL,        NULL,        NULL, /*40-44*/
           NULL,        NULL, msi_plessey,        NULL,         fim, /*45-49*/
-        code39,      pharma,         pzn,  pharma_two,        NULL, /*50-54*/
+        code39,      pharma,         pzn,  pharma_two,     postnet, /*50-54*/
         pdf417,      pdf417,    maxicode,      qrcode,        NULL, /*55-59*/
        code128,        NULL,        NULL,     auspost,        NULL, /*60-64*/
           NULL,     auspost,     auspost,     auspost,        eanx, /*65-69*/

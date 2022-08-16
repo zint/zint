@@ -81,20 +81,21 @@ static void types(void) {
             "51 PHARMA      Pharmacode One-Track    130 EANX_CC        Composite EAN\n"
             "52 PZN         Pharmazentralnummer     131 GS1_128_CC     Composite GS1-128\n"
             "53 PHARMA_TWO  Pharmacode Two-Track    132 DBAR_OMN_CC    Comp DataBar Omni\n"
-            "55 PDF417      PDF417                  133 DBAR_LTD_CC    Comp DataBar Limited\n"
-            "56 PDF417COMP  Compact PDF417          134 DBAR_EXP_CC    Comp DataBar Expanded\n"
-            "57 MAXICODE    MaxiCode                135 UPCA_CC        Composite UPC-A\n"
-            "58 QRCODE      QR Code                 136 UPCE_CC        Composite UPC-E\n"
-            "60 CODE128B    Code 128 (Subset B)     137 DBAR_STK_CC    Comp DataBar Stacked\n"
-            "63 AUSPOST     AP Standard Customer    138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
-            "66 AUSREPLY    AP Reply Paid           139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
-            "67 AUSROUTE    AP Routing              140 CHANNEL        Channel Code\n"
-            "68 AUSREDIRECT AP Redirection          141 CODEONE        Code One\n"
-            "69 ISBNX       ISBN                    142 GRIDMATRIX     Grid Matrix\n"
-            "70 RM4SCC      Royal Mail 4SCC         143 UPNQR          UPN QR Code\n"
-            "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
-            "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
-            "73 VIN         Vehicle Information No. 146 BC412          BC412\n"
+            "54 CEPNET      Brazilian CEPNet        133 DBAR_LTD_CC    Comp DataBar Limited\n"
+            "55 PDF417      PDF417                  134 DBAR_EXP_CC    Comp DataBar Expanded\n"
+            "56 PDF417COMP  Compact PDF417          135 UPCA_CC        Composite UPC-A\n"
+            "57 MAXICODE    MaxiCode                136 UPCE_CC        Composite UPC-E\n"
+            "58 QRCODE      QR Code                 137 DBAR_STK_CC    Comp DataBar Stacked\n"
+            "60 CODE128B    Code 128 (Subset B)     138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
+            "63 AUSPOST     AP Standard Customer    139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
+            "66 AUSREPLY    AP Reply Paid           140 CHANNEL        Channel Code\n"
+            "67 AUSROUTE    AP Routing              141 CODEONE        Code One\n"
+            "68 AUSREDIRECT AP Redirection          142 GRIDMATRIX     Grid Matrix\n"
+            "69 ISBNX       ISBN                    143 UPNQR          UPN QR Code\n"
+            "70 RM4SCC      Royal Mail 4SCC         144 ULTRA          Ultracode\n"
+            "71 DATAMATRIX  Data Matrix             145 RMQR           Rectangular Micro QR\n"
+            "72 EAN14       EAN-14                  146 BC412          BC412\n"
+            "73 VIN         Vehicle Information No.\n"
             );
 }
 
@@ -303,6 +304,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_C25LOGIC, "c25logic" },
         { BARCODE_C25STANDARD, "c25matrix" },
         { BARCODE_C25STANDARD, "c25standard" },
+        { BARCODE_CEPNET, "cepnet" },
         { BARCODE_CHANNEL, "channel" },
         { BARCODE_CHANNEL, "channelcode" }, /* Synonym */
         { BARCODE_CODABAR, "codabar" },

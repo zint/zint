@@ -132,6 +132,10 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
 }
 
 /* Handles the PostNet system used for Zip codes in the US */
+/* Also handles Brazilian CEPNet - more information at
+ * https://silo.tips/download/sumario-4-regras-de-endereamento
+ * https://barcodeguide.seagullscientific.com/Content/Symbologies/CEPNet.htm
+ * TODO: Check compliant symbol sizes */
 static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
@@ -140,9 +144,17 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
         strcpy(symbol->errtxt, "480: Input too long (38 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    if (length != 5 && length != 9 && length != 11) {
-        strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
-        error_number = ZINT_WARN_NONCOMPLIANT;
+    
+    if (symbol->symbology == BARCODE_CEPNET) {
+        if (length != 8) {
+            strcpy(symbol->errtxt, "499: Input is wrong length (should be 8 digits)");
+            error_number = ZINT_WARN_NONCOMPLIANT;
+        }
+    } else {
+        if (length != 5 && length != 9 && length != 11) {
+            strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
+            error_number = ZINT_WARN_NONCOMPLIANT;
+        }
     }
     if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "481: Invalid character in data (digits only)");

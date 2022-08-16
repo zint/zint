@@ -75,6 +75,7 @@ zint -b GS1_128_CC --compliantheight -d "[99]1234-abcd" --mode=3 --primary="[01]
 zint -b PHARMA_TWO --compliantheight -d "29876543" --scale=1 -o images/pharma_two.svg
 zint -b POSTNET --compliantheight -d "12345678901" --scale=1 -o images/postnet.svg
 zint -b PLANET --compliantheight -d "4012345235636" --scale=1 -o images/planet.svg
+zint -b CEPNET --compliantheight -d "12345678" --scale=1 -o images/cepnet.svg
 zint -b AUSPOST --compliantheight -d "96184209" --scale=1 -o images/auspost.svg
 zint -b AUSROUTE --compliantheight -d "34567890" --scale=1 -o images/ausroute.svg
 zint -b AUSREPLY --compliantheight -d "12345678" --scale=1 -o images/ausreply.svg
