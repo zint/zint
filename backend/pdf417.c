@@ -116,7 +116,7 @@ static int pdf_quelmode(const unsigned char codeascii) {
 }
 
 /* Check consecutive segments for text/num and return the length */
-static int pdf_text_num_length(const int liste[3][PDF_MAX_LEN], const int indexliste, const int start) {
+static int pdf_text_num_length(int liste[3][PDF_MAX_LEN], const int indexliste, const int start) {
     int i, len = 0;
     for (i = start; i < indexliste; i++) {
         if (liste[1][i] == BYT)
@@ -223,8 +223,7 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
 }
 
 /* Whether to stay in numeric mode or not */
-static int pdf_num_stay(const unsigned char *chaine, const int indexliste, const int liste[3][PDF_MAX_LEN],
-            const int i) {
+static int pdf_num_stay(const unsigned char *chaine, const int indexliste, int liste[3][PDF_MAX_LEN], const int i) {
     int curtable, last_len, last_ml, next_len, num_cws, tex_cws;
 
     if (liste[0][i] >= 13 || (indexliste == 1 && liste[0][i] > 5)) {
