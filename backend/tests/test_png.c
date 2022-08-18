@@ -44,7 +44,7 @@ static void test_pixel_plot(int index, int debug) {
         int repeat;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0 },
@@ -352,14 +352,14 @@ static void test_wpng_error_handler(void) {
 
     wpng_error.symbol = &symbol;
 
-    // Create empty file
-    (void) remove(filename); // In case junk hanging around
+    /* Create empty file */
+    (void) remove(filename); /* In case junk hanging around */
     fp = fopen(filename, "w+");
     assert_nonnull(fp, "fopen(%s) failed\n", filename);
     ret = fclose(fp);
     assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
 
-    // Re-open for read, which will cause libpng to error
+    /* Re-open for read, which will cause libpng to error */
     fp = fopen(filename, "r");
     assert_nonnull(fp, "fopen(%s) for read failed\n", filename);
 
@@ -378,7 +378,7 @@ static void test_wpng_error_handler(void) {
     } else {
         png_init_io(png_ptr, fp);
 
-        // This should fail and jmp to setjmp
+        /* This should fail and jmp to setjmp */
         png_write_info(png_ptr, info_ptr);
         assert_zero(1, "libpng error setjmp failed\n");
     }
@@ -386,7 +386,7 @@ static void test_wpng_error_handler(void) {
     testFinish();
 }
 
-// Check compliant height printable for max CODABLOCKF with 44 rows * ((62 cols) * 0.55 + 3)) = 1632.4
+/* Check compliant height printable for max CODABLOCKF with 44 rows * ((62 cols) * 0.55 + 3)) = 1632.4 */
 static void test_large_compliant_height(void) {
     int ret;
     struct zint_symbol *symbol = NULL;

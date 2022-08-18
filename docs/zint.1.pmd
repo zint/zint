@@ -114,7 +114,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   Set the ECI code for the input data to *INTEGER*. See `-e` | `--ecinos` for a list of the ECIs available. ECIs are
     supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417,
-    QR Code, rMQR and Ultracode
+    QR Code, rMQR and Ultracode.
 
 `--esc`
 

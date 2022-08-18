@@ -28,6 +28,8 @@ Changes
 - GS1: new AI 4309 with latlong checker, new currency code 925
 - GUI: add automatic info feedback to "Automatic" combo item of size/row/height
   comboboxes
+- PDF417: encodation now simpler and closer to ISO/IEC 24728:2006 Annex N
+  algorithm, props Jeff Skaistis
 
 Bugs
 ----
@@ -43,6 +45,10 @@ Bugs
 - vector: ensure separators don't overlap with other rectangles so that
   they render correctly when have RGBA alpha channel
 - GUI: update_preview() after Data Dialog return to ensure preview in sync
+- PDF417: fix invalid numeric -> byte shift transitions, MR #151, props Jeff
+  Skaistis
+- PDF417: fix extraneous text latch after a byte shift, MR #151, props Jeff
+  Skaistis
 
 
 Version 2.11.0 (2022-05-24)
