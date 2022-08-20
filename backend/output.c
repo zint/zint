@@ -301,6 +301,12 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             *top = *bottom = 1.6f;
             done = 1;
             break;
+        case BARCODE_CEPNET:
+            /* CEPNet e Código Bidimensional Datamatrix 2D (26/05/2021) 3.8 Localização */
+            *left = *right = 10.0f;
+            *top = *bottom = 1.6f; /* As POSTNET (1.016mm == 0.025") */
+            done = 1;
+            break;
 
         case BARCODE_MSI_PLESSEY:
             /* TODO Find doc (TEC-IT says 12X so use that for the moment) */

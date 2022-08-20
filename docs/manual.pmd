@@ -3155,7 +3155,7 @@ these.
 
 Based on POSTNET, the CEPNet symbol is used by Correios, the Brazilian postal
 service, to encode CEP (Código de Endereçamento Postal) numbers on mail items.
-Input should consist of eight digits with the check digit being automattically
+Input should consist of eight digits with the check digit being automatically
 added by Zint.
 
 \clearpage

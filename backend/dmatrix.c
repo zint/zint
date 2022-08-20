@@ -683,7 +683,7 @@ static int dm_switch_mode(const int next_mode, unsigned char target[], int tp, i
 
 #define DM_NUM_MODES        6
 
-static char *dm_smodes[] = { "?", "ASCII", "C40", "TEXT", "X12", "EDF", "B256" };
+static const char *dm_smodes[] = { "?", "ASCII", "C40", "TEXT", "X12", "EDF", "B256" };
 
 /* The size of this structure could be significantly reduced using techniques pointed out by Alex Geller,
    but not done currently to avoid the processing overhead */

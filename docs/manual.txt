@@ -138,6 +138,7 @@ August 2022
         -   6.4.1 Two-Track Pharmacode
         -   6.4.2 POSTNET
         -   6.4.3 PLANET
+        -   6.4.4 Brazilian CEPNet
     -   6.5 4-State Postal Codes
         -   6.5.1 Australia Post 4-State Symbols
             -   6.5.1.1 Customer Barcodes
@@ -738,6 +739,8 @@ underscores are optional.
   52        BARCODE_PZN               PZN
 
   53        BARCODE_PHARMA_TWO        Pharmacode Two-Track
+
+  54        BARCODE_CEPNET            Brazilian CEPNet
 
   55        BARCODE_PDF417            PDF417
 
@@ -3082,6 +3085,15 @@ While Zint will encode PLANET symbols of up to 38 digits in length, standard
 lengths used by USPS were Planet12 (11-digit input) and Planet14 (13-digit
 input), and as with POSTNET a warning will be issued if the length is not one of
 these.
+
+6.4.4 Brazilian CEPNet
+
+[zint -b CEPNET --compliantheight -d "12345678"]
+
+Based on POSTNET, the CEPNet symbol is used by Correios, the Brazilian postal
+service, to encode CEP (Código de Endereçamento Postal) numbers on mail items.
+Input should consist of eight digits with the check digit being automatically
+added by Zint.
 
 6.5 4-State Postal Codes
 

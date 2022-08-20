@@ -147,6 +147,10 @@
 - Tcl_GetIndexFromObj() flags arg -> 0
 2022-05-12 GL
 - -vers maximum changed to 999 (DAFT)
+2022-07-03 GL
+- Added BC412
+2022-08-20 GL
+- Added CEPNet
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -249,6 +253,7 @@ static const char *s_code_list[] = {
     "Pharma",
     "PZN",
     "PharmaTwo",
+    "CEPNet",
     "PDF417",
     "PDF417Compact",
     "MaxiCode",
@@ -348,6 +353,7 @@ static const int s_code_number[] = {
     BARCODE_PHARMA,
     BARCODE_PZN,
     BARCODE_PHARMA_TWO,
+    BARCODE_CEPNET,
     BARCODE_PDF417,
     BARCODE_PDF417COMP,
     BARCODE_MAXICODE,

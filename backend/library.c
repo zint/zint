@@ -955,12 +955,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             symbol->symbology = BARCODE_PLESSEY;
         } else if (symbol->symbology == 48) {
             symbol->symbology = BARCODE_NVE18;
-        } else if (symbol->symbology == 54) { /* General Parcel up to tbarcode 9, Brazilian CEPNet for tbarcode 10+ */
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "210: General Parcel Code not supported");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
         } else if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
             symbol->symbology = BARCODE_CODE128;
         } else if (symbol->symbology == 62) {
@@ -1591,7 +1585,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "BARCODE_PHARMA", BARCODE_PHARMA, 51 },
         { "BARCODE_PZN", BARCODE_PZN, 52 },
         { "BARCODE_PHARMA_TWO", BARCODE_PHARMA_TWO, 53 },
-        { "", -1, 54 },
+        { "BARCODE_CEPNET", BARCODE_CEPNET, 54 },
         { "BARCODE_PDF417", BARCODE_PDF417, 55 },
         { "BARCODE_PDF417COMP", BARCODE_PDF417COMP, 56 },
         { "BARCODE_MAXICODE", BARCODE_MAXICODE, 57 },
