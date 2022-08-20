@@ -178,6 +178,7 @@ extern "C" {
 #define BARCODE_PHARMA          51  /* Pharmacode One-Track */
 #define BARCODE_PZN             52  /* Pharmazentralnummer */
 #define BARCODE_PHARMA_TWO      53  /* Pharmacode Two-Track */
+#define BARCODE_CEPNET          54  /* Brazilian CEPNet Postal Code */
 #define BARCODE_PDF417          55  /* PDF417 */
 #define BARCODE_PDF417COMP      56  /* Compact PDF417 (Truncated PDF417) */
 #define BARCODE_PDF417TRUNC     56  /* Legacy */

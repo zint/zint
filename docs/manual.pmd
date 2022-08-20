@@ -601,6 +601,8 @@ Value
  52      `BARCODE_PZN`             PZN
 
  53      `BARCODE_PHARMA_TWO`      Pharmacode Two-Track
+ 
+ 54      `BARCODE_CEPNET`          Brazilian CEPNet
 
  55      `BARCODE_PDF417`          PDF417
 
@@ -3146,6 +3148,15 @@ While Zint will encode PLANET symbols of up to 38 digits in length, standard
 lengths used by USPS were `Planet12` (11-digit input) and `Planet14` (13-digit
 input), and as with POSTNET a warning will be issued if the length is not one of
 these.
+
+### 6.4.4 Brazilian CEPNet
+
+![`zint -b CEPNET --compliantheight -d "12345678"`](images/cepnet.svg)
+
+Based on POSTNET, the CEPNet symbol is used by Correios, the Brazilian postal
+service, to encode CEP (Código de Endereçamento Postal) numbers on mail items.
+Input should consist of eight digits with the check digit being automattically
+added by Zint.
 
 \clearpage
 
