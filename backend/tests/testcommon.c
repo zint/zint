@@ -1914,7 +1914,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 1 /*linear_row_height*/, 0, },
         { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
-        { "", -1, 54, 0, 0, 0, 0, 0, },
+        { "", BARCODE_CEPNET, 54, 0, 0, 0, 0, 0, },
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 1, 0, 0, },
         { "pdf417compact", BARCODE_PDF417COMP, 56, 1, 1, 1, 0, 0, },
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
@@ -2997,6 +2997,9 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
                 testutil_pclose(fp);
                 return -1;
+            }
+            if (h * 2 == bwipp_row_height[r]) { /* Hack to use middle row (avoids add-on text offsets) */
+                memcpy(b - cnt, b, cnt);
             }
         }
     }

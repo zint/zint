@@ -660,7 +660,8 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
                 break;
             case BYT: /* 670 - octet stream mode */
                 pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode, debug_print);
-                if (*p_lastmode != TEX || liste[0][i] != 1) { /* don't switch mode on single byte shift from text mode */
+                /* don't switch mode on single byte shift from text mode */
+                if (*p_lastmode != TEX || liste[0][i] != 1) {
                     *p_lastmode = BYT;
                 } else if (*p_curtable == T_PUNCT && *p_tex_padded) { /* If T_PUNCT and padded with AL */
                     /* Then need to reset to alpha - ISO/IEC 15438:2015 5.4.2.4 b) 2) */

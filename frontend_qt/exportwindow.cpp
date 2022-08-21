@@ -30,7 +30,8 @@
 // Shorthand
 #define QSL QStringLiteral
 
-ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data) : m_bc(bc), m_output_data(output_data), m_lines(0)
+ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
+    : m_bc(bc), m_output_data(output_data), m_lines(0)
 {
     setupUi(this);
     QSettings settings;

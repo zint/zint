@@ -112,7 +112,8 @@ static void version(int no_png) {
         /* This is a test release */
         version_release = version_release / 10;
         version_build = zint_version % 10;
-        printf("Zint version %d.%d.%d.%d (dev)%s\n", version_major, version_minor, version_release, version_build, no_png_lib);
+        printf("Zint version %d.%d.%d.%d (dev)%s\n", version_major, version_minor, version_release, version_build,
+                no_png_lib);
     } else {
         /* This is a stable release */
         printf("Zint version %d.%d.%d%s\n", version_major, version_minor, version_release, no_png_lib);
@@ -1681,7 +1682,8 @@ int main(int argc, char **argv) {
                         ret = ZBarcode_Encode_Segs(my_symbol, segs, seg_count);
                     } else {
                         if (i == 1 && (ZBarcode_Cap(symbology, ZINT_CAP_STACKABLE) & ZINT_CAP_STACKABLE) == 0) {
-                            fprintf(stderr, "Error 173: Symbology must be stackable if multiple data arguments given\n");
+                            fprintf(stderr,
+                                    "Error 173: Symbology must be stackable if multiple data arguments given\n");
                             fflush(stderr);
                             error_number = ZINT_ERROR_INVALID_DATA;
                             break;

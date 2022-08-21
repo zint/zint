@@ -10,18 +10,26 @@ Code 11, Standard Code 2 of 5, IATA Code 2 of 5, Industrial Code 2 of 5,
 Interleaved Code 2 of 5, Code 2 of 5 Data Logic, ITF-14, Deutsche Post Leitcode,
 Deutsche Post Identcode, UPC-A, UPC-E, EAN-2, EAN-5, EAN-8, EAN-13, ISBN, UK
 Plessey, MSI Plessey, Telepen Alpha, Telepen Numeric, Code 39, Extended Code 39,
-Code 93, PZN, Code 32, LOGMARS, Codabar, Pharmacode, Code 128, GS1-128, NVE-18,
-Code 16k, PDF417, MicroPDF417, Two-Track Pharmacode, POSTNET, PLANET, Australia
-Post 4-State Symbols, RM4SCC, Dutch Post KIX, USPS Intelligent Mail, GS1 DataBar
-Omnidirectional, GS1 DataBar Limited, GS1 DataBar Expanded, GS1 DataBar Stacked,
-Composite Symbology, Data Matrix, QR Code, MaxiCode, Aztec Code, Aztec Runes,
-EAN-14, Micro QR, Korea Post Barcode, HIBC Code 128, HIBC Code 39, HIBC Data
-Matrix, HIBC PDF417, HIBC MicroPDF417, HIBC QR Code, HIBC Codablock-F, HIBC
-Aztec Code, Japanese Postal Code, Code 49, Channel Code, Code One, Grid Matrix,
-DAFT, FIM and Flattermarken, Codablock-F, DotCode, Han Xin Code, rMQR,
-Ultracode, UPNQR, VIN, and DPD Code.
+Code 93, PZN, LOGMARS, Code 32, VIN, Codabar, Pharmacode, Code 128, GS1-128,
+EAN-14, NVE-18 (SSCC-18), DPD Code, GS1 DataBar Omnidirectional, GS1 DataBar
+Limited, GS1 DataBar Expanded, GS1 DataBar Stacked, GS1 Composite Symbologies,
+Korea Post, Channel Code, BC412, Codablock-F, Code 16k, PDF417, Compact PDF417,
+MicroPDF417, Code 49, Two-Track Pharmacode, POSTNET, PLANET, CEPNet, Australia
+Post 4-State Symbols, Dutch Post KIX, Royal Mail RM4SCC, Royal Mail 4-State
+Mailmark, USPS Intelligent Mail, Japanese Postal Code, DAFT, Data Matrix, QR
+Code, Micro QR Code, Rectangular Micro QR Code (rMQR), UPNQR, MaxiCode, Aztec
+Code, Aztec Runes, Code One, Grid Matrix, DotCode, Han Xin Code, Ultracode, HIBC
+Code 128, HIBC Code 39, HIBC Data Matrix, HIBC PDF417, HIBC MicroPDF417, HIBC QR
+Code, HIBC Codablock-F, HIBC Aztec Code, FIM and Flattermarken.
 
-Output can be saved as BMP, EPS, GIF, PCX, TIF, EMF, PNG or SVG.
+Output can be saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG or TIF.
+
+
+DOCUMENTATION
+-------------
+For documentation see "docs/manual.txt" or online at
+
+    <http://zint.org.uk/Manual.aspx>
 
 
 PROJECT HISTORY
@@ -74,5 +82,5 @@ Please note the following points...
 * Please DO NOT post messages asking for us to change the license
   arrangements. You will be ignored.
 * Please remember that Zint is developed by volunteers. While we attempt to
-  answer all messages within a week, this is highly dependant on external
+  answer all messages within a week, this is highly dependent on external
   circumstances.
