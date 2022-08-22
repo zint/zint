@@ -17,6 +17,9 @@ Build static Qt:
 Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
   ("Eingabeaufforderung" = "Command Prompt")
 
+Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
+- set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
+
 - cd C:\qt\qt-everywhere-src-5.15.2
 - configure.bat -static -release -prefix c:\qt\5.15.2static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
   One may set another destination folder after the -prefix option.

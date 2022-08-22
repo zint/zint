@@ -1,6 +1,6 @@
-% ZINT(1) Version 2.11.0.9
+% ZINT(1) Version 2.11.1
 %
-% June 2022
+% August 2022
 
 # NAME
 
@@ -343,7 +343,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         rMQR            1 to 38 (33 to 38 automatic width)
 
     For a number of linear symbols, it specifies check character options ("hide" or "hidden" means don't show in HRT,
-    "show" or "visible" means do display in HRT):
+    "visible" means do display in HRT):
 
         C25IATA         1 or 2 (add visible or hidden check digit)
         C25IND          ditto

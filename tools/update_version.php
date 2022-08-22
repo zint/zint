@@ -5,6 +5,7 @@
     Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
+
 /* Run from project directory
  *
  *      php tools/update_version.php ZINT_VERSION_MAJOR ZINT_VERSION_MINOR ZINT_VERSION_RELEASE [ZINT_VERSION_BUILD]
@@ -64,7 +65,7 @@ function version_replace($to_do, $file, $match_pattern, $replace_pattern, $repla
     foreach ($lines as $li => $line) {
         if (preg_match($match_pattern, $line)) {
             $cnt = 0;
-            $lines[$li] = preg_replace($replace_pattern, $replace_str, $line, 1, $cnt);
+            $lines[$li] = preg_replace($replace_pattern, $replace_str, $line, -1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
                 exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
             }
@@ -154,7 +155,7 @@ if (!file_put_contents($file, implode("\n", $lines))) {
 
 // README.linux
 
-version_replace(3, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9][0-9.]+/', $v_base_str);
+version_replace(4, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9][0-9.]+/', $v_base_str);
 
 // zint.spec
 
@@ -304,6 +305,7 @@ version_replace(2, $data_dirname . 'win32/vs2019/zint.vcxproj', '/ZINT_VERSION="
 
 print PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;
+print '!!!  REMEMBER: update release date in manual and man page         !!!' . PHP_EOL;
 print '!!!  REMEMBER: cd docs; make                                      !!!' . PHP_EOL;
 print '!!!  REMEMBER: run "autoconf" and "./configure" in "backend_tcl/" !!!' . PHP_EOL;
 print '!!!  REMEMBER: update version and date in "ChangeLog"             !!!' . PHP_EOL;

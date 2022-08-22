@@ -10,7 +10,7 @@
 ;******************************************************************************
 !define PRODUCT_NAME "Zint"
 !define PRODUCT_EXE "qtZint.exe"
-!define PRODUCT_VERSION "2.11.0.9"
+!define PRODUCT_VERSION "2.11.1"
 !define PRODUCT_WEB_SITE "http://www.zint.org.uk"
 !define PRODUCT_PUBLISHER "Robin Stuart & BogDan Vatra"
 !define PRODUCT_DIR_REGKEY "Software\Microsoft\Windows\CurrentVersion\App Paths\${PRODUCT_EXE}"

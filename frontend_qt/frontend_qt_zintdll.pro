@@ -2,6 +2,7 @@ TEMPLATE = app
 TARGET = qtZint
 QT += uitools
 QT += widgets
+QT += svg
 
 # Input
 HEADERS += barcodeitem.h \

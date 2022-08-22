@@ -8,10 +8,9 @@ INCLUDEPATH += ../backend_qt
     INCLUDEPATH += ../../lpng
     INCLUDEPATH += ../../zlib
 }
-QT += gui
 QT += uitools
 QT += widgets
-QT += uitools
+QT += svg
 
 # Input
 HEADERS += barcodeitem.h \
