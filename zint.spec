@@ -41,7 +41,7 @@ Requires:      %{name} = %{version}-%{release}
 %description -n zint-devel 
 C library and header files needed to develop applications using %{name}.
 The API documentation can be found ont the project website:
-http://www.zint.org.uk/zintSite/Manual.aspx
+https://zint.org.uk/manual/
 
 
 %package -n zint-qt
