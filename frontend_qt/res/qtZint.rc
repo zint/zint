@@ -5,8 +5,8 @@
 #include <winver.h>
 
 
-#define VER_FILEVERSION        2,11,1,0
-#define VER_FILEVERSION_STR    "2.11.1.0\0"
+#define VER_FILEVERSION        2,11,1,9
+#define VER_FILEVERSION_STR    "2.11.1.9\0"
 
 #ifdef GCC_WINDRES
 

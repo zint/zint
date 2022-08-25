@@ -1,5 +1,5 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
-Version 2.11.1
+Version 2.11.1.9
 August 2022
 
 *******************************************************************************
@@ -4120,7 +4120,7 @@ defined.
 
 Annex B. Man Page ZINT(1)
 
-% ZINT(1) Version 2.11.1 % % August 2022
+% ZINT(1) Version 2.11.1.9 % % August 2022
 
 NAME
 
