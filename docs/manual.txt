@@ -980,8 +980,8 @@ to be inverted so that a white symbol is shown on a black background (known as
     zint -r -d "This Text"
 
 gives an inverted Code 128 symbol. This is not practical for most symbologies
-but white-on-black is allowed by the Aztec Code, Data Matrix, Han Xin Code, Grid
-Matrix and QR Code symbology specifications.
+but white-on-black is allowed by the Aztec Code, Data Matrix, DotCode, Han Xin
+Code, Grid Matrix and QR Code symbology specifications.
 
 For more specific needs the foreground (ink) and background (paper) colours can
 be specified using the --fg and --bg options followed by a number in RRGGBB
