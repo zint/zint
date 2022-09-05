@@ -837,6 +837,10 @@ static void test_encode_file_unreadable(void) {
 #ifdef _WIN32
     testSkip("Test not implemented on Windows");
 #else
+    if (getuid() == 0) {
+        testSkip("Test not available as root");
+        return;
+    }
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");

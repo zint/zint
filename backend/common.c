@@ -487,20 +487,30 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
         if (row_height < 0.5f) { /* Absolute minimum */
             row_height = 0.5f;
         }
-        if (min_row_height && stripf(row_height) < stripf(min_row_height)) {
-            error_number = ZINT_WARN_NONCOMPLIANT;
-            if (!no_errtxt) {
-                strcpy(symbol->errtxt, "247: Height not compliant with standards");
+        if (min_row_height) {
+            /* This seems necessary to get gcc 12.2.1 to work consistently for static 32-bit builds */
+            volatile const float row_height_strip = stripf(row_height);
+            volatile const float min_row_height_strip = stripf(min_row_height);
+            if (row_height_strip < min_row_height_strip) {
+                error_number = ZINT_WARN_NONCOMPLIANT;
+                if (!no_errtxt) {
+                    strcpy(symbol->errtxt, "247: Height not compliant with standards");
+                }
             }
         }
         symbol->height = stripf(row_height * zero_count + fixed_height);
     } else {
         symbol->height = stripf(fixed_height); /* Ignore any given height */
     }
-    if (max_height && stripf(symbol->height) > stripf(max_height)) {
-        error_number = ZINT_WARN_NONCOMPLIANT;
-        if (!no_errtxt) {
-            strcpy(symbol->errtxt, "248: Height not compliant with standards");
+    if (max_height) {
+        /* See above */
+        volatile const float symbol_height_strip = stripf(symbol->height);
+        volatile const float max_height_strip = stripf(max_height);
+        if (symbol_height_strip > max_height_strip) {
+            error_number = ZINT_WARN_NONCOMPLIANT;
+            if (!no_errtxt) {
+                strcpy(symbol->errtxt, "248: Height not compliant with standards");
+            }
         }
     }
 

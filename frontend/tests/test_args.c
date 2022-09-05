@@ -803,7 +803,7 @@ static void test_checks(int index, int debug) {
 
     char cmd[4096];
     char buf[4096];
-    char *outfilename = "out.gif";
+    const char *outfilename = "out.gif";
 
     testStart("test_checks");
 
@@ -1064,7 +1064,7 @@ static void test_barcode_symbology(int index, int debug) {
 
     char cmd[4096];
     char buf[8192];
-    char *outfilename = "out.gif";
+    const char *outfilename = "out.gif";
 
     testStart("test_barcode_symbology");
 
@@ -1158,6 +1158,11 @@ static void test_other_opts(int index, int debug) {
 
     char cmd[4096];
     char buf[8192];
+#ifdef NO_PNG
+    const char *outfilename = "out.gif";
+#else
+    const char *outfilename = "out.png";
+#endif
 
     testStart("test_other_opts");
 
@@ -1183,6 +1188,9 @@ static void test_other_opts(int index, int debug) {
             assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
         } else {
             assert_zero(strcmp(buf, data[i].expected), "i:%d strcmp buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
+            if (strstr(data[i].expected, "Error") == NULL) {
+                assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s)\n", i, outfilename, errno, strerror(errno));
+            }
         }
     }
 
@@ -1214,6 +1222,11 @@ static void test_exit_status(int index, int debug) {
 
     char cmd[4096];
     char buf[8192];
+#ifdef NO_PNG
+    const char *outfilename = "out.gif";
+#else
+    const char *outfilename = "out.png";
+#endif
 
     testStart("test_exit_status");
 
@@ -1237,6 +1250,9 @@ static void test_exit_status(int index, int debug) {
 
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, &exit_status), "i:%d exec(%s) NULL\n", i, cmd);
         assert_equal(exit_status, data[i].expected, "i:%d exit_status %d != expected (%d) (%s), (cmd: %s)\n", i, exit_status, data[i].expected, buf, cmd);
+        if (data[i].expected < ZINT_ERROR) {
+            assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s)\n", i, outfilename, errno, strerror(errno));
+        }
     }
 
     testFinish();
