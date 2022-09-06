@@ -34,7 +34,7 @@
 /* Telepen Barcode Symbology information and History (BSiH)
    https://telepen.co.uk/wp-content/uploads/2018/10/Barcode-Symbology-information-and-History.pdf */
 
-#define SODIUM_X_F        (IS_NUM_F | IS_UX__F) /* SODIUM "0123456789X" */
+#define SODIUM_X_F        (IS_NUM_F | IS_UX__F | IS_LX__F) /* SODIUM "0123456789Xx" */
 
 #include <stdio.h>
 #include "common.h"
@@ -155,7 +155,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     int i;
     char dest[521]; /* 12 (start) + 30 * 16 (max for DELs) + 16 (check digit) + 12 (stop) + 1 = 521 */
     char *d = dest;
-    unsigned char temp[64];
+    unsigned char temp[61];
 
     count = 0;
 
@@ -163,20 +163,20 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
         strcpy(symbol->errtxt, "392: Input too long (60 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    ustrcpy(temp, source);
-    to_upper(temp, src_len);
-    if (!is_sane(SODIUM_X_F, temp, src_len)) {
+    if (!is_sane(SODIUM_X_F, source, src_len)) {
         strcpy(symbol->errtxt, "393: Invalid character in data (digits and \"X\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
 
     /* Add a leading zero if required */
     if (src_len & 1) {
-        memmove(temp + 1, temp, src_len);
+        memcpy(temp + 1, source, src_len++);
         temp[0] = '0';
-
-        temp[++src_len] = '\0';
+    } else {
+        memcpy(temp, source, src_len);
     }
+    temp[src_len] = '\0';
+    to_upper(temp, src_len);
 
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
