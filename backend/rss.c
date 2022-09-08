@@ -745,7 +745,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     checksum = 0;
     /* Calculate the checksum */
     for (i = 0; i < 14; i++) {
-#if _MSC_VER == 1900 && defined(_WIN64) /* MSVC 2015 x64 */
+#if defined(_MSC_VER) && _MSC_VER == 1900 && defined(_WIN64) /* MSVC 2015 x64 */
         checksum %= 89; /* Hack to get around optimizer bug */
 #endif
         checksum += checksum_weight_ltd[i] * left_widths[i];
