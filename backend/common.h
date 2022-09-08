@@ -41,9 +41,7 @@
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L /* C89 */
-#    include <alloca.h>
-#  endif
+#  include <alloca.h>
 #  define z_alloca(nmemb) alloca(nmemb)
 #endif
 
