@@ -32,7 +32,8 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -105,7 +106,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
@@ -116,7 +117,7 @@ static void test_print(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -153,7 +154,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", %d, \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height, data[i].option_1, data[i].option_2,
@@ -182,7 +183,7 @@ static void test_print(int index, int generate, int debug) {
 
 INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_string);
 
-static void test_ps_convert(int index) {
+static void test_ps_convert(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -200,7 +201,7 @@ static void test_ps_convert(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         ps_convert_test((unsigned char *) data[i].data, converted);
         assert_zero(strcmp((char *) converted, data[i].expected), "i:%d ps_convert(%s) %s != %s\n", i, data[i].data, converted, data[i].expected);
@@ -211,10 +212,12 @@ static void test_ps_convert(int index) {
 
 INTERNAL int ps_plot(struct zint_symbol *symbol, int rotate_angle);
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     struct zint_vector vector = {0};
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -241,10 +244,10 @@ static void test_outfile(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_ps_convert", test_ps_convert, 1, 0, 0 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_print", test_print },
+        { "test_ps_convert", test_ps_convert },
+        { "test_outfile", test_outfile },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

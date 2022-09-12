@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -46,7 +48,7 @@ static void test_options(int index, int debug) {
         int expected_width;
         const char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
         /*  1*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
@@ -58,10 +60,10 @@ static void test_options(int index, int debug) {
         /*  7*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot encode in GS1 and Reader Initialisation mode at the same time" },
         /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "" },
         /*  9*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "" },
-        /* 10*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "" }, // 22 layers
-        /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Data too long for reader initialisation symbol" }, // 23 layers
-        /* 12*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "" }, // Compact 1 layer
-        /* 13*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 2, { 0, 0, "" }, "A", 0, 19, 19, "" }, // Compact 2 layers gets set to full 1 layer if READER_INIT set
+        /* 10*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "" }, /* 22 layers */
+        /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Data too long for reader initialisation symbol" }, /* 23 layers */
+        /* 12*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "" }, /* Compact 1 layer */
+        /* 13*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 2, { 0, 0, "" }, "A", 0, 19, 19, "" }, /* Compact 2 layers gets set to full 1 layer if READER_INIT set */
         /* 14*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input too large (3 character maximum)" },
         /* 15*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character in data (digits only)" },
         /* 16*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input out of range (0 to 255)" },
@@ -80,7 +82,7 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -105,7 +107,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2393,14 +2396,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2410,7 +2413,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOutputOptionsName(data[i].output_options),
                     data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
@@ -2459,7 +2462,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode_segs(int index, int generate, int debug) {
+static void test_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -2658,14 +2662,14 @@ static void test_encode_segs(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode_segs");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2677,7 +2681,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -2743,8 +2747,9 @@ static void test_encode_segs(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Nico Gunkel OSS-Fuzz
-static void test_fuzz(int index, int debug) {
+/* #181 Nico Gunkel OSS-Fuzz */
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2754,7 +2759,7 @@ static void test_fuzz(int index, int debug) {
         int option_1;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /* 0*/ { BARCODE_AZTEC,
                     "\133\060\060\060\135\060\125\125\125\125\140\060\125\125\125\125\060\060\060\271\060\060\125\103\164\125\125\125\377\377\125\125"
@@ -2828,7 +2833,7 @@ static void test_fuzz(int index, int debug) {
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "\377\377\377\377\377\377\261\261\261\261\261\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\135\135\135\135\135\135"
                     "\135\335\135\060\060\010\010\010\010\010\060",
-                    2251, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for malloc leak
+                    2251, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, /* Original OSS-Fuzz triggering data for malloc leak */
         /* 1*/ { BARCODE_AZTEC,
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060"
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\000\060\060\060\060\000\060\060\000\060\060\060\060"
@@ -2918,7 +2923,7 @@ static void test_fuzz(int index, int debug) {
                     "\060\060\060\363\060\060\060\060\060\060\060\060\060\060\060\060\362\060\060\060\060\060\000\060\060\377\060\060\060\175\175\175"
                     "\175\060\060\060\175\175\175\175\060\060\005\060\005\060\005\060\060\060\060\000\000\060\060\060\060\060\060\377\060\060\060\060"
                     "\377\060\377\377\060\060\057\060\060\057\060\060\060\000\000\060\060",
-                    2801, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, // Original OSS-Fuzz triggering data for binary_string buffer overrun
+                    2801, DATA_MODE, -1, ZINT_ERROR_TOO_LONG }, /* Original OSS-Fuzz triggering data for binary_string buffer overrun */
         /* 2*/ { BARCODE_AZTEC,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
@@ -2953,7 +2958,7 @@ static void test_fuzz(int index, int debug) {
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123",
-                    4483, -1, 1, 0 }, // 4483 = (1664 (Max codewords) - 169 (ECC codewords) - 2 (overhead)) * 3 (3 4-bit digits per 12-bit wordcode)
+                    4483, -1, 1, 0 }, /* 4483 = (1664 (Max codewords) - 169 (ECC codewords) - 2 (overhead)) * 3 (3 4-bit digits per 12-bit wordcode) */
         /* 3*/ { BARCODE_AZTEC,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
@@ -3166,7 +3171,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -3186,8 +3191,9 @@ static void test_fuzz(int index, int debug) {
 
 #define TEST_PERF_ITERATIONS    1000
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -3254,7 +3260,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_encode = diff_buffer = 0;
 
@@ -3285,19 +3291,19 @@ static void test_perf(int index, int debug) {
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
-    if (index != -1) {
+    if (p_ctx->index != -1) {
         printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
     }
 }
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_options", test_options },
+        { "test_encode", test_encode },
+        { "test_encode_segs", test_encode_segs },
+        { "test_fuzz", test_fuzz },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

@@ -31,7 +31,8 @@
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -68,7 +69,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -97,7 +98,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -179,7 +181,7 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -205,7 +207,7 @@ static void test_options(int index, int debug) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
-        if (index == -1 && data[i].compare_previous != -1) {
+        if (p_ctx->index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_equal(!ret, !data[i].compare_previous, "i:%d testUtilSymbolCmp !ret %d != %d\n", i, ret, data[i].compare_previous);
         }
@@ -222,7 +224,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_reader_init(int index, int generate, int debug) {
+static void test_reader_init(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -253,7 +256,7 @@ static void test_reader_init(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -265,7 +268,7 @@ static void test_reader_init(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -298,7 +301,8 @@ static void test_reader_init(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int generate, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -383,7 +387,7 @@ static void test_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -398,7 +402,7 @@ static void test_input(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %d, %d, { %d, %d, \"%s\" }, \"%s\", %s, %d, %d, %d, \"%s\", %d, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, data[i].option_2,
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
@@ -447,7 +451,8 @@ static void test_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2090,8 +2095,7 @@ static void test_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2101,7 +2105,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].eci, testUtilInputModeName(data[i].input_mode),
                     data[i].option_1, data[i].option_2, data[i].option_3,
@@ -2151,7 +2155,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode_segs(int index, int generate, int debug) {
+static void test_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2455,7 +2460,7 @@ static void test_encode_segs(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2467,7 +2472,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -2539,7 +2544,8 @@ static void test_encode_segs(int index, int generate, int debug) {
 }
 
 /* #181 Nico Gunkel OSS-Fuzz */
-static void test_fuzz(int index, int debug) {
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2812,7 +2818,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2904,7 +2910,7 @@ static int annex_d_decode_dump(int chainemc[], int mclength, unsigned char *chai
     return 0;
 }
 
-static void test_numbprocess(int index) {
+static void test_numbprocess(const testCtx *const p_ctx) {
 
     struct item {
         unsigned char *chaine;
@@ -2977,7 +2983,7 @@ static void test_numbprocess(int index) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         mclength = 0;
         length = (int) ustrlen(data[i].chaine);
@@ -3007,7 +3013,8 @@ static void test_numbprocess(int index) {
 #define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
 /* Not a real test, just performance indicator */
-static void test_perf(int index, int debug) {
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -3078,7 +3085,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -3128,7 +3135,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -3136,16 +3143,16 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_reader_init", test_reader_init, 1, 1, 1 },
-        { "test_input", test_input, 1, 1, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
-        { "test_numbprocess", test_numbprocess, 1, 0, 0 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_options", test_options },
+        { "test_reader_init", test_reader_init },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_encode_segs", test_encode_segs },
+        { "test_fuzz", test_fuzz },
+        { "test_numbprocess", test_numbprocess },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

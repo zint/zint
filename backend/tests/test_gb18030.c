@@ -27,13 +27,14 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "test_gb18030_tab.h"
 #include "test_gbk_tab.h"
 #include "../eci.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-//#define TEST_JUST_SAY_GNO
+/* #define TEST_JUST_SAY_GNO */
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/gb18030_gnu.c"
 #include "../just_say_gno/gb2312_gnu.c"
@@ -41,29 +42,30 @@
 
 INTERNAL int u_gb18030_int_test(const unsigned int u, unsigned int *dest1, unsigned int *dest2);
 
-// As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
-// The version of GB18030.TXT is jdk-1.4.2/GB18030.TXT taken from
-// https://haible.de/bruno/charsets/conversion-tables/GB18030.html
-// The generated file backend/tests/test_gb18030_tab.h does not include U+10000..10FFFF codepoints to save space.
-// See also backend/tests/tools/data/GB18030.TXT.README and backend/tests/tools/gen_test_tab.php.
+/* As control convert to GB 18030 using table generated from GB18030.TXT plus simple processing.
+   The version of GB18030.TXT is jdk-1.4.2/GB18030.TXT taken from
+   https://haible.de/bruno/charsets/conversion-tables/GB18030.html
+   The generated file backend/tests/test_gb18030_tab.h does not include U+10000..10FFFF codepoints to save space.
+   See also backend/tests/tools/data/GB18030.TXT.README and backend/tests/tools/gen_test_tab.php.
+*/
 static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *dest2) {
     unsigned int c;
     int tab_length, start_i, end_i;
     int i;
 
-    // GB18030 two-byte extension
-    if (u == 0x1E3F) { // GB 18030-2005 change, was PUA U+E7C7 below, see Table 3-39, p.111, Lunde 2nd ed.
+    /* GB18030 two-byte extension */
+    if (u == 0x1E3F) { /* GB 18030-2005 change, was PUA U+E7C7 below, see Table 3-39, p.111, Lunde 2nd ed. */
         *dest1 = 0xA8BC;
         return 2;
     }
-    // GB18030 four-byte extension
-    if (u == 0xE7C7) { // PUA
+    /* GB18030 four-byte extension */
+    if (u == 0xE7C7) { /* PUA */
         *dest1 = 0x8135;
         *dest2 = 0xF437;
         return 4;
     }
-    // GB18030 two-byte extension
-    if (u >= 0x9FB4 && u <= 0x9FBB) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
+    /* GB18030 two-byte extension */
+    if (u >= 0x9FB4 && u <= 0x9FBB) { /* GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed. */
         if (u == 0x9FB4) {
             *dest1 = 0xFE59;
         } else if (u == 0x9FB5) {
@@ -81,8 +83,8 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         }
         return 2;
     }
-    // GB18030 two-byte extension
-    if (u >= 0xFE10 && u <= 0xFE19) { // GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed.
+    /* GB18030 two-byte extension */
+    if (u >= 0xFE10 && u <= 0xFE19) { /* GB 18030-2005 change, were PUA, see Table 3-37, p.108, Lunde 2nd ed. */
         if (u == 0xFE10) {
             *dest1 = 0xA6D9;
         } else if (u == 0xFE11) {
@@ -98,8 +100,8 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         }
         return 2;
     }
-    // GB18030 four-byte extension
-    if (u >= 0xFE1A && u <= 0xFE2F) { // These are Vertical Forms (U+FE1A..FE1F unassigned) and Combining Half Marks (U+FE20..FE2F)
+    /* GB18030 four-byte extension */
+    if (u >= 0xFE1A && u <= 0xFE2F) { /* These are Vertical Forms (U+FE1A..FE1F unassigned) and Combining Half Marks (U+FE20..FE2F) */
         if (u >= 0xFE1A && u <= 0xFE1D) {
             c = 0x84318336 + (u - 0xFE1A);
         } else if (u >= 0xFE1E && u <= 0xFE27) {
@@ -111,9 +113,9 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
         *dest2 = c & 0xFFFF;
         return 4;
     }
-    // GB18030
-    // Code set 3 (Unicode U+10000..U+10FFFF)
-    if (u >= 0x10000 /*&& u < 0x10400*/) { // Not being called for U+10400..U+10FFFF
+    /* GB18030 */
+    /* Code set 3 (Unicode U+10000..U+10FFFF) */
+    if (u >= 0x10000 /*&& u < 0x10400*/) { /* Not being called for U+10400..U+10FFFF */
         c = u - 0x10000;
         *dest1 = 0x9030;
         *dest2 = 0x8130 + (c % 10) + 0x100 * (c / 10);
@@ -147,7 +149,8 @@ static int u_gb18030_int2(unsigned int u, unsigned int *dest1, unsigned int *des
 #define TEST_INT_PERF_ITERATIONS    250
 #endif
 
-static void test_u_gb18030_int(int debug) {
+static void test_u_gb18030_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     int ret, ret2;
     unsigned int val1_1, val1_2, val2_1, val2_2;
@@ -176,8 +179,8 @@ static void test_u_gb18030_int(int debug) {
     }
 #endif
 
-    for (i = 0; i < 0x10400; i++) { // Don't bother with U+10400..U+10FFFF, programmatically filled
-        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+    for (i = 0; i < 0x10400; i++) { /* Don't bother with U+10400..U+10FFFF, programmatically filled */
+        if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
         val1_1 = val1_2 = val2_1 = val2_2 = 0;
@@ -214,7 +217,7 @@ static void test_u_gb18030_int(int debug) {
 #endif
     }
 
-    // u_gb18030() assumes valid Unicode so now returns a nonsense value here
+    /* u_gb18030() assumes valid Unicode so now returns a nonsense value here */
     val1_1 = val1_2 = 0;
     ret = u_gb18030_int_test(0x110000, &val1_1, &val1_2); /* Invalid Unicode codepoint */
     assert_equal(ret, 4, "0x110000 ret %d != 4, val1_1 0x%04X, val1_2 0x%04X\n", ret, val1_1, val1_2);
@@ -237,7 +240,7 @@ static void test_u_gb18030_int(int debug) {
     testFinish();
 }
 
-static void test_gb18030_utf8(int index) {
+static void test_gb18030_utf8(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -247,15 +250,17 @@ static void test_gb18030_utf8(int index) {
         unsigned int expected_gbdata[30];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA8A6, UTF-8 C3A9
-    // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 18030 0xA6C2, UTF-8 CEB2
-    // ¤ U+00A4 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA1E8, UTF-8 C2A4
-    // ¥ U+00A5 in ISO 8859-1 0xA5, in GB 18030 4-byte 0x81308436, UTF-8 C2A5
-    // ・ U+30FB katakana middle dot, not in any ISO or Win page, in GB 18030 0xA1A4, duplicate of mapping of U+00B7, UTF-8 E383BB
-    // · U+00B7 middle dot in ISO 8859-1 0xB7, in GB 18030 "GB 18030 subset" 0xA1A4, duplicate of mapping of U+30FB, UTF-8 C2B7
-    // ― U+2015 horizontal bar in ISO 8859-7 Greek and ISO 8859-10 Nordic, not in any Win page, in GB 18030 "GB18030.TXT" 0xA1AA, duplicate of mapping of U+2014, UTF-8 E28095
-    // — U+2014 em dash, not in any ISO, in Win 1250 and other Win, in GB 18030 "GB 18030 subset" 0xA1AA, duplicate of mapping of U+2015, UTF-8 E28094
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA8A6, UTF-8 C3A9
+       β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 18030 0xA6C2, UTF-8 CEB2
+       ¤ U+00A4 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 18030 0xA1E8, UTF-8 C2A4
+       ¥ U+00A5 in ISO 8859-1 0xA5, in GB 18030 4-byte 0x81308436, UTF-8 C2A5
+       ・ U+30FB katakana middle dot, not in any ISO or Win page, in GB 18030 0xA1A4, duplicate of mapping of U+00B7, UTF-8 E383BB
+       · U+00B7 middle dot in ISO 8859-1 0xB7, in GB 18030 "GB 18030 subset" 0xA1A4, duplicate of mapping of U+30FB, UTF-8 C2B7
+       ― U+2015 horizontal bar in ISO 8859-7 Greek and ISO 8859-10 Nordic, not in any Win page, in GB 18030 "GB18030.TXT" 0xA1AA, duplicate of mapping of U+2014, UTF-8 E28095
+       — U+2014 em dash, not in any ISO, in Win 1250 and other Win, in GB 18030 "GB 18030 subset" 0xA1AA, duplicate of mapping of U+2015, UTF-8 E28094
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "é", -1, 0, 1, { 0xA8A6 }, "" },
         /*  1*/ { "β", -1, 0, 1, { 0xA6C2 }, "" },
@@ -281,7 +286,7 @@ static void test_gb18030_utf8(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -300,7 +305,7 @@ static void test_gb18030_utf8(int index) {
     testFinish();
 }
 
-static void test_gb18030_utf8_to_eci(int index) {
+static void test_gb18030_utf8_to_eci(const testCtx *const p_ctx) {
 
     struct item {
         int eci;
@@ -312,13 +317,15 @@ static void test_gb18030_utf8_to_eci(int index) {
         unsigned int expected_gbdata[30];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in HANXIN Chinese mode first byte range 0x81..FE
-    // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
-    // ¥ U+00A5 in ISO 8859-1 0xA5, in first byte range 0x81..FE
-    // ÿ U+00FF in ISO 8859-1 0xFF, outside first byte and second/third/fourth byte ranges
-    // @ U+0040 in ASCII 0x40, outside first byte range, in double-byte second byte range, outside quad-byte second/third/fourth byte ranges
-    // 9 U+0039 in ASCII 0x39, outside first byte range, outside double-byte second byte range and quad-byte third byte range, in quad-byte second/fourth byte ranges
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in HANXIN Chinese mode first byte range 0x81..FE
+       β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
+       ¥ U+00A5 in ISO 8859-1 0xA5, in first byte range 0x81..FE
+       ÿ U+00FF in ISO 8859-1 0xFF, outside first byte and second/third/fourth byte ranges
+       @ U+0040 in ASCII 0x40, outside first byte range, in double-byte second byte range, outside quad-byte second/third/fourth byte ranges
+       9 U+0039 in ASCII 0x39, outside first byte range, outside double-byte second byte range and quad-byte third byte range, in quad-byte second/fourth byte ranges
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
         /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
@@ -396,7 +403,7 @@ static void test_gb18030_utf8_to_eci(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -418,7 +425,7 @@ static void test_gb18030_utf8_to_eci(int index) {
 INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
-static void test_gb18030_cpy(int index) {
+static void test_gb18030_cpy(const testCtx *const p_ctx) {
 
     struct item {
         int full_multibyte;
@@ -429,7 +436,7 @@ static void test_gb18030_cpy(int index) {
         unsigned int expected_gbdata[30];
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 0, "\351", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
         /*  1*/ { 1, "\351", -1, 0, 1, { 0xE9 }, "In HANXIN Chinese mode first-byte range but only one byte" },
@@ -453,7 +460,7 @@ static void test_gb18030_cpy(int index) {
         int ret_length;
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -492,7 +499,7 @@ static int u_gbk_int2(unsigned int u, unsigned int *dest) {
     return 0;
 }
 
-static void test_u_gbk_int(void) {
+static void test_u_gbk_int(const testCtx *const p_ctx) {
 
     int ret, ret2;
     unsigned int val, val2;
@@ -501,9 +508,11 @@ static void test_u_gbk_int(void) {
     testStart("test_u_gbk_int");
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+        if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
+
         val = val2 = 0;
         ret = u_gbk_int_test(i, &val);
         ret2 = u_gbk_int2(i, &val2);
@@ -519,8 +528,9 @@ static void test_u_gbk_int(void) {
 #define TEST_PERF_ITER_MILLES   50
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -565,7 +575,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = (int) strlen(data[i].data);
 
@@ -597,7 +607,7 @@ static void test_perf(int index, int debug) {
         total += diff;
         total_gno += diff_gno;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: new % 8gms, gno % 8gms ratio % 9g, eci %gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno), TEST_PERF_TIME(total_eci));
     }
@@ -605,13 +615,13 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_u_gb18030_int", test_u_gb18030_int, 0, 0, 1 },
-        { "test_gb18030_utf8", test_gb18030_utf8, 1, 0, 0 },
-        { "test_gb18030_utf8_to_eci", test_gb18030_utf8_to_eci, 1, 0, 0 },
-        { "test_gb18030_cpy", test_gb18030_cpy, 1, 0, 0 },
-        { "test_u_gbk_int", test_u_gbk_int, 0, 0, 0 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_u_gb18030_int", test_u_gb18030_int },
+        { "test_gb18030_utf8", test_gb18030_utf8 },
+        { "test_gb18030_utf8_to_eci", test_gb18030_utf8_to_eci },
+        { "test_gb18030_cpy", test_gb18030_cpy },
+        { "test_u_gbk_int", test_u_gbk_int },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

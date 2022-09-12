@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,12 +27,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include <sys/stat.h>
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -78,13 +79,13 @@ static void test_print(int index, int generate, int debug) {
     int escaped_size = 1024;
 
     int have_libreoffice = 0;
-    if (generate) {
+    if (p_ctx->generate) {
         have_libreoffice = testUtilHaveLibreOffice();
     }
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
@@ -95,7 +96,7 @@ static void test_print(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -126,7 +127,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height,
@@ -135,8 +136,8 @@ static void test_print(int index, int generate, int debug) {
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {
-                // Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
-                // Doesn't seem to be a way to force Draw invocation through the command line
+                /* Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
+                   Doesn't seem to be a way to force Draw invocation through the command line */
                 ret = testUtilVerifyLibreOffice(expected_file, debug);
                 assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
@@ -146,7 +147,7 @@ static void test_print(int index, int generate, int debug) {
 
             ret = testUtilCmpBins(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
-            if (index == -1) assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            if (p_ctx->index == -1) assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
         }
 
         ZBarcode_Delete(symbol);
@@ -157,10 +158,12 @@ static void test_print(int index, int generate, int debug) {
 
 INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle);
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     struct zint_vector vector = {0};
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -187,9 +190,9 @@ static void test_outfile(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_print", test_print },
+        { "test_outfile", test_outfile },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -198,3 +201,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

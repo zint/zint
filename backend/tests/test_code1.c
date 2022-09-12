@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int eci;
@@ -42,8 +44,8 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // Reference AIM USS Code One Table 2
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* Reference AIM USS Code One Table 2 */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -1, -1, { 0, 0, "" }, "1", 3550, 0, 148, 134 }, /* Auto Version H */
         /*  1*/ { -1, -1, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -196,8 +198,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -224,7 +225,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -238,7 +240,7 @@ static void test_input(int index, int debug) {
         int expected_width;
         const char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", },
         /*  1*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", },
@@ -276,7 +278,7 @@ static void test_input(int index, int debug) {
         /* 33*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
         /* 34*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
         /* 35*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", },
-        /* 36*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, // Trumps other checking
+        /* 36*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, /* Trumps other checking */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -286,8 +288,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -312,7 +313,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -329,7 +331,7 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Figure examples AIM USS Code One (USSCO) Revision March 3, 2000
+    /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
     struct item data[] = {
         /*  0*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456789012", -1, 0, 16, 18, 1, "USSCO Figure 1 (Version A, no padding), same",
                     "111111111111001100"
@@ -2883,14 +2885,13 @@ static void test_encode(int index, int generate, int debug) {
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2903,7 +2904,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2,
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
@@ -2949,7 +2950,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode_segs(int index, int generate, int debug) {
+static void test_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -2964,7 +2966,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // Figure examples AIM USS Code One (USSCO) Revision March 3, 2000
+    /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 16, 18, 1, "Standard example",
                     "100011010111100011"
@@ -3272,14 +3274,13 @@ static void test_encode_segs(int index, int generate, int debug) {
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode_segs");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -3295,7 +3296,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -3348,17 +3349,18 @@ static void test_encode_segs(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_fuzz(int index, int debug) {
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
         int length;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /* 0*/ { "3333P33B\035333V3333333333333\0363", -1, 0 }, // #181 Nico Gunkel, OSS-Fuzz
-        /* 1*/ { "{{-06\024755712162106130000000829203983\377", -1, 0 }, // #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1
+        /* 0*/ { "3333P33B\035333V3333333333333\0363", -1, 0 }, /* #181 Nico Gunkel, OSS-Fuzz */
+        /* 1*/ { "{{-06\024755712162106130000000829203983\377", -1, 0 }, /* #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1 */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -3368,8 +3370,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -3390,12 +3391,12 @@ static void test_fuzz(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_encode_segs", test_encode_segs },
+        { "test_fuzz", test_fuzz },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

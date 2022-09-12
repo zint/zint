@@ -33,7 +33,8 @@
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -42,22 +43,24 @@ static void test_large(int index, int debug) {
         int ret;
         int expected_width;
     };
-    // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "A", 60, 0, 695 },
         /*  1*/ { BARCODE_CODE128, "A", 61, ZINT_ERROR_TOO_LONG, -1 },
         /*  2*/ { BARCODE_CODE128, "A", 161, ZINT_ERROR_TOO_LONG, -1 },
         /*  3*/ { BARCODE_CODE128, "\351A", 40, 0, 695 },
-        /*  4*/ { BARCODE_CODE128, "\351A", 41, ZINT_ERROR_TOO_LONG, -1 }, // 41 chars (+ 20 shifts)
+        /*  4*/ { BARCODE_CODE128, "\351A", 41, ZINT_ERROR_TOO_LONG, -1 }, /* 41 chars (+ 20 shifts) */
         /*  5*/ { BARCODE_CODE128, "0", 120, 0, 695 },
         /*  6*/ { BARCODE_CODE128, "0", 121, ZINT_ERROR_TOO_LONG, -1 },
         /*  7*/ { BARCODE_CODE128B, "A", 60, 0, 695 },
         /*  8*/ { BARCODE_CODE128B, "A", 61, ZINT_ERROR_TOO_LONG, -1 },
         /*  9*/ { BARCODE_CODE128B, "0", 60, 0, 695 },
         /* 10*/ { BARCODE_CODE128B, "0", 61, ZINT_ERROR_TOO_LONG, -1 },
-        /* 11*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890", -1, 0, 706 }, // 116 nos + 3 FNC1s
-        /* 12*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234[93]1234", -1, ZINT_ERROR_TOO_LONG, -1 }, // 116 nos + 4 FNC1s
+        /* 11*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890", -1, 0, 706 }, /* 116 nos + 3 FNC1s */
+        /* 12*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234[93]1234", -1, ZINT_ERROR_TOO_LONG, -1 }, /* 116 nos + 4 FNC1s */
         /* 13*/ { BARCODE_GS1_128, "A", 161, ZINT_ERROR_TOO_LONG, -1 },
         /* 14*/ { BARCODE_EAN14, "1234567890123", -1, 0, 134 },
         /* 15*/ { BARCODE_EAN14, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1 },
@@ -76,7 +79,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -105,7 +108,8 @@ static void test_large(int index, int debug) {
 
 INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
-static void test_hrt_cpy_iso8859_1(int index, int debug) {
+static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -114,10 +118,12 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
         char *expected;
         char *comment;
     };
-    // NBSP U+00A0 (\240, 160), UTF-8 C2A0 (\302\240)
-    // ¡ U+00A1 (\241, 161), UTF-8 C2A1 (\302\241)
-    // é U+00E9 (\351, 233), UTF-8 C3A9
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       NBSP U+00A0 (\240, 160), UTF-8 C2A0 (\302\240)
+       ¡ U+00A1 (\241, 161), UTF-8 C2A1 (\302\241)
+       é U+00E9 (\351, 233), UTF-8 C3A9
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "", -1, 0, "", "" },
         /*  1*/ { "abc", -1, 3, "abc", "" },
@@ -154,12 +160,12 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
         ret = c128_hrt_cpy_iso8859_1_test(&symbol, (unsigned char *) data[i].data, length);
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < ret; j++) {
                 fprintf(stderr, "symbol.text[%d] %2X\n", j, symbol.text[j]);
             }
@@ -173,7 +179,8 @@ static void test_hrt_cpy_iso8859_1(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -183,8 +190,10 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, "1234567890", -1, "1234567890" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, "\000ABC\000DEF\000", 9, " ABC DEF " },
@@ -192,12 +201,12 @@ static void test_hrt(int index, int debug) {
         /*  3*/ { BARCODE_CODE128, UNICODE_MODE, "12345\01167890\037\177", -1, "12345 67890  " },
         /*  4*/ { BARCODE_CODE128, UNICODE_MODE, "abcdé", -1, "abcdé" },
         /*  5*/ { BARCODE_CODE128, DATA_MODE, "abcd\351", -1, "abcdé" },
-        /*  6*/ { BARCODE_CODE128, DATA_MODE, "ab\240cd\351", -1, "ab\302\240cdé" }, // NBSP
+        /*  6*/ { BARCODE_CODE128, DATA_MODE, "ab\240cd\351", -1, "ab\302\240cdé" }, /* NBSP */
         /*  7*/ { BARCODE_CODE128B, UNICODE_MODE, "abcdé", -1, "abcdé" },
         /*  8*/ { BARCODE_CODE128B, DATA_MODE, "abcd\351", -1, "abcdé" },
         /*  9*/ { BARCODE_HIBC_128, UNICODE_MODE, "1234567890", -1, "*+12345678900*" },
-        /* 10*/ { BARCODE_HIBC_128, UNICODE_MODE, "a99912345", -1, "*+A999123457*" }, // Converts to upper
-        // BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c
+        /* 10*/ { BARCODE_HIBC_128, UNICODE_MODE, "a99912345", -1, "*+A999123457*" }, /* Converts to upper */
+        /* BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -207,7 +216,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -225,7 +234,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_reader_init(int index, int generate, int debug) {
+static void test_reader_init(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -257,19 +267,19 @@ static void test_reader_init(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -288,7 +298,8 @@ static void test_reader_init(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int generate, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -299,14 +310,16 @@ static void test_input(int index, int generate, int debug) {
         char *expected;
         char *comment;
     };
-    // NUL U+0000, CodeA-only
-    // US U+001F (\037, 31), CodeA-only
-    // a U+0061 (\141, 97), CodeB-only
-    // b U+0062 (\142, 98), CodeB-only
-    // PAD U+0080 (\200, 128), UTF-8 C280 (\302\200), CodeA-only extended ASCII, not in ISO 8859-1
-    // APC U+009F (\237, 159), UTF-8 C29F, CodeA-only extended ASCII, not in ISO 8859-1
-    // ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
-    // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+    /*
+       NUL U+0000, CodeA-only
+       US U+001F (\037, 31), CodeA-only
+       a U+0061 (\141, 97), CodeB-only
+       b U+0062 (\142, 98), CodeB-only
+       PAD U+0080 (\200, 128), UTF-8 C280 (\302\200), CodeA-only extended ASCII, not in ISO 8859-1
+       APC U+009F (\237, 159), UTF-8 C29F, CodeA-only extended ASCII, not in ISO 8859-1
+       ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
+       é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+    */
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, "Error 204: Invalid character in input data (ISO/IEC 8859-1 only)", "PAD not in ISO 8859-1" },
         /*  1*/ { DATA_MODE, "\200", -1, 0, 57, "(5) 103 101 64 23 106", "PAD ok using binary" },
@@ -354,19 +367,19 @@ static void test_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
@@ -383,7 +396,8 @@ static void test_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_ean128_input(int index, int generate, int debug) {
+static void test_ean128_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -431,19 +445,19 @@ static void test_ean128_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_GS1_128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
@@ -460,7 +474,8 @@ static void test_ean128_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_hibc_input(int index, int generate, int debug) {
+static void test_hibc_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -488,19 +503,19 @@ static void test_hibc_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_HIBC_128, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
@@ -517,7 +532,8 @@ static void test_hibc_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_ean14_input(int index, int generate, int debug) {
+static void test_ean14_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -540,19 +556,19 @@ static void test_ean14_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_EAN14, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
@@ -569,7 +585,8 @@ static void test_ean14_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_dpd_input(int index, int generate, int debug) {
+static void test_dpd_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -596,19 +613,19 @@ static void test_dpd_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_DPD, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
@@ -625,7 +642,8 @@ static void test_dpd_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -639,8 +657,8 @@ static void test_encode(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // BARCODE_GS1_128 examples verified manually against GS1 General Specifications 21.0.1 (GGS)
-    // BARCODE_DPD examples Specification DPD and primetime Parcel Despatch (DPDAPPD) Version 4.0.2
+    /* BARCODE_GS1_128 examples verified manually against GS1 General Specifications 21.0.1 (GGS) */
+    /* BARCODE_DPD examples Specification DPD and primetime Parcel Despatch (DPDAPPD) Version 4.0.2 */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, "AIM", 0, 1, 68, 1, "ISO/IEC 15417:2007 Figure 1",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
@@ -786,14 +804,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -803,7 +821,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
@@ -857,8 +875,9 @@ static void test_encode(int index, int generate, int debug) {
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 #define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -894,7 +913,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -924,7 +943,7 @@ static void test_perf(int index, int debug) {
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
             diff_buf_inter += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
 
             start = clock();
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
@@ -944,7 +963,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -952,18 +971,18 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt_cpy_iso8859_1", test_hrt_cpy_iso8859_1, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_reader_init", test_reader_init, 1, 1, 1 },
-        { "test_input", test_input, 1, 1, 1 },
-        { "test_ean128_input", test_ean128_input, 1, 1, 1 },
-        { "test_hibc_input", test_hibc_input, 1, 1, 1 },
-        { "test_ean14_input", test_ean14_input, 1, 1, 1 },
-        { "test_dpd_input", test_dpd_input, 1, 1, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt_cpy_iso8859_1", test_hrt_cpy_iso8859_1 },
+        { "test_hrt", test_hrt },
+        { "test_reader_init", test_reader_init },
+        { "test_input", test_input },
+        { "test_ean128_input", test_ean128_input },
+        { "test_hibc_input", test_hibc_input },
+        { "test_ean14_input", test_ean14_input },
+        { "test_dpd_input", test_dpd_input },
+        { "test_encode", test_encode },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

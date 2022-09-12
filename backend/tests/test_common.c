@@ -51,7 +51,7 @@ static int is_sane_orig(const char test_string[], const unsigned char source[], 
     return 0;
 }
 
-static void test_is_sane(int index) {
+static void test_is_sane(const testCtx *const p_ctx) {
 
     struct item {
         unsigned int flg;
@@ -156,7 +156,7 @@ static void test_is_sane(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
@@ -185,7 +185,7 @@ static void test_is_sane(int index) {
     testFinish();
 }
 
-static void test_is_sane_lookup(int index) {
+static void test_is_sane_lookup(const testCtx *const p_ctx) {
 
     struct item {
         char *test_string;
@@ -210,7 +210,7 @@ static void test_is_sane_lookup(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         test_length = data[i].test_length == -1 ? (int) strlen(data[i].test_string) : data[i].test_length;
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
@@ -229,7 +229,7 @@ static void test_is_sane_lookup(int index) {
     testFinish();
 }
 
-static void test_is_valid_utf8(int index) {
+static void test_is_valid_utf8(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -257,7 +257,7 @@ static void test_is_valid_utf8(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
@@ -268,7 +268,8 @@ static void test_is_valid_utf8(int index) {
     testFinish();
 }
 
-static void test_utf8_to_unicode(int index, int debug) {
+static void test_utf8_to_unicode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -300,7 +301,7 @@ static void test_utf8_to_unicode(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -319,7 +320,8 @@ static void test_utf8_to_unicode(int index, int debug) {
     testFinish();
 }
 
-static void test_set_height(int index, int debug) {
+static void test_set_height(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int rows;
@@ -361,7 +363,7 @@ static void test_set_height(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         memset(&symbol, 0, sizeof(symbol));
         symbol.rows = data[i].rows;
@@ -379,7 +381,8 @@ static void test_set_height(int index, int debug) {
     testFinish();
 }
 
-static void test_debug_test_codeword_dump_int(int index, int debug) {
+static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int codewords[50];
@@ -402,7 +405,7 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         debug_test_codeword_dump_int(&symbol, data[i].codewords, data[i].length);
         assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n", i, symbol.errtxt, (int) strlen(symbol.errtxt));
@@ -414,13 +417,13 @@ static void test_debug_test_codeword_dump_int(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_is_sane", test_is_sane, 1, 0, 0 },
-        { "test_is_sane_lookup", test_is_sane_lookup, 1, 0, 0 },
-        { "test_is_valid_utf8", test_is_valid_utf8, 1, 0, 0 },
-        { "test_utf8_to_unicode", test_utf8_to_unicode, 1, 0, 1 },
-        { "test_set_height", test_set_height, 1, 0, 1 },
-        { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_is_sane", test_is_sane },
+        { "test_is_sane_lookup", test_is_sane_lookup },
+        { "test_is_valid_utf8", test_is_valid_utf8 },
+        { "test_utf8_to_unicode", test_utf8_to_unicode },
+        { "test_set_height", test_set_height },
+        { "test_debug_test_codeword_dump_int", test_debug_test_codeword_dump_int },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

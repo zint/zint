@@ -269,7 +269,8 @@ static void arg_output_options(char *cmd, int output_options) {
 }
 
 // Tests args that can be detected with `--dump`
-static void test_dump_args(int index, int debug) {
+static void test_dump_args(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -354,7 +355,7 @@ static void test_dump_args(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint --dump");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -398,7 +399,8 @@ static void test_dump_args(int index, int debug) {
 }
 
 // Tests segs
-static void test_dump_segs(int index, int debug) {
+static void test_dump_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -431,7 +433,7 @@ static void test_dump_segs(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint --dump");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -468,7 +470,8 @@ static void test_dump_segs(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
 #define TEST_INPUT_LONG "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 
@@ -527,8 +530,7 @@ static void test_input(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 #ifdef _WIN32
         if (data[i].outfile && (int) strlen(data[i].outfile) > 50) {
             if (debug & ZINT_DEBUG_TEST_PRINT) printf("%d not Windows compatible (outfile length %d > 50)\n", i, (int) strlen(data[i].outfile));
@@ -564,7 +566,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_stdin_input(int index, int debug) {
+static void test_stdin_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -588,7 +591,7 @@ static void test_stdin_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         sprintf(cmd, "echo '%s' | zint", data[i].data);
         if (debug & ZINT_DEBUG_PRINT) {
@@ -609,7 +612,8 @@ static void test_stdin_input(int index, int debug) {
 }
 
 // Note ordering of `--batch` before/after data/input args affects error messages
-static void test_batch_input(int index, int debug) {
+static void test_batch_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -640,7 +644,7 @@ static void test_batch_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint --dump --batch");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -668,7 +672,8 @@ static void test_batch_input(int index, int debug) {
     testFinish();
 }
 
-static void test_batch_large(int index, int debug) {
+static void test_batch_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -703,8 +708,7 @@ static void test_batch_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint --batch --filetype=gif");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -733,7 +737,8 @@ static void test_batch_large(int index, int debug) {
     testFinish();
 }
 
-static void test_checks(int index, int debug) {
+static void test_checks(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int addongap;
@@ -809,7 +814,7 @@ static void test_checks(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint -d 1 --filetype=gif");
         if (debug & ZINT_DEBUG_PRINT) {
@@ -849,7 +854,8 @@ static void test_checks(int index, int debug) {
     testFinish();
 }
 
-static void test_barcode_symbology(int index, int debug) {
+static void test_barcode_symbology(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         const char *bname;
@@ -1070,7 +1076,7 @@ static void test_barcode_symbology(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint --filetype=gif");
         strcat(cmd, " --verbose");
@@ -1091,7 +1097,8 @@ static void test_barcode_symbology(int index, int debug) {
     testFinish();
 }
 
-static void test_other_opts(int index, int debug) {
+static void test_other_opts(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -1168,7 +1175,7 @@ static void test_other_opts(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint");
 
@@ -1197,7 +1204,8 @@ static void test_other_opts(int index, int debug) {
     testFinish();
 }
 
-static void test_exit_status(int index, int debug) {
+static void test_exit_status(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int b;
@@ -1232,7 +1240,7 @@ static void test_exit_status(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(cmd, "zint");
         *buf = '\0';
@@ -1260,17 +1268,17 @@ static void test_exit_status(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_dump_args", test_dump_args, 1, 0, 1 },
-        { "test_dump_segs", test_dump_segs, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_stdin_input", test_stdin_input, 1, 0, 1 },
-        { "test_batch_input", test_batch_input, 1, 0, 1 },
-        { "test_batch_large", test_batch_large, 1, 0, 1 },
-        { "test_checks", test_checks, 1, 0, 1 },
-        { "test_barcode_symbology", test_barcode_symbology, 1, 0, 1 },
-        { "test_other_opts", test_other_opts, 1, 0, 1 },
-        { "test_exit_status", test_exit_status, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_dump_args", test_dump_args },
+        { "test_dump_segs", test_dump_segs },
+        { "test_input", test_input },
+        { "test_stdin_input", test_stdin_input },
+        { "test_batch_input", test_batch_input },
+        { "test_batch_large", test_batch_large },
+        { "test_checks", test_checks },
+        { "test_barcode_symbology", test_barcode_symbology },
+        { "test_other_opts", test_other_opts },
+        { "test_exit_status", test_exit_status },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

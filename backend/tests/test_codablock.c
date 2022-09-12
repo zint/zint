@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -41,25 +43,27 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -1, -1, "A", 2666, 0, 44, 728 },
         /*  1*/ { -1, -1, "A", 2725, 0, 44, 739 },
-        /*  2*/ { -1, -1, "A", 2726, 0, 44, 739 }, // 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1
+        /*  2*/ { -1, -1, "A", 2726, 0, 44, 739 }, /* 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1 */
         /*  3*/ { -1, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  4*/ { -1, -1, "A", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  5*/ { -1, -1, "12", 2726 * 2, 0, 44, 739 },
         /*  6*/ { -1, -1, "12", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  7*/ { -1, -1, "\351", 2726 / 2, 0, 44, 739 },
         /*  8*/ { -1, -1, "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { 1, -1, "A", 60, 0, 1, 695 }, // CODE128 60 max
+        /*  9*/ { 1, -1, "A", 60, 0, 1, 695 }, /* CODE128 60 max */
         /* 10*/ { 1, -1, "A", 61, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 11*/ { 2, -1, "A", 122, 0, 2, 739 },
-        /* 12*/ { 2, 10, "A", 122, 0, 2, 739 }, // Cols 10 -> 67
+        /* 12*/ { 2, 10, "A", 122, 0, 2, 739 }, /* Cols 10 -> 67 */
         /* 13*/ { 2, 67, "A", 122, 0, 2, 739 },
         /* 14*/ { 2, -1, "A", 123, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { 2, -1, "A", 63 * 2, ZINT_ERROR_TOO_LONG, -1, -1 }, // Triggers initial testColumns > 62
+        /* 15*/ { 2, -1, "A", 63 * 2, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Triggers initial testColumns > 62 */
         /* 16*/ { 2, -1, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 17*/ { 2, 9, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 18*/ { 3, -1, "A", 184, 0, 3, 739 },
@@ -76,7 +80,7 @@ static void test_large(int index, int debug) {
         /* 29*/ { 43, -1, "A", 2665, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 30*/ { 44, -1, "A", 2726, 0, 44, 739 },
         /* 31*/ { 44, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 32*/ { 44, 60, "A", 2726, 0, 44, 739 }, // Cols 60 -> 67
+        /* 32*/ { 44, 60, "A", 2726, 0, 44, 739 }, /* Cols 60 -> 67 */
         /* 33*/ { 44, 67, "A", 2726, 0, 44, 739 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -89,7 +93,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -113,7 +117,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -125,7 +130,7 @@ static void test_options(int index, int debug) {
         int expected_width;
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, 1, -1, "é", 0, 1, 57, "CODE128" },
         /*  1*/ { UNICODE_MODE, -1, -1, "A", 0, 2, 101, "Defaults" },
@@ -160,7 +165,7 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -181,7 +186,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_reader_init(int index, int generate, int debug) {
+static void test_reader_init(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -209,19 +215,19 @@ static void test_reader_init(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -240,7 +246,8 @@ static void test_reader_init(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int generate, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -254,19 +261,21 @@ static void test_input(int index, int generate, int debug) {
         char *expected;
         char *comment;
     };
-    // NUL U+0000, CodeA-only
-    // US U+001F (\037, 31), CodeA-only
-    // a U+0061 (\141, 97), CodeB-only
-    // DEL U+007F (\177, 127), CodeB-only
-    // PAD U+0080 (\200, 128), UTF-8 C280 (\302\200), CodeA-only extended ASCII, not in ISO 8859-1
-    // APC U+009F (\237, 159), UTF-8 C29F, CodeA-only extended ASCII, not in ISO 8859-1
-    // NBSP U+00A0 (\240, 160), UTF-8 C2A0, CodeA and CodeB extended ASCII
-    // ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
-    // à U+00E0 (\340, 224), UTF-8 C3A0, CodeB-only extended ASCII
-    // á U+00E1 (\341, 225), UTF-8 C3A1, CodeB-only extended ASCII
-    // é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
-    // ñ U+00F1 (\361, 241), UTF-8 C3B1, CodeB-only extended ASCII
-    // ÿ U+00FF (\377, 255), UTF-8 C3BF, CodeB-only extended ASCII
+    /*
+       NUL U+0000, CodeA-only
+       US U+001F (\037, 31), CodeA-only
+       a U+0061 (\141, 97), CodeB-only
+       DEL U+007F (\177, 127), CodeB-only
+       PAD U+0080 (\200, 128), UTF-8 C280 (\302\200), CodeA-only extended ASCII, not in ISO 8859-1
+       APC U+009F (\237, 159), UTF-8 C29F, CodeA-only extended ASCII, not in ISO 8859-1
+       NBSP U+00A0 (\240, 160), UTF-8 C2A0, CodeA and CodeB extended ASCII
+       ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
+       à U+00E0 (\340, 224), UTF-8 C3A0, CodeB-only extended ASCII
+       á U+00E1 (\341, 225), UTF-8 C3A1, CodeB-only extended ASCII
+       é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
+       ñ U+00F1 (\361, 241), UTF-8 C3B1, CodeB-only extended ASCII
+       ÿ U+00FF (\377, 255), UTF-8 C3BF, CodeB-only extended ASCII
+    */
     struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "A", -1, 0, 2, 101, "67 64 40 21 63 64 63 42 6A 67 64 0B 63 64 2B 40 4F 6A", "Fillings 5" },
         /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "AAA", -1, 0, 2, 101, "67 64 40 21 21 21 63 55 6A 67 64 0B 63 64 0E 57 48 6A", "Fillings 3" },
@@ -318,19 +327,19 @@ static void test_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].option_2,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
@@ -349,7 +358,8 @@ static void test_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -460,13 +470,13 @@ static void test_encode(int index, int generate, int debug) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -476,7 +486,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
@@ -513,15 +523,16 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(int index, int debug) {
+/* #181 Christian Hartlage OSS-Fuzz */
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
         int length;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "\034\034I", 3, 0 },
     };
@@ -533,7 +544,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -551,13 +562,13 @@ static void test_fuzz(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_reader_init", test_reader_init, 1, 1, 1 },
-        { "test_input", test_input, 1, 1, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_options", test_options },
+        { "test_reader_init", test_reader_init },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_fuzz", test_fuzz },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

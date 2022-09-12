@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_2;
@@ -41,11 +43,11 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -1, -1, "1", 2751, 0, 162, 162 },
         /*  1*/ { -1, -1, "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, -1, "1", 2755, ZINT_ERROR_TOO_LONG, -1, -1 }, // Triggers buffer > 9191
+        /*  2*/ { -1, -1, "1", 2755, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Triggers buffer > 9191 */
         /*  3*/ { -1, -1, "A", 1836, 0, 162, 162 },
         /*  4*/ { -1, -1, "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  5*/ { -1, -1, "A1", 1529, 0, 162, 162 },
@@ -75,7 +77,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -99,7 +101,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -111,21 +114,21 @@ static void test_options(int index, int debug) {
         int expected_size;
         const char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 0, 0, { 0, 0, "" }, "12345", 0, 0, 18, "" },
         /*  1*/ { 0, 1, { 0, 0, "" }, "12345", 0, 0, 18, "" },
         /*  2*/ { 0, 2, { 0, 0, "" }, "12345", 0, 0, 30, "" },
-        /*  3*/ { 0, 14, { 0, 0, "" }, "12345", 0, 0, 18, "" }, // Version > max version 13 so ignored
+        /*  3*/ { 0, 14, { 0, 0, "" }, "12345", 0, 0, 18, "" }, /* Version > max version 13 so ignored */
         /*  4*/ { 0, 13, { 0, 0, "" }, "12345", 0, 0, 162, "" },
         /*  5*/ { 0, 1, { 0, 0, "" }, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input data too long for selected symbol size" },
         /*  6*/ { 0, 2, { 0, 0, "" }, "1234567890123456789", 0, 0, 30, "" },
-        /*  7*/ { 0, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, // Version auto-set to 2
+        /*  7*/ { 0, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* Version auto-set to 2 */
         /*  8*/ { 0, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
-        /*  9*/ { 5, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" }, // Version specified so overrides ECC level which gets reduced to 4
-        /* 10*/ { 5, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, // Version not specified so increased to allow for ECC level
-        /* 11*/ { 6, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, // ECC > max ECC 5 so ignored and auto-settings version 2, ECC 4 used
-        /* 12*/ { 1, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, // ECC < min ECC 2, ECC 2 used
+        /*  9*/ { 5, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" }, /* Version specified so overrides ECC level which gets reduced to 4 */
+        /* 10*/ { 5, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* Version not specified so increased to allow for ECC level */
+        /* 11*/ { 6, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* ECC > max ECC 5 so ignored and auto-settings version 2, ECC 4 used */
+        /* 12*/ { 1, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* ECC < min ECC 2, ECC 2 used */
         /* 13*/ { 4, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
         /* 14*/ { 0, 0, { 1, 2, "" }, "12345", 0, 0, 18, "" },
         /* 15*/ { 0, 0, { 1, 1, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count out of range (2-16)" },
@@ -145,7 +148,7 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -174,7 +177,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int generate, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -188,11 +192,13 @@ static void test_input(int index, int generate, int debug) {
         char *expected;
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
-    // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 2312 0xA6C2, UTF-8 CEB2
-    // ÿ U+00FF in ISO 8859-1 0xFF, not in GB 2312, outside first byte and second byte range, UTF-8 C3BF
-    // ㈩ U+3229 in GB 2312 0x226E
-    // 一 U+4E00 in GB 2312 0x523B
+    /*
+       é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
+       β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 2312 0xA6C2, UTF-8 CEB2
+       ÿ U+00FF in ISO 8859-1 0xFF, not in GB 2312, outside first byte and second byte range, UTF-8 C3BF
+       ㈩ U+3229 in GB 2312 0x226E
+       一 U+4E00 in GB 2312 0x523B
+    */
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, 0, -1, -1, { 0, 0, "" }, "é", 0, 0, "08 54 6F 78 00", "H1 (GB 2312) Note: Grid Matrix default is GB 2312, not ISO 8859-1" },
         /*  1*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "é", 0, 3, "60 01 58 00 74 40", "ECI-3 B1 (ISO 8859-1)" },
@@ -321,12 +327,12 @@ static void test_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        debug |= ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
         if (data[i].structapp.count) {
@@ -336,7 +342,7 @@ static void test_input(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, %s, { %d, %d, \"%s\" }, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOutputOptionsName(data[i].output_options), testUtilOption3Name(data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
@@ -355,7 +361,8 @@ static void test_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -475,7 +482,7 @@ static void test_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -485,7 +492,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, %d, %s, %d, %d, \"%s\",\n",
                     i, data[i].data, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilErrorName(data[i].ret),
                     symbol->rows, symbol->width, data[i].comment);
@@ -508,7 +515,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode_segs(int index, int generate, int debug) {
+static void test_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -523,8 +531,10 @@ static void test_encode_segs(int index, int generate, int debug) {
         char *comment;
         char *expected;
     };
-    // ¶ not in GB 2312 (in ISO/IEC 8869-1)
-    // Ж in GB 2312 (and ISO/IEC 8859-5)
+    /*
+       ¶ not in GB 2312 (in ISO/IEC 8869-1)
+       Ж in GB 2312 (and ISO/IEC 8859-5)
+    */
     struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, "Standard example (adds ECI 3 for ¶)",
                     "111111000000111111000000111111"
@@ -809,7 +819,7 @@ static void test_encode_segs(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -822,7 +832,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[8192];
             char escaped2[8192];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -859,8 +869,9 @@ static void test_encode_segs(int index, int generate, int debug) {
 
 #define TEST_PERF_ITERATIONS    1000
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -904,7 +915,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_encode = diff_buffer = 0;
 
@@ -935,20 +946,20 @@ static void test_perf(int index, int debug) {
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
-    if (index != -1) {
+    if (p_ctx->index != -1) {
         printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
     }
 }
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_input", test_input, 1, 1, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_options", test_options },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_encode_segs", test_encode_segs },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

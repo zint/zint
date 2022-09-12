@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,25 +27,26 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include <sys/stat.h>
 
 INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
-// For overview when debugging: ./test_tiff -f pixel_plot -d 5
-static void test_pixel_plot(int index, int debug) {
+/* For overview when debugging: ./test_tiff -f pixel_plot -d 5 */
+static void test_pixel_plot(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int width;
         int height;
         char *pattern;
         int repeat;
-        int no_identify; // identify fails for some valid TIFFs (eg. RGB with LZW and large rows)
+        int no_identify; /* identify fails for some valid TIFFs (eg. RGB with LZW and large rows) */
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0, 0 },
@@ -63,28 +64,28 @@ static void test_pixel_plot(int index, int debug) {
         /* 13*/ { 3, 3, "101010101", 0, 0, 0 },
         /* 14*/ { 4, 3, "10", 1, 0, 0 },
         /* 15*/ { 3, 4, "10", 1, 0, 0 },
-        /* 16*/ { 45, 44, "10", 1, 0, 0 }, // Strip Count 1, Rows Per Strip 44 (45 * 44 * 4 == 7920)
-        /* 17*/ { 45, 45, "10", 1, 0, 0 }, // Strip Count 1, Rows Per Strip 45 (45 * 45 * 4 == 8100)
-        /* 18*/ { 46, 45, "10", 1, 0, 0 }, // Strip Count 2, Rows Per Strip 44 (46 * 45 * 4 == 8280)
-        /* 19*/ { 46, 46, "10", 1, 0, 0 }, // Strip Count 2, Rows Per Strip 44
-        /* 20*/ { 2048, 1, "10", 1, 1, 0 }, // Strip Count 1, Rows Per Strip 1 (2048 * 4 == 8192)
-        /* 21*/ { 1, 2048, "10", 1, 0, 0 }, // Strip Count 1, Rows Per Strip 2048
-        /* 22*/ { 2048, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
-        /* 23*/ { 2, 2048, "10", 1, 0, 0 }, // Strip Count 2, Rows Per Strip 1024 (2 * 1024 * 4 == 8192)
-        /* 24*/ { 2048, 3, "10", 1, 1, 0 }, // Strip Count 3, Rows Per Strip 1
-        /* 25*/ { 3, 2048, "10", 1, 0, 0 }, // Strip Count 4, Rows Per Strip 682 ((3 * 682 + 2) * 4 == 8192)
-        /* 26*/ { 2049, 4, "10", 1, 1, 0 }, // Strip Count 4, Rows Per Strip 1 (2049 * 1 * 4 == 8196) - large rows in 1 strip, even if > 8192
-        /* 27*/ { 4, 2049, "10", 1, 0, 0 }, // Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196)
-        /* 28*/ { 4096, 1, "10", 1, 1, 0 }, // Strip Count 1, Rows Per Strip 1
-        /* 29*/ { 1, 4096, "10", 1, 0, 0 }, // Strip Count 2, Rows Per Strip 2048
-        /* 30*/ { 4096, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
-        /* 31*/ { 2, 4096, "10", 1, 0, 0 }, // Strip Count 4, Rows Per Strip 1024
-        /* 32*/ { 8192, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
-        /* 33*/ { 2, 8192, "10", 1, 0, 0 }, // Strip Count 8, Rows Per Strip 1024
-        /* 34*/ { ZINT_MAX_DATA_LEN, 1, "10", 1, 1, 0 }, // Strip Count 1, Rows Per Strip 1
-        /* 35*/ { 1, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, // Strip Count 9, Rows Per Strip 2048
-        /* 36*/ { ZINT_MAX_DATA_LEN, 2, "10", 1, 1, 0 }, // Strip Count 2, Rows Per Strip 1
-        /* 37*/ { 2, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, // Strip Count 17, Rows Per Strip 1024
+        /* 16*/ { 45, 44, "10", 1, 0, 0 }, /* Strip Count 1, Rows Per Strip 44 (45 * 44 * 4 == 7920) */
+        /* 17*/ { 45, 45, "10", 1, 0, 0 }, /* Strip Count 1, Rows Per Strip 45 (45 * 45 * 4 == 8100) */
+        /* 18*/ { 46, 45, "10", 1, 0, 0 }, /* Strip Count 2, Rows Per Strip 44 (46 * 45 * 4 == 8280) */
+        /* 19*/ { 46, 46, "10", 1, 0, 0 }, /* Strip Count 2, Rows Per Strip 44 */
+        /* 20*/ { 2048, 1, "10", 1, 1, 0 }, /* Strip Count 1, Rows Per Strip 1 (2048 * 4 == 8192) */
+        /* 21*/ { 1, 2048, "10", 1, 0, 0 }, /* Strip Count 1, Rows Per Strip 2048 */
+        /* 22*/ { 2048, 2, "10", 1, 1, 0 }, /* Strip Count 2, Rows Per Strip 1 */
+        /* 23*/ { 2, 2048, "10", 1, 0, 0 }, /* Strip Count 2, Rows Per Strip 1024 (2 * 1024 * 4 == 8192) */
+        /* 24*/ { 2048, 3, "10", 1, 1, 0 }, /* Strip Count 3, Rows Per Strip 1 */
+        /* 25*/ { 3, 2048, "10", 1, 0, 0 }, /* Strip Count 4, Rows Per Strip 682 ((3 * 682 + 2) * 4 == 8192) */
+        /* 26*/ { 2049, 4, "10", 1, 1, 0 }, /* Strip Count 4, Rows Per Strip 1 (2049 * 1 * 4 == 8196) - large rows in 1 strip, even if > 8192 */
+        /* 27*/ { 4, 2049, "10", 1, 0, 0 }, /* Strip Count 5, Rows Per Strip 512 ((4 * 512 + 1) * 4 == 8196) */
+        /* 28*/ { 4096, 1, "10", 1, 1, 0 }, /* Strip Count 1, Rows Per Strip 1 */
+        /* 29*/ { 1, 4096, "10", 1, 0, 0 }, /* Strip Count 2, Rows Per Strip 2048 */
+        /* 30*/ { 4096, 2, "10", 1, 1, 0 }, /* Strip Count 2, Rows Per Strip 1 */
+        /* 31*/ { 2, 4096, "10", 1, 0, 0 }, /* Strip Count 4, Rows Per Strip 1024 */
+        /* 32*/ { 8192, 2, "10", 1, 1, 0 }, /* Strip Count 2, Rows Per Strip 1 */
+        /* 33*/ { 2, 8192, "10", 1, 0, 0 }, /* Strip Count 8, Rows Per Strip 1024 */
+        /* 34*/ { ZINT_MAX_DATA_LEN, 1, "10", 1, 1, 0 }, /* Strip Count 1, Rows Per Strip 1 */
+        /* 35*/ { 1, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, /* Strip Count 9, Rows Per Strip 2048 */
+        /* 36*/ { ZINT_MAX_DATA_LEN, 2, "10", 1, 1, 0 }, /* Strip Count 2, Rows Per Strip 1 */
+        /* 37*/ { 2, ZINT_MAX_DATA_LEN, "10", 1, 0, 0 }, /* Strip Count 17, Rows Per Strip 1024 */
     };
     int data_size = ARRAY_SIZE(data);
     int i, ret;
@@ -105,13 +106,13 @@ static void test_pixel_plot(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int size;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         strcpy(symbol->outfile, tif);
 
         symbol->bitmap_width = data[i].width;
         symbol->bitmap_height = data[i].height;
-        symbol->symbology = BARCODE_ULTRA; // Use ULTRA with alpha background to force RGB
+        symbol->symbology = BARCODE_ULTRA; /* Use ULTRA with alpha background to force RGB */
         strcpy(symbol->bgcolour, "FFFFFFEE");
         symbol->debug |= debug;
 
@@ -156,7 +157,8 @@ static void test_pixel_plot(int index, int debug) {
     testFinish();
 }
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -216,7 +218,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
@@ -228,7 +230,7 @@ static void test_print(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
         int text_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -275,7 +277,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2,
@@ -305,10 +307,12 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     unsigned char data[] = { "1" };
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -332,10 +336,10 @@ static void test_outfile(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_pixel_plot", test_pixel_plot, 1, 0, 1 },
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_pixel_plot", test_pixel_plot },
+        { "test_print", test_print },
+        { "test_outfile", test_outfile },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -344,3 +348,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

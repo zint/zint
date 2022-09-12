@@ -41,9 +41,10 @@
 
 #define TEST_CSV_PERF_ITERATIONS    100
 
-//#define TEST_IMAIL_CSV_MAX 300
+/* #define TEST_IMAIL_CSV_MAX 300 */
 
-static void test_csv(int index, int debug) {
+static void test_csv(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     char csvfile[1024];
     FILE *fd;
@@ -84,10 +85,10 @@ static void test_csv(int index, int debug) {
 
 			lc++;
 
-			if (index != -1 && lc != index + 1) continue;
+            if (testContinue(p_ctx, lc - 1)) continue;
 
 			#ifdef TEST_IMAIL_CSV_MAX
-			if (lc > TEST_IMAIL_CSV_MAX && index == -1) {
+			if (lc > TEST_IMAIL_CSV_MAX && p_ctx->index == -1) {
 				break;
 			}
 			#endif
@@ -159,15 +160,16 @@ static void test_csv(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { "53379777234994544928-51135759461", "" }, // None
+        /*  0*/ { "53379777234994544928-51135759461", "" }, /* None */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -177,7 +179,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -195,7 +197,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -203,20 +206,20 @@ static void test_input(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "53379777234994544928-51135759461", 0, 3, 129 },
         /*  1*/ { "123456789012345678901234567890123", ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  3*/ { "12345678901234567890", 0, 3, 129 }, // Tracker only, no ZIP
-        /*  4*/ { "15345678901234567890", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Tracker 2nd char > 4
-        /*  5*/ { "1234567890123456789", ZINT_ERROR_INVALID_DATA, -1, -1 }, // Tracker 20 chars
-        /*  6*/ { "12345678901234567890-1234", ZINT_ERROR_INVALID_DATA, -1, -1 }, // ZIP wrong len
+        /*  3*/ { "12345678901234567890", 0, 3, 129 }, /* Tracker only, no ZIP */
+        /*  4*/ { "15345678901234567890", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Tracker 2nd char > 4 */
+        /*  5*/ { "1234567890123456789", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Tracker 20 chars */
+        /*  6*/ { "12345678901234567890-1234", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* ZIP wrong len */
         /*  7*/ { "12345678901234567890-12345", 0, 3, 129 },
-        /*  8*/ { "12345678901234567890-123456", ZINT_ERROR_INVALID_DATA, -1, -1 }, // ZIP wrong len
-        /*  9*/ { "12345678901234567890-12345678", ZINT_ERROR_INVALID_DATA, -1, -1 }, // ZIP wrong len
+        /*  8*/ { "12345678901234567890-123456", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* ZIP wrong len */
+        /*  9*/ { "12345678901234567890-12345678", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* ZIP wrong len */
         /* 10*/ { "12345678901234567890-123456789", 0, 3, 129 },
-        /* 11*/ { "12345678901234567890-1234567890", ZINT_ERROR_INVALID_DATA, -1, -1 }, // ZIP wrong len
+        /* 11*/ { "12345678901234567890-1234567890", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* ZIP wrong len */
         /* 12*/ { "12345678901234567890-12345678901", 0, 3, 129 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -227,7 +230,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -248,7 +251,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -274,13 +278,13 @@ static void test_encode(int index, int generate, int debug) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -290,7 +294,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -325,11 +329,11 @@ static void test_encode(int index, int generate, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_csv", test_csv, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_csv", test_csv },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

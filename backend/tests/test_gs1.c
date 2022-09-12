@@ -27,13 +27,15 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
 /*
  * Check that GS1_128-based and DBAR_EXP-based symbologies reduce GS1 data
  */
-static void test_gs1_reduce(int index, int generate, int debug) {
+static void test_gs1_reduce(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -203,7 +205,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -218,7 +220,7 @@ static void test_gs1_reduce(int index, int generate, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
 
-        if (generate) {
+        if (p_ctx->generate) {
             if (data[i].ret == 0) {
                 printf("        /*%2d*/ { %s, %s, \"%s\", \"%s\", %d, \"%s\",\n",
                         i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].data, data[i].composite, data[i].ret, data[i].comment);
@@ -257,7 +259,8 @@ static void test_gs1_reduce(int index, int generate, int debug) {
  * Check GS1_128-based and DBAR_EXP-based symbologies HRT
  * See test_hrt() in test_rss.c and test_composite.c for DBAR other than DBAR_EXP-based
  */
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -319,7 +322,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -345,7 +348,7 @@ static void test_hrt(int index, int debug) {
 
 #include "../gs1.h"
 
-static void test_gs1_verify(int index, int debug) {
+static void test_gs1_verify(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -1350,8 +1353,7 @@ static void test_gs1_verify(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1371,7 +1373,7 @@ static void test_gs1_verify(int index, int debug) {
     testFinish();
 }
 
-static void test_gs1_lint(int index, int debug) {
+static void test_gs1_lint(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -1768,8 +1770,7 @@ static void test_gs1_lint(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1793,7 +1794,8 @@ static void test_gs1_lint(int index, int debug) {
 /*
  * Check GS1_MODE for non-forced GS1 compliant symbologies (see gs1_compliant() in library.c)
  */
-static void test_input_mode(int index, int debug) {
+static void test_input_mode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1935,7 +1937,7 @@ static void test_input_mode(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1944,7 +1946,7 @@ static void test_input_mode(int index, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        if (index == -1 && data[i].compare_previous) {
+        if (p_ctx->index == -1 && data[i].compare_previous) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);
         }
@@ -1959,7 +1961,8 @@ static void test_input_mode(int index, int debug) {
 /*
  * Check GS1NOCHECK_MODE for GS1_128-based and DBAR_EXP-based symbologies
  */
-static void test_gs1nocheck_mode(int index, int debug) {
+static void test_gs1nocheck_mode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2152,7 +2155,7 @@ static void test_gs1nocheck_mode(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2177,13 +2180,13 @@ static void test_gs1nocheck_mode(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_gs1_reduce", test_gs1_reduce, 1, 1, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_gs1_verify", test_gs1_verify, 1, 0, 1 },
-        { "test_gs1_lint", test_gs1_lint, 1, 0, 1 },
-        { "test_input_mode", test_input_mode, 1, 0, 1 },
-        { "test_gs1nocheck_mode", test_gs1nocheck_mode, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_gs1_reduce", test_gs1_reduce },
+        { "test_hrt", test_hrt },
+        { "test_gs1_verify", test_gs1_verify },
+        { "test_gs1_lint", test_gs1_lint },
+        { "test_input_mode", test_input_mode },
+        { "test_gs1nocheck_mode", test_gs1nocheck_mode },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

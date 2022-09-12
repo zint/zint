@@ -32,7 +32,7 @@
 #include "testcommon.h"
 #include "../iso4217.h"
 
-static void test_numeric(int index) {
+static void test_numeric(const testCtx *const p_ctx) {
 
     struct item {
         int data;
@@ -436,7 +436,7 @@ static void test_numeric(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         ret = iso4217_numeric(data[i].data);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
@@ -484,13 +484,14 @@ static int bc_iso4217_numeric(int cc) {
     return 0;
 }
 
-static void test_numeric_bc(void) {
+static void test_numeric_bc(const testCtx *const p_ctx) {
 
     int i, ret, bc_ret;
 
     testStart("test_numeric_bc");
 
     for (i = 0; i < 1001; i++) {
+        if (testContinue(p_ctx, i)) continue;
         ret = iso4217_numeric(i);
         bc_ret = bc_iso4217_numeric(i);
         assert_equal(ret, bc_ret, "i:%d ret %d != bc_ret %d\n", i, ret, bc_ret);
@@ -501,9 +502,9 @@ static void test_numeric_bc(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_numeric", test_numeric, 1, 0, 0 },
-        { "test_numeric_bc", test_numeric_bc, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_numeric", test_numeric },
+        { "test_numeric_bc", test_numeric_bc },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

@@ -31,7 +31,8 @@
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -41,7 +42,7 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "1", 23, 0, 3, 133 },
         /*  1*/ { BARCODE_AUSPOST, "1", 24, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -70,7 +71,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -94,7 +95,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -102,9 +104,9 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_AUSPOST, "12345678901234567890123", "" }, // None
+        /*  0*/ { BARCODE_AUSPOST, "12345678901234567890123", "" }, /* None */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -114,7 +116,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -132,7 +134,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -142,7 +145,7 @@ static void test_input(int index, int debug) {
         int expected_width;
         char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "12345678", 0, 3, 73, "" },
         /*  1*/ { BARCODE_AUSPOST, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 405: Invalid character in DPID (first 8 characters) (digits only)" },
@@ -151,12 +154,12 @@ static void test_input(int index, int debug) {
         /*  4*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
         /*  5*/ { BARCODE_AUSPOST, "1234567890123456", 0, 3, 103, "" },
         /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for length 16)" },
-        /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, // Length 18
+        /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, /* Length 18 */
         /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133, "" },
         /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 406: Invalid character in data (digits only for length 23)" },
-        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input wrong length (8, 13, 16, 18 or 23 characters only)" }, // No leading zeroes added
+        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input wrong length (8, 13, 16, 18 or 23 characters only)" }, /* No leading zeroes added */
         /* 11*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "" },
-        /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, // Leading zeroes added
+        /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, /* Leading zeroes added */
         /* 13*/ { BARCODE_AUSREPLY, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input too long (8 character maximum)" },
         /* 14*/ { BARCODE_AUSROUTE, "123456", 0, 3, 73, "" },
         /* 15*/ { BARCODE_AUSROUTE, "12345", 0, 3, 73, "" },
@@ -174,7 +177,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -196,11 +199,13 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-// Australia Post Customer Barcoding Technical Specifications (Revised 3 Aug 2012) "AusPost Tech Specs"
-// https://auspost.com.au/content/dam/auspost_corp/media/documents/customer-barcode-technical-specifications-aug2012.pdf
-// Australia Post A Guide To Printing the 4-State Barcode (Revised 16 March 2012) "AusPost Guide"
-// https://auspost.com.au/content/dam/auspost_corp/media/documents/a-guide-to-printing-the-4state-barcode-v31-mar2012.pdf
-static void test_encode(int index, int generate, int debug) {
+/* Australia Post Customer Barcoding Technical Specifications (Revised 3 Aug 2012) "AusPost Tech Specs"
+   https://auspost.com.au/content/dam/auspost_corp/media/documents/customer-barcode-technical-specifications-aug2012.pdf
+   Australia Post A Guide To Printing the 4-State Barcode (Revised 16 March 2012) "AusPost Guide"
+   https://auspost.com.au/content/dam/auspost_corp/media/documents/a-guide-to-printing-the-4state-barcode-v31-mar2012.pdf
+*/
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -297,13 +302,13 @@ static void test_encode(int index, int generate, int debug) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -313,7 +318,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -346,8 +351,9 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(int index, int debug) {
+/* #181 Christian Hartlage OSS-Fuzz */
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -355,7 +361,7 @@ static void test_fuzz(int index, int debug) {
         int length;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /* 0*/ { BARCODE_AUSROUTE, "A\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
         /* 1*/ { BARCODE_AUSROUTE, "1\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
@@ -372,7 +378,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -390,12 +396,12 @@ static void test_fuzz(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_fuzz", test_fuzz },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

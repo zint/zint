@@ -31,7 +31,8 @@
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -58,7 +59,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -82,7 +83,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -110,7 +112,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -128,7 +130,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -158,7 +161,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -183,7 +186,8 @@ static void test_input(int index, int debug) {
      https://telepen.co.uk/wp-content/uploads/2018/10/Barcode-Symbology-information-and-History.pdf */
 /* E2326U: SB Telepen Barcode Fonts Guide Issue 2 (Apr 2009)
      https://telepen.co.uk/wp-content/uploads/2018/09/SB-Telepen-Barcode-Fonts-V2.pdf */
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -242,7 +246,7 @@ static void test_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -252,7 +256,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -286,7 +290,8 @@ static void test_encode(int index, int generate, int debug) {
 }
 
 /* #181 Nico Gunkel OSS-Fuzz */
-static void test_fuzz(int index, int debug) {
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -314,7 +319,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -370,11 +375,11 @@ static const char TeleTable[128][16] = {
 };
 
 /* Dummy to generate lengths table */
-static void test_generate_lens(int generate) {
+static void test_generate_lens(const testCtx *const p_ctx) {
 
     int i;
 
-    if (!generate) {
+    if (!p_ctx->generate) {
         return;
     }
 
@@ -391,13 +396,13 @@ static void test_generate_lens(int generate) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
-        { "test_generate_lens", test_generate_lens, 0, 1, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_fuzz", test_fuzz },
+        { "test_generate_lens", test_generate_lens },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

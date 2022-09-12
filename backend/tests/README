@@ -62,21 +62,47 @@ To run a single dataset item in a single test function, use '-i <index>':
 
   backend/tests/test_dotcode -f input -i 2
 
+To run a range of dataset items in a single test function, use '-i <start>,<end>':
+
+  backend/tests/test_dotcode -f input -i 2,5
+
+To exclude a single dataset item in a single test function, use '-x <index>':
+
+  backend/tests/test_dotcode -f input -x 4
+
+This can also take a range, '-x <start>,<end>':
+
+  backend/tests/test_dotcode -f input -x 4,6
+
+The include and exclude options can be used together:
+
+  backend/tests/test_dotcode -f input -i 2,7 -x 4
+
 To show debug info (if any), use '-d <flag>':
 
   backend/tests/test_dotcode -f input -i 2 -d 1
 
+E.g. to print which dataset items are being run, use '-d 16':
+
+  backend/tests/test_dotcode -f input -d 16 -i 2
+
 (for other flags see <project-dir>/backend/tests/testcommon.h)
-
-To generate test data, use '-g':
-
-  backend/tests/test_dotcode -f encode -g
 
 To run a test against BWIPP (if any), use '-d 128':
 
   backend/tests/test_composite -d 128
 
 (see also <project-dir>/backend/tests/tools/run_bwipp_tests.sh)
+
+To run a test against ZXing-C++ (if any), use '-d 512':
+
+  backend/tests/test_rss -d 512
+
+(see also <project-dir>/backend/tests/tools/run_zxingcpp_tests.sh)
+
+To generate test data, use '-g':
+
+  backend/tests/test_dotcode -f encode -g
 
 ------------------------------------------------------------------------------
 

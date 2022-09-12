@@ -27,19 +27,20 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "test_ksx1001_tab.h"
 #include "../ksx1001.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-//#define TEST_JUST_SAY_GNO
+/* #define TEST_JUST_SAY_GNO */
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/ksx1001_gnu.h"
 #endif
 
 INTERNAL int u_ksx1001_test(const unsigned int u, unsigned char *dest);
 
-// Version of `u_ksx1001()` taking unsigned int destination for backward-compatible testing
+/* Version of `u_ksx1001()` taking unsigned int destination for backward-compatible testing */
 static int u_ksx1001_int(const unsigned int u, unsigned int *d) {
     unsigned char dest[2];
     int ret = u_ksx1001_test(u, dest);
@@ -49,8 +50,9 @@ static int u_ksx1001_int(const unsigned int u, unsigned int *d) {
     return ret;
 }
 
-// As control convert to KS X 1001 using simple table generated from
-// https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/KSC/KSX1001.TXT plus simple processing
+/* As control convert to KS X 1001 using simple table generated from
+   https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/KSC/KSX1001.TXT plus simple processing
+*/
 static int u_ksx1001_int2(unsigned int u, unsigned int *dest) {
     int tab_length, start_i, end_i;
     int i;
@@ -59,15 +61,15 @@ static int u_ksx1001_int2(unsigned int u, unsigned int *dest) {
         *dest = u;
         return 1;
     }
-    if (u == 0x20AC) { // Euro sign added KS X 1001:1998
+    if (u == 0x20AC) { /* Euro sign added KS X 1001:1998 */
         *dest = 0x2266 + 0x8080;
         return 2;
     }
-    if (u == 0xAE) { // Registered trademark added KS X 1001:1998
+    if (u == 0xAE) { /* Registered trademark added KS X 1001:1998 */
         *dest = 0x2267 + 0x8080;
         return 2;
     }
-    if (u == 0x327E) { // Korean postal code symbol added KS X 1001:2002
+    if (u == 0x327E) { /* Korean postal code symbol added KS X 1001:2002 */
         *dest = 0x2268 + 0x8080;
         return 2;
     }
@@ -92,7 +94,8 @@ static int u_ksx1001_int2(unsigned int u, unsigned int *dest) {
 #define TEST_INT_PERF_ITERATIONS    100
 #endif
 
-static void test_u_ksx1001_int(int debug) {
+static void test_u_ksx1001_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     int ret, ret2;
     unsigned int val, val2;
@@ -115,7 +118,7 @@ static void test_u_ksx1001_int(int debug) {
 #endif
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+        if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
         val = val2 = 0;
@@ -126,7 +129,7 @@ static void test_u_ksx1001_int(int debug) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
 #ifdef TEST_JUST_SAY_GNO
-        if (i >= 0x80) { // `ksx1001_wctomb_zint()` doesn't handle ASCII
+        if (i >= 0x80) { /* `ksx1001_wctomb_zint()` doesn't handle ASCII */
             if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
                 val2 = 0;
                 ret2 = ksx1001_wctomb_zint(&val2, i);
@@ -146,7 +149,7 @@ static void test_u_ksx1001_int(int debug) {
 
             assert_equal(ret, ret2, "i:%d 0x%04X ret %d != ret2 %d, val 0x%04X, val2 0x%04X\n", (int) i, i, ret, ret2, val, val2);
             if (ret2) {
-                val2 += 0x8080; // `ksx1001_wctomb_zint()` returns pure KS X 1001 values, convert to EUC-KR
+                val2 += 0x8080; /* `ksx1001_wctomb_zint()` returns pure KS X 1001 values, convert to EUC-KR */
                 assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
             }
         }
@@ -165,8 +168,8 @@ static void test_u_ksx1001_int(int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_u_ksx1001_int", test_u_ksx1001_int, 0, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_u_ksx1001_int", test_u_ksx1001_int },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

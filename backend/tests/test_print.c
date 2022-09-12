@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,14 +27,15 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include <sys/stat.h>
 
 #define TEST_PRINT_OVERWRITE_EXPECTED   "bmp,emf,eps,gif,pcx,png,svg,tif,txt"
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -71,7 +72,8 @@ static void test_print(int index, int generate, int debug) {
     int have_ghostscript = 0;
     int have_vnu = 0;
     int have_tiffinfo = 0;
-    if (generate) {
+
+    if (p_ctx->generate) {
         have_identify = testUtilHaveIdentify();
         have_libreoffice = testUtilHaveLibreOffice();
         have_ghostscript = testUtilHaveGhostscript();
@@ -83,7 +85,7 @@ static void test_print(int index, int generate, int debug) {
 
     assert_nonzero(testUtilDataPath(data_dir, sizeof(data_dir), "/backend/tests/data", NULL), "testUtilDataPath == 0\n");
 
-    if (generate) {
+    if (p_ctx->generate) {
         if (!testUtilDirExists(data_dir)) {
             ret = testUtilMkDir(data_dir);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir, ret, errno, strerror(errno));
@@ -110,7 +112,7 @@ static void test_print(int index, int generate, int debug) {
         strcat(data_subdir, "/");
         strcat(data_subdir, exts[j]);
 
-        if (generate) {
+        if (p_ctx->generate) {
             if (!testUtilDirExists(data_subdir)) {
                 ret = testUtilMkDir(data_subdir);
                 assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_subdir, ret, errno, strerror(errno));
@@ -119,7 +121,7 @@ static void test_print(int index, int generate, int debug) {
 
         for (i = 0; i < data_size; i++) {
 
-            if (index != -1 && i != index) continue;
+            if (testContinue(p_ctx, i)) continue;
 
             symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
@@ -147,7 +149,7 @@ static void test_print(int index, int generate, int debug) {
             ret = ZBarcode_Print(symbol, 0);
             assert_zero(ret, "i:%d j:%d %s %s ZBarcode_Print %s ret %d != 0\n", i, j, exts[j], testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-            if (generate) {
+            if (p_ctx->generate) {
                 if (j == 0) {
                     printf("        /*%3d*/ { %s, %d, %d, %.8g, \"%s\", \"%s\" },\n",
                             i, testUtilBarcodeName(data[i].symbology), data[i].option_1, data[i].option_2, data[i].scale,
@@ -163,17 +165,17 @@ static void test_print(int index, int generate, int debug) {
                         }
                     } else if (strcmp(exts[j], "svg") == 0 || strcmp(exts[j], "emf") == 0) {
                         if (have_libreoffice) {
-                            ret = testUtilVerifyLibreOffice(expected_file, debug); // Slow
+                            ret = testUtilVerifyLibreOffice(expected_file, debug); /* Slow */
                             assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
                         if (have_vnu && strcmp(exts[j], "svg") == 0) {
-                            ret = testUtilVerifyVnu(expected_file, debug); // Very slow
+                            ret = testUtilVerifyVnu(expected_file, debug); /* Very slow */
                             assert_zero(ret, "i:%d %s vnu %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
-                    } else if (strcmp(exts[j], "tif") == 0 && have_tiffinfo) { // Much faster (and better) than identify
+                    } else if (strcmp(exts[j], "tif") == 0 && have_tiffinfo) { /* Much faster (and better) than identify */
                         ret = testUtilVerifyTiffInfo(expected_file, debug);
                         assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
-                    } else if (strcmp(exts[j], "txt") != 0) { // I.e. rasters
+                    } else if (strcmp(exts[j], "txt") != 0) { /* I.e. rasters */
                         if (have_identify) {
                             ret = testUtilVerifyIdentify(expected_file, debug);
                             assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
@@ -202,7 +204,7 @@ static void test_print(int index, int generate, int debug) {
                     assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
                 }
 
-                if (index == -1) assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+                if (p_ctx->index == -1) assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
             }
 
             ZBarcode_Delete(symbol);
@@ -214,8 +216,8 @@ static void test_print(int index, int generate, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_print", test_print, 1, 1, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_print", test_print },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -224,3 +226,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -41,25 +43,25 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 65, 0, 1, 787 },
         /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 65, 0, 1, 799 }, // 1 mod-10 check digit
+        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 65, 0, 1, 799 }, /* 1 mod-10 check digit */
         /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 65, 0, 1, 811 }, // 2 mod-10 check digits
+        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 65, 0, 1, 811 }, /* 2 mod-10 check digits */
         /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 65, 0, 1, 799 }, // 1 mod-11 check digit
+        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 65, 0, 1, 799 }, /* 1 mod-11 check digit */
         /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "3", 65, 0, 1, 811 }, // 1 mod-11 double check digit "10"
+        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "3", 65, 0, 1, 811 }, /* 1 mod-11 double check digit "10" */
         /*  9*/ { BARCODE_MSI_PLESSEY, 3, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 65, 0, 1, 811 }, // 1 mod-11 and 1 mod-10 check digit
+        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 65, 0, 1, 811 }, /* 1 mod-11 and 1 mod-10 check digit */
         /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "3", 65, 0, 1, 823 }, // 1 mod-11 double check digit "10" and 1 mod-10 check digit
+        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "3", 65, 0, 1, 823 }, /* 1 mod-11 double check digit "10" and 1 mod-10 check digit */
         /* 13*/ { BARCODE_MSI_PLESSEY, 4, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 65, 0, 1, 799 }, // 1 NCR mod-11 check digit
+        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 65, 0, 1, 799 }, /* 1 NCR mod-11 check digit */
         /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 65, 0, 1, 811 }, // 1 NCR mod-11 and 1 mod-10 check digit
+        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 65, 0, 1, 811 }, /* 1 NCR mod-11 and 1 mod-10 check digit */
         /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 18*/ { BARCODE_PLESSEY, -1, "A", 65, 0, 1, 1107 },
         /* 19*/ { BARCODE_PLESSEY, -1, "A", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -74,7 +76,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -98,7 +100,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -107,7 +110,7 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567", "1234567" },
         /*  1*/ { BARCODE_MSI_PLESSEY, 0, "1234567", "1234567" },
@@ -133,8 +136,8 @@ static void test_hrt(int index, int debug) {
         /* 21*/ { BARCODE_MSI_PLESSEY, 2, "123456", "12345666" },
         /* 22*/ { BARCODE_MSI_PLESSEY, 3, "123456", "1234560" },
         /* 23*/ { BARCODE_MSI_PLESSEY, 4, "123456", "12345609" },
-        /* 24*/ { BARCODE_MSI_PLESSEY, 3, "2211", "221110" }, // Mod-11 check digit '10'
-        /* 25*/ { BARCODE_MSI_PLESSEY, 3 + 10, "2211", "2211" }, // Mod-11 check digit '10'
+        /* 24*/ { BARCODE_MSI_PLESSEY, 3, "2211", "221110" }, /* Mod-11 check digit '10' */
+        /* 25*/ { BARCODE_MSI_PLESSEY, 3 + 10, "2211", "2211" }, /* Mod-11 check digit '10' */
         /* 26*/ { BARCODE_MSI_PLESSEY, 4, "2211", "2211100" },
         /* 27*/ { BARCODE_MSI_PLESSEY, 4 + 10, "2211", "2211" },
         /* 28*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
@@ -147,7 +150,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -165,7 +168,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -175,12 +179,12 @@ static void test_input(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1", 0, 1, 19 },
         /*  1*/ { BARCODE_MSI_PLESSEY, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, -2, "1", 0, 1, 19 }, // < 0 ignored
-        /*  3*/ { BARCODE_MSI_PLESSEY, 7, "1", 0, 1, 19 }, // > 6 ignored
+        /*  2*/ { BARCODE_MSI_PLESSEY, -2, "1", 0, 1, 19 }, /* < 0 ignored */
+        /*  3*/ { BARCODE_MSI_PLESSEY, 7, "1", 0, 1, 19 }, /* > 6 ignored */
         /*  4*/ { BARCODE_PLESSEY, -1, "A", 0, 1, 83 },
         /*  5*/ { BARCODE_PLESSEY, -1, "G", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
@@ -192,7 +196,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -213,7 +217,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -269,13 +274,13 @@ static void test_encode(int index, int generate, int debug) {
     char bwipp_buf[4096];
     char bwipp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -285,7 +290,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -324,8 +329,9 @@ static void test_encode(int index, int generate, int debug) {
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 #define TEST_PERF_TIME(arg) ((arg) * 1000.0 / CLOCKS_PER_SEC)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -363,7 +369,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -393,7 +399,7 @@ static void test_perf(int index, int debug) {
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
             diff_buf_inter += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
 
             start = clock();
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
@@ -413,7 +419,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -421,12 +427,12 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

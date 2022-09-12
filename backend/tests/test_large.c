@@ -53,13 +53,13 @@
 
 INTERNAL int clz_u64_test(uint64_t x);
 
-static void test_clz_u64(int index) {
+static void test_clz_u64(const testCtx *const p_ctx) {
 
     struct item {
         uint64_t s;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 0x0, 64 },
         /*  1*/ { 0x1, 63 },
@@ -195,7 +195,7 @@ static void test_clz_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         ret = clz_u64_test(data[i].s);
         assert_equal(ret, data[i].ret, "i:%d 0x%" LX_FMT "X ret %d != %d\n", i, data[i].s, ret, data[i].ret);
@@ -204,14 +204,14 @@ static void test_clz_u64(int index) {
     testFinish();
 }
 
-static void test_load(int index) {
+static void test_load(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         large_int s;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), LI(0, 0), LI(0, 0) },
         /*  1*/ { LI(1, 1), LI(0, 0), LI(0, 0) },
@@ -228,7 +228,7 @@ static void test_load(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_load(&data[i].t, &data[i].s);
 
@@ -241,7 +241,7 @@ static void test_load(int index) {
     testFinish();
 }
 
-static void test_load_str_u64(int index) {
+static void test_load_str_u64(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
@@ -249,15 +249,15 @@ static void test_load_str_u64(int index) {
         int length;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), "0", -1, LI(0, 0) },
         /*  1*/ { LI(0, 1), "1", -1, LI(1, 0) },
         /*  2*/ { LI(1, 1), "4294967296", -1, LI(4294967296, 0) },
         /*  3*/ { LI(1, 1), "18446744073709551615", -1, LI(0xFFFFFFFFFFFFFFFF, 0) },
-        /*  4*/ { LI(1, 1), "18446744073709551616", -1, LI(0, 0) }, // Overflow 18446744073709551616 == 2^64 == 0
-        /*  5*/ { LI(2, 2), "123", 2, LI(12, 0) }, // Only reads up to length
-        /*  6*/ { LI(2, 2), "123A1X", -1, LI(123, 0) }, // Only reads decimal
+        /*  4*/ { LI(1, 1), "18446744073709551616", -1, LI(0, 0) }, /* Overflow 18446744073709551616 == 2^64 == 0 */
+        /*  5*/ { LI(2, 2), "123", 2, LI(12, 0) }, /* Only reads up to length */
+        /*  6*/ { LI(2, 2), "123A1X", -1, LI(123, 0) }, /* Only reads decimal */
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -269,7 +269,7 @@ static void test_load_str_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_load_str_u64(&data[i].t, (unsigned char *) data[i].s, data[i].length == -1 ? (int) strlen(data[i].s) : data[i].length);
 
@@ -282,14 +282,14 @@ static void test_load_str_u64(int index) {
     testFinish();
 }
 
-static void test_add_u64(int index) {
+static void test_add_u64(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         uint64_t s;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 0, LI(0, 0) },
         /*  1*/ { LI(1, 0), 0, LI(1, 0) },
@@ -301,7 +301,7 @@ static void test_add_u64(int index) {
         /*  7*/ { LI(0xFFFFFFFFFFFFFFFE, 100), 4, LI(2, 101) },
         /*  8*/ { LI(0xFFFFFFFFFFFFFF0E, 0xFFFFFE), 0xFF, LI(0xD, 0xFFFFFF) },
         /*  9*/ { LI(0xFFFFFFFF00000001, 0xFFFFFFFF), 0xFFFFFFFF, LI(0, 0x100000000) },
-        /* 10*/ { LI(0x0000000000000001, 0xFFFFFFFFFFFFFFFF), 0xFFFFFFFFFFFFFFFF, LI(0, 0) }, // Overflow
+        /* 10*/ { LI(0x0000000000000001, 0xFFFFFFFFFFFFFFFF), 0xFFFFFFFFFFFFFFFF, LI(0, 0) }, /* Overflow */
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -313,7 +313,7 @@ static void test_add_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_add_u64(&data[i].t, data[i].s);
 
@@ -326,14 +326,14 @@ static void test_add_u64(int index) {
     testFinish();
 }
 
-static void test_sub_u64(int index) {
+static void test_sub_u64(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         uint64_t s;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 0, LI(0, 0) },
         /*  1*/ { LI(1, 0), 0, LI(1, 0) },
@@ -357,7 +357,7 @@ static void test_sub_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_sub_u64(&data[i].t, data[i].s);
 
@@ -370,14 +370,14 @@ static void test_sub_u64(int index) {
     testFinish();
 }
 
-static void test_mul_u64(int index) {
+static void test_mul_u64(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         uint64_t s;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 0, LI(0, 0) },
         /*  1*/ { LI(1, 0), 0, LI(0, 0) },
@@ -392,7 +392,7 @@ static void test_mul_u64(int index) {
         /* 10*/ { LI(0xFFFFFFFFFFFFFFFF, 0x3FFFFFFFFFFFFFFF), 4, LI(0xFFFFFFFFFFFFFFFC, 0xFFFFFFFFFFFFFFFF) },
         /* 11*/ { LI(0x3333333333333333, 0x111), 5, LI(0xFFFFFFFFFFFFFFFF, 0x555) },
         /* 12*/ { LI(0x3333333333333334, 0x111), 5, LI(4, 0x556) },
-        /* 13*/ { LI(0x2222222222222222, 0x2222222222222222), 8, LI(0x1111111111111110, 0x1111111111111111) }, // Overflow
+        /* 13*/ { LI(0x2222222222222222, 0x2222222222222222), 8, LI(0x1111111111111110, 0x1111111111111111) }, /* Overflow */
         /* 14*/ { LI(432, 518), 10, LI(4320, 5180) },
         /* 15*/ { LI(0xCCCCCCCCCCCCCCCC, 0xCCCCCCCCCCCCCCC), 20, LI(0xFFFFFFFFFFFFFFF0, 0xFFFFFFFFFFFFFFFF) },
         /* 16*/ { LI(432, 518), 100, LI(43200, 51800) },
@@ -414,7 +414,7 @@ static void test_mul_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_mul_u64(&data[i].t, data[i].s);
 
@@ -427,7 +427,7 @@ static void test_mul_u64(int index) {
     testFinish();
 }
 
-static void test_div_u64(int index) {
+static void test_div_u64(const testCtx *const p_ctx) {
 
     uint64_t r;
     struct item {
@@ -436,12 +436,12 @@ static void test_div_u64(int index) {
         uint64_t expected_r;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 1, 0, LI(0, 0) },
         /*  1*/ { LI(1, 0), 1, 0, LI(1, 0) },
         /*  2*/ { LI(4990000, 0), 509999, 400009, LI(9, 0) },
-        /*  3*/ { LI(3, 0), 2, 1, LI(1, 0) }, // BEGIN divmnu64.c.txt (first 3 errors)
+        /*  3*/ { LI(3, 0), 2, 1, LI(1, 0) }, /* BEGIN divmnu64.c.txt (first 3 errors) */
         /*  4*/ { LI(3, 0), 3, 0, LI(1, 0) },
         /*  5*/ { LI(3, 0), 4, 3, LI(0, 0) },
         /*  6*/ { LI(0, 0), 0xFFFFFFFF, 0, LI(0, 0) },
@@ -465,10 +465,10 @@ static void test_div_u64(int index) {
         /* 24*/ { LI(0x0000FFFF0000FFFF, 0), 0x0000FFFF0000FFFF, 0, LI(1, 0) },
         /* 25*/ { LI(0x0000FFFF0000FFFF, 0), 0x100000000, 0x0000FFFF, LI(0x0000FFFF, 0) },
         /* 26*/ { LI(0x00004567000089AB, 0x00000123), 0x100000000, 0x000089AB, LI(0x0000012300004567, 0) },
-        /* 27*/ { LI(0x0000FFFE00000000, 0x00008000), 0x000080000000FFFF, 0x7FFF0000FFFF, LI(0xFFFFFFFF, 0) }, // END divmnu64.c.txt (last 6 96-bit divisor); shows that first qhat0 can = b + 1
-        /* 28*/ { LI(0, 0x80000000FFFE0000), 0x80000000FFFF0000, 0x1FFFE00000000, LI(0xFFFFFFFFFFFE0000, 0) }, // Shows that first qhat1 can = b + 1
-        /* 29*/ { LI(0xFFFE000000000000, 0x80000000), 0x80000000FFFF0000, 0x7FFF0000FFFF0000, LI(0xFFFFFFFF, 0) }, // First qhat0 = b + 1
-        /* 30*/ { LI(0x7FFF800000000000, 0), 0x800000000001, 0x7FFFFFFF0002, LI(0xFFFE, 0) }, // "add back" examples won't trigger as divisor only 2 digits (in 2**32 base)
+        /* 27*/ { LI(0x0000FFFE00000000, 0x00008000), 0x000080000000FFFF, 0x7FFF0000FFFF, LI(0xFFFFFFFF, 0) }, /* END divmnu64.c.txt (last 6 96-bit divisor); shows that first qhat0 can = b + 1 */
+        /* 28*/ { LI(0, 0x80000000FFFE0000), 0x80000000FFFF0000, 0x1FFFE00000000, LI(0xFFFFFFFFFFFE0000, 0) }, /* Shows that first qhat1 can = b + 1 */
+        /* 29*/ { LI(0xFFFE000000000000, 0x80000000), 0x80000000FFFF0000, 0x7FFF0000FFFF0000, LI(0xFFFFFFFF, 0) }, /* First qhat0 = b + 1 */
+        /* 30*/ { LI(0x7FFF800000000000, 0), 0x800000000001, 0x7FFFFFFF0002, LI(0xFFFE, 0) }, /* "add back" examples won't trigger as divisor only 2 digits (in 2**32 base) */
         /* 31*/ { LI(0, 0x7FFF800000000000), 0x800000000001, 0x1FFFE0000, LI(0xFFFFFFFE00020000, 0xFFFE) },
         /* 32*/ { LI(0x0000000000000003, 0x80000000), 0x2000000000000001, 0x1FFFFFFC00000004, LI(0x3FFFFFFFF, 0) },
         /* 33*/ { LI(0x0000000000000003, 0x00008000), 0x2000000000000001, 0x1FFFFFFFFFFC0004, LI(0x3FFFF, 0) },
@@ -506,26 +506,26 @@ static void test_div_u64(int index) {
         /* 65*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF), 0x3000000000000000, 0xFFFFFFFFFFFFFFF, LI(0x5555555555555555, 5) },
         /* 66*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF), 0xFFFFFFFFFFFFFFFF, 0, LI(1, 1) },
         /* 67*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFEFFFFFFFF), 0xFFFFFFFFFFFFFFFF, 0xFFFFFFFEFFFFFFFF, LI(0xFFFFFFFF00000000, 0) },
-        /* 68*/ { LI(0x00000F70677372AE, 0), 0x453AF5, 0, LI(0x391736, 0) }, // Divisor 0x453AF5 (4537077) used by RSS14
+        /* 68*/ { LI(0x00000F70677372AE, 0), 0x453AF5, 0, LI(0x391736, 0) }, /* Divisor 0x453AF5 (4537077) used by RSS14 */
         /* 69*/ { LI(0x00000F70677372AF, 0), 0x453AF5, 1, LI(0x391736, 0) },
         /* 70*/ { LI(0x00000F70677372B0, 0), 0x453AF5, 2, LI(0x391736, 0) },
         /* 71*/ { LI(0x453AF4, 0), 0x453AF5, 0x453AF4, LI(0, 0) },
         /* 72*/ { LI(0x453AF5, 0), 0x453AF5, 0, LI(1, 0) },
         /* 73*/ { LI(0x453AF6, 0), 0x453AF5, 1, LI(1, 0) },
         /* 74*/ { { 0x453AF5 * 10 - 1, 0 }, 0x453AF5, 0x453AF4, LI(9, 0) },
-        /* 75*/ { LI(0x000003A03166E0CE, 0), 0x1EB983, 0x1EB982, LI(0x1E35C4, 0) }, // Divisor 0x1EB983 (2013571) used by RSS_LTD
+        /* 75*/ { LI(0x000003A03166E0CE, 0), 0x1EB983, 0x1EB982, LI(0x1E35C4, 0) }, /* Divisor 0x1EB983 (2013571) used by RSS_LTD */
         /* 76*/ { LI(0x000003A03166E0CF, 0), 0x1EB983, 0, LI(0x1E35C5, 0) },
         /* 77*/ { LI(0x000003A03166E0D0, 0), 0x1EB983, 1, LI(0x1E35C5, 0) },
-        /* 78*/ { LI(0x93BB793904CAFFFF, 0x13F50B74), 32, 0x1F, LI(0xA49DDBC9C82657FF, 0x9FA85B) }, // Divisor 32 used by MAILMARK
+        /* 78*/ { LI(0x93BB793904CAFFFF, 0x13F50B74), 32, 0x1F, LI(0xA49DDBC9C82657FF, 0x9FA85B) }, /* Divisor 32 used by MAILMARK */
         /* 79*/ { LI(0x93BB793904CB0000, 0x13F50B74), 32, 0, LI(0xA49DDBC9C8265800, 0x9FA85B) },
         /* 80*/ { LI(0x93BB793904CB0001, 0x13F50B74), 32, 1, LI(0xA49DDBC9C8265800, 0x9FA85B) },
-        /* 81*/ { LI(0x93BB793904CAFFFF, 0x13F50B74), 30, 0x1D, LI(0x8D752EB519C27FFF, 0xAA4D2E) }, // Divisor 30 used by MAILMARK
+        /* 81*/ { LI(0x93BB793904CAFFFF, 0x13F50B74), 30, 0x1D, LI(0x8D752EB519C27FFF, 0xAA4D2E) }, /* Divisor 30 used by MAILMARK */
         /* 82*/ { LI(0x93BB793904CB0000, 0x13F50B74), 30, 0, LI(0x8D752EB519C28000, 0xAA4D2E) },
         /* 83*/ { LI(0x93BB793904CB0001, 0x13F50B74), 30, 1, LI(0x8D752EB519C28000, 0xAA4D2E) },
-        /* 84*/ { LI(0x4ABC16A2E5C005FF, 0x16907B2A2), 636,  635, LI(0xD70F9761AA390E7F, 0x9151FD) }, // Divisor 636 used by ONECODE
+        /* 84*/ { LI(0x4ABC16A2E5C005FF, 0x16907B2A2), 636,  635, LI(0xD70F9761AA390E7F, 0x9151FD) }, /* Divisor 636 used by ONECODE */
         /* 85*/ { LI(0x4ABC16A2E5C00600, 0x16907B2A2), 636, 0, LI(0xD70F9761AA390E80, 0x9151FD) },
         /* 86*/ { LI(0x4ABC16A2E5C00601, 0x16907B2A2), 636, 1, LI(0xD70F9761AA390E80, 0x9151FD) },
-        /* 87*/ { LI(0x4ABC16A2E5C00734, 0x16907B2A2), 1365, 1364, LI(0xD93B96FDAE65FA60, 0x43B5AC) }, // Divisor 1365 used by ONECODE
+        /* 87*/ { LI(0x4ABC16A2E5C00734, 0x16907B2A2), 1365, 1364, LI(0xD93B96FDAE65FA60, 0x43B5AC) }, /* Divisor 1365 used by ONECODE */
         /* 88*/ { LI(0x4ABC16A2E5C00735, 0x16907B2A2), 1365, 0, LI(0xD93B96FDAE65FA61, 0x43B5AC) },
         /* 89*/ { LI(0x4ABC16A2E5C00736, 0x16907B2A2), 1365, 1, LI(0xD93B96FDAE65FA61, 0x43B5AC) },
     };
@@ -539,7 +539,7 @@ static void test_div_u64(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         r = large_div_u64(&data[i].t, data[i].s);
 
@@ -554,14 +554,14 @@ static void test_div_u64(int index) {
     testFinish();
 }
 
-static void test_unset_bit(int index) {
+static void test_unset_bit(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         int s;
         large_int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 0, LI(0, 0) },
         /*  1*/ { LI(0, 0xFFFFFFFFFFFFFFFF), 0, LI(0, 0xFFFFFFFFFFFFFFFF) },
@@ -705,7 +705,7 @@ static void test_unset_bit(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         large_unset_bit(&data[i].t, data[i].s);
 
@@ -718,7 +718,7 @@ static void test_unset_bit(int index) {
     testFinish();
 }
 
-static void test_uint_array(int index) {
+static void test_uint_array(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
@@ -726,7 +726,7 @@ static void test_uint_array(int index) {
         int bits;
         unsigned int expected[130];
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), 0, 0, { 0 } },
         /*  1*/ { LI(1, 1), 16, 0, { 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1 } },
@@ -757,10 +757,10 @@ static void test_uint_array(int index) {
         /* 26*/ { LI(1, 1), 7, 19, { 0, 0, 0, 0x80, 0, 0, 1 } },
         /* 27*/ { LI(1, 1), 5, 31, { 0, 0, 4, 0, 1 } },
         /* 28*/ { LI(1, 1), 4, 32, { 0, 1, 0, 1 } },
-        /* 29*/ { LI(1, 1), 4, 33, { 0, 1, 0, 1 } }, // Bits > 32 ignored and treated as 32
-        /* 30*/ { LI(0xF0F0F0F0F0F0F0F0, 0xE0F0F0F0F0F0F0F0), 129, 1, { 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 } }, // Leading zeroes
-        /* 31*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF), 130, 1, { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, // Leading zeroes
-        /* 32*/ { LI(0xFFFFFFFFFFFFFFFF, 0xEFFFFFFFFFFFFFFF), 127, 1, { 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, // Truncated
+        /* 29*/ { LI(1, 1), 4, 33, { 0, 1, 0, 1 } }, /* Bits > 32 ignored and treated as 32 */
+        /* 30*/ { LI(0xF0F0F0F0F0F0F0F0, 0xE0F0F0F0F0F0F0F0), 129, 1, { 0, 1, 1, 1, 0, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 0, 0, 0, 0 } }, /* Leading zeroes */
+        /* 31*/ { LI(0xFFFFFFFFFFFFFFFF, 0xFFFFFFFFFFFFFFFF), 130, 1, { 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, /* Leading zeroes */
+        /* 32*/ { LI(0xFFFFFFFFFFFFFFFF, 0xEFFFFFFFFFFFFFFF), 127, 1, { 1, 1, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1 } }, /* Truncated */
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -779,7 +779,7 @@ static void test_uint_array(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         memset(uint_array, 0, sizeof(uint_array));
 
@@ -807,13 +807,13 @@ static void test_uint_array(int index) {
     testFinish();
 }
 
-static void test_dump(int index) {
+static void test_dump(const testCtx *const p_ctx) {
 
     struct item {
         large_int t;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { LI(0, 0), "0x0" },
         /*  1*/ { LI(1, 0), "0x1" },
@@ -870,7 +870,7 @@ static void test_dump(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         memset(dump, 0, sizeof(dump));
 
@@ -885,17 +885,17 @@ static void test_dump(int index) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_clz_u64", test_clz_u64, 1, 0, 0 },
-        { "test_load", test_load, 1, 0, 0 },
-        { "test_load_str_u64", test_load_str_u64, 1, 0, 0 },
-        { "test_add_u64", test_add_u64, 1, 0, 0 },
-        { "test_sub_u64", test_sub_u64, 1, 0, 0 },
-        { "test_mul_u64", test_mul_u64, 1, 0, 0 },
-        { "test_div_u64", test_div_u64, 1, 0, 0 },
-        { "test_unset_bit", test_unset_bit, 1, 0, 0 },
-        { "test_uint_array", test_uint_array, 1, 0, 0 },
-        { "test_dump", test_dump, 1, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_clz_u64", test_clz_u64 },
+        { "test_load", test_load },
+        { "test_load_str_u64", test_load_str_u64 },
+        { "test_add_u64", test_add_u64 },
+        { "test_sub_u64", test_sub_u64 },
+        { "test_mul_u64", test_mul_u64 },
+        { "test_div_u64", test_div_u64 },
+        { "test_unset_bit", test_unset_bit },
+        { "test_uint_array", test_uint_array },
+        { "test_dump", test_dump },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

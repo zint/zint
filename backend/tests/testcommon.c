@@ -64,7 +64,7 @@ static const char *testFunc = NULL;
 
 /* Visual C++ 6 doesn't support variadic args to macros, so make do with functions, which have inferior behaviour,
    e.g. don't exit on failure, `assert_equal()` type-specific */
-#if _MSC_VER == 1200 /* VC6 */
+#if (defined(_MSC_VER) && _MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) /* VC6 or C89 */
 #include <stdarg.h>
 void assert_zero(int exp, const char *fmt, ...) {
     assertionNum++;
@@ -174,32 +174,84 @@ void testReport(void) {
     }
 }
 
+/* Verifies that a string `src` (length <= 9) only uses digits. On success returns value in `p_val` */
+static int validate_int(const char src[], int *p_val) {
+    int val = 0;
+    int i;
+    const int length = (int) strlen(src);
+
+    if (length > 9) { /* Prevent overflow */
+        return 0;
+    }
+    for (i = 0; i < length; i++) {
+        if (src[i] < '0' || src[i] > '9') {
+            return 0;
+        }
+        val *= 10;
+        val += src[i] - '0';
+    }
+    *p_val = val;
+
+    return 1;
+}
+
+/* Verifies that a string `src` only uses digits or a comma-separated range of digits.
+   On success returns value in `p_val` and if present a range end value in `p_val_end` */
+static int validate_int_range(const char src[], int *p_val, int *p_val_end) {
+    int val = 0;
+    int val_end = -1;
+    const int length = (int) strlen(src);
+    int i, j;
+
+    for (i = 0; i < length; i++) {
+        if (src[i] < '0' || src[i] > '9') {
+            if (src[i] != ',') {
+                return 0;
+            }
+            val_end = 0;
+            for (j = i + 1; j < length; j++) {
+                if (src[j] < '0' || src[j] > '9') {
+                    return 0;
+                }
+                if (j - (i + 1) >= 9) { /* Prevent overflow */
+                    return 0;
+                }
+                val_end *= 10;
+                val_end += src[j] - '0';
+            }
+            break;
+        }
+        if (i >= 9) { /* Prevent overflow */
+            return 0;
+        }
+        val *= 10;
+        val += src[i] - '0';
+    }
+    *p_val = val;
+    *p_val_end = val_end;
+
+    return 1;
+}
+
 /* Begin test program, parse args */
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
-    int i, opt, ran;
-    long long_opt;
-    char *optarg_endptr = NULL;
-    int debug = 0;
+    int i, ran;
+    char *optarg;
     char *func = NULL;
     char func_buf[256 + 5];
-    int index = -1;
-    int generate = 0;
+    testCtx ctx;
 
-    typedef void (*func_void)(void);
-    typedef void (*func_debug)(int debug);
-    typedef void (*func_index)(int index);
-    typedef void (*func_index_debug)(int index, int debug);
-    typedef void (*func_generate)(int generate);
-    typedef void (*func_generate_debug)(int generate, int debug);
-    typedef void (*func_index_generate)(int index, int generate);
-    typedef void (*func_index_generate_debug)(int index, int generate, int debug);
+    ctx.index = ctx.index_end = ctx.exclude = ctx.exclude_end = -1;
+    ctx.generate = ctx.debug = 0;
 
     if (argc) {
-        char *filename = strrchr(argv[0], '/');
+        const char *filename;
 #ifdef _WIN32
-        if (filename == NULL) {
-            filename = strrchr(argv[0], '\\');
+        if ((filename = strrchr(argv[0], '\\')) == NULL) {
+            filename = strrchr(argv[0], '/');
         }
+#else
+        filename = strrchr(argv[0], '/');
 #endif
         if (filename) {
             assertionFilename = filename + 1;
@@ -208,19 +260,22 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
         }
     }
 
-    while ((opt = getopt(argc, argv, "d:f:gi:")) != -1) {
-        switch (opt) {
-            case 'd':
-                errno = 0;
-                long_opt = strtol(optarg, &optarg_endptr, 10);
-                if (errno || optarg_endptr == optarg || long_opt < 0 || long_opt > INT_MAX) {
-                    fprintf(stderr, "testRun: -d debug value invalid\n");
-                    debug = 0;
-                } else {
-                    debug = long_opt;
+    for (i = 1; i < argc; i++) {
+        if (strcmp(argv[i], "-d") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -d debug value missing, ignored\n");
+            } else {
+                optarg = argv[++i];
+                if (!validate_int(optarg, &ctx.debug)) {
+                    fprintf(stderr, "testRun: -d debug value invalid, ignored\n");
+                    ctx.debug = 0;
                 }
-                break;
-            case 'f':
+            }
+        } else if (strcmp(argv[i], "-f") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -f func value missing, ignored\n");
+            } else {
+                optarg = argv[++i];
                 if (strlen(optarg) < 256) {
                     if (strncmp(optarg, "test_", 5) == 0) {
                         strcpy(func_buf, optarg);
@@ -230,23 +285,34 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                     }
                     func = func_buf;
                 } else {
-                    fprintf(stderr, "testRun: -f func value too long\n");
+                    fprintf(stderr, "testRun: -f func value too long, ignored\n");
                     func = NULL;
                 }
-                break;
-            case 'g':
-                generate = 1;
-                break;
-            case 'i':
-                errno = 0;
-                long_opt = strtol(optarg, &optarg_endptr, 10);
-                if (errno || optarg_endptr == optarg || long_opt < 0 || long_opt > INT_MAX) {
-                    fprintf(stderr, "testRun: -i index value invalid\n");
-                    index = -1;
-                } else {
-                    index = long_opt;
+            }
+        } else if (strcmp(argv[i], "-g") == 0) {
+            ctx.generate = 1;
+        } else if (strcmp(argv[i], "-i") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -i index value missing, ignored\n");
+            } else {
+                optarg = argv[++i];
+                if (!validate_int_range(optarg, &ctx.index, &ctx.index_end)) {
+                    fprintf(stderr, "testRun: -i index value invalid, ignored\n");
+                    ctx.index = ctx.index_end = -1;
                 }
-                break;
+            }
+        } else if (strcmp(argv[i], "-x") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -x exclude value missing, ignored\n");
+            } else {
+                optarg = argv[++i];
+                if (!validate_int_range(optarg, &ctx.exclude, &ctx.exclude_end)) {
+                    fprintf(stderr, "testRun: -x exclude value invalid, ignored\n");
+                    ctx.exclude = ctx.exclude_end = -1;
+                }
+            }
+        } else {
+            fprintf(stderr, "testRun: unknown arg '%s', ignored\n", argv[i]);
         }
     }
 
@@ -255,41 +321,39 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
         if (func && strcmp(func, funcs[i].name) != 0) {
             continue;
         }
-        if (funcs[i].has_index && funcs[i].has_generate && funcs[i].has_debug) {
-            (*(func_index_generate_debug)funcs[i].func)(index, generate, debug);
-        } else if (funcs[i].has_index && funcs[i].has_generate) {
-            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
-            (*(func_index_generate)funcs[i].func)(index, generate);
-        } else if (funcs[i].has_index && funcs[i].has_debug) {
-            if (generate) fprintf(stderr, "testRun %s: -g ignored\n", funcs[i].name);
-            (*(func_index_debug)funcs[i].func)(index, debug);
-        } else if (funcs[i].has_index) {
-            if (generate) fprintf(stderr, "testRun %s: -g ignored\n", funcs[i].name);
-            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
-            (*(func_index)funcs[i].func)(index);
-        } else if (funcs[i].has_generate && funcs[i].has_debug) {
-            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
-            (*(func_generate_debug)funcs[i].func)(generate, debug);
-        } else if (funcs[i].has_generate) {
-            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
-            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
-            (*(func_generate)funcs[i].func)(generate);
-        } else if (funcs[i].has_debug) {
-            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
-            if (generate) fprintf(stderr, "testRun %s -g ignored\n", funcs[i].name);
-            (*(func_debug)funcs[i].func)(debug);
-        } else {
-            if (index != -1) fprintf(stderr, "testRun %s: -i index ignored\n", funcs[i].name);
-            if (generate) fprintf(stderr, "testRun %s -g ignored\n", funcs[i].name);
-            if (debug) fprintf(stderr, "testRun %s: -d ignored\n", funcs[i].name);
-            (*(func_void)funcs[i].func)();
-        }
+        (*funcs[i].func)(&ctx);
         ran++;
     }
 
     if (func && !ran) {
         fprintf(stderr, "testRun: unknown -f func arg '%s'\n", func);
     }
+}
+
+/* Call in a dataset loop to determine if a datum should be tested according to -i & -x args */
+int testContinue(const testCtx *const p_ctx, const int i) {
+    if (p_ctx->index != -1) {
+        if (p_ctx->index_end != -1) {
+            if (i < p_ctx->index || (p_ctx->index_end && i > p_ctx->index_end)) {
+                return 1;
+            }
+        } else if (i != p_ctx->index) {
+            return 1;
+        }
+    }
+    if (p_ctx->exclude != -1) {
+        if (p_ctx->exclude_end != -1) {
+            if (i >= p_ctx->exclude && (p_ctx->exclude_end == 0 || i <= p_ctx->exclude_end)) {
+                return 1;
+            }
+        } else if (i == p_ctx->exclude) {
+            return 1;
+        }
+    }
+    if ((p_ctx->debug & ZINT_DEBUG_TEST_PRINT) && !(p_ctx->debug & ZINT_DEBUG_TEST_LESS_NOISY)) {
+        printf("i:%d\n", i);
+    }
+    return 0;
 }
 
 /* Helper to set common symbol fields */

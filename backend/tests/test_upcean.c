@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_upce_input(int index, int debug) {
+static void test_upce_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -39,21 +41,21 @@ static void test_upce_input(int index, int debug) {
 
         char *hrt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_UPCE, "12345", 0, "00123457" }, // equivalent: 00123400005, Check digit: 7
+        /*  0*/ { BARCODE_UPCE, "12345", 0, "00123457" }, /* equivalent: 00123400005, Check digit: 7 */
         /*  1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK, "" },
-        /*  2*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, // equivalent: 00012000003, Check digit: 4
-        /*  3*/ { BARCODE_UPCE, "123456", 0, "01234565" }, // equivalent: 01234500006, Check digit: 5
+        /*  2*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, /* equivalent: 00012000003, Check digit: 4 */
+        /*  3*/ { BARCODE_UPCE, "123456", 0, "01234565" }, /* equivalent: 01234500006, Check digit: 5 */
         /*  4*/ { BARCODE_UPCE_CHK, "123456", ZINT_ERROR_INVALID_CHECK, "" },
-        /*  5*/ { BARCODE_UPCE_CHK, "123457", 0, "00123457" }, // equivalent: 00123400005, Check digit: 7
-        /*  6*/ { BARCODE_UPCE, "1234567", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /*  5*/ { BARCODE_UPCE_CHK, "123457", 0, "00123457" }, /* equivalent: 00123400005, Check digit: 7 */
+        /*  6*/ { BARCODE_UPCE, "1234567", 0, "12345670" }, /* equivalent: 12345600007, Check digit: 0 */
         /*  7*/ { BARCODE_UPCE_CHK, "1234567", ZINT_ERROR_INVALID_CHECK, "" },
-        /*  8*/ { BARCODE_UPCE_CHK, "1234565", 0, "01234565" }, // equivalent: 01234500006, Check digit: 5
+        /*  8*/ { BARCODE_UPCE_CHK, "1234565", 0, "01234565" }, /* equivalent: 01234500006, Check digit: 5 */
         /*  9*/ { BARCODE_UPCE, "12345678", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 10*/ { BARCODE_UPCE, "12345670", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /* 10*/ { BARCODE_UPCE, "12345670", 0, "12345670" }, /* equivalent: 12345600007, Check digit: 0 */
         /* 11*/ { BARCODE_UPCE_CHK, "12345678", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 12*/ { BARCODE_UPCE_CHK, "12345670", 0, "12345670" }, // equivalent: 12345600007, Check digit: 0
+        /* 12*/ { BARCODE_UPCE_CHK, "12345670", 0, "12345670" }, /* equivalent: 12345600007, Check digit: 0 */
         /* 13*/ { BARCODE_UPCE, "123456789", ZINT_ERROR_TOO_LONG, "" },
         /* 14*/ { BARCODE_UPCE_CHK, "123456789", ZINT_ERROR_TOO_LONG, "" },
         /* 15*/ { BARCODE_UPCE, "123456A", ZINT_ERROR_INVALID_DATA, "" },
@@ -62,31 +64,31 @@ static void test_upce_input(int index, int debug) {
         /* 18*/ { BARCODE_UPCE_CHK, "123456A", ZINT_ERROR_INVALID_DATA, "" },
         /* 19*/ { BARCODE_UPCE_CHK, "1234567A", ZINT_ERROR_INVALID_DATA, "" },
         /* 20*/ { BARCODE_UPCE_CHK, "12345678A", ZINT_ERROR_INVALID_DATA, "" },
-        /* 21*/ { BARCODE_UPCE, "2345678", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, Check digit: 1
-        /* 22*/ { BARCODE_UPCE_CHK, "23456781", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, Check digit: 1
-        /* 23*/ { BARCODE_UPCE, "123455", 0, "01234558" }, // equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 24*/ { BARCODE_UPCE_CHK, "1234558", 0, "01234558" }, // equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 25*/ { BARCODE_UPCE, "456784", 0, "04567840" }, // equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 26*/ { BARCODE_UPCE_CHK, "4567840", 0, "04567840" }, // equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 27*/ { BARCODE_UPCE, "345670", 0, "03456703" }, // equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 28*/ { BARCODE_UPCE_CHK, "3456703", 0, "03456703" }, // equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 29*/ { BARCODE_UPCE, "984753", 0, "09847531" }, // equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d))
-        /* 30*/ { BARCODE_UPCE_CHK, "9847531", 0, "09847531" }, // equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d))
-        /* 31*/ { BARCODE_UPCE, "120453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
-        /* 32*/ { BARCODE_UPCE, "121453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
-        /* 33*/ { BARCODE_UPCE, "122453", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1)
+        /* 21*/ { BARCODE_UPCE, "2345678", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, Check digit: 1 */
+        /* 22*/ { BARCODE_UPCE_CHK, "23456781", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, Check digit: 1 */
+        /* 23*/ { BARCODE_UPCE, "123455", 0, "01234558" }, /* equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 24*/ { BARCODE_UPCE_CHK, "1234558", 0, "01234558" }, /* equivalent: 01234500005, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 25*/ { BARCODE_UPCE, "456784", 0, "04567840" }, /* equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 26*/ { BARCODE_UPCE_CHK, "4567840", 0, "04567840" }, /* equivalent: 04567000008, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 27*/ { BARCODE_UPCE, "345670", 0, "03456703" }, /* equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 28*/ { BARCODE_UPCE_CHK, "3456703", 0, "03456703" }, /* equivalent: 03400000567, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 29*/ { BARCODE_UPCE, "984753", 0, "09847531" }, /* equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d)) */
+        /* 30*/ { BARCODE_UPCE_CHK, "9847531", 0, "09847531" }, /* equivalent: 09840000075, Check digit: 1 (BS 797 Rule 3 (d)) */
+        /* 31*/ { BARCODE_UPCE, "120453", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1) */
+        /* 32*/ { BARCODE_UPCE, "121453", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1) */
+        /* 33*/ { BARCODE_UPCE, "122453", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 3, 3rd can't be 0, 1 or 2 (BS 787 Table 5 NOTE 1) */
         /* 34*/ { BARCODE_UPCE, "123453", 0, "01234531" },
-        /* 35*/ { BARCODE_UPCE, "123054", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 4, 4th can't be 0 (BS 787 Table 5 NOTE 2)
+        /* 35*/ { BARCODE_UPCE, "123054", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 4, 4th can't be 0 (BS 787 Table 5 NOTE 2) */
         /* 36*/ { BARCODE_UPCE, "123154", 0, "01231542" },
-        /* 37*/ { BARCODE_UPCE, "123405", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 5, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 37*/ { BARCODE_UPCE, "123405", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 5, 5th can't be 0 (BS 787 Table 5 NOTE 3) */
         /* 38*/ { BARCODE_UPCE, "123455", 0, "01234558" },
-        /* 39*/ { BARCODE_UPCE, "123406", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 6, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 39*/ { BARCODE_UPCE, "123406", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 6, 5th can't be 0 (BS 787 Table 5 NOTE 3) */
         /* 40*/ { BARCODE_UPCE, "123456", 0, "01234565" },
-        /* 41*/ { BARCODE_UPCE, "123407", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 7, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 41*/ { BARCODE_UPCE, "123407", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 7, 5th can't be 0 (BS 787 Table 5 NOTE 3) */
         /* 42*/ { BARCODE_UPCE, "123457", 0, "01234572" },
-        /* 43*/ { BARCODE_UPCE, "123408", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 8, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 43*/ { BARCODE_UPCE, "123408", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 8, 5th can't be 0 (BS 787 Table 5 NOTE 3) */
         /* 44*/ { BARCODE_UPCE, "123458", 0, "01234589" },
-        /* 45*/ { BARCODE_UPCE, "123409", ZINT_ERROR_INVALID_DATA, "" }, // If last digit (emode) 9, 5th can't be 0 (BS 787 Table 5 NOTE 3)
+        /* 45*/ { BARCODE_UPCE, "123409", ZINT_ERROR_INVALID_DATA, "" }, /* If last digit (emode) 9, 5th can't be 0 (BS 787 Table 5 NOTE 3) */
         /* 46*/ { BARCODE_UPCE, "123459", 0, "01234596" },
         /* 47*/ { BARCODE_UPCE, "000000", 0, "00000000" },
         /* 48*/ { BARCODE_UPCE, "000001", 0, "00000019" },
@@ -100,14 +102,14 @@ static void test_upce_input(int index, int debug) {
     char cmp_buf[4096];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_upce_input");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -147,15 +149,16 @@ static void test_upce_input(int index, int debug) {
     testFinish();
 }
 
-// Note requires ZINT_SANITIZE to be set
-static void test_upca_print(int index, int debug) {
+/* Note requires ZINT_SANITIZE to be set */
+static void test_upca_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
         char *data;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_UPCA, "01234567890", 0 },
     };
@@ -167,7 +170,7 @@ static void test_upca_print(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -189,18 +192,19 @@ static void test_upca_print(int index, int debug) {
     testFinish();
 }
 
-static void test_upca_input(int index, int debug) {
+static void test_upca_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
         char *data;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_UPCA, "12345678901", 0 },
         /*  1*/ { BARCODE_UPCA, "1234567890", 0 },
-        /*  2*/ { BARCODE_UPCA, "123456789012", 0 }, // UPC-A accepts CHK
+        /*  2*/ { BARCODE_UPCA, "123456789012", 0 }, /* UPC-A accepts CHK */
         /*  3*/ { BARCODE_UPCA, "123456789011", ZINT_ERROR_INVALID_CHECK },
         /*  4*/ { BARCODE_UPCA, "1234567890123", ZINT_ERROR_TOO_LONG },
         /*  5*/ { BARCODE_UPCA, "123456789012A", ZINT_ERROR_INVALID_DATA },
@@ -242,7 +246,7 @@ static void test_upca_input(int index, int debug) {
         /* 41*/ { BARCODE_UPCA_CHK, "12348", 0 },
         /* 42*/ { BARCODE_UPCA_CHK, "1234", ZINT_ERROR_INVALID_CHECK },
         /* 43*/ { BARCODE_UPCA_CHK, "1236", 0 },
-        /* 44*/ { BARCODE_UPCA_CHK, "123", 0 }, // Happens to be correct check digit
+        /* 44*/ { BARCODE_UPCA_CHK, "123", 0 }, /* Happens to be correct check digit */
         /* 45*/ { BARCODE_UPCA_CHK, "124", ZINT_ERROR_INVALID_CHECK },
         /* 46*/ { BARCODE_UPCA_CHK, "12", ZINT_ERROR_INVALID_CHECK },
         /* 47*/ { BARCODE_UPCA_CHK, "17", 0 },
@@ -282,7 +286,7 @@ static void test_upca_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -298,7 +302,8 @@ static void test_upca_input(int index, int debug) {
     testFinish();
 }
 
-static void test_eanx_input(int index, int generate, int debug) {
+static void test_eanx_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -307,7 +312,7 @@ static void test_eanx_input(int index, int generate, int debug) {
         char *ret_errtxt;
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_EANX, "123456789012", 0, "", "" },
         /*  1*/ { BARCODE_EANX, "12345678901A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
@@ -450,7 +455,7 @@ static void test_eanx_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -459,7 +464,7 @@ static void test_eanx_input(int index, int generate, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
                 i, testUtilBarcodeName(data[i].symbology), data[i].data, testUtilErrorName(data[i].ret),
                 testUtilEscape(symbol->errtxt, (int) strlen(symbol->errtxt), errtxt_escaped, sizeof(errtxt_escaped)),
@@ -475,7 +480,8 @@ static void test_eanx_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_isbn_input(int index, int generate, int debug) {
+static void test_isbn_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -484,7 +490,7 @@ static void test_isbn_input(int index, int generate, int debug) {
         char *ret_errtxt;
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "0", 0, 0, "", "Left zero-padded if < 10 chars" },
         /*  1*/ { "1", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '1', expecting '0'", "" },
@@ -602,8 +608,7 @@ static void test_isbn_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -612,7 +617,7 @@ static void test_isbn_input(int index, int generate, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
                 i, data[i].data, testUtilErrorName(data[i].ret_encode), data[i].ret_vector,
                 testUtilEscape(symbol->errtxt, (int) strlen(symbol->errtxt), errtxt_escaped, sizeof(errtxt_escaped)),
@@ -633,7 +638,8 @@ static void test_isbn_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -641,25 +647,25 @@ static void test_hrt(int index, int debug) {
         int ret;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_EANX, "12345678901", 0, "0123456789012" },
         /*  1*/ { BARCODE_EANX, "123456789012", 0, "1234567890128" },
-        /*  2*/ { BARCODE_EANX, "1234567890128", 0, "1234567890128" }, // EANX accepts CHK (treated as such if no leading zeroes required)
+        /*  2*/ { BARCODE_EANX, "1234567890128", 0, "1234567890128" }, /* EANX accepts CHK (treated as such if no leading zeroes required) */
         /*  3*/ { BARCODE_EANX_CHK, "1234567890128", 0, "1234567890128" },
-        /*  4*/ { BARCODE_EANX_CHK, "123456789012", 0, "0123456789012" }, // '2' happens to be correct check digit for "012345678901"
+        /*  4*/ { BARCODE_EANX_CHK, "123456789012", 0, "0123456789012" }, /* '2' happens to be correct check digit for "012345678901" */
         /*  5*/ { BARCODE_EANX, "1234567890128+1", 0, "1234567890128+01" },
         /*  6*/ { BARCODE_EANX_CHK, "1234567890128+1", 0, "1234567890128+01" },
         /*  7*/ { BARCODE_EANX, "12345678", 0, "0000123456784" },
-        /*  8*/ { BARCODE_EANX, "1234567", 0, "12345670" }, // EAN-8
-        /*  9*/ { BARCODE_EANX_CHK, "12345670", 0, "12345670" }, // EAN-8
-        /* 10*/ { BARCODE_EANX, "123456", 0, "01234565" }, // EAN-8
-        /* 11*/ { BARCODE_EANX_CHK, "123457", 0, "00123457" }, // EAN-8
-        /* 12*/ { BARCODE_EANX, "12345", 0, "12345" }, // EAN-5
-        /* 13*/ { BARCODE_EANX, "123", 0, "00123" }, // EAN-5
-        /* 14*/ { BARCODE_EANX, "12", 0, "12" }, // EAN-2
-        /* 15*/ { BARCODE_EANX, "1", 0, "01" }, // EAN-2
-        /* 16*/ { BARCODE_EANX, "0", 0, "00" }, // EAN-2
+        /*  8*/ { BARCODE_EANX, "1234567", 0, "12345670" }, /* EAN-8 */
+        /*  9*/ { BARCODE_EANX_CHK, "12345670", 0, "12345670" }, /* EAN-8 */
+        /* 10*/ { BARCODE_EANX, "123456", 0, "01234565" }, /* EAN-8 */
+        /* 11*/ { BARCODE_EANX_CHK, "123457", 0, "00123457" }, /* EAN-8 */
+        /* 12*/ { BARCODE_EANX, "12345", 0, "12345" }, /* EAN-5 */
+        /* 13*/ { BARCODE_EANX, "123", 0, "00123" }, /* EAN-5 */
+        /* 14*/ { BARCODE_EANX, "12", 0, "12" }, /* EAN-2 */
+        /* 15*/ { BARCODE_EANX, "1", 0, "01" }, /* EAN-2 */
+        /* 16*/ { BARCODE_EANX, "0", 0, "00" }, /* EAN-2 */
         /* 17*/ { BARCODE_ISBNX, "0", 0, "9780000000002" },
         /* 18*/ { BARCODE_ISBNX, "123456789X", 0, "9781234567897" },
         /* 19*/ { BARCODE_ISBNX, "9781234567897", 0, "9781234567897" },
@@ -671,28 +677,28 @@ static void test_hrt(int index, int debug) {
         /* 25*/ { BARCODE_UPCA_CHK, "123456789050+1", 0, "123456789050+01" },
         /* 26*/ { BARCODE_UPCA, "123456789050+123", 0, "123456789050+00123" },
         /* 27*/ { BARCODE_UPCA_CHK, "123456789050+123", 0, "123456789050+00123" },
-        /* 28*/ { BARCODE_UPCE, "12345", 0, "00123457" }, // equivalent: 00123400005, hrt: 00123457, Check digit: 7
-        /* 29*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, // equivalent: 00012000003, hrt: 00012344, Check digit: 4
-        /* 30*/ { BARCODE_UPCE, "123456", 0, "01234565" }, // equivalent: 01234500006, hrt: 01234565, Check digit: 5
-        /* 31*/ { BARCODE_UPCE_CHK, "123457", 0, "00123457" }, // equivalent: 00123400005, hrt: 00123457, Check digit: 7
-        /* 32*/ { BARCODE_UPCE, "1234567", 0, "12345670" }, // equivalent: 12345600007, hrt: 12345670, Check digit: 0
-        /* 33*/ { BARCODE_UPCE_CHK, "1234565", 0, "01234565" }, // equivalent: 01234500006, hrt: 01234565, Check digit: 5
-        /* 34*/ { BARCODE_UPCE_CHK, "12345670", 0, "12345670" }, // equivalent: 12345600007, hrt: 12345670, Check digit: 0
-        /* 35*/ { BARCODE_UPCE, "2345678", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1
-        /* 36*/ { BARCODE_UPCE_CHK, "23456781", 0, "03456781" }, // 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1
-        /* 37*/ { BARCODE_UPCE, "123455", 0, "01234558" }, // equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 38*/ { BARCODE_UPCE_CHK, "1234558", 0, "01234558" }, // equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a))
-        /* 39*/ { BARCODE_UPCE, "456784", 0, "04567840" }, // equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 40*/ { BARCODE_UPCE_CHK, "4567840", 0, "04567840" }, // equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b))
-        /* 41*/ { BARCODE_UPCE, "345670", 0, "03456703" }, // equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 42*/ { BARCODE_UPCE_CHK, "3456703", 0, "03456703" }, // equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c))
-        /* 43*/ { BARCODE_UPCE, "984753", 0, "09847531" }, // equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d))
-        /* 44*/ { BARCODE_UPCE_CHK, "9847531", 0, "09847531" }, // equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d))
+        /* 28*/ { BARCODE_UPCE, "12345", 0, "00123457" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
+        /* 29*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, /* equivalent: 00012000003, hrt: 00012344, Check digit: 4 */
+        /* 30*/ { BARCODE_UPCE, "123456", 0, "01234565" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
+        /* 31*/ { BARCODE_UPCE_CHK, "123457", 0, "00123457" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
+        /* 32*/ { BARCODE_UPCE, "1234567", 0, "12345670" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
+        /* 33*/ { BARCODE_UPCE_CHK, "1234565", 0, "01234565" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
+        /* 34*/ { BARCODE_UPCE_CHK, "12345670", 0, "12345670" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
+        /* 35*/ { BARCODE_UPCE, "2345678", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
+        /* 36*/ { BARCODE_UPCE_CHK, "23456781", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
+        /* 37*/ { BARCODE_UPCE, "123455", 0, "01234558" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 38*/ { BARCODE_UPCE_CHK, "1234558", 0, "01234558" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 39*/ { BARCODE_UPCE, "456784", 0, "04567840" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 40*/ { BARCODE_UPCE_CHK, "4567840", 0, "04567840" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 41*/ { BARCODE_UPCE, "345670", 0, "03456703" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 42*/ { BARCODE_UPCE_CHK, "3456703", 0, "03456703" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 43*/ { BARCODE_UPCE, "984753", 0, "09847531" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
+        /* 44*/ { BARCODE_UPCE_CHK, "9847531", 0, "09847531" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
         /* 45*/ { BARCODE_UPCE, "123453", 0, "01234531" },
         /* 46*/ { BARCODE_UPCE, "000000", 0, "00000000" },
         /* 47*/ { BARCODE_UPCE, "0000000", 0, "00000000" },
         /* 48*/ { BARCODE_UPCE, "1000000", 0, "10000007" },
-        /* 49*/ { BARCODE_UPCE, "2000000", 0, "00000000" }, // First char 2-9 ignored, replaced with 0
+        /* 49*/ { BARCODE_UPCE, "2000000", 0, "00000000" }, /* First char 2-9 ignored, replaced with 0 */
         /* 50*/ { BARCODE_UPCE, "3000000", 0, "00000000" },
         /* 51*/ { BARCODE_UPCE, "8000000", 0, "00000000" },
         /* 52*/ { BARCODE_UPCE, "9000000", 0, "00000000" },
@@ -709,7 +715,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -727,7 +733,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_vector_same(int index, int debug) {
+static void test_vector_same(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -737,8 +744,8 @@ static void test_vector_same(int index, int debug) {
     };
     struct item data[] = {
         /* 0*/ { BARCODE_UPCE, "123456", 0, 0 },
-        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 0 }, // 5 is correct check digit
-        /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 0 }, // 9 is correct check digit
+        /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 0 }, /* 5 is correct check digit */
+        /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 0 }, /* 9 is correct check digit */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -751,7 +758,7 @@ static void test_vector_same(int index, int debug) {
         int vectors_size = ARRAY_SIZE(vectors);
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         for (j = 0; j < vectors_size; j++) {
             symbol = ZBarcode_Create();
@@ -786,9 +793,10 @@ static void test_vector_same(int index, int debug) {
     testFinish();
 }
 
-// https://www.isbn-international.org/content/isbn-users-manual ISBN Users' Manual
-// https://bisg.org/page/BarcodingGuidelines BISG Barcode Guidelines for the US Book Industry (BISG BGUSBI)
-static void test_encode(int index, int generate, int debug) {
+/* https://www.isbn-international.org/content/isbn-users-manual ISBN Users' Manual */
+/* https://bisg.org/page/BarcodingGuidelines BISG Barcode Guidelines for the US Book Industry (BISG BGUSBI) */
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -919,14 +927,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[4096];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -936,7 +944,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
                                 i, testUtilBarcodeName(data[i].symbology), data[i].option_2, data[i].data, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
@@ -979,8 +987,9 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// #181 Christian Hartlage OSS-Fuzz
-static void test_fuzz(int index, int debug) {
+/* #181 Christian Hartlage OSS-Fuzz */
+static void test_fuzz(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -988,7 +997,7 @@ static void test_fuzz(int index, int debug) {
         int length;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%2d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /* 0*/ { BARCODE_EANX, "55++15", -1, ZINT_ERROR_INVALID_DATA },
         /* 1*/ { BARCODE_EANX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
@@ -1000,7 +1009,7 @@ static void test_fuzz(int index, int debug) {
         /* 7*/ { BARCODE_ISBNX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
         /* 8*/ { BARCODE_EANX, "+12345", -1, 0 },
         /* 9*/ { BARCODE_EANX, "+123456", -1, ZINT_ERROR_TOO_LONG },
-        /*10*/ { BARCODE_EANX, "000002000000200+203", -1, ZINT_ERROR_TOO_LONG }, // #218 Jan Schrewe CI-Fuzz
+        /*10*/ { BARCODE_EANX, "000002000000200+203", -1, ZINT_ERROR_TOO_LONG }, /* #218 Jan Schrewe CI-Fuzz */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1010,7 +1019,7 @@ static void test_fuzz(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1032,8 +1041,9 @@ static void test_fuzz(int index, int debug) {
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 #define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1045,7 +1055,7 @@ static void test_perf(int index, int debug) {
         int expected_width;
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_EANX, -1, "123456789012+12345", 0, 1, 149, "EAN-13 add-on 5" },
         /*  1*/ { BARCODE_EANX, -1, "123456789012", 0, 1, 95, "EAN-13 no add-on" },
@@ -1078,7 +1088,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -1108,7 +1118,7 @@ static void test_perf(int index, int debug) {
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
             diff_buf_inter += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
 
             start = clock();
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
@@ -1128,7 +1138,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -1136,17 +1146,17 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_upce_input", test_upce_input, 1, 0, 1 },
-        { "test_upca_print", test_upca_print, 1, 0, 1 },
-        { "test_upca_input", test_upca_input, 1, 0, 1 },
-        { "test_eanx_input", test_eanx_input, 1, 1, 1 },
-        { "test_isbn_input", test_isbn_input, 1, 1, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_vector_same", test_vector_same, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_fuzz", test_fuzz, 1, 0, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_upce_input", test_upce_input },
+        { "test_upca_print", test_upca_print },
+        { "test_upca_input", test_upca_input },
+        { "test_eanx_input", test_eanx_input },
+        { "test_isbn_input", test_isbn_input },
+        { "test_hrt", test_hrt },
+        { "test_vector_same", test_vector_same },
+        { "test_encode", test_encode },
+        { "test_fuzz", test_fuzz },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

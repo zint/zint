@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -41,7 +43,7 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODABAR, -1, "A1234567890123456789012345678901234567890123456789012345678B", 60, 0, 1, 602 },
         /*  1*/ { BARCODE_CODABAR, -1, "A12345678901234567890123456789012345678901234567890123456789B", 61, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -64,7 +66,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -88,7 +90,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -97,16 +100,16 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODABAR, -1, "A1234B", "A1234B" },
-        /*  1*/ { BARCODE_CODABAR, -1, "a1234c", "A1234C" }, // Converts to upper
-        /*  2*/ { BARCODE_CODABAR, 1, "A1234B", "A1234B" }, // Check not included
-        /*  3*/ { BARCODE_CODABAR, 2, "A1234B", "A12345B" }, // Check included
-        /*  4*/ { BARCODE_CODABAR, 1, "A123456A", "A123456A" }, // Check not included
-        /*  5*/ { BARCODE_CODABAR, 2, "A123456A", "A123456$A" }, // Check included
-        /*  6*/ { BARCODE_PHARMA, -1, "123456", "" }, // None
-        /*  7*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, // None
+        /*  1*/ { BARCODE_CODABAR, -1, "a1234c", "A1234C" }, /* Converts to upper */
+        /*  2*/ { BARCODE_CODABAR, 1, "A1234B", "A1234B" }, /* Check not included */
+        /*  3*/ { BARCODE_CODABAR, 2, "A1234B", "A12345B" }, /* Check included */
+        /*  4*/ { BARCODE_CODABAR, 1, "A123456A", "A123456A" }, /* Check not included */
+        /*  5*/ { BARCODE_CODABAR, 2, "A123456A", "A123456$A" }, /* Check included */
+        /*  6*/ { BARCODE_PHARMA, -1, "123456", "" }, /* None */
+        /*  7*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, /* None */
         /*  8*/ { BARCODE_CODE32, -1, "123456", "A001234564" },
         /*  9*/ { BARCODE_CODE32, -1, "12345678", "A123456788" },
     };
@@ -118,7 +121,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -136,7 +139,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -146,7 +150,7 @@ static void test_input(int index, int debug) {
         int expected_width;
         const char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODABAR, "A1234B", 0, 1, 62, "" },
         /*  1*/ { BARCODE_CODABAR, "1234B", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 358: Does not begin with \"A\", \"B\", \"C\" or \"D\"" },
@@ -183,7 +187,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -205,7 +209,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -260,14 +265,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -277,7 +282,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -323,11 +328,11 @@ static void test_encode(int index, int generate, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

@@ -32,7 +32,8 @@
 #include "testcommon.h"
 #include "../gs1.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -44,17 +45,17 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // ISO/IEC 16022:2006 Table 7 and ISO/IEC 21471:2020 (DMRE) Table 7
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* ISO/IEC 16022:2006 Table 7 and ISO/IEC 21471:2020 (DMRE) Table 7 */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "1", 3116, 0, 144, 144 },
         /*  1*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "1", 3117, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "1", 10922, ZINT_ERROR_TOO_LONG, -1, -1 }, // Minimal encoding can handle max (10921 + 1) * 6 = 65532 < 65536 (2*16) due to sizeof(previous)
-        /*  3*/ { BARCODE_DATAMATRIX, -1, { 1, 2, "001001"}, "1", 3108, 0, 144, 144 }, // Structured Append 4 codewords overhead == 8 digits
+        /*  2*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "1", 10922, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Minimal encoding can handle max (10921 + 1) * 6 = 65532 < 65536 (2*16) due to sizeof(previous) */
+        /*  3*/ { BARCODE_DATAMATRIX, -1, { 1, 2, "001001"}, "1", 3108, 0, 144, 144 }, /* Structured Append 4 codewords overhead == 8 digits */
         /*  4*/ { BARCODE_DATAMATRIX, -1, { 1, 2, "001001"}, "1", 3109, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  5*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "A", 2335, 0, 144, 144 },
         /*  6*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "A", 2336, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "\200", 1556, 0, 144, 144 }, // Spec says 1555 but 1556 correct as only single byte count of 0 required
+        /*  7*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "\200", 1556, 0, 144, 144 }, /* Spec says 1555 but 1556 correct as only single byte count of 0 required */
         /*  8*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "\200", 1557, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  9*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "\001", 1558, 0, 144, 144 },
         /* 10*/ { BARCODE_DATAMATRIX, -1, { 0, 0, "" }, "\001", 1559, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -154,55 +155,55 @@ static void test_large(int index, int debug) {
         /*104*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "1", 561, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*105*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "A", 418, 0, 64, 64 },
         /*106*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "A", 419, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*107*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "\200", 278, 0, 64, 64 }, // Spec says 277 but 278 correct as only single byte count of 0 required
+        /*107*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "\200", 278, 0, 64, 64 }, /* Spec says 277 but 278 correct as only single byte count of 0 required */
         /*108*/ { BARCODE_DATAMATRIX, 16, { 0, 0, "" }, "\200", 279, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*109*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "1", 736, 0, 72, 72 },
         /*110*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "1", 737, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*111*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "A", 550, 0, 72, 72 },
         /*112*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "A", 551, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*113*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "\200", 366, 0, 72, 72 }, // Spec says 365 but 366 correct as only single byte count of 0 required
+        /*113*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "\200", 366, 0, 72, 72 }, /* Spec says 365 but 366 correct as only single byte count of 0 required */
         /*114*/ { BARCODE_DATAMATRIX, 17, { 0, 0, "" }, "\200", 367, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*115*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "1", 912, 0, 80, 80 },
         /*116*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "1", 913, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*117*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "A", 682, 0, 80, 80 },
         /*118*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "A", 683, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*119*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "\200", 454, 0, 80, 80 }, // Spec says 453 but 454 correct as only single byte count of 0 required
+        /*119*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "\200", 454, 0, 80, 80 }, /* Spec says 453 but 454 correct as only single byte count of 0 required */
         /*120*/ { BARCODE_DATAMATRIX, 18, { 0, 0, "" }, "\200", 455, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*121*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "1", 1152, 0, 88, 88 },
         /*122*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "1", 1153, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*123*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "A", 862, 0, 88, 88 },
         /*124*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "A", 863, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*125*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "\200", 574, 0, 88, 88 }, // Spec says 573 but 574 correct as only single byte count of 0 required
+        /*125*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "\200", 574, 0, 88, 88 }, /* Spec says 573 but 574 correct as only single byte count of 0 required */
         /*126*/ { BARCODE_DATAMATRIX, 19, { 0, 0, "" }, "\200", 575, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*127*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "1", 1392, 0, 96, 96 },
         /*128*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "1", 1393, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*129*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "A", 1042, 0, 96, 96 },
         /*130*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "A", 1043, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*131*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "\200", 694, 0, 96, 96 }, // Spec says 693 but 694 correct as only single byte count of 0 required
+        /*131*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "\200", 694, 0, 96, 96 }, /* Spec says 693 but 694 correct as only single byte count of 0 required */
         /*132*/ { BARCODE_DATAMATRIX, 20, { 0, 0, "" }, "\200", 695, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*133*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "1", 1632, 0, 104, 104 },
         /*134*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "1", 1633, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*135*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "A", 1222, 0, 104, 104 },
         /*136*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "A", 1223, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*137*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "\200", 814, 0, 104, 104 }, // Spec says 813 but 814 correct as only single byte count of 0 required
+        /*137*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "\200", 814, 0, 104, 104 }, /* Spec says 813 but 814 correct as only single byte count of 0 required */
         /*138*/ { BARCODE_DATAMATRIX, 21, { 0, 0, "" }, "\200", 815, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*139*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "1", 2100, 0, 120, 120 },
         /*140*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "1", 2101, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*141*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "A", 1573, 0, 120, 120 },
         /*142*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "A", 1574, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*143*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "\200", 1048, 0, 120, 120 }, // Spec says 1047 but 1048 correct as only single byte count of 0 required
+        /*143*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "\200", 1048, 0, 120, 120 }, /* Spec says 1047 but 1048 correct as only single byte count of 0 required */
         /*144*/ { BARCODE_DATAMATRIX, 22, { 0, 0, "" }, "\200", 1049, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*145*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "1", 2608, 0, 132, 132 },
         /*146*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "1", 2609, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*147*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "A", 1954, 0, 132, 132 },
         /*148*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "A", 1955, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*149*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "\200", 1302, 0, 132, 132 }, // Spec says 1301 but 1302 correct as only single byte count of 0 required
+        /*149*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "\200", 1302, 0, 132, 132 }, /* Spec says 1301 but 1302 correct as only single byte count of 0 required */
         /*150*/ { BARCODE_DATAMATRIX, 23, { 0, 0, "" }, "\200", 1303, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*151*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "1", 3116, 0, 144, 144 },
         /*152*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "1", 3117, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*153*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "A", 2335, 0, 144, 144 },
         /*154*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "A", 2336, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*155*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "\200", 1556, 0, 144, 144 }, // Spec says 1555 but 1556 correct as only single byte count of 0 required
+        /*155*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "\200", 1556, 0, 144, 144 }, /* Spec says 1555 but 1556 correct as only single byte count of 0 required */
         /*156*/ { BARCODE_DATAMATRIX, 24, { 0, 0, "" }, "\200", 1557, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*157*/ { BARCODE_DATAMATRIX, 25, { 0, 0, "" }, "1", 10, 0, 8, 18 },
         /*158*/ { BARCODE_DATAMATRIX, 25, { 0, 0, "" }, "1", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -306,7 +307,7 @@ static void test_large(int index, int debug) {
         /*256*/ { BARCODE_DATAMATRIX, 41, { 0, 0, "" }, "A", 83, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*257*/ { BARCODE_DATAMATRIX, 41, { 0, 0, "" }, "\200", 54, 0, 20, 44 },
         /*258*/ { BARCODE_DATAMATRIX, 41, { 0, 0, "" }, "\200", 55, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*259*/ { BARCODE_DATAMATRIX, 42, { 0, 0, "" }, "1", 168, 0, 20, 64 }, // Spec says 186 but typo
+        /*259*/ { BARCODE_DATAMATRIX, 42, { 0, 0, "" }, "1", 168, 0, 20, 64 }, /* Spec says 186 but typo */
         /*260*/ { BARCODE_DATAMATRIX, 42, { 0, 0, "" }, "1", 169, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*261*/ { BARCODE_DATAMATRIX, 42, { 0, 0, "" }, "A", 124, 0, 20, 64 },
         /*262*/ { BARCODE_DATAMATRIX, 42, { 0, 0, "" }, "A", 125, ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -359,7 +360,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -395,8 +396,9 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-// Note need ZINT_SANITIZE set for these
-static void test_buffer(int index, int debug) {
+/* Note need ZINT_SANITIZE set for these */
+static void test_buffer(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int eci;
@@ -406,7 +408,7 @@ static void test_buffer(int index, int debug) {
         int ret;
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 16383, UNICODE_MODE, READER_INIT, "1", 0, "" },
         /*  1*/ { 3, UNICODE_MODE, 0, "000106j 05 Galeria A NaÃ§Ã£o0000000000", 0, "From Okapi, consecutive use of upper shift; #176" },
@@ -419,7 +421,7 @@ static void test_buffer(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -435,7 +437,8 @@ static void test_buffer(int index, int debug) {
     testFinish();
 }
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -452,86 +455,86 @@ static void test_options(int index, int debug) {
         int expected_width;
         const char *expected_errtxt;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" },
         /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 524: Older Data Matrix standards are no longer supported" },
         /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" },
         /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, -1, { 0, 0, "" }, "1", 0, 12, 12, "" },
         /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, -1, { 0, 0, "" }, "1", 0, 26, 64, "" },
-        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" }, // Ignored
-        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "" }, // 4 data
+        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" }, /* Ignored */
+        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "" }, /* 4 data */
         /*  7*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "____", ZINT_ERROR_TOO_LONG, -1, -1, "Error 522: Input too long for selected symbol size" },
         /*  8*/ { BARCODE_DATAMATRIX, -1, -1, 25, -1, -1, { 0, 0, "" }, "____", 0, 8, 18, "" },
-        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" }, // 10 data
+        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" }, /* 10 data */
         /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" },
         /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________", 0, 16, 16, "" },
-        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "" }, // 15 data
+        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "" }, /* 15 data */
         /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "" },
         /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________", 0, 18, 18, "" },
-        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "" }, // 18 data
-        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "" }, // 19 data
-        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "" }, // 21 data
-        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "" }, // 23 data
+        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "" }, /* 18 data */
+        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "" }, /* 19 data */
+        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "" }, /* 21 data */
+        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "" }, /* 23 data */
         /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________", 0, 8, 64, "" },
         /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "" },
-        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "" }, // 31 data
+        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "" }, /* 31 data */
         /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "" },
         /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________", 0, 24, 24, "" },
-        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "" }, // 37 data
+        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "" }, /* 37 data */
         /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________", 0, 8, 96, "" },
         /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "" },
-        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "" }, // 39 data
+        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "" }, /* 39 data */
         /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________", 0, 12, 64, "" },
         /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "" },
-        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "" }, // 43 data
+        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "" }, /* 43 data */
         /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________", 0, 12, 64, "" },
         /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "" },
-        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "" }, // 44 data
-        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "" }, // 45 data
+        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "" }, /* 44 data */
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "" }, /* 45 data */
         /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "" },
         /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________________", 0, 32, 32, "" },
-        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "" }, // 49 data
+        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "" }, /* 49 data */
         /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "" },
         /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________", 0, 32, 32, "" },
-        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "" }, // 50 data
+        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "" }, /* 50 data */
         /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________", 0, 20, 44, "" },
         /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "" },
-        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, // 51 data
+        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, /* 51 data */
         /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44, "" },
-        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, // Ignored
-        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "" }, // 61 data
-        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "" }, // 62 data
-        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "" }, // 63 data
+        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, /* Ignored */
+        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "" }, /* 61 data */
+        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "" }, /* 62 data */
+        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "" }, /* 63 data */
         /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 8, 144, "" },
         /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "" },
-        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "" }, // 64 data
+        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "" }, /* 64 data */
         /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 12, 88, "" },
         /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "" },
-        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "" }, // 65 data
+        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "" }, /* 65 data */
         /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 26, 40, "" },
         /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "" },
-        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "" }, // 70 data
+        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "" }, /* 70 data */
         /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 26, 40, "" },
         /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "" },
-        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "" }, // 71 data
+        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "" }, /* 71 data */
         /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 22, 48, "" },
         /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "" },
-        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "" }, // 80 data
+        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "" }, /* 80 data */
         /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 24, 48, "" },
         /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "" },
-        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "" }, // 84 data
+        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "" }, /* 84 data */
         /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 20, 64, "" },
         /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "" },
-        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "" }, // 90 data
+        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "" }, /* 90 data */
         /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 26, 48, "" },
         /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "" },
-        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "" }, // 91 data
+        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "" }, /* 91 data */
         /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 24, 64, "" },
         /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "" },
-        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, // 118 data
-        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "" }, // 118 data
-        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, // 118 data
+        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, /* 118 data */
+        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "" }, /* 118 data */
+        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, /* 118 data */
         /* 78*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "" },
         /* 79*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "" },
         /* 80*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "" },
@@ -550,7 +553,7 @@ static void test_options(int index, int debug) {
         /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001-254) (ID '255255')" },
         /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID too long (6 digit maximum)" },
         /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time" },
-        /* 96*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "" }, // Macro05/06 ignored if have Structured Append TODO: error/warning
+        /* 96*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "" }, /* Macro05/06 ignored if have Structured Append TODO: error/warning */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -560,12 +563,12 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        debug &= ~ZINT_DEBUG_TEST; // Want real errtxt
+        debug &= ~ZINT_DEBUG_TEST; /* Want real errtxt */
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
@@ -596,7 +599,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_reader_init(int index, int generate, int debug) {
+static void test_reader_init(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -623,19 +627,19 @@ static void test_reader_init(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -660,7 +664,8 @@ INTERNAL int dm_encode_test(struct zint_symbol *symbol, const unsigned char sour
             const int gs1, unsigned char target[], int *p_tp);
 #endif
 
-static void test_input(int index, int generate, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -678,7 +683,7 @@ static void test_input(int index, int generate, int debug) {
         char *expected;
         char *comment;
 
-        int expected_diff; // Difference between default minimal encodation and ISO encodation (FAST_MODE)
+        int expected_diff; /* Difference between default minimal encodation and ISO encodation (FAST_MODE) */
     };
     struct item data[] = {
         /*  0*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "0466010592130100000k*AGUATY80", 0, 0, 18, 18, 1, "(32) 86 C4 83 87 DE 8F 83 82 82 31 6C EE 08 85 D6 D2 EF 65 93 B0 1C 3C 76 FB D4 AB 16 11", "#208", 0 },
@@ -930,27 +935,26 @@ static void test_input(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_input");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->debug = ZINT_DEBUG_TEST; // Needed to get codeword dump in errtxt
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, %s, \"%s\", %s, %d, %d, %d, %d, \"%s\", \"%s\", %d },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilOutputOptionsName(data[i].output_options), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -1049,7 +1053,8 @@ static void test_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1066,11 +1071,12 @@ static void test_encode(int index, int generate, int debug) {
         int expected_width;
         int bwipp_cmp;
         char *comment;
-        int expected_diff; // Difference between default minimal encodation and ISO encodation (FAST_MODE)
+        int expected_diff; /* Difference between default minimal encodation and ISO encodation (FAST_MODE) */
         char *expected;
     };
-    // Verified manually against ISO/IEC 16022:2006, ISO/IEC 21471:2020, GS1 General Specifications 21.0.1 (GGS), ANSI/HIBC LIC 2.6-2016 (HIBC/LIC),
-    // ANSI/HIBC PAS 1.3-2010 (HIBC/PAS) and AIM ITS/04-023:2022 (ECI Part 3: Register), with noted exceptions
+    /* Verified manually against ISO/IEC 16022:2006, ISO/IEC 21471:2020, GS1 General Specifications 21.0.1 (GGS), ANSI/HIBC LIC 2.6-2016 (HIBC/LIC),
+       ANSI/HIBC PAS 1.3-2010 (HIBC/PAS) and AIM ITS/04-023:2022 (ECI Part 3: Register), with noted exceptions
+    */
     struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "1234abcd", -1, 0, 14, 14, 1, "", 0,
                     "10101010101010"
@@ -5181,15 +5187,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -5201,7 +5206,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %s, \"%s\", %d, %s, %d, %d, %d, \"%s\", %d,\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
                     testUtilOutputOptionsName(data[i].output_options),
@@ -5289,7 +5294,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_encode_segs(int index, int generate, int debug) {
+static void test_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -5477,15 +5483,14 @@ static void test_encode_segs(int index, int generate, int debug) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode_segs");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -5501,7 +5506,7 @@ static void test_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -5570,7 +5575,8 @@ static void test_encode_segs(int index, int generate, int debug) {
 }
 
 #ifdef ZINT_TEST_ENCODING
-static void test_minimalenc(int index, int debug) {
+static void test_minimalenc(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -5581,10 +5587,10 @@ static void test_minimalenc(int index, int debug) {
         int length;
         int ret;
 
-        int expected_diff; // Difference between default minimal encodation and ISO encodation (FAST_MODE)
+        int expected_diff; /* Difference between default minimal encodation and ISO encodation (FAST_MODE) */
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, "A", -1, 0, 0, "ASC" },
         /*  1*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AA", -1, 0, 0, "ASC" },
@@ -6617,8 +6623,7 @@ static void test_minimalenc(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -6672,8 +6677,9 @@ static void test_minimalenc(int index, int debug) {
 #endif
 #define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -6779,7 +6785,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -6809,7 +6815,7 @@ static void test_perf(int index, int debug) {
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
             diff_buf_inter += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
 
             start = clock();
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
@@ -6829,7 +6835,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -6837,18 +6843,18 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_buffer", test_buffer, 1, 0, 1 },
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_reader_init", test_reader_init, 1, 1, 1 },
-        { "test_input", test_input, 1, 1, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_encode_segs", test_encode_segs, 1, 1, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_buffer", test_buffer },
+        { "test_options", test_options },
+        { "test_reader_init", test_reader_init },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_encode_segs", test_encode_segs },
 #ifdef ZINT_TEST_ENCODING
-        { "test_minimalenc", test_minimalenc, 1, 0, 1 },
+        { "test_minimalenc", test_minimalenc },
 #endif
-        { "test_perf", test_perf, 1, 0, 1 },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

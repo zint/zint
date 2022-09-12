@@ -31,7 +31,8 @@
 
 #include "testcommon.h"
 
-static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
+static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -133,7 +134,7 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -149,7 +150,7 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (const unsigned char *) text, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %.0f, %.0f, %d, %d, ",
                     i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].w, data[i].h, symbol->rows, symbol->width);
             testUtilModulesPrintRow(symbol, symbol->rows - 1, "", " },\n");
@@ -193,7 +194,8 @@ static void test_binary_div_modulo_divisor(int index, int generate, int debug) {
 }
 
 /* Replicate examples from GS1 General Specifications 21.0.1 and ISO/IEC 24724:2011 */
-static void test_examples(int index, int generate, int debug) {
+static void test_examples(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -874,8 +876,7 @@ static void test_examples(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -885,7 +886,7 @@ static void test_examples(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %d, \"%s\", %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(symbol->symbology), testUtilInputModeName(data[i].input_mode),
                     data[i].option_2, data[i].option_3,
@@ -933,7 +934,8 @@ static void test_examples(int index, int generate, int debug) {
 }
 
 /* Test general-purpose data compaction */
-static void test_general_field(int index, int generate, int debug) {
+static void test_general_field(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1201,7 +1203,7 @@ static void test_general_field(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1211,7 +1213,7 @@ static void test_general_field(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%2d*/ { %s, \"%s\", %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(symbol->symbology), data[i].data, ret, symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
@@ -1232,7 +1234,8 @@ static void test_general_field(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_binary_buffer_size(int index, int generate, int debug) {
+static void test_binary_buffer_size(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -1264,7 +1267,7 @@ static void test_binary_buffer_size(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1274,7 +1277,7 @@ static void test_binary_buffer_size(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].data, testUtilErrorName(ret), symbol->rows, symbol->width, data[i].comment);
         } else {
@@ -1288,7 +1291,8 @@ static void test_binary_buffer_size(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1318,7 +1322,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1336,7 +1340,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1471,7 +1476,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1495,13 +1500,13 @@ static void test_input(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_binary_div_modulo_divisor", test_binary_div_modulo_divisor, 1, 1, 1 },
-        { "test_examples", test_examples, 1, 1, 1 },
-        { "test_general_field", test_general_field, 1, 1, 1 },
-        { "test_binary_buffer_size", test_binary_buffer_size, 1, 1, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_binary_div_modulo_divisor", test_binary_div_modulo_divisor },
+        { "test_examples", test_examples },
+        { "test_general_field", test_general_field },
+        { "test_binary_buffer_size", test_binary_buffer_size },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

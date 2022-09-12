@@ -32,7 +32,8 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -124,7 +125,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
 
         have_libreoffice = testUtilHaveLibreOffice();
@@ -140,8 +141,7 @@ static void test_print(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
         int text_length;
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i); /* ZINT_DEBUG_TEST_PRINT 16 */
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -186,7 +186,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.8g, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
@@ -219,10 +219,12 @@ static void test_print(int index, int generate, int debug) {
 
 INTERNAL int svg_plot(struct zint_symbol *symbol, int rotate_angle);
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     struct zint_vector vector = {0};
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -249,9 +251,9 @@ static void test_outfile(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_print", test_print },
+        { "test_outfile", test_outfile },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

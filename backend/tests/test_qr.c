@@ -31,7 +31,8 @@
 
 #include "testcommon.h"
 
-static void test_qr_options(int index, int debug) {
+static void test_qr_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -99,8 +100,7 @@ static void test_qr_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -112,7 +112,7 @@ static void test_qr_options(int index, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
-        if (index == -1 && data[i].compare_previous != -1) {
+        if (p_ctx->index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_equal(!ret, !data[i].compare_previous, "i:%d testUtilSymbolCmp !ret %d != %d\n", i, ret, data[i].compare_previous);
         }
@@ -131,7 +131,8 @@ static void test_qr_options(int index, int debug) {
     testFinish();
 }
 
-static void test_qr_input(int index, int generate, int debug) {
+static void test_qr_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -322,8 +323,7 @@ static void test_qr_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -335,7 +335,7 @@ static void test_qr_input(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -386,7 +386,8 @@ static void test_qr_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_qr_gs1(int index, int generate, int debug) {
+static void test_qr_gs1(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -426,8 +427,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -439,7 +439,7 @@ static void test_qr_gs1(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
@@ -468,7 +468,8 @@ static void test_qr_gs1(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_qr_optimize(int index, int generate, int debug) {
+static void test_qr_optimize(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -527,8 +528,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -540,7 +540,7 @@ static void test_qr_optimize(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
@@ -580,7 +580,8 @@ static void test_qr_optimize(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_qr_encode(int index, int generate, int debug) {
+static void test_qr_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -3980,8 +3981,7 @@ static void test_qr_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -3996,7 +3996,7 @@ static void test_qr_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     data[i].eci, data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
@@ -4046,7 +4046,8 @@ static void test_qr_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_qr_encode_segs(int index, int generate, int debug) {
+static void test_qr_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -4301,8 +4302,7 @@ static void test_qr_encode_segs(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -4318,7 +4318,7 @@ static void test_qr_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -4392,7 +4392,8 @@ static void test_qr_encode_segs(int index, int generate, int debug) {
 #define TEST_PERF_ITERATIONS    1000
 
 /* Not a real test, just performance indicator */
-static void test_qr_perf(int index, int debug) {
+static void test_qr_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -4434,7 +4435,7 @@ static void test_qr_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_encode = diff_buffer = 0;
 
@@ -4465,12 +4466,13 @@ static void test_qr_perf(int index, int debug) {
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
-    if (index != -1) {
+    if (p_ctx->index != -1) {
         printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
     }
 }
 
-static void test_microqr_options(int index, int debug) {
+static void test_microqr_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -4557,7 +4559,7 @@ static void test_microqr_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -4566,7 +4568,7 @@ static void test_microqr_options(int index, int debug) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
-        if (index == -1 && data[i].compare_previous != -1) {
+        if (p_ctx->index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_equal(!ret, !data[i].compare_previous, "i:%d testUtilSymbolCmp !ret %d != %d\n", i, ret, data[i].compare_previous);
         }
@@ -4585,7 +4587,8 @@ static void test_microqr_options(int index, int debug) {
     testFinish();
 }
 
-static void test_microqr_input(int index, int generate, int debug) {
+static void test_microqr_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -4669,8 +4672,7 @@ static void test_microqr_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -4682,7 +4684,7 @@ static void test_microqr_input(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -4730,7 +4732,8 @@ static void test_microqr_input(int index, int generate, int debug) {
 }
 
 /* Check MICROQR padding (4-bit final codeword for M1 and M3 in particular) */
-static void test_microqr_padding(int index, int generate, int debug) {
+static void test_microqr_padding(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -4791,8 +4794,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -4810,7 +4812,7 @@ static void test_microqr_padding(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %d, \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, data[i].option_1, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
@@ -4845,7 +4847,8 @@ static void test_microqr_padding(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_microqr_optimize(int index, int generate, int debug) {
+static void test_microqr_optimize(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -4889,7 +4892,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -4901,7 +4904,7 @@ static void test_microqr_optimize(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -4946,7 +4949,8 @@ static void test_microqr_optimize(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_microqr_encode(int index, int generate, int debug) {
+static void test_microqr_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -5922,7 +5926,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -5932,7 +5936,7 @@ static void test_microqr_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
@@ -5981,7 +5985,8 @@ static void test_microqr_encode(int index, int generate, int debug) {
 }
 
 /* Not a real test, just performance indicator */
-static void test_microqr_perf(int index, int debug) {
+static void test_microqr_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -6013,7 +6018,7 @@ static void test_microqr_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_encode = diff_buffer = 0;
 
@@ -6044,12 +6049,13 @@ static void test_microqr_perf(int index, int debug) {
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
-    if (index != -1) {
+    if (p_ctx->index != -1) {
         printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
     }
 }
 
-static void test_upnqr_input(int index, int generate, int debug) {
+static void test_upnqr_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -6081,7 +6087,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -6096,7 +6102,7 @@ static void test_upnqr_input(int index, int generate, int debug) {
             assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
         }
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
                     symbol->errtxt, data[i].comment);
@@ -6110,7 +6116,8 @@ static void test_upnqr_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_upnqr_encode(int index, int generate, int debug) {
+static void test_upnqr_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -6541,7 +6548,7 @@ static void test_upnqr_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -6551,7 +6558,7 @@ static void test_upnqr_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -6603,7 +6610,8 @@ static void test_upnqr_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_rmqr_large(int index, int debug) {
+static void test_rmqr_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -7140,7 +7148,7 @@ static void test_rmqr_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -7173,7 +7181,8 @@ static void test_rmqr_large(int index, int debug) {
     testFinish();
 }
 
-static void test_rmqr_options(int index, int debug) {
+static void test_rmqr_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_1;
@@ -7264,7 +7273,7 @@ static void test_rmqr_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -7288,7 +7297,8 @@ static void test_rmqr_options(int index, int debug) {
     testFinish();
 }
 
-static void test_rmqr_input(int index, int generate, int debug) {
+static void test_rmqr_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -7437,7 +7447,7 @@ static void test_rmqr_input(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -7449,7 +7459,7 @@ static void test_rmqr_input(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %d, %s, \"%s\", %s, %d, \"%s\", %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci,
                     data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
@@ -7486,7 +7496,8 @@ static void test_rmqr_input(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_rmqr_gs1(int index, int generate, int debug) {
+static void test_rmqr_gs1(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -7520,7 +7531,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -7532,7 +7543,7 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
         } else {
@@ -7545,7 +7556,8 @@ static void test_rmqr_gs1(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_rmqr_optimize(int index, int generate, int debug) {
+static void test_rmqr_optimize(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -7595,7 +7607,7 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -7607,7 +7619,7 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
@@ -7637,7 +7649,8 @@ static void test_rmqr_optimize(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_rmqr_encode(int index, int generate, int debug) {
+static void test_rmqr_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -8035,7 +8048,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -8045,7 +8058,7 @@ static void test_rmqr_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
@@ -8082,7 +8095,8 @@ static void test_rmqr_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_rmqr_encode_segs(int index, int generate, int debug) {
+static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int input_mode;
@@ -8204,7 +8218,7 @@ static void test_rmqr_encode_segs(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -8217,7 +8231,7 @@ static void test_rmqr_encode_segs(int index, int generate, int debug) {
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             char escaped1[4096];
             char escaped2[4096];
             int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
@@ -8284,32 +8298,32 @@ static void test_rmqr_encode_segs(int index, int generate, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_qr_options", test_qr_options, 1, 0, 1 },
-        { "test_qr_input", test_qr_input, 1, 1, 1 },
-        { "test_qr_gs1", test_qr_gs1, 1, 1, 1 },
-        { "test_qr_optimize", test_qr_optimize, 1, 1, 1 },
-        { "test_qr_encode", test_qr_encode, 1, 1, 1 },
-        { "test_qr_encode_segs", test_qr_encode_segs, 1, 1, 1 },
-        { "test_qr_perf", test_qr_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_qr_options", test_qr_options },
+        { "test_qr_input", test_qr_input },
+        { "test_qr_gs1", test_qr_gs1 },
+        { "test_qr_optimize", test_qr_optimize },
+        { "test_qr_encode", test_qr_encode },
+        { "test_qr_encode_segs", test_qr_encode_segs },
+        { "test_qr_perf", test_qr_perf },
 
-        { "test_microqr_options", test_microqr_options, 1, 0, 1 },
-        { "test_microqr_input", test_microqr_input, 1, 1, 1 },
-        { "test_microqr_padding", test_microqr_padding, 1, 1, 1 },
-        { "test_microqr_optimize", test_microqr_optimize, 1, 1, 1 },
-        { "test_microqr_encode", test_microqr_encode, 1, 1, 1 },
-        { "test_microqr_perf", test_microqr_perf, 1, 0, 1 },
+        { "test_microqr_options", test_microqr_options },
+        { "test_microqr_input", test_microqr_input },
+        { "test_microqr_padding", test_microqr_padding },
+        { "test_microqr_optimize", test_microqr_optimize },
+        { "test_microqr_encode", test_microqr_encode },
+        { "test_microqr_perf", test_microqr_perf },
 
-        { "test_upnqr_input", test_upnqr_input, 1, 1, 1 },
-        { "test_upnqr_encode", test_upnqr_encode, 1, 1, 1 },
+        { "test_upnqr_input", test_upnqr_input },
+        { "test_upnqr_encode", test_upnqr_encode },
 
-        { "test_rmqr_large", test_rmqr_large, 1, 0, 1 },
-        { "test_rmqr_options", test_rmqr_options, 1, 0, 1 },
-        { "test_rmqr_input", test_rmqr_input, 1, 1, 1 },
-        { "test_rmqr_gs1", test_rmqr_gs1, 1, 1, 1 },
-        { "test_rmqr_optimize", test_rmqr_optimize, 1, 1, 1 },
-        { "test_rmqr_encode", test_rmqr_encode, 1, 1, 1 },
-        { "test_rmqr_encode_segs", test_rmqr_encode_segs, 1, 1, 1 },
+        { "test_rmqr_large", test_rmqr_large },
+        { "test_rmqr_options", test_rmqr_options },
+        { "test_rmqr_input", test_rmqr_input },
+        { "test_rmqr_gs1", test_rmqr_gs1 },
+        { "test_rmqr_optimize", test_rmqr_optimize },
+        { "test_rmqr_encode", test_rmqr_encode },
+        { "test_rmqr_encode_segs", test_rmqr_encode_segs },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

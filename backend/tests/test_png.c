@@ -35,7 +35,8 @@
 
 INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
-static void test_pixel_plot(int index, int debug) {
+static void test_pixel_plot(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int width;
@@ -69,7 +70,7 @@ static void test_pixel_plot(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int size;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -117,7 +118,8 @@ static void test_pixel_plot(int index, int debug) {
     testFinish();
 }
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -214,7 +216,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
@@ -226,7 +228,7 @@ static void test_print(int index, int generate, int debug) {
     for (i = 0; i < data_size; i++) {
         int text_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -276,7 +278,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", \"%s\", \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
@@ -304,10 +306,12 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     unsigned char data[] = { "1" };
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -339,7 +343,7 @@ struct wpng_error_type {
 
 INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg);
 
-static void test_wpng_error_handler(void) {
+static void test_wpng_error_handler(const testCtx *const p_ctx) {
     int ret;
     char filename[] = "out.png";
     FILE *fp;
@@ -347,6 +351,8 @@ static void test_wpng_error_handler(void) {
     struct zint_symbol symbol = {0};
     png_structp png_ptr;
     png_infop info_ptr;
+
+    (void)p_ctx;
 
     testStart("test_wpng_error_handler");
 
@@ -387,12 +393,14 @@ static void test_wpng_error_handler(void) {
 }
 
 /* Check compliant height printable for max CODABLOCKF with 44 rows * ((62 cols) * 0.55 + 3)) = 1632.4 */
-static void test_large_compliant_height(void) {
+static void test_large_compliant_height(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol = NULL;
     const char pattern[] = { "1" };
     const int codablockf_max = 2726;
     char data_buf[2726 + 1];
+
+    (void)p_ctx;
 
     testStart("test_large_compliant_height");
 
@@ -415,12 +423,12 @@ static void test_large_compliant_height(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_pixel_plot", test_pixel_plot, 1, 0, 1 },
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
-        { "test_wpng_error_handler", test_wpng_error_handler, 0, 0, 0 },
-        { "test_large_compliant_height", test_large_compliant_height, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_pixel_plot", test_pixel_plot },
+        { "test_print", test_print },
+        { "test_outfile", test_outfile },
+        { "test_wpng_error_handler", test_wpng_error_handler },
+        { "test_large_compliant_height", test_large_compliant_height },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

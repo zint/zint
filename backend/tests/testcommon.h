@@ -37,6 +37,10 @@
 #ifndef Z_TESTCOMMON_H
 #define Z_TESTCOMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 #define ZINT_DEBUG_TEST_PRINT           16
 #define ZINT_DEBUG_TEST_LESS_NOISY      32
 #define ZINT_DEBUG_TEST_KEEP_OUTFILE    64
@@ -53,6 +57,10 @@
 #define testutil_pclose(stream) _pclose(stream)
 #else
 #include <unistd.h>
+#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L /* C89 */
+    extern FILE *popen(const char *command, const char *type);
+    extern int pclose(FILE *stream);
+#  endif
 #define testutil_popen(command, mode) popen(command, mode)
 #define testutil_pclose(stream) pclose(stream)
 #endif
@@ -64,15 +72,11 @@
 #  pragma warning(disable: 4305) /* truncation from 'double' to 'float' */
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 extern int assertionFailed;
 extern int assertionNum;
 extern const char *assertionFilename;
 
-#if _MSC_VER < 1900 /* MSVC 2015 */
+#if defined(_MSC_VER) && _MSC_VER < 1900 /* MSVC 2015 */
 #define testStart(__arg__) (testStartReal("", __arg__))
 #else
 #define testStart(__arg__) (testStartReal(__func__, __arg__))
@@ -82,19 +86,29 @@ void testFinish(void);
 void testSkip(const char *msg);
 void testReport(void);
 
+typedef struct s_testCtx {
+    int index;
+    int index_end;
+    int exclude;
+    int exclude_end;
+    int generate;
+    int debug;
+} testCtx;
+typedef void (*testFunc_t)(const testCtx *const p_ctx);
 typedef struct s_testFunction {
-    const char *name; void *func; int has_index; int has_generate; int has_debug;
+    const char *name; testFunc_t func;
 } testFunction;
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
+int testContinue(const testCtx *const p_ctx, const int i);
 
-#if _MSC_VER == 1200 /* VC6 */
+#if (defined(_MSC_VER) &&_MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) /* VC6 or C89 */
 void assert_zero(int exp, const char *fmt, ...);
 void assert_nonzero(int exp, const char *fmt, ...);
 void assert_null(const void *exp, const char *fmt, ...);
 void assert_nonnull(const void *exp, const char *fmt, ...);
 void assert_equal(int e1, int e2, const char *fmt, ...);
 void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
-void assert_notequal(int e1, int e2, ...);
+void assert_notequal(int e1, int e2, const char *fmt, ...);
 #else
 #define assert_exp(__exp__, ...) \
     { assertionNum++; if (!(__exp__)) { assertionFailed++; printf("%s:%d ", assertionFilename, __LINE__); \

@@ -27,20 +27,21 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "test_gb2312_tab.h"
 #include "../eci.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-//#define TEST_JUST_SAY_GNO
+/* #define TEST_JUST_SAY_GNO */
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/gb2312_gnu.c"
 #endif
 
 INTERNAL int u_gb2312_int_test(const unsigned int u, unsigned int *d);
 
-// As control convert to GB 2312 using simple table generated from unicode.org GB2312.TXT plus simple processing
-// GB2312.TXT no longer on unicode.org site but available from https://haible.de/bruno/charsets/conversion-tables/GB2312.html
+/* As control convert to GB 2312 using simple table generated from unicode.org GB2312.TXT plus simple processing */
+/* GB2312.TXT no longer on unicode.org site but available from https://haible.de/bruno/charsets/conversion-tables/GB2312.html */
 static int u_gb2312_int2(unsigned int u, unsigned int *d) {
     int tab_length, start_i, end_i;
     int i;
@@ -49,7 +50,7 @@ static int u_gb2312_int2(unsigned int u, unsigned int *d) {
         *d = (unsigned char) u;
         return 1;
     }
-    // Shortcut
+    /* Shortcut */
     if ((u > 0x0451 && u < 0x2015) || (u > 0x3229 && u < 0x4E00) || (u > 0x9FA0 && u < 0xFF01) || u > 0xFFE5) {
         return 0;
     }
@@ -58,7 +59,7 @@ static int u_gb2312_int2(unsigned int u, unsigned int *d) {
     end_i = start_i + 0x800 > tab_length ? tab_length : start_i + 0x800;
     for (i = start_i; i < end_i; i += 2) {
         if (test_gb2312_tab[i + 1] == u) {
-            *d = test_gb2312_tab[i] + 0x8080; // Table in GB 2312 not EUC-CN
+            *d = test_gb2312_tab[i] + 0x8080; /* Table in GB 2312 not EUC-CN */
             return 2;
         }
     }
@@ -74,7 +75,8 @@ static int u_gb2312_int2(unsigned int u, unsigned int *d) {
 #define TEST_INT_PERF_ITERATIONS    250
 #endif
 
-static void test_u_gb2312_int(int debug) {
+static void test_u_gb2312_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     int ret, ret2;
     unsigned int val, val2;
@@ -97,7 +99,7 @@ static void test_u_gb2312_int(int debug) {
 #endif
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+        if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
         val = val2 = 0;
@@ -108,7 +110,7 @@ static void test_u_gb2312_int(int debug) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
 #ifdef TEST_JUST_SAY_GNO
-        // `gb2312_wctomb_zint()` doesn't handle ASCII; and ignore duplicate mappings, no longer done
+        /* `gb2312_wctomb_zint()` doesn't handle ASCII; and ignore duplicate mappings, no longer done */
         if (i >= 0x80 && i != 0xB7 && i != 0x2014) {
             if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
                 val2 = 0;
@@ -145,7 +147,7 @@ static void test_u_gb2312_int(int debug) {
     testFinish();
 }
 
-static void test_gb2312_utf8(int index) {
+static void test_gb2312_utf8(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -155,15 +157,17 @@ static void test_gb2312_utf8(int index) {
         unsigned int expected_gbdata[20];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
-    // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 2312 0xA6C2, UTF-8 CEB2
-    // ¤ U+00A4 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA1E8, UTF-8 C2A4
-    // ¥ U+00A5 in ISO 8859-1 0xA5, not in GB 2312, UTF-8 C2A5
-    // ・ U+30FB katakana middle dot, not in any ISO or Win page, in GB 2312 "GB2312.TXT" 0xA1A4, duplicate of mapping of U+00B7, UTF-8 E383BB
-    // · U+00B7 middle dot in ISO 8859-1 0xB7, in GB 2312 "GB 18030 subset" 0xA1A4, duplicate of mapping of U+30FB, UTF-8 C2B7
-    // ― U+2015 horizontal bar in ISO 8859-7 Greek and ISO 8859-10 Nordic, not in any Win page, in GB 2312 "GB2312.TXT" 0xA1AA, duplicate of mapping of U+2014, UTF-8 E28095
-    // — U+2014 em dash, not in any ISO, in Win 1250 and other Win, in GB 2312 "GB 18030 subset" 0xA1AA, duplicate of mapping of U+2015, UTF-8 E28094
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
+       β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in GB 2312 0xA6C2, UTF-8 CEB2
+       ¤ U+00A4 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA1E8, UTF-8 C2A4
+       ¥ U+00A5 in ISO 8859-1 0xA5, not in GB 2312, UTF-8 C2A5
+       ・ U+30FB katakana middle dot, not in any ISO or Win page, in GB 2312 "GB2312.TXT" 0xA1A4, duplicate of mapping of U+00B7, UTF-8 E383BB
+       · U+00B7 middle dot in ISO 8859-1 0xB7, in GB 2312 "GB 18030 subset" 0xA1A4, duplicate of mapping of U+30FB, UTF-8 C2B7
+       ― U+2015 horizontal bar in ISO 8859-7 Greek and ISO 8859-10 Nordic, not in any Win page, in GB 2312 "GB2312.TXT" 0xA1AA, duplicate of mapping of U+2014, UTF-8 E28095
+       — U+2014 em dash, not in any ISO, in Win 1250 and other Win, in GB 2312 "GB 18030 subset" 0xA1AA, duplicate of mapping of U+2015, UTF-8 E28094
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "é", -1, 0, 1, { 0xA8A6 }, "" },
         /*  1*/ { "β", -1, 0, 1, { 0xA6C2 }, "" },
@@ -188,7 +192,7 @@ static void test_gb2312_utf8(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -207,7 +211,7 @@ static void test_gb2312_utf8(int index) {
     testFinish();
 }
 
-static void test_gb2312_utf8_to_eci(int index) {
+static void test_gb2312_utf8_to_eci(const testCtx *const p_ctx) {
 
     struct item {
         int eci;
@@ -219,19 +223,21 @@ static void test_gb2312_utf8_to_eci(int index) {
         unsigned int expected_gbdata[20];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in GRIDMATRIX Chinese mode first byte range 0xA1..A9, 0xB0..F7
-    // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
-    // ¥ U+00A5 in ISO 8859-1 0xA5, in first byte range 0xA1..A9, 0xB0..F7
-    // NBSP U+00A0 in ISO 8859-1 0xA0, outside first byte and second byte range 0xA1..FE, UTF-8 C2A0 (\302\240)
-    // ¡ U+00A1 in ISO 8859-1 0xA1, in first byte range
-    // © U+00A9 in ISO 8859-1 0xA9, in first byte range
-    // ª U+00AA in ISO 8859-1 0xAA, outside first byte range
-    // ¯ U+00AF in ISO 8859-1 0xAF, outside first byte range
-    // ° U+00B0 in ISO 8859-1 0xB0, in first byte range
-    // ÷ U+00F7 in ISO 8859-1 0xF7, in first byte range
-    // ø U+00F8 in ISO 8859-1 0xF8, outside first byte range
-    // ÿ U+00FF in ISO 8859-1 0xFF, outside first byte and second byte range
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in GRIDMATRIX Chinese mode first byte range 0xA1..A9, 0xB0..F7
+       β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
+       ¥ U+00A5 in ISO 8859-1 0xA5, in first byte range 0xA1..A9, 0xB0..F7
+       NBSP U+00A0 in ISO 8859-1 0xA0, outside first byte and second byte range 0xA1..FE, UTF-8 C2A0 (\302\240)
+       ¡ U+00A1 in ISO 8859-1 0xA1, in first byte range
+       © U+00A9 in ISO 8859-1 0xA9, in first byte range
+       ª U+00AA in ISO 8859-1 0xAA, outside first byte range
+       ¯ U+00AF in ISO 8859-1 0xAF, outside first byte range
+       ° U+00B0 in ISO 8859-1 0xB0, in first byte range
+       ÷ U+00F7 in ISO 8859-1 0xF7, in first byte range
+       ø U+00F8 in ISO 8859-1 0xF8, outside first byte range
+       ÿ U+00FF in ISO 8859-1 0xFF, outside first byte and second byte range
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
         /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "First byte in range but only one byte" },
@@ -288,7 +294,7 @@ static void test_gb2312_utf8_to_eci(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -310,7 +316,7 @@ static void test_gb2312_utf8_to_eci(int index) {
 INTERNAL void gb2312_cpy_test(const unsigned char source[], int *p_length, unsigned int *ddata,
                 const int full_multibyte);
 
-static void test_gb2312_cpy(int index) {
+static void test_gb2312_cpy(const testCtx *const p_ctx) {
 
     struct item {
         int full_multibyte;
@@ -321,7 +327,7 @@ static void test_gb2312_cpy(int index) {
         unsigned int expected_gbdata[20];
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 0, "\351", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
         /*  1*/ { 1, "\351", -1, 0, 1, { 0xE9 }, "In GRIDMATRIX Chinese mode first-byte range but only one byte" },
@@ -345,7 +351,7 @@ static void test_gb2312_cpy(int index) {
         int ret_length;
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -363,8 +369,9 @@ static void test_gb2312_cpy(int index) {
 #define TEST_PERF_ITER_MILLES   100
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -407,7 +414,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = (int) strlen(data[i].data);
 
@@ -449,7 +456,7 @@ static void test_perf(int index, int debug) {
         total_eci += diff_eci;
         total_eci_gno += diff_eci_gno;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: new % 8gms, gno % 8gms ratio % 9g | eci % 8gms, gno % 8gms ratio %g\n", comment_max, "totals",
                 TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno),
                 TEST_PERF_TIME(total_eci), TEST_PERF_TIME(total_eci_gno), TEST_PERF_RATIO(total_eci, total_eci_gno));
@@ -458,12 +465,12 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_u_gb2312_int", test_u_gb2312_int, 0, 0, 1 },
-        { "test_gb2312_utf8", test_gb2312_utf8, 1, 0, 0 },
-        { "test_gb2312_utf8_to_eci", test_gb2312_utf8_to_eci, 1, 0, 0 },
-        { "test_gb2312_cpy", test_gb2312_cpy, 1, 0, 0 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_u_gb2312_int", test_u_gb2312_int },
+        { "test_gb2312_utf8", test_gb2312_utf8 },
+        { "test_gb2312_utf8_to_eci", test_gb2312_utf8_to_eci },
+        { "test_gb2312_cpy", test_gb2312_cpy },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

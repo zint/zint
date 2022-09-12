@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,13 +27,14 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 
-static void test_pixel_plot(int index, int debug) {
+static void test_pixel_plot(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int width;
@@ -42,7 +43,7 @@ static void test_pixel_plot(int index, int debug) {
         int repeat;
         int ret;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0 },
@@ -52,8 +53,8 @@ static void test_pixel_plot(int index, int debug) {
         /*  5*/ { 3, 2, "101010", 0, 0 },
         /*  6*/ { 3, 3, "101010101", 0, 0 },
         /*  7*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
-        /*  8*/ { 20, 30, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWKCKBKMKRKYKGKK", 1, 0 }, // Single LZW block, size 255
-        /*  9*/ { 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1, 0 }, // Two LZW blocks, last size 1
+        /*  8*/ { 20, 30, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWKCKBKMKRKYKGKK", 1, 0 }, /* Single LZW block, size 255 */
+        /*  9*/ { 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1, 0 }, /* Two LZW blocks, last size 1 */
         /* 10*/ { 1, 1, "D", 0, ZINT_ERROR_INVALID_DATA },
     };
     int data_size = ARRAY_SIZE(data);
@@ -62,7 +63,7 @@ static void test_pixel_plot(int index, int debug) {
 
     char *gif = "out.gif";
 
-    char data_buf[19 * 32 + 1]; // 19 * 32 == 608
+    char data_buf[19 * 32 + 1]; /* 19 * 32 == 608 */
 
     int have_identify = testUtilHaveIdentify();
 
@@ -71,7 +72,7 @@ static void test_pixel_plot(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int size;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -119,7 +120,8 @@ static void test_pixel_plot(int index, int debug) {
     testFinish();
 }
 
-static void test_print(int index, int generate, int debug) {
+static void test_print(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -185,7 +187,7 @@ static void test_print(int index, int generate, int debug) {
 
     testStart("test_print");
 
-    if (generate) {
+    if (p_ctx->generate) {
         char data_dir_path[1024];
         assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
@@ -196,7 +198,7 @@ static void test_print(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -239,7 +241,7 @@ static void test_print(int index, int generate, int debug) {
 
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, %d, %.5g, %.5g, %.5g, \"%s\", \"%s\", \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height,
@@ -266,10 +268,12 @@ static void test_print(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_outfile(void) {
+static void test_outfile(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol symbol = {0};
     unsigned char data[] = { "1" };
+
+    (void)p_ctx;
 
     testStart("test_outfile");
 
@@ -291,7 +295,9 @@ static void test_outfile(void) {
     testFinish();
 }
 
-static void test_large_scale(int debug) {
+static void test_large_scale(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
     int length, ret;
     struct zint_symbol symbol = {0};
     char data[] = "1";
@@ -304,15 +310,15 @@ static void test_large_scale(int debug) {
     strcpy(symbol.fgcolour, "000000");
     strcpy(symbol.bgcolour, "ffffff");
     strcpy(symbol.outfile, "out.gif");
-    // X-dimension 0.27mm * 95 = 25.65 ~ 25 pixels so 12.5 gives 95 dpmm (2400 dpi)
-    symbol.scale = 12.5f; // 70.0f would cause re-alloc as LZW > 1MB but very slow
+    /* X-dimension 0.27mm * 95 = 25.65 ~ 25 pixels so 12.5 gives 95 dpmm (2400 dpi) */
+    symbol.scale = 12.5f; /* 70.0f would cause re-alloc as LZW > 1MB but very slow */
     symbol.dot_size = 4.0f / 5.0f;
 
     ret = ZBarcode_Encode_and_Print(&symbol, (unsigned char *) data, length, 0 /*rotate_angle*/);
     assert_zero(ret, "%s ZBarcode_Encode_and_Print ret %d != 0 %s\n", testUtilBarcodeName(symbol.symbology), ret, symbol.errtxt);
 
     if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) { /* -d 64 */
-        // 129.1 kB file manually inspected and checked (1.1 MB file for scale 70.0f also checked)
+        /* 129.1 kB file manually inspected and checked (1.1 MB file for scale 70.0f also checked) */
         assert_zero(remove(symbol.outfile), "remove(%s) != 0\n", symbol.outfile);
     }
 
@@ -323,11 +329,11 @@ static void test_large_scale(int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_pixel_plot", test_pixel_plot, 1, 0, 1 },
-        { "test_print", test_print, 1, 1, 1 },
-        { "test_outfile", test_outfile, 0, 0, 0 },
-        { "test_large_scale", test_large_scale, 0, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_pixel_plot", test_pixel_plot },
+        { "test_print", test_print },
+        { "test_outfile", test_outfile },
+        { "test_large_scale", test_large_scale },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
@@ -336,3 +342,5 @@ int main(int argc, char *argv[]) {
 
     return 0;
 }
+
+/* vim: set ts=4 sw=4 et : */

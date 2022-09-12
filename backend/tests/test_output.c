@@ -34,7 +34,7 @@
 INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom);
 
-static void test_quiet_zones(void) {
+static void test_quiet_zones(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol symbol = {0};
     int hide_text = 0;
@@ -44,10 +44,12 @@ static void test_quiet_zones(void) {
 
     for (i = 1; i <= BARCODE_LAST; i++) {
         if (!ZBarcode_ValidID(i)) continue;
+        if (testContinue(p_ctx, i)) continue;
+
         symbol.symbology = i;
         symbol.output_options = BARCODE_QUIET_ZONES;
         ret = out_quiet_zones_test(&symbol, hide_text, &left, &right, &top, &bottom);
-        if (i != BARCODE_FLAT && i != BARCODE_BC412) { // Only two which aren't marked as done
+        if (i != BARCODE_FLAT && i != BARCODE_BC412) { /* Only two which aren't marked as done */
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }
     }
@@ -57,8 +59,8 @@ static void test_quiet_zones(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_quiet_zones", test_quiet_zones, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_quiet_zones", test_quiet_zones },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

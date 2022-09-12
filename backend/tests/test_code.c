@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_large(int index, int debug) {
+static void test_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -41,22 +43,22 @@ static void test_large(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "1", 121, 0, 1, 999 }, // 8 (Start) + 121*8 + 2*8 (Checks) + 7 (Stop) == 999
+        /*  0*/ { BARCODE_CODE11, -1, "1", 121, 0, 1, 999 }, /* 8 (Start) + 121*8 + 2*8 (Checks) + 7 (Stop) == 999 */
         /*  1*/ { BARCODE_CODE11, -1, "1", 122, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_CODE39, -1, "1", 85, 0, 1, 1130 }, // 13 (Start) + 85*13 + 12 (Stop) == 1130
+        /*  2*/ { BARCODE_CODE39, -1, "1", 85, 0, 1, 1130 }, /* 13 (Start) + 85*13 + 12 (Stop) == 1130 */
         /*  3*/ { BARCODE_CODE39, -1, "1", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  4*/ { BARCODE_EXCODE39, -1, "1", 85, 0, 1, 1130 },
         /*  5*/ { BARCODE_EXCODE39, -1, "1", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_EXCODE39, -1, "a", 42, 0, 1, 1117 }, // Takes 2 encoding chars per char
+        /*  6*/ { BARCODE_EXCODE39, -1, "a", 42, 0, 1, 1117 }, /* Takes 2 encoding chars per char */
         /*  7*/ { BARCODE_EXCODE39, -1, "a", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  8*/ { BARCODE_EXCODE39, -1, "a", 85, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { BARCODE_LOGMARS, -1, "1", 30, 0, 1, 511 }, // 16 (Start) + 30*16 + 15 (Stop) == 511
+        /*  9*/ { BARCODE_LOGMARS, -1, "1", 30, 0, 1, 511 }, /* 16 (Start) + 30*16 + 15 (Stop) == 511 */
         /* 10*/ { BARCODE_LOGMARS, -1, "1", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { BARCODE_CODE93, -1, "1", 107, 0, 1, 1000 }, // 9 (Start) + 107*9 + 2*9 (Checks) + 10 (Stop) == 1000
+        /* 11*/ { BARCODE_CODE93, -1, "1", 107, 0, 1, 1000 }, /* 9 (Start) + 107*9 + 2*9 (Checks) + 10 (Stop) == 1000 */
         /* 12*/ { BARCODE_CODE93, -1, "1", 108, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 13*/ { BARCODE_CODE93, -1, "a", 53, 0, 1, 991 }, // Takes 2 encoding chars per char
+        /* 13*/ { BARCODE_CODE93, -1, "a", 53, 0, 1, 991 }, /* Takes 2 encoding chars per char */
         /* 14*/ { BARCODE_CODE93, -1, "a", 54, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 15*/ { BARCODE_CODE93, -1, "a", 107, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 16*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142 },
@@ -65,7 +67,7 @@ static void test_large(int index, int debug) {
         /* 19*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 20*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 21*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259 },
-        /* 22*/ { BARCODE_HIBC_39, -1, "1", 67, 0, 1, 1135 }, // 69 - 2 ('+' and check digit)
+        /* 22*/ { BARCODE_HIBC_39, -1, "1", 67, 0, 1, 1135 }, /* 69 - 2 ('+' and check digit) */
         /* 23*/ { BARCODE_HIBC_39, -1, "1", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -78,7 +80,7 @@ static void test_large(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -102,7 +104,8 @@ static void test_large(int index, int debug) {
     testFinish();
 }
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -112,36 +115,36 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "123-45", -1, "123-4552" }, // 2 checksums
-        /*  1*/ { BARCODE_CODE11, 1, "123-45", -1, "123-455" }, // 1 check digit
-        /*  2*/ { BARCODE_CODE11, 2, "123-45", -1, "123-45" }, // No checksums
-        /*  3*/ { BARCODE_CODE11, -1, "123456789012", -1, "123456789012-8" }, // First check digit 10 (A) goes to hyphen
+        /*  0*/ { BARCODE_CODE11, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
+        /*  1*/ { BARCODE_CODE11, 1, "123-45", -1, "123-455" }, /* 1 check digit */
+        /*  2*/ { BARCODE_CODE11, 2, "123-45", -1, "123-45" }, /* No checksums */
+        /*  3*/ { BARCODE_CODE11, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
         /*  4*/ { BARCODE_CODE39, -1, "ABC1234", -1, "*ABC1234*" },
-        /*  5*/ { BARCODE_CODE39, -1, "abc1234", -1, "*ABC1234*" }, // Converts to upper
+        /*  5*/ { BARCODE_CODE39, -1, "abc1234", -1, "*ABC1234*" }, /* Converts to upper */
         /*  6*/ { BARCODE_CODE39, -1, "123456789", -1, "*123456789*" },
-        /*  7*/ { BARCODE_CODE39, 1, "123456789", -1, "*1234567892*" }, // With check digit
+        /*  7*/ { BARCODE_CODE39, 1, "123456789", -1, "*1234567892*" }, /* With check digit */
         /*  8*/ { BARCODE_EXCODE39, -1, "ABC1234", -1, "ABC1234" },
         /*  9*/ { BARCODE_EXCODE39, -1, "abc1234", -1, "abc1234" },
-        /* 10*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234" }, // With check digit (not displayed)
-        /* 11*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, // NUL, ctrls and DEL replaced with spaces
+        /* 10*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234" }, /* With check digit (not displayed) */
+        /* 11*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* NUL, ctrls and DEL replaced with spaces */
         /* 12*/ { BARCODE_LOGMARS, -1, "ABC1234", -1, "ABC1234" },
-        /* 13*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, // Converts to upper
-        /* 14*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, // With check digit
-        /* 15*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, // With check digit
-        /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, // No longer shows 2 check chars added (same as BWIPP and TEC-IT)
-        /* 17*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, // Unless requested
+        /* 13*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, /* Converts to upper */
+        /* 14*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, /* With check digit */
+        /* 15*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, /* With check digit */
+        /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, /* No longer shows 2 check chars added (same as BWIPP and TEC-IT) */
+        /* 17*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, /* Unless requested */
         /* 18*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
         /* 19*/ { BARCODE_CODE93, 1, "abc1234", -1, "abc1234ZG" },
-        /* 20*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, // NUL, ctrls and DEL replaced with spaces
-        /* 21*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, // Pads with zeroes if length < 7
+        /* 20*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, /* NUL, ctrls and DEL replaced with spaces */
+        /* 21*/ { BARCODE_PZN, -1, "12345", -1, "PZN -00123458" }, /* Pads with zeroes if length < 7 */
         /* 22*/ { BARCODE_PZN, -1, "123456", -1, "PZN -01234562" },
         /* 23*/ { BARCODE_PZN, -1, "1234567", -1, "PZN -12345678" },
         /* 24*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
-        /* 25*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, // Include Import char - no change
+        /* 25*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, /* Include Import char - no change */
         /* 26*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
-        /* 27*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, // Converts to upper
+        /* 27*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, /* Converts to upper */
         /* 28*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
     };
     int data_size = ARRAY_SIZE(data);
@@ -152,7 +155,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -170,7 +173,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -181,7 +185,7 @@ static void test_input(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE11, -1, "-", -1, 0, 1, 37 },
         /*  1*/ { BARCODE_CODE11, -1, "0123456789-", -1, 0, 1, 115 },
@@ -191,7 +195,7 @@ static void test_input(int index, int debug) {
         /*  5*/ { BARCODE_CODE11, -1, "12!", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  6*/ { BARCODE_CODE11, -1, " ", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /*  7*/ { BARCODE_CODE11, 3, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1 },
-        /*  8*/ { BARCODE_CODE39, -1, "a", -1, 0, 1, 38 }, // Converts to upper
+        /*  8*/ { BARCODE_CODE39, -1, "a", -1, 0, 1, 38 }, /* Converts to upper */
         /*  9*/ { BARCODE_CODE39, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, 1, 584 },
         /* 10*/ { BARCODE_CODE39, -1, "AB!", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 11*/ { BARCODE_CODE39, -1, "A\"B", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
@@ -210,8 +214,8 @@ static void test_input(int index, int debug) {
         /* 24*/ { BARCODE_CODE39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 25*/ { BARCODE_CODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 26*/ { BARCODE_CODE39, 0, "1", -1, 0, 1, 38 },
-        /* 27*/ { BARCODE_CODE39, 1, "1", -1, 0, 1, 51 }, // Check digit
-        /* 28*/ { BARCODE_CODE39, 2, "1", -1, 0, 1, 38 }, // option_2 > 1 gnored
+        /* 27*/ { BARCODE_CODE39, 1, "1", -1, 0, 1, 51 }, /* Check digit */
+        /* 28*/ { BARCODE_CODE39, 2, "1", -1, 0, 1, 38 }, /* option_2 > 1 gnored */
         /* 29*/ { BARCODE_EXCODE39, -1, "A", -1, 0, 1, 38 },
         /* 30*/ { BARCODE_EXCODE39, -1, "a", -1, 0, 1, 51 },
         /* 31*/ { BARCODE_EXCODE39, -1, ",", -1, 0, 1, 51 },
@@ -231,14 +235,14 @@ static void test_input(int index, int debug) {
         /* 45*/ { BARCODE_CODE93, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 46*/ { BARCODE_PZN, -1, "1", -1, 0, 1, 142 },
         /* 47*/ { BARCODE_PZN, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 48*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // Check digit == 10 so can't be used
+        /* 48*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
         /* 49*/ { BARCODE_VIN, -1, "5GZCZ43D13S812715", -1, 0, 1, 246 },
-        /* 50*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, // North American with invalid check character
-        /* 51*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, // Not North American so no check
-        /* 52*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // I not allowed
-        /* 53*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // O not allowed
-        /* 54*/ { BARCODE_VIN, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, // Q not allowed
-        /* 55*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, // Converts to upper
+        /* 50*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, /* North American with invalid check character */
+        /* 51*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, /* Not North American so no check */
+        /* 52*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* I not allowed */
+        /* 53*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* O not allowed */
+        /* 54*/ { BARCODE_VIN, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Q not allowed */
+        /* 55*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, /* Converts to upper */
         /* 56*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 57*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 58*/ { BARCODE_HIBC_39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
@@ -251,7 +255,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -272,7 +276,8 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -422,14 +427,14 @@ static void test_encode(int index, int generate, int debug) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); // Only do ZXing-C++ test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -439,7 +444,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %d, %s, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -489,8 +494,9 @@ static void test_encode(int index, int generate, int debug) {
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 #define TEST_PERF_TIME(arg) ((arg) * 1000.0 / CLOCKS_PER_SEC)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -532,7 +538,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         diff_create = diff_encode = diff_buffer = diff_buf_inter = diff_print = 0;
 
@@ -562,7 +568,7 @@ static void test_perf(int index, int debug) {
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
             diff_buf_inter += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Buffer OUT_BUFFER_INTERMEDIATE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; // Undo
+            symbol->output_options &= ~OUT_BUFFER_INTERMEDIATE; /* Undo */
 
             start = clock();
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
@@ -582,7 +588,7 @@ static void test_perf(int index, int debug) {
         total_buf_inter += diff_buf_inter;
         total_print += diff_print;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: encode % 8gms, buffer % 8gms, buf_inter % 8gms, print % 8gms, create % 8gms\n", comment_max, "totals",
                 TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_buf_inter), TEST_PERF_TIME(total_print), TEST_PERF_TIME(total_create));
     }
@@ -590,12 +596,12 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_large", test_large, 1, 0, 1 },
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_large", test_large },
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

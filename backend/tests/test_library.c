@@ -34,7 +34,8 @@
 #include <sys/stat.h>
 #include <errno.h>
 
-static void test_checks(int index, int debug) {
+static void test_checks(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -220,7 +221,7 @@ static void test_checks(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -269,7 +270,8 @@ static void test_checks(int index, int debug) {
     testFinish();
 }
 
-static void test_checks_segs(int index, int debug) {
+static void test_checks_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -309,7 +311,7 @@ static void test_checks_segs(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -331,7 +333,8 @@ static void test_checks_segs(int index, int debug) {
     testFinish();
 }
 
-static void test_input_data(int index, int debug) {
+static void test_input_data(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -363,7 +366,7 @@ static void test_input_data(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -388,13 +391,15 @@ static void test_input_data(int index, int debug) {
     testFinish();
 }
 
-static void test_symbologies(void) {
+static void test_symbologies(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol symbol = {0};
 
     testStart("test_symbologies");
 
     for (i = -1; i < 148; i++) {
+        if (testContinue(p_ctx, i)) continue;
+
         symbol.symbology = i;
         ret = ZBarcode_Encode(&symbol, TU("1"), 0);
         assert_notequal(ret, ZINT_ERROR_ENCODING_PROBLEM, "i:%d Encoding problem (%s)\n", i, symbol.errtxt);
@@ -403,7 +408,8 @@ static void test_symbologies(void) {
     testFinish();
 }
 
-static void test_input_mode(int index, int debug) {
+static void test_input_mode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -434,7 +440,7 @@ static void test_input_mode(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -451,7 +457,8 @@ static void test_input_mode(int index, int debug) {
     testFinish();
 }
 
-static void test_escape_char_process(int index, int generate, int debug) {
+static void test_escape_char_process(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -559,8 +566,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if ((debug & ZINT_DEBUG_TEST_PRINT) && !(debug & ZINT_DEBUG_TEST_LESS_NOISY)) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -579,7 +585,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, TU(text), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, \"%s\", \"%s\", %s, %d, \"%s\", %d, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
                     testUtilEscape(data[i].data, length, escaped, ARRAY_SIZE(escaped)),
@@ -590,7 +596,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
 
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                if (index == -1 && data[i].compare_previous) {
+                if (p_ctx->index == -1 && data[i].compare_previous) {
                     ret = testUtilSymbolCmp(symbol, &previous_symbol);
                     assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);
                 }
@@ -633,7 +639,7 @@ static void test_escape_char_process(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_cap(int index) {
+static void test_cap(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
@@ -660,7 +666,7 @@ static void test_cap(int index) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         ret = ZBarcode_Cap(data[i].symbology, data[i].cap_flag);
         assert_equal(ret, data[i].expected, "i:%d ZBarcode_Cap(%s, 0x%X) 0x%X != 0x%X\n", i, testUtilBarcodeName(data[i].symbology), data[i].cap_flag, ret, data[i].expected);
@@ -669,7 +675,7 @@ static void test_cap(int index) {
     testFinish();
 }
 
-static void test_cap_compliant_height(void) {
+static void test_cap_compliant_height(const testCtx *const p_ctx) {
     int symbol_id;
     int ret;
 
@@ -677,11 +683,12 @@ static void test_cap_compliant_height(void) {
 
     for (symbol_id = 1; symbol_id <= BARCODE_LAST; symbol_id++) {
         if (!ZBarcode_ValidID(symbol_id)) continue;
+        if (testContinue(p_ctx, symbol_id)) continue;
 
         ret = ZBarcode_Cap(symbol_id, ZINT_CAP_COMPLIANT_HEIGHT);
 
         switch (symbol_id) {
-            //case BARCODE_CODE11: /* TODO: Find doc */
+            /*case BARCODE_CODE11: TODO: Find doc */
             case BARCODE_C25INTER:
             case BARCODE_CODE39:
             case BARCODE_EXCODE39:
@@ -689,12 +696,12 @@ static void test_cap_compliant_height(void) {
             case BARCODE_EANX_CHK:
             case BARCODE_GS1_128:
             case BARCODE_CODABAR:
-            //case BARCODE_DPLEIT: /* TODO: Find doc */
-            //case BARCODE_DPIDENT: /* TODO: Find doc */
+            /*case BARCODE_DPLEIT: TODO: Find doc */
+            /*case BARCODE_DPIDENT: TODO: Find doc */
             case BARCODE_CODE16K:
             case BARCODE_CODE49:
             case BARCODE_CODE93:
-            //case BARCODE_FLAT: /* TODO: Find doc */
+            /*case BARCODE_FLAT: TODO: Find doc */
             case BARCODE_DBAR_OMN:
             case BARCODE_DBAR_LTD:
             case BARCODE_DBAR_EXP:
@@ -704,7 +711,7 @@ static void test_cap_compliant_height(void) {
             case BARCODE_UPCE:
             case BARCODE_UPCE_CHK:
             case BARCODE_POSTNET:
-            //case BARCODE_MSI_PLESSEY: /* TODO: Find doc */
+            /*case BARCODE_MSI_PLESSEY: TODO: Find doc */
             case BARCODE_FIM:
             case BARCODE_LOGMARS:
             case BARCODE_PHARMA:
@@ -718,17 +725,17 @@ static void test_cap_compliant_height(void) {
             case BARCODE_ISBNX:
             case BARCODE_RM4SCC:
             case BARCODE_EAN14:
-            //case BARCODE_VIN: /* Spec unlikely */
+            /*case BARCODE_VIN: Spec unlikely */
             case BARCODE_CODABLOCKF:
             case BARCODE_NVE18:
             case BARCODE_JAPANPOST:
-            //case BARCODE_KOREAPOST: /* TODO: Find doc */
+            /*case BARCODE_KOREAPOST: TODO: Find doc */
             case BARCODE_DBAR_STK:
             case BARCODE_DBAR_OMNSTK:
             case BARCODE_DBAR_EXPSTK:
             case BARCODE_PLANET:
             case BARCODE_USPS_IMAIL:
-            //case BARCODE_PLESSEY: /* TODO: Find doc */
+            /*case BARCODE_PLESSEY: TODO: Find doc */
             case BARCODE_TELEPEN_NUM:
             case BARCODE_ITF14:
             case BARCODE_KIX:
@@ -760,11 +767,13 @@ static void test_cap_compliant_height(void) {
     testFinish();
 }
 
-static void test_encode_file_empty(void) {
+static void test_encode_file_empty(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     char filename[] = "in.bin";
     FILE *fstream;
+
+    (void)p_ctx;
 
     testStart("test_encode_file_empty");
 
@@ -789,12 +798,14 @@ static void test_encode_file_empty(void) {
     testFinish();
 }
 
-static void test_encode_file_too_large(void) {
+static void test_encode_file_too_large(const testCtx *const p_ctx) {
     char filename[] = "in.bin";
     FILE *fstream;
     int ret;
     struct zint_symbol *symbol;
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
+
+    (void)p_ctx;
 
     testStart("test_encode_file_too_large");
 
@@ -822,7 +833,7 @@ static void test_encode_file_too_large(void) {
 }
 
 /* #181 Nico Gunkel OSS-Fuzz */
-static void test_encode_file_unreadable(void) {
+static void test_encode_file_unreadable(const testCtx *const p_ctx) {
 #ifndef _WIN32
     int ret;
     struct zint_symbol *symbol;
@@ -831,6 +842,8 @@ static void test_encode_file_unreadable(void) {
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
     int fd;
 #endif
+
+    (void)p_ctx;
 
     testStart("test_encode_file_unreadable");
 
@@ -866,10 +879,12 @@ static void test_encode_file_unreadable(void) {
 }
 
 /* #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method */
-static void test_encode_file_directory(void) {
+static void test_encode_file_directory(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     char dirname[] = "in_dir";
+
+    (void)p_ctx;
 
     testStart("test_encode_file_directory");
 
@@ -891,13 +906,15 @@ static void test_encode_file_directory(void) {
     testFinish();
 }
 
-static void test_encode_file(void) {
+static void test_encode_file(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     char *data = "1";
     char *filename = "test_encode_file_in.txt";
     char *outfile = "test_encode_file_out.gif";
     FILE *fp;
+
+    (void)p_ctx;
 
     testStart("test_encode_file");
 
@@ -954,10 +971,12 @@ static void test_encode_file(void) {
     testFinish();
 }
 
-static void test_encode_print_outfile_directory(void) {
+static void test_encode_print_outfile_directory(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     char dirname[] = "outdir.txt";
+
+    (void)p_ctx;
 
     testStart("test_encode_print_outfile_directory");
 
@@ -980,7 +999,7 @@ static void test_encode_print_outfile_directory(void) {
     testFinish();
 }
 
-static void test_bad_args(void) {
+static void test_bad_args(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     char *data = "1";
@@ -989,6 +1008,8 @@ static void test_bad_args(void) {
     struct zint_seg seg = { TU("1"), -1, 4 };
     struct zint_seg seg_empty = { TU(""), -1, 4 };
     struct zint_seg seg_too_long = { TU("1"), ZINT_MAX_DATA_LEN + 1, 4 };
+
+    (void)p_ctx;
 
     testStart("test_bad_args");
 
@@ -1120,11 +1141,13 @@ static void test_bad_args(void) {
     testFinish();
 }
 
-static void test_valid_id(void) {
+static void test_valid_id(const testCtx *const p_ctx) {
 
     int ret;
     const char *name;
     int symbol_id;
+
+    (void)p_ctx;
 
     testStart("test_valid_id");
 
@@ -1146,7 +1169,7 @@ static void test_valid_id(void) {
 
 INTERNAL int error_tag_test(struct zint_symbol *symbol, int error_number, const char *error_string);
 
-static void test_error_tag(int index) {
+static void test_error_tag(const testCtx *const p_ctx) {
 
     struct item {
         int error_number;
@@ -1181,7 +1204,7 @@ static void test_error_tag(int index) {
     for (i = 0; i < data_size; i++) {
         struct zint_symbol symbol = {0};
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol.warn_level = data[i].warn_level;
 
@@ -1202,12 +1225,14 @@ static void test_error_tag(int index) {
 
 INTERNAL void strip_bom_test(unsigned char *source, int *input_length);
 
-static void test_strip_bom(void) {
+static void test_strip_bom(const testCtx *const p_ctx) {
 
     int length, ret;
     char data[] = "\357\273\277A"; /* U+FEFF BOM, with "A" */
     char bom_only[] = "\357\273\277"; /* U+FEFF BOM only */
     char buf[6];
+
+    (void)p_ctx;
 
     testStart("test_strip_bom");
 
@@ -1229,11 +1254,13 @@ static void test_strip_bom(void) {
     testFinish();
 }
 
-static void test_zero_outfile(void) {
+static void test_zero_outfile(const testCtx *const p_ctx) {
 
     int ret;
     struct zint_symbol *symbol;
     char *data = "1234";
+
+    (void)p_ctx;
 
     testStart("test_zero_outfile");
 
@@ -1260,11 +1287,13 @@ static void test_zero_outfile(void) {
     testFinish();
 }
 
-static void test_clear(void) {
+static void test_clear(const testCtx *const p_ctx) {
 
     int ret;
     struct zint_symbol *symbol;
     char *data = "1234";
+
+    (void)p_ctx;
 
     testStart("test_clear");
 
@@ -1354,27 +1383,27 @@ static void test_clear(void) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_checks", test_checks, 1, 0, 1 },
-        { "test_checks_segs", test_checks_segs, 1, 0, 1 },
-        { "test_input_data", test_input_data, 1, 0, 1 },
-        { "test_symbologies", test_symbologies, 0, 0, 0 },
-        { "test_input_mode", test_input_mode, 1, 0, 1 },
-        { "test_escape_char_process", test_escape_char_process, 1, 1, 1 },
-        { "test_cap", test_cap, 1, 0, 0 },
-        { "test_cap_compliant_height", test_cap_compliant_height, 0, 0, 0 },
-        { "test_encode_file_empty", test_encode_file_empty, 0, 0, 0 },
-        { "test_encode_file_too_large", test_encode_file_too_large, 0, 0, 0 },
-        { "test_encode_file_unreadable", test_encode_file_unreadable, 0, 0, 0 },
-        { "test_encode_file_directory", test_encode_file_directory, 0, 0, 0 },
-        { "test_encode_file", test_encode_file, 0, 0, 0 },
-        { "test_encode_print_outfile_directory", test_encode_print_outfile_directory, 0, 0, 0 },
-        { "test_bad_args", test_bad_args, 0, 0, 0 },
-        { "test_valid_id", test_valid_id, 0, 0, 0 },
-        { "test_error_tag", test_error_tag, 1, 0, 0 },
-        { "test_strip_bom", test_strip_bom, 0, 0, 0 },
-        { "test_zero_outfile", test_zero_outfile, 0, 0, 0 },
-        { "test_clear", test_clear, 0, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_checks", test_checks },
+        { "test_checks_segs", test_checks_segs },
+        { "test_input_data", test_input_data },
+        { "test_symbologies", test_symbologies },
+        { "test_input_mode", test_input_mode },
+        { "test_escape_char_process", test_escape_char_process },
+        { "test_cap", test_cap },
+        { "test_cap_compliant_height", test_cap_compliant_height },
+        { "test_encode_file_empty", test_encode_file_empty },
+        { "test_encode_file_too_large", test_encode_file_too_large },
+        { "test_encode_file_unreadable", test_encode_file_unreadable },
+        { "test_encode_file_directory", test_encode_file_directory },
+        { "test_encode_file", test_encode_file },
+        { "test_encode_print_outfile_directory", test_encode_print_outfile_directory },
+        { "test_bad_args", test_bad_args },
+        { "test_valid_id", test_valid_id },
+        { "test_error_tag", test_error_tag },
+        { "test_strip_bom", test_strip_bom },
+        { "test_zero_outfile", test_zero_outfile },
+        { "test_clear", test_clear },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

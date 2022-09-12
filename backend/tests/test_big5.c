@@ -78,7 +78,8 @@ static int u_big5_int2(unsigned int u, unsigned int *dest) {
 #define TEST_INT_PERF_ITERATIONS    100
 #endif
 
-static void test_u_big5_int(int debug) {
+static void test_u_big5_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     unsigned int i;
     int ret, ret2;
@@ -168,7 +169,7 @@ static int big5_utf8(struct zint_symbol *symbol, const unsigned char source[], i
     return 0;
 }
 
-static void test_big5_utf8(int index) {
+static void test_big5_utf8(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -178,8 +179,10 @@ static void test_big5_utf8(int index) {
         unsigned int expected_b5data[20];
         char *comment;
     };
-    /* ＿ U+FF3F fullwidth low line, not in ISO/Win, in Big5 0xA1C4, UTF-8 EFBCBF */
-    /* ╴ U+2574 drawings box light left, not in ISO/Win, not in original Big5 but in "Big5-2003" as 0xA15A, UTF-8 E295B4 */
+    /*
+       ＿ U+FF3F fullwidth low line, not in ISO/Win, in Big5 0xA1C4, UTF-8 EFBCBF
+       ╴ U+2574 drawings box light left, not in ISO/Win, not in original Big5 but in "Big5-2003" as 0xA15A, UTF-8 E295B4
+    */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "＿", -1, 0, 1, { 0xA1C4 }, "" },
@@ -196,7 +199,7 @@ static void test_big5_utf8(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -217,9 +220,9 @@ static void test_big5_utf8(int index) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_u_big5_int", test_u_big5_int, 0, 0, 1 },
-        { "test_big5_utf8", test_big5_utf8, 1, 0, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_u_big5_int", test_u_big5_int },
+        { "test_big5_utf8", test_big5_utf8 },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

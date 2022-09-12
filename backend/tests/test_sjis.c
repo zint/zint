@@ -27,19 +27,22 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 #include "test_sjis_tab.h"
 #include "../eci.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-//#define TEST_JUST_SAY_GNO
+/* #define TEST_JUST_SAY_GNO */
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/sjis_gnu.c"
 #endif
 
 INTERNAL int u_sjis_int_test(const unsigned int u, unsigned int *dest);
 
-// As control convert to Shift JIS using simple table generated from https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT plus simple processing
+/* As control convert to Shift JIS using simple table generated from
+   https://www.unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT plus simple processing
+*/
 static int u_sjis_int2(unsigned int u, unsigned int *dest) {
     int tab_length, start_i, end_i;
     int i;
@@ -47,11 +50,11 @@ static int u_sjis_int2(unsigned int u, unsigned int *dest) {
         *dest = u;
         return 1;
     }
-    // Shortcut
+    /* Shortcut */
     if ((u > 0x00F7 && u < 0x0391) || (u > 0x0451 && u < 0x2010) || (u > 0x9FA0 && u < 0xE000) || (u > 0xE757 && u < 0xFF01) || u > 0xFFE5) {
         return 0;
     }
-    if (u >= 0xE000 && u <= 0xE757) { // PUA mappings, not in SHIFTJIS.TXT
+    if (u >= 0xE000 && u <= 0xE757) { /* PUA mappings, not in SHIFTJIS.TXT */
         if (u <= 0xE0BB) {
             *dest = u - 0xE000 + 0xF040 + (u >= 0xE000 + 0x3F);
         } else if (u <= 0xE177) {
@@ -96,7 +99,8 @@ static int u_sjis_int2(unsigned int u, unsigned int *dest) {
 #define TEST_INT_PERF_ITERATIONS    100
 #endif
 
-static void test_u_sjis_int(int debug) {
+static void test_u_sjis_int(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     int ret, ret2;
     unsigned int val, val2;
@@ -119,9 +123,11 @@ static void test_u_sjis_int(int debug) {
 #endif
 
     for (i = 0; i < 0xFFFE; i++) {
-        if (i >= 0xD800 && i <= 0xDFFF) { // UTF-16 surrogates
+        if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
+
         val = val2 = 0;
         ret = u_sjis_int_test(i, &val);
         ret2 = u_sjis_int2(i, &val2);
@@ -130,7 +136,7 @@ static void test_u_sjis_int(int debug) {
             assert_equal(val, val2, "i:%d 0x%04X val 0x%04X != val2 0x%04X\n", (int) i, i, val, val2);
         }
 #ifdef TEST_JUST_SAY_GNO
-        if (i != 0xFF3C) { // Full-width reverse solidus duplicate no longer mapped to ignore
+        if (i != 0xFF3C) { /* Full-width reverse solidus duplicate no longer mapped to ignore */
             if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
                 val2 = 0;
                 ret2 = sjis_wctomb_zint(&val2, i);
@@ -166,7 +172,7 @@ static void test_u_sjis_int(int debug) {
     testFinish();
 }
 
-static void test_sjis_utf8(int index) {
+static void test_sjis_utf8(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -176,18 +182,20 @@ static void test_sjis_utf8(int index) {
         unsigned int expected_jisdata[20];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
-    // β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS 0x83C0, UTF-8 CEB2
-    // Ж U+0416 in ISO 8859-5 Cyrillic (but not other ISO 8859), Win 1251, in Shift JIS 0x8447, UTF-8 D096
-    // ¥ U+00A5 in ISO 8859-1 0xA5 (\245), in Shift JIS single-byte 0x5C (\134) (backslash); 0xA5 same codepoint as single-byte half-width katakana ･ (U+FF65) in Shift JIS (below), UTF-8 C2A5
-    // ･ U+FF65 half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xA5 (\245), UTF-8 EFBDA5
-    // ｿ U+FF7F half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xBF (\277), UTF-8 EFBDBF
-    // ‾ U+203E overline, not in ISO/Win, in Shift JIS single-byte 0x7E (\176) (tilde), UTF-8 E280BE
-    // ＼ U+FF3C full-width reverse solidus, in Shift JIS 0x815F, was duplicate of mapping of U+005C, UTF-8 EFBCBC
-    // 点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
-    // 茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
-    // テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9
+       β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS 0x83C0, UTF-8 CEB2
+       Ж U+0416 in ISO 8859-5 Cyrillic (but not other ISO 8859), Win 1251, in Shift JIS 0x8447, UTF-8 D096
+       ¥ U+00A5 in ISO 8859-1 0xA5 (\245), in Shift JIS single-byte 0x5C (\134) (backslash); 0xA5 same codepoint as single-byte half-width katakana ･ (U+FF65) in Shift JIS (below), UTF-8 C2A5
+       ･ U+FF65 half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xA5 (\245), UTF-8 EFBDA5
+       ｿ U+FF7F half-width katakana, not in ISO/Win, in Shift JIS single-byte 0xBF (\277), UTF-8 EFBDBF
+       ‾ U+203E overline, not in ISO/Win, in Shift JIS single-byte 0x7E (\176) (tilde), UTF-8 E280BE
+       ＼ U+FF3C full-width reverse solidus, in Shift JIS 0x815F, was duplicate of mapping of U+005C, UTF-8 EFBCBC
+       点 U+70B9 kanji, in Shift JIS 0x935F (\223\137), UTF-8 E782B9
+       茗 U+8317 kanji, in Shift JIS 0xE4AA (\344\252), UTF-8 E88C97
+       テ U+30C6 katakana, in Shift JIS 0x8365 (\203\145), UTF-8 E38386
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { "é", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
         /*  1*/ { "~", -1, ZINT_ERROR_INVALID_DATA, -1, {0}, "" },
@@ -208,7 +216,7 @@ static void test_sjis_utf8(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -227,7 +235,7 @@ static void test_sjis_utf8(int index) {
     testFinish();
 }
 
-static void test_sjis_utf8_to_eci(int index) {
+static void test_sjis_utf8_to_eci(const testCtx *const p_ctx) {
 
     struct item {
         int eci;
@@ -239,16 +247,18 @@ static void test_sjis_utf8_to_eci(int index) {
         unsigned int expected_jisdata[20];
         char *comment;
     };
-    // é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in QR Kanji mode first byte range 0x81..9F, 0xE0..EB
-    // β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
-    // ¥ U+00A5 in ISO 8859-1 0xA5, outside first byte range 0x81..9F, 0xE0..EB
-    // ú U+00FA in ISO 8859-1 0xFA, outside first byte range
-    // à U+00EO in ISO 8859-1 0xE0, in first byte range
-    // ë U+00EB in ISO 8859-1 0xEB, in first byte range
-    // ì U+00EC in ISO 8859-1 0xEC, outside first byte range
-    // µ U+00B5 in ISO 8859-1 0xB5, outside first byte range
-    // À U+00C0 in ISO 8859-1 0xC0, outside first byte range and 0xEBxx second byte range
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /*
+       é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in QR Kanji mode first byte range 0x81..9F, 0xE0..EB
+       β U+03B2 in ISO 8859-7 Greek 0xE2 (but not other ISO 8859 or Win page)
+       ¥ U+00A5 in ISO 8859-1 0xA5, outside first byte range 0x81..9F, 0xE0..EB
+       ú U+00FA in ISO 8859-1 0xFA, outside first byte range
+       à U+00EO in ISO 8859-1 0xE0, in first byte range
+       ë U+00EB in ISO 8859-1 0xEB, in first byte range
+       ì U+00EC in ISO 8859-1 0xEC, outside first byte range
+       µ U+00B5 in ISO 8859-1 0xB5, outside first byte range
+       À U+00C0 in ISO 8859-1 0xC0, outside first byte range and 0xEBxx second byte range
+    */
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 3, 0, "é", -1, 0, 1, { 0xE9 }, "" },
         /*  1*/ { 3, 1, "é", -1, 0, 1, { 0xE9 }, "" },
@@ -298,7 +308,7 @@ static void test_sjis_utf8_to_eci(int index) {
     for (i = 0; i < data_size; i++) {
         int ret_length;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -317,7 +327,7 @@ static void test_sjis_utf8_to_eci(int index) {
     testFinish();
 }
 
-static void test_sjis_cpy(int index) {
+static void test_sjis_cpy(const testCtx *const p_ctx) {
 
     struct item {
         int full_multibyte;
@@ -328,7 +338,7 @@ static void test_sjis_cpy(int index) {
         unsigned int expected_jisdata[20];
         char *comment;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { 0, "\351", -1, 0, 1, { 0xE9 }, "Not full multibyte" },
         /*  1*/ { 1, "\351", -1, 0, 1, { 0xE9 }, "In QR Kanji mode first-byte range but only one byte" },
@@ -351,7 +361,7 @@ static void test_sjis_cpy(int index) {
         int ret_length;
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
@@ -369,8 +379,9 @@ static void test_sjis_cpy(int index) {
 #define TEST_PERF_ITER_MILLES   100
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 
-// Not a real test, just performance indicator
-static void test_perf(int index, int debug) {
+/* Not a real test, just performance indicator */
+static void test_perf(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         char *data;
@@ -412,7 +423,7 @@ static void test_perf(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int j;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         length = (int) strlen(data[i].data);
 
@@ -439,7 +450,7 @@ static void test_perf(int index, int debug) {
         total += diff;
         total_gno += diff_gno;
     }
-    if (index == -1) {
+    if (p_ctx->index == -1) {
         printf("%*s: new % 8gms, gno % 8gms ratio %g\n", comment_max, "totals",
                 TEST_PERF_TIME(total), TEST_PERF_TIME(total_gno), TEST_PERF_RATIO(total, total_gno));
     }
@@ -447,12 +458,12 @@ static void test_perf(int index, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_u_sjis_int", test_u_sjis_int, 0, 0, 1 },
-        { "test_sjis_utf8", test_sjis_utf8, 1, 0, 0 },
-        { "test_sjis_utf8_to_eci", test_sjis_utf8_to_eci, 1, 0, 0 },
-        { "test_sjis_cpy", test_sjis_cpy, 1, 0, 0 },
-        { "test_perf", test_perf, 1, 0, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_u_sjis_int", test_u_sjis_int },
+        { "test_sjis_utf8", test_sjis_utf8 },
+        { "test_sjis_utf8_to_eci", test_sjis_utf8_to_eci },
+        { "test_sjis_cpy", test_sjis_cpy },
+        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

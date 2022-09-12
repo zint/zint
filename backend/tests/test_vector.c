@@ -38,7 +38,7 @@ static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, f
         return NULL;
     }
     for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
-        //printf("x %.8g, y %.8g, width %.8g, height %.8g\n", rect->x, rect->y, rect->width, rect->height);
+        /* printf("x %.8g, y %.8g, width %.8g, height %.8g\n", rect->x, rect->y, rect->width, rect->height); */
         if (rect->x == stripf(x) && rect->y == stripf(y)) {
             if (height && width) {
                 if (rect->height == stripf(height) && rect->width == stripf(width)) {
@@ -68,7 +68,7 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
         return NULL;
     }
     for (circle = symbol->vector->circles; circle != NULL; circle = circle->next) {
-        //printf("x %.8g, y %.8g, diamter %.8g\n", circle->x, circle->y, circle->diameter);
+        /* printf("x %.8g, y %.8g, diamter %.8g\n", circle->x, circle->y, circle->diameter); */
         if (circle->x == stripf(x) && circle->y == stripf(y)) {
             if (diameter) {
                 if (circle->diameter == stripf(diameter)) {
@@ -83,7 +83,8 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
     return circle;
 }
 
-static void test_options(int index, int debug) {
+static void test_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -113,7 +114,7 @@ static void test_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -145,7 +146,8 @@ static void test_options(int index, int debug) {
     testFinish();
 }
 
-static void test_buffer_vector(int index, int generate, int debug) {
+static void test_buffer_vector(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -300,7 +302,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -324,7 +326,7 @@ static void test_buffer_vector(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", \"%s\", %.8g, %d, %d, %.8g, %.8g },\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].composite,
                     symbol->height, symbol->rows, symbol->width, symbol->vector->width, symbol->vector->height);
@@ -344,7 +346,8 @@ static void test_buffer_vector(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_upcean_hrt(int index, int debug) {
+static void test_upcean_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -411,7 +414,7 @@ static void test_upcean_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -440,7 +443,7 @@ static void test_upcean_hrt(int index, int debug) {
         assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %.8g != %.8g\n",
             i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             sprintf(symbol->outfile, "test_upcean_hrt%d.svg", i);
             ZBarcode_Print(symbol, 0);
         }
@@ -465,7 +468,8 @@ static void test_upcean_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_row_separator(int index, int debug) {
+static void test_row_separator(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -504,7 +508,7 @@ static void test_row_separator(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -534,7 +538,8 @@ static void test_row_separator(int index, int debug) {
     testFinish();
 }
 
-static void test_stacking(int index, int debug) {
+static void test_stacking(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -570,7 +575,7 @@ static void test_stacking(int index, int debug) {
     for (i = 0; i < data_size; i++) {
         int length2;
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -592,7 +597,7 @@ static void test_stacking(int index, int debug) {
         assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
 
         if (data[i].expected_separator_y != -1) {
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
                 sprintf(symbol->outfile, "test_stacking_%d.svg", i);
                 ZBarcode_Print(symbol, 0);
             }
@@ -615,7 +620,8 @@ static void test_stacking(int index, int debug) {
     testFinish();
 }
 
-static void test_output_options(int index, int debug) {
+static void test_output_options(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -699,7 +705,7 @@ static void test_output_options(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -724,7 +730,7 @@ static void test_output_options(int index, int debug) {
         if (ret < ZINT_ERROR) {
             assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
                 sprintf(symbol->outfile, "test_output_options_%d.svg", i);
                 ZBarcode_Print(symbol, 0);
             }
@@ -755,7 +761,8 @@ static void test_output_options(int index, int debug) {
 }
 
 /* Checks that symbol lead-in (composite offset) isn't used to calc string position for non-composite barcodes */
-static void test_noncomposite_string_x(int index, int debug) {
+static void test_noncomposite_string_x(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -778,7 +785,7 @@ static void test_noncomposite_string_x(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -808,7 +815,8 @@ static void test_noncomposite_string_x(int index, int debug) {
 }
 
 /* Checks UPCA/UPCE main_symbol_width_x (used for addon formatting) set whether whitespace width set or not */
-static void test_upcean_whitespace_width(int index, int debug) {
+static void test_upcean_whitespace_width(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -838,7 +846,7 @@ static void test_upcean_whitespace_width(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -857,7 +865,7 @@ static void test_upcean_whitespace_width(int index, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != 0\n", i, data[i].symbology, ret);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             sprintf(symbol->outfile, "test_upcean_whitespace_width_%d.svg", i);
             ZBarcode_Print(symbol, 0);
         }
@@ -880,7 +888,8 @@ static void test_upcean_whitespace_width(int index, int debug) {
     testFinish();
 }
 
-static void test_scale(int index, int debug) {
+static void test_scale(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -925,7 +934,7 @@ static void test_scale(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -955,7 +964,7 @@ static void test_scale(int index, int debug) {
         assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_vector, symbol->errtxt);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
+        if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             sprintf(symbol->outfile, "test_scale_%d.svg", i);
             ZBarcode_Print(symbol, 0);
         }
@@ -986,7 +995,8 @@ static void test_scale(int index, int debug) {
     testFinish();
 }
 
-static void test_guard_descent(int index, int debug) {
+static void test_guard_descent(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1051,7 +1061,7 @@ static void test_guard_descent(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1070,7 +1080,7 @@ static void test_guard_descent(int index, int debug) {
         if (ret < ZINT_ERROR) {
             assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
                 sprintf(symbol->outfile, "test_guard_descent_%d.svg", i);
                 ZBarcode_Print(symbol, 0);
             }
@@ -1095,7 +1105,8 @@ static void test_guard_descent(int index, int debug) {
     testFinish();
 }
 
-static void test_quiet_zones(int index, int debug) {
+static void test_quiet_zones(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -1407,7 +1418,7 @@ static void test_quiet_zones(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -1435,7 +1446,7 @@ static void test_quiet_zones(int index, int debug) {
         if (ret < ZINT_ERROR) {
             assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-            if (index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
                 sprintf(symbol->outfile, "test_quiet_zones_%d.svg", i);
                 ZBarcode_Print(symbol, 0);
             }
@@ -1466,7 +1477,8 @@ static void test_quiet_zones(int index, int debug) {
     testFinish();
 }
 
-static void test_height(int index, int generate, int debug) {
+static void test_height(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2105,8 +2117,7 @@ static void test_height(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2137,7 +2148,7 @@ static void test_height(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%s) vector NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %.5g, \"%s\", \"%s\", %s, %.8g, %d, %d, %.8g, %.8g, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilOutputOptionsName(data[i].output_options),
                     data[i].height, data[i].data, data[i].composite, testUtilErrorName(data[i].ret),
@@ -2158,7 +2169,8 @@ static void test_height(int index, int generate, int debug) {
     testFinish();
 }
 
-static void test_height_per_row(int index, int generate, int debug) {
+static void test_height_per_row(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int symbology;
@@ -2268,8 +2280,7 @@ static void test_height_per_row(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
-        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d\n", i);
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -2297,7 +2308,7 @@ static void test_height_per_row(int index, int generate, int debug) {
         assert_zero(ret, "i:%d ZBarcode_Buffer_Vector(%s) ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%s) vector NULL\n", i, testUtilBarcodeName(data[i].symbology));
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %d, %d, %.5g, %.5g, \"%s\", \"%s\", %s, %.8g, %d, %d, %.8g, %.8g, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
                     data[i].option_1, data[i].option_2, data[i].option_3, data[i].height, data[i].scale,
@@ -2321,20 +2332,20 @@ static void test_height_per_row(int index, int generate, int debug) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_options", test_options, 1, 0, 1 },
-        { "test_buffer_vector", test_buffer_vector, 1, 1, 1 },
-        { "test_upcean_hrt", test_upcean_hrt, 1, 0, 1 },
-        { "test_row_separator", test_row_separator, 1, 0, 1 },
-        { "test_stacking", test_stacking, 1, 0, 1 },
-        { "test_output_options", test_output_options, 1, 0, 1 },
-        { "test_noncomposite_string_x", test_noncomposite_string_x, 1, 0, 1 },
-        { "test_upcean_whitespace_width", test_upcean_whitespace_width, 1, 0, 1 },
-        { "test_scale", test_scale, 1, 0, 1 },
-        { "test_guard_descent", test_guard_descent, 1, 0, 1 },
-        { "test_quiet_zones", test_quiet_zones, 1, 0, 1 },
-        { "test_height", test_height, 1, 1, 1 },
-        { "test_height_per_row", test_height_per_row, 1, 1, 1 },
+    testFunction funcs[] = { /* name, func */
+        { "test_options", test_options },
+        { "test_buffer_vector", test_buffer_vector },
+        { "test_upcean_hrt", test_upcean_hrt },
+        { "test_row_separator", test_row_separator },
+        { "test_stacking", test_stacking },
+        { "test_output_options", test_output_options },
+        { "test_noncomposite_string_x", test_noncomposite_string_x },
+        { "test_upcean_whitespace_width", test_upcean_whitespace_width },
+        { "test_scale", test_scale },
+        { "test_guard_descent", test_guard_descent },
+        { "test_quiet_zones", test_quiet_zones },
+        { "test_height", test_height },
+        { "test_height_per_row", test_height_per_row },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

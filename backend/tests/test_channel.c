@@ -27,10 +27,12 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
 
-static void test_hrt(int index, int debug) {
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_2;
@@ -39,7 +41,7 @@ static void test_hrt(int index, int debug) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -1, "1", -1, "01" },
         /*  1*/ { 3, "1", -1, "01" },
@@ -71,7 +73,7 @@ static void test_hrt(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -89,7 +91,8 @@ static void test_hrt(int index, int debug) {
     testFinish();
 }
 
-static void test_input(int index, int debug) {
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
     struct item {
         int option_2;
@@ -98,13 +101,13 @@ static void test_input(int index, int debug) {
         int expected_rows;
         int expected_width;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -1, "0", 0, 1, 19 }, // < 3 ignored
+        /*  0*/ { -1, "0", 0, 1, 19 }, /* < 3 ignored */
         /*  1*/ { 0, "0", 0, 1, 19, },
         /*  2*/ { 1, "0", 0, 1, 19, },
         /*  3*/ { 2, "0", 0, 1, 19, },
-        /*  4*/ { 9, "0", 0, 1, 19, }, // > 8 ignored
+        /*  4*/ { 9, "0", 0, 1, 19, }, /* > 8 ignored */
         /*  5*/ { -1, "00", 0, 1, 19 },
         /*  6*/ { 3, "00", 0, 1, 19 },
         /*  7*/ { -1, "26", 0, 1, 19, },
@@ -113,39 +116,39 @@ static void test_input(int index, int debug) {
         /* 10*/ { 3, "000", 0, 1, 19, },
         /* 11*/ { 3, "001", 0, 1, 19, },
         /* 12*/ { 3, "026", 0, 1, 19, },
-        /* 13*/ { -1, "27", 0, 1, 23 }, // Channel 4
-        /* 14*/ { -1, "026", 0, 1, 23, }, // Defaults to channel 4 due to length
+        /* 13*/ { -1, "27", 0, 1, 23 }, /* Channel 4 */
+        /* 14*/ { -1, "026", 0, 1, 23, }, /* Defaults to channel 4 due to length */
         /* 15*/ { 3, "0026", 0, 1, 19, },
         /* 16*/ { 3, "1234", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 17*/ { 4, "000", 0, 1, 23 },
-        /* 18*/ { -1, "000", 0, 1, 23 }, // Defaults to channel 4 due to length
+        /* 18*/ { -1, "000", 0, 1, 23 }, /* Defaults to channel 4 due to length */
         /* 19*/ { 4, "026", 0, 1, 23 },
         /* 20*/ { 4, "0000026", 0, 1, 23 },
         /* 21*/ { 4, "0000", 0, 1, 23 },
         /* 22*/ { 4, "292", 0, 1, 23 },
         /* 23*/ { 4, "293", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 24*/ { -1, "293", 0, 1, 27 }, // Channel 5
+        /* 24*/ { -1, "293", 0, 1, 27 }, /* Channel 5 */
         /* 25*/ { 5, "0000", 0, 1, 27 },
-        /* 26*/ { -1, "0000", 0, 1, 27 }, // Defaults to channel 5 due to length
+        /* 26*/ { -1, "0000", 0, 1, 27 }, /* Defaults to channel 5 due to length */
         /* 27*/ { -1, "3493", 0, 1, 27 },
         /* 28*/ { 5, "3493", 0, 1, 27 },
         /* 29*/ { 5, "3494", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 30*/ { -1, "3494", 0, 1, 31 }, // Channel 6
+        /* 30*/ { -1, "3494", 0, 1, 31 }, /* Channel 6 */
         /* 31*/ { 6, "00000", 0, 1, 31 },
-        /* 32*/ { -1, "00000", 0, 1, 31 }, // Defaults to channel 5 due to length
+        /* 32*/ { -1, "00000", 0, 1, 31 }, /* Defaults to channel 5 due to length */
         /* 33*/ { -1, "44072", 0, 1, 31 },
         /* 34*/ { 6, "44072", 0, 1, 31 },
         /* 35*/ { 6, "44073", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 36*/ { -1, "44073", 0, 1, 35 }, // Channel 7
+        /* 36*/ { -1, "44073", 0, 1, 35 }, /* Channel 7 */
         /* 37*/ { 7, "000000", 0, 1, 35 },
-        /* 38*/ { -1, "000000", 0, 1, 35 }, // Defaults to channel 7 due to length
+        /* 38*/ { -1, "000000", 0, 1, 35 }, /* Defaults to channel 7 due to length */
         /* 39*/ { 7, "576688", 0, 1, 35 },
         /* 40*/ { 7, "576689", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 41*/ { 7, "0576688", 0, 1, 35 },
         /* 42*/ { -1, "1234567", 0, 1, 39 },
-        /* 43*/ { -1, "576689", 0, 1, 39 }, // Channel 8
+        /* 43*/ { -1, "576689", 0, 1, 39 }, /* Channel 8 */
         /* 44*/ { 8, "0000000", 0, 1, 39, },
-        /* 45*/ { -1, "0000000", 0, 1, 39, }, // Defaults to channel 8 due to length
+        /* 45*/ { -1, "0000000", 0, 1, 39, }, /* Defaults to channel 8 due to length */
         /* 46*/ { 8, "1234567", 0, 1, 39, },
         /* 47*/ { 8, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 48*/ { 8, "01234567", ZINT_ERROR_TOO_LONG, -1, -1 },
@@ -161,7 +164,7 @@ static void test_input(int index, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -182,9 +185,10 @@ static void test_input(int index, int debug) {
     testFinish();
 }
 
-static void test_encode(int index, int generate, int debug) {
+static void test_encode(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); // Only do BWIPP test if asked, too slow otherwise
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     struct item {
         int option_2;
@@ -420,7 +424,7 @@ static void test_encode(int index, int generate, int debug) {
 
     for (i = 0; i < data_size; i++) {
 
-        if (index != -1 && i != index) continue;
+        if (testContinue(p_ctx, i)) continue;
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -430,7 +434,7 @@ static void test_encode(int index, int generate, int debug) {
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
-        if (generate) {
+        if (p_ctx->generate) {
             printf("        /*%3d*/ { %d, \"%s\", %s, %d, %d, \"%s\",\n",
                     i, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
@@ -463,8 +467,8 @@ static void test_encode(int index, int generate, int debug) {
     testFinish();
 }
 
-// Dummy to generate pre-calculated tables for channels 7/8
-static void test_generate(int generate) {
+/* Dummy to generate pre-calculated tables for channels 7/8 */
+static void test_generate(const testCtx *const p_ctx) {
 
     struct item {
         char *data;
@@ -474,7 +478,7 @@ static void test_generate(int generate) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    if (!generate) {
+    if (!p_ctx->generate) {
         return;
     }
 
@@ -493,11 +497,11 @@ static void test_generate(int generate) {
 
 int main(int argc, char *argv[]) {
 
-    testFunction funcs[] = { /* name, func, has_index, has_generate, has_debug */
-        { "test_hrt", test_hrt, 1, 0, 1 },
-        { "test_input", test_input, 1, 0, 1 },
-        { "test_encode", test_encode, 1, 1, 1 },
-        { "test_generate", test_generate, 0, 1, 0 },
+    testFunction funcs[] = { /* name, func */
+        { "test_hrt", test_hrt },
+        { "test_input", test_input },
+        { "test_encode", test_encode },
+        { "test_generate", test_generate },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));
