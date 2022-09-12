@@ -213,13 +213,16 @@ jobs:
       with:
         release: '10-2021.10'
 
+    - name: Install Ninja
+      uses: seanmiddleditch/gha-setup-ninja@v3
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
     - name: Configure CMake
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_TOOLCHAIN_FILE="cmake/arm-gcc-cortex-m4.cmake" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
+      run: cmake $GITHUB_WORKSPACE -GNinja -DCMAKE_TOOLCHAIN_FILE="cmake/arm-gcc-cortex-m4.cmake" -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
 
     - name: Build
       working-directory: ${{runner.workspace}}/build
