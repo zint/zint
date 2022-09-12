@@ -171,9 +171,9 @@ jobs:
     - name: Build
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: cmake --build . -j8 --config $BUILD_TYPE
+      run: SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" cmake --build . -j8 --config $BUILD_TYPE
 
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
+      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
