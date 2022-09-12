@@ -119,7 +119,7 @@ static void test_csv(const testCtx *const p_ctx) {
 			strcat(data, "-");
 			strcat(data, routing_code);
 
-			assert_nonzero(strlen(data), "lc:%d strlen(data) == 0", lc);
+			assert_nonzero((int) strlen(data), "lc:%d strlen(data) == 0", lc);
 
 			symbol = ZBarcode_Create();
 			assert_nonnull(symbol, "Symbol not created\n");
