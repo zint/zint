@@ -112,6 +112,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
+    - name: Install multilibs
+      run: sudo apt install gcc-multilib g++-multilib
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 
