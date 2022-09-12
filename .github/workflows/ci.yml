@@ -152,12 +152,16 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
+      run: PATH=$PATH:"$(pwd)/backend/Release:$(pwd)/frontend/Release" ctest -V -C $BUILD_TYPE
 
   build-macOS:
     runs-on: macOS-latest
 
     steps:
     - uses: actions/checkout@v2
+
+    - name: Install libpng-dev
+      run: sudo apt-get install libpng-dev
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
@@ -176,4 +180,3 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
-      run: PATH=$PATH:"$(pwd)/backend/Release:$(pwd)/frontend/Release" ctest -V -C $BUILD_TYPE
