@@ -33,6 +33,10 @@
 #ifndef Z_COMMON_H
 #define Z_COMMON_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
@@ -41,7 +45,9 @@
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  include <alloca.h>
+#  if !(defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)) /* BSD */
+#    include <alloca.h>
+#  endif
 #  define z_alloca(nmemb) alloca(nmemb)
 #endif
 
@@ -148,10 +154,6 @@ typedef unsigned __int64 uint64_t;
 /* Set a module to a colour */
 #  define set_module_colour(s, y, x, c) do { (s)->encoded_data[(y)][(x)] = (c); } while (0)
 #endif
-
-#ifdef __cplusplus
-extern "C" {
-#endif /* __cplusplus */
 
     INTERNAL int ctoi(const char source);
     INTERNAL char itoc(const int source);
