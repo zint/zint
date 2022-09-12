@@ -177,3 +177,27 @@ jobs:
       working-directory: ${{runner.workspace}}/build
       shell: bash
       run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
+
+  build-macOS-sanitize:
+    runs-on: macOS-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: cmake -E make_directory ${{runner.workspace}}/build
+
+    - name: Configure CMake
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DZINT_TEST=ON -DZINT_SANITIZE=ON -DZINT_USE_PNG=OFF -DZINT_USE_QT=OFF
+
+    - name: Build
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: SDKROOT="$(xcrun --sdk macosx --show-sdk-path)" cmake --build . -j8 --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: ${{runner.workspace}}/build
+      shell: bash
+      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
