@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.11.1.9
-August 2022
+September 2022
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -2911,9 +2911,10 @@ Structured Append the same as PDF417, for which see details.
 A stacked variation of the GS1 DataBar Truncated symbol requiring the same input
 (see 6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated), this
 symbol is the same as the following GS1 DataBar Stacked Omnidirectional symbol
-except that its height is reduced, making it suitable for small items when
-omnidirectional scanning is not required. It can be generated with a
-two-dimensional component to make a composite symbol.
+except that its height is reduced and its central separator is a single row,
+making it suitable for small items when omnidirectional scanning is not
+required. It can be generated with a two-dimensional component to make a
+composite symbol.
 
 6.2.7.2 GS1 DataBar Stacked Omnidirectional
 
@@ -2921,7 +2922,7 @@ two-dimensional component to make a composite symbol.
 
 A stacked variation of the GS1 DataBar Omnidirectional symbol requiring the same
 input (see 6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated). The
-data is encoded in two rows of bars with a central finder pattern. This symbol
+data is encoded in two rows of bars with a central 3-row separator. This symbol
 can be generated with a two-dimensional component to make a composite symbol.
 
 6.2.7.3 GS1 DataBar Expanded Stacked
