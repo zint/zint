@@ -45,7 +45,7 @@ extern "C" {
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  if !(defined(__FreeBSD__) || defined(__OpenBSD__) || defined(__NetBSD__) || defined(__DragonFly__)) /* BSD */
+#  if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) || defined(__NuttX__) /* C89 or NuttX RTOS */
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)
