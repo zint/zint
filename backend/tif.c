@@ -33,13 +33,13 @@
 #include <assert.h>
 #include <errno.h>
 #include <stdio.h>
-#include "common.h"
-#include "tif.h"
-#include "tif_lzw.h"
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
+#include "common.h"
+#include "tif.h"
+#include "tif_lzw.h"
 
 /* PhotometricInterpretation */
 #define TIF_PMI_WHITEISZERO     0

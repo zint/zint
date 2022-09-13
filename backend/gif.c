@@ -32,11 +32,11 @@
 
 #include <errno.h>
 #include <stdio.h>
-#include "common.h"
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
+#include "common.h"
 
 /* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
 #define GIF_LZW_PAGE_SIZE   0x100000 /* Megabyte */

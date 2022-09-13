@@ -34,10 +34,10 @@
 
 /* Code 16k can hold up to 77 characters or 154 numbers */
 
-#include "common.h"
-#include "code128.h"
 #include <assert.h>
 #include <stdio.h>
+#include "common.h"
+#include "code128.h"
 
 /* Note using C128Table with extra entry at 106 (Triple Shift) for C16KTable */
 

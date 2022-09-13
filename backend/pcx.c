@@ -32,12 +32,12 @@
 
 #include <errno.h>
 #include <stdio.h>
-#include "common.h"
-#include "pcx.h"        /* PCX header structure */
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
+#include "common.h"
+#include "pcx.h"        /* PCX header structure */
 
 /* ZSoft PCX File Format Technical Reference Manual http://bespin.org/~qz/pc-gpe/pcx.txt */
 INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {

@@ -33,9 +33,9 @@
 /*  The function "USPS_MSB_Math_CRC11GenerateFrameCheckSequence"
     is Copyright (C) 2006 United States Postal Service */
 
+#include <stdio.h>
 #include "common.h"
 #include "large.h"
-#include <stdio.h>
 
 #define SODIUM_MNS_F (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
 

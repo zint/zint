@@ -30,11 +30,11 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#include "common.h"
-#include "code128.h"
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>
+#include "common.h"
+#include "code128.h"
 
 #define uchar unsigned char
 

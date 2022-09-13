@@ -35,8 +35,8 @@
 
 #define SODIUM_X_F        (IS_NUM_F | IS_UX__F | IS_LX__F) /* SODIUM "0123456789Xx" */
 
-#include "common.h"
 #include <stdio.h>
+#include "common.h"
 
 static const char TeleTable[128][16] = {
     { "31313131"       }, { "1131313111"     }, { "33313111"       }, { "1111313131"     },

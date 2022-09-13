@@ -32,12 +32,12 @@
 
 #include <errno.h>
 #include <stdio.h>
-#include "common.h"
-#include "bmp.h"        /* Bitmap header structure */
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
+#include "common.h"
+#include "bmp.h"        /* Bitmap header structure */
 
 INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     int i, row, column;

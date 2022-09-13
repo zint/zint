@@ -33,12 +33,12 @@
 /* This code attempts to implement Han Xin Code according to ISO/IEC 20830:2021
  * (previously ISO/IEC 20830 (draft 2019-10-10) and AIMD-015:2010 (Rev 0.8)) */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "reedsol.h"
 #include "hanxin.h"
 #include "eci.h"
-#include <assert.h>
 
 /* Find which submode to use for a text character */
 static int hx_getsubmode(const unsigned int input) {

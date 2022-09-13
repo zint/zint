@@ -38,11 +38,10 @@
 #include <fcntl.h>
 #include <io.h>
 #endif
-#include "common.h"
-
 #include <png.h>
 #include <zlib.h>
 #include <setjmp.h>
+#include "common.h"
 
 /* Note if change this need to change "backend/tests/test_png.c" definition also */
 struct wpng_error_type {

@@ -30,8 +30,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#include "common.h"
 #include <stdio.h>
+#include "common.h"
 
 INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length);
 
