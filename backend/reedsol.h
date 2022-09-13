@@ -1,7 +1,10 @@
 /*
-
     This is a simple Reed-Solomon encoder
     (C) Cliff Hones 2004
+*/
+/*
+    libzint - the open source barcode library
+    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +32,7 @@
     SUCH DAMAGE.
 
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_REEDSOL_H
 #define Z_REEDSOL_H
@@ -72,4 +75,5 @@ INTERNAL void rs_uint_free(rs_uint_t *rs_uint);
 }
 #endif /* __cplusplus */
 
+/* vim: set ts=4 sw=4 et : */
 #endif /* Z_REEDSOL_H */

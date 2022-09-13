@@ -1,5 +1,5 @@
-/*  eci.c - Extended Channel Interpretations to Unicode tables
-
+/*  eci.c - Extended Channel Interpretations to Unicode tables */
+/*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
 
@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_ECI_H
 #define Z_ECI_H

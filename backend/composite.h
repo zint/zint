@@ -1,8 +1,7 @@
 /* composite.c - Tables for UCC.EAN Composite Symbols */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,10 +28,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
+#ifndef Z_COMPOSITE_H
+#define Z_COMPOSITE_H
 
 /* CC-A component coefficients from ISO/IEC 24728:2006 Annex F */
-static const unsigned short int ccaCoeffs[30] = {
+static const unsigned short ccaCoeffs[30] = {
     /* k = 4 */
     522, 568, 723, 809,
 
@@ -138,3 +140,6 @@ static const UINT pwr928[69][7] = {
     { 231,  54, 222, 565, 282, 130, 192, },
     { 462, 108, 445, 202, 564, 260, 384, },
 };
+
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_COMPOSITE_H */

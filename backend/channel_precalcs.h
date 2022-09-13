@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -27,7 +27,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
+#ifndef Z_CHANNEL_PRECALCS_H
+#define Z_CHANNEL_PRECALCS_H
 
 /* Channel code precalculated values to avoid excessive looping */
 /* To generate uncomment CHANNEL_GENERATE_PRECALCS define and run "backend/tests/test_channel -f generate -g" */
@@ -104,3 +107,6 @@ static channel_precalc channel_precalcs8[] = {
     { 7504623, { 1, 1, 3, 4, 3, 1, 1, 1, }, { 5, 2, 1, 1, 1, 1, 1, 3, }, { 8, 8, 8, 6, 3, 1, 1, }, { 8, 4, 3, 3, 3, 3, 3, }, },
     { 7623744, { 3, 1, 1, 2, 2, 1, 2, 3, }, { 5, 2, 1, 1, 1, 2, 1, 2, }, { 8, 6, 6, 6, 5, 4, 4, }, { 8, 4, 3, 3, 3, 3, 2, }, },
 };
+
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_CHANNEL_PRECALCS_H */

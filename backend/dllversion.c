@@ -1,8 +1,7 @@
 /* Sed: http://msdn.microsoft.com/library/en-us/shellcc/platform/shell/programmersguide/versions.asp */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,8 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
 #if defined (_WIN32) && (defined(_USRDLL) || defined(DLL_EXPORT) || defined(PIC))
 #include <windows.h>
 #include <shlwapi.h>
@@ -40,14 +40,13 @@ extern "C"
 {
 #endif
 
-__declspec(dllexport) HRESULT DllGetVersion (DLLVERSIONINFO2* pdvi);
+__declspec(dllexport) HRESULT DllGetVersion(DLLVERSIONINFO2 *pdvi);
 
 #ifdef __cplusplus
 }
 #endif
 
-HRESULT DllGetVersion (DLLVERSIONINFO2* pdvi)
-{
+HRESULT DllGetVersion(DLLVERSIONINFO2 *pdvi) {
     if (!pdvi || (sizeof(*pdvi) != pdvi->info1.cbSize))
         return (E_INVALIDARG);
 
@@ -64,4 +63,5 @@ HRESULT DllGetVersion (DLLVERSIONINFO2* pdvi)
 #else
 /* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
 typedef int make_iso_compilers_happy;
+/* vim: set ts=4 sw=4 et : */
 #endif /* _WIN32 */

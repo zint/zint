@@ -1,5 +1,4 @@
 /* pdf417.h - PDF417 tables and coefficients declarations */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -30,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* See "pdf417_tabs.h" for table definitions */
 

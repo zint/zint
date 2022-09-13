@@ -1,7 +1,7 @@
-/*  reedsol_logs.h - Log and antilog tables for Reed-Solomon
-
+/*  reedsol_logs.h - Log and antilog tables for Reed-Solomon */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef REEDSOL_LOGS_H
-#define REEDSOL_LOGS_H
+#ifndef Z_REEDSOL_LOGS_H
+#define Z_REEDSOL_LOGS_H
 
 /* Static log/antilog tables for prime polys of up to degree 8 (> 8 too large so generated at runtime instead).
  * Antilog tables doubled to avoid mod. */
@@ -261,4 +261,5 @@ static const unsigned char alog_0x163[510] = {
     0x4C, 0x98, 0x53, 0xA6, 0x2F, 0x5E, 0xBC, 0x1B, 0x36, 0x6C, 0xD8, 0xD3, 0xC5, 0xE9, 0xB1,
 };
 
-#endif /* REEDSOL_LOGS_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_REEDSOL_LOGS_H */

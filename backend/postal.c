@@ -145,7 +145,7 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
         strcpy(symbol->errtxt, "480: Input too long (38 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
-    
+
     if (symbol->symbology == BARCODE_CEPNET) {
         if (length != 8) {
             strcpy(symbol->errtxt, "780: Input is wrong length (should be 8 digits)");

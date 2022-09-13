@@ -1,8 +1,7 @@
 /* imail.c - Handles Intelligent Mail (aka OneCode) for USPS */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008 - 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,14 +28,14 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /*  The function "USPS_MSB_Math_CRC11GenerateFrameCheckSequence"
     is Copyright (C) 2006 United States Postal Service */
 
-#include <stdio.h>
 #include "common.h"
 #include "large.h"
+#include <stdio.h>
 
 #define SODIUM_MNS_F (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
 
@@ -187,7 +186,7 @@ static const unsigned short AppxD_II[78] = {
     0x0801, 0x1002, 0x1001, 0x0802, 0x0404, 0x0208, 0x0110, 0x00A0
 };
 
-static const unsigned short int AppxD_IV[130] = {
+static const unsigned short AppxD_IV[130] = {
     /* Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
     67, 6, 78, 16, 86, 95, 34, 40, 45, 113, 117, 121, 62, 87, 18, 104, 41, 76, 57, 119, 115, 72, 97,
     2, 127, 26, 105, 35, 122, 52, 114, 7, 24, 82, 68, 63, 94, 44, 77, 112, 70, 100, 39, 30, 107,
@@ -255,7 +254,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned short usps_crc;
     unsigned int codeword[10];
     unsigned short characters[10];
-    short int bar_map[130];
+    short bar_map[130];
     int zip_len, len;
 
     if (length > 32) {
@@ -453,3 +452,5 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->width = read - 1;
     return error_number;
 }
+
+/* vim: set ts=4 sw=4 et : */

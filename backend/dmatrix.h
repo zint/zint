@@ -75,11 +75,11 @@ static const char dm_text_value[] = {
 };
 
 /* Position in option array [symbol option value - 1]
-// The position in the option array is by increasing total data codewords with square first
-// The last comment value is the total data codewords value.
-// The index of this array is the --vers parameter value -1 and is given as first comment value */
+   The position in the option array is by increasing total data codewords with square first
+   The last comment value is the total data codewords value.
+   The index of this array is the --vers parameter value -1 and is given as first comment value */
 
-static const unsigned short int dm_intsymbol[] = {
+static const unsigned short dm_intsymbol[] = {
 /* Standard DM */
      0, /*  1: 10x10 ,  3*/  1, /*  2: 12x12 ,  5*/  3, /*  3: 14x14 ,  8*/  5, /*  4: 16x16 , 12*/
      7, /*  5: 18x18 , 18*/  9, /*  6: 20x20 , 22*/ 12, /*  7: 22x22 , 30*/ 15, /*  8: 24x24 , 36*/
@@ -122,7 +122,7 @@ static const char dm_isDMRE[] = {
 
 /* Horizontal matrix size */
 
-static const unsigned short int dm_matrixH[] = {
+static const unsigned short dm_matrixH[] = {
     /* 0*/ 10, /* 10x10 ,  3*/ 12, /* 12x12 , 5 */  8, /*  8x18 ,  5*/ 14, /* 14x14 ,  8*/
     /* 4*/  8, /*  8x32 , 10*/ 16, /* 16x16 , 12*/ 12, /* 12x26 , 16*/ 18, /* 18x18 , 18*/
     /* 8*/  8, /*  8x48 , 18*/ 20, /* 20x20 , 22*/ 12, /* 12x36 , 22*/  8, /*  8x64 , 24*/
@@ -139,7 +139,7 @@ static const unsigned short int dm_matrixH[] = {
 
 /* Vertical matrix sizes */
 
-static const unsigned short int dm_matrixW[] = {
+static const unsigned short dm_matrixW[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */ 18, /*  8x18 */ 14, /* 14x14 */
     /* 4*/ 32, /*  8x32 */ 16, /* 16x16 */ 26, /* 12x26 */ 18, /* 18x18 */
     /* 8*/ 48, /*  8x48 */ 20, /* 20x20 */ 36, /* 12x36 */ 64, /*  8x64 */
@@ -157,7 +157,7 @@ static const unsigned short int dm_matrixW[] = {
 
 /* Horizontal submodule size (including subfinder) */
 
-static const unsigned short int dm_matrixFH[] = {
+static const unsigned short dm_matrixFH[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */  8, /*  8x18 */ 14, /* 14x14 */
     /* 4*/  8, /*  8x32 */ 16, /* 16x16 */ 12, /* 12x26 */ 18, /* 18x18 */
     /* 8*/  8, /*  8x48 */ 20, /* 20x20 */ 12, /* 12x36 */  8, /*  8x64 */
@@ -174,7 +174,7 @@ static const unsigned short int dm_matrixFH[] = {
 
 /* Vertical submodule size (including subfinder) */
 
-static const unsigned short int dm_matrixFW[] = {
+static const unsigned short dm_matrixFW[] = {
     /* 0*/ 10, /* 10x10 */ 12, /* 12x12 */ 18, /*  8x18 */ 14, /* 14x14 */
     /* 4*/ 16, /*  8x32 */ 16, /* 16x16 */ 26, /* 12x26 */ 18, /* 18x18 */
     /* 8*/ 24, /*  8x48 */ 20, /* 20x20 */ 18, /* 12x36 */ 16, /*  8x64 */
@@ -191,7 +191,7 @@ static const unsigned short int dm_matrixFW[] = {
 
 /* Total Data Codewords */
 
-static const unsigned short int dm_matrixbytes[] = {
+static const unsigned short dm_matrixbytes[] = {
     /* 0*/   3, /* 10x10 */   5, /* 12x12 */   5, /*  8x18 */   8, /* 14x14 */
     /* 4*/  10, /*  8x32 */  12, /* 16x16 */  16, /* 12x26 */  18, /* 18x18 */
     /* 8*/  18, /*  8x48 */  22, /* 20x20 */  22, /* 12x36 */  24, /*  8x64 */
@@ -208,7 +208,7 @@ static const unsigned short int dm_matrixbytes[] = {
 
 /* Data Codewords per RS-Block */
 
-static const unsigned short int dm_matrixdatablock[] = {
+static const unsigned short dm_matrixdatablock[] = {
     /* 0*/   3, /* 10x10 */   5, /* 12x12 */   5, /*  8x18 */   8, /* 14x14 */
     /* 4*/  10, /*  8x32 */  12, /* 16x16 */  16, /* 12x26 */  18, /* 18x18 */
     /* 8*/  18, /*  8x48 */  22, /* 20x20 */  22, /* 12x36 */  24, /*  8x64 */
@@ -225,7 +225,7 @@ static const unsigned short int dm_matrixdatablock[] = {
 
 /* ECC Codewords per RS-Block */
 
-static const unsigned short int dm_matrixrsblock[] = {
+static const unsigned short dm_matrixrsblock[] = {
     /* 0*/  5, /* 10x10 */  7, /* 12x12 */  7, /*  8x18 */ 10, /* 14x14 */
     /* 4*/ 11, /*  8x32 */ 12, /* 16x16 */ 14, /* 12x26 */ 14, /* 18x18 */
     /* 8*/ 15, /*  8x48 */ 18, /* 20x20 */ 18, /* 12x36 */ 18, /*  8x64 */

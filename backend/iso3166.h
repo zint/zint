@@ -3,7 +3,7 @@
  */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,9 +30,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef ISO3166_H
-#define ISO3166_H
+#ifndef Z_ISO3166_H
+#define Z_ISO3166_H
 
 /* Whether ISO 3166-1 numeric */
 static int iso3166_numeric(int cc) {
@@ -85,4 +86,4 @@ static int iso3166_alpha2(const char *cc) {
     return codes[cc_int >> 3] & (1 << (cc_int & 0x7)) ? 1 : 0;
 }
 
-#endif /* ISO3166_H */
+#endif /* Z_ISO3166_H */

@@ -1,5 +1,4 @@
 /* pdf417_tabs.h - PDF417 tables and coefficients */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -30,6 +29,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* this file contains the character table, the pre-calculated coefficients and the
    codeword patterns taken from lines 416 to 454 of pdf417.frm */

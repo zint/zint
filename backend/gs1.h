@@ -1,5 +1,4 @@
 /* gs1.h - Verifies GS1 data */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,6 +28,8 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
 #ifndef Z_GS1_H
 #define Z_GS1_H
 

@@ -1,8 +1,7 @@
 /* dmatrix_trace.h - Trace routines for DM_COMPRESSION algorithm */
-
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef Z_DMATRIX_TRACE_H
 #define Z_DMATRIX_TRACE_H
@@ -151,4 +150,5 @@ static void DM_TRACE_NotAddEdge(const unsigned char *source, const int length, s
 }
 
 #endif /* DM_TRACE */
+/* vim: set ts=4 sw=4 et : */
 #endif /* Z_DMATRIX_TRACE_H */

@@ -1,5 +1,4 @@
 /* medical.c - Handles 1 track and 2 track pharmacode and Codabar */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -29,9 +28,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#include <stdio.h>
 #include "common.h"
+#include <stdio.h>
 
 INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int length);
 

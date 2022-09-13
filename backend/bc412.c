@@ -32,10 +32,10 @@
 
 /* A little information about this symbology can be found at
  * https://barcodeguide.seagullscientific.com/Content/Symbologies/BC412.htm
- * 
+ *
  * Partial specification at
  * https://www.wdfxw.net/doc80487518.htm
- * 
+ *
  * Checked against the encoder at
  * https://www.barcodesoft.com/en/semi/semi-t1-95-bc-412-code */
 
@@ -72,26 +72,26 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     char dest[293]; /* 2 + (36 * 8) + 3 */
     char *d = dest;
     int error_number = 0;
-    
+
     if ((length < 7) || (length > 18)) {
         strcpy(symbol->errtxt, "790: Input wrong length (should be between 7 and 18 characters)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source, length);
-    
+
     padded_source[0] = source[0];
     padded_source[1] = '0';
-    
+
     for (i = 2; i <= length; i++) {
         padded_source[i] = source[i - 1];
     }
     padded_source[length + 1] = 0;
-    
+
     if (!is_sane_lookup(BROMINE, 35, padded_source, length + 1, posns)) {
         strcpy(symbol->errtxt, "791: Invalid character in data (alphanumerics only, excluding the letter \"O\")");
         return ZINT_ERROR_INVALID_DATA;
     }
-    
+
     for (i = 0; i <= length; i++) {
         if (i % 2) {
             counter_even += posns[i];
@@ -99,38 +99,38 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
             counter_odd += posns[i];
         }
     }
-    
+
     counter_odd %= 35;
     counter_even %= 35;
-    
+
     /* Check digit */
     check_sum = counter_odd + (2 * counter_even);
     check_sum %= 35;
     check_sum *= 17;
     check_sum %= 35;
-    
+
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("BC412 check: %c\n", BROMINE[check_sum]);
     }
-        
+
     padded_source[1] = BROMINE[check_sum];
     posns[1] = check_sum;
-        
+
     /* Start character */
     memcpy(d, "12", 2);
     d += 2;
-    
+
     for (i = 0; i <= length; i++, d += 8) {
         memcpy(d, BC412Table[posns[i]], 8);
     }
-    
+
     /* Stop character */
     memcpy(d, "111", 3);
     d += 3;
-    
+
     expand(symbol, dest, d - dest);
     ustrcpy(symbol->text, padded_source);
-    
+
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* SEMI T1-95 Table 1 "Module" (Character) Height 2mm ± 0.025mm, using Module Spacing 0.12mm ± 0.025mm as
            X-dimension */
@@ -140,7 +140,7 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
         /* Using compliant height as default as no backwards compatibility to consider */
         (void) set_height(symbol, 0.0f, stripf(2.0f / 0.12f), 0.0f, 1 /*no_errtxt*/);
     }
-    
+
     return error_number;
 }
 

@@ -1,7 +1,7 @@
-/*  tif_lzw.h - LZW compression for TIFF
-
+/*  tif_lzw.h - LZW compression for TIFF */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,10 +28,10 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef TIF_LZW_H
-#define TIF_LZW_H
+#ifndef Z_TIF_LZW_H
+#define Z_TIF_LZW_H
 
 /*
  * Adapted from TIFF Library 4.2.0 libtiff/tif_lzw.c */
@@ -370,4 +370,5 @@ static void tif_lzw_init(tif_lzw_state *sp) {
     sp->enc_hashtab = NULL;
 }
 
-#endif   /* TIF_LZW_H */
+/* vim: set ts=4 sw=4 et : */
+#endif /* Z_TIF_LZW_H */

@@ -2,13 +2,14 @@
 /* Generate ISO 3166 include "backend/iso3166.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 */
+/* SPDX-License-Identifier: BSD-3-Clause */
+
 /* To create "backend/iso3166.h" (from project directory):
  *
  *   php backend/tools/gen_iso3166_h.php > backend/iso3166.h
  */
-/* vim: set ts=4 sw=4 et : */
 
 $basename = basename(__FILE__);
 $dirname = dirname(__FILE__);
@@ -122,7 +123,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -149,6 +150,7 @@ print <<<'EOD'
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 
 EOD;
@@ -156,8 +158,8 @@ EOD;
 
 if ($print_h_guard) {
 print <<<'EOD'
-#ifndef ISO3166_H
-#define ISO3166_H
+#ifndef Z_ISO3166_H
+#define Z_ISO3166_H
 
 EOD;
 }
@@ -219,7 +221,9 @@ EOD;
 if ($print_h_guard) {
 print <<<'EOD'
 
-#endif /* ISO3166_H */
+#endif /* Z_ISO3166_H */
 
 EOD;
 }
+
+/* vim: set ts=4 sw=4 et : */

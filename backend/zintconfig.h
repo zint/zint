@@ -1,7 +1,7 @@
-/*  zintconfig.h - the configured options and settings for libzint
-
+/*  zintconfig.h - the configured options and settings for libzint */
+/*
     libzint - the open source barcode library
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -28,7 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 #ifndef ZINTCONFIG_H
 #define ZINTCONFIG_H
@@ -38,4 +38,5 @@
 #define ZINT_VERSION_RELEASE    1
 #define ZINT_VERSION_BUILD      9
 
+/* vim: set ts=4 sw=4 et : */
 #endif /* ZINTCONFIG_H */
