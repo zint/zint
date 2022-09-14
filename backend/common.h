@@ -41,11 +41,16 @@ extern "C" {
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
 
+/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
+#if !defined(_MSC_VER) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#define ZINT_IS_C89
+#endif
+
 #ifdef _MSC_VER
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  if (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) || defined(__NuttX__) /* C89 or NuttX RTOS */
+#  if defined(ZINT_IS_C89) || defined(__NuttX__) /* C89 or NuttX RTOS */
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)
@@ -101,14 +106,13 @@ typedef unsigned __int64 uint64_t;
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
-/* VC6 or C89 */
-#if (defined(_MSC_VER) && _MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#if (defined(_MSC_VER) && _MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 #  define ceilf (float) ceil
 #  define floorf (float) floor
 #  define fmodf (float) fmod
 #endif
 /* `round()` (C99) not before MSVC 2013 (C++ 12.0) */
-#if (defined(_MSC_VER) && _MSC_VER < 1800) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#if (defined(_MSC_VER) && _MSC_VER < 1800) || defined(ZINT_IS_C89)
 #  define round(arg) floor((arg) + 0.5)
 #  define roundf(arg) floorf((arg) + 0.5f)
 #endif

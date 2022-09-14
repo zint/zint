@@ -57,7 +57,7 @@ extern "C" {
 #define testutil_pclose(stream) _pclose(stream)
 #else
 #include <unistd.h>
-#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L /* C89 */
+#  if defined(ZINT_IS_C89)
     extern FILE *popen(const char *command, const char *type);
     extern int pclose(FILE *stream);
 #  endif
@@ -101,7 +101,7 @@ typedef struct s_testFunction {
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 int testContinue(const testCtx *const p_ctx, const int i);
 
-#if (defined(_MSC_VER) &&_MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) /* VC6 or C89 */
+#if (defined(_MSC_VER) &&_MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 void assert_zero(int exp, const char *fmt, ...);
 void assert_nonzero(int exp, const char *fmt, ...);
 void assert_null(const void *exp, const char *fmt, ...);

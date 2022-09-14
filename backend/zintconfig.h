@@ -1,4 +1,4 @@
-/*  zintconfig.h - the configured options and settings for libzint */
+/*  zintconfig.h - the configured options and settings for libzint, generated from "zintconfig.h.in" by CMake */
 /*
     libzint - the open source barcode library
     Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>

@@ -34,23 +34,21 @@
 /* Due to above: */
 /* SPDX-License-Identifier: LGPL-2.1+ */
 
-#include "testcommon.h"
-
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
 #endif
-
-#include "../eci.h"
 #ifndef NO_PNG
 #include <png.h>
 #include <zlib.h>
 #include <setjmp.h>
 #endif
 #include <assert.h>
-#include <errno.h>
 #include <limits.h>
 #include <sys/stat.h>
+
+#include "testcommon.h"
+#include "../eci.h"
 
 static int tests = 0;
 static int failed = 0;
@@ -63,7 +61,7 @@ static const char *testFunc = NULL;
 
 /* Visual C++ 6 doesn't support variadic args to macros, so make do with functions, which have inferior behaviour,
    e.g. don't exit on failure, `assert_equal()` type-specific */
-#if (defined(_MSC_VER) && _MSC_VER == 1200) || (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L) /* VC6 or C89 */
+#if (defined(_MSC_VER) && _MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 #include <stdarg.h>
 void assert_zero(int exp, const char *fmt, ...) {
     assertionNum++;
