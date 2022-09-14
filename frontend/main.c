@@ -1,5 +1,4 @@
 /* main.c - Command line handling routines for Zint */
-
 /*
     libzint - the open source barcode library
     Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
@@ -20,15 +19,15 @@
  */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <limits.h>
+
 #ifndef _MSC_VER
 #include <getopt.h>
 #include <zint.h>
 #else
-#include <malloc.h>
 #include "../getopt/getopt.h"
 #include "zint.h"
 #if _MSC_VER != 1200 /* VC6 */
@@ -42,6 +41,21 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
+#endif
+
+/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
+#if !defined(_MSC_VER) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
+#define ZINT_IS_C89
+#endif
+
+#ifdef _MSC_VER
+#  include <malloc.h>
+#  define z_alloca(nmemb) _alloca(nmemb)
+#else
+#  if defined(ZINT_IS_C89) || defined(__NuttX__) /* C89 or NuttX RTOS */
+#    include <alloca.h>
+#  endif
+#  define z_alloca(nmemb) alloca(nmemb)
 #endif
 
 /* Print list of supported symbologies */
@@ -682,7 +696,7 @@ static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10
 static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
             const char *filetype, const int output_given, const int rotate_angle) {
     FILE *file;
-    unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; // Maximum HanXin input
+    unsigned char buffer[ZINT_MAX_DATA_LEN] = {0}; /* Maximum HanXin input */
     unsigned char character = 0;
     int buf_posn = 0, error_number = 0, warn_number = 0, line_count = 1;
     char output_file[256];
@@ -795,17 +809,17 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                         output_file[o] = '_';
                     } else {
                         switch (buffer[i]) {
-                            case 0x21: // !
-                            case 0x22: // "
-                            case 0x2a: // *
-                            case 0x2f: // /
-                            case 0x3a: // :
-                            case 0x3c: // <
-                            case 0x3e: // >
-                            case 0x3f: // ?
-                            case 0x5c: // Backslash
-                            case 0x7c: // |
-                            case 0x7f: // DEL
+                            case '!':
+                            case '"':
+                            case '*':
+                            case '/':
+                            case ':':
+                            case '<':
+                            case '>':
+                            case '?':
+                            case '\\':
+                            case '|':
+                            case 0x7f: /* DEL */
                                 output_file[o] = '_';
                                 break;
                             default:
@@ -814,13 +828,17 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                         }
                     }
 
-                    // Skip escape characters
-                    if ((buffer[i] == 0x5c) && (symbol->input_mode & ESCAPE_MODE)) {
+                    /* Skip escape characters */
+                    if ((buffer[i] == '\\') && (symbol->input_mode & ESCAPE_MODE)) {
                         i++;
                         if (buffer[i] == 'x') {
                             i += 2;
+                        } else if (buffer[i] == 'd' || buffer[i] == 'o') {
+                            i += 3;
                         } else if (buffer[i] == 'u') {
                             i += 4;
+                        } else if (buffer[i] == 'U') {
+                            i += 6;
                         }
                     }
                     i++;
@@ -973,11 +991,7 @@ int main(int argc, char **argv) {
     int data_arg_num = 0;
     int seg_count = 0;
     float float_opt;
-#ifndef _MSC_VER
-    arg_opt arg_opts[argc];
-#else
-    arg_opt *arg_opts = (arg_opt *) _alloca(argc * sizeof(arg_opt));
-#endif
+    arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
     int no_getopt_error = 1;
 
     my_symbol = ZBarcode_Create();
@@ -1009,7 +1023,7 @@ int main(int argc, char **argv) {
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
             OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
-            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR,
+            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
         };
         int option_index = 0;
         static const struct option long_options[] = {
@@ -1078,7 +1092,7 @@ int main(int argc, char **argv) {
             {"square", 0, NULL, OPT_SQUARE},
             {"structapp", 1, NULL, OPT_STRUCTAPP},
             {"types", 0, NULL, 't'},
-            {"verbose", 0, NULL, OPT_VERBOSE}, // Currently undocumented, output some debug info
+            {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
             {"vers", 1, NULL, OPT_VERS},
             {"version", 0, NULL, 'v'},
             {"vwhitesp", 1, NULL, OPT_VWHITESP},

@@ -27,11 +27,13 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
  */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
-#include "testcommon.h"
 #ifndef _WIN32
 #include <sys/wait.h>
 #endif
+
+#include "testcommon.h"
 
 #ifdef _WIN32
 /* Hacks to stop popen() mangling input on Windows */
@@ -268,7 +270,7 @@ static void arg_output_options(char *cmd, int output_options) {
     }
 }
 
-// Tests args that can be detected with `--dump`
+/* Tests args that can be detected with `--dump` */
 static void test_dump_args(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -295,7 +297,7 @@ static void test_dump_args(const testCtx *const p_ctx) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ {              -1, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B" },
         /*  1*/ { BARCODE_CODE128, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B" },
@@ -398,7 +400,7 @@ static void test_dump_args(const testCtx *const p_ctx) {
     testFinish();
 }
 
-// Tests segs
+/* Tests segs */
 static void test_dump_segs(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -413,7 +415,7 @@ static void test_dump_segs(const testCtx *const p_ctx) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ {              -1, "123", NULL, NULL, -1, -1, -1, "D2 13 9B 39 65 C8 C9 8E B" },
         /*  1*/ {              -1, "123", NULL, NULL, -1, 3, -1, "Error 166: Invalid segment argument, expect \"ECI,DATA\"" },
@@ -493,7 +495,7 @@ static void test_input(const testCtx *const p_ctx) {
         int num_expected;
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "", 2, "00001.gif\00000002.gif" },
         /*  1*/ { BARCODE_CODE128, 1, -1, 0, "gif", "1\n2\n3\n4\n5\n6\n7\n8\n9\n10\n", "~~~.gif", 10, "001.gif\000002.gif\000003.gif\000004.gif\000005.gif\000006.gif\000007.gif\000008.gif\000009.gif\000010.gif" },
@@ -506,15 +508,19 @@ static void test_input(const testCtx *const p_ctx) {
         /*  8*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
         /*  9*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_u00A0B.gif" },
         /* 10*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
-        /* 11*/ { BARCODE_CODE128, 1, -1, 0, "gif", "\n", "test_batch.gif", 0, NULL },
-        /* 12*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", TEST_INPUT_LONG "~.gif", 2, TEST_INPUT_LONG "1.gif\000" TEST_INPUT_LONG "2.gif" },
-        /* 13*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
-        /* 14*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
-        /* 15*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.gif" },
-        /* 16*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpg", 1, "test_batch.gif" },
-        /* 17*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.emf" },
-        /* 18*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpg", 1, "test_batch.emf" },
-        /* 19*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
+        /* 11*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1!2\"3*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "1_2_3_.gif\000__45_6_.gif\000_7890__12345_6789_.gif\000A_U0000A0B.gif" },
+        /* 12*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "!\"*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "___.gif\000__45_6_.gif\000_7890_12345_6789_.gif\000A_B.gif" },
+        /* 13*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1\\d123*9\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1_d123_9.gif\000_o1234_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
+        /* 14*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "1\\d123*2\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1__2.gif\000_4_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
+        /* 15*/ { BARCODE_CODE128, 1, -1, 0, "gif", "\n", "test_batch.gif", 0, NULL },
+        /* 16*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", TEST_INPUT_LONG "~.gif", 2, TEST_INPUT_LONG "1.gif\000" TEST_INPUT_LONG "2.gif" },
+        /* 17*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 18*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 19*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.gif" },
+        /* 20*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpg", 1, "test_batch.gif" },
+        /* 21*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.emf" },
+        /* 22*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpg", 1, "test_batch.emf" },
+        /* 23*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -575,7 +581,7 @@ static void test_stdin_input(const testCtx *const p_ctx) {
         char *input;
         char *outfile;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "123", "-", "test_stdin_input.gif" },
     };
@@ -611,7 +617,7 @@ static void test_stdin_input(const testCtx *const p_ctx) {
     testFinish();
 }
 
-// Note ordering of `--batch` before/after data/input args affects error messages
+/* Note ordering of `--batch` before/after data/input args affects error messages */
 static void test_batch_input(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -623,7 +629,7 @@ static void test_batch_input(const testCtx *const p_ctx) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "123", NULL, NULL, "Warning 122: Can't define data in batch mode, ignoring '123'\nWarning 124: No data received, no symbol generated" },
         /*  1*/ { BARCODE_CODE128, "123", "123\n456\n", NULL, "Warning 122: Can't define data in batch mode, ignoring '123'\nD2 13 9B 39 65 C8 C9 8E B\nD2 19 3B 72 67 4E 4D 8E B" },
@@ -683,7 +689,7 @@ static void test_batch_large(const testCtx *const p_ctx) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_HANXIN, 0, "1", 7827, "00001.gif" },
         /*  1*/ { BARCODE_HANXIN, 1, "1", 7827, "11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111.gif" },
@@ -763,7 +769,7 @@ static void test_checks(const testCtx *const p_ctx) {
 
         char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 139: Invalid add-on gap value (digits only)" },
         /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
@@ -864,7 +870,7 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         int fail;
         const char *expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { "_", "1", NULL, 1, "Error 119: Invalid barcode type '_'" },
         /*  1*/ { "a", "1", NULL, 1, "Error 119: Invalid barcode type 'a'" },
@@ -873,39 +879,39 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         /*  4*/ { "code12", "1", NULL, 1, "Error 119: Invalid barcode type 'code12'" },
         /*  5*/ { "BARCODE_CODE11", "1", NULL, 0, "symbology: 1," },
         /*  6*/ { "C25 Standard", "1", NULL, 0, "symbology: 2," },
-        /*  7*/ { "c25matrix", "1", NULL, 0, "symbology: 2," }, // Legacy now supported
-        /*  8*/ { "2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, // Synonym
-        /*  9*/ { "2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, // Synonym
-        /* 10*/ { "Code 2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, // Synonym
-        /* 11*/ { "Code 2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, // Synonym
-        /* 12*/ { "Standard Code 2 of 5", "1", NULL, 0, "symbology: 2," }, // Synonym
+        /*  7*/ { "c25matrix", "1", NULL, 0, "symbology: 2," }, /* Legacy now supported */
+        /*  8*/ { "2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, /* Synonym */
+        /*  9*/ { "2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, /* Synonym */
+        /* 10*/ { "Code 2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, /* Synonym */
+        /* 11*/ { "Code 2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, /* Synonym */
+        /* 12*/ { "Standard Code 2 of 5", "1", NULL, 0, "symbology: 2," }, /* Synonym */
         /* 13*/ { "C25INTER", "1", NULL, 0, "symbology: 3," },
-        /* 14*/ { "c25 interleaved", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 15*/ { "code 2 of 5 inter", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 16*/ { "code 2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 17*/ { "2 of 5 inter", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 18*/ { "2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 19*/ { "interleaved 2 of 5", "1", NULL, 0, "symbology: 3," }, // Synonym
-        /* 20*/ { "interleaved code 2 of 5", "1", NULL, 0, "symbology: 3," }, // Synonym
+        /* 14*/ { "c25 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 15*/ { "code 2 of 5 inter", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 16*/ { "code 2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 17*/ { "2 of 5 inter", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 18*/ { "2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 19*/ { "interleaved 2 of 5", "1", NULL, 0, "symbology: 3," }, /* Synonym */
+        /* 20*/ { "interleaved code 2 of 5", "1", NULL, 0, "symbology: 3," }, /* Synonym */
         /* 21*/ { "c25IATA", "1", NULL, 0, "symbology: 4," },
-        /* 22*/ { "2of5IATA", "1", NULL, 0, "symbology: 4," }, // Synonym
-        /* 23*/ { "code2of5IATA", "1", NULL, 0, "symbology: 4," }, // Synonym
-        /* 24*/ { "IATA2of5", "1", NULL, 0, "symbology: 4," }, // Synonym
-        /* 25*/ { "IATAcode2of5", "1", NULL, 0, "symbology: 4," }, // Synonym
+        /* 22*/ { "2of5IATA", "1", NULL, 0, "symbology: 4," }, /* Synonym */
+        /* 23*/ { "code2of5IATA", "1", NULL, 0, "symbology: 4," }, /* Synonym */
+        /* 24*/ { "IATA2of5", "1", NULL, 0, "symbology: 4," }, /* Synonym */
+        /* 25*/ { "IATAcode2of5", "1", NULL, 0, "symbology: 4," }, /* Synonym */
         /* 26*/ { "c25 Logic", "1", NULL, 0, "symbology: 6," },
-        /* 27*/ { "c25 Data Logic", "1", NULL, 0, "symbology: 6," }, // Synonym
-        /* 28*/ { "Code 2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, // Synonym
-        /* 29*/ { "Code 2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, // Synonym
-        /* 30*/ { "2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, // Synonym
-        /* 31*/ { "2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, // Synonym
+        /* 27*/ { "c25 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
+        /* 28*/ { "Code 2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
+        /* 29*/ { "Code 2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
+        /* 30*/ { "2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
+        /* 31*/ { "2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
         /* 32*/ { "c25 Ind", "1", NULL, 0, "symbology: 7," },
-        /* 33*/ { "c25 Industrial", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 34*/ { "code 2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 35*/ { "code 2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 36*/ { "2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 37*/ { "2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 38*/ { "Industrial 2 of 5", "1", NULL, 0, "symbology: 7," }, // Synonym
-        /* 39*/ { "Industrial code 2 of 5", "1", NULL, 0, "symbology: 7," }, // Synonym
+        /* 33*/ { "c25 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 34*/ { "code 2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 35*/ { "code 2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 36*/ { "2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 37*/ { "2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 38*/ { "Industrial 2 of 5", "1", NULL, 0, "symbology: 7," }, /* Synonym */
+        /* 39*/ { "Industrial code 2 of 5", "1", NULL, 0, "symbology: 7," }, /* Synonym */
         /* 40*/ { "code39", "1", NULL, 0, "symbology: 8," },
         /* 41*/ { "excode 39", "1", NULL, 0, "symbology: 9," },
         /* 42*/ { "Extended Code 39", "1", NULL, 0, "symbology: 9," },
@@ -949,121 +955,123 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         /* 80*/ { " pharma", "123456", NULL, 0, "symbology: 51," },
         /* 81*/ { " pzn ", "1", NULL, 0, "symbology: 52," },
         /* 82*/ { "pharma two", "4", NULL, 0, "symbology: 53," },
-        /* 83*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
-        /* 84*/ { "pdf", "1", NULL, 1, "Error 119: Invalid barcode type 'pdf'" },
-        /* 85*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
-        /* 86*/ { "pdf417trunc", "1", NULL, 0, "symbology: 56," },
-        /* 87*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
-        /* 88*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
-        /* 89*/ { "qr", "1", NULL, 0, "symbology: 58," }, // Synonym
-        /* 90*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
-        /* 91*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
-        /* 92*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
-        /* 93*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
-        /* 94*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
-        /* 95*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
-        /* 96*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
-        /* 97*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
-        /* 98*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
-        /* 99*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
-        /*100*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
-        /*101*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
-        /*102*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
-        /*103*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
-        /*104*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
-        /*105*/ { "rss14stack", "1", NULL, 0, "symbology: 79," },
-        /*106*/ { "DataBar Stk", "1", NULL, 0, "symbology: 79," },
-        /*107*/ { "DataBar Stacked", "1", NULL, 0, "symbology: 79," },
-        /*108*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
-        /*109*/ { "RSS14STACK OMNI", "1", NULL, 0, "symbology: 80," },
-        /*110*/ { "DataBar Omn Stk", "1", NULL, 0, "symbology: 80," },
-        /*111*/ { "DataBar Stacked Omn", "1", NULL, 0, "symbology: 80," },
-        /*112*/ { "DataBar Stacked Omni", "1", NULL, 0, "symbology: 80," },
-        /*113*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*114*/ { "rss_expstack", "[20]01", NULL, 0, "symbology: 81," },
-        /*115*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*116*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*117*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "symbology: 81," },
-        /*118*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
-        /*119*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
-        /*120*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
-        /*121*/ { "OneCode", "12345678901234567890", NULL, 0, "symbology: 85," },
-        /*122*/ { "plessey", "1", NULL, 0, "symbology: 86," },
-        /*123*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
-        /*124*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
-        /*125*/ { "KIX", "1", NULL, 0, "symbology: 90," },
-        /*126*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
-        /*127*/ { "Aztec Code", "1", NULL, 0, "symbology: 92," }, // Synonym
-        /*128*/ { "daft", "D", NULL, 0, "symbology: 93," },
-        /*129*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
-        /*130*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
-        /*131*/ { "Micro QR Code", "1", NULL, 0, "symbology: 97," },
-        /*132*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
-        /*133*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, // Synonym
-        /*134*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
-        /*135*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, // Synonym
-        /*136*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, // Synonym
-        /*137*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
-        /*138*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
-        /*139*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, // Synonym
-        /*140*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
-        /*141*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, // Synonym
-        /*142*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
-        /*143*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, // Synonym
-        /*144*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, // Synonym
-        /*145*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
-        /*146*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, // Synonym
-        /*147*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
-        /*148*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
-        /*149*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
-        /*150*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
-        /*151*/ { "azrune", "1", NULL, 0, "symbology: 128," },
-        /*152*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, // Synonym
-        /*153*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, // Synonym
-        /*154*/ { "code32", "1", NULL, 0, "symbology: 129," },
-        /*155*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*156*/ { "eancc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*157*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
-        /*158*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
-        /*159*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*160*/ { "rss14 cc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*161*/ { "databaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*162*/ { "databaromnicc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*163*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*164*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*165*/ { "databarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*166*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*167*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*168*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*169*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*170*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*171*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
-        /*172*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
-        /*173*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*174*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*175*/ { "databar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*176*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*177*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*178*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*179*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*180*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*181*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*182*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*183*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*184*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*185*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*186*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*187*/ { "Channel", "1", NULL, 0, "symbology: 140," },
-        /*188*/ { "Channel Code", "1", NULL, 0, "symbology: 140," },
-        /*189*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
-        /*190*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
-        /*191*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
-        /*192*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, // Synonym
-        /*193*/ { "ultra", "1", NULL, 0, "symbology: 144," },
-        /*194*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, // Synonym
-        /*195*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
-        /*196*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
-        /*197*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
+        /* 83*/ { "cepnet", "12345678", NULL, 0, "symbology: 54," },
+        /* 84*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
+        /* 85*/ { "pdf", "1", NULL, 1, "Error 119: Invalid barcode type 'pdf'" },
+        /* 86*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
+        /* 87*/ { "pdf417trunc", "1", NULL, 0, "symbology: 56," },
+        /* 88*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
+        /* 89*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
+        /* 90*/ { "qr", "1", NULL, 0, "symbology: 58," }, /* Synonym */
+        /* 91*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
+        /* 92*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
+        /* 93*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
+        /* 94*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
+        /* 95*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
+        /* 96*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
+        /* 97*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
+        /* 98*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
+        /* 99*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
+        /*100*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
+        /*101*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
+        /*102*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
+        /*103*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
+        /*104*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
+        /*105*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
+        /*106*/ { "rss14stack", "1", NULL, 0, "symbology: 79," },
+        /*107*/ { "DataBar Stk", "1", NULL, 0, "symbology: 79," },
+        /*108*/ { "DataBar Stacked", "1", NULL, 0, "symbology: 79," },
+        /*109*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
+        /*110*/ { "RSS14STACK OMNI", "1", NULL, 0, "symbology: 80," },
+        /*111*/ { "DataBar Omn Stk", "1", NULL, 0, "symbology: 80," },
+        /*112*/ { "DataBar Stacked Omn", "1", NULL, 0, "symbology: 80," },
+        /*113*/ { "DataBar Stacked Omni", "1", NULL, 0, "symbology: 80," },
+        /*114*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
+        /*115*/ { "rss_expstack", "[20]01", NULL, 0, "symbology: 81," },
+        /*116*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
+        /*117*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "symbology: 81," },
+        /*118*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "symbology: 81," },
+        /*119*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
+        /*120*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
+        /*121*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
+        /*122*/ { "OneCode", "12345678901234567890", NULL, 0, "symbology: 85," },
+        /*123*/ { "plessey", "1", NULL, 0, "symbology: 86," },
+        /*124*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
+        /*125*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
+        /*126*/ { "KIX", "1", NULL, 0, "symbology: 90," },
+        /*127*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
+        /*128*/ { "Aztec Code", "1", NULL, 0, "symbology: 92," }, /* Synonym */
+        /*129*/ { "daft", "D", NULL, 0, "symbology: 93," },
+        /*130*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
+        /*131*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
+        /*132*/ { "Micro QR Code", "1", NULL, 0, "symbology: 97," },
+        /*133*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
+        /*134*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, /* Synonym */
+        /*135*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
+        /*136*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, /* Synonym */
+        /*137*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, /* Synonym */
+        /*138*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
+        /*139*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
+        /*140*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, /* Synonym */
+        /*141*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
+        /*142*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, /* Synonym */
+        /*143*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
+        /*144*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, /* Synonym */
+        /*145*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, /* Synonym */
+        /*146*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
+        /*147*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, /* Synonym */
+        /*148*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
+        /*149*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
+        /*150*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
+        /*151*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
+        /*152*/ { "azrune", "1", NULL, 0, "symbology: 128," },
+        /*153*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, /* Synonym */
+        /*154*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, /* Synonym */
+        /*155*/ { "code32", "1", NULL, 0, "symbology: 129," },
+        /*156*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
+        /*157*/ { "eancc", "[20]01", "1234567890128", 0, "symbology: 130," },
+        /*158*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
+        /*159*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
+        /*160*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /*161*/ { "rss14 cc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /*162*/ { "databaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /*163*/ { "databaromnicc", "[20]01", "1234567890123", 0, "symbology: 132," },
+        /*164*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /*165*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /*166*/ { "databarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /*167*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "symbology: 133," },
+        /*168*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /*169*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /*170*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /*171*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
+        /*172*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
+        /*173*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
+        /*174*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /*175*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /*176*/ { "databar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /*177*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "symbology: 137," },
+        /*178*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*179*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*180*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*181*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*182*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "symbology: 138," },
+        /*183*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*184*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*185*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*186*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*187*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
+        /*188*/ { "Channel", "1", NULL, 0, "symbology: 140," },
+        /*189*/ { "Channel Code", "1", NULL, 0, "symbology: 140," },
+        /*190*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
+        /*191*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
+        /*192*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
+        /*193*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, /* Synonym */
+        /*194*/ { "ultra", "1", NULL, 0, "symbology: 144," },
+        /*195*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, /* Synonym */
+        /*196*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
+        /*197*/ { "bc412", "1234567", NULL, 0, "symbology: 146," },
+        /*198*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
+        /*199*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -1110,7 +1118,7 @@ static void test_other_opts(const testCtx *const p_ctx) {
         char *expected;
         int strstr_cmp;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900", "", 0 },
         /*  1*/ { BARCODE_CODE128, "1", -1, " -bg=", "EF9900", "", 0 },
@@ -1216,13 +1224,13 @@ static void test_exit_status(const testCtx *const p_ctx) {
 
         int expected;
     };
-    // s/\/\*[ 0-9]*\*\//\=printf("\/*%3d*\/", line(".") - line("'<"))
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900", 0 },
-        /*  1*/ { BARCODE_CODE128, "1", -1, " --bg=", "GF9900", ZINT_ERROR_INVALID_OPTION }, // Caught by libzint
-        /*  2*/ { BARCODE_CODE128, "1", -1, " --border=", "1001", ZINT_WARN_INVALID_OPTION }, // Caught by CLI
-        /*  3*/ { BARCODE_CODE128, "1", -1, " --data=", "\200", ZINT_ERROR_INVALID_DATA }, // Caught by libzint
-        /*  4*/ { BARCODE_CODE128, "1", -1, " --separator=", "-1", ZINT_ERROR_INVALID_OPTION }, // Caught by CLI
+        /*  1*/ { BARCODE_CODE128, "1", -1, " --bg=", "GF9900", ZINT_ERROR_INVALID_OPTION }, /* Caught by libzint */
+        /*  2*/ { BARCODE_CODE128, "1", -1, " --border=", "1001", ZINT_WARN_INVALID_OPTION }, /* Caught by CLI */
+        /*  3*/ { BARCODE_CODE128, "1", -1, " --data=", "\200", ZINT_ERROR_INVALID_DATA }, /* Caught by libzint */
+        /*  4*/ { BARCODE_CODE128, "1", -1, " --separator=", "-1", ZINT_ERROR_INVALID_OPTION }, /* Caught by CLI */
     };
     int data_size = ARRAY_SIZE(data);
     int i;
