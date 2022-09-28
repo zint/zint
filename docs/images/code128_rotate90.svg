@@ -1,52 +1,52 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="72" height="161" version="1.1"
+<svg width="286" height="644" version="1.1"
    xmlns="http://www.w3.org/2000/svg">
    <desc>Zint Generated Symbol
    </desc>
 
    <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="72" height="161" fill="#FFFFFF" />
-      <rect x="11.34" y="0.00" width="60.00" height="2.40" />
-      <rect x="11.34" y="3.60" width="60.00" height="1.20" />
-      <rect x="11.34" y="7.20" width="60.00" height="1.20" />
-      <rect x="11.34" y="13.20" width="60.00" height="2.40" />
-      <rect x="11.34" y="16.80" width="60.00" height="3.60" />
-      <rect x="11.34" y="24.00" width="60.00" height="1.20" />
-      <rect x="11.34" y="26.40" width="60.00" height="1.20" />
-      <rect x="11.34" y="30.00" width="60.00" height="2.40" />
-      <rect x="11.34" y="37.20" width="60.00" height="1.20" />
-      <rect x="11.34" y="39.60" width="60.00" height="1.20" />
-      <rect x="11.34" y="45.60" width="60.00" height="2.40" />
-      <rect x="11.34" y="49.20" width="60.00" height="1.20" />
-      <rect x="11.34" y="52.80" width="60.00" height="1.20" />
-      <rect x="11.34" y="55.20" width="60.00" height="4.80" />
-      <rect x="11.34" y="62.40" width="60.00" height="1.20" />
-      <rect x="11.34" y="66.00" width="60.00" height="2.40" />
-      <rect x="11.34" y="69.60" width="60.00" height="2.40" />
-      <rect x="11.34" y="74.40" width="60.00" height="2.40" />
-      <rect x="11.34" y="79.20" width="60.00" height="2.40" />
-      <rect x="11.34" y="82.80" width="60.00" height="3.60" />
-      <rect x="11.34" y="90.00" width="60.00" height="1.20" />
-      <rect x="11.34" y="92.40" width="60.00" height="1.20" />
-      <rect x="11.34" y="94.80" width="60.00" height="2.40" />
-      <rect x="11.34" y="99.60" width="60.00" height="1.20" />
-      <rect x="11.34" y="105.60" width="60.00" height="4.80" />
-      <rect x="11.34" y="112.80" width="60.00" height="1.20" />
-      <rect x="11.34" y="116.40" width="60.00" height="1.20" />
-      <rect x="11.34" y="118.80" width="60.00" height="1.20" />
-      <rect x="11.34" y="122.40" width="60.00" height="4.80" />
-      <rect x="11.34" y="128.40" width="60.00" height="1.20" />
-      <rect x="11.34" y="132.00" width="60.00" height="1.20" />
-      <rect x="11.34" y="135.60" width="60.00" height="3.60" />
-      <rect x="11.34" y="140.40" width="60.00" height="2.40" />
-      <rect x="11.34" y="145.20" width="60.00" height="2.40" />
-      <rect x="11.34" y="151.20" width="60.00" height="3.60" />
-      <rect x="11.34" y="156.00" width="60.00" height="1.20" />
-      <rect x="11.34" y="158.40" width="60.00" height="2.40" />
-      <text x="2.10" y="80.40" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="8.4" transform="rotate(90,2.10,80.40)" >
+      <rect x="0" y="0" width="286" height="644" fill="#FFFFFF" />
+      <rect x="45.36" y="0.00" width="240.00" height="9.60" />
+      <rect x="45.36" y="14.40" width="240.00" height="4.80" />
+      <rect x="45.36" y="28.80" width="240.00" height="4.80" />
+      <rect x="45.36" y="52.80" width="240.00" height="9.60" />
+      <rect x="45.36" y="67.20" width="240.00" height="14.40" />
+      <rect x="45.36" y="96.00" width="240.00" height="4.80" />
+      <rect x="45.36" y="105.60" width="240.00" height="4.80" />
+      <rect x="45.36" y="120.00" width="240.00" height="9.60" />
+      <rect x="45.36" y="148.80" width="240.00" height="4.80" />
+      <rect x="45.36" y="158.40" width="240.00" height="4.80" />
+      <rect x="45.36" y="182.40" width="240.00" height="9.60" />
+      <rect x="45.36" y="196.80" width="240.00" height="4.80" />
+      <rect x="45.36" y="211.20" width="240.00" height="4.80" />
+      <rect x="45.36" y="220.80" width="240.00" height="19.20" />
+      <rect x="45.36" y="249.60" width="240.00" height="4.80" />
+      <rect x="45.36" y="264.00" width="240.00" height="9.60" />
+      <rect x="45.36" y="278.40" width="240.00" height="9.60" />
+      <rect x="45.36" y="297.60" width="240.00" height="9.60" />
+      <rect x="45.36" y="316.80" width="240.00" height="9.60" />
+      <rect x="45.36" y="331.20" width="240.00" height="14.40" />
+      <rect x="45.36" y="360.00" width="240.00" height="4.80" />
+      <rect x="45.36" y="369.60" width="240.00" height="4.80" />
+      <rect x="45.36" y="379.20" width="240.00" height="9.60" />
+      <rect x="45.36" y="398.40" width="240.00" height="4.80" />
+      <rect x="45.36" y="422.40" width="240.00" height="19.20" />
+      <rect x="45.36" y="451.20" width="240.00" height="4.80" />
+      <rect x="45.36" y="465.60" width="240.00" height="4.80" />
+      <rect x="45.36" y="475.20" width="240.00" height="4.80" />
+      <rect x="45.36" y="489.60" width="240.00" height="19.20" />
+      <rect x="45.36" y="513.60" width="240.00" height="4.80" />
+      <rect x="45.36" y="528.00" width="240.00" height="4.80" />
+      <rect x="45.36" y="542.40" width="240.00" height="14.40" />
+      <rect x="45.36" y="561.60" width="240.00" height="9.60" />
+      <rect x="45.36" y="580.80" width="240.00" height="9.60" />
+      <rect x="45.36" y="604.80" width="240.00" height="14.40" />
+      <rect x="45.36" y="624.00" width="240.00" height="4.80" />
+      <rect x="45.36" y="633.60" width="240.00" height="9.60" />
+      <text x="8.40" y="321.60" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="33.6" transform="rotate(90,8.40,321.60)" >
          This Text
       </text>
    </g>

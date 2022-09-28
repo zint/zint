@@ -82,6 +82,7 @@ static void test_options(const testCtx *const p_ctx) {
 
     struct item {
         int input_mode;
+        int eci;
         int output_options;
         int option_2;
         int option_3;
@@ -95,23 +96,26 @@ static void test_options(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "" },
-        /*  1*/ { -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
-        /*  2*/ { -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
-        /*  3*/ { -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "" },
-        /*  4*/ { -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "" },
-        /*  5*/ { -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol width 4 is too small" }, /* Cols < 5 */
-        /*  6*/ { -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol height 3 is too small" }, /* Not enough data - height 3 too small */
-        /*  7*/ { -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "" }, /* Cols 200 max */
-        /*  8*/ { -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "" },
-        /*  9*/ { -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Symbol width 201 is too large" },
-        /* 10*/ { -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "" }, /* Mask > 8 + 1 ignored */
-        /* 11*/ { -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "" },
-        /* 12*/ { -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "" },
-        /* 13*/ { -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
-        /* 14*/ { -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
-        /* 15*/ { -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index out of range (1-2)" },
-        /* 16*/ { -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode" },
+        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "" },
+        /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
+        /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
+        /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "" },
+        /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "" },
+        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol width 4 is too small" }, /* Cols < 5 */
+        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol height 3 is too small" }, /* Not enough data - height 3 too small */
+        /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "" }, /* Cols 200 max */
+        /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "" },
+        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Symbol width 201 is too large" },
+        /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "" }, /* Mask > 8 + 1 ignored */
+        /* 11*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "" },
+        /* 12*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "" },
+        /* 13*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
+        /* 14*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
+        /* 15*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index out of range (1-2)" },
+        /* 16*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode" },
+        /* 17*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" },
+        /* 18*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards" },
+        /* 19*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -126,7 +130,7 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DOTCODE, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }

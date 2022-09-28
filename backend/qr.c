@@ -1580,11 +1580,12 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     int warn_number;
     int i, j, est_binlen, prev_est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, size;
-    int bitmask, gs1;
+    int bitmask;
     int user_mask;
     int canShrink;
     int size_squared;
     const struct zint_structapp *p_structapp = NULL;
+    const int gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1594,8 +1595,6 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     unsigned char *datastream;
     unsigned char *fullstream;
     unsigned char *grid;
-
-    gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
 
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 8 */
     if (user_mask > 8) {
@@ -1641,8 +1640,21 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         p_structapp = &symbol->structapp;
     }
 
-    /* TODO: GS1 General Specifications 22.0 section 5.7.3 says Structured Append and ECIs not supported
-       for GS1 QR Code so should check and return ZINT_WARN_NONCOMPLIANT if either true */
+    /* GS1 General Specifications 22.0 section 5.7.3 says Structured Append and ECIs not supported
+       for GS1 QR Code so check and return ZINT_WARN_NONCOMPLIANT if either true */
+    if (gs1 && warn_number == 0) {
+        for (i = 0; i < seg_count; i++) {
+            if (local_segs[i].eci) {
+                strcpy(symbol->errtxt, "755: Using ECI in GS1 mode not supported by GS1 standards");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
+                break;
+            }
+        }
+        if (warn_number == 0 && p_structapp) {
+            strcpy(symbol->errtxt, "756: Using Structured Append in GS1 mode not supported by GS1 standards");
+            warn_number = ZINT_WARN_NONCOMPLIANT;
+        }
+    }
 
     est_binlen = qr_calc_binlen_segs(40, mode, ddata, local_segs, seg_count, p_structapp, 0 /*mode_preset*/, gs1,
                     debug_print);
@@ -2975,9 +2987,9 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     int warn_number;
     int i, j, est_binlen;
     int ecc_level, autosize, version, max_cw, target_codewords, blocks, h_size, v_size;
-    int gs1;
     int footprint, best_footprint, format_data;
     unsigned int left_format_info, right_format_info;
+    const int gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -2987,13 +2999,23 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     unsigned char *fullstream;
     unsigned char *grid;
 
-    gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
-
     segs_cpy(symbol, segs, seg_count, local_segs);
 
     warn_number = qr_prep_data(symbol, local_segs, seg_count, ddata);
     if (warn_number >= ZINT_ERROR) {
         return warn_number;
+    }
+
+    /* GS1 General Specifications 22.0 section 5.7.3 says ECIs not supported
+       for GS1 QR Code so check and return ZINT_WARN_NONCOMPLIANT if true */
+    if (gs1 && warn_number == 0) {
+        for (i = 0; i < seg_count; i++) {
+            if (local_segs[i].eci) {
+                strcpy(symbol->errtxt, "757: Using ECI in GS1 mode not supported by GS1 standards");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
+                break;
+            }
+        }
     }
 
     est_binlen = qr_calc_binlen_segs(RMQR_VERSION + 31, mode, ddata, local_segs, seg_count, NULL /*p_structapp*/,

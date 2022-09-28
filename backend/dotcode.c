@@ -1213,6 +1213,7 @@ static void dc_force_corners(const int width, const int height, char *dot_array)
 }
 
 INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
+    int warn_number = 0;
     int i, j, k;
     int jc, n_dots;
     int data_length, ecc_length;
@@ -1226,6 +1227,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     unsigned char structapp_array[5];
     int structapp_size = 0;
     int padding_dots;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     /* Allow 4 codewords per input + 2 (FNC) + seg_count * 4 (ECI) + 2 (special char 1st position)
        + 5 (Structured Append) + 10 (PAD) */
@@ -1260,8 +1262,21 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
         }
     }
 
-    /* TODO: GS1 General Specifications 22.0 section 5.8.2 says Structured Append and ECIs not supported
-       for GS1 DotCode so should check and return ZINT_WARN_NONCOMPLIANT if either true */
+    /* GS1 General Specifications 22.0 section 5.8.2 says Structured Append and ECIs not supported
+       for GS1 DotCode so check and return ZINT_WARN_NONCOMPLIANT if either true */
+    if (gs1 && warn_number == 0) {
+        for (i = 0; i < seg_count; i++) {
+            if (segs[i].eci) {
+                strcpy(symbol->errtxt, "733: Using ECI in GS1 mode not supported by GS1 standards");
+                warn_number = ZINT_WARN_NONCOMPLIANT;
+                break;
+            }
+        }
+        if (warn_number == 0 && symbol->structapp.count) {
+            strcpy(symbol->errtxt, "734: Using Structured Append in GS1 mode not supported by GS1 standards");
+            warn_number = ZINT_WARN_NONCOMPLIANT;
+        }
+    }
 
     data_length = dc_encode_message_segs(symbol, segs, seg_count, codeword_array, &binary_finish, structapp_array,
                     &structapp_size);
@@ -1539,7 +1554,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     symbol->output_options |= BARCODE_DOTTY_MODE;
 
-    return 0;
+    return warn_number;
 }
 
 /* vim: set ts=4 sw=4 et : */

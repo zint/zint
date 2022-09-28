@@ -1,6 +1,27 @@
 Version 2.11.1.9 (dev) not released yet
 =======================================
 
+**Incompatible changes**
+------------------------
+- DOTCODE, QRCODE, RMQR: now return warning if ECI or Structured Append used in
+  GS1 mode
+- CLI now returns an error if unknown option given or if option is missing its
+  argument
+  NOTE: previously printed error messages but continued without returning an
+  error
+
+Changes
+-------
+- DOTCODE, QRCODE, RMQR: return warning if ECI or Structured Append used in GS1
+  mode, ticket #271
+- CLI: improve `getopt_long_only()` processing, printing own message if bad arg
+  and returning error if so rather than continuing to process
+- manual: MSE typo -> MSI; adjust SVG scaling for PDF manual; pandoc 2.19.2
+
+Bugs
+----
+- GUI: fix "Border Width" ampersand shortcut
+
 
 Version 2.11.1 (2022-08-22)
 ===========================

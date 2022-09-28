@@ -35,6 +35,8 @@ static void test_qr_options(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
+        int input_mode;
+        int eci;
         int option_1;
         int option_2;
         struct zint_structapp structapp;
@@ -43,52 +45,56 @@ static void test_qr_options(const testCtx *const p_ctx) {
         int ret_vector;
         int expected_size;
         int compare_previous;
+        char *expected;
     };
     /* 貫 U+8CAB kanji, in Shift JIS 0x8AD1 (\212\321), UTF-8 E8B2AB */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, -1 }, /* ECC auto-set to 1 (L), version auto-set to 1 */
-        /*  1*/ { 5, -1, { 0, 0, "" }, "12345", 0, 0, 21, 0 }, /* ECC > 4 ignored */
-        /*  2*/ { -1, 41, { 0, 0, "" }, "12345", 0, 0, 21, 0 }, /* Version > 40 ignored */
-        /*  3*/ { -1, 2, { 0, 0, "" }, "12345", 0, 0, 25, -1 }, /* ECC auto-set to 4 (Q), version 2 */
-        /*  4*/ { 4, 2, { 0, 0, "" }, "12345", 0, 0, 25, 0 }, /* ECC 4 (Q), version 2 */
-        /*  5*/ { 1, 2, { 0, 0, "" }, "12345", 0, 0, 25, 1 }, /* ECC 1 (L), version 2 */
-        /*  6*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, -1 }, /* ECC auto-set to 1 (L), version auto-set to 1 */
-        /*  7*/ { 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 }, /* Version auto-set to 1 */
-        /*  8*/ { -1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 }, /* ECC auto-set to 1 (L) */
-        /*  9*/ { 1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0 },
-        /* 10*/ { 2, 1, { 0, 0, "" }, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, /* ECC 2 (M), version 1 */
-        /* 11*/ { 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, -1 }, /* Version auto-set to 2 */
-        /* 12*/ { 2, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 0 },
-        /* 13*/ { 1, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 1 },
-        /* 14*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, -1 }, /* ECC auto-set to 1 (L), version auto-set to 3 */
-        /* 15*/ { 1, 3, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 0 },
-        /* 16*/ { 2, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, -1 }, /* ECC 2 (M), version auto-set to 4 */
-        /* 17*/ { 2, 4, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 0 },
-        /* 18*/ { 3, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, -1 }, /* ECC 3 (Q), version auto-set to 5 */
-        /* 19*/ { 3, 5, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 0 },
-        /* 20*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, -1 }, /* ECC 4 (H), version auto-set to 6 */
-        /* 21*/ { 4, 6, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 0 },
-        /* 22*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, -1 }, /* ECC auto-set to 1, version auto-set to 13 */
-        /* 23*/ { 1, 13, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 0 },
-        /* 24*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, -1 }, /* ECC 4, version auto-set to 21 */
-        /* 25*/ { 4, 21, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 0 },
-        /* 26*/ { -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, -1 }, /* ECC auto-set to 1, version auto-set to 22 */
-        /* 27*/ { 1, 22, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 0 },
-        /* 28*/ { 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 1 }, /* ECC 4, version auto-set 34 */
-        /* 29*/ { 4, 34, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0 },
-        /* 30*/ { 4, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, /* 1852 alphanumerics max for ECC 4 (H) */
-        /* 31*/ { 1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1 }, /* 4296 alphanumerics max for ECC 1 (L) */
-        /* 32*/ { 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1 }, /* 424 Kanji, ECC 4 (Q), version 1 */
-        /* 33*/ { 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1 }, /* 425 Kanji, ECC 4 (Q), version 1 */
-        /* 34*/ { 4, 1, { 0, 0, "" }, "12345678901234567", 0, 0, 21, -1 },
-        /* 35*/ { 4, 1, { 1, 2, "" }, "12345678901234567", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 36*/ { 4, 1, { 1, 2, "" }, "123456789012", ZINT_ERROR_TOO_LONG, -1, 0, -1 },
-        /* 37*/ { 4, 1, { 1, 2, "" }, "12345678901", 0, 0, 21, -1 },
-        /* 38*/ { 4, 1, { 3, 16, "123" }, "12345678901", 0, 0, 21, -1 },
-        /* 39*/ { 4, 1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, /* Bad Structured Append count */
-        /* 40*/ { 4, 1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, /* Bad Structured Append index */
-        /* 41*/ { 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1 }, /* Bad Structured Append ID */
+        /*  0*/ { -1, -1, -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
+        /*  1*/ { -1, -1, 5, -1, { 0, 0, "" }, "12345", 0, 0, 21, 0, "" }, /* ECC > 4 ignored */
+        /*  2*/ { -1, -1, -1, 41, { 0, 0, "" }, "12345", 0, 0, 21, 0, "" }, /* Version > 40 ignored */
+        /*  3*/ { -1, -1, -1, 2, { 0, 0, "" }, "12345", 0, 0, 25, -1, "" }, /* ECC auto-set to 4 (Q), version 2 */
+        /*  4*/ { -1, -1, 4, 2, { 0, 0, "" }, "12345", 0, 0, 25, 0, "" }, /* ECC 4 (Q), version 2 */
+        /*  5*/ { -1, -1, 1, 2, { 0, 0, "" }, "12345", 0, 0, 25, 1, "" }, /* ECC 1 (L), version 2 */
+        /*  6*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
+        /*  7*/ { -1, -1, 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" }, /* Version auto-set to 1 */
+        /*  8*/ { -1, -1, -1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" }, /* ECC auto-set to 1 (L) */
+        /*  9*/ { -1, -1, 1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" },
+        /* 10*/ { -1, -1, 2, 1, { 0, 0, "" }, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for selected symbol size" }, /* ECC 2 (M), version 1 */
+        /* 11*/ { -1, -1, 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, -1, "" }, /* Version auto-set to 2 */
+        /* 12*/ { -1, -1, 2, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 0, "" },
+        /* 13*/ { -1, -1, 1, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 1, "" },
+        /* 14*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 3 */
+        /* 15*/ { -1, -1, 1, 3, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 0, "" },
+        /* 16*/ { -1, -1, 2, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, -1, "" }, /* ECC 2 (M), version auto-set to 4 */
+        /* 17*/ { -1, -1, 2, 4, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 0, "" },
+        /* 18*/ { -1, -1, 3, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, -1, "" }, /* ECC 3 (Q), version auto-set to 5 */
+        /* 19*/ { -1, -1, 3, 5, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 0, "" },
+        /* 20*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, -1, "" }, /* ECC 4 (H), version auto-set to 6 */
+        /* 21*/ { -1, -1, 4, 6, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 0, "" },
+        /* 22*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, -1, "" }, /* ECC auto-set to 1, version auto-set to 13 */
+        /* 23*/ { -1, -1, 1, 13, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 0, "" },
+        /* 24*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, -1, "" }, /* ECC 4, version auto-set to 21 */
+        /* 25*/ { -1, -1, 4, 21, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 0, "" },
+        /* 26*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, -1, "" }, /* ECC auto-set to 1, version auto-set to 22 */
+        /* 27*/ { -1, -1, 1, 22, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 0, "" },
+        /* 28*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 1, "" }, /* ECC 4, version auto-set 34 */
+        /* 29*/ { -1, -1, 4, 34, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0, "" },
+        /* 30*/ { -1, -1, 4, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1, "" }, /* 1852 alphanumerics max for ECC 4 (H) */
+        /* 31*/ { -1, -1, 1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1, "" }, /* 4296 alphanumerics max for ECC 1 (L) */
+        /* 32*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1, "" }, /* 424 Kanji, ECC 4 (Q), version 1 */
+        /* 33*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 561: Input too long for selected error correction level" }, /* 425 Kanji, ECC 4 (Q), version 1 */
+        /* 34*/ { -1, -1, 4, 1, { 0, 0, "" }, "12345678901234567", 0, 0, 21, -1, "" },
+        /* 35*/ { -1, -1, 4, 1, { 1, 2, "" }, "12345678901234567", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for selected symbol size" },
+        /* 36*/ { -1, -1, 4, 1, { 1, 2, "" }, "123456789012", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for selected symbol size" },
+        /* 37*/ { -1, -1, 4, 1, { 1, 2, "" }, "12345678901", 0, 0, 21, -1, "" },
+        /* 38*/ { -1, -1, 4, 1, { 3, 16, "123" }, "12345678901", 0, 0, 21, -1, "" },
+        /* 39*/ { -1, -1, 4, 1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 750: Structured Append count out of range (2-16)" },
+        /* 40*/ { -1, -1, 4, 1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 751: Structured Append index out of range (1-2)" },
+        /* 41*/ { -1, -1, 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 754: Structured Append ID '256' out of range (0-255)" },
+        /* 42*/ { GS1_MODE, 3, -1, -1, { 0, 0, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" },
+        /* 43*/ { GS1_MODE, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 756: Using Structured Append in GS1 mode not supported by GS1 standards" },
+        /* 44*/ { GS1_MODE, 3, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -105,13 +111,14 @@ static void test_qr_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         if (p_ctx->index == -1 && data[i].compare_previous != -1) {
             ret = testUtilSymbolCmp(symbol, &previous_symbol);
             assert_equal(!ret, !data[i].compare_previous, "i:%d testUtilSymbolCmp !ret %d != %d\n", i, ret, data[i].compare_previous);
@@ -7185,6 +7192,8 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
+        int input_mode;
+        int eci;
         int option_1;
         int option_2;
         char *data;
@@ -7195,75 +7204,76 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -1, -1, "12345", 0, 0, 11, 27 }, /* ECC auto-set to H, version auto-set to 11 (R11x27) */
-        /*  1*/ { 4, 11, "12345", 0, 0, 11, 27 },
-        /*  2*/ { 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, /* ECC L not available */
-        /*  3*/ { 3, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, /* ECC Q not available */
-        /*  4*/ { 4, 11, "123456789", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 9 numbers */
-        /*  5*/ { 4, 11, "1234567890", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /*  6*/ { 2, 11, "12345678901234", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 14 numbers */
-        /*  7*/ { 2, 11, "123456789012345", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /*  8*/ { 4, 11, "ABCDEF", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 6 letters */
-        /*  9*/ { 4, 11, "ABCDEFG", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 10*/ { 2, 11, "ABCDEFGH", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 8 letters */
-        /* 11*/ { 2, 11, "ABCDEFGHI", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 12*/ { 4, 11, "\177\177\177\177", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 4 bytes */
-        /* 13*/ { 4, 11, "\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 14*/ { 2, 11, "\177\177\177\177\177\177", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 6 bytes */
-        /* 15*/ { 2, 11, "\177\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 16*/ { 4, 11, "点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* Max capacity ECC H, version 11, 2 kanji */
-        /* 17*/ { 4, 11, "点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 18*/ { 2, 11, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* Max capacity ECC M, version 11, 3 kanji */
-        /* 19*/ { 2, 11, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 20*/ { -1, 1, "12345", 0, 0, 7, 43 }, /* ECC auto-set to M, version 1 (R7x43) */
-        /* 21*/ { 2, 1, "12345", 0, 0, 7, 43 },
-        /* 22*/ { 4, 1, "12345", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 5 numbers */
-        /* 23*/ { 4, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 24*/ { 2, 1, "123456789012", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 12 numbers */
-        /* 25*/ { 2, 1, "1234567890123", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 26*/ { 4, 1, "ABC", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 3 letters */
-        /* 27*/ { 4, 1, "ABCD", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 28*/ { 2, 1, "ABCDEFG", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 7 letters */
-        /* 29*/ { 2, 1, "ABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 30*/ { 4, 1, "\177\177", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 2 bytes */
-        /* 31*/ { 4, 1, "\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 32*/ { 2, 1, "\177\177\177\177\177", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 5 bytes */
-        /* 33*/ { 2, 1, "\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 34*/ { 4, 1, "点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* Max capacity ECC H, version 1, 1 kanji */
-        /* 35*/ { 4, 1, "点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 36*/ { 2, 1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* Max capacity ECC M, version 1, 3 kanji */
-        /* 37*/ { 2, 1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 38*/ { 4, 7, "12345678901234567890123", 0, 0, 9, 59 }, /* Max capacity ECC H, version 7 (R9x59), 23 numbers */
-        /* 39*/ { 4, 7, "123456789012345678901234", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 40*/ { 4, 7, "点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 9, 59 }, /* Max capacity ECC H, version 7, 6 kanji */
-        /* 41*/ { 4, 7, "点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 42*/ { 4, 13, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, /* Max capacity ECC H, version 13 (R11x59), 8 kanji */
-        /* 43*/ { 4, 13, "点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 44*/ { 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 77 }, /* Max capacity ECC H, version 20 (R13x77), 17 kanji */
-        /* 45*/ { 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 46*/ { 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, /* Max capacity ECC H, version 26 (R15x99), 28 kanji */
-        /* 47*/ { 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 48*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* Max capacity ECC H, version 32 (R17x139), 46 kanji */
-        /* 49*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 50*/ { -1, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* Max capacity ECC M, version 32, 92 kanji */
-        /* 51*/ { 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
-        /* 52*/ { -1, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43 */
-        /* 53*/ { 4, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 59 }, /* ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59 */
-        /* 54*/ { -1, 34, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 9, 43 }, /* ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43 */
-        /* 55*/ { -1, 35, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27 */
-        /* 56*/ { 4, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, /* ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59 */
-        /* 57*/ { -1, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 43 }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43 */
-        /* 58*/ { -1, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 43 }, /* ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43 */
-        /* 59*/ { 4, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 59 }, /* ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59 */
-        /* 60*/ { -1, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 43 }, /* ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43 */
-        /* 61*/ { 4, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 59 }, /* ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59 */
-        /* 62*/ { -1, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 43 }, /* ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43 */
-        /* 63*/ { 4, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 77 }, /* ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77 */
-        /* 64*/ { -1, 39, "点茗点", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
-        /* 65*/ { 4, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 27 }, /* ECC set to H, auto-sets R13x27 */
-        /* 66*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, /* ECC set to H, auto-sets R15x99 (max capacity) */
-        /* 67*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 17, 99 }, /* ECC set to H, auto-sets R17x99 */
-        /* 68*/ { 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* ECC set to H, auto-sets R17x139 (max capacity) */
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "12345", 0, 0, 11, 27 }, /* ECC auto-set to H, version auto-set to 11 (R11x27) */
+        /*  1*/ { UNICODE_MODE, -1, 4, 11, "12345", 0, 0, 11, 27 },
+        /*  2*/ { UNICODE_MODE, -1, 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, /* ECC L not available */
+        /*  3*/ { UNICODE_MODE, -1, 3, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 }, /* ECC Q not available */
+        /*  4*/ { UNICODE_MODE, -1, 4, 11, "123456789", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 9 numbers */
+        /*  5*/ { UNICODE_MODE, -1, 4, 11, "1234567890", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /*  6*/ { UNICODE_MODE, -1, 2, 11, "12345678901234", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 14 numbers */
+        /*  7*/ { UNICODE_MODE, -1, 2, 11, "123456789012345", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /*  8*/ { UNICODE_MODE, -1, 4, 11, "ABCDEF", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 6 letters */
+        /*  9*/ { UNICODE_MODE, -1, 4, 11, "ABCDEFG", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 10*/ { UNICODE_MODE, -1, 2, 11, "ABCDEFGH", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 8 letters */
+        /* 11*/ { UNICODE_MODE, -1, 2, 11, "ABCDEFGHI", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 12*/ { UNICODE_MODE, -1, 4, 11, "\177\177\177\177", 0, 0, 11, 27 }, /* Max capacity ECC H, version 11, 4 bytes */
+        /* 13*/ { UNICODE_MODE, -1, 4, 11, "\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 14*/ { UNICODE_MODE, -1, 2, 11, "\177\177\177\177\177\177", 0, 0, 11, 27 }, /* Max capacity ECC M, version 11, 6 bytes */
+        /* 15*/ { UNICODE_MODE, -1, 2, 11, "\177\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 16*/ { UNICODE_MODE, -1, 4, 11, "点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* Max capacity ECC H, version 11, 2 kanji */
+        /* 17*/ { UNICODE_MODE, -1, 4, 11, "点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 18*/ { UNICODE_MODE, -1, 2, 11, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* Max capacity ECC M, version 11, 3 kanji */
+        /* 19*/ { UNICODE_MODE, -1, 2, 11, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 20*/ { UNICODE_MODE, -1, -1, 1, "12345", 0, 0, 7, 43 }, /* ECC auto-set to M, version 1 (R7x43) */
+        /* 21*/ { UNICODE_MODE, -1, 2, 1, "12345", 0, 0, 7, 43 },
+        /* 22*/ { UNICODE_MODE, -1, 4, 1, "12345", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 5 numbers */
+        /* 23*/ { UNICODE_MODE, -1, 4, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 24*/ { UNICODE_MODE, -1, 2, 1, "123456789012", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 12 numbers */
+        /* 25*/ { UNICODE_MODE, -1, 2, 1, "1234567890123", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 26*/ { UNICODE_MODE, -1, 4, 1, "ABC", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 3 letters */
+        /* 27*/ { UNICODE_MODE, -1, 4, 1, "ABCD", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 28*/ { UNICODE_MODE, -1, 2, 1, "ABCDEFG", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 7 letters */
+        /* 29*/ { UNICODE_MODE, -1, 2, 1, "ABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 30*/ { UNICODE_MODE, -1, 4, 1, "\177\177", 0, 0, 7, 43 }, /* Max capacity ECC H, version 1, 2 bytes */
+        /* 31*/ { UNICODE_MODE, -1, 4, 1, "\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 32*/ { UNICODE_MODE, -1, 2, 1, "\177\177\177\177\177", 0, 0, 7, 43 }, /* Max capacity ECC M, version 1, 5 bytes */
+        /* 33*/ { UNICODE_MODE, -1, 2, 1, "\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 34*/ { UNICODE_MODE, -1, 4, 1, "点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* Max capacity ECC H, version 1, 1 kanji */
+        /* 35*/ { UNICODE_MODE, -1, 4, 1, "点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 36*/ { UNICODE_MODE, -1, 2, 1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* Max capacity ECC M, version 1, 3 kanji */
+        /* 37*/ { UNICODE_MODE, -1, 2, 1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 38*/ { UNICODE_MODE, -1, 4, 7, "12345678901234567890123", 0, 0, 9, 59 }, /* Max capacity ECC H, version 7 (R9x59), 23 numbers */
+        /* 39*/ { UNICODE_MODE, -1, 4, 7, "123456789012345678901234", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 40*/ { UNICODE_MODE, -1, 4, 7, "点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 9, 59 }, /* Max capacity ECC H, version 7, 6 kanji */
+        /* 41*/ { UNICODE_MODE, -1, 4, 7, "点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 42*/ { UNICODE_MODE, -1, 4, 13, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, /* Max capacity ECC H, version 13 (R11x59), 8 kanji */
+        /* 43*/ { UNICODE_MODE, -1, 4, 13, "点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 44*/ { UNICODE_MODE, -1, 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 77 }, /* Max capacity ECC H, version 20 (R13x77), 17 kanji */
+        /* 45*/ { UNICODE_MODE, -1, 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 46*/ { UNICODE_MODE, -1, 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, /* Max capacity ECC H, version 26 (R15x99), 28 kanji */
+        /* 47*/ { UNICODE_MODE, -1, 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 48*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* Max capacity ECC H, version 32 (R17x139), 46 kanji */
+        /* 49*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 50*/ { UNICODE_MODE, -1, -1, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* Max capacity ECC M, version 32, 92 kanji */
+        /* 51*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0 },
+        /* 52*/ { UNICODE_MODE, -1, -1, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43 }, /* ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43 */
+        /* 53*/ { UNICODE_MODE, -1, 4, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 59 }, /* ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59 */
+        /* 54*/ { UNICODE_MODE, -1, -1, 34, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 9, 43 }, /* ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43 */
+        /* 55*/ { UNICODE_MODE, -1, -1, 35, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27 */
+        /* 56*/ { UNICODE_MODE, -1, 4, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 59 }, /* ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59 */
+        /* 57*/ { UNICODE_MODE, -1, -1, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 43 }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43 */
+        /* 58*/ { UNICODE_MODE, -1, -1, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 43 }, /* ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43 */
+        /* 59*/ { UNICODE_MODE, -1, 4, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 59 }, /* ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59 */
+        /* 60*/ { UNICODE_MODE, -1, -1, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 43 }, /* ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43 */
+        /* 61*/ { UNICODE_MODE, -1, 4, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 59 }, /* ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59 */
+        /* 62*/ { UNICODE_MODE, -1, -1, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 43 }, /* ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43 */
+        /* 63*/ { UNICODE_MODE, -1, 4, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 77 }, /* ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77 */
+        /* 64*/ { UNICODE_MODE, -1, -1, 39, "点茗点", ZINT_ERROR_INVALID_OPTION, -1, 0, 0 },
+        /* 65*/ { UNICODE_MODE, -1, 4, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 27 }, /* ECC set to H, auto-sets R13x27 */
+        /* 66*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99 }, /* ECC set to H, auto-sets R15x99 (max capacity) */
+        /* 67*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 17, 99 }, /* ECC set to H, auto-sets R17x99 */
+        /* 68*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139 }, /* ECC set to H, auto-sets R17x139 (max capacity) */
+        /* 69*/ { GS1_MODE, 3, -1, -1, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 11, 27 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -7278,7 +7288,7 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, UNICODE_MODE, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);

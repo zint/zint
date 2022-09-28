@@ -2470,7 +2470,7 @@ A-F up to a maximum of 65 characters and includes a CRC check digit.
 
 [zint -b MSI_PLESSEY -d "6502" --vers=2]
 
-Based on Plessey and developed by MSE Data Corporation, MSI Plessey has a range
+Based on Plessey and developed by MSI Data Corporation, MSI Plessey has a range
 of check digit options that are selectable by setting --vers (API option_2).
 Numeric (digits 0-9) input can be encoded, up to a maximum of 65 digits. The
 table below shows the options available:
@@ -2499,7 +2499,7 @@ modulo-10 check digits.
 
 Telepen Alpha was developed by SB Electronic Systems Limited and can encode
 ASCII text input, up to a maximum of 30 characters. Telepen includes a
-modulo-127 check digit.
+modulo-127 check digit, added by Zint.
 
 6.1.6.2 Telepen Numeric
 
@@ -2522,7 +2522,7 @@ Standard Code 39 was developed in 1974 by Intermec. Input data can be up to 85
 characters in length and can include the characters 0-9, A-Z, dash (-), full
 stop (.), space, asterisk (*), dollar ($), slash (/), plus (+) and percent (%).
 The standard does not require a check digit but a modulo-43 check digit can be
-added if required by setting --vers=1 (API option_2 = 1).
+added if desired by setting --vers=1 (API option_2 = 1).
 
 6.1.7.2 Extended Code 39
 
@@ -2530,8 +2530,8 @@ added if required by setting --vers=1 (API option_2 = 1).
 
 Also known as Code 39e and Code39+, this symbology expands on Standard Code 39
 to provide support for the full 7-bit ASCII character set. The standard does not
-require a check digit but a modulo-43 check digit can be added if required by
-setting --vers=1 (API option_2 = 1).
+require a check digit but a modulo-43 check digit can be added by setting
+--vers=1 (API option_2 = 1).
 
 6.1.7.3 Code 93
 
@@ -2769,7 +2769,7 @@ the table below:
   7          000000          576688
   8          0000000         7742862
 
-  : Table : Channel Maximum Values:
+  : Table : Channel Value Ranges:
 
 6.1.14 BC412 (SEMI T1-95)
 

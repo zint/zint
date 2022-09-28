@@ -282,7 +282,7 @@ static void to_lower(char source[]) {
 
     for (i = 0; i < src_len; i++) {
         if ((source[i] >= 'A') && (source[i] <= 'Z')) {
-            source[i] = (source[i] - 'A') + 'a';
+            source[i] |= 0x20;
         }
     }
 }
@@ -997,14 +997,14 @@ int main(int argc, char **argv) {
     my_symbol = ZBarcode_Create();
     if (!my_symbol) {
         fprintf(stderr, "Error 151: Memory failure\n");
-        exit(1);
+        exit(ZINT_ERROR_MEMORY);
     }
     no_png = strcmp(my_symbol->outfile, "out.gif") == 0;
 
     if (argc == 1) {
         ZBarcode_Delete(my_symbol);
         usage(no_png);
-        exit(1);
+        exit(ZINT_ERROR_INVALID_DATA);
     }
     my_symbol->input_mode = UNICODE_MODE;
 
@@ -1012,6 +1012,7 @@ int main(int argc, char **argv) {
     win_args(&argc, &argv);
 #endif
 
+    opterr = 0; /* Disable `getopt_long_only()` printing errors */
     while (no_getopt_error) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER, OPT_BOX,
@@ -1269,7 +1270,7 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.0f && float_opt <= 50.0f) {
                     my_symbol->guard_descent = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 155: Guard bar descent '%g' out of range (0 to 50), ignoring\n",
+                    fprintf(stderr, "Warning 135: Guard bar descent '%g' out of range (0 to 50), ignoring\n",
                             float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1301,13 +1302,13 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error 148: Invalid mask value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
-                if (val > 7) { /* `val` >= 0 always */
+                if (val <= 7) { /* `val` >= 0 always */
+                    mask = val + 1;
+                } else {
                     /* mask pattern >= 0 and <= 7 (i.e. values >= 1 and <= 8) only permitted */
                     fprintf(stderr, "Warning 147: Mask value out of range (0 to 7), ignoring\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
-                } else {
-                    mask = val + 1;
                 }
                 break;
             case OPT_MODE:
@@ -1508,17 +1509,14 @@ int main(int argc, char **argv) {
                 usage(no_png);
                 help = 1;
                 break;
-
             case 'v':
                 version(no_png);
                 help = 1;
                 break;
-
             case 't':
                 types();
                 help = 1;
                 break;
-
             case 'e':
                 show_eci();
                 help = 1;
@@ -1584,23 +1582,19 @@ int main(int argc, char **argv) {
                 break;
 
             case '?':
-                no_getopt_error = 0;
+                if (optopt) {
+                    fprintf(stderr, "Error 109: option '%s' requires an argument\n", argv[optind - 1]);
+                } else {
+                    fprintf(stderr, "Error 101: unknown option '%s'\n", argv[optind - 1]);
+                }
+                return do_exit(ZINT_ERROR_INVALID_OPTION);
                 break;
 
             default: /* Shouldn't happen */
                 fprintf(stderr, "Error 123: ?? getopt error 0%o\n", c); /* Not reached */
-                fflush(stderr);
-                no_getopt_error = 0;
+                return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
                 break;
         }
-    }
-
-    if (optind < argc) {
-        fprintf(stderr, "Error 125: Invalid option\n");
-        while (optind < argc)
-            fprintf(stderr, "%s", argv[optind++]);
-        fprintf(stderr, "\n");
-        fflush(stderr);
     }
 
     if (data_arg_num) {

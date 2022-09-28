@@ -785,8 +785,8 @@ static void test_checks(const testCtx *const p_ctx) {
         /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,  -2,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '-2' out of range (0.5 to 2000), ignoring" },
         /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,   0,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '0' out of range (0.5 to 2000), ignoring" },
         /* 13*/ { -1, -1,   -1, -1,    -1,      NULL, 2001,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '2001' out of range (0.5 to 2000), ignoring" },
-        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 155: Guard bar descent '-2' out of range (0 to 50), ignoring" },
-        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 155: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
+        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '-2' out of range (0 to 50), ignoring" },
+        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
         /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 148: Invalid mask value (digits only)" },
         /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 147: Mask value out of range (0 to 7), ignoring" },
         /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 116: Mode value out of range (0 to 6), ignoring" },
@@ -874,202 +874,202 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
     static const struct item data[] = {
         /*  0*/ { "_", "1", NULL, 1, "Error 119: Invalid barcode type '_'" },
         /*  1*/ { "a", "1", NULL, 1, "Error 119: Invalid barcode type 'a'" },
-        /*  2*/ { "code128", "1", NULL, 0, "symbology: 20," },
+        /*  2*/ { "code128", "1", NULL, 0, "BARCODE_CODE128 (20)," },
         /*  3*/ { "code218", "1", NULL, 1, "Error 119: Invalid barcode type 'code218'" },
         /*  4*/ { "code12", "1", NULL, 1, "Error 119: Invalid barcode type 'code12'" },
-        /*  5*/ { "BARCODE_CODE11", "1", NULL, 0, "symbology: 1," },
-        /*  6*/ { "C25 Standard", "1", NULL, 0, "symbology: 2," },
-        /*  7*/ { "c25matrix", "1", NULL, 0, "symbology: 2," }, /* Legacy now supported */
-        /*  8*/ { "2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, /* Synonym */
-        /*  9*/ { "2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, /* Synonym */
-        /* 10*/ { "Code 2 of 5 Standard", "1", NULL, 0, "symbology: 2," }, /* Synonym */
-        /* 11*/ { "Code 2 of 5 Matrix", "1", NULL, 0, "symbology: 2," }, /* Synonym */
-        /* 12*/ { "Standard Code 2 of 5", "1", NULL, 0, "symbology: 2," }, /* Synonym */
-        /* 13*/ { "C25INTER", "1", NULL, 0, "symbology: 3," },
-        /* 14*/ { "c25 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 15*/ { "code 2 of 5 inter", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 16*/ { "code 2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 17*/ { "2 of 5 inter", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 18*/ { "2 of 5 interleaved", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 19*/ { "interleaved 2 of 5", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 20*/ { "interleaved code 2 of 5", "1", NULL, 0, "symbology: 3," }, /* Synonym */
-        /* 21*/ { "c25IATA", "1", NULL, 0, "symbology: 4," },
-        /* 22*/ { "2of5IATA", "1", NULL, 0, "symbology: 4," }, /* Synonym */
-        /* 23*/ { "code2of5IATA", "1", NULL, 0, "symbology: 4," }, /* Synonym */
-        /* 24*/ { "IATA2of5", "1", NULL, 0, "symbology: 4," }, /* Synonym */
-        /* 25*/ { "IATAcode2of5", "1", NULL, 0, "symbology: 4," }, /* Synonym */
-        /* 26*/ { "c25 Logic", "1", NULL, 0, "symbology: 6," },
-        /* 27*/ { "c25 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
-        /* 28*/ { "Code 2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
-        /* 29*/ { "Code 2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
-        /* 30*/ { "2 of 5 Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
-        /* 31*/ { "2 of 5 Data Logic", "1", NULL, 0, "symbology: 6," }, /* Synonym */
-        /* 32*/ { "c25 Ind", "1", NULL, 0, "symbology: 7," },
-        /* 33*/ { "c25 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 34*/ { "code 2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 35*/ { "code 2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 36*/ { "2 of 5 Ind", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 37*/ { "2 of 5 Industrial", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 38*/ { "Industrial 2 of 5", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 39*/ { "Industrial code 2 of 5", "1", NULL, 0, "symbology: 7," }, /* Synonym */
-        /* 40*/ { "code39", "1", NULL, 0, "symbology: 8," },
-        /* 41*/ { "excode 39", "1", NULL, 0, "symbology: 9," },
-        /* 42*/ { "Extended Code 39", "1", NULL, 0, "symbology: 9," },
-        /* 43*/ { "eanx", "1", NULL, 0, "symbology: 13," },
-        /* 44*/ { "ean", "1", NULL, 0, "symbology: 13," },
-        /* 45*/ { "eanx chk", "1", NULL, 0, "symbology: 14," },
-        /* 46*/ { "eanxchk", "1", NULL, 0, "symbology: 14," },
-        /* 47*/ { "eanchk", "1", NULL, 0, "symbology: 14," },
-        /* 48*/ { "GS1128", "[01]12345678901231", NULL, 0, "symbology: 16," },
-        /* 49*/ { "ean 128", "[01]12345678901231", NULL, 0, "symbology: 16," },
-        /* 50*/ { "coda bar", "A1B", NULL, 0, "symbology: 18," },
-        /* 51*/ { "DPLEIT", "1", NULL, 0, "symbology: 21," },
-        /* 52*/ { "DPIDENT", "1", NULL, 0, "symbology: 22," },
-        /* 53*/ { "code16k", "1", NULL, 0, "symbology: 23," },
-        /* 54*/ { "CODE49", "1", NULL, 0, "symbology: 24," },
-        /* 55*/ { "CODE93", "1", NULL, 0, "symbology: 25," },
-        /* 56*/ { "flat", "1", NULL, 0, "symbology: 28," },
-        /* 57*/ { "dbar omn", "1", NULL, 0, "symbology: 29," },
-        /* 58*/ { "rss14", "1", NULL, 0, "symbology: 29," },
-        /* 59*/ { "databar omn", "1", NULL, 0, "symbology: 29," },
-        /* 60*/ { "databar omni", "1", NULL, 0, "symbology: 29," },
-        /* 61*/ { "dbar ltd", "1", NULL, 0, "symbology: 30," },
-        /* 62*/ { "rss ltd", "1", NULL, 0, "symbology: 30," },
-        /* 63*/ { "databar ltd", "1", NULL, 0, "symbology: 30," },
-        /* 64*/ { "databar limited", "1", NULL, 0, "symbology: 30," },
-        /* 65*/ { "dbarexp", "[10]12", NULL, 0, "symbology: 31," },
-        /* 66*/ { "rss exp", "[10]12", NULL, 0, "symbology: 31," },
-        /* 67*/ { "databarexp", "[10]12", NULL, 0, "symbology: 31," },
-        /* 68*/ { "databarexpanded", "[10]12", NULL, 0, "symbology: 31," },
-        /* 69*/ { "telepen", "1", NULL, 0, "symbology: 32," },
+        /*  5*/ { "BARCODE_CODE11", "1", NULL, 0, "BARCODE_CODE11 (1)," },
+        /*  6*/ { "C25 Standard", "1", NULL, 0, "BARCODE_C25STANDARD (2)," },
+        /*  7*/ { "c25matrix", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Legacy now supported */
+        /*  8*/ { "2 of 5 Standard", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Synonym */
+        /*  9*/ { "2 of 5 Matrix", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Synonym */
+        /* 10*/ { "Code 2 of 5 Standard", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Synonym */
+        /* 11*/ { "Code 2 of 5 Matrix", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Synonym */
+        /* 12*/ { "Standard Code 2 of 5", "1", NULL, 0, "BARCODE_C25STANDARD (2)," }, /* Synonym */
+        /* 13*/ { "C25INTER", "1", NULL, 0, "BARCODE_C25INTER (3)," },
+        /* 14*/ { "c25 interleaved", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 15*/ { "code 2 of 5 inter", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 16*/ { "code 2 of 5 interleaved", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 17*/ { "2 of 5 inter", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 18*/ { "2 of 5 interleaved", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 19*/ { "interleaved 2 of 5", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 20*/ { "interleaved code 2 of 5", "1", NULL, 0, "BARCODE_C25INTER (3)," }, /* Synonym */
+        /* 21*/ { "c25IATA", "1", NULL, 0, "BARCODE_C25IATA (4)," },
+        /* 22*/ { "2of5IATA", "1", NULL, 0, "BARCODE_C25IATA (4)," }, /* Synonym */
+        /* 23*/ { "code2of5IATA", "1", NULL, 0, "BARCODE_C25IATA (4)," }, /* Synonym */
+        /* 24*/ { "IATA2of5", "1", NULL, 0, "BARCODE_C25IATA (4)," }, /* Synonym */
+        /* 25*/ { "IATAcode2of5", "1", NULL, 0, "BARCODE_C25IATA (4)," }, /* Synonym */
+        /* 26*/ { "c25 Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," },
+        /* 27*/ { "c25 Data Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," }, /* Synonym */
+        /* 28*/ { "Code 2 of 5 Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," }, /* Synonym */
+        /* 29*/ { "Code 2 of 5 Data Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," }, /* Synonym */
+        /* 30*/ { "2 of 5 Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," }, /* Synonym */
+        /* 31*/ { "2 of 5 Data Logic", "1", NULL, 0, "BARCODE_C25LOGIC (6)," }, /* Synonym */
+        /* 32*/ { "c25 Ind", "1", NULL, 0, "BARCODE_C25IND (7)," },
+        /* 33*/ { "c25 Industrial", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 34*/ { "code 2 of 5 Ind", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 35*/ { "code 2 of 5 Industrial", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 36*/ { "2 of 5 Ind", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 37*/ { "2 of 5 Industrial", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 38*/ { "Industrial 2 of 5", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 39*/ { "Industrial code 2 of 5", "1", NULL, 0, "BARCODE_C25IND (7)," }, /* Synonym */
+        /* 40*/ { "code39", "1", NULL, 0, "BARCODE_CODE39 (8)," },
+        /* 41*/ { "excode 39", "1", NULL, 0, "BARCODE_EXCODE39 (9)," },
+        /* 42*/ { "Extended Code 39", "1", NULL, 0, "BARCODE_EXCODE39 (9)," },
+        /* 43*/ { "eanx", "1", NULL, 0, "BARCODE_EANX (13)," },
+        /* 44*/ { "ean", "1", NULL, 0, "BARCODE_EANX (13)," },
+        /* 45*/ { "eanx chk", "1", NULL, 0, "BARCODE_EANX_CHK (14)," },
+        /* 46*/ { "eanxchk", "1", NULL, 0, "BARCODE_EANX_CHK (14)," },
+        /* 47*/ { "eanchk", "1", NULL, 0, "BARCODE_EANX_CHK (14)," },
+        /* 48*/ { "GS1128", "[01]12345678901231", NULL, 0, "BARCODE_GS1_128 (16)," },
+        /* 49*/ { "ean 128", "[01]12345678901231", NULL, 0, "BARCODE_GS1_128 (16)," },
+        /* 50*/ { "coda bar", "A1B", NULL, 0, "BARCODE_CODABAR (18)," },
+        /* 51*/ { "DPLEIT", "1", NULL, 0, "BARCODE_DPLEIT (21)," },
+        /* 52*/ { "DPIDENT", "1", NULL, 0, "BARCODE_DPIDENT (22)," },
+        /* 53*/ { "code16k", "1", NULL, 0, "BARCODE_CODE16K (23)," },
+        /* 54*/ { "CODE49", "1", NULL, 0, "BARCODE_CODE49 (24)," },
+        /* 55*/ { "CODE93", "1", NULL, 0, "BARCODE_CODE93 (25)," },
+        /* 56*/ { "flat", "1", NULL, 0, "BARCODE_FLAT (28)," },
+        /* 57*/ { "dbar omn", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 58*/ { "rss14", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 59*/ { "databar omn", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 60*/ { "databar omni", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 61*/ { "dbar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 62*/ { "rss ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 63*/ { "databar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 64*/ { "databar limited", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 65*/ { "dbarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 66*/ { "rss exp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 67*/ { "databarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 68*/ { "databarexpanded", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 69*/ { "telepen", "1", NULL, 0, "BARCODE_TELEPEN (32)," },
         /* 70*/ { "upc", "1", NULL, 1, "Error 119: Invalid barcode type 'upc'" },
-        /* 71*/ { "upca", "1", NULL, 0, "symbology: 34," },
-        /* 72*/ { "upca_chk", "123456789012", NULL, 0, "symbology: 35," },
-        /* 73*/ { "upce", "1", NULL, 0, "symbology: 37," },
-        /* 74*/ { "upce chk", "12345670", NULL, 0, "symbology: 38," },
-        /* 75*/ { "POSTNET ", "12345678901", NULL, 0, "symbology: 40," },
-        /* 76*/ { "msi", "1", NULL, 0, "symbology: 47," },
-        /* 77*/ { "MSI Plessey ", "1", NULL, 0, "symbology: 47," },
-        /* 78*/ { "fim ", "A", NULL, 0, "symbology: 49," },
-        /* 79*/ { "LOGMARS", "123456", NULL, 0, "symbology: 50," },
-        /* 80*/ { " pharma", "123456", NULL, 0, "symbology: 51," },
-        /* 81*/ { " pzn ", "1", NULL, 0, "symbology: 52," },
-        /* 82*/ { "pharma two", "4", NULL, 0, "symbology: 53," },
-        /* 83*/ { "cepnet", "12345678", NULL, 0, "symbology: 54," },
-        /* 84*/ { "BARCODE_PDF417", "1", NULL, 0, "symbology: 55," },
+        /* 71*/ { "upca", "1", NULL, 0, "BARCODE_UPCA (34)," },
+        /* 72*/ { "upca_chk", "123456789012", NULL, 0, "BARCODE_UPCA_CHK (35)," },
+        /* 73*/ { "upce", "1", NULL, 0, "BARCODE_UPCE (37)," },
+        /* 74*/ { "upce chk", "12345670", NULL, 0, "BARCODE_UPCE_CHK (38)," },
+        /* 75*/ { "POSTNET ", "12345678901", NULL, 0, "BARCODE_POSTNET (40)," },
+        /* 76*/ { "msi", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
+        /* 77*/ { "MSI Plessey ", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
+        /* 78*/ { "fim ", "A", NULL, 0, "BARCODE_FIM (49)," },
+        /* 79*/ { "LOGMARS", "123456", NULL, 0, "BARCODE_LOGMARS (50)," },
+        /* 80*/ { " pharma", "123456", NULL, 0, "BARCODE_PHARMA (51)," },
+        /* 81*/ { " pzn ", "1", NULL, 0, "BARCODE_PZN (52)," },
+        /* 82*/ { "pharma two", "4", NULL, 0, "BARCODE_PHARMA_TWO (53)," },
+        /* 83*/ { "cepnet", "12345678", NULL, 0, "BARCODE_CEPNET (54)," },
+        /* 84*/ { "BARCODE_PDF417", "1", NULL, 0, "BARCODE_PDF417 (55)," },
         /* 85*/ { "pdf", "1", NULL, 1, "Error 119: Invalid barcode type 'pdf'" },
-        /* 86*/ { "barcodepdf417comp", "1", NULL, 0, "symbology: 56," },
-        /* 87*/ { "pdf417trunc", "1", NULL, 0, "symbology: 56," },
-        /* 88*/ { "MaxiCode", "1", NULL, 0, "symbology: 57," },
-        /* 89*/ { "QR CODE", "1", NULL, 0, "symbology: 58," },
-        /* 90*/ { "qr", "1", NULL, 0, "symbology: 58," }, /* Synonym */
-        /* 91*/ { "Code 128 B", "1", NULL, 0, "symbology: 60," },
-        /* 92*/ { "AUS POST", "12345678901234567890123", NULL, 0, "symbology: 63," },
-        /* 93*/ { "AusReply", "12345678", NULL, 0, "symbology: 66," },
-        /* 94*/ { "AUSROUTE", "12345678", NULL, 0, "symbology: 67," },
-        /* 95*/ { "AUS REDIRECT", "12345678", NULL, 0, "symbology: 68," },
-        /* 96*/ { "isbnx", "123456789", NULL, 0, "symbology: 69," },
-        /* 97*/ { "rm4scc", "1", NULL, 0, "symbology: 70," },
-        /* 98*/ { "DataMatrix", "1", NULL, 0, "symbology: 71," },
-        /* 99*/ { "EAN14", "1", NULL, 0, "symbology: 72," },
-        /*100*/ { "vin", "12345678701234567", NULL, 0, "symbology: 73," },
-        /*101*/ { "CodaBlock-F", "1", NULL, 0, "symbology: 74," },
-        /*102*/ { "NVE18", "1", NULL, 0, "symbology: 75," },
-        /*103*/ { "Japan Post", "1", NULL, 0, "symbology: 76," },
-        /*104*/ { "Korea Post", "1", NULL, 0, "symbology: 77," },
-        /*105*/ { "DBar Stk", "1", NULL, 0, "symbology: 79," },
-        /*106*/ { "rss14stack", "1", NULL, 0, "symbology: 79," },
-        /*107*/ { "DataBar Stk", "1", NULL, 0, "symbology: 79," },
-        /*108*/ { "DataBar Stacked", "1", NULL, 0, "symbology: 79," },
-        /*109*/ { "DBar Omn Stk", "1", NULL, 0, "symbology: 80," },
-        /*110*/ { "RSS14STACK OMNI", "1", NULL, 0, "symbology: 80," },
-        /*111*/ { "DataBar Omn Stk", "1", NULL, 0, "symbology: 80," },
-        /*112*/ { "DataBar Stacked Omn", "1", NULL, 0, "symbology: 80," },
-        /*113*/ { "DataBar Stacked Omni", "1", NULL, 0, "symbology: 80," },
-        /*114*/ { "DBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*115*/ { "rss_expstack", "[20]01", NULL, 0, "symbology: 81," },
-        /*116*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*117*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "symbology: 81," },
-        /*118*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "symbology: 81," },
-        /*119*/ { "planet", "12345678901", NULL, 0, "symbology: 82," },
-        /*120*/ { "MicroPDF417", "1", NULL, 0, "symbology: 84," },
-        /*121*/ { "USPS IMail", "12345678901234567890", NULL, 0, "symbology: 85," },
-        /*122*/ { "OneCode", "12345678901234567890", NULL, 0, "symbology: 85," },
-        /*123*/ { "plessey", "1", NULL, 0, "symbology: 86," },
-        /*124*/ { "telepen num", "1", NULL, 0, "symbology: 87," },
-        /*125*/ { "ITF14", "1", NULL, 0, "symbology: 89," },
-        /*126*/ { "KIX", "1", NULL, 0, "symbology: 90," },
-        /*127*/ { "Aztec", "1", NULL, 0, "symbology: 92," },
-        /*128*/ { "Aztec Code", "1", NULL, 0, "symbology: 92," }, /* Synonym */
-        /*129*/ { "daft", "D", NULL, 0, "symbology: 93," },
-        /*130*/ { "DPD", "0123456789012345678901234567", NULL, 0, "symbology: 96," },
-        /*131*/ { "Micro QR", "1", NULL, 0, "symbology: 97," },
-        /*132*/ { "Micro QR Code", "1", NULL, 0, "symbology: 97," },
-        /*133*/ { "hibc128", "1", NULL, 0, "symbology: 98," },
-        /*134*/ { "hibccode128", "1", NULL, 0, "symbology: 98," }, /* Synonym */
-        /*135*/ { "hibc39", "1", NULL, 0, "symbology: 99," },
-        /*136*/ { "hibccode39", "1", NULL, 0, "symbology: 99," }, /* Synonym */
-        /*137*/ { "hibcdatamatrix", "1", NULL, 0, "symbology: 102," }, /* Synonym */
-        /*138*/ { "hibcdm", "1", NULL, 0, "symbology: 102," },
-        /*139*/ { "HIBC qr", "1", NULL, 0, "symbology: 104," },
-        /*140*/ { "HIBC QR Code", "1", NULL, 0, "symbology: 104," }, /* Synonym */
-        /*141*/ { "HIBCPDF", "1", NULL, 0, "symbology: 106," },
-        /*142*/ { "HIBCPDF417", "1", NULL, 0, "symbology: 106," }, /* Synonym */
-        /*143*/ { "HIBCMICPDF", "1", NULL, 0, "symbology: 108," },
-        /*144*/ { "HIBC Micro PDF", "1", NULL, 0, "symbology: 108," }, /* Synonym */
-        /*145*/ { "HIBC Micro PDF417", "1", NULL, 0, "symbology: 108," }, /* Synonym */
-        /*146*/ { "HIBC BlockF", "1", NULL, 0, "symbology: 110," },
-        /*147*/ { "HIBC CodaBlock-F", "1", NULL, 0, "symbology: 110," }, /* Synonym */
-        /*148*/ { "HIBC Aztec", "1", NULL, 0, "symbology: 112," },
-        /*149*/ { "DotCode", "1", NULL, 0, "symbology: 115," },
-        /*150*/ { "Han Xin", "1", NULL, 0, "symbology: 116," },
-        /*151*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "symbology: 121," },
-        /*152*/ { "azrune", "1", NULL, 0, "symbology: 128," },
-        /*153*/ { "aztecrune", "1", NULL, 0, "symbology: 128," }, /* Synonym */
-        /*154*/ { "aztecrunes", "1", NULL, 0, "symbology: 128," }, /* Synonym */
-        /*155*/ { "code32", "1", NULL, 0, "symbology: 129," },
-        /*156*/ { "eanx cc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*157*/ { "eancc", "[20]01", "1234567890128", 0, "symbology: 130," },
-        /*158*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
-        /*159*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "symbology: 131," },
-        /*160*/ { "dbaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*161*/ { "rss14 cc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*162*/ { "databaromncc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*163*/ { "databaromnicc", "[20]01", "1234567890123", 0, "symbology: 132," },
-        /*164*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*165*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*166*/ { "databarltdcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*167*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "symbology: 133," },
-        /*168*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*169*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*170*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*171*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "symbology: 134," },
-        /*172*/ { "upcacc", "[20]01", "12345678901", 0, "symbology: 135," },
-        /*173*/ { "upcecc", "[20]01", "1234567", 0, "symbology: 136," },
-        /*174*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*175*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*176*/ { "databar stk cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*177*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "symbology: 137," },
-        /*178*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*179*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*180*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*181*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*182*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "symbology: 138," },
-        /*183*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*184*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*185*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*186*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*187*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "symbology: 139," },
-        /*188*/ { "Channel", "1", NULL, 0, "symbology: 140," },
-        /*189*/ { "Channel Code", "1", NULL, 0, "symbology: 140," },
-        /*190*/ { "CodeOne", "1", NULL, 0, "symbology: 141," },
-        /*191*/ { "Grid Matrix", "1", NULL, 0, "symbology: 142," },
-        /*192*/ { "UPN QR", "1", NULL, 0, "symbology: 143," },
-        /*193*/ { "UPN QR Code", "1", NULL, 0, "symbology: 143," }, /* Synonym */
-        /*194*/ { "ultra", "1", NULL, 0, "symbology: 144," },
-        /*195*/ { "ultracode", "1", NULL, 0, "symbology: 144," }, /* Synonym */
-        /*196*/ { "rMQR", "1", NULL, 0, "symbology: 145," },
-        /*197*/ { "bc412", "1234567", NULL, 0, "symbology: 146," },
+        /* 86*/ { "barcodepdf417comp", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
+        /* 87*/ { "pdf417trunc", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
+        /* 88*/ { "MaxiCode", "1", NULL, 0, "BARCODE_MAXICODE (57)," },
+        /* 89*/ { "QR CODE", "1", NULL, 0, "BARCODE_QRCODE (58)," },
+        /* 90*/ { "qr", "1", NULL, 0, "BARCODE_QRCODE (58)," }, /* Synonym */
+        /* 91*/ { "Code 128 B", "1", NULL, 0, "BARCODE_CODE128B (60)," },
+        /* 92*/ { "AUS POST", "12345678901234567890123", NULL, 0, "BARCODE_AUSPOST (63)," },
+        /* 93*/ { "AusReply", "12345678", NULL, 0, "BARCODE_AUSREPLY (66)," },
+        /* 94*/ { "AUSROUTE", "12345678", NULL, 0, "BARCODE_AUSROUTE (67)," },
+        /* 95*/ { "AUS REDIRECT", "12345678", NULL, 0, "BARCODE_AUSREDIRECT (68)," },
+        /* 96*/ { "isbnx", "123456789", NULL, 0, "BARCODE_ISBNX (69)," },
+        /* 97*/ { "rm4scc", "1", NULL, 0, "BARCODE_RM4SCC (70)," },
+        /* 98*/ { "DataMatrix", "1", NULL, 0, "BARCODE_DATAMATRIX (71)," },
+        /* 99*/ { "EAN14", "1", NULL, 0, "BARCODE_EAN14 (72)," },
+        /*100*/ { "vin", "12345678701234567", NULL, 0, "BARCODE_VIN (73)" },
+        /*101*/ { "CodaBlock-F", "1", NULL, 0, "BARCODE_CODABLOCKF (74)," },
+        /*102*/ { "NVE18", "1", NULL, 0, "BARCODE_NVE18 (75)," },
+        /*103*/ { "Japan Post", "1", NULL, 0, "BARCODE_JAPANPOST (76)," },
+        /*104*/ { "Korea Post", "1", NULL, 0, "BARCODE_KOREAPOST (77)," },
+        /*105*/ { "DBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*106*/ { "rss14stack", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*107*/ { "DataBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*108*/ { "DataBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*109*/ { "DBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*110*/ { "RSS14STACK OMNI", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*111*/ { "DataBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*112*/ { "DataBar Stacked Omn", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*113*/ { "DataBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*114*/ { "DBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*115*/ { "rss_expstack", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*116*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*117*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*118*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*119*/ { "planet", "12345678901", NULL, 0, "BARCODE_PLANET (82)," },
+        /*120*/ { "MicroPDF417", "1", NULL, 0, "BARCODE_MICROPDF417 (84)," },
+        /*121*/ { "USPS IMail", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*122*/ { "OneCode", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*123*/ { "plessey", "1", NULL, 0, "BARCODE_PLESSEY (86)," },
+        /*124*/ { "telepen num", "1", NULL, 0, "BARCODE_TELEPEN_NUM (87)," },
+        /*125*/ { "ITF14", "1", NULL, 0, "BARCODE_ITF14 (89)," },
+        /*126*/ { "KIX", "1", NULL, 0, "BARCODE_KIX (90)," },
+        /*127*/ { "Aztec", "1", NULL, 0, "BARCODE_AZTEC (92)," },
+        /*128*/ { "Aztec Code", "1", NULL, 0, "BARCODE_AZTEC (92)," }, /* Synonym */
+        /*129*/ { "daft", "D", NULL, 0, "BARCODE_DAFT (93)," },
+        /*130*/ { "DPD", "0123456789012345678901234567", NULL, 0, "BARCODE_DPD (96)," },
+        /*131*/ { "Micro QR", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*132*/ { "Micro QR Code", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*133*/ { "hibc128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," },
+        /*134*/ { "hibccode128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," }, /* Synonym */
+        /*135*/ { "hibc39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," },
+        /*136*/ { "hibccode39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," }, /* Synonym */
+        /*137*/ { "hibcdatamatrix", "1", NULL, 0, "BARCODE_HIBC_DM (102)," }, /* Synonym */
+        /*138*/ { "hibcdm", "1", NULL, 0, "BARCODE_HIBC_DM (102)," },
+        /*139*/ { "HIBC qr", "1", NULL, 0, "BARCODE_HIBC_QR (104)," },
+        /*140*/ { "HIBC QR Code", "1", NULL, 0, "BARCODE_HIBC_QR (104)," }, /* Synonym */
+        /*141*/ { "HIBCPDF", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," },
+        /*142*/ { "HIBCPDF417", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," }, /* Synonym */
+        /*143*/ { "HIBCMICPDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," },
+        /*144*/ { "HIBC Micro PDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*145*/ { "HIBC Micro PDF417", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*146*/ { "HIBC BlockF", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," },
+        /*147*/ { "HIBC CodaBlock-F", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," }, /* Synonym */
+        /*148*/ { "HIBC Aztec", "1", NULL, 0, "BARCODE_HIBC_AZTEC (112)," },
+        /*149*/ { "DotCode", "1", NULL, 0, "BARCODE_DOTCODE (115)," },
+        /*150*/ { "Han Xin", "1", NULL, 0, "BARCODE_HANXIN (116)," },
+        /*151*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK (121)," },
+        /*152*/ { "azrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," },
+        /*153*/ { "aztecrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*154*/ { "aztecrunes", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*155*/ { "code32", "1", NULL, 0, "BARCODE_CODE32 (129)," },
+        /*156*/ { "eanx cc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*157*/ { "eancc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*158*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*159*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*160*/ { "dbaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*161*/ { "rss14 cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*162*/ { "databaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*163*/ { "databaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*164*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*165*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*166*/ { "databarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*167*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*168*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*169*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*170*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*171*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*172*/ { "upcacc", "[20]01", "12345678901", 0, "BARCODE_UPCA_CC (135)," },
+        /*173*/ { "upcecc", "[20]01", "1234567", 0, "BARCODE_UPCE_CC (136)," },
+        /*174*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*175*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*176*/ { "databar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*177*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*178*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*179*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*180*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*181*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*182*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*183*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*184*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*185*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*186*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*187*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*188*/ { "Channel", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*189*/ { "Channel Code", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*190*/ { "CodeOne", "1", NULL, 0, "BARCODE_CODEONE (141)," },
+        /*191*/ { "Grid Matrix", "1", NULL, 0, "BARCODE_GRIDMATRIX (142)," },
+        /*192*/ { "UPN QR", "1", NULL, 0, "BARCODE_UPNQR (143)," },
+        /*193*/ { "UPN QR Code", "1", NULL, 0, "BARCODE_UPNQR (143)," }, /* Synonym */
+        /*194*/ { "ultra", "1", NULL, 0, "BARCODE_ULTRA (144)," },
+        /*195*/ { "ultracode", "1", NULL, 0, "BARCODE_ULTRA (144)," }, /* Synonym */
+        /*196*/ { "rMQR", "1", NULL, 0, "BARCODE_RMQR (145)," },
+        /*197*/ { "bc412", "1234567", NULL, 0, "BARCODE_BC412 (146)," },
         /*198*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
         /*199*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
@@ -1096,10 +1096,10 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         strcat(cmd, " 2>&1");
 
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
-        assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr(%s, %s) == NULL (%s)\n", i, buf, data[i].expected, cmd);
         if (!data[i].fail) {
             assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s) (%s)\n", i, outfilename, errno, strerror(errno), cmd);
         }
+        assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr(%s, %s) == NULL (%s)\n", i, buf, data[i].expected, cmd);
     }
 
     testFinish();
@@ -1231,6 +1231,9 @@ static void test_exit_status(const testCtx *const p_ctx) {
         /*  2*/ { BARCODE_CODE128, "1", -1, " --border=", "1001", ZINT_WARN_INVALID_OPTION }, /* Caught by CLI */
         /*  3*/ { BARCODE_CODE128, "1", -1, " --data=", "\200", ZINT_ERROR_INVALID_DATA }, /* Caught by libzint */
         /*  4*/ { BARCODE_CODE128, "1", -1, " --separator=", "-1", ZINT_ERROR_INVALID_OPTION }, /* Caught by CLI */
+        /*  5*/ { BARCODE_CODE128, "1", -1, " --separator", NULL, ZINT_ERROR_INVALID_OPTION },
+        /*  6*/ { BARCODE_CODE128, "1", -1, " --separator=", NULL, 0 }, /* Separator arg treated as 0 */
+        /*  7*/ { BARCODE_CODE128, "1", -1, " --unknown", NULL, ZINT_ERROR_INVALID_OPTION },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

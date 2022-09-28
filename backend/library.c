@@ -888,13 +888,17 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("ZBarcode_Encode_Segs: symbology: %d, input_mode: 0x%X, ECI: %d, option_1: %d, option_2: %d,"
-                " option_3: %d, scale: %g\n    output_options: 0x%X, fg: %s, bg: %s,"
-                " seg_count: %d, length[0] %d," " First 10 source[0] \"%.*s\", First 10 primary: \"%.10s\"\n",
-                symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
+        const int len = local_segs[0].length;
+        const int primary_len = symbol->primary[0] ? (int) strlen(symbol->primary) : 0;
+        char name[32];
+        (void) ZBarcode_BarcodeName(symbol->symbology, name);
+        printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1: %d, option_2: %d"
+                ", option_3: %d,\n                      scale: %g, output_options: 0x%X, fg: %s, bg: %s"
+                ", seg_count: %d,\n                      %ssource%s (%d): \"%.*s\", %sprimary (%d): \"%.20s\"\n",
+                name, symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
                 symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
-                seg_count, local_segs[0].length, local_segs[0].length < 10 ? local_segs[0].length : 10,
-                local_segs[0].source, symbol->primary);
+                seg_count, len > 20 ? "First 20 " : "", seg_count > 1 ? "[0]" : "", len, len > 20 ? 20 : len,
+                local_segs[0].source, primary_len > 20 ? "First 20 " : "", primary_len, symbol->primary);
     }
 
     if (total_len > ZINT_MAX_DATA_LEN) {

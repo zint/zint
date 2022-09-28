@@ -1697,7 +1697,7 @@ and use standard height (if any) for default
                 <string>Width of boundary bars or border in X-dimensions</string>
                </property>
                <property name="text">
-                <string>Border &amp;Width:</string>
+                <string>B&amp;order Width:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -2091,7 +2091,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
              <item row="4" column="3" colspan="2">
               <widget class="QCheckBox" name="chkQuietZones">
                <property name="toolTip">
-                <string>Add compliant quiet zones to whitespace
+                <string>Add compliant quiet zones (if any) to whitespace
 (ignored if disabled)</string>
                </property>
                <property name="text">

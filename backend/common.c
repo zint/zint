@@ -78,7 +78,7 @@ INTERNAL void to_upper(unsigned char source[], const int length) {
 
     for (i = 0; i < length; i++) {
         if (z_islower(source[i])) {
-            source[i] = (source[i] - 'a') + 'A';
+            source[i] &= 0x5F;
         }
     }
 }
