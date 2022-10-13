@@ -14,8 +14,8 @@ Changes
 -------
 - bwipp_dump.ps: convert patch file to cat file as BWIPP now honours `dontdraw`
   for composite symbologies
-- common.c: ensure `stripf()` not inlined to prevent optimizer undoing effect
-  (ticket #269)
+- DOTCODE, QRCODE, RMQR: return warning if ECI or Structured Append used in GS1
+  mode, ticket #271
 - CLI: improve `getopt_long_only()` processing, printing own message if bad arg
   and returning error if so rather than continuing to process
 - manual: MSE typo -> MSI; adjust SVG scaling for PDF manual; pandoc 2.19.2
@@ -28,8 +28,8 @@ Bugs
   #269)
 - common.h: define ZINT_IS_C89 as __STDC_VERSION__ not defined by MSVC, and use
   when checking whether to include <alloca.h> (MR #152)
-- DOTCODE, QRCODE, RMQR: return warning if ECI or Structured Append used in GS1
-  mode, ticket #271
+- common.c: ensure `stripf()` not inlined to prevent optimizer undoing effect
+  (ticket #269)
 - GUI: fix "Border Width" ampersand shortcut
 - CODE128: allow for extended latching (double FNC4) spanning intermediate
   CodeC sequence by setting `f_state` only if in CodeA/B & checking before
@@ -42,7 +42,7 @@ Bugs
   & using actual codeword count
 - CODE16K: ensure initial mode selection allows for extended characters
 - vector.c: add `z_alloca()` cast for `first_row_rects` (ticket #272)
-- MSVC project files: remove incorrect "CompileACpp" setting from libzint
+- MSVC project files: remove incorrect "CompileAsCpp" setting from libzint
   project files (ticket #272)
 - bwipp_dump.ps: fix 2/4-track processing; update to latest BWIPP
 
