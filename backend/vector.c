@@ -421,7 +421,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     struct zint_vector_hexagon *hexagon, *last_hexagon = NULL;
     struct zint_vector_string *last_string = NULL;
     struct zint_vector_circle *circle, *last_circle = NULL;
-    struct zint_vector_rect **first_row_rects = z_alloca(sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
+    struct zint_vector_rect **first_row_rects
+                    = (struct zint_vector_rect **) z_alloca(sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
 
     memset(first_row_rects, 0, sizeof(struct zint_vector_rect *) * (symbol->rows + 1));
 

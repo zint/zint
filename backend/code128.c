@@ -378,9 +378,8 @@ INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsig
 
 /* Handle Code 128, 128B and HIBC 128 */
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, j, k, values[C128_MAX] = {0}, bar_characters, read, total_sum;
-    int error_number, indexchaine, indexliste, f_state;
-    int sourcelen;
+    int i, j, k, values[C128_MAX] = {0}, bar_characters = 0, read, total_sum;
+    int error_number = 0, indexchaine, indexliste, f_state = 0;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set = ' ';
     float glyph_count;
@@ -390,14 +389,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
     assert(length > 0);
 
-    error_number = 0;
-
-    sourcelen = length;
-
-    bar_characters = 0;
-    f_state = 0;
-
-    if (sourcelen > C128_MAX) {
+    if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
         sprintf(symbol->errtxt, "340: Input too long (%d character maximum)", C128_MAX);
@@ -405,13 +397,13 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     /* Detect extended ASCII characters */
-    for (i = 0; i < sourcelen; i++) {
+    for (i = 0; i < length; i++) {
         fset[i] = source[i] >= 128 ? 'f' : ' ';
     }
 
     /* Decide when to latch to extended mode - Annex E note 3 */
     j = 0;
-    for (i = 0; i < sourcelen; i++) {
+    for (i = 0; i < length; i++) {
         if (fset[i] == 'f') {
             j++;
         } else {
@@ -424,7 +416,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
 
-        if ((j >= 3) && (i == (sourcelen - 1))) {
+        if ((j >= 3) && (i == (length - 1))) {
             for (k = i; k > (i - 3); k--) {
                 fset[k] = 'F';
             }
@@ -432,14 +424,14 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     /* Decide if it is worth reverting to 646 encodation for a few characters as described in 4.3.4.2 (d) */
-    for (i = 1; i < sourcelen; i++) {
+    for (i = 1; i < length; i++) {
         if ((fset[i - 1] == 'F') && (fset[i] == ' ')) {
             /* Detected a change from 8859-1 to 646 - count how long for */
-            for (j = 0; ((i + j) < sourcelen) && (fset[i + j] == ' '); j++);
+            for (j = 0; ((i + j) < length) && (fset[i + j] == ' '); j++);
             /* Count how many 8859-1 beyond */
             k = 0;
-            if (i + j < sourcelen) {
-                for (k = 1; ((i + j + k) < sourcelen) && (fset[i + j + k] != ' '); k++);
+            if (i + j < length) {
+                for (k = 1; ((i + j + k) < length) && (fset[i + j + k] != ' '); k++);
             }
             if (j < 3 || (j < 5 && k > 2)) {
                 /* Change to shifting back rather than latching back */
@@ -462,10 +454,10 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < sourcelen)) {
+        while ((list[1][indexliste] == mode) && (indexchaine < length)) {
             list[0][indexliste]++;
             indexchaine++;
-            if (indexchaine == sourcelen) {
+            if (indexchaine == length) {
                 break;
             }
             mode = c128_parunmodd(source[indexchaine]);
@@ -474,7 +466,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
         indexliste++;
-    } while (indexchaine < sourcelen);
+    } while (indexchaine < length);
 
     c128_dxsmooth(list, &indexliste);
 
@@ -503,21 +495,21 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     c128_put_in_set(list, indexliste, set, NULL /*source*/);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Data: %.*s (%d)\n", sourcelen, source, sourcelen);
-        printf(" Set: %.*s\n", sourcelen, set);
-        printf("FSet: %.*s\n", sourcelen, fset);
+        printf("Data: %.*s (%d)\n", length, source, length);
+        printf(" Set: %.*s\n", length, set);
+        printf("FSet: %.*s\n", length, fset);
     }
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
     last_set = set[0];
     glyph_count = 0.0f;
-    for (i = 0; i < sourcelen; i++) {
+    for (i = 0; i < length; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
             glyph_count = glyph_count + 1.0f;
         }
         if ((fset[i] == 'f') || (fset[i] == 'n')) {
-            glyph_count = glyph_count + 1.0f;
+            glyph_count = glyph_count + 1.0f; /* May be overestimate if in latch */
         }
         if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
             if (set[i] != last_set) {
@@ -593,13 +585,14 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             case 'A':
                 values[bar_characters++] = 101;
                 values[bar_characters++] = 101;
+                f_state = 1;
                 break;
             case 'B':
                 values[bar_characters++] = 100;
                 values[bar_characters++] = 100;
+                f_state = 1;
                 break;
         }
-        f_state = 1;
     }
 
     /* Encode the data */
@@ -631,13 +624,14 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
                     case 'A':
                         values[bar_characters++] = 101;
                         values[bar_characters++] = 101;
+                        f_state = 1;
                         break;
                     case 'B':
                         values[bar_characters++] = 100;
                         values[bar_characters++] = 100;
+                        f_state = 1;
                         break;
                 }
-                f_state = 1;
             }
             if ((fset[read] == ' ') && (f_state == 1)) {
                 /* Latch end of extended mode */
@@ -645,17 +639,18 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
                     case 'A':
                         values[bar_characters++] = 101;
                         values[bar_characters++] = 101;
+                        f_state = 0;
                         break;
                     case 'B':
                         values[bar_characters++] = 100;
                         values[bar_characters++] = 100;
+                        f_state = 0;
                         break;
                 }
-                f_state = 0;
             }
         }
 
-        if ((fset[read] == 'f') || (fset[read] == 'n')) {
+        if ((fset[read] == 'f' && f_state == 0) || (fset[read] == 'n' && f_state == 1)) {
             /* Shift to or from extended mode */
             switch (current_set) {
                 case 'A':
@@ -686,7 +681,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
         }
 
-    } while (read < sourcelen);
+    } while (read < length);
 
     /* Destination setting and check digit calculation */
     memcpy(d, C128Table[values[0]], 6);
@@ -733,21 +728,16 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 /* Handle EAN-128 (Now known as GS1-128), and composite version if `cc_mode` set */
 INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
                 const int cc_rows) {
-    int i, values[C128_MAX] = {0}, bar_characters, read, total_sum;
+    int i, values[C128_MAX] = {0}, bar_characters = 0, read, total_sum;
     int error_number, warn_number = 0, indexchaine, indexliste;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, mode, last_set;
     float glyph_count;
     char dest[1000];
     char *d = dest;
-    int separator_row, linkage_flag;
+    int separator_row = 0, linkage_flag = 0;
     int reduced_length;
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
-
-    linkage_flag = 0;
-
-    bar_characters = 0;
-    separator_row = 0;
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the

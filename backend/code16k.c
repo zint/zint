@@ -57,40 +57,31 @@ static const int C16KStopValues[16] = {
 };
 
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char width_pattern[100];
+    char width_pattern[40]; /* 4 (start) + 1 (guard) + 5*6 (chars) + 4 (stop) + 1 */
     int current_row, rows, looper, first_check, second_check;
     int indexchaine;
     int list[2][C128_MAX] = {{0}};
-    char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set;
+    char set[C128_MAX] = {0}, fset[C128_MAX] = {0}, mode, current_set;
     int pads_needed, indexliste, i, m, read, mx_reader;
     int extra_pads = 0;
     int values[C128_MAX] = {0};
     int bar_characters;
-    float glyph_count;
     int error_number = 0, first_sum, second_sum;
-    int input_length;
-    int gs1;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    /* Suppresses clang-analyzer-core.UndefinedBinaryOperatorResult warning on fset which is fully set */
-    assert(length > 0);
-
-    input_length = length;
-
-    if ((symbol->input_mode & 0x07) == GS1_MODE) {
-        gs1 = 1;
-    } else {
-        gs1 = 0;
-    }
-
-    if (input_length > C128_MAX) {
+    if (length > C128_MAX) {
         strcpy(symbol->errtxt, "420: Input too long");
         return ZINT_ERROR_TOO_LONG;
     }
 
-    bar_characters = 0;
+    if (symbol->option_1 == 1 || symbol->option_1 > 16) {
+        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 16)");
+        return ZINT_ERROR_INVALID_OPTION;
+    }
 
     /* Detect extended ASCII characters */
-    for (i = 0; i < input_length; i++) {
+    for (i = 0; i < length; i++) {
         fset[i] = source[i] >= 128 ? 'f' : ' ';
     }
     /* Note to be safe not using extended ASCII latch as not mentioned in BS EN 12323:2005 */
@@ -103,10 +94,10 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     do {
         list[1][indexliste] = mode;
-        while ((list[1][indexliste] == mode) && (indexchaine < input_length)) {
+        while ((list[1][indexliste] == mode) && (indexchaine < length)) {
             list[0][indexliste]++;
             indexchaine++;
-            if (indexchaine == input_length) {
+            if (indexchaine == length) {
                 break;
             }
             mode = c128_parunmodd(source[indexchaine]);
@@ -115,82 +106,17 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             } /* FNC1 */
         }
         indexliste++;
-    } while (indexchaine < input_length);
+    } while (indexchaine < length);
 
     c128_dxsmooth(list, &indexliste);
 
     /* Put set data into set[], resolving odd C blocks */
     c128_put_in_set(list, indexliste, set, source);
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Data: %.*s\n", input_length, source);
-        printf(" Set: %.*s\n", input_length, set);
-        printf("FSet: %.*s\n", input_length, fset);
-    }
-
-    /* Make sure the data will fit in the symbol */
-    last_set = set[0];
-    glyph_count = 0.0f;
-    for (i = 0; i < input_length; i++) {
-        if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0f;
-        }
-        if (fset[i] == 'f') {
-            glyph_count = glyph_count + 1.0f;
-        }
-        if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
-            if (set[i] != last_set) {
-                last_set = set[i];
-                glyph_count = glyph_count + 1.0f;
-            }
-        }
-        if (i == 0) {
-            if ((set[i] == 'B') && (set[1] == 'C')) {
-                glyph_count = glyph_count - 1.0f;
-            }
-            if ((set[i] == 'B') && (set[1] == 'B')) {
-                if (set[2] == 'C') {
-                    glyph_count = glyph_count - 1.0f;
-                }
-            }
-        }
-
-        if ((set[i] == 'C') && (!((gs1) && (source[i] == '[')))) {
-            glyph_count = glyph_count + 0.5f;
-        } else {
-            glyph_count = glyph_count + 1.0f;
-        }
-    }
-
-    if ((gs1) && (set[0] != 'A')) {
-        /* FNC1 can be integrated with mode character */
-        glyph_count--;
-    }
-
-    if (glyph_count > 77.0f) {
-        strcpy(symbol->errtxt, "421: Input too long");
-        return ZINT_ERROR_TOO_LONG;
-    }
-
-    /* Calculate how tall the symbol will be */
-    glyph_count = glyph_count + 2.0f;
-    i = (int) glyph_count;
-    rows = (i / 5);
-    if (i % 5 > 0) {
-        rows++;
-    }
-
-    if (rows == 1) {
-        rows = 2;
-    }
-    if (symbol->option_1 >= 2 && symbol->option_1 <= 16) { /* Minimum no. of rows */
-        if (symbol->option_1 > rows) {
-            extra_pads = (symbol->option_1 - rows) * 5;
-            rows = symbol->option_1;
-        }
-    } else if (symbol->option_1 >= 1) {
-        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 16)");
-        return ZINT_ERROR_INVALID_OPTION;
+    if (debug_print) {
+        printf("Data: %.*s\n", length, source);
+        printf(" Set: %.*s\n", length, set);
+        printf("FSet: %.*s\n", length, fset);
     }
 
     /* start with the mode character - Table 2 */
@@ -205,20 +131,17 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     if (symbol->output_options & READER_INIT) {
-        if (m == 2) {
-            m = 5;
-        }
         if (gs1) {
             strcpy(symbol->errtxt, "422: Cannot use both GS1 mode and Reader Initialisation");
             return ZINT_ERROR_INVALID_OPTION;
-        } else {
-            if ((set[0] == 'B') && (set[1] == 'C')) {
-                m = 6;
-            }
         }
-        values[bar_characters] = (7 * (rows - 2)) + m; /* see 4.3.4.2 */
-        values[bar_characters + 1] = 96; /* FNC3 */
-        bar_characters += 2;
+        if (m == 2) {
+            m = 5;
+        } else if ((set[0] == 'B') && (set[1] == 'C') && fset[0] != 'f') {
+            m = 6;
+        }
+        values[1] = 96; /* FNC3 */
+        bar_characters = 2;
     } else {
         if (gs1) {
             /* Integrate FNC1 */
@@ -230,43 +153,36 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             }
         } else {
             if ((set[0] == 'B') && (set[1] == 'C')) {
-                m = 5;
-            }
-            if (((set[0] == 'B') && (set[1] == 'B')) && (set[2] == 'C')) {
+                m = fset[0] == 'f' ? 6 : 5;
+            } else if ((set[0] == 'B') && (set[1] == 'B') && (set[2] == 'C') && fset[0] != 'f' && fset[1] != 'f') {
                 m = 6;
             }
         }
-        values[bar_characters] = (7 * (rows - 2)) + m; /* see 4.3.4.2 */
-        bar_characters++;
+        bar_characters = 1;
     }
 
     current_set = set[0];
     read = 0;
 
     /* Encode the data */
+    /* TODO: make use of extra (non-CODE128) shifts: 1SB, 2SA/B/C, 3SB/C */
     do {
 
-        if ((read != 0) && (set[read] != set[read - 1])) {
+        if ((read != 0) && (set[read] != current_set)) {
             /* Latch different code set */
             switch (set[read]) {
                 case 'A':
-                    values[bar_characters] = 101;
-                    bar_characters++;
+                    values[bar_characters++] = 101;
                     current_set = 'A';
                     break;
                 case 'B':
-                    values[bar_characters] = 100;
-                    bar_characters++;
+                    values[bar_characters++] = 100;
                     current_set = 'B';
                     break;
                 case 'C':
-                    if (!((read == 1) && (set[0] == 'B'))) {
-                        /* Not Mode C/Shift B */
-                        if (!((read == 2) && ((set[0] == 'B') && (set[1] == 'B')))) {
-                            /* Not Mode C/Double Shift B */
-                            values[bar_characters] = 99;
-                            bar_characters++;
-                        }
+                    /* If not Mode C/Shift B and not Mode C/Double Shift B */
+                    if (!(read == 1 && m >= 5) && !(read == 2 && m == 6)) {
+                        values[bar_characters++] = 99;
                     }
                     current_set = 'C';
                     break;
@@ -277,31 +193,27 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             /* Shift extended mode */
             switch (current_set) {
                 case 'A':
-                    values[bar_characters] = 101; /* FNC 4 */
+                    values[bar_characters++] = 101; /* FNC 4 */
                     break;
                 case 'B':
-                    values[bar_characters] = 100; /* FNC 4 */
+                    values[bar_characters++] = 100; /* FNC 4 */
                     break;
             }
-            bar_characters++;
         }
 
         if ((set[read] == 'a') || (set[read] == 'b')) {
             /* Insert shift character */
-            values[bar_characters] = 98;
-            bar_characters++;
+            values[bar_characters++] = 98;
         }
 
         if (!((gs1) && (source[read] == '['))) {
             switch (set[read]) { /* Encode data characters */
                 case 'A':
-                case 'a':
-                    c128_set_a(source[read], values, &bar_characters);
+                case 'a': c128_set_a(source[read], values, &bar_characters);
                     read++;
                     break;
                 case 'B':
-                case 'b':
-                    c128_set_b(source[read], values, &bar_characters);
+                case 'b': (void) c128_set_b(source[read], values, &bar_characters);
                     read++;
                     break;
                 case 'C': c128_set_c(source[read], source[read + 1], values, &bar_characters);
@@ -309,11 +221,15 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
                     break;
             }
         } else {
-            values[bar_characters] = 102;
-            bar_characters++;
+            values[bar_characters++] = 102;
             read++;
         }
-    } while (read < input_length);
+
+        if (bar_characters > 80 - 2) { /* Max rows 16 * 5 - 2 check chars */
+            strcpy(symbol->errtxt, "421: Input too long");
+            return ZINT_ERROR_TOO_LONG;
+        }
+    } while (read < length);
 
     pads_needed = 5 - ((bar_characters + 2) % 5);
     if (pads_needed == 5) {
@@ -322,10 +238,17 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     if ((bar_characters + pads_needed) < 8) {
         pads_needed += 8 - (bar_characters + pads_needed);
     }
-    for (i = 0; i < pads_needed + extra_pads; i++) {
-        values[bar_characters] = 103;
-        bar_characters++;
+
+    rows = (bar_characters + pads_needed + 4) / 5;
+    if (symbol->option_1 > rows) {
+        extra_pads = (symbol->option_1 - rows) * 5;
+        rows = symbol->option_1;
     }
+
+    for (i = 0; i < pads_needed + extra_pads; i++) {
+        values[bar_characters++] = 103;
+    }
+    values[0] = (7 * (rows - 2)) + m; /* see 4.3.4.2 */
 
     /* Calculate check digits */
     first_sum = 0;
@@ -341,10 +264,13 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     values[bar_characters + 1] = second_check;
     bar_characters += 2;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Codewords:");
+    if (debug_print) {
+        printf("Codewords (%d):", bar_characters);
         for (i = 0; i < bar_characters; i++) {
-            printf(" %d", values[i]);
+            if (i % 5 == 0) {
+                printf("\n");
+            }
+            printf(" %3d", values[i]);
         }
         printf("\n");
     }
@@ -353,6 +279,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         debug_test_codeword_dump_int(symbol, values, bar_characters); /* Missing row start/stop */
     }
 #endif
+
+    assert(rows * 5 == bar_characters);
 
     for (current_row = 0; current_row < rows; current_row++) {
         int writer;
@@ -376,16 +304,10 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             for (looper = 0; looper < ctoi(width_pattern[mx_reader]); looper++) {
                 if (flip_flop == 1) {
                     set_module(symbol, current_row, writer);
-                    writer++;
-                } else {
-                    writer++;
                 }
+                writer++;
             }
-            if (flip_flop == 0) {
-                flip_flop = 1;
-            } else {
-                flip_flop = 0;
-            }
+            flip_flop = !flip_flop;
         }
     }
 

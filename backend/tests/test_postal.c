@@ -224,60 +224,67 @@ static void test_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         float expected_height;
+        int bwipp_cmp;
+        char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_FLAT, -1, 0, "1234567890", 0, 1, 90, 50 },
-        /*  1*/ { BARCODE_FLAT, -1, 0, "A", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /*  2*/ { BARCODE_POSTNET, -1, 0, "12345", 0, 2, 63, 12 },
-        /*  3*/ { BARCODE_POSTNET, -1, 0, "123457689", 0, 2, 103, 12 },
-        /*  4*/ { BARCODE_POSTNET, -1, 0, "12345768901", 0, 2, 123, 12 },
-        /*  5*/ { BARCODE_POSTNET, -1, 0, "0", ZINT_WARN_NONCOMPLIANT, 2, 23, 12 },
-        /*  6*/ { BARCODE_POSTNET, -1, 0, "1234", ZINT_WARN_NONCOMPLIANT, 2, 53, 12 },
-        /*  7*/ { BARCODE_POSTNET, -1, 0, "123456", ZINT_WARN_NONCOMPLIANT, 2, 73, 12 },
-        /*  8*/ { BARCODE_POSTNET, -1, 0, "123456789012", ZINT_WARN_NONCOMPLIANT, 2, 133, 12 },
-        /*  9*/ { BARCODE_POSTNET, -1, 0, "1234A", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 10*/ { BARCODE_POSTNET, -1, 0.9, "12345", 0, 2, 63, 1 },
-        /* 11*/ { BARCODE_FIM, -1, 0, "a", 0, 1, 17, 50 },
-        /* 12*/ { BARCODE_FIM, -1, 0, "b", 0, 1, 17, 50 },
-        /* 13*/ { BARCODE_FIM, -1, 0, "c", 0, 1, 17, 50 },
-        /* 14*/ { BARCODE_FIM, -1, 0, "d", 0, 1, 17, 50 },
-        /* 15*/ { BARCODE_FIM, -1, 0, "ad", ZINT_ERROR_TOO_LONG, -1, -1, -1 },
-        /* 16*/ { BARCODE_FIM, -1, 0, "e", 0, 1, 17, 50 },
-        /* 17*/ { BARCODE_FIM, -1, 0, "f", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 18*/ { BARCODE_CEPNET, -1, 0, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 19*/ { BARCODE_RM4SCC, -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 3, 299, 8 },
-        /* 20*/ { BARCODE_RM4SCC, -1, 0, "a", 0, 3, 19, 8 }, /* Converts to upper */
-        /* 21*/ { BARCODE_RM4SCC, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 22*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD", 0, 3, 133, 8 }, /* 19 symbol chars */
-        /* 23*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD1", 0, 3, 133, 8 }, /* 20 symbol chars */
-        /* 24*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCDE", ZINT_ERROR_TOO_LONG, -1, -1, -1 }, /* 21 symbol chars */
-        /* 25*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD12", ZINT_ERROR_TOO_LONG, -1, -1, -1 }, /* 21 symbol chars */
-        /* 26*/ { BARCODE_JAPANPOST, -1, 0, "1234567890ABCDE", 0, 3, 133, 8 }, /* 20 symbol chars */
-        /* 27*/ { BARCODE_JAPANPOST, -1, 0, "a", 0, 3, 133, 8 }, /* Converts to upper */
-        /* 28*/ { BARCODE_JAPANPOST, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 29*/ { BARCODE_KOREAPOST, -1, 0, "123456", 0, 1, 167, 50 },
-        /* 30*/ { BARCODE_KOREAPOST, -1, 0, "A", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 31*/ { BARCODE_PLANET, -1, 0, "12345678901", 0, 2, 123, 12 },
-        /* 32*/ { BARCODE_PLANET, -1, 0, "1234567890123", 0, 2, 143, 12 },
-        /* 33*/ { BARCODE_PLANET, -1, 0, "0", ZINT_WARN_NONCOMPLIANT, 2, 23, 12 },
-        /* 34*/ { BARCODE_PLANET, -1, 0, "1234567890", ZINT_WARN_NONCOMPLIANT, 2, 113, 12 },
-        /* 35*/ { BARCODE_PLANET, -1, 0, "123456789012", ZINT_WARN_NONCOMPLIANT, 2, 133, 12 },
-        /* 36*/ { BARCODE_PLANET, -1, 0, "12345678901234", ZINT_WARN_NONCOMPLIANT, 2, 153, 12 },
-        /* 37*/ { BARCODE_PLANET, -1, 0, "1234567890A", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 38*/ { BARCODE_KIX, -1, 0, "0123456789ABCDEFGH", 0, 3, 143, 8 },
-        /* 39*/ { BARCODE_KIX, -1, 0, "a", 0, 3, 7, 8 }, /* Converts to upper */
-        /* 40*/ { BARCODE_KIX, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 41*/ { BARCODE_DAFT, -1, 0, "DAFT", 0, 3, 7, 8 },
-        /* 42*/ { BARCODE_DAFT, -1, 0, "a", 0, 3, 1, 8 }, /* Converts to upper */
-        /* 43*/ { BARCODE_DAFT, -1, 0, "B", ZINT_ERROR_INVALID_DATA, -1, -1, -1 },
-        /* 44*/ { BARCODE_DAFT, -1, 1.9, "DAFT", 0, 3, 7, 2 },
-        /* 45*/ { BARCODE_DAFT, 500, 0.9, "DAFT", 0, 3, 7, 2 }, /* 50% ratio */
-        /* 46*/ { BARCODE_DAFT, 500, 0.4, "DAFT", 0, 3, 7, 8 }, /* 50% ratio */
+        /*  0*/ { BARCODE_FLAT, -1, 0, "1234567890", 0, 1, 90, 50, 1, "" },
+        /*  1*/ { BARCODE_FLAT, -1, 0, "A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /*  2*/ { BARCODE_POSTNET, -1, 0, "12345", 0, 2, 63, 12, 1, "" },
+        /*  3*/ { BARCODE_POSTNET, -1, 0, "123457689", 0, 2, 103, 12, 1, "" },
+        /*  4*/ { BARCODE_POSTNET, -1, 0, "12345768901", 0, 2, 123, 12, 1, "" },
+        /*  5*/ { BARCODE_POSTNET, -1, 0, "0", ZINT_WARN_NONCOMPLIANT, 2, 23, 12, 0, "BWIPP requires standard lengths" },
+        /*  6*/ { BARCODE_POSTNET, -1, 0, "1234", ZINT_WARN_NONCOMPLIANT, 2, 53, 12, 0, "BWIPP requires standard lengths" },
+        /*  7*/ { BARCODE_POSTNET, -1, 0, "123456", ZINT_WARN_NONCOMPLIANT, 2, 73, 12, 0, "BWIPP requires standard lengths" },
+        /*  8*/ { BARCODE_POSTNET, -1, 0, "123456789012", ZINT_WARN_NONCOMPLIANT, 2, 133, 12, 0, "BWIPP requires standard lengths" },
+        /*  9*/ { BARCODE_POSTNET, -1, 0, "1234A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 10*/ { BARCODE_POSTNET, -1, 0.9, "12345", 0, 2, 63, 1, 1, "" },
+        /* 11*/ { BARCODE_FIM, -1, 0, "a", 0, 1, 17, 50, 1, "" },
+        /* 12*/ { BARCODE_FIM, -1, 0, "b", 0, 1, 17, 50, 1, "" },
+        /* 13*/ { BARCODE_FIM, -1, 0, "c", 0, 1, 17, 50, 1, "" },
+        /* 14*/ { BARCODE_FIM, -1, 0, "d", 0, 1, 17, 50, 1, "" },
+        /* 15*/ { BARCODE_FIM, -1, 0, "ad", ZINT_ERROR_TOO_LONG, -1, -1, -1, 1, "" },
+        /* 16*/ { BARCODE_FIM, -1, 0, "e", 0, 1, 17, 50, 1, "" },
+        /* 17*/ { BARCODE_FIM, -1, 0, "f", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 18*/ { BARCODE_CEPNET, -1, 0, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 19*/ { BARCODE_RM4SCC, -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 3, 299, 8, 1, "" },
+        /* 20*/ { BARCODE_RM4SCC, -1, 0, "a", 0, 3, 19, 8, 1, "" }, /* Converts to upper */
+        /* 21*/ { BARCODE_RM4SCC, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 22*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD", 0, 3, 133, 8, 1, "" }, /* 19 symbol chars */
+        /* 23*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD1", 0, 3, 133, 8, 1, "" }, /* 20 symbol chars */
+        /* 24*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCDE", ZINT_ERROR_TOO_LONG, -1, -1, -1, 1, "" }, /* 21 symbol chars */
+        /* 25*/ { BARCODE_JAPANPOST, -1, 0, "1234567890-ABCD12", ZINT_ERROR_TOO_LONG, -1, -1, -1, 1, "" }, /* 21 symbol chars */
+        /* 26*/ { BARCODE_JAPANPOST, -1, 0, "1234567890ABCDE", 0, 3, 133, 8, 1, "" }, /* 20 symbol chars */
+        /* 27*/ { BARCODE_JAPANPOST, -1, 0, "a", 0, 3, 133, 8, 1, "" }, /* Converts to upper */
+        /* 28*/ { BARCODE_JAPANPOST, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 29*/ { BARCODE_KOREAPOST, -1, 0, "123456", 0, 1, 167, 50, 1, "" },
+        /* 30*/ { BARCODE_KOREAPOST, -1, 0, "A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 31*/ { BARCODE_PLANET, -1, 0, "12345678901", 0, 2, 123, 12, 1, "" },
+        /* 32*/ { BARCODE_PLANET, -1, 0, "1234567890123", 0, 2, 143, 12, 1, "" },
+        /* 33*/ { BARCODE_PLANET, -1, 0, "0", ZINT_WARN_NONCOMPLIANT, 2, 23, 12, 0, "BWIPP requires standard lengths" },
+        /* 34*/ { BARCODE_PLANET, -1, 0, "1234567890", ZINT_WARN_NONCOMPLIANT, 2, 113, 12, 0, "BWIPP requires standard lengths" },
+        /* 35*/ { BARCODE_PLANET, -1, 0, "123456789012", ZINT_WARN_NONCOMPLIANT, 2, 133, 12, 0, "BWIPP requires standard lengths" },
+        /* 36*/ { BARCODE_PLANET, -1, 0, "12345678901234", ZINT_WARN_NONCOMPLIANT, 2, 153, 12, 0, "BWIPP requires standard lengths" },
+        /* 37*/ { BARCODE_PLANET, -1, 0, "1234567890A", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 38*/ { BARCODE_KIX, -1, 0, "0123456789ABCDEFGH", 0, 3, 143, 8, 1, "" },
+        /* 39*/ { BARCODE_KIX, -1, 0, "a", 0, 3, 7, 8, 1, "" }, /* Converts to upper */
+        /* 40*/ { BARCODE_KIX, -1, 0, ",", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 41*/ { BARCODE_DAFT, -1, 0, "DAFT", 0, 3, 7, 8, 1, "" },
+        /* 42*/ { BARCODE_DAFT, -1, 0, "a", 0, 3, 1, 8, 1, "" }, /* Converts to upper */
+        /* 43*/ { BARCODE_DAFT, -1, 0, "B", ZINT_ERROR_INVALID_DATA, -1, -1, -1, 1, "" },
+        /* 44*/ { BARCODE_DAFT, -1, 1.9, "DAFT", 0, 3, 7, 2, 1, "" },
+        /* 45*/ { BARCODE_DAFT, 500, 0.9, "DAFT", 0, 3, 7, 2, 1, "" }, /* 50% ratio */
+        /* 46*/ { BARCODE_DAFT, 500, 0.4, "DAFT", 0, 3, 7, 8, 1, "" }, /* 50% ratio */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
+
+    char cmp_buf[8192];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStart("test_input");
 
@@ -300,6 +307,21 @@ static void test_input(const testCtx *const p_ctx) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
             assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n", i, symbol->height, data[i].expected_height);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[4096];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
         }
 
         ZBarcode_Delete(symbol);

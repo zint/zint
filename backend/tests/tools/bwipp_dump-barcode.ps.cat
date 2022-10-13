@@ -116,36 +116,84 @@ ret /pixs known {
             sbs length 1 sub
         } ifelse def
 
-        % If should use bhs/bbs to emulate rows (DAFT/pharmacode2) (hacky)
         /nosbs false def
-        /minh 999999 def
-        /midh 0 def
-        /maxh 0 def
-        /maxb 0 def
-        systemdict /hs known ret /bhs known and ret /bbs known and {
+
+        % Check for pharmacode2
+        b (pharmacode2) eq {
+            /nosbs true def
             /bhs ret /bhs get def
             /bbs ret /bbs get def
+            0 1 bbs length 1 sub {
+                /i exch def
+                i 0 ne { (0) print } if
+                bbs i get 0.1 lt {
+                    bhs i get 0.3 gt { (1) print } { (0) print } ifelse
+                } {
+                    bhs i get 0.1 gt { (1) print } { (0) print } ifelse
+                } ifelse
+            } for
+            n { (\n) print } if
+            0 1 bbs length 1 sub {
+                /i exch def
+                i 0 ne { (0) print } if
+                bbs i get 0.1 lt {
+                    bhs i get 0.1 gt { (1) print } { (0) print } ifelse
+                } {
+                    bhs i get 0.3 gt { (1) print } { (0) print } ifelse
+                } ifelse
+            } for
+            n { (\n) print } if
+        } if
+
+        % Check for 2-track postal
+        b (postnet) eq b (planet) eq or {
+            /nosbs true def
+            /bhs ret /bhs get def
             0 1 bhs length 1 sub {
                 /i exch def
-                /h bhs i get def
-                /b bbs i get def
-                h minh lt { /minh h def } if
-                h maxh gt { /maxh h def } if
-                h minh ne h maxh ne and { /midh h def } if
-                b maxb gt { /maxb b def } if
+                i 0 ne { (0) print } if
+                bhs i get 0.1 gt { (1) print } { (0) print } ifelse
             } for
-            0 1 limit {
+            n { (\n) print } if
+            0 1 bhs length 1 sub {
                 /i exch def
-                i 2 mod 0 eq {           % i is even
-                    /h bhs i 2 idiv get def
-                    /b bbs i 2 idiv get def
-                    h maxh eq h midh eq b maxb eq and or maxb 0 ne b maxb eq and midh 0 eq and h minh eq and or { (1) } { (0) } ifelse print  % Yeah, me too
+                i 0 ne { (0) print } if
+                bhs i get 0.01 lt { (0) print } { (1) print } ifelse
+            } for
+            n { (\n) print } if
+        } if
+
+        % Check for 4-track postal
+        b (auspost) eq b (kix) eq or b (royalmail) eq or b (onecode) eq or b (japanpost) eq or b (daft) eq or {
+            /nosbs true def
+            /bhs ret /bhs get def
+            /bbs ret /bbs get def
+            0 1 bbs length 1 sub {
+                /i exch def
+                i 0 ne { (0) print } if
+                bbs i get 0.05 lt {
+                    bhs i get 0.14 gt { (1) print } { (0) print } ifelse
+                } {
+                    bhs i get 0.09 gt { (1) print } { (0) print } ifelse
+                } ifelse
+            } for
+            n { (\n) print } if
+            0 1 bbs length 1 sub {
+                /i exch def
+                i 0 ne { (0) print } if
+                (1) print
+            } for
+            n { (\n) print } if
+            0 1 bbs length 1 sub {
+                /i exch def
+                i 0 ne { (0) print } if
+                bbs i get 0.05 lt {
+                    bhs i get 0.09 gt { (1) print } { (0) print } ifelse
                 } {
                     (0) print
                 } ifelse
             } for
             n { (\n) print } if
-            maxb 0 ne midh 0 eq and maxb 0 eq minh maxh eq and or { /nosbs true def } if  % No tracker (pharmacode2)
         } if
 
         % Process sbs
@@ -159,20 +207,6 @@ ret /pixs known {
                         sbs i get f cvi { (0) print } repeat
                     } ifelse
                 } if
-            } for
-            n { (\n) print } if
-        } if
-
-        % Third row if DAFT, second row if no tracker (pharmacode2)
-        maxb 0 ne midh 0 ne or minh maxh eq or {
-            0 1 limit {
-                /i exch def
-                i 2 mod 0 eq {           % i is even
-                    /b bbs i 2 idiv get def
-                    b 0 eq { (1) } { (0) } ifelse print
-                } {
-                    (0) print
-                } ifelse
             } for
             n { (\n) print } if
         } if

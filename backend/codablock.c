@@ -317,7 +317,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                         emptyColumns--;
                     } else {
                         /* Must change to A or B */
-                        if (emptyColumns == 1) {
+                        if (emptyColumns == 1 || (isFNC4 && emptyColumns == 2)) {
                             /* Can't switch: */
                             pSet[charCur - 1] |= CEnd + CFill;
                             emptyColumns = 0;
@@ -362,7 +362,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
         }
     } while (rowsCur > 44);
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("  -> out: rowsCur <%i>, useColumns <%i>, fillings <%i>\n", rowsCur, useColumns, fillings);
+        printf("  -> out: rowsCur <%d>, useColumns <%d>, fillings <%d>\n", rowsCur, useColumns, fillings);
     }
     *pUseColumns = useColumns;
     *pRows = rowsCur;
@@ -388,7 +388,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
     columnsRequested = *pUseColumns >= 4 ? *pUseColumns : 0;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Optimizer : Searching <%i> rows\n", rowsRequested);
+        printf("Optimizer : Searching <%d> rows\n", rowsRequested);
     }
 
     if (columnsRequested) {
@@ -841,7 +841,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
                 printf("\n");
             }
         }
-        printf("rows=%i columns=%i fillings=%i\n", rows, columns, fillings);
+        printf("rows=%d columns=%d (%d data) fillings=%d\n", rows, columns, columns - 5, fillings);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {

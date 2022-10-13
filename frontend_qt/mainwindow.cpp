@@ -79,7 +79,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("Codablock-F (and HIBC)"), BARCODE_CODABLOCKF },
     { QSL("Code 11"), BARCODE_CODE11 },
     { QSL("Code 128 (ISO 15417) (and GS1-128 and HIBC)"), BARCODE_CODE128 },
-    { QSL("Code 16k (EN 12323)"), BARCODE_CODE16K },
+    { QSL("Code 16K (EN 12323)"), BARCODE_CODE16K },
     { QSL("Code 2 of 5 Data Logic"), BARCODE_C25LOGIC },
     { QSL("Code 2 of 5 IATA"), BARCODE_C25IATA },
     { QSL("Code 2 of 5 Industrial"), BARCODE_C25IND },

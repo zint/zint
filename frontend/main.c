@@ -76,7 +76,7 @@ static void types(void) {
             "20 CODE128     Code 128                 89 ITF14          ITF-14\n"
             "21 DPLEIT      Deutsche Post Leitcode   90 KIX            Dutch Post KIX Code\n"
             "22 DPIDENT     Deutsche Post Identcode  92 AZTEC          Aztec Code\n"
-            "23 CODE16K     Code 16k                 93 DAFT           DAFT Code\n"
+            "23 CODE16K     Code 16K                 93 DAFT           DAFT Code\n"
             "24 CODE49      Code 49                  96 DPD            DPD Parcel Code 128\n"
             "25 CODE93      Code 93                  97 MICROQR        Micro QR Code\n"
             "28 FLAT        Flattermarken            98 HIBC_128       HIBC Code 128\n"

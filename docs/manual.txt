@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.11.1.9
-September 2022
+October 2022
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -1122,7 +1122,7 @@ Latin-2 (ISO/IEC 8859-2 plus ASCII).
   Aztec Code      Latin-1                    None
   Codablock-F     Latin-1                    None
   Code 128        Latin-1                    None
-  Code 16k        Latin-1                    None
+  Code 16K        Latin-1                    None
   Code One        Latin-1                    None
   Data Matrix     Latin-1                    None
   DotCode         Latin-1                    None
@@ -4121,7 +4121,7 @@ defined.
 
 Annex B. Man Page ZINT(1)
 
-% ZINT(1) Version 2.11.1.9 % % August 2022
+% ZINT(1) Version 2.11.1.9 % % October 2022
 
 NAME
 
@@ -4333,7 +4333,7 @@ OPTIONS
 
 --heightperrow
 
-    Treat height as per-row. Affects Codablock-F, Code16K, Code 49, GS1 DataBar
+    Treat height as per-row. Affects Codablock-F, Code 16K, Code 49, GS1 DataBar
     Expanded Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417.
 
 -i, --input=FILE
@@ -4419,7 +4419,7 @@ OPTIONS
 --rows=INTEGER
 
     Set the number of rows for Codablock-F or PDF417 to INTEGER. It will also
-    set the minimum number of rows for Code 16k or Code 49, and the maximum
+    set the minimum number of rows for Code 16K or Code 49, and the maximum
     number of rows for GS1 DataBar Expanded Stacked (DBAR_EXPSTK).
 
 --scale=NUMBER

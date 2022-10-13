@@ -12,15 +12,39 @@ Version 2.11.1.9 (dev) not released yet
 
 Changes
 -------
-- DOTCODE, QRCODE, RMQR: return warning if ECI or Structured Append used in GS1
-  mode, ticket #271
+- bwipp_dump.ps: convert patch file to cat file as BWIPP now honours `dontdraw`
+  for composite symbologies
+- common.c: ensure `stripf()` not inlined to prevent optimizer undoing effect
+  (ticket #269)
 - CLI: improve `getopt_long_only()` processing, printing own message if bad arg
   and returning error if so rather than continuing to process
 - manual: MSE typo -> MSI; adjust SVG scaling for PDF manual; pandoc 2.19.2
+- manual/man page/GUI: Code 16k -> Code 16K
 
 Bugs
 ----
+- test suite: fix `test_library` test to allow for running from root;
+  fix `test_args` test to allow for re-running (remove junk) (tickets #268,
+  #269)
+- common.h: define ZINT_IS_C89 as __STDC_VERSION__ not defined by MSVC, and use
+  when checking whether to include <alloca.h> (MR #152)
+- DOTCODE, QRCODE, RMQR: return warning if ECI or Structured Append used in GS1
+  mode, ticket #271
 - GUI: fix "Border Width" ampersand shortcut
+- CODE128: allow for extended latching (double FNC4) spanning intermediate
+  CodeC sequence by setting `f_state` only if in CodeA/B & checking before
+  adding extended mode switch (cf OkapiBarcode commit [9ce6dcc], props Daniel
+  Gredler)
+- DATAMATRIX: in FAST_MODE re-process any buffered X12 characters when mode
+  changes from X12 (cf OkapiBarcode commit [fb7981e], props Daniel Gredler)
+- CODABLOCKF: allow for FNC4 when estimating no. of rows required
+- CODE16K: make sure row calculation accurate by dispensing with glyph estimate
+  & using actual codeword count
+- CODE16K: ensure initial mode selection allows for extended characters
+- vector.c: add `z_alloca()` cast for `first_row_rects` (ticket #272)
+- MSVC project files: remove incorrect "CompileACpp" setting from libzint
+  project files (ticket #272)
+- bwipp_dump.ps: fix 2/4-track processing; update to latest BWIPP
 
 
 Version 2.11.1 (2022-08-22)

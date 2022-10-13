@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.11.1.9
-% September 2022
+% October 2022
 
 # 1. Introduction
 
@@ -1022,7 +1022,7 @@ Symbology      Default character sets    Alternate if input not Latin-1
 Aztec Code     Latin-1                   None
 Codablock-F    Latin-1                   None
 Code 128       Latin-1                   None
-Code 16k       Latin-1                   None
+Code 16K       Latin-1                   None
 Code One       Latin-1                   None
 Data Matrix    Latin-1                   None
 DotCode        Latin-1                   None

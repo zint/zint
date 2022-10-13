@@ -1357,6 +1357,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
             }
 
             if (next_mode != DM_X12) {
+                sp -= process_p; /* About to throw away buffer, need to re-process input, cf Okapi commit [fb7981e] */
                 process_p = 0; /* Throw away buffer if any */
                 target[tp++] = 254; /* Unlatch */
                 next_mode = DM_ASCII;
@@ -1390,7 +1391,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
             } else {
                 next_mode = DM_EDIFACT;
                 if (process_p == 3) {
-                    /* Note different then spec Step (f)(2), which suggests checking when 0, but this seems to
+                    /* Note different than spec Step (f)(2), which suggests checking when 0, but this seems to
                        work better in many cases as the switch to ASCII is "free" */
                     next_mode = dm_look_ahead_test(source, length, sp, current_mode, process_p, gs1, debug_print);
                 }

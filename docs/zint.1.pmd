@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.11.1.9
 %
-% August 2022
+% October 2022
 
 # NAME
 
@@ -187,7 +187,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--heightperrow`
 
-:   Treat height as per-row. Affects Codablock-F, Code16K, Code 49, GS1 DataBar Expanded Stacked (DBAR_EXPSTK),
+:   Treat height as per-row. Affects Codablock-F, Code 16K, Code 49, GS1 DataBar Expanded Stacked (DBAR_EXPSTK),
     MicroPDF417 and PDF417.
 
 `-i`, `--input=FILE`
@@ -269,7 +269,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--rows=INTEGER`
 
 :   Set the number of rows for Codablock-F or PDF417 to *INTEGER*. It will also set the minimum number of rows for
-    Code 16k or Code 49, and the maximum number of rows for GS1 DataBar Expanded Stacked (DBAR_EXPSTK).
+    Code 16K or Code 49, and the maximum number of rows for GS1 DataBar Expanded Stacked (DBAR_EXPSTK).
 
 `--scale=NUMBER`
 

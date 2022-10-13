@@ -2158,7 +2158,8 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
                 *gs1_cvt = 1;
             }
             return "gs1datamatrix";
-        } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_ULTRA) {
+        } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_CODE16K || symbology == BARCODE_ULTRA
+                    || symbology == BARCODE_CODE49) {
             if (debug & ZINT_DEBUG_TEST_PRINT) {
                 printf("i:%d %s not BWIPP compatible, GS1_MODE not supported\n",
                         index, testUtilBarcodeName(symbology));
@@ -2342,8 +2343,13 @@ static char *testUtilBwippUtf8Convert(const int index, const int symbology, cons
                 index, eci, testUtilBarcodeName(symbology));
         return NULL;
     }
+    if (utf8_to_eci(eci, data, converted, p_data_len) != 0) {
+        fprintf(stderr, "i:%d testUtilBwippUtf8Convert: failed to convert UTF-8 data for %s, default ECI %d\n",
+                index, testUtilBarcodeName(symbology), eci);
+        return NULL;
+    }
 
-    return (char *) data;
+    return (char *) converted;
 }
 
 #define GS_INITIAL_LEN  35 /* Length of cmd up to -q */
@@ -2612,7 +2618,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         || symbology == BARCODE_USPS_IMAIL || symbology == BARCODE_AUSPOST
                         || symbology == BARCODE_PHARMA_TWO) {
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Zap */
-                if (symbology == BARCODE_KIX) {
+                if (symbology == BARCODE_RM4SCC || symbology == BARCODE_KIX || symbology == BARCODE_JAPANPOST || symbology == BARCODE_DAFT) {
                     to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
                 } else if (symbology == BARCODE_USPS_IMAIL) {
                     char *dash = strchr(bwipp_data, '-');
@@ -2643,13 +2649,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             } else if (symbology == BARCODE_FIM) {
                 strcpy(bwipp_data, "fima");
-                bwipp_data[3] = data[0] - 'A' + 'a';
+                bwipp_data[3] = z_isupper(data[0]) ? data[0] - 'A' + 'a' : data[0];
             } else if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
                 if (option_1 >= 2) {
                     if ((symbology == BARCODE_CODE16K && option_1 <= 16)
-                            || (symbology == BARCODE_CODE49 && option_1 <= 8)) {
+                            || (symbology == BARCODE_CODE49 && option_1 <= 8 && option_1 >= symbol->rows)) {
                         sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_1);
                     }
@@ -3043,8 +3049,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         }
         cnt = (int) fread(b, 1, symbol->width, fp);
         if (cnt != symbol->width) {
-            fprintf(stderr, "i:%d testUtilBwipp: failed to read symbol->width %d bytes, cnt %d (%s)\n",
-                    index, symbol->width, cnt, cmd);
+            fprintf(stderr, "i:%d testUtilBwipp: failed to read row %d of %d, symbol->width %d bytes, cnt %d (%s)\n",
+                    index, r + 1, symbol->rows, symbol->width, cnt, cmd);
             testutil_pclose(fp);
             return -1;
         }
@@ -3275,7 +3281,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "Code128", BARCODE_CODE128, 20, },
         { "ITF", BARCODE_DPLEIT, 21, },
         { "ITF", BARCODE_DPIDENT, 22, },
-        { "", BARCODE_CODE16K, 23, },
+        { "Code16K", BARCODE_CODE16K, 23, },
         { "", BARCODE_CODE49, 24, },
         { "Code93", BARCODE_CODE93, 25, },
         { "", -1, 26, },
@@ -3326,7 +3332,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "DataMatrix", BARCODE_DATAMATRIX, 71, },
         { "Code128", BARCODE_EAN14, 72, },
         { "Code39", BARCODE_VIN, 73, },
-        { "", BARCODE_CODABLOCKF, 74, },
+        { "CodablockF", BARCODE_CODABLOCKF, 74, },
         { "Code128", BARCODE_NVE18, 75, },
         { "", BARCODE_JAPANPOST, 76, },
         { "", BARCODE_KOREAPOST, 77, },
@@ -3362,7 +3368,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 107, },
         { "", BARCODE_HIBC_MICPDF, 108, },
         { "", -1, 109, },
-        { "", BARCODE_HIBC_BLOCKF, 110, },
+        { "CodablockF", BARCODE_HIBC_BLOCKF, 110, },
         { "", -1, 111, },
         { "Aztec", BARCODE_HIBC_AZTEC, 112, },
         { "", -1, 113, },
@@ -3425,6 +3431,14 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         if (full_multibyte) { /* TODO: Support in ZXing-C++ */
             printf("i:%d %s not ZXing-C++ compatible, ZINT_FULL_MULTIBYTE not supported\n",
                     index, testUtilBarcodeName(symbology));
+            return NULL;
+        }
+    } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
+        if (symbol->rows == 1) { /* Single row i.e. CODE128 not supported */
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not ZXing-C++ compatible, single row not supported\n",
+                        index, testUtilBarcodeName(symbology));
+            }
             return NULL;
         }
     } else if (is_extendable(symbology)) {

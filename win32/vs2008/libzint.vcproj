@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
+				AdditionalIncludeDirectories="..\..\..\lpng;..\..\..\zlib"
 				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.11.1.9\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL;DEBUG"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -52,7 +52,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="4"
-				CompileAs="2"
+				CompileAs="0"
 				DisableSpecificWarnings="4018;4244;4305"
 			/>
 			<Tool
@@ -68,10 +68,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libpngd.lib zlibd.lib"
+				AdditionalDependencies="libpng16_static.lib zlib.lib"
 				OutputFile="$(OutDir)\zintd.dll"
 				LinkIncremental="2"
-				AdditionalLibraryDirectories="..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Debug;..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Debug\ZLib"
+				AdditionalLibraryDirectories="..\..\..\lpng\build\Release;..\..\..\zlib"
 				IgnoreDefaultLibraryNames="libcmtd.lib"
 				GenerateDebugInformation="true"
 				SubSystem="2"
@@ -126,7 +126,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="2"
 				EnableIntrinsicFunctions="false"
-				AdditionalIncludeDirectories="..\..\..\support\lpng169;&quot;..\..\zlib128-dll\include&quot;"
+				AdditionalIncludeDirectories="..\..\..\lpng;..\..\..\zlib"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION=&quot;\&quot;2.11.1.9\&quot;&quot;;BUILD_ZINT_DLL;ZLIB_DLL;PNG_DLL"
 				StringPooling="true"
 				ExceptionHandling="0"
@@ -136,7 +136,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="0"
-				CompileAs="2"
+				CompileAs="0"
 				DisableSpecificWarnings="4018;4244;4305"
 			/>
 			<Tool
@@ -152,10 +152,10 @@
 			<Tool
 				Name="VCLinkerTool"
 				LinkLibraryDependencies="false"
-				AdditionalDependencies="libpng.lib zlib.lib"
+				AdditionalDependencies="libpng16_static.lib zlib.lib"
 				OutputFile="$(OutDir)\zint.dll"
 				LinkIncremental="1"
-				AdditionalLibraryDirectories="..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Release;..\..\..\support\lpng169\projects\visualc71\Win32_LIB_Release\ZLib"
+				AdditionalLibraryDirectories="..\..\..\lpng\build\Release;..\..\..\zlib"
 				GenerateDebugInformation="false"
 				SubSystem="2"
 				OptimizeReferences="2"
@@ -221,7 +221,7 @@
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
 				DebugInformationFormat="0"
-				CompileAs="2"
+				CompileAs="0"
 				DisableSpecificWarnings="4018;4244;4305"
 			/>
 			<Tool
@@ -264,59 +264,59 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\backend\2of5.c"
+				RelativePath="..\..\backend\2of5.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\auspost.c"
+				RelativePath="..\..\backend\auspost.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\aztec.c"
+				RelativePath="..\..\backend\aztec.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\bc412.c"
+				RelativePath="..\..\backend\bc412.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\bmp.c"
+				RelativePath="..\..\backend\bmp.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\codablock.c"
+				RelativePath="..\..\backend\codablock.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code.c"
+				RelativePath="..\..\backend\code.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code1.c"
+				RelativePath="..\..\backend\code1.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code128.c"
+				RelativePath="..\..\backend\code128.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code16k.c"
+				RelativePath="..\..\backend\code16k.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code49.c"
+				RelativePath="..\..\backend\code49.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\common.c"
+				RelativePath="..\..\backend\common.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\composite.c"
+				RelativePath="..\..\backend\composite.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dllversion.c"
+				RelativePath="..\..\backend\dllversion.c"
 				>
 				<FileConfiguration
 					Name="Release_LIB|Win32"
@@ -328,131 +328,131 @@
 				</FileConfiguration>
 			</File>
 			<File
-				RelativePath="..\backend\dmatrix.c"
+				RelativePath="..\..\backend\dmatrix.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dotcode.c"
+				RelativePath="..\..\backend\dotcode.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\eci.c"
+				RelativePath="..\..\backend\eci.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\emf.c"
+				RelativePath="..\..\backend\emf.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\general_field.c"
+				RelativePath="..\..\backend\general_field.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gif.c"
+				RelativePath="..\..\backend\gif.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gridmtx.c"
+				RelativePath="..\..\backend\gridmtx.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gs1.c"
+				RelativePath="..\..\backend\gs1.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\hanxin.c"
+				RelativePath="..\..\backend\hanxin.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\imail.c"
+				RelativePath="..\..\backend\imail.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\large.c"
+				RelativePath="..\..\backend\large.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\library.c"
+				RelativePath="..\..\backend\library.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\mailmark.c"
+				RelativePath="..\..\backend\mailmark.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\maxicode.c"
+				RelativePath="..\..\backend\maxicode.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\medical.c"
+				RelativePath="..\..\backend\medical.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\output.c"
+				RelativePath="..\..\backend\output.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\pcx.c"
+				RelativePath="..\..\backend\pcx.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\pdf417.c"
+				RelativePath="..\..\backend\pdf417.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\plessey.c"
+				RelativePath="..\..\backend\plessey.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\png.c"
+				RelativePath="..\..\backend\png.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\postal.c"
+				RelativePath="..\..\backend\postal.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\ps.c"
+				RelativePath="..\..\backend\ps.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\qr.c"
+				RelativePath="..\..\backend\qr.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\raster.c"
+				RelativePath="..\..\backend\raster.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\reedsol.c"
+				RelativePath="..\..\backend\reedsol.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\rss.c"
+				RelativePath="..\..\backend\rss.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\svg.c"
+				RelativePath="..\..\backend\svg.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\telepen.c"
+				RelativePath="..\..\backend\telepen.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\tif.c"
+				RelativePath="..\..\backend\tif.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\ultra.c"
+				RelativePath="..\..\backend\ultra.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\upcean.c"
+				RelativePath="..\..\backend\upcean.c"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\vector.c"
+				RelativePath="..\..\backend\vector.c"
 				>
 			</File>
 		</Filter>
@@ -462,171 +462,171 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\backend\aztec.h"
+				RelativePath="..\..\backend\aztec.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\big5.h"
+				RelativePath="..\..\backend\big5.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\bmp.h"
+				RelativePath="..\..\backend\bmp.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\channel_precalcs.h"
+				RelativePath="..\..\backend\channel_precalcs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code1.h"
+				RelativePath="..\..\backend\code1.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code128.h"
+				RelativePath="..\..\backend\code128.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\code49.h"
+				RelativePath="..\..\backend\code49.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\common.h"
+				RelativePath="..\..\backend\common.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\composite.h"
+				RelativePath="..\..\backend\composite.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dmatrix.h"
+				RelativePath="..\..\backend\dmatrix.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\dmatrix_trace.h"
+				RelativePath="..\..\backend\dmatrix_trace.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\eci.h"
+				RelativePath="..\..\backend\eci.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\eci_sb.h"
+				RelativePath="..\..\backend\eci_sb.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\emf.h"
+				RelativePath="..\..\backend\emf.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\font.h"
+				RelativePath="..\..\backend\font.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gb18030.h"
+				RelativePath="..\..\backend\gb18030.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gb2312.h"
+				RelativePath="..\..\backend\gb2312.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gbk.h"
+				RelativePath="..\..\backend\gbk.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\general_field.h"
+				RelativePath="..\..\backend\general_field.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gridmtx.h"
+				RelativePath="..\..\backend\gridmtx.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gs1.h"
+				RelativePath="..\..\backend\gs1.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\gs1_lint.h"
+				RelativePath="..\..\backend\gs1_lint.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\hanxin.h"
+				RelativePath="..\..\backend\hanxin.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\iso3166.h"
+				RelativePath="..\..\backend\iso3166.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\iso4217.h"
+				RelativePath="..\..\backend\iso4217.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\ksx1001.h"
+				RelativePath="..\..\backend\ksx1001.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\large.h"
+				RelativePath="..\..\backend\large.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\maxicode.h"
+				RelativePath="..\..\backend\maxicode.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\output.h"
+				RelativePath="..\..\backend\output.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\pcx.h"
+				RelativePath="..\..\backend\pcx.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\pdf417.h"
+				RelativePath="..\..\backend\pdf417.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\pdf417_tabs.h"
+				RelativePath="..\..\backend\pdf417_tabs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\qr.h"
+				RelativePath="..\..\backend\qr.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\reedsol.h"
+				RelativePath="..\..\backend\reedsol.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\reedsol_logs.h"
+				RelativePath="..\..\backend\reedsol_logs.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\rss.h"
+				RelativePath="..\..\backend\rss.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\sjis.h"
+				RelativePath="..\..\backend\sjis.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\tif.h"
+				RelativePath="..\..\backend\tif.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\tif_lzw.h"
+				RelativePath="..\..\backend\tif_lzw.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\zfiletypes.h"
+				RelativePath="..\..\backend\zfiletypes.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\zint.h"
+				RelativePath="..\..\backend\zint.h"
 				>
 			</File>
 			<File
-				RelativePath="..\backend\zintconfig.h"
+				RelativePath="..\..\backend\zintconfig.h"
 				>
 			</File>
 		</Filter>
@@ -636,7 +636,7 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<File
-				RelativePath="..\backend\libzint.rc"
+				RelativePath="..\..\backend\libzint.rc"
 				>
 				<FileConfiguration
 					Name="Release_LIB|Win32"

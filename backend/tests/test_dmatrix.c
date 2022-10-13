@@ -926,6 +926,11 @@ static void test_input(const testCtx *const p_ctx) {
         /*237*/ { UNICODE_MODE, 0, -1, -1, -1, "AAAAAAAAAAAAAA12a", 0, 0, 12, 26, 0, "E6 59 BF 59 BF 59 BF 59 BF FE 42 42 8E 62 81 ED 19 C5 3F C8 AC F1 E9 F5 68 75 AA 6C 14 72", "CCCCCCCCCCCCAAAAA; BWIPP same as FAST_MODE", 0 },
         /*238*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "1234ééé12", 0, 0, 8, 32, 0, "8E A4 E7 59 D5 6B EB 6A 8E 81 22 4D 35 A9 CA 58 B3 1B 33 B7 DD", "N12 N34 BAS BE9 BE9 ASC FN4 A69 N12; BWIPP same as non-FAST_MODE", 0 },
         /*239*/ { UNICODE_MODE, 0, -1, -1, -1, "1234ééé12", 0, 0, 14, 14, 1, "8E A4 E7 5A D5 6B 01 8E 1C 5C 58 A7 11 8D DD A8 D6 B9", "", 1 },
+        /*240*/ { UNICODE_MODE, 0, -1, -1, -1, "A*B>C 1A*B>C 1\013*B>C 1A*B>C 1A*", 0, 0, 22, 22, 1, "(50) EE 57 B8 0F 04 21 72 5E 21 FE 21 32 0C EE 08 9B 64 7E 57 B8 0F 04 21 72 FE 81 68 FE", "Okapi datamatrix/ascii-within-x12.png", 1 },
+        /*241*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "A*B>C 1A*B>C 1\013*B>C 1A*B>C 1A*", 0, 0, 22, 22, 1, "(50) EE 57 B8 0F 04 21 72 5E 21 FE 21 32 0C EE 08 9B 64 7E 57 B8 0F 04 21 72 FE 81 68 FE", "Okapi datamatrix/ascii-within-x12.png, process_p 2", 1 },
+        /*242*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "A*B>C 1A*B>C \0131*B>C 1A*B>C 1A*", 0, 0, 22, 22, 1, "(50) EE 57 B8 0F 04 21 72 5E 21 FE 21 0C EE 1F 78 0F 04 21 72 5E 21 13 97 FE 2B 81 68 FE", "process_p 1", 1 },
+        /*243*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "A*B>C 1A*B>C\013 1*B>C 1A*B>C 1A*", 0, 0, 22, 22, 1, "(50) EE 57 B8 0F 04 21 72 5E 21 FE 0C EE 13 8A 5E 21 13 97 08 9B 64 7E FE 42 2B 81 68 FE", "process_p 0", 1 },
+        /*244*/ { UNICODE_MODE | FAST_MODE, 0, -1, -1, -1, "A*B>C 1A*B>C 1*\013B>C 1A*B>C 1A*", 0, 0, 22, 22, 1, "(50) EE 57 B8 0F 04 21 72 5E 21 13 8A FE 0C EE 5E 21 13 97 08 9B 64 7E FE 42 2B 81 68 FE", "process_p 0", 1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -252,12 +252,14 @@ static void test_input(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
+        int option_1;
         int option_2;
         char *data;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
         char *expected;
         char *comment;
     };
@@ -277,51 +279,63 @@ static void test_input(const testCtx *const p_ctx) {
        ÿ U+00FF (\377, 255), UTF-8 C3BF, CodeB-only extended ASCII
     */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "A", -1, 0, 2, 101, "67 64 40 21 63 64 63 42 6A 67 64 0B 63 64 2B 40 4F 6A", "Fillings 5" },
-        /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "AAA", -1, 0, 2, 101, "67 64 40 21 21 21 63 55 6A 67 64 0B 63 64 0E 57 48 6A", "Fillings 3" },
-        /*  2*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "AAAA", -1, 0, 2, 101, "67 64 40 21 21 21 21 65 6A 67 64 0B 63 64 1A 0E 03 6A", "Fillings 2" },
-        /*  3*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "AAAAA", -1, 0, 2, 101, "67 64 40 21 21 21 21 65 6A 67 64 0B 21 63 1D 30 14 6A", "Fillings 1" },
-        /*  4*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "AAAAAA", -1, 0, 2, 101, "67 64 40 21 21 21 21 65 6A 67 64 0B 21 21 35 5D 2B 6A", "Fillings 0" },
-        /*  5*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "1234", -1, 0, 2, 101, "67 63 00 0C 22 64 63 1A 6A 67 64 0B 63 64 3A 1C 29 6A", "Fillings 4" },
-        /*  6*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "12345", -1, 0, 2, 101, "67 63 00 0C 22 64 15 49 6A 67 64 0B 63 64 41 44 07 6A", "Fillings 2 (not counting CodeB at end of 1st line)" },
-        /*  7*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "123456", -1, 0, 2, 101, "67 63 00 0C 22 38 64 12 6A 67 64 0B 63 64 2D 50 52 6A", "Fillings 3" },
-        /*  8*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "1234567", -1, 0, 2, 101, "67 63 00 0C 22 38 64 12 6A 67 64 0B 17 63 16 02 5B 6A", "Fillings 1 (not counting CodeB at end of 1st line)" },
-        /*  9*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "12345678", -1, 0, 2, 101, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 63 64 08 1C 64 6A", "Fillings 2" },
-        /* 10*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "123456789", -1, 0, 2, 101, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 19 63 25 4C 65 6A", "Fillings 1" },
-        /* 11*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "1234567890", -1, 0, 2, 101, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 19 10 41 38 62 6A", "Fillings 0" },
-        /* 12*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "A123ñ", -1, 0, 2, 101, "67 64 40 21 11 12 13 54 6A 67 64 0B 64 51 42 28 50 6A", "K1/K2 example in Annex F" },
-        /* 13*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aß", -1, 0, 2, 101, "67 64 40 41 64 3F 63 54 6A 67 64 0B 63 64 5B 1D 06 6A", "CodeB a FNC4 ß fits 1st line" },
-        /* 14*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037ß", -1, 0, 2, 101, "67 62 40 5F 65 3F 63 49 6A 67 64 0B 63 64 0F 1D 26 6A", "CodeA US FNC4 ß fits 1st line" },
-        /* 15*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aaß", -1, 0, 2, 101, "67 64 40 41 41 64 3F 10 6A 67 64 0B 63 64 4E 5B 04 6A", "CodeB a a FNC4 ß fits 1st line" },
-        /* 16*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037\037ß", -1, 0, 2, 101, "67 62 40 5F 5F 65 3F 17 6A 67 64 0B 63 64 34 0F 24 6A", "CodeA US US FNC4 ß fits 1st line" },
-        /* 17*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aaaß", -1, 0, 2, 101, "67 64 40 41 41 41 63 39 6A 67 64 0B 64 3F 4C 4E 50 6A", "CodeB a (3) / CodeB FNC4 ß fully on next line" },
-        /* 18*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037\037\037ß", -1, 0, 2, 101, "67 62 40 5F 5F 5F 63 03 6A 67 64 0B 64 3F 0E 34 1A 6A", "CodeA US (3) / CodeB FNC4 ß fully on next line" },
-        /* 19*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aà", -1, 0, 2, 101, "67 64 40 41 64 40 63 59 6A 67 64 0B 63 64 5D 1E 16 6A", "CodeB a FNC4 à fits 1st line" },
-        /* 20*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037à", -1, 0, 2, 101, "67 62 40 5F 65 62 40 26 6A 67 64 0B 63 64 1B 1E 01 6A", "CodeA US FNC4 Shift à fits 1st line" },
-        /* 21*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037àa", -1, 0, 2, 101, "67 62 40 5F 64 64 40 2C 6A 67 64 0B 41 63 52 4A 16 6A", "CodeA US LatchB FNC4 à fits 1st line / Code B a" },
-        /* 22*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aaà", -1, 0, 2, 101, "67 64 40 41 41 64 40 16 6A 67 64 0B 63 64 51 5D 1F 6A", "CodeB a a FNC4 à fits 1st line" },
-        /* 23*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037\037à", -1, 0, 2, 101, "67 62 40 5F 5F 63 64 1D 6A 67 64 0B 64 40 37 1B 55 6A", "CodeA US US / Code B FNC4 à fully on next line" },
-        /* 24*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "aaaà", -1, 0, 2, 101, "67 64 40 41 41 41 63 39 6A 67 64 0B 64 40 50 51 13 6A", "CodeB a (3) / Code B FNC4 à fully on next line" },
-        /* 25*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\037\037\037à", -1, 0, 2, 101, "67 62 40 5F 5F 5F 63 03 6A 67 64 0B 64 40 1C 37 0F 6A", "CodeA US (3) / CodeB FNC4 à fully on next line" },
-        /* 26*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\037\200", -1, 0, 2, 101, "67 62 40 5F 65 40 63 4E 6A 67 64 0B 63 64 5D 0A 05 6A", "CodeA US FNC4 PAD fits 1st line" },
-        /* 27*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\141\200", -1, 0, 2, 101, "67 64 40 41 64 62 40 31 6A 67 64 0B 63 64 49 0A 08 6A", "CodeB a FNC4 Shift PAD fits 1st line" },
-        /* 28*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\141\200\037", -1, 0, 2, 101, "67 64 40 41 65 65 40 44 6A 67 62 0B 5F 63 10 12 3E 6A", "CodeB a LatchA FNC4 PAD fits 1st line / CodeA US" },
-        /* 29*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\037\037\200", -1, 0, 2, 101, "67 62 40 5F 5F 65 40 1D 6A 67 64 0B 63 64 0F 5D 0A 6A", "CodeA US US FNC4 PAD fits 1st line" },
-        /* 30*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\141\141\200", -1, 0, 2, 101, "67 64 40 41 41 63 64 1B 6A 67 62 0B 65 40 33 49 21 6A", "CodeB a a / CodeA FNC4 PAD fully on next line" },
-        /* 31*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\037\037\037\200", -1, 0, 2, 101, "67 62 40 5F 5F 5F 63 03 6A 67 62 0B 65 40 4A 0F 06 6A", "CodeA US (3) / CodeA FNC4 PAD fully on next line" },
-        /* 32*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, "\141\141\141\200", -1, 0, 2, 101, "67 64 40 41 41 41 63 39 6A 67 62 0B 65 40 28 33 34 6A", "CodeB a (3) / CodeA FNC4 PAD fully on next line" },
-        /* 33*/ { BARCODE_CODABLOCKF, DATA_MODE, 10, "\200\240\237\340\337\341\377", -1, 0, 4, 112, "(40) 67 62 42 65 40 65 00 63 1E 6A 67 62 0B 65 5F 64 64 40 55 6A 67 64 0C 64 3F 64 41 63", "" },
-        /* 34*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "\000a\037\177}12", 7, 0, 3, 101, "67 62 41 40 62 41 5F 3B 6A 67 64 0B 5F 5D 11 12 2D 6A 67 64 0C 63 64 40 05 26 6A", "" },
-        /* 35*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "abcdéf", -1, 0, 3, 101, "67 64 41 41 42 43 44 5D 6A 67 64 0B 64 49 46 63 0A 6A 67 64 0C 63 64 4F 26 02 6A", "" },
-        /* 36*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, "a12é\000", 6, 0, 3, 101, "67 64 41 41 11 12 63 2C 6A 67 64 0B 64 49 62 40 2B 6A 67 64 0C 63 64 33 34 31 6A", "" },
-        /* 37*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 11, "1234\001", -1, 0, 2, 123, "67 63 00 0C 22 65 41 63 64 54 6A 67 64 0B 63 64 63 64 3F 20 24 6A", "" },
-        /* 38*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
+        /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "A", -1, 0, 2, 101, 1, "67 64 40 21 63 64 63 42 6A 67 64 0B 63 64 2B 40 4F 6A", "Fillings 5" },
+        /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 63 55 6A 67 64 0B 63 64 0E 57 48 6A", "Fillings 3" },
+        /*  2*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 21 65 6A 67 64 0B 63 64 1A 0E 03 6A", "Fillings 2" },
+        /*  3*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAAAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 21 65 6A 67 64 0B 21 63 1D 30 14 6A", "Fillings 1" },
+        /*  4*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAAAAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 21 65 6A 67 64 0B 21 21 35 5D 2B 6A", "Fillings 0" },
+        /*  5*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "1234", -1, 0, 2, 101, 1, "67 63 00 0C 22 64 63 1A 6A 67 64 0B 63 64 3A 1C 29 6A", "Fillings 4" },
+        /*  6*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "12345", -1, 0, 2, 101, 1, "67 63 00 0C 22 64 15 49 6A 67 64 0B 63 64 41 44 07 6A", "Fillings 2 (not counting CodeB at end of 1st line)" },
+        /*  7*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "123456", -1, 0, 2, 101, 1, "67 63 00 0C 22 38 64 12 6A 67 64 0B 63 64 2D 50 52 6A", "Fillings 3" },
+        /*  8*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "1234567", -1, 0, 2, 101, 1, "67 63 00 0C 22 38 64 12 6A 67 64 0B 17 63 16 02 5B 6A", "Fillings 1 (not counting CodeB at end of 1st line)" },
+        /*  9*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "12345678", -1, 0, 2, 101, 1, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 63 64 08 1C 64 6A", "Fillings 2" },
+        /* 10*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "123456789", -1, 0, 2, 101, 1, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 19 63 25 4C 65 6A", "Fillings 1" },
+        /* 11*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "1234567890", -1, 0, 2, 101, 0, "67 63 00 0C 22 38 4E 5C 6A 67 64 0B 19 10 41 38 62 6A", "Fillings 0; BWIPP different encodation (CodeB 9 0 instead of CodeC 90" },
+        /* 12*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "A123ñ", -1, 0, 2, 101, 1, "67 64 40 21 11 12 13 54 6A 67 64 0B 64 51 42 28 50 6A", "K1/K2 example in Annex F" },
+        /* 13*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aß", -1, 0, 2, 101, 1, "67 64 40 41 64 3F 63 54 6A 67 64 0B 63 64 5B 1D 06 6A", "CodeB a FNC4 ß fits 1st line" },
+        /* 14*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037ß", -1, 0, 2, 101, 1, "67 62 40 5F 65 3F 63 49 6A 67 64 0B 63 64 0F 1D 26 6A", "CodeA US FNC4 ß fits 1st line" },
+        /* 15*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aaß", -1, 0, 2, 101, 1, "67 64 40 41 41 64 3F 10 6A 67 64 0B 63 64 4E 5B 04 6A", "CodeB a a FNC4 ß fits 1st line" },
+        /* 16*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037\037ß", -1, 0, 2, 101, 1, "67 62 40 5F 5F 65 3F 17 6A 67 64 0B 63 64 34 0F 24 6A", "CodeA US US FNC4 ß fits 1st line" },
+        /* 17*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aaaß", -1, 0, 2, 101, 1, "67 64 40 41 41 41 63 39 6A 67 64 0B 64 3F 4C 4E 50 6A", "CodeB a (3) / CodeB FNC4 ß fully on next line" },
+        /* 18*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037\037\037ß", -1, 0, 2, 101, 1, "67 62 40 5F 5F 5F 63 03 6A 67 64 0B 64 3F 0E 34 1A 6A", "CodeA US (3) / CodeB FNC4 ß fully on next line" },
+        /* 19*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aà", -1, 0, 2, 101, 1, "67 64 40 41 64 40 63 59 6A 67 64 0B 63 64 5D 1E 16 6A", "CodeB a FNC4 à fits 1st line" },
+        /* 20*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037à", -1, 0, 2, 101, 0, "67 62 40 5F 65 62 40 26 6A 67 64 0B 63 64 1B 1E 01 6A", "CodeA US FNC4 Shift à fits 1st line; BWIPP different encodation (CodeB instead of Shift)" },
+        /* 21*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037àa", -1, 0, 2, 101, 0, "67 62 40 5F 64 64 40 2C 6A 67 64 0B 41 63 52 4A 16 6A", "CodeA US LatchB FNC4 à fits 1st line / Code B a; BWIPP diffent encodation (as above)" },
+        /* 22*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aaà", -1, 0, 2, 101, 1, "67 64 40 41 41 64 40 16 6A 67 64 0B 63 64 51 5D 1F 6A", "CodeB a a FNC4 à fits 1st line" },
+        /* 23*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037\037à", -1, 0, 2, 101, 1, "67 62 40 5F 5F 63 64 1D 6A 67 64 0B 64 40 37 1B 55 6A", "CodeA US US / Code B FNC4 à fully on next line" },
+        /* 24*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "aaaà", -1, 0, 2, 101, 1, "67 64 40 41 41 41 63 39 6A 67 64 0B 64 40 50 51 13 6A", "CodeB a (3) / Code B FNC4 à fully on next line" },
+        /* 25*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\037\037\037à", -1, 0, 2, 101, 1, "67 62 40 5F 5F 5F 63 03 6A 67 64 0B 64 40 1C 37 0F 6A", "CodeA US (3) / CodeB FNC4 à fully on next line" },
+        /* 26*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\037\200", -1, 0, 2, 101, 1, "67 62 40 5F 65 40 63 4E 6A 67 64 0B 63 64 5D 0A 05 6A", "CodeA US FNC4 PAD fits 1st line" },
+        /* 27*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\141\200", -1, 0, 2, 101, 0, "67 64 40 41 64 62 40 31 6A 67 64 0B 63 64 49 0A 08 6A", "CodeB a FNC4 Shift PAD fits 1st line; BWIPP different encodation (CodeA instead of Shift)" },
+        /* 28*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\141\200\037", -1, 0, 2, 101, 0, "67 64 40 41 65 65 40 44 6A 67 62 0B 5F 63 10 12 3E 6A", "CodeB a LatchA FNC4 PAD fits 1st line / CodeA US; BWIPP diffent encodation (as above)" },
+        /* 29*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\037\037\200", -1, 0, 2, 101, 1, "67 62 40 5F 5F 65 40 1D 6A 67 64 0B 63 64 0F 5D 0A 6A", "CodeA US US FNC4 PAD fits 1st line" },
+        /* 30*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\141\141\200", -1, 0, 2, 101, 1, "67 64 40 41 41 63 64 1B 6A 67 62 0B 65 40 33 49 21 6A", "CodeB a a / CodeA FNC4 PAD fully on next line" },
+        /* 31*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\037\037\037\200", -1, 0, 2, 101, 1, "67 62 40 5F 5F 5F 63 03 6A 67 62 0B 65 40 4A 0F 06 6A", "CodeA US (3) / CodeA FNC4 PAD fully on next line" },
+        /* 32*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\141\141\141\200", -1, 0, 2, 101, 1, "67 64 40 41 41 41 63 39 6A 67 62 0B 65 40 28 33 34 6A", "CodeB a (3) / CodeA FNC4 PAD fully on next line" },
+        /* 33*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, 10, "\200\240\237\340\337\341\377", -1, 0, 4, 112, 0, "(40) 67 62 42 65 40 65 00 63 1E 6A 67 62 0B 65 5F 64 64 40 55 6A 67 64 0C 64 3F 64 41 63", "BWIPP different encodation (CodeB before FNC4 instead of after)" },
+        /* 34*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "\000a\037\177}12", 7, 0, 3, 101, 1, "67 62 41 40 62 41 5F 3B 6A 67 64 0B 5F 5D 11 12 2D 6A 67 64 0C 63 64 40 05 26 6A", "" },
+        /* 35*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "abcdéf", -1, 0, 3, 101, 1, "67 64 41 41 42 43 44 5D 6A 67 64 0B 64 49 46 63 0A 6A 67 64 0C 63 64 4F 26 02 6A", "" },
+        /* 36*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "a12é\000", 6, 0, 3, 101, 0, "67 64 41 41 11 12 63 2C 6A 67 64 0B 64 49 62 40 2B 6A 67 64 0C 63 64 33 34 31 6A", "BWIPP different encodation (CodeA instead of Shift)" },
+        /* 37*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, 11, "1234\001", -1, 0, 2, 123, 1, "67 63 00 0C 22 65 41 63 64 54 6A 67 64 0B 63 64 63 64 3F 20 24 6A", "" },
+        /* 38*/ { BARCODE_CODABLOCKF, UNICODE_MODE, 3, -1, "ÁÁÁÁÁÁ99999999999999ÁÁÁÁÁÁÁ99999999999999Á", -1, 0, 3, 244, 1, "(66) 67 64 41 64 21 64 21 64 21 64 21 64 21 64 21 63 63 63 63 63 56 6A 67 63 2B 63 63 63", "Latching to extended ASCII not used by `codablockf()` (see test_code128 Okapi)" },
+        /* 39*/ { BARCODE_CODABLOCKF, DATA_MODE, 2, -1, "@g(\302\302\302\302\3025555\302\302\302\302\302\302\302\302", -1, 0, 2, 255, 1, "(46) 67 64 40 20 47 08 64 22 64 22 64 22 64 22 64 22 63 37 37 64 63 4B 6A 67 64 0B 64 22", "Must allow for FNC4 when testing if enough room when switching from CodeC" },
+        /* 40*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "ÿ\012àa\0121\012àAà", -1, 0, 5, 101, 0, "(45) 67 64 43 64 5F 65 4A 09 6A 67 64 0B 64 40 41 63 34 6A 67 62 0C 4A 11 4A 63 25 6A 67", "BWIPP different encoding (Shift instead of CodeA)" },
+        /* 41*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "ÿy1234\012àa\0121\0127890àAàDà\012à", -1, 0, 7, 112, 0, "(70) 67 64 45 64 5F 59 11 12 2E 6A 67 62 0B 13 14 4A 63 64 43 6A 67 64 0C 64 40 41 65 4A", "BWIPP different encoding (Shift instead of CodeA)" },
+        /* 42*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 8, 134, 0, "(96) 67 64 46 64 5F 63 0C 22 38 4E 5E 6A 67 62 0B 4A 64 64 40 63 0C 22 2B 6A 67 63 2C 38", "BWIPP different encoding (CodeB before FNC4 instead of after)" },
+        /* 43*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé12345123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2" "B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé6789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\012123456à\012à\012à\0123Ä4Ä5Ä6AÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécéÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécéÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé", -1, 0, 44, 739, 0, "(2948) 67 63 2A 0C 22 38 4E 5A 0C 22 65 15 21 22 23 24 25 26 27 28 29 4A 63 0C 22 38 64", "BWIPP gs command too long" },
+        /* 44*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890ààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄ2ÄÄÄÄÄÄ4ÄÄÄÄÄÄaÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\0122567890àààààABCDEFGààà\012\012\012HIJK\012\012\0122à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄ2Ä4ÄaÄé1é2é34é56Ä78é9éAéBéCééaébécé123456789012345ABCDEF\012123456ÿ123456\012à12345678abcdef\012\0121234\012\0127890àABCDà\012\012ààGHIJKàLMabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890ààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2", -1, 0, 33, 387, 0, "(1155) 67 64 5F 64 5F 63 0C 22 38 4E 65 4A 64 64 40 63 0C 22 38 4E 64 41 42 43 44 45 46", "BWIPP different encodation" },
+        /* 45*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, 1, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    char escaped[1024];
+    char escaped[16834];
+    char cmp_buf[32768];
+    char cmp_msg[32768];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_input");
 
@@ -334,21 +348,47 @@ static void test_input(const testCtx *const p_ctx) {
 
         symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].option_2,
+            printf("        /*%3d*/ { %s, %s, %d, %d, \"%s\", %d, %s, %d, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_2,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, symbol->errtxt, data[i].comment);
         } else {
+            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
+                    if (!data[i].bwipp_cmp) {
+                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    } else {
+                        char modules_dump[32768];
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                        assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                    }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[32768];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
             }
         }
 
@@ -375,7 +415,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *expected;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, 1, "Same as CODE128 (not supported by BWIPP)",
+        /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, 1, "Same as CODE128 (not supported by BWIPP or ZXing-C++)",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
         /*  1*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against tec-it",
@@ -467,10 +507,11 @@ static void test_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol;
 
     char escaped[1024];
-    char bwipp_buf[8192];
-    char bwipp_msg[1024];
+    char cmp_buf[8192];
+    char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStart("test_encode");
 
@@ -506,13 +547,24 @@ static void test_encode(const testCtx *const p_ctx) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf), NULL);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                        ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, data[i].expected);
+                        ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
                     }
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[4096];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
                 }
             }
         }
