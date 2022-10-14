@@ -382,7 +382,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number = 0, indexchaine, indexliste, f_state = 0;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set = ' ';
-    float glyph_count;
+    int glyph_count = 0; /* Codeword estimate times 2 */
     char dest[1000];
     char *d = dest;
 
@@ -503,40 +503,39 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
     last_set = set[0];
-    glyph_count = 0.0f;
     for (i = 0; i < length; i++) {
         if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0f;
+            glyph_count += 2; /* 1 codeword */
         }
         if ((fset[i] == 'f') || (fset[i] == 'n')) {
-            glyph_count = glyph_count + 1.0f; /* May be overestimate if in latch */
+            glyph_count += 2; /* May be overestimate if in latch */
         }
         if (((set[i] == 'A') || (set[i] == 'B')) || (set[i] == 'C')) {
             if (set[i] != last_set) {
                 last_set = set[i];
-                glyph_count = glyph_count + 1.0f;
+                glyph_count += 2;
             }
         }
         if (i == 0) {
             if (fset[i] == 'F') {
-                glyph_count = glyph_count + 2.0f;
+                glyph_count += 4; /* 2 codewords */
             }
         } else {
             if ((fset[i] == 'F') && (fset[i - 1] != 'F')) {
-                glyph_count = glyph_count + 2.0f;
+                glyph_count += 4;
             }
             if ((fset[i] != 'F') && (fset[i - 1] == 'F')) {
-                glyph_count = glyph_count + 2.0f;
+                glyph_count += 4;
             }
         }
 
         if (set[i] == 'C') {
-            glyph_count = glyph_count + 0.5f;
+            glyph_count += 1; /* Half a codeword */
         } else {
-            glyph_count = glyph_count + 1.0f;
+            glyph_count += 2;
         }
     }
-    if (glyph_count > 60.0f) {
+    if (glyph_count > 120) { /* 60 * 2 */
         strcpy(symbol->errtxt, "341: Input too long (60 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
@@ -732,7 +731,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     int error_number, warn_number = 0, indexchaine, indexliste;
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, mode, last_set;
-    float glyph_count;
+    int glyph_count = 0; /* Codeword estimate times 2 */
     char dest[1000];
     char *d = dest;
     int separator_row = 0, linkage_flag = 0;
@@ -795,24 +794,23 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
     last_set = set[0];
-    glyph_count = 0.0f;
     for (i = 0; i < reduced_length; i++) {
         if ((set[i] == 'A') || (set[i] == 'B') || (set[i] == 'C')) {
             if (set[i] != last_set) {
                 last_set = set[i];
-                glyph_count = glyph_count + 1.0f;
+                glyph_count += 2; /* 1 codeword */
             }
         } else if ((set[i] == 'a') || (set[i] == 'b')) {
-            glyph_count = glyph_count + 1.0f; /* Not reached */
+            glyph_count += 2; /* Not reached */
         }
 
         if ((set[i] == 'C') && (reduced[i] != '[')) {
-            glyph_count = glyph_count + 0.5f;
+            glyph_count += 1; /* Half a codeword */
         } else {
-            glyph_count = glyph_count + 1.0f;
+            glyph_count += 2;
         }
     }
-    if (glyph_count > 60.0f) {
+    if (glyph_count > 120) { /* 60 * 2 */
         strcpy(symbol->errtxt, "344: Input too long (60 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
