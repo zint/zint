@@ -1,5 +1,4 @@
-Zint and libzint
-----------------
+# Zint and libzint
 Zint is a suite of programs to allow easy encoding of data in any of the
 wide range of public domain barcode standards and to allow integration of
 this capability into your own programs.
@@ -25,20 +24,15 @@ Code, HIBC Codablock-F, HIBC Aztec Code, FIM and Flattermarken.
 Output can be saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG or TIF.
 
 
-DOCUMENTATION
--------------
-For documentation see "docs/manual.txt" or online at
-
-    <https://zint.org.uk/manual/>
+# Documentation
+For documentation see [docs/manual.txt](docs/manual.txt) or online at: [https://zint.org.uk/manual/](https://zint.org.uk/manual/)
 
 
-PROJECT HISTORY
----------------
-Please see "ChangeLog" in the project root directory.
+# Project History
+Please see [ChangeLog](ChangeLog) in the project root directory.
 
 
-LICENSE
--------
+# License
 Zint, libzint and Zint Barcode Studio are Copyright © 2022 Robin Stuart. All
 historical versions are distributed under the GNU General Public License
 version 3 or later. Versions 2.5 and later are released under a dual license:
@@ -47,40 +41,30 @@ GUI, Zint Barcode Studio, and the CLI are released under the GNU General Public
 License version 3 or later.
 
 
-CONTACT US
-----------
-The home of Zint is:
+# Contact Us
+The home of Zint is: [SourceForge](https://sourceforge.net/p/zint/)
 
-    <https://sourceforge.net/p/zint/>
-
-The code is now also mirrored at:
-
-    <https://github.com/zint/zint>
+The code is now also mirrored at: [GitHub](https://github.com/zint/zint)
 
 For feature requests or bug reports please either add a ticket on the project's
-SourceForge page
+[SourceForge page](https://sourceforge.net/p/zint/tickets/)
 
-    <https://sourceforge.net/p/zint/tickets/>
-
-or join the mailing list at
-
-    <https://sourceforge.net/projects/zint/lists/zint-barcode>
+or join the mailing list at [SourceForge](https://sourceforge.net/projects/zint/lists/zint-barcode)
 
 
-BEFORE POSTING TO THE LIST
---------------------------
+# BEFORE POSTING TO THE LIST
 Please note the following points...
-* Zint is primarily developed for Linux. While we have some experience of
+- Zint is primarily developed for Linux. While we have some experience of
   using Zint on Windows we may be unable to resolve problems if they are
   specific to other operating systems. We cannot provide support for using
   Zint with commercial packages such as MS Office or Crystal Reports.
-* Always ensure you are using the latest version of Zint before posting bug
+- Always ensure you are using the latest version of Zint before posting bug
   reports - the bug you are reporting may have been fixed already.
-* Please remember to state what operating system you are using and include
+- Please remember to state what operating system you are using and include
   enough information to allow us to reproduce the error - including input
   data if appropriate.
-* Please DO NOT post messages asking for us to change the license
+- Please DO NOT post messages asking for us to change the license
   arrangements. You will be ignored.
-* Please remember that Zint is developed by volunteers. While we attempt to
+- Please remember that Zint is developed by volunteers. While we attempt to
   answer all messages within a week, this is highly dependent on external
   circumstances.
