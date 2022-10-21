@@ -47,9 +47,7 @@ The home of Zint is: [SourceForge](https://sourceforge.net/p/zint/)
 The code is now also mirrored at: [GitHub](https://github.com/zint/zint)
 
 For feature requests or bug reports please either add a ticket on the project's
-[SourceForge page](https://sourceforge.net/p/zint/tickets/)
-
-or join the mailing list at [SourceForge](https://sourceforge.net/projects/zint/lists/zint-barcode)
+[SourceForge page](https://sourceforge.net/p/zint/tickets/), or join the mailing list at [SourceForge](https://sourceforge.net/projects/zint/lists/zint-barcode)
 
 
 # BEFORE POSTING TO THE LIST
