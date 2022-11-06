@@ -301,7 +301,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     const int length = (int) strlen(source) / 8;
     int i;
     unsigned char *data_string = (unsigned char *) z_alloca(length + 3);
-    int chainemc[180], mclength;
+    int chainemc[180], mclength = 0;
     int k, j, p, longueur, mccorrection[50] = {0}, offset;
     int total;
     char pattern[580];
@@ -322,11 +322,8 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
         }
     }
 
-    mclength = 0;
-
     /* "the CC-B component shall have codeword 920 in the first symbol character position" (section 9a) */
-    chainemc[mclength] = 920;
-    mclength++;
+    chainemc[mclength++] = 920;
 
     pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
 
@@ -410,8 +407,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
 
     /* Binary input padded to target length so no padding should be necessary */
     while (i > 0) {
-        chainemc[mclength] = 900; /* Not reached */
-        mclength++;
+        chainemc[mclength++] = 900; /* Not reached */
         i--;
     }
 
@@ -435,8 +431,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     }
     /* we add these codes to the string */
     for (i = k - 1; i >= 0; i--) {
-        chainemc[mclength] = mccorrection[i];
-        mclength++;
+        chainemc[mclength++] = mccorrection[i];
     }
 
     /* Now get the RAP (Row Address Pattern) start values */
@@ -522,7 +517,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     const int length = (int) strlen(source) / 8;
     int i, p;
     unsigned char *data_string = (unsigned char *) z_alloca(length + 4);
-    int chainemc[1000], mclength, k;
+    int chainemc[1000], mclength = 0, k;
     int offset, longueur, loop, total, j, mccorrection[520] = {0};
     int c1, c2, c3, dummy[35];
     char pattern[580];
@@ -540,12 +535,8 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
         }
     }
 
-    mclength = 0;
-
-    chainemc[mclength] = 0; /* space for length descriptor */
-    mclength++;
-    chainemc[mclength] = 920; /* CC-C identifier */
-    mclength++;
+    chainemc[mclength++] = 0; /* space for length descriptor */
+    chainemc[mclength++] = 920; /* CC-C identifier */
 
     pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
 
@@ -603,8 +594,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     }
     /* we add these codes to the string */
     for (i = k - 1; i >= 0; i--) {
-        chainemc[mclength] = mccorrection[i];
-        mclength++;
+        chainemc[mclength++] = mccorrection[i];
     }
 
     /* 818 - The CW string is finished */

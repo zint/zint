@@ -232,6 +232,20 @@ the data with a slash &quot;/&quot;</string>
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkMPDFFast">
+     <property name="text">
+      <string>&amp;Fast encoding</string>
+     </property>
+     <property name="toolTip">
+      <string>Use a faster but less optimal algorithm
+for encoding the data</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBoxMPDFStructApp">
      <property name="title">
       <string>Structured Append</string>

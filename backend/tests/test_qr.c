@@ -4417,7 +4417,7 @@ static void test_qr_perf(const testCtx *const p_ctx) {
     struct item data[] = {
         /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
-                    0, 37, 37, "107 chars, Mixed modes" },
+                    ZINT_WARN_NONCOMPLIANT, 37, 37, "107 chars, Mixed modes" },
         /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
@@ -4428,7 +4428,7 @@ static void test_qr_perf(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
-                    0, 105, 105, "963 chars, Mixed modes" },
+                    ZINT_WARN_NONCOMPLIANT, 105, 105, "963 chars, Mixed modes" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.11.1.9
-% October 2022
+% November 2022
 
 # 1. Introduction
 
@@ -2031,7 +2031,8 @@ Value               Effect
                     overall height.
 
 `FAST_MODE`         Use faster if less optimal encodation for symbologies that
-                    support it (currently `DATAMATRIX` only).
+                    support it (currently `DATAMATRIX`, `MICROPDF417` and
+                    `PDF417` only).
 --------------------------------------------------------------------------------
 
 Table: API `input_mode` Values {#tbl:api_input_mode tag="$ $"}
@@ -2917,6 +2918,9 @@ This symbology uses Latin-1 character encoding by default but also supports the
 ECI encoding mechanism. A separate symbology ID (`BARCODE_HIBC_PDF`) can be used
 to encode Health Industry Barcode (HIBC) data.
 
+For a faster but less optimal encoding, the `--fast` option (API `input_mode |=
+FAST_MODE`) may be used.
+
 PDF417 supports Structured Append of up to 99,999 symbols and an optional
 numeric ID of up to 30 digits, which can be set by using the `--structapp`
 option (see [4.16 Structured Append]) (API `structapp`). The ID consists of up
@@ -2947,7 +2951,7 @@ can be determined using the `--cols` switch (API `option_2`) as with PDF417.
 This symbology uses Latin-1 character encoding by default but also supports the
 ECI encoding mechanism. A separate symbology ID (`BARCODE_HIBC_MICPDF`) can be
 used to encode Health Industry Barcode (HIBC) data. MicroPDF417 supports
-Structured Append the same as PDF417, for which see details.
+`FAST_MODE` and Structured Append the same as PDF417, for which see details.
 
 ### 6.2.7 GS1 DataBar Stacked (ISO 24724)
 

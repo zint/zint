@@ -1486,6 +1486,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("radPDFTruncated")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radPDFHIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("chkPDFFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("spnPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
         connect(get_widget(QSL("spnPDFStructAppIndex")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
@@ -1510,6 +1511,7 @@ void MainWindow::change_options()
         connect(m_btnHeightPerRowDisable, SIGNAL(clicked( bool )), SLOT(height_per_row_disable()));
         connect(m_btnHeightPerRowDefault, SIGNAL(clicked( bool )), SLOT(height_per_row_default()));
         connect(get_widget(QSL("radMPDFStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("chkMPDFFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("spnMPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnMPDFStructAppCount")), SIGNAL(valueChanged( int )), SLOT(structapp_ui_set()));
         connect(get_widget(QSL("spnMPDFStructAppIndex")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
@@ -2437,6 +2439,10 @@ void MainWindow::update_preview()
             }
             m_bc.bc.setOption1(get_cmb_index(QSL("cmbPDFECC")) - 1);
 
+            if (get_chk_val(QSL("chkPDFFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
+            }
+
             if ((item_val = get_spn_val(QSL("spnPDFStructAppCount"))) > 1) {
                 m_bc.bc.setStructApp(item_val, get_spn_val(QSL("spnPDFStructAppIndex")),
                             get_txt_val(QSL("txtPDFStructAppID")));
@@ -2450,6 +2456,10 @@ void MainWindow::update_preview()
                 m_bc.bc.setSymbol(BARCODE_MICROPDF417);
 
             m_bc.bc.setOption2(get_cmb_index(QSL("cmbMPDFCols")));
+
+            if (get_chk_val(QSL("chkMPDFFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
+            }
 
             if ((item_val = get_spn_val(QSL("spnMPDFStructAppCount"))) > 1) {
                 m_bc.bc.setStructApp(item_val, get_spn_val(QSL("spnMPDFStructAppIndex")),
@@ -3677,6 +3687,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/pdf417/ecc"), get_cmb_index(QSL("cmbPDFECC")));
             settings.setValue(QSL("studio/bc/pdf417/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC")));
+            settings.setValue(QSL("studio/bc/pdf417/chk_fast"), get_chk_val(QSL("chkPDFFast")));
             settings.setValue(QSL("studio/bc/pdf417/structapp_count"), get_spn_val(QSL("spnPDFStructAppCount")));
             settings.setValue(QSL("studio/bc/pdf417/structapp_index"), get_spn_val(QSL("spnPDFStructAppIndex")));
             settings.setValue(QSL("studio/bc/pdf417/structapp_id"), get_txt_val(QSL("txtPDFStructAppID")));
@@ -3688,6 +3699,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/micropdf417/height_per_row"), get_dspn_val(QSL("spnMPDFHeightPerRow")));
             settings.setValue(QSL("studio/bc/micropdf417/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radMPDFStand") << QSL("radMPDFHIBC")));
+            settings.setValue(QSL("studio/bc/micropdf417/chk_fast"), get_chk_val(QSL("chkMPDFFast")));
             settings.setValue(QSL("studio/bc/micropdf417/structapp_count"),
                 get_spn_val(QSL("spnMPDFStructAppCount")));
             settings.setValue(QSL("studio/bc/micropdf417/structapp_index"),
@@ -4059,6 +4071,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/pdf417/ecc"), QSL("cmbPDFECC"));
             set_rad_from_setting(settings, QSL("studio/bc/pdf417/encoding_mode"),
                 QStringList() << QSL("radPDFStand") << QSL("radPDFTruncated") << QSL("radPDFHIBC"));
+            set_chk_from_setting(settings, QSL("studio/bc/pdf417/chk_fast"), QSL("chkPDFFast"));
             set_spn_from_setting(settings, QSL("studio/bc/pdf417/structapp_count"), QSL("spnPDFStructAppCount"), 1);
             set_spn_from_setting(settings, QSL("studio/bc/pdf417/structapp_index"), QSL("spnPDFStructAppIndex"), 0);
             set_txt_from_setting(settings, QSL("studio/bc/pdf417/structapp_id"), QSL("txtPDFStructAppID"), QSL(""));
@@ -4071,6 +4084,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 0.0f);
             set_rad_from_setting(settings, QSL("studio/bc/micropdf417/encoding_mode"),
                 QStringList() << QSL("radMPDFStand") << QSL("radMPDFHIBC"));
+            set_chk_from_setting(settings, QSL("studio/bc/micropdf417/chk_fast"), QSL("chkMPDFFast"));
             set_spn_from_setting(settings, QSL("studio/bc/micropdf417/structapp_count"),
                 QSL("spnMPDFStructAppCount"), 1);
             set_spn_from_setting(settings, QSL("studio/bc/micropdf417/structapp_index"),

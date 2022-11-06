@@ -923,6 +923,20 @@ right row indicators and shortens the stop pattern</string>
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkPDFFast">
+     <property name="text">
+      <string>&amp;Fast encoding</string>
+     </property>
+     <property name="toolTip">
+      <string>Use a faster but less optimal algorithm
+for encoding the data</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBoxPDFStructApp">
      <property name="title">
       <string>Structured Append</string>

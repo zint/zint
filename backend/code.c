@@ -568,7 +568,9 @@ typedef const struct s_channel_precalc {
     long value; unsigned char B[8]; unsigned char S[8]; unsigned char bmax[7]; unsigned char smax[7];
 } channel_precalc;
 
-/*#define CHANNEL_GENERATE_PRECALCS*/
+#if 0
+#define CHANNEL_GENERATE_PRECALCS
+#endif
 
 #ifdef CHANNEL_GENERATE_PRECALCS
 /* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run

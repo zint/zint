@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.11.1.9
 %
-% October 2022
+% November 2022
 
 # NAME
 
@@ -144,7 +144,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--fast`
 
-:   Use faster if less optimal encodation (currently affects Data Matrix only).
+:   Use faster if less optimal encodation (currently affects Data Matrix, MicroPDF417 & PDF417 only).
 
 `--fg=COLOUR`
 

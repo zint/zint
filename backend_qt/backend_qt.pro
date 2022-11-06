@@ -56,6 +56,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/pcx.h \
             ../backend/pdf417.h \
             ../backend/pdf417_tabs.h \
+            ../backend/pdf417_trace.h \
             ../backend/qr.h \
             ../backend/reedsol.h \
             ../backend/reedsol_logs.h \

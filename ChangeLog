@@ -20,6 +20,9 @@ Changes
   and returning error if so rather than continuing to process
 - manual: MSE typo -> MSI; adjust SVG scaling for PDF manual; pandoc 2.19.2
 - manual/man page/GUI: Code 16k -> Code 16K
+- PDF417/MICROPDF417: add optimized encoding, FAST_MODE for previous; formatting
+  changes
+- common.c/h: add `cnt_digits()`, comments in include, minor fiddling
 
 Bugs
 ----
@@ -45,6 +48,8 @@ Bugs
 - MSVC project files: remove incorrect "CompileAsCpp" setting from libzint
   project files (ticket #272)
 - bwipp_dump.ps: fix 2/4-track processing; update to latest BWIPP
+- PDF417/MICROPDF417: use latch not ps shift for padding when spanning
+  Text segments to avoid affecting 1st char of 2nd segment
 
 
 Version 2.11.1 (2022-08-22)

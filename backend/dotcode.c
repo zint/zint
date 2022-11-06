@@ -409,21 +409,12 @@ static int dc_datum_c(const unsigned char source[], const int length, const int 
     return is_twodigits(source, length, position);
 }
 
-/* Returns how many consecutive digits lie immediately ahead (Annex F.II.A) */
-static int dc_n_digits(const unsigned char source[], const int length, const int position, const int max) {
-    int i;
-
-    for (i = position; (i < length) && z_isdigit(source[i]) && (i < position + max); i++);
-
-    return i - position;
-}
-
 /* Checks ahead for 10 or more digits starting "17xxxxxx10..." (Annex F.II.B) */
 static int dc_seventeen_ten(const unsigned char source[], const int length, const int position) {
 
     if (position + 9 < length && source[position] == '1' && source[position + 1] == '7'
             && source[position + 8] == '1' && source[position + 9] == '0'
-            && dc_n_digits(source, length, position + 2, 6) >= 6) {
+            && cnt_digits(source, length, position + 2, 6) >= 6) {
         return 1;
     }
 
@@ -447,7 +438,7 @@ static int dc_ahead_c(const unsigned char source[], const int length, const int 
 /* Annex F.II.F */
 static int dc_try_c(const unsigned char source[], const int length, const int position) {
 
-    if (position < length && z_isdigit(source[position])) { /* dc_n_digits(position) > 0 */
+    if (position < length && z_isdigit(source[position])) { /* cnt_digits(position) > 0 */
         const int ahead_c_position = dc_ahead_c(source, length, position);
         if (ahead_c_position > dc_ahead_c(source, length, position + 1)) {
             return ahead_c_position;
@@ -681,7 +672,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
 
             /* Step C3 */
             if (dc_binary(source, length, position)) {
-                /* dc_n_digits(position + 1) > 0 */
+                /* cnt_digits(position + 1) > 0 */
                 if (position + 1 < length && z_isdigit(source[position + 1])) {
                     if ((source[position] - 128) < 32) {
                         codeword_array[ap++] = 110; /* Upper Shift A */

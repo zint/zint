@@ -336,6 +336,8 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     segs[0].source = (unsigned char *) to_process;
     segs[0].length = length;
 
+    if (symbol->debug & ZINT_DEBUG_PRINT) printf("HIBC processed source: %s\n", to_process);
+
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
             error_number = code128(symbol, segs[0].source, segs[0].length);

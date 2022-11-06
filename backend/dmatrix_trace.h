@@ -52,6 +52,7 @@ static void DM_TRACE_VertexToString(const unsigned char *source, const int lengt
         printf("char '%c' at %d mode %s", source[position], position, dm_smodes[edge->mode]);
     }
 }
+
 static void DM_TRACE_EdgeToString(char *buf, const unsigned char *source, const int length, struct dm_edge *edges,
             struct dm_edge *edge) {
     int previousMode = DM_TRACE_getPreviousMode(edges, edge);

@@ -51,9 +51,8 @@ INTERNAL int ctoi(const char source) {
 INTERNAL char itoc(const int source) {
     if ((source >= 0) && (source <= 9)) {
         return ('0' + source);
-    } else {
-        return ('A' + (source - 10));
     }
+    return ('A' - 10 + source);
 }
 
 /* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
@@ -72,7 +71,7 @@ INTERNAL int to_int(const unsigned char source[], const int length) {
     return val;
 }
 
-/* Converts lower case characters to upper case in a string source[] */
+/* Converts lower case characters to upper case in string `source` */
 INTERNAL void to_upper(unsigned char source[], const int length) {
     int i;
 
@@ -83,12 +82,12 @@ INTERNAL void to_upper(unsigned char source[], const int length) {
     }
 }
 
-/* Returns the number of times a character occurs in a string */
-INTERNAL int chr_cnt(const unsigned char string[], const int length, const unsigned char c) {
+/* Returns the number of times a character occurs in `source` */
+INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsigned char c) {
     int count = 0;
     int i;
     for (i = 0; i < length; i++) {
-        if (string[i] == c) {
+        if (source[i] == c) {
             count++;
         }
     }
@@ -168,7 +167,7 @@ INTERNAL int is_sane_lookup(const char test_string[], const int test_length, con
     return 1;
 }
 
-/* Returns the position of data in set_string */
+/* Returns the position of `data` in `set_string` */
 INTERNAL int posn(const char set_string[], const char data) {
     const char *s;
 
@@ -180,7 +179,8 @@ INTERNAL int posn(const char set_string[], const char data) {
     return -1;
 }
 
-/* Convert an integer value to a string representing its binary equivalent and place at a given position */
+/* Converts `arg` to a string representing its binary equivalent of length `length` and places in `binary` at
+  `bin_posn`. Returns `bin_posn` + `length` */
 INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn) {
     int i;
     int start;
@@ -198,28 +198,28 @@ INTERNAL int bin_append_posn(const int arg, const int length, char *binary, cons
 }
 
 #ifndef Z_COMMON_INLINE
-/* Return true (1) if a module is dark/black, otherwise false (0) */
+/* Returns true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return (symbol->encoded_data[y_coord][x_coord >> 3] >> (x_coord & 0x07)) & 1;
 }
 
-/* Set a module to dark/black */
+/* Sets a module to dark/black */
 INTERNAL void set_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord >> 3] |= 1 << (x_coord & 0x07);
 }
 
-/* Return true (1-8) if a module is colour, otherwise false (0) */
+/* Returns true (1-8) if a module is colour, otherwise false (0) */
 INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return symbol->encoded_data[y_coord][x_coord];
 }
 
-/* Set a module to a colour */
+/* Sets a module to a colour */
 INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour) {
     symbol->encoded_data[y_coord][x_coord] = colour;
 }
 #endif
 
-/* Set a dark/black module to white (i.e. unset) */
+/* Sets a dark/black module to white (i.e. unsets) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord >> 3] &= ~(1 << (x_coord & 0x07));
 }
@@ -255,7 +255,7 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
     }
 }
 
-/* Indicates which symbologies can have row binding */
+/* Whether `symbology` can have row binding */
 INTERNAL int is_stackable(const int symbology) {
     if (symbology < BARCODE_PHARMA_TWO && symbology != BARCODE_POSTNET) {
         return 1;
@@ -280,7 +280,7 @@ INTERNAL int is_stackable(const int symbology) {
     return 0;
 }
 
-/* Indicates which symbols can have addon (EAN-2 and EAN-5) */
+/* Whether `symbology` can have addon (EAN-2 and EAN-5) */
 INTERNAL int is_extendable(const int symbology) {
 
     switch (symbology) {
@@ -301,12 +301,12 @@ INTERNAL int is_extendable(const int symbology) {
     return 0;
 }
 
-/* Indicates which symbols can have composite 2D component data */
+/* Whether `symbology` can have composite 2D component data */
 INTERNAL int is_composite(const int symbology) {
     return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
 }
 
-/* Returns 1 if symbology is a matrix design renderable as dots */
+/* Whether `symbology` is a matrix design renderable as dots */
 INTERNAL int is_dotty(const int symbology) {
 
     switch (symbology) {
@@ -332,7 +332,7 @@ INTERNAL int is_dotty(const int symbology) {
     return 0;
 }
 
-/* Returns 1 if symbology has fixed aspect ratio (matrix design) */
+/* Whether `symbology` has a fixed aspect ratio (matrix design) */
 INTERNAL int is_fixed_ratio(const int symbology) {
 
     if (is_dotty(symbology)) {
@@ -356,6 +356,16 @@ INTERNAL int is_twodigits(const unsigned char source[], const int length, const 
     }
 
     return 0;
+}
+
+/* Returns how many consecutive digits lie immediately ahead up to `max`, or all if `max` is -1 */
+INTERNAL int cnt_digits(const unsigned char source[], const int length, const int position, const int max) {
+    int i;
+    const int max_length = max == -1 || position + max > length ? length : position + max;
+
+    for (i = position; i < max_length && z_isdigit(source[i]); i++);
+
+    return i - position;
 }
 
 /* State machine to decode UTF-8 to Unicode codepoints (state 0 means done, state 12 means error) */
@@ -419,8 +429,8 @@ INTERNAL int is_valid_utf8(const unsigned char source[], const int length) {
     return state == 0;
 }
 
-/* Convert UTF-8 to Unicode. If `disallow_4byte` unset, allow all values (UTF-32). If `disallow_4byte` set,
- * only allow codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
+/* Converts UTF-8 to Unicode. If `disallow_4byte` unset, allows all values (UTF-32). If `disallow_4byte` set,
+ * only allows codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
 INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
             int *length, const int disallow_4byte) {
     int bpos;
@@ -453,7 +463,7 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
     return 0;
 }
 
-/* Set symbol height, returning a warning if not within minimum and/or maximum if given.
+/* Sets symbol height, returning a warning if not within minimum and/or maximum if given.
    `default_height` does not include height of fixed-height rows (i.e. separators/composite data) */
 INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
             const float max_height, const int no_errtxt) {
@@ -535,7 +545,7 @@ INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count) {
     return total_len;
 }
 
-/* Shallow copy segments, adjusting default ECIs */
+/* Shallow copies segments, adjusting default ECIs */
 INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
             struct zint_seg local_segs[]) {
     const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;

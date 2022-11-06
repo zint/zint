@@ -3342,7 +3342,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "DataBarExpanded", BARCODE_DBAR_EXPSTK, 81, },
         { "", BARCODE_PLANET, 82, },
         { "", -1, 83, },
-        { "", BARCODE_MICROPDF417, 84, },
+        { "MicroPDF417", BARCODE_MICROPDF417, 84, },
         { "", BARCODE_USPS_IMAIL, 85, },
         { "", BARCODE_PLESSEY, 86, },
         { "", BARCODE_TELEPEN_NUM, 87, },
@@ -3468,9 +3468,9 @@ int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char 
 
 int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
             char *buffer, const int buffer_size, int *p_cmp_len) {
-    static const char cmd_fmt[] = "zxingcppdecoder -width %d -textonly -format %s -bits '%s'";
-    static const char hint_cmd_fmt[] = "zxingcppdecoder -width %d -textonly -format %s -hint '%s' -bits '%s'";
-    static const char cs_cmd_fmt[] = "zxingcppdecoder -width %d -textonly -format %s -bits '%s' -charset %s";
+    static const char cmd_fmt[] = "zxingcppdecoder -textonly -format %s -width %d -bits '%s'";
+    static const char hint_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -hint '%s' -width %d -bits '%s'";
+    static const char cs_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -charset %s -width %d -bits '%s'";
 
     const int bits_len = (int) strlen(bits);
     const int width = symbol->width;
@@ -3519,11 +3519,11 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
         } else {
             charset = "ISO8859_1";
         }
-        sprintf(cmd, cs_cmd_fmt, width, zxingcpp_barcode, bits, charset);
+        sprintf(cmd, cs_cmd_fmt, zxingcpp_barcode, charset, width, bits);
     } else if (hint) {
-        sprintf(cmd, hint_cmd_fmt, width, zxingcpp_barcode, hint, bits);
+        sprintf(cmd, hint_cmd_fmt, zxingcpp_barcode, hint, width, bits);
     } else {
-        sprintf(cmd, cmd_fmt, width, zxingcpp_barcode, bits);
+        sprintf(cmd, cmd_fmt, zxingcpp_barcode, width, bits);
     }
 
     if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {
