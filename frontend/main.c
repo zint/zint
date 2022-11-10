@@ -148,6 +148,7 @@ static void usage(int no_png) {
             "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
             "  --binary              Treat input as raw binary data\n"
             "  --bind                Add boundary bars\n"
+            "  --bindtop             Add top boundary bar only\n"
             "  --bold                Use bold text\n"
             "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
             "  --box                 Add a box around the symbol\n"
@@ -1015,7 +1016,7 @@ int main(int argc, char **argv) {
     opterr = 0; /* Disable `getopt_long_only()` printing errors */
     while (no_getopt_error) {
         enum options {
-            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BOLD, OPT_BORDER, OPT_BOX,
+            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_ESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
@@ -1034,6 +1035,7 @@ int main(int argc, char **argv) {
             {"binary", 0, NULL, OPT_BINARY},
             {"bg", 1, 0, OPT_BG},
             {"bind", 0, NULL, OPT_BIND},
+            {"bindtop", 0, NULL, OPT_BIND_TOP},
             {"bold", 0, NULL, OPT_BOLD},
             {"border", 1, NULL, OPT_BORDER},
             {"box", 0, NULL, OPT_BOX},
@@ -1136,6 +1138,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_BIND:
                 my_symbol->output_options |= BARCODE_BIND;
+                break;
+            case OPT_BIND_TOP:
+                my_symbol->output_options |= BARCODE_BIND_TOP;
                 break;
             case OPT_BOLD:
                 my_symbol->output_options |= BOLD_TEXT;

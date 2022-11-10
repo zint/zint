@@ -257,16 +257,16 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
-    if (!((symbol->output_options & BARCODE_BOX) || (symbol->output_options & BARCODE_BIND))) {
-        /* If no option has been selected then uses default box option */
-        symbol->output_options |= BARCODE_BOX;
-        if (symbol->border_width == 0) { /* Allow override if non-zero */
-            /* GS1 General Specifications 21.0.1 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
-            symbol->border_width = 5; /* Note change from previous value 8 */
-        }
-    }
-
     if (error_number < ZINT_ERROR) {
+        if (!(symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
+            /* If no option has been selected then uses default box option */
+            symbol->output_options |= BARCODE_BOX;
+            if (symbol->border_width == 0) { /* Allow override if non-zero */
+                /* GS1 General Specifications 21.0.1 Sections 5.3.2.4 & 5.3.6 (4.83 / 1.016 ~ 4.75) */
+                symbol->border_width = 5; /* Note change from previous value 8 */
+            }
+        }
+
         if (symbol->output_options & COMPLIANT_HEIGHT) {
             /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional
                to symbol->height), same as GS1-128: "in case of further space constraints"

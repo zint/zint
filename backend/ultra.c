@@ -945,11 +945,11 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         int link2 = 2; /* Draft Table 7, Structured Append Group (SAG) with no File Number */
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
-            strcpy(symbol->errtxt, "558: Structured Append count out of range (2-8)");
+            strcpy(symbol->errtxt, "596: Structured Append count out of range (2-8)");
             return ZINT_ERROR_INVALID_OPTION;
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "559: Structured Append index out of range (1-%d)", symbol->structapp.count);
+            sprintf(symbol->errtxt, "597: Structured Append index out of range (1-%d)", symbol->structapp.count);
             return ZINT_ERROR_INVALID_OPTION;
         }
         scr_cw_count = 1;
@@ -960,17 +960,17 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
             for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 5) { /* 282 * 283 + 282 = 80088 */
-                strcpy(symbol->errtxt, "727: Structured Append ID too long (5 digit maximum)");
+                strcpy(symbol->errtxt, "593: Structured Append ID too long (5 digit maximum)");
                 return ZINT_ERROR_INVALID_OPTION;
             }
 
             id = to_int((const unsigned char *) symbol->structapp.id, id_len);
             if (id == -1) {
-                strcpy(symbol->errtxt, "728: Invalid Structured Append ID (digits only)");
+                strcpy(symbol->errtxt, "594: Invalid Structured Append ID (digits only)");
                 return ZINT_ERROR_INVALID_OPTION;
             }
             if (id > 80088) {
-                sprintf(symbol->errtxt, "729: Structured Append ID '%d' out of range (1-80088)", id);
+                sprintf(symbol->errtxt, "595: Structured Append ID '%d' out of range (1-80088)", id);
                 return ZINT_ERROR_INVALID_OPTION;
             }
             if (id) {

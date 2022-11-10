@@ -255,7 +255,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
             }
         }
     } else if (symbol->option_1 >= 1) {
-        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 8)");
+        strcpy(symbol->errtxt, "433: Minimum number of rows out of range (2 to 8)");
         return ZINT_ERROR_INVALID_OPTION;
     }
 

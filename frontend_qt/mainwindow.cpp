@@ -1154,7 +1154,9 @@ void MainWindow::structapp_ui_set()
 
 void MainWindow::on_encoded()
 {
-    if (QApplication::activeModalWidget() != nullptr) { // Protect against encode in popup dialog
+    // Protect against encode in Sequence Export popup dialog
+    QWidget *activeModalWidget = QApplication::activeModalWidget();
+    if (activeModalWidget != nullptr && activeModalWidget->objectName() == "ExportDialog") {
         return;
     }
     enableActions();
@@ -1173,7 +1175,9 @@ void MainWindow::on_encoded()
 
 void MainWindow::on_errored()
 {
-    if (QApplication::activeModalWidget() != nullptr) { // Protect against error in popup dialog (Sequence Export)
+    // Protect against error in Sequence Export popup dialog
+    QWidget *activeModalWidget = QApplication::activeModalWidget();
+    if (activeModalWidget != nullptr && activeModalWidget->objectName() == "ExportDialog") {
         return;
     }
     enableActions();
@@ -1700,6 +1704,17 @@ void MainWindow::change_options()
             connect(get_widget(QSL("spnDAFTTrackerRatio")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
         }
 
+    } else if (symbology == BARCODE_DPD) {
+        btype->setItemText(0, tr("Default (bind top, 3X width)"));
+        QFile file(QSL(":/grpDPD.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            tabMain->insertTab(1, m_optionWidget, tr("DPD Cod&e"));
+            connect(get_widget(QSL("chkDPDRelabel")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_DATAMATRIX) {
         QFile file(QSL(":/grpDM.ui"));
         if (!file.open(QIODevice::ReadOnly))
@@ -1724,7 +1739,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("spnDMStructAppID2")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_ITF14) {
-        btype->setItemText(0, tr("Default (box, non-zero width)"));
+        btype->setItemText(0, tr("Default (box, 5X width)"));
         QFile file(QSL(":/grpITF14.ui"));
         if (file.open(QIODevice::ReadOnly)) {
             m_optionWidget = uiload.load(&file);
@@ -2600,6 +2615,13 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_DAFT);
             // Kept as percentage, convert to thousandths
             m_bc.bc.setOption2((int) (get_dspn_val(QSL("spnDAFTTrackerRatio")) * 10));
+            break;
+
+        case BARCODE_DPD:
+            m_bc.bc.setSymbol(BARCODE_DPD);
+            if (get_chk_val(QSL("chkDPDRelabel"))) {
+                m_bc.bc.setOption2(1);
+            }
             break;
 
         case BARCODE_DATAMATRIX:
@@ -3806,6 +3828,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
                 QString::number(get_dspn_val(QSL("spnDAFTTrackerRatio")), 'f', 1 /*precision*/));
             break;
 
+        case BARCODE_DPD:
+            settings.setValue(QSL("studio/bc/dpd/chk_relabel"), get_chk_val(QSL("chkDPDRelabel")));
+            break;
+
         case BARCODE_DATAMATRIX:
         case BARCODE_HIBC_DM:
             settings.setValue(QSL("studio/bc/datamatrix/size"), get_cmb_index(QSL("cmbDM200Size")));
@@ -4193,6 +4219,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_DAFT:
             set_dspn_from_setting(settings, QSL("studio/bc/daft/tracker_ratio"), QSL("spnDAFTTrackerRatio"), 25.0f);
+            break;
+
+        case BARCODE_DPD:
+            set_chk_from_setting(settings, QSL("studio/bc/dpd/chk_relabel"), QSL("chkDPDRelabel"));
             break;
 
         case BARCODE_DATAMATRIX:

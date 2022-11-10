@@ -145,7 +145,7 @@ private slots:
         bc.setCMYK(cmyk);
         QCOMPARE(bc.cmyk(), cmyk);
 
-        int borderTypes[] = { 0, BARCODE_BIND, BARCODE_BOX };
+        int borderTypes[] = { 0, BARCODE_BIND, BARCODE_BOX, BARCODE_BIND_TOP };
         for (int i = 0; i < ARRAY_SIZE(borderTypes); i++) {
             bc.setBorderType(i);
             QCOMPARE(bc.borderType(), borderTypes[i]);

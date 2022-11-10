@@ -9,6 +9,10 @@ Version 2.11.1.9 (dev) not released yet
   argument
   NOTE: previously printed error messages but continued without returning an
   error
+- DPD now adds top boundary bar by default and returns warnings if input is not
+  compliant
+- Legacy and never-used output option BARCODE_NO_ASCII removed (value now used
+  by new output option BARCODE_BIND_TOP)
 
 Changes
 -------
@@ -22,7 +26,11 @@ Changes
 - manual/man page/GUI: Code 16k -> Code 16K
 - PDF417/MICROPDF417: add optimized encoding, FAST_MODE for previous; formatting
   changes
-- common.c/h: add `cnt_digits()`, comments in include, minor fiddling
+- common.c/h: add `cnt_digits()`; comments in include; minor fiddling
+- API/CLI/Tcl/GUI: new output option BARCODE_BIND_TOP / `--bindtop` / "Bind Top"
+- DPD: add top boundary (width 3X) by default, using new BARCODE_BIND_TOP;
+  "relabel" option; some compliance checks
+- manual: fuller DPD doc; some spelling typos, formatting
 
 Bugs
 ----
@@ -50,6 +58,8 @@ Bugs
 - bwipp_dump.ps: fix 2/4-track processing; update to latest BWIPP
 - PDF417/MICROPDF417: use latch not ps shift for padding when spanning
   Text segments to avoid affecting 1st char of 2nd segment
+- GUI: only skip encoded/errored signal processing if active modal ExportDialog
+  (wasn't clearing/setting error text bar correctly)
 
 
 Version 2.11.1 (2022-08-22)

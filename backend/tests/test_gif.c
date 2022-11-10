@@ -172,6 +172,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 27*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
         /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
         /* 29*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
+        /* 30*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -665,8 +665,9 @@ static void plot_hexagon(unsigned char *scaled_hexagon, const int hex_width, con
 static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixelbuf,
             const int xoffset_si, const int yoffset_si, const int symbol_height_si, const int dot_overspill_si,
             const int image_width, const int image_height, const int si) {
-    if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-        const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
+    if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
+        const int no_extend = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF
+                                || symbol->symbology == BARCODE_DPD;
         const int horz_outside = is_fixed_ratio(symbol->symbology);
         const int bwidth_si = symbol->border_width * si;
         int ybind_top = yoffset_si - bwidth_si;
@@ -676,15 +677,19 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
             ybind_bot = image_height - bwidth_si;
         }
         /* Horizontal boundary bars */
-        if ((symbol->output_options & BARCODE_BOX) || !is_codablockf) {
-            /* Box or not CodaBlockF */
+        if ((symbol->output_options & BARCODE_BOX) || !no_extend) {
+            /* Box or not CodaBlockF/DPD */
             draw_bar(pixelbuf, 0, image_width, ybind_top, bwidth_si, image_width, image_height, DEFAULT_INK);
-            draw_bar(pixelbuf, 0, image_width, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
+            if (!(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                draw_bar(pixelbuf, 0, image_width, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
+            }
         } else {
-            /* CodaBlockF bind - does not extend over horizontal whitespace */
+            /* CodaBlockF/DPD bind - does not extend over horizontal whitespace */
             const int width_si = symbol->width * si;
             draw_bar(pixelbuf, xoffset_si, width_si, ybind_top, bwidth_si, image_width, image_height, DEFAULT_INK);
-            draw_bar(pixelbuf, xoffset_si, width_si, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
+            if (!(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                draw_bar(pixelbuf, xoffset_si, width_si, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
+            }
         }
         if (symbol->output_options & BARCODE_BOX) {
             /* Vertical side bars */
@@ -1147,7 +1152,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     if (!hide_text) {
         int text_yposn = yoffset_si + symbol_height_si + (int) (text_gap * si); /* Calculated to top of text */
         if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-            text_yposn += symbol->border_width * si;
+            text_yposn += symbol->border_width * si; /* Note not needed for BARCODE_BIND_TOP */
         }
 
         if (upceanflag >= 6) { /* UPC-E, EAN-8, UPC-A, EAN-13 */

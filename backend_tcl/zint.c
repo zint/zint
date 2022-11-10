@@ -480,8 +480,9 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -bg color: set background color as 6 or 8 hex rrggbbaa\n"
     /* cli option --binary internally handled */
     "   -bind bool: bars above/below the code, size set by -border\n"
+    "   -bindtop bool: bar above the code, size set by -border\n"
     "   -bold bool: use bold text\n"
-    "   -border integer: width of a border around the symbol. Use with -bind/-box 1\n"
+    "   -border integer: width of a border around the symbol. Use with -bind/-box/-bindtop 1\n"
     "   -box bool: box around bar code, size set be -border\n"
     /* cli option --cmyk not supported as no corresponding output */
     "   -cols integer: Codablock F, DotCode, PDF417: number of columns\n"
@@ -758,7 +759,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         /*--------------------------------------------------------------------*/
         /* Option list and indexes */
         static const char *optionList[] = {
-            "-addongap", "-barcode", "-bg", "-bind", "-bold", "-border", "-box",
+            "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
             "-eci", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
@@ -770,7 +771,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
-            iAddonGap, iBarcode, iBG, iBind, iBold, iBorder, iBox,
+            iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
             iECI, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
@@ -797,6 +798,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         /* >> Decode object */
         switch (optionIndex) {
         case iBind:
+        case iBindTop:
         case iBold:
         case iBox:
         case iCompliantHeight:
@@ -929,6 +931,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options |= BARCODE_BIND;
             } else {
                 my_symbol->output_options &= ~BARCODE_BIND;
+            }
+            break;
+        case iBindTop:
+            if (intValue) {
+                my_symbol->output_options |= BARCODE_BIND_TOP;
+            } else {
+                my_symbol->output_options &= ~BARCODE_BIND_TOP;
             }
             break;
         case iBold:

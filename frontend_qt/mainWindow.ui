@@ -912,7 +912,7 @@ Extended Channel Interpretation (ECI)</string>
                  <widget class="QLineEdit" name="txtDataSeg1">
                   <property name="minimumSize">
                    <size>
-                    <width>200</width>
+                    <width>150</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1173,7 +1173,7 @@ or import from file</string>
                  <widget class="QLineEdit" name="txtDataSeg2">
                   <property name="minimumSize">
                    <size>
-                    <width>200</width>
+                    <width>150</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1434,7 +1434,7 @@ or import from file</string>
                  <widget class="QLineEdit" name="txtDataSeg3">
                   <property name="minimumSize">
                    <size>
-                    <width>200</width>
+                    <width>150</width>
                     <height>0</height>
                    </size>
                   </property>
@@ -1763,6 +1763,11 @@ and use standard height (if any) for default
                <item>
                 <property name="text">
                  <string>Box</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Bind Top</string>
                 </property>
                </item>
               </widget>

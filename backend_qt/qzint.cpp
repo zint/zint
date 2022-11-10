@@ -217,7 +217,7 @@ namespace Zint {
         m_lastError = m_zintSymbol->errtxt;
 
         if (m_error < ZINT_ERROR) {
-            m_borderType = m_zintSymbol->output_options & (BARCODE_BIND | BARCODE_BOX);
+            m_borderType = m_zintSymbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP);
             m_height = m_zintSymbol->height;
             m_borderWidth = m_zintSymbol->border_width;
             m_whitespace = m_zintSymbol->whitespace_width;
@@ -411,6 +411,8 @@ namespace Zint {
             m_borderType = BARCODE_BIND;
         } else if (borderTypeIndex == 2) {
             m_borderType = BARCODE_BOX;
+        } else if (borderTypeIndex == 3) {
+            m_borderType = BARCODE_BIND_TOP;
         } else {
             m_borderType = 0;
         }
@@ -941,20 +943,28 @@ namespace Zint {
             arg_color(cmd, "--bg=", bgColor());
         }
 
-        bool default_bind = false, default_box = false, default_border = false;
+        bool default_bind = false, default_bind_top = false, default_box = false, default_border = false;
         if (m_symbol == BARCODE_ITF14) {
             if ((borderType() & BARCODE_BOX) && borderWidth() == 5) {
-                default_bind = default_box = default_border = true;
+                default_box = default_border = true;
             }
-        } else if (m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_CODE16K || m_symbol == BARCODE_CODE49) {
+        } else if (m_symbol == BARCODE_CODABLOCKF || m_symbol == BARCODE_HIBC_BLOCKF || m_symbol == BARCODE_CODE16K
+                    || m_symbol == BARCODE_CODE49) {
             if ((borderType() & BARCODE_BIND) && borderWidth() == 1) {
                 default_bind = default_border = true;
+            }
+        } else if (m_symbol == BARCODE_DPD) {
+            if ((borderType() & BARCODE_BIND_TOP) && borderWidth() == 3) {
+                default_bind_top = default_border = true;
             }
         }
 
         arg_bool(cmd, "--binary", (inputMode() & 0x07) == DATA_MODE);
         if (!default_bind) {
-            arg_bool(cmd, "--bind", (borderType() & BARCODE_BIND) && !(borderType() & BARCODE_BOX));
+            arg_bool(cmd, "--bind", borderType() & BARCODE_BIND);
+        }
+        if (!default_bind_top) {
+            arg_bool(cmd, "--bindtop", borderType() & BARCODE_BIND_TOP);
         }
         arg_bool(cmd, "--bold", fontSetting() & BOLD_TEXT);
         if (!default_border) {

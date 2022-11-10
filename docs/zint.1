@@ -89,13 +89,18 @@ stacked with multiple \f[V]-d\f[R] | \f[V]--data\f[R] inputs, in which
 case the width of the separator bars is specified with the
 \f[V]--separator\f[R] option.
 .TP
+\f[V]--bindtop\f[R]
+Add a horizontal boundary bar to the top of the symbol.
+The width of the boundary bar is specified by the \f[V]--border\f[R]
+option.
+.TP
 \f[V]--bold\f[R]
 Use bold text for the Human Readable Text (HRT).
 .TP
 \f[V]--border=INTEGER\f[R]
-Set the width of boundary bars (\f[V]--bind\f[R]) or box borders
-(\f[V]--box\f[R]), where \f[I]INTEGER\f[R] is in integral multiples of
-the X-dimension.
+Set the width of boundary bars (\f[V]--bind\f[R] or \f[V]--bindtop\f[R])
+or box borders (\f[V]--box\f[R]), where \f[I]INTEGER\f[R] is in integral
+multiples of the X-dimension.
 The default is zero.
 .TP
 \f[V]--box\f[R]
@@ -461,6 +466,7 @@ For a few other symbologies, it specifies other characteristics:
 \f[C]
 Channel Code    3 to 8    (no. of channels)
 DAFT            50 to 900 (permille tracker ratio)
+DPD             1         (relabel)
 Ultracode       2         (revision 2)
 VIN             1         (add international prefix)
 \f[R]

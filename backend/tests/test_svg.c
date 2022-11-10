@@ -108,6 +108,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 49*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg" },
         /* 50*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg" },
         /* 51*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg" },
+        /* 52*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

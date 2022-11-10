@@ -1565,7 +1565,7 @@ static int qr_prep_data(struct zint_symbol *symbol, struct zint_seg segs[], cons
                     return error_number;
                 }
                 if (segs[i].eci != 20) {
-                    strcpy(symbol->errtxt, "543: Converted to Shift JIS but no ECI specified");
+                    strcpy(symbol->errtxt, "760: Converted to Shift JIS but no ECI specified");
                     warn_number = ZINT_WARN_NONCOMPLIANT;
                 }
             }
@@ -2598,11 +2598,11 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     /* Get version from user */
     if ((symbol->option_2 >= 1) && (symbol->option_2 <= 4)) {
         if (symbol->option_2 == 1 && !is_sane(NEON_F, source, length)) {
-            strcpy(symbol->errtxt, "775: Invalid character in data for Version M1 (digits only)");
+            strcpy(symbol->errtxt, "758: Invalid character in data for Version M1 (digits only)");
             return ZINT_ERROR_INVALID_DATA;
         } else if (symbol->option_2 == 2 && !is_sane(QR_ALPHA, source, length)) {
             strcpy(symbol->errtxt,
-                    "776: Invalid character in data for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)");
+                    "759: Invalid character in data for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)");
             return ZINT_ERROR_INVALID_DATA;
         }
         if (symbol->option_2 - 1 >= autoversion) {

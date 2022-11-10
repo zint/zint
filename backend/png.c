@@ -157,7 +157,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
 
         /* For Ultracode, have foreground only if have bind/box */
-        if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX))) {
+        if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP))) {
             /* Check whether can re-use black */
             if (fg.red == 0 && fg.green == 0 && fg.blue == 0) {
                 map['1'] = 7; /* Re-use black */

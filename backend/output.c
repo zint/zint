@@ -354,7 +354,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             done = 1;
             break;
         case BARCODE_DPD:
-            /* Specification DPD and primetime Parcel Despatch 4.0.2 Section 5.5.1 5mm / 0.4mm (X max) = 12.5 */
+            /* DPD Parcel Label Specification Version 2.4.1 Section 4.6.1.2, 5mm / 0.4mm (X max) = 12.5 */
             *left = *right = 12.5f;
             done = 1;
             break;
@@ -507,7 +507,7 @@ INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const
 
     *yoffset = symbol->whitespace_height + qz_top;
     *boffset = symbol->whitespace_height + qz_bottom;
-    if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND)) {
+    if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP)) {
         *yoffset += symbol->border_width;
         *boffset += symbol->border_width;
     }

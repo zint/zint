@@ -266,7 +266,8 @@ extern "C" {
 #define BARCODE_LAST            146 /* Max barcode number marker, not barcode */
 
 /* Output options (`symbol->output_options`) */
-#define BARCODE_NO_ASCII        0x0001  /* Legacy (no-op) */
+#define BARCODE_BIND_TOP        0x0001  /* Boundary bar above the symbol only (not below), does not affect stacking */
+                                        /* Note: value was once used by the legacy (never-used) BARCODE_NO_ASCII */
 #define BARCODE_BIND            0x0002  /* Boundary bars above & below the symbol and between stacked symbols */
 #define BARCODE_BOX             0x0004  /* Box around symbol */
 #define BARCODE_STDOUT          0x0008  /* Output to stdout */

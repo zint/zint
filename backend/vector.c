@@ -406,6 +406,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
     const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
+    const int no_extend = is_codablockf || symbol->symbology == BARCODE_DPD;
 
     float addon_row_height;
     float large_bar_height;
@@ -730,7 +731,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
         text_yposn = yoffset + symbol->height + text_height + text_gap; /* Calculated to bottom of text */
         if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-            text_yposn += symbol->border_width;
+            text_yposn += symbol->border_width; /* Note not needed for BARCODE_BIND_TOP */
         }
 
         if (upceanflag >= 6) { /* UPC-E, EAN-8, UPC-A, EAN-13 */
@@ -906,7 +907,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     /* Bind/box */
-    if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
+    if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
         const int horz_outside = is_fixed_ratio(symbol->symbology);
         float ybind_top = yoffset - symbol->border_width;
         /* Following equivalent to yoffset + symbol->height + dot_overspill except for BARCODE_MAXICODE */
@@ -918,21 +919,23 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* Top */
         rect = vector_plot_create_rect(symbol, 0.0f, ybind_top, vector->width, symbol->border_width);
         if (!rect) return ZINT_ERROR_MEMORY;
-        if (!(symbol->output_options & BARCODE_BOX) && is_codablockf) {
-            /* CodaBlockF bind - does not extend over horizontal whitespace */
+        if (!(symbol->output_options & BARCODE_BOX) && no_extend) {
+            /* CodaBlockF/DPD bind - does not extend over horizontal whitespace */
             rect->x = xoffset;
             rect->width -= xoffset + roffset;
         }
         vector_plot_add_rect(symbol, rect, &last_rectangle);
         /* Bottom */
-        rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
-        if (!rect) return ZINT_ERROR_MEMORY;
-        if (!(symbol->output_options & BARCODE_BOX) && is_codablockf) {
-            /* CodaBlockF bind - does not extend over horizontal whitespace */
-            rect->x = xoffset;
-            rect->width -= xoffset + roffset;
+        if (!(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+            rect = vector_plot_create_rect(symbol, 0.0f, ybind_bot, vector->width, symbol->border_width);
+            if (!rect) return ZINT_ERROR_MEMORY;
+            if (!(symbol->output_options & BARCODE_BOX) && no_extend) {
+                /* CodaBlockF/DPD bind - does not extend over horizontal whitespace */
+                rect->x = xoffset;
+                rect->width -= xoffset + roffset;
+            }
+            vector_plot_add_rect(symbol, rect, &last_rectangle);
         }
-        vector_plot_add_rect(symbol, rect, &last_rectangle);
         if (symbol->output_options & BARCODE_BOX) {
             const float xbox_right = vector->width - symbol->border_width;
             float box_top = yoffset;

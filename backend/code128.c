@@ -708,6 +708,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         }
         printf(" (%d)\n", bar_characters);
         printf("Barspaces: %.*s\n", (int) (d - dest), dest);
+        printf("Checksum:  %d\n", total_sum);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
@@ -1051,57 +1052,89 @@ INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int lengt
 }
 
 /* DPD (Deutscher Paketdienst) Code */
-/* Specification at ftp://dpd.at/Datenspezifikationen/EN/gbs_V4.0.2_hauptdokument.pdf
- * or https://docplayer.net/33728877-Dpd-parcel-label-specification.html */
+/* Specification at https://esolutions.dpd.com/dokumente/DPD_Parcel_Label_Specification_2.4.1_EN.pdf
+ * and identification tag info (Barcode ID) at https://esolutions.dpd.com/dokumente/DPD_Routing_Database_1.3_EN.pdf */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
     int i, p;
-    unsigned char identifier;
+    unsigned char ident_tag;
+    unsigned char local_source_buf[29];
+    unsigned char *local_source;
     const int mod = 36;
+    const int relabel = symbol->option_2 == 1; /* A "relabel" has no identification tag */
     int cd; /* Check digit */
 
-    if (length != 28) {
-        strcpy(symbol->errtxt, "349: DPD input wrong length (28 characters required)");
+    if ((length != 27 && length != 28) || (length == 28 && relabel)) {
+        if (relabel) {
+            strcpy(symbol->errtxt, "830: DPD relabel input wrong length (27 characters required)");
+        } else {
+            strcpy(symbol->errtxt, "349: DPD input wrong length (27 or 28 characters required)");
+        }
         return ZINT_ERROR_TOO_LONG;
     }
 
-    identifier = source[0];
+    if (length == 27 && !relabel) {
+        local_source_buf[0] = '%';
+        ustrcpy(local_source_buf + 1, source);
+        local_source = local_source_buf;
+        length++;
+    } else {
+        local_source = source;
+    }
 
-    to_upper(source + 1, length - 1);
-    if (!is_sane(KRSET_F, source + 1, length - 1)) {
-        strcpy(symbol->errtxt, "300: Invalid character in DPD data (alphanumerics only)");
+    ident_tag = local_source[0];
+
+    to_upper(local_source + !relabel, length - !relabel);
+    if (!is_sane(KRSET_F, local_source + !relabel, length - !relabel)) {
+        if (local_source == local_source_buf || relabel) {
+            strcpy(symbol->errtxt, "300: Invalid character in data (alphanumerics only)");
+        } else {
+            strcpy(symbol->errtxt, "299: Invalid character in data (alphanumerics only after first character)");
+        }
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    if ((identifier < 32) || (identifier > 127)) {
-        strcpy(symbol->errtxt, "343: Invalid DPD identifier (first character), ASCII values 32 to 127 only");
+    if ((ident_tag < 32) || (ident_tag > 127)) {
+        strcpy(symbol->errtxt, "343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only");
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    error_number = code128(symbol, source, length); /* Only returns errors, not warnings */
+    error_number = code128(symbol, local_source, length); /* Only returns errors, not warnings */
 
     if (error_number < ZINT_ERROR) {
+        if (!(symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
+            /* If no option has been selected then uses default bind top option */
+            symbol->output_options |= BARCODE_BIND_TOP; /* Note won't extend over quiet zones for DPD */
+            if (symbol->border_width == 0) { /* Allow override if non-zero */
+                symbol->border_width = 3; /* From examples, not mentioned in spec */
+            }
+        }
+
         if (symbol->output_options & COMPLIANT_HEIGHT) {
-            /* Specification DPD and primetime Parcel Despatch 4.0.2 Section 5.5.1
+            /* DPD Parcel Label Specification Version 2.4.1 (19.01.2021) Section 4.6.1.2
                25mm / 0.4mm (X max) = 62.5 min, 25mm / 0.375 (X) ~ 66.66 default */
-            error_number = set_height(symbol, 62.5f, stripf(25.0f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+            if (relabel) { /* If relabel then half-size */
+                error_number = set_height(symbol, 31.25f, stripf(12.5f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+            } else {
+                error_number = set_height(symbol, 62.5f, stripf(25.0f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+            }
         } else {
-            (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+            (void) set_height(symbol, 0.0f, relabel ? 25.0f : 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
 
         cd = mod;
 
         p = 0;
-        for (i = 1; i < length; i++) {
-            symbol->text[p] = source[i];
+        for (i = !relabel; i < length; i++) {
+            symbol->text[p] = local_source[i];
             p++;
 
-            cd += posn(KRSET, source[i]);
+            cd += posn(KRSET, local_source[i]);
             if (cd > mod) cd -= mod;
             cd *= 2;
             if (cd >= (mod + 1)) cd -= mod + 1;
 
-            switch (i) {
+            switch (i + relabel) {
                 case 4:
                 case 7:
                 case 11:
@@ -1127,6 +1160,20 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
         p++;
 
         symbol->text[p] = '\0';
+
+        if (error_number == 0) {
+            /* Some compliance checks */
+            if (!is_sane(NEON_F, local_source + length - 16, 16)) {
+                if (!is_sane(NEON_F, local_source + length - 3, 3)) { /* 3-digit Country Code (ISO 3166-1) */
+                    strcpy(symbol->errtxt, "831: Destination Country Code (last 3 characters) should be numeric");
+                } else if (!is_sane(NEON_F, local_source + length - 6, 3)) { /* 3-digit Service Code */
+                    strcpy(symbol->errtxt, "832: Service Code (characters 6-4 from end) should be numeric");
+                } else { /* Last 10 characters of Tracking No. */
+                    strcpy(symbol->errtxt, "833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
+                }
+                error_number = ZINT_WARN_NONCOMPLIANT;
+            }
+        }
     }
 
     return error_number;

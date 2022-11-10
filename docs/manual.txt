@@ -252,7 +252,8 @@ composite
     linear and stacked. Those currently supported are made up of a linear
     ‘primary’ message above which is printed a stacked component based on the
     PDF417 symbology. These symbols also have a separator which separates the
-    linear and the stacked components.
+    linear and the stacked components. The stacked component is most often
+    referred to as the 2D (two-dimensional) component.
 
 X-dimension
 
@@ -957,7 +958,8 @@ The width of the boundary bars or box borders must be specified using the
 
 gives a box with a width 10 times the X-dimension of the symbol. Note that when
 specifying a box, horizontal whitespace is usually required in order to create a
-quiet zone between the barcode and the sides of the box.
+quiet zone between the barcode and the sides of the box. To add a boundary bar
+to the top only use --bindtop.
 
 For linear symbols, horizontal boundary bars appear tight against the barcode,
 inside any vertical whitespace (or text). For matrix symbols, however, where
@@ -967,8 +969,8 @@ whitespace.
 [zint -b QRCODE --border=1 --box -d "This Text" --quietzones]
 
 Codablock-F, Code 16K and Code 49 always have boundary bars, and default to
-particular horizontal whitespace values. Special considerations apply to
-ITF-14 - see 6.1.2.6 ITF-14 for that symbology.
+particular horizontal whitespace values. Special considerations apply to ITF-14
+and DPD - see 6.1.2.6 ITF-14 and 6.1.10.7 DPD Code for those symbologies.
 
 4.7 Using Colour
 
@@ -1181,11 +1183,12 @@ may encode it using an ECI-aware symbology and an ECI value from Table
 : ECI Codes below. The ECI information is added to your code symbol as prefix
 data. The symbologies that support ECI are
 
-  ------------- -------------- ------------- -----------
-  Aztec Code    DotCode        MaxiCode      QR Code
-  Code One      Grid Matrix    MicroPDF417   rMQR
-  Data Matrix   Han Xin Code   PDF417        Ultracode
-  ------------- -------------- ------------- -----------
+  ------------- -------------- -----------
+  Aztec Code    Grid Matrix    PDF417
+  Code One      Han Xin Code   QR Code
+  Data Matrix   MaxiCode       rMQR
+  DotCode       MicroPDF417    Ultracode
+  ------------- -------------- -----------
 
   : Table : ECI-Aware Symbologies:
 
@@ -1984,8 +1987,10 @@ together when adjusting this value:
   -------------------------- ----------------------------------------------------
   0                          No options selected.
 
+  BARCODE_BIND_TOP           Boundary bar above the symbol only.[7]
+
   BARCODE_BIND               Boundary bars above and below the symbol and between
-                             rows if stacking multiple symbols.[7]
+                             rows if stacking multiple symbols.[8]
 
   BARCODE_BOX                Add a box surrounding the symbol and whitespace.
 
@@ -2010,7 +2015,7 @@ together when adjusting this value:
                              separate colour channels (OUT_BUFFER only).
 
   BARCODE_QUIET_ZONES        Add compliant quiet zones (additional to any
-                             specified whitespace).[8]
+                             specified whitespace).[9]
 
   BARCODE_NO_QUIET_ZONES     Disable quiet zones, notably those with defaults.
 
@@ -2328,7 +2333,7 @@ border width of 5. This behaviour can be overridden by using the --bind option
 (API output_options |= BARCODE_BIND). Similarly the border width can be
 overridden using --border (API border_width). If a symbol with no border is
 required this can be achieved by explicitly setting the border type to box (or
-bind) and leaving the border width 0.
+bind or bindtop) and leaving the border width 0.
 
 [zint -b ITF14 --box --compliantheight -d "9212320967145"]
 
@@ -2387,7 +2392,7 @@ UPC-E is a zero-compressed version of UPC-A developed for smaller packages. The
 code requires a 6-digit article number (digits 0-9). The check digit is
 calculated by Zint. EAN-2 and EAN-5 add-on symbols can be added using the +
 character as with UPC-A. In addition Zint also supports Number System 1 encoding
-by entering a 7-digit article number stating with the digit 1. For example:
+by entering a 7-digit article number starting with the digit 1. For example:
 
     zint -b UPCE -d 1123456
 
@@ -2443,8 +2448,8 @@ If you are encoding an EAN-8 or EAN-13 symbol and your data already includes the
 check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an 8 or
 13-digit input and validates the check digit before encoding.
 
-Options to adjust the add-on gap and the descent height of guard bars are the
-same as for 6.1.3.2 UPC Version E.
+Options to adjust the add-on gap and the guard bar descent height are the same
+as for 6.1.3.2 UPC Version E.
 
 6.1.4.2 SBN, ISBN and ISBN-13
 
@@ -2455,7 +2460,7 @@ SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit needs to
 be present in the input data and will be verified before the symbol is
 generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
 character as with UPC symbols, and there are options to adjust the add-on gap
-and the descent height of guard bars - see 6.1.3.2 UPC Version E.
+and the guard bar descent height - see 6.1.3.2 UPC Version E.
 
 6.1.5 Plessey
 
@@ -2682,11 +2687,39 @@ a standard Code 128 symbol as required by the Health Industry Barcode standards.
 
 6.1.10.7 DPD Code
 
-[zint -b DPD --compliantheight -d "%000393206219912345678101040"]
+[zint -b DPD --compliantheight -d "000393206219912345678101040"]
 
 Another variation of Code 128 as used by DPD (Deutscher Paketdienst). Requires a
-28 character alphanumeric input. Zint formats the Human Readable Text as
-specified by DPD and adds a modulo-36 check character.
+27 or 28 character input. For 28 character input, the first character is an
+identification tag (Barcode ID), which should usually be "%" (ASCII 37). If 27
+characters are supplied, "%" will be prefixed by Zint (except if marked as a
+“relabel”, see below). The rest of the 27-character input must be alphanumeric,
+and is of the form:
+
+  Destination Post Code   Tracking Number      Service Code   Dest. Country Code
+  ----------------------- -------------------- -------------- ----------------------
+  PPPPPPP                 TTTTTTTTTTTTTT       SSS            CCC
+  (7 alphanumerics)       (14 alphanumerics)   (3 digits)     (3-digit ISO 3166-1)
+
+  : Table : DPD Input Fields:
+
+A warning will be generated if the Service Code, the Destination Country Code,
+or the last 10 characters of the Tracking Number are non-numeric.
+
+Zint formats the Human Readable Text as specified by DPD, leaving out the
+identication tag, and adds a modulo-36 check character to the text (not to the
+barcode itself), thus:
+
+PPPP PPP TTTT TTTT TTTT TT SSS CCC D
+
+By default a top boundary bar is added, with default width 3X. The width can be
+overridden using --border (API border_width). For a symbol with no top boundary
+bar, explicitly set the border type to bindtop (or bind or box) and leave the
+border width 0.
+
+A DPD Code can be marked as a “relabel” by specifying --vers=1 (API
+option_2 = 1), which omits the identification tag and prints the barcode at half
+height. In this case, an input of 27 alphanumeric characters is required.
 
 6.1.11 GS1 DataBar (ISO 24724)
 
@@ -4191,12 +4224,17 @@ OPTIONS
     --data inputs, in which case the width of the separator bars is specified
     with the --separator option.
 
+--bindtop
+    Add a horizontal boundary bar to the top of the symbol. The width of the
+    boundary bar is specified by the --border option.
+
 --bold
     Use bold text for the Human Readable Text (HRT).
 
 --border=INTEGER
-    Set the width of boundary bars (--bind) or box borders (--box), where
-    INTEGER is in integral multiples of the X-dimension. The default is zero.
+    Set the width of boundary bars (--bind or --bindtop) or box borders (--box),
+    where INTEGER is in integral multiples of the X-dimension. The default is
+    zero.
 
 --box
     Add a box around the symbol. The width of the borders is specified by the
@@ -4532,6 +4570,7 @@ OPTIONS
 
         Channel Code    3 to 8    (no. of channels)
         DAFT            50 to 900 (permille tracker ratio)
+        DPD             1         (relabel)
         Ultracode       2         (revision 2)
         VIN             1         (add international prefix)
 
@@ -4675,8 +4714,10 @@ Code (including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which
 have a fixed width-to-height ratio (or, in the case of Code One, a fixed
 height).
 
-[7] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
+[7] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD Code.
+
+[8] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[8] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
+[9] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.

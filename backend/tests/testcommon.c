@@ -535,7 +535,7 @@ const char *testUtilOutputOptionsName(int output_options) {
         int val;
     };
     static const struct item data[] = {
-        { "BARCODE_NO_ASCII", BARCODE_NO_ASCII, 1 },
+        { "BARCODE_BIND_TOP", BARCODE_BIND_TOP, 1 },
         { "BARCODE_BIND", BARCODE_BIND, 2 },
         { "BARCODE_BOX", BARCODE_BOX, 4 },
         { "BARCODE_STDOUT", BARCODE_STDOUT, 8 },
@@ -2017,7 +2017,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "daft", BARCODE_DAFT, 93, 0, 0, 0, 0, 0, },
         { "", -1, 94, 0, 0, 0, 0, 0, },
         { "", -1, 95, 0, 0, 0, 0, 0, },
-        { "", BARCODE_DPD, 96, 0, 0, 0, 0, 0, },
+        { "code128", BARCODE_DPD, 96, 0, 1, 0, 0, 0, },
         { "microqrcode", BARCODE_MICROQR, 97, 1, 1, 1, 0, 0, },
         { "hibccode128", BARCODE_HIBC_128, 98, 0, 0, 0, 0, 0, },
         { "hibccode39", BARCODE_HIBC_39, 99, 0, 0, 0, 0, 0, },
@@ -2647,6 +2647,12 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     memmove(bwipp_data + 2, bwipp_data, data_len + 1);
                     memmove(bwipp_data, prefix, 2);
                 }
+            } else if (symbology == BARCODE_DPD) {
+                if (data_len == 27 && option_2 != 1) {
+                    memmove(bwipp_data + 1, bwipp_data, data_len + 1);
+                    bwipp_data[0] = '%';
+                }
+                bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_FIM) {
                 strcpy(bwipp_data, "fima");
                 bwipp_data[3] = z_isupper(data[0]) ? data[0] - 'A' + 'a' : data[0];
@@ -3610,6 +3616,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                                 || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT
                                 || symbology == BARCODE_DPIDENT;
     const int is_upcean = is_extendable(symbology);
+    const int need_dpd_prefix = (symbology == BARCODE_DPD && expected_len == 27 && symbol->option_2 != 1);
 
     char *reduced = gs1 ? (char *) z_alloca(expected_len + 1) : NULL;
     char *escaped = is_escaped ? (char *) z_alloca(expected_len + 1) : NULL;
@@ -3621,6 +3628,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
                         ? (char *) z_alloca(expected_len + 3 + 1) : NULL;
+    char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
 
     int ret;
     int ret_memcmp;
@@ -3882,6 +3890,12 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         }
         expected = ean14_nve18;
         expected_len += 3;
+
+    } else if (need_dpd_prefix) {
+        dpd[0] = '%';
+        memcpy(dpd + 1, expected, expected_len);
+        expected = dpd;
+        expected_len++;
     }
 
     if (ret_buf) {

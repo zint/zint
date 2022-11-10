@@ -56,12 +56,16 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     multiple `-d` | `--data` inputs, in which case the width of the separator bars is specified with the `--separator`
     option.
 
+`--bindtop`
+:   Add a horizontal boundary bar to the top of the symbol. The width of the boundary bar is specified by the
+    `--border` option.
+
 `--bold`
 :   Use bold text for the Human Readable Text (HRT).
 
 `--border=INTEGER`
-:   Set the width of boundary bars (`--bind`) or box borders (`--box`), where *INTEGER* is in integral multiples of
-    the X-dimension. The default is zero.
+:   Set the width of boundary bars (`--bind` or `--bindtop`) or box borders (`--box`), where *INTEGER* is in integral
+    multiples of the X-dimension. The default is zero.
 
 `--box`
 :   Add a box around the symbol. The width of the borders is specified by the `--border` option.
@@ -367,6 +371,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
         Channel Code    3 to 8    (no. of channels)
         DAFT            50 to 900 (permille tracker ratio)
+        DPD             1         (relabel)
         Ultracode       2         (revision 2)
         VIN             1         (add international prefix)
 

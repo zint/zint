@@ -32,6 +32,7 @@ FORMS += extCLI.ui \
          grpDBExtend.ui \
          grpDM.ui \
          grpDotCode.ui \
+         grpDPD.ui \
          grpGrid.ui \
          grpHX.ui \
          grpITF14.ui \

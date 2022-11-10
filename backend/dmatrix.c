@@ -1668,7 +1668,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (segs_length(segs, seg_count) > 3116) { /* Max is 3166 digits */
-        strcpy(symbol->errtxt, "760: Data too long to fit in symbol");
+        strcpy(symbol->errtxt, "719: Data too long to fit in symbol");
         return ZINT_ERROR_TOO_LONG;
     }
 

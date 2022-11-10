@@ -71,7 +71,7 @@ zint -b GS1_128 --compliantheight -d "[01]98898765432106[3202]012345[15]991231" 
 zint -b EAN14 --compliantheight -d "9889876543210" --scale=$SCALE_LINEAR -o images/ean14.svg
 zint -b NVE18 --compliantheight -d "37612345000001003" --scale=$SCALE_LINEAR -o images/nve18.svg
 zint -b HIBC_128 -d "A123BJC5D6E71" --scale=$SCALE_LINEAR -o images/hibc_128.svg
-zint -b DPD --compliantheight -d "%000393206219912345678101040" --scale=$SCALE_LINEAR -o images/dpd.svg
+zint -b DPD --compliantheight -d "000393206219912345678101040" --scale=$SCALE_LINEAR -o images/dpd.svg
 zint -b DBAR_OMN --compliantheight -d "0950110153001" --scale=$SCALE_LINEAR -o images/dbar_omn.svg
 zint -b DBAR_OMN -d "0950110153001" --height=13 --scale=$SCALE_LINEAR -o images/dbar_truncated.svg
 zint -b DBAR_LTD --compliantheight -d "0950110153001" --scale=$SCALE_LINEAR -o images/dbar_ltd.svg
