@@ -19,7 +19,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES  SOVERSION "${ZINT_VERSION_MAJO
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend")
 
-target_link_libraries(${PROJECT_NAME} zint Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Gui)
+if(ZINT_SHARED)
+    target_link_libraries(${PROJECT_NAME} zint)
+else()
+    target_link_libraries(${PROJECT_NAME} zint-static)
+endif()
+target_link_libraries(${PROJECT_NAME} Qt${QT_VERSION_MAJOR}::Widgets Qt${QT_VERSION_MAJOR}::Gui)
 
 if(ZINT_TEST)
     add_subdirectory(tests)

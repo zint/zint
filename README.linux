@@ -114,6 +114,7 @@ ZINT_COVERAGE:BOOL=OFF # Set code coverage flags
 ZINT_DEBUG:BOOL=OFF    # Set debug compile flags
 ZINT_NOOPT:BOOL=OFF    # Set no optimize compile flags
 ZINT_SANITIZE:BOOL=OFF # Set sanitize compile/link flags
+ZINT_SHARED:BOOL=ON    # Build shared library
 ZINT_STATIC:BOOL=OFF   # Build static library
 ZINT_TEST:BOOL=OFF     # Set test compile flag
 ZINT_USE_PNG:BOOL=ON   # Build with PNG support

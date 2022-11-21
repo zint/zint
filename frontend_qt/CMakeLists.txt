@@ -48,7 +48,12 @@ endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend" "${CMAKE_SOURCE_DIR}/backend_qt")
 
-target_link_libraries(${PROJECT_NAME} zint QZint
+if(ZINT_SHARED)
+    target_link_libraries(${PROJECT_NAME} zint)
+else()
+    target_link_libraries(${PROJECT_NAME} zint-static)
+endif()
+target_link_libraries(${PROJECT_NAME} QZint
                         Qt${QT_VERSION_MAJOR}::UiTools Qt${QT_VERSION_MAJOR}::Gui Qt${QT_VERSION_MAJOR}::Svg
                         Qt${QT_VERSION_MAJOR}::Core)
 

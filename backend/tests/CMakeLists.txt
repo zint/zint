@@ -21,9 +21,11 @@ endif()
 
 set(testcommon_SRCS testcommon.c testcommon.h)
 
-add_library(testcommon ${testcommon_SRCS})
-target_link_libraries(testcommon zint)
-target_include_directories(testcommon PUBLIC ${zint_backend_tests_SOURCE_DIR})
+if(ZINT_SHARED)
+    add_library(testcommon ${testcommon_SRCS})
+    target_link_libraries(testcommon zint)
+    target_include_directories(testcommon PUBLIC ${zint_backend_tests_SOURCE_DIR})
+endif()
 
 if(ZINT_STATIC)
     add_library(testcommon-static ${testcommon_SRCS})
