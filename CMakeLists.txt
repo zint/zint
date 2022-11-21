@@ -192,6 +192,8 @@ else()
 endif()
 
 install(FILES cmake/modules/FindZint.cmake DESTINATION ${CMAKE_MODULES_INSTALL_PATH} COMPONENT Devel)
+configure_file("zint-config.cmake.in" "zint-config.cmake" @ONLY)
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zint-config.cmake" DESTINATION "${SHARE_INSTALL_PREFIX}/zint")
 
 # This needs to be run very last so other parts of the scripts can take
 # advantage of this.

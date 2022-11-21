@@ -48,6 +48,15 @@ function(zint_target_compile_definitions scope definition)
     endif()
 endfunction()
 
+function(zint_target_include_directories scope directory)
+    if(ZINT_SHARED)
+        target_include_directories(zint ${scope} ${directory})
+    endif()
+    if(ZINT_STATIC)
+        target_include_directories(zint-static ${scope} ${directory})
+    endif()
+endfunction()
+
 if(ZINT_SHARED)
     set_target_properties(zint PROPERTIES   SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
                                             VERSION ${ZINT_VERSION})
@@ -76,12 +85,18 @@ if(MSVC)
     target_compile_definitions(zint PRIVATE DLL_EXPORT)
 endif()
 
+zint_target_include_directories(PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+)
+
 if(ZINT_SHARED)
-    install(TARGETS zint ${INSTALL_TARGETS_DEFAULT_ARGS})
+    install(TARGETS zint EXPORT zint-targets ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif()
 if(ZINT_STATIC)
-    install(TARGETS zint-static ${INSTALL_TARGETS_DEFAULT_ARGS})
+    install(TARGETS zint-static EXPORT zint-targets ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif()
+install(EXPORT zint-targets NAMESPACE zint:: DESTINATION "${SHARE_INSTALL_PREFIX}/zint")
 install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
 
 if(ZINT_TEST)
