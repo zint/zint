@@ -102,7 +102,7 @@ extern "C" {
         char bgcolour[10];  /* Background as RGB/RGBA hexadecimal string, 6 or 8 characters, NUL-terminated */
         char *fgcolor;      /* Pointer to fgcolour (alternate spelling) */
         char *bgcolor;      /* Pointer to bgcolour (alternate spelling) */
-        char outfile[256];  /* Name of file to output to, NUL-terminated. Default "out.png" ("out.gif" if NO_PNG) */
+        char outfile[256];  /* Name of file to output to, NUL-terminated. Default "out.png" ("out.gif" if no PNG) */
         char primary[128];  /* Primary message data (MaxiCode, Composite), NUL-terminated */
         int option_1;       /* Symbol-specific options (see "../docs/manual.txt") */
         int option_2;       /* Symbol-specific options */
@@ -441,6 +441,10 @@ extern "C" {
 
     /* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
     ZINT_EXTERN unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
+
+
+    /* Whether Zint built without PNG support */
+    ZINT_EXTERN int ZBarcode_NoPng(void);
 
     /* Return the version of Zint linked to */
     ZINT_EXTERN int ZBarcode_Version(void);

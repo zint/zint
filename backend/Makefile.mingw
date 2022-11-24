@@ -34,8 +34,8 @@ LIB_OBJ:= $(COMMON_OBJ) $(ONEDIM_OBJ) $(TWODIM_OBJ) $(POSTAL_OBJ) $(OUTPUT_OBJ)
 DLL_OBJ:= $(LIB_OBJ:.o=.lo) dllversion.lo
 
 
-ifeq ($(NO_PNG),true)
-DEFINES+= -DNO_PNG
+ifeq ($(ZINT_NO_PNG),true)
+DEFINES+= -DZINT_NO_PNG
 else
 DEFINES_DLL+= -DPNG_DLL -DZLIB_DLL
 LIBS+= -lpng -lz

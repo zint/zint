@@ -102,7 +102,7 @@ public slots:
     void copy_to_clipboard_emf();
     void copy_to_clipboard_eps();
     void copy_to_clipboard_gif();
-    void copy_to_clipboard_png(); // Note Qt can't handle #ifndef NO_PNG in slots
+    void copy_to_clipboard_png();
     void copy_to_clipboard_pcx();
     void copy_to_clipboard_svg();
     void copy_to_clipboard_tif();
@@ -201,9 +201,7 @@ private:
     QShortcut *m_copyBMPShortcut;
     QShortcut *m_copyEMFShortcut;
     QShortcut *m_copyGIFShortcut;
-#ifndef NO_PNG
     QShortcut *m_copyPNGShortcut;
-#endif
     QShortcut *m_copySVGShortcut;
     QShortcut *m_copyTIFShortcut;
     QAction *m_copyBMPAct;

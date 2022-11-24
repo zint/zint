@@ -38,7 +38,7 @@
 #include <windows.h>
 #include <direct.h>
 #endif
-#ifndef NO_PNG
+#ifndef ZINT_NO_PNG
 #include <png.h>
 #include <zlib.h>
 #include <setjmp.h>
@@ -1363,7 +1363,7 @@ int testUtilRename(const char *oldpath, const char *newpath) {
 /* Compare 2 PNG files */
 int testUtilCmpPngs(const char *png1, const char *png2) {
     int ret = -1;
-#ifdef NO_PNG
+#ifdef ZINT_NO_PNG
     (void)png1; (void)png2;
 #else
     FILE *fp1;

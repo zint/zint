@@ -2241,6 +2241,13 @@ For example:
 
 5.14 Zint Version
 
+Whether the Zint library linked to was built with PNG support may be determined
+with:
+
+    int ZBarcode_NoPng();
+
+which returns 1 if no PNG support is available, else zero.
+
 Lastly, the version of the Zint library linked to is returned by:
 
     int ZBarcode_Version();

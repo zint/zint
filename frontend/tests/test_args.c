@@ -1176,11 +1176,7 @@ static void test_other_opts(const testCtx *const p_ctx) {
 
     char cmd[4096];
     char buf[8192];
-#ifdef NO_PNG
-    const char *outfilename = "out.gif";
-#else
-    const char *outfilename = "out.png";
-#endif
+    const char *outfilename = ZBarcode_NoPng() ? "out.gif" : "out.png";
 
     testStart("test_other_opts");
 
@@ -1244,11 +1240,7 @@ static void test_exit_status(const testCtx *const p_ctx) {
 
     char cmd[4096];
     char buf[8192];
-#ifdef NO_PNG
-    const char *outfilename = "out.gif";
-#else
-    const char *outfilename = "out.png";
-#endif
+    const char *outfilename = ZBarcode_NoPng() ? "out.gif" : "out.png";
 
     testStart("test_exit_status");
 

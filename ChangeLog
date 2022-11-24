@@ -31,6 +31,11 @@ Changes
 - DPD: add top boundary (width 3X) by default, using new BARCODE_BIND_TOP;
   "relabel" option; some compliance checks
 - manual: fuller DPD doc; some spelling typos, formatting
+- cmake: fixes for static build and install directories, props koprok
+- cmake: remove zintconfig.h.in for now as incompatible with MSVC project builds
+  (will add back in future if go fully CMake)
+- NO_PNG -> ZINT_NO_PNG and new API function `Zint_NoPng()` to determine if no
+  PNG support in libzint; replace use in GUI with backend_qt method `noPng()`
 
 Bugs
 ----

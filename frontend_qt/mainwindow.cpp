@@ -50,9 +50,7 @@ static const QKeySequence openCLISeq(Qt::SHIFT | Qt::CTRL | Qt::Key_C);
 static const QKeySequence copyBMPSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_B);
 static const QKeySequence copyEMFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_E);
 static const QKeySequence copyGIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_G);
-#ifndef NO_PNG
 static const QKeySequence copyPNGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_P);
-#endif
 static const QKeySequence copySVGSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_S);
 static const QKeySequence copyTIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_T);
 
@@ -355,10 +353,10 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(m_copyEMFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_emf()));
     m_copyGIFShortcut = new QShortcut(copyGIFSeq, this);
     connect(m_copyGIFShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_gif()));
-#ifndef NO_PNG
-    m_copyPNGShortcut = new QShortcut(copyPNGSeq, this);
-    connect(m_copyPNGShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_png()));
-#endif
+    if (!m_bc.bc.noPng()) {
+        m_copyPNGShortcut = new QShortcut(copyPNGSeq, this);
+        connect(m_copyPNGShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_png()));
+    }
     m_copySVGShortcut = new QShortcut(copySVGSeq, this);
     connect(m_copySVGShortcut, SIGNAL(activated()), SLOT(copy_to_clipboard_svg()));
     m_copyTIFShortcut = new QShortcut(copyTIFSeq, this);
@@ -594,20 +592,20 @@ bool MainWindow::save()
                 QDir::toNativeSeparators(QDir::homePath())).toString());
 
     suffixes << QSL("eps") << QSL("gif") << QSL("svg") << QSL("bmp") << QSL("pcx") << QSL("emf") << QSL("tif");
-#ifdef NO_PNG
-    suffix = settings.value(QSL("studio/default_suffix"), QSL("gif")).toString();
-    save_dialog.setNameFilter(tr(
-        "Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
-        ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
-        ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
-#else
-    suffix = settings.value(QSL("studio/default_suffix"), QSL("png")).toString();
-    save_dialog.setNameFilter(tr(
-        "Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
-        ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
-        ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
-    suffixes << QSL("png");
-#endif
+    if (m_bc.bc.noPng()) {
+        suffix = settings.value(QSL("studio/default_suffix"), QSL("gif")).toString();
+        save_dialog.setNameFilter(tr(
+            "Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
+            ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
+            ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+    } else {
+        suffix = settings.value(QSL("studio/default_suffix"), QSL("png")).toString();
+        save_dialog.setNameFilter(tr(
+            "Portable Network Graphic (*.png);;Encapsulated PostScript (*.eps);;Graphics Interchange Format (*.gif)"
+            ";;Scalable Vector Graphic (*.svg);;Windows Bitmap (*.bmp);;ZSoft PC Painter Image (*.pcx)"
+            ";;Enhanced Metafile (*.emf);;Tagged Image File Format (*.tif)"));
+        suffixes << QSL("png");
+    }
 
     if (QString::compare(suffix, QSL("png"), Qt::CaseInsensitive) == 0)
         save_dialog.selectNameFilter(tr("Portable Network Graphic (*.png)"));
@@ -1290,14 +1288,12 @@ void MainWindow::copy_to_clipboard_pcx()
     copy_to_clipboard(QSL(".zint.pcx"), QSL("PCX"), "image/x-pcx");
 }
 
-#ifndef NO_PNG
 void MainWindow::copy_to_clipboard_png()
 {
-    copy_to_clipboard(QSL(".zint.png"), QSL("PNG"));
+    if (!m_bc.bc.noPng()) {
+        copy_to_clipboard(QSL(".zint.png"), QSL("PNG"));
+    }
 }
-#else
-void MainWindow::copy_to_clipboard_png() {} // Workaround Qt not parsing #ifndef NO_PNG in slots
-#endif
 
 void MainWindow::copy_to_clipboard_svg()
 {
@@ -1394,9 +1390,9 @@ void MainWindow::view_context_menu(const QPoint &pos)
 #ifdef MAINWINDOW_COPY_PCX
         menu.addAction(m_copyPCXAct);
 #endif
-#ifndef NO_PNG
-        menu.addAction(m_copyPNGAct);
-#endif
+        if (!m_bc.bc.noPng()) {
+            menu.addAction(m_copyPNGAct);
+        }
         menu.addAction(m_copySVGAct);
         menu.addAction(m_copyTIFAct);
         menu.addSeparator();
@@ -2984,12 +2980,12 @@ void MainWindow::createActions()
     connect(m_copyPCXAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_pcx()));
 #endif
 
-#ifndef NO_PNG
-    m_copyPNGAct = new QAction(copyIcon, tr("Copy as &PNG"), this);
-    m_copyPNGAct->setStatusTip(tr("Copy to clipboard as PNG"));
-    m_copyPNGAct->setShortcut(copyPNGSeq);
-    connect(m_copyPNGAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_png()));
-#endif
+    if (!m_bc.bc.noPng()) {
+        m_copyPNGAct = new QAction(copyIcon, tr("Copy as &PNG"), this);
+        m_copyPNGAct->setStatusTip(tr("Copy to clipboard as PNG"));
+        m_copyPNGAct->setShortcut(copyPNGSeq);
+        connect(m_copyPNGAct, SIGNAL(triggered()), this, SLOT(copy_to_clipboard_png()));
+    }
 
     m_copySVGAct = new QAction(copyIcon, tr("Copy as S&VG"), this);
     m_copySVGAct->setStatusTip(tr("Copy to clipboard as SVG"));
@@ -3048,9 +3044,9 @@ void MainWindow::createMenu()
 #ifdef MAINWINDOW_COPY_PCX
     m_menu->addAction(m_copyPCXAct);
 #endif
-#ifndef NO_PNG
-    m_menu->addAction(m_copyPNGAct);
-#endif
+    if (!m_bc.bc.noPng()) {
+        m_menu->addAction(m_copyPNGAct);
+    }
     m_menu->addAction(m_copySVGAct);
     m_menu->addAction(m_copyTIFAct);
     m_menu->addSeparator();
@@ -3083,9 +3079,9 @@ void MainWindow::enableActions()
 #ifdef MAINWINDOW_COPY_PCX
     m_copyPCXAct->setEnabled(enabled);
 #endif
-#ifndef NO_PNG
-    m_copyPNGAct->setEnabled(enabled);
-#endif
+    if (!m_bc.bc.noPng()) {
+        m_copyPNGAct->setEnabled(enabled);
+    }
     m_copySVGAct->setEnabled(enabled);
     m_copyTIFAct->setEnabled(enabled);
     m_openCLIAct->setEnabled(enabled);
@@ -3096,9 +3092,9 @@ void MainWindow::enableActions()
     m_copyBMPShortcut->setEnabled(enabled);
     m_copyEMFShortcut->setEnabled(enabled);
     m_copyGIFShortcut->setEnabled(enabled);
-#ifndef NO_PNG
-    m_copyPNGShortcut->setEnabled(enabled);
-#endif
+    if (!m_bc.bc.noPng()) {
+        m_copyPNGShortcut->setEnabled(enabled);
+    }
     m_copySVGShortcut->setEnabled(enabled);
     m_copyTIFShortcut->setEnabled(enabled);
 }

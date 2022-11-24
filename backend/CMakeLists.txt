@@ -4,8 +4,6 @@
 
 project(zint)
 
-configure_file(zintconfig.h.in ${CMAKE_CURRENT_SOURCE_DIR}/zintconfig.h)
-
 set(zint_COMMON_SRCS common.c library.c large.c reedsol.c gs1.c eci.c general_field.c)
 set(zint_ONEDIM_SRCS bc412.c code.c code128.c 2of5.c upcean.c telepen.c medical.c plessey.c rss.c)
 set(zint_POSTAL_SRCS postal.c auspost.c imail.c mailmark.c)
@@ -69,7 +67,7 @@ endif()
 if(ZINT_USE_PNG AND PNG_FOUND)
     zint_target_link_libraries(PNG::PNG)
 else()
-    zint_target_compile_definitions(PUBLIC NO_PNG)
+    zint_target_compile_definitions(PRIVATE ZINT_NO_PNG)
 endif()
 
 if(ZINT_TEST)

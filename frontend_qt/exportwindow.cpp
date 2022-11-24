@@ -34,6 +34,11 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     : m_bc(bc), m_output_data(output_data), m_lines(0)
 {
     setupUi(this);
+
+    if (m_bc->bc.noPng()) {
+        cmbFileType->removeItem(0); // PNG
+    }
+
     QSettings settings;
 #if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
@@ -47,7 +52,8 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     linPrefix->setText(settings.value(QSL("studio/export/file_prefix"), QSL("bcs_")).toString());
     linPostfix->setText(settings.value(QSL("studio/export/file_postfix"), QSL("")).toString());
     cmbFileName->setCurrentIndex(settings.value(QSL("studio/export/name_format"), 0).toInt());
-    cmbFileFormat->setCurrentIndex(settings.value(QSL("studio/export/filetype"), 0).toInt());
+    cmbFileType->setCurrentIndex(std::min(settings.value(QSL("studio/export/filetype"), 0).toInt(),
+                    cmbFileType->count() - 1));
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
     btnCancel->setIcon(closeIcon);
@@ -77,7 +83,7 @@ ExportWindow::~ExportWindow()
     settings.setValue(QSL("studio/export/file_prefix"), linPrefix->text());
     settings.setValue(QSL("studio/export/file_postfix"), linPostfix->text());
     settings.setValue(QSL("studio/export/name_format"), cmbFileName->currentIndex());
-    settings.setValue(QSL("studio/export/filetype"), cmbFileFormat->currentIndex());
+    settings.setValue(QSL("studio/export/filetype"), cmbFileType->currentIndex());
 }
 
 void ExportWindow::get_directory()
@@ -122,25 +128,11 @@ void ExportWindow::process()
     }
 
     QString suffix;
-    switch (cmbFileFormat->currentIndex()) {
-#ifdef NO_PNG
-        case 0: suffix = QSL(".eps"); break;
-        case 1: suffix = QSL(".gif"); break;
-        case 2: suffix = QSL(".svg"); break;
-        case 3: suffix = QSL(".bmp"); break;
-        case 4: suffix = QSL(".pcx"); break;
-        case 5: suffix = QSL(".emf"); break;
-        case 6: suffix = QSL(".tif"); break;
-#else
-        case 0: suffix = QSL(".png"); break;
-        case 1: suffix = QSL(".eps"); break;
-        case 2: suffix = QSL(".gif"); break;
-        case 3: suffix = QSL(".svg"); break;
-        case 4: suffix = QSL(".bmp"); break;
-        case 5: suffix = QSL(".pcx"); break;
-        case 6: suffix = QSL(".emf"); break;
-        case 7: suffix = QSL(".tif"); break;
-#endif
+    int suffixIdx = cmbFileType->currentText().lastIndexOf(QSL("(*."));
+    if (suffixIdx == -1) {
+        suffix = m_bc->bc.noPng() ? QSL(".gif") : QSL(".png");
+    } else {
+        suffix = cmbFileType->currentText().mid(suffixIdx + 2, 4);
     }
 
     QString filePathPrefix = linDestPath->text() % QDir::separator() % linPrefix->text();

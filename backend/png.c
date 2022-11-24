@@ -30,7 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#ifndef NO_PNG
+#ifndef ZINT_NO_PNG
 
 #include <errno.h>
 #include <stdio.h>
@@ -348,4 +348,4 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 /* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
 typedef int make_iso_compilers_happy;
 /* vim: set ts=4 sw=4 et : */
-#endif /* NO_PNG */
+#endif /* ZINT_NO_PNG */

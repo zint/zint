@@ -196,6 +196,9 @@ public:
     /* Note: legacy argument `mode` is not used */
     void render(QPainter& painter, const QRectF& paintRect, AspectRatioMode mode = IgnoreAspectRatio);
 
+    /* Whether Zint library "libzint" built with PNG support or not (`ZBarcode_NoPng()`) */
+    bool noPng() const;
+
     int getVersion() const;
 
     /* Translate settings into Command Line equivalent. Set `win` to use Windows escaping of data.

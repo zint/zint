@@ -13,7 +13,7 @@ INCLUDEPATH += ../backend d:\\opt\\include
 
 DEFINES +=  _CRT_SECURE_NO_WARNINGS _CRT_NONSTDC_NO_WARNINGS ZINT_VERSION=\\\"$$VERSION\\\" include=""
 
-!contains(DEFINES, NO_PNG) {
+!contains(DEFINES, ZINT_NO_PNG) {
     SOURCES += ../backend/png.c
 }
 

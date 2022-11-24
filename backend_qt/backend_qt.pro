@@ -19,7 +19,7 @@ INCLUDEPATH += ../backend
 #EDIT THIS !!!!
 DEFINES += ZINT_VERSION="\\\"2.11.1.9\\\""
 
-!contains(DEFINES, NO_PNG) {
+!contains(DEFINES, ZINT_NO_PNG) {
     INCLUDEPATH += ../../lpng
     INCLUDEPATH += ../../zlib
 }

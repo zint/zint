@@ -4,7 +4,7 @@ DEPENDPATH += . debug release
 INCLUDEPATH += .
 INCLUDEPATH += ../backend
 INCLUDEPATH += ../backend_qt
-!contains(DEFINES, NO_PNG) {
+!contains(DEFINES, ZINT_NO_PNG) {
     INCLUDEPATH += ../../lpng
     INCLUDEPATH += ../../zlib
 }
@@ -82,7 +82,7 @@ QMAKE_LIBDIR += ../backend_qt/release
 LIBS += -lQt5Core
 QMAKE_LIBDIR += C:/qt/5.15.2static/lib
 
-!contains(DEFINES, NO_PNG) {
+!contains(DEFINES, ZINT_NO_PNG) {
 # Win
     win32:LIBS += -llibpng16 -lzlib
     win32:QMAKE_LIBDIR+="../../lpng/projects/vstudio/Release Library"

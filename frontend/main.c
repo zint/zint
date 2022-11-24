@@ -1000,7 +1000,7 @@ int main(int argc, char **argv) {
         fprintf(stderr, "Error 151: Memory failure\n");
         exit(ZINT_ERROR_MEMORY);
     }
-    no_png = strcmp(my_symbol->outfile, "out.gif") == 0;
+    no_png = ZBarcode_NoPng();
 
     if (argc == 1) {
         ZBarcode_Delete(my_symbol);

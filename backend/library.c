@@ -61,7 +61,7 @@ struct zint_symbol *ZBarcode_Create(void) {
     symbol->fgcolor = &symbol->fgcolour[0];
     strcpy(symbol->bgcolour, "ffffff");
     symbol->bgcolor = &symbol->bgcolour[0];
-#ifdef NO_PNG
+#ifdef ZINT_NO_PNG
     strcpy(symbol->outfile, "out.gif");
 #else
     strcpy(symbol->outfile, "out.png");
@@ -1854,6 +1854,15 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     }
 
     return result;
+}
+
+/* Whether Zint built without PNG support */
+int ZBarcode_NoPng(void) {
+#ifdef ZINT_NO_PNG
+    return 1;
+#else
+    return 0;
+#endif
 }
 
 /* Return the version of Zint linked to */

@@ -682,6 +682,10 @@ namespace Zint {
         return m_lastError.length();
     }
 
+    bool QZint::noPng() const {
+        return ZBarcode_NoPng() == 1;
+    }
+
     int QZint::getVersion() const {
         return ZBarcode_Version();
     }

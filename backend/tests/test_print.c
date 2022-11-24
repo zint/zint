@@ -102,9 +102,9 @@ static void test_print(const testCtx *const p_ctx) {
     }
 
     for (j = 0; j < exts_size; j++) {
-#ifdef NO_PNG
-        if (strcmp(exts[j], "png") == 0) continue;
-#endif
+
+        if (ZBarcode_NoPng() && strcmp(exts[j], "png") == 0) continue;
+
         assert_nonzero(sizeof(data_subdir) > strlen(data_dir) + 1 + strlen(exts[j]),
             "sizeof(data_subdir) (%d) <= strlen(data_dir) (%d) + 1 + strlen(%s) (%d)\n",
             (int) sizeof(data_subdir), (int) strlen(data_dir), exts[j], (int) strlen(exts[j]));

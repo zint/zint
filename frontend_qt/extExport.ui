@@ -143,12 +143,12 @@
         <string>The type of file which you want to create</string>
        </property>
        <property name="buddy">
-        <cstring>cmbFileFormat</cstring>
+        <cstring>cmbFileType</cstring>
        </property>
       </widget>
      </item>
      <item row="4" column="1" colspan="2">
-      <widget class="QComboBox" name="cmbFileFormat">
+      <widget class="QComboBox" name="cmbFileType">
        <property name="toolTip">
         <string>The type of file which you want to create</string>
        </property>

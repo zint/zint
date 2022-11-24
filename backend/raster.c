@@ -49,9 +49,9 @@
 
 #define UPCEAN_TEXT     1
 
-#ifndef NO_PNG
+#ifndef ZINT_NO_PNG
 INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
-#endif /* NO_PNG */
+#endif /* ZINT_NO_PNG */
 INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
@@ -233,7 +233,7 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
             }
             break;
         case OUT_PNG_FILE:
-#ifndef NO_PNG
+#ifndef ZINT_NO_PNG
             error_number = png_pixel_plot(symbol, rotated_pixbuf);
 #else
             if (rotate_angle) {
@@ -1335,12 +1335,12 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {
     int error;
 
-#ifdef NO_PNG
+#ifdef ZINT_NO_PNG
     if (file_type == OUT_PNG_FILE) {
         strcpy(symbol->errtxt, "660: PNG format disabled at compile time");
         return ZINT_ERROR_INVALID_OPTION;
     }
-#endif /* NO_PNG */
+#endif /* ZINT_NO_PNG */
 
     error = out_check_colour_options(symbol);
     if (error != 0) {
