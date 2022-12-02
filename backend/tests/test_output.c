@@ -113,7 +113,7 @@ static void test_fopen(const testCtx *const p_ctx) {
         if (testContinue(p_ctx, i)) continue;
 
         strcpy(outfile, cwdbuf);
-        len = strlen(outfile);
+        len = (int) strlen(outfile);
         if (len && outfile[len - 1] != TEST_OUT_SEP) { outfile[len++] = TEST_OUT_SEP; outfile[len] = '\0'; }
         dir_exists = subdir_exists = 0;
 
