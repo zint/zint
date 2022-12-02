@@ -1497,7 +1497,7 @@ static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
             i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].x_dim, data[i].filetype, ret, data[i].expected);
 
         if (ret) {
-            dpmm_from_dpi = roundf(data[i].dpi / 25.4f);
+            dpmm_from_dpi = stripf(roundf(data[i].dpi / 25.4f));
             ret = ZBarcode_Scale_From_XdimDp(data[i].symbology, data[i].x_dim, dpmm_from_dpi, data[i].filetype);
             assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
                 i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].x_dim, data[i].filetype, ret, data[i].expected);
@@ -1505,7 +1505,7 @@ static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
             if (data[i].expected > 0.1f && data[i].expected < 200.0f /* Can't round trip scales <= 0.1 or >= 200.0f */
                     && (data[i].symbology == BARCODE_MAXICODE || strcmp(data[i].filetype, "gif") != 0)) { /* Non-MAXICODE raster rounds to half-increments */
                 x_dim_from_scale = ZBarcode_XdimDp_From_Scale(data[i].symbology, ret, data[i].dpmm, data[i].filetype);
-                x_dim_from_scale = roundf(x_dim_from_scale * 100.0f) / 100.0f;
+                x_dim_from_scale = stripf(stripf(roundf(x_dim_from_scale * 100.0f)) / 100.0f);
                 assert_equal(x_dim_from_scale, data[i].x_dim, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != x_dim %.8g\n",
                     i, testUtilBarcodeName(data[i].symbology), ret, data[i].x_dim, data[i].filetype, x_dim_from_scale, data[i].x_dim);
             }
@@ -1571,7 +1571,7 @@ static void test_xdimdp_from_scale(const testCtx *const p_ctx) {
             i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].scale, data[i].filetype, ret, data[i].expected);
 
         if (ret) {
-            dpmm_from_dpi = roundf(data[i].dpi / 25.4f);
+            dpmm_from_dpi = stripf(roundf(data[i].dpi / 25.4f));
             ret = ZBarcode_XdimDp_From_Scale(data[i].symbology, data[i].scale, dpmm_from_dpi, data[i].filetype);
             assert_equal(ret, data[i].expected, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
                 i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].scale, data[i].filetype, ret, data[i].expected);
