@@ -1,0 +1,350 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>ScaleDialog</class>
+ <widget class="QDialog" name="ScaleDialog">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>250</width>
+    <height>200</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>Set Printing Scale</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:res/zint-qt.ico</normaloff>:res/zint-qt.ico</iconset>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutScale">
+   <item>
+    <layout class="QGridLayout" name="gridLayoutScale">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblXdim">
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>X-dimension in selected units</string>
+       </property>
+       <property name="text">
+        <string>&amp;X-dimension:</string>
+       </property>
+       <property name="buddy">
+        <cstring>spnXdim</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QDoubleSpinBox" name="spnXdim">
+       <property name="toolTip">
+        <string>X-dimension in selected units</string>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="decimals">
+        <number>5</number>
+       </property>
+       <property name="minimum">
+        <double>0.001000000000000</double>
+       </property>
+       <property name="maximum">
+        <double>100.000000000000000</double>
+       </property>
+       <property name="singleStep">
+        <double>0.010000000000000</double>
+       </property>
+       <property name="value">
+        <double>1.000000000000000</double>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="2">
+      <widget class="QComboBox" name="cmbXdimUnits">
+       <property name="toolTip">
+        <string>X-dimension units (millimetres or inches)</string>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>mm</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>in</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="0" column="3">
+      <widget class="QPushButton" name="btnXdimDefault">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Reset X-dimension to default (symbology specific)</string>
+       </property>
+       <property name="text">
+        <string>De&amp;fault</string>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblResolution">
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Resolution (dot density) in selected units</string>
+       </property>
+       <property name="text">
+        <string>&amp;Resolution:</string>
+       </property>
+       <property name="buddy">
+        <cstring>spnResolution</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QSpinBox" name="spnResolution">
+       <property name="toolTip">
+        <string>Resolution (dot density) in selected units</string>
+       </property>
+       <property name="suffix">
+        <string/>
+       </property>
+       <property name="maximum">
+        <number>9999</number>
+       </property>
+       <property name="minimum">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>12</number>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QComboBox" name="cmbResolutionUnits">
+       <property name="toolTip">
+        <string>Resolution units (dots per mm or dots per inch)</string>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <item>
+        <property name="text">
+         <string>dpmm</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>dpi</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="3">
+      <widget class="QPushButton" name="btnResolutionDefault">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Reset resolution to default (12 dpmm or 300 dpi)</string>
+       </property>
+       <property name="text">
+        <string>Defau&amp;lt</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblFileType">
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>The type of file which will be outputted to</string>
+       </property>
+       <property name="text">
+        <string>File &amp;Type:</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbFileType</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1" colspan="3">
+      <widget class="QComboBox" name="cmbFileType">
+       <property name="toolTip">
+        <string>The type of file which will be outputted to</string>
+       </property>
+       <item>
+        <property name="text">
+         <string>Raster (BMP/GIF/PCX/PNG/TIF)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Vector (excluding EMF)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Extended Metafile (EMF)</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="lblPrintingScale">
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Calculated scale</string>
+       </property>
+       <property name="text">
+        <string>Printing Scale:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1" colspan="3">
+      <widget class="QLabel" name="msgPrintingScale">
+       <property name="toolTip">
+        <string>Calculated scale</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="lblWidthHeight">
+       <property name="maximumSize">
+        <size>
+         <width>120</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Image size (width x height) of barcode</string>
+       </property>
+       <property name="text">
+        <string>Print Size:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="1" colspan="3">
+      <widget class="QLabel" name="msgWidthHeight">
+       <property name="toolTip">
+        <string>Image size (width x height) of barcode</string>
+       </property>
+       <property name="text">
+        <string/>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacerScale">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>40</width>
+       <height>10</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horzLayoutScaleBtns">
+     <item>
+      <spacer name="horzSpacerScaleBtns">
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="sizeHint" stdset="0">
+        <size>
+         <width>40</width>
+         <height>20</height>
+        </size>
+       </property>
+      </spacer>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnOK">
+       <property name="autoDefault">
+        <bool>true</bool>
+       </property>
+       <property name="toolTip">
+        <string>Close the window and update the Printing Scale</string>
+       </property>
+       <property name="text">
+        <string>&amp;Ok</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QPushButton" name="btnCancel">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="toolTip">
+        <string>Close window without updating the Printing Scale</string>
+       </property>
+       <property name="text">
+        <string>&amp;Close</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

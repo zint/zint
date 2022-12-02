@@ -36,6 +36,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "output.h"
 
 static void pick_colour(int colour, char colour_code[]) {
     switch (colour) {
@@ -183,7 +184,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     if (symbol->output_options & BARCODE_STDOUT) {
         fsvg = stdout;
     } else {
-        if (!(fsvg = fopen(symbol->outfile, "w"))) {
+        if (!(fsvg = out_fopen(symbol->outfile, "w"))) {
             sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }

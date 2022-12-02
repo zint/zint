@@ -37,6 +37,7 @@
 #include <fcntl.h>
 #endif
 #include "common.h"
+#include "output.h"
 
 /* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
 #define GIF_LZW_PAGE_SIZE   0x100000 /* Megabyte */
@@ -474,7 +475,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #endif
         gif_file = stdout;
     } else {
-        if (!(gif_file = fopen(symbol->outfile, "wb"))) {
+        if (!(gif_file = out_fopen(symbol->outfile, "wb"))) {
             sprintf(symbol->errtxt, "611: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }

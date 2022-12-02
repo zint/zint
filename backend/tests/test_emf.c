@@ -44,6 +44,7 @@ static void test_print(const testCtx *const p_ctx) {
         int whitespace_height;
         int option_1;
         int option_2;
+        float dpmm;
         char *fgcolour;
         char *bgcolour;
         int rotate_angle;
@@ -52,21 +53,34 @@ static void test_print(const testCtx *const p_ctx) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "Égjpqy", "code128_egrave_bold.emf", "" },
-        /*  1*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, "147AD0", "FC9630", 0, "123", "telenum_fg_bg.emf", "" },
-        /*  2*/ { BARCODE_ULTRA, -1, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", 0, "123", "ultracode_fg_bg.emf", "" },
-        /*  3*/ { BARCODE_ULTRA, -1, 2, BARCODE_BOX, 2, 2, -1, -1, "FF0000", "0000FF", 0, "123", "ultracode_fg_bg_box2.emf", "" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "9780877799306+54321", "ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
-        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "210987654321+54321", "ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
-        /*  6*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.emf", "" },
-        /*  7*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon.emf", "" },
-        /*  8*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "0123456+12", "upce_2addon_small_bold.emf", "" },
-        /*  9*/ { BARCODE_ITF14, -1, -1, BOLD_TEXT, -1, -1, -1, -1, "", "", 0, "123", "itf14_bold.emf", "" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 90, "123", "code39_rotate_90.emf", "" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 180, "123", "code39_rotate_180.emf", "" },
-        /* 12*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, "", "", 270, "123", "code39_rotate_270.emf", "" },
-        /* 13*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
-        /* 14*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg.emf", "" },
+        /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 0, "", "", 0, "Égjpqy", "code128_egrave_bold.emf", "" },
+        /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 100.0f / 25.4f, "", "", 0, "Égjpqy", "code128_egrave_bold_100dpi.emf", "" },
+        /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 150.0f / 25.4f, "", "", 0, "Égjpqy", "code128_egrave_bold_150dpi.emf", "" },
+        /*  3*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 300.0f / 25.4f, "", "", 0, "Égjpqy", "code128_egrave_bold_300dpi.emf", "" },
+        /*  4*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 400.0f / 25.4f, "", "", 0, "Égjpqy", "code128_egrave_bold_400dpi.emf", "" },
+        /*  5*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 1200.0f / 25.4f, "", "", 0, "Égjpqy", "code128_egrave_bold_1200dpi.emf", "" },
+        /*  6*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, 0, "147AD0", "FC9630", 0, "123", "telenum_fg_bg.emf", "" },
+        /*  7*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, 150.0f / 25.4f, "147AD0", "FC9630", 0, "123", "telenum_fg_bg_150dpi.emf", "" },
+        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 5, -1, -1, -1, 0, "147AD0", "FC9630", 0, "123", "ultracode_fg_bg.emf", "" },
+        /*  9*/ { BARCODE_ULTRA, -1, 2, BARCODE_BOX, 2, 2, -1, -1, 0, "FF0000", "0000FF", 0, "123", "ultracode_fg_bg_box2.emf", "" },
+        /* 10*/ { BARCODE_ULTRA, -1, 2, BARCODE_BOX, 2, 2, -1, -1, 600.0f / 25.4f, "FF0000", "0000FF", 0, "123", "ultracode_fg_bg_box2_600dpi.emf", "" },
+        /* 11*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9780877799306+54321", "ean13_5addon_ggs_5.2.2.5.2-2.emf", "" },
+        /* 12*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "210987654321+54321", "ean13_5addon_#185.emf", "#185 Byte count, font data, HeaderExtension1/2" },
+        /* 13*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.emf", "" },
+        /* 14*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "0123456+12", "upce_2addon.emf", "" },
+        /* 15*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 150.f / 25.4f, "", "", 0, "0123456+12", "upce_2addon_150dpi.emf", "" },
+        /* 16*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, 0, "", "", 0, "0123456+12", "upce_2addon_small_bold.emf", "" },
+        /* 17*/ { BARCODE_ITF14, -1, -1, BOLD_TEXT, -1, -1, -1, -1, 0, "", "", 0, "123", "itf14_bold.emf", "" },
+        /* 18*/ { BARCODE_ITF14, -1, -1, BOLD_TEXT, -1, -1, -1, -1, 600.f / 25.4f, "", "", 0, "123", "itf14_bold_600dpi.emf", "" },
+        /* 19*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 90, "123", "code39_rotate_90.emf", "" },
+        /* 20*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, 300.f / 25.4f, "", "", 90, "123", "code39_rotate_90_300dpi.emf", "" },
+        /* 21*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 180, "123", "code39_rotate_180.emf", "" },
+        /* 22*/ { BARCODE_CODE39, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 270, "123", "code39_rotate_270.emf", "" },
+        /* 23*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185.emf", "#185 Maxicode scaling" },
+        /* 24*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 150.f / 25.4f, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185_150dpi.emf", "#185 Maxicode scaling" },
+        /* 25*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 600.f / 25.4f, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185_600dpi.emf", "#185 Maxicode scaling" },
+        /* 26*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg.emf", "" },
+        /* 27*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 300.0f, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg_300dpi.emf", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -111,6 +125,10 @@ static void test_print(const testCtx *const p_ctx) {
         if (data[i].whitespace_height != -1) {
             symbol->whitespace_height = data[i].whitespace_height;
         }
+        if (data[i].dpmm) {
+            symbol->dpmm = data[i].dpmm;
+            symbol->scale = ZBarcode_Scale_From_XdimDp(symbol->symbology, ZBarcode_Default_Xdim(symbol->symbology), symbol->dpmm, "EMF");
+        }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
         }
@@ -128,10 +146,10 @@ static void test_print(const testCtx *const p_ctx) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %g, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height,
-                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
+                    data[i].option_1, data[i].option_2, data[i].dpmm, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
@@ -170,10 +188,13 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.symbology = BARCODE_CODE128;
     symbol.vector = &vector;
 
-    strcpy(symbol.outfile, "nosuch_dir/out.emf");
+    strcpy(symbol.outfile, "test_emf_out.emf");
+    (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
+    assert_nonzero(testUtilCreateROFile(symbol.outfile), "emf_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     ret = emf_plot(&symbol, 0);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+    assert_zero(testUtilRmROFile(symbol.outfile), "emf_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     symbol.output_options |= BARCODE_STDOUT;
 

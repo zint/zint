@@ -31,12 +31,14 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
 #include "common.h"
+#include "output.h"
 #include "pcx.h"        /* PCX header structure */
 
 /* ZSoft PCX File Format Technical Reference Manual http://bespin.org/~qz/pc-gpe/pcx.txt */
@@ -68,8 +70,8 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     header.window_ymin = 0;
     header.window_xmax = symbol->bitmap_width - 1;
     header.window_ymax = symbol->bitmap_height - 1;
-    header.horiz_dpi = 300;
-    header.vert_dpi = 300;
+    header.horiz_dpi = symbol->dpmm ? (uint16_t) roundf(stripf(symbol->dpmm * 25.4f)) : 300;
+    header.vert_dpi = header.horiz_dpi;
 
     for (i = 0; i < 48; i++) {
         header.colourmap[i] = 0x00;
@@ -98,7 +100,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #endif
         pcx_file = stdout;
     } else {
-        if (!(pcx_file = fopen(symbol->outfile, "wb"))) {
+        if (!(pcx_file = out_fopen(symbol->outfile, "wb"))) {
             sprintf(symbol->errtxt, "621: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }

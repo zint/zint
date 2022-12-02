@@ -73,8 +73,8 @@ e.g. CMAKE_MODULE_PATH=/usr/lib/x86_64-linux-gnu/cmake/Qt5
 2.2. Using the Qt Maintenance Tool
 ----------------------------------
 
-Alternatively, for a more consistent, dependable, flexible experience, sign up and download the
-Qt Maintenance Tool from
+Alternatively, for a more consistent experience, sign up and download the Qt Maintenance Tool
+from
 
     https://www.qt.io/download-qt-installer
 
@@ -82,8 +82,8 @@ On Ubuntu/Debian you may need to install xinerama to run the tool:
 
     sudo apt install libxcb-xinerama0
 
-Launch the tool and install the "Desktop gcc 64-bit" component for either Qt 5.15.2 or Qt 6
-(>= 6.1, and not 6.3.0).
+Launch the tool and install the "Desktop gcc 64-bit" component for either Qt 5.15.2 (preferred)
+or Qt 6 (>= 6.1, 6.2.4 preferably, and not >= 6.3 which are incompatible).
 
 Once Qt is installed you may need to tell CMake where it is:
 

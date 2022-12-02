@@ -24,13 +24,15 @@
 #include <QGraphicsScene>
 #include <QButtonGroup>
 
-#include "ui_mainWindow.h"
-#include "barcodeitem.h"
-
 class QLabel;
 class QShortcut;
 class QDoubleSpinBox;
 class QPushButton;
+
+#include "ui_mainWindow.h"
+#include "barcodeitem.h"
+
+class ScaleWindow;
 
 class MainWindow : public QWidget, private Ui::mainWindow
 {
@@ -64,7 +66,6 @@ public slots:
     void composite_ean_check();
     void maxi_scm_ui_set();
     void msi_plessey_ui_set();
-    void change_print_scale();
     void change_cmyk();
     void autoheight_ui_set();
     void HRTShow_ui_set();
@@ -74,6 +75,7 @@ public slots:
     void on_encoded();
     void on_errored();
     void on_dataChanged(const QString& text, bool escaped, int seg_no);
+    void on_scaleChanged(double scale);
     void filter_symbologies();
 
     bool save();
@@ -97,6 +99,7 @@ public slots:
     void clear_composite();
     void zap();
     void open_cli_dialog();
+    void open_scale_dialog();
 
     void copy_to_clipboard_bmp();
     void copy_to_clipboard_emf();
@@ -112,8 +115,11 @@ public slots:
     void height_per_row_disable();
     void height_per_row_default();
 
-    void guard_reset_upcean();
-    void guard_reset_upca();
+    void guard_default_upcean();
+    void guard_default_upca();
+
+    void daft_ui_set();
+    void daft_tracker_default();
 
     void view_context_menu(const QPoint &pos);
     void errtxtBar_context_menu(const QPoint &pos);
@@ -134,9 +140,11 @@ protected:
     virtual bool eventFilter(QObject *watched, QEvent *event) override;
 
     void combobox_item_enabled(QComboBox *comboBox, int index, bool enabled);
-    void upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base);
-    void upcean_guard_descent(const QString &spnBoxName, const QString &labelName);
-    void guard_reset(const QString &spnBoxName);
+    bool upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base);
+    void upcean_guard_descent(const QString &spnBoxName, const QString &labelName, const QString &btnDefaultName,
+            bool enabled = true);
+    void guard_default(const QString &spnBoxName);
+    double get_height_per_row_default();
     void set_gs1_mode(bool gs1_mode);
     void set_smaller_font(const QString &labelName);
 
@@ -187,6 +195,11 @@ protected:
     void save_sub_settings(QSettings &settings, int symbology);
     void load_sub_settings(QSettings &settings, int symbology);
 
+    void size_msg_ui_set();
+
+    float get_dpmm(const struct Zint::QZintXdimDpVars *vars) const;
+    const char *getFileType(const struct Zint::QZintXdimDpVars *vars, bool msg = false) const;
+
 private:
     QColor m_fgcolor, m_bgcolor;
     QByteArray m_fgcolor_geometry, m_bgcolor_geometry;
@@ -223,6 +236,8 @@ private:
     QDoubleSpinBox *m_spnHeightPerRow;
     QPushButton *m_btnHeightPerRowDisable;
     QPushButton *m_btnHeightPerRowDefault;
+    struct Zint::QZintXdimDpVars m_xdimdpVars;
+    ScaleWindow *m_scaleWindow;
 };
 
 /* vim: set ts=4 sw=4 et : */

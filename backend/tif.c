@@ -38,6 +38,7 @@
 #include <fcntl.h>
 #endif
 #include "common.h"
+#include "output.h"
 #include "tif.h"
 #include "tif_lzw.h"
 
@@ -331,7 +332,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #endif
         tif_file = stdout;
     } else {
-        if (!(tif_file = fopen(symbol->outfile, "wb+"))) { /* '+' as use fseek/ftell() */
+        if (!(tif_file = out_fopen(symbol->outfile, "wb+"))) { /* '+' as use fseek/ftell() */
             sprintf(symbol->errtxt, "672: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
@@ -523,7 +524,11 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     tags[entries].tag = 0x0128; /* ResolutionUnit */
     tags[entries].type = 3; /* SHORT */
     tags[entries].count = 1;
-    tags[entries++].offset = 2; /* Inches */
+    if (symbol->dpmm) {
+        tags[entries++].offset = 3; /* Centimetres */
+    } else {
+        tags[entries++].offset = 2; /* Inches */
+    }
 
     if (color_map_size) {
         tags[entries].tag = 0x0140; /* ColorMap */
@@ -571,17 +576,17 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         total_bytes_put += strip_count * 8;
     }
 
-    /* X Resolution */
-    temp32 = 72;
+    /* XResolution */
+    temp32 = symbol->dpmm ? symbol->dpmm : 72;
     fwrite(&temp32, 4, 1, tif_file);
-    temp32 = 1;
+    temp32 = symbol->dpmm ? 10 /*cm*/ : 1;
     fwrite(&temp32, 4, 1, tif_file);
     total_bytes_put += 8;
 
-    /* Y Resolution */
-    temp32 = 72;
+    /* YResolution */
+    temp32 = symbol->dpmm ? symbol->dpmm : 72;
     fwrite(&temp32, 4, 1, tif_file);
-    temp32 = 1;
+    temp32 = symbol->dpmm ? 10 /*cm*/ : 1;
     fwrite(&temp32, 4, 1, tif_file);
     total_bytes_put += 8;
 

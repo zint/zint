@@ -31,29 +31,29 @@ proc Generate {} {
     if {[catch {zint encode [.e get] ::zintimg -barcode [.c get] {*}[.o get]} e]} {
         tk_messageBox -message $e -title "Zint error"
     } else {
-	set w [image width ::zintimg]
-	set h [image height ::zintimg]
-	set lw [winfo width .l]
-	set lh [winfo height .l]
-	set sx [expr {int(1.0 * $lw / $w)}]
-	set sy [expr {int(1.0 * $lh / $h)}]
-	if {$sy < $sx} {
-	    set sx $sy
-	}
-	if {$sx <= 0} {
-	    set sx [expr {1.1 * $lw / $w}]
-	    set sy [expr {1.1 * $lh / $h}]
-	    if {$sy < $sx} {
-		set sx $sy
-	    }
-	}
-	::zintimg blank
-	::zintimg configure -width 1 -height 1
-	::zintimg blank
-	::zintimg configure -width 0 -height 0
-	catch {
-	    zint encode [.e get] ::zintimg -barcode [.c get] -scale $sx {*}[.o get]
-	}
+        set w [image width ::zintimg]
+        set h [image height ::zintimg]
+        set lw [winfo width .l]
+        set lh [winfo height .l]
+        set sx [expr {int(1.0 * $lw / $w)}]
+        set sy [expr {int(1.0 * $lh / $h)}]
+        if {$sy < $sx} {
+            set sx $sy
+        }
+        if {$sx <= 0} {
+            set sx [expr {1.1 * $lw / $w}]
+            set sy [expr {1.1 * $lh / $h}]
+            if {$sy < $sx} {
+                set sx $sy
+            }
+        }
+        ::zintimg blank
+        ::zintimg configure -width 1 -height 1
+        ::zintimg blank
+        ::zintimg configure -width 0 -height 0
+        catch {
+            zint encode [.e get] ::zintimg -barcode [.c get] -scale $sx {*}[.o get]
+        }
     }
 }
 pack [label .l -image ::zintimg -bg white] -side top -fill both -expand 1 \

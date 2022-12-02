@@ -957,7 +957,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         if (symbol->structapp.id[0]) {
             int id, id_len;
 
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+            for (id_len = 1; id_len < 6 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 5) { /* 282 * 283 + 282 = 80088 */
                 strcpy(symbol->errtxt, "593: Structured Append ID too long (5 digit maximum)");

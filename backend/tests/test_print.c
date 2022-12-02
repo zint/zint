@@ -67,7 +67,7 @@ static void test_print(const testCtx *const p_ctx) {
     char escaped[1024];
     int escaped_size = 1024;
 
-    int have_identify = 0;
+    const char *have_identify = NULL;
     int have_libreoffice = 0;
     int have_ghostscript = 0;
     int have_vnu = 0;
@@ -177,7 +177,7 @@ static void test_print(const testCtx *const p_ctx) {
                         assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                     } else if (strcmp(exts[j], "txt") != 0) { /* I.e. rasters */
                         if (have_identify) {
-                            ret = testUtilVerifyIdentify(expected_file, debug);
+                            ret = testUtilVerifyIdentify(have_identify, expected_file, debug);
                             assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
                         }
                     }

@@ -29,10 +29,12 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-#include "testcommon.h"
-#include <fcntl.h>
-#include <sys/stat.h>
 #include <errno.h>
+#include <fcntl.h>
+#include <math.h>
+#include <sys/stat.h>
+#include "testcommon.h"
+#include "../common.h"
 
 static void test_checks(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
@@ -63,8 +65,8 @@ static void test_checks(const testCtx *const p_ctx) {
         /*  1*/ { BARCODE_CODE128, -1, "1234", -1, -1, 0, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", -1 },
         /*  2*/ { BARCODE_QRCODE, -1, "1234", -1, -1, 3, 0, 0, 0, 0, -1, -1, -1, -1, 0, "", -1 },
         /*  3*/ { BARCODE_QRCODE, -1, "1234", -1, -1, 999999 + 1, 0, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 218: Invalid ECI code 1000000", -1 },
-        /*  4*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 0.009, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 227: Scale out of range (0.01 to 100)", -1 },
-        /*  5*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 100.01, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 227: Scale out of range (0.01 to 100)", -1 },
+        /*  4*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 0.009, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 227: Scale out of range (0.01 to 200)", -1 },
+        /*  5*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 200.01, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 227: Scale out of range (0.01 to 200)", -1 },
         /*  6*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, -1, 20.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Dot size out of range (0.01 to 20)", -1 },
         /*  7*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 0, 0.01, 0.009, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 221: Dot size out of range (0.01 to 20)", -1 },
         /*  8*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, -0.1, 0, 0, 0, -1, -1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 765: Height out of range (0 to 2000)", -1 },
@@ -1381,6 +1383,204 @@ static void test_clear(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
+
+    struct item {
+        int symbology;
+        float x_dim;
+        float dpmm;
+        int dpi;
+        char *filetype;
+        float expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { BARCODE_EANX, 0.33f, 2, 50, "gif", 0.5f },
+        /*  1*/ { BARCODE_EANX, 0.33f, 2, 50, "emf", 0.33000001f },
+        /*  2*/ { BARCODE_EANX, 0.33f, 2, 50, "svg", 0.33000001f },
+        /*  3*/ { BARCODE_EANX, 0.33f, 3, 76, "gif", 0.5f },
+        /*  4*/ { BARCODE_EANX, 0.33f, 3, 76, "svg", 0.495f },
+        /*  5*/ { BARCODE_EANX, 0.33f, 4, 100, "gif", 0.5f },
+        /*  6*/ { BARCODE_EANX, 0.33f, 4, 100, "svg", 0.66000003f },
+        /*  7*/ { BARCODE_EANX, 0.33f, 6, 150, "gif", 1 },
+        /*  8*/ { BARCODE_EANX, 0.33f, 6, 150, "svg", 0.99f },
+        /*  9*/ { BARCODE_EANX, 0.33f, 8, 200, "gif", 1.5f },
+        /* 10*/ { BARCODE_EANX, 0.33f, 8, 200, "svg", 1.32f },
+        /* 11*/ { BARCODE_EANX, 0.33f, 12, 300, "gif", 2 },
+        /* 12*/ { BARCODE_EANX, 0.33f, 12, 300, "svg", 1.98f },
+        /* 13*/ { BARCODE_EANX, 0.33f, 16, 400, "gif", 2.5f }, /* NOTE: scale previously documented as 3.0f */
+        /* 14*/ { BARCODE_EANX, 0.33f, 16, 400, "svg", 2.64f },
+        /* 15*/ { BARCODE_EANX, 0.33f, 24, 600, "gif", 4 },
+        /* 16*/ { BARCODE_EANX, 0.33f, 24, 600, "svg", 3.96f },
+        /* 17*/ { BARCODE_EANX, 0.33f, 47, 1200, "gif", 8 },
+        /* 18*/ { BARCODE_EANX, 0.33f, 47, 1200, "emf", 7.755f },
+        /* 19*/ { BARCODE_EANX, 0.33f, 47, 1200, "svg", 7.755f },
+        /* 20*/ { BARCODE_EANX, 0.33f, 94, 2400, "gif", 15.5f }, /* NOTE dpmm previously documented as 95 */
+        /* 21*/ { BARCODE_EANX, 0.33f, 94, 2400, "svg", 15.51f },
+        /* 22*/ { BARCODE_EANX, 0.33f, 189, 4800, "gif", 31 },
+        /* 23*/ { BARCODE_EANX, 0.33f, 189, 4800, "svg", 31.185001f },
+        /* 24*/ { BARCODE_EANX, 0.33f, 378, 9600, "gif", 62.5f },
+        /* 25*/ { BARCODE_EANX, 0.33f, 378, 9600, "svg", 62.370003f },
+        /* 26*/ { BARCODE_MAXICODE, 0.88f, 4, 100, "gif", 0.352f },
+        /* 27*/ { BARCODE_MAXICODE, 0.88f, 4, 100, "emf", 0.1f }, /* NOTE scale rounded up to min 0.1 so doesn't round trip */
+        /* 28*/ { BARCODE_MAXICODE, 0.88f, 4, 100, "svg", 1.76f },
+        /* 29*/ { BARCODE_MAXICODE, 0.88f, 6, 150, "gif", 0.528f }, /* NOTE scale previously documented as 0.5f */
+        /* 30*/ { BARCODE_MAXICODE, 0.88f, 6, 150, "emf", 0.132f },
+        /* 31*/ { BARCODE_MAXICODE, 0.88f, 6, 150, "svg", 2.6399999 },
+        /* 32*/ { BARCODE_MAXICODE, 0.88f, 8, 200, "gif", 0.704f }, /* NOTE scale previously documented as 0.7f */
+        /* 33*/ { BARCODE_MAXICODE, 0.88f, 8, 200, "emf", 0.176f },
+        /* 34*/ { BARCODE_MAXICODE, 0.88f, 8, 200, "svg", 3.52f },
+        /* 35*/ { BARCODE_MAXICODE, 0.88f, 12, 300, "gif", 1.056f }, /* NOTE scale previously documented as 1.0f */
+        /* 36*/ { BARCODE_MAXICODE, 0.88f, 12, 300, "emf", 0.264f },
+        /* 37*/ { BARCODE_MAXICODE, 0.88f, 12, 300, "svg", 5.2799997f },
+        /* 38*/ { BARCODE_MAXICODE, 0.88f, 16, 400, "gif", 1.408f }, /* NOTE scale previously documented as 1.4f */
+        /* 39*/ { BARCODE_MAXICODE, 0.88f, 16, 400, "emf", 0.352f },
+        /* 40*/ { BARCODE_MAXICODE, 0.88f, 16, 400, "gif", 1.408f },
+        /* 41*/ { BARCODE_MAXICODE, 0.88f, 24, 600, "gif", 2.112f }, /* NOTE scale previously documented as 2.1f */
+        /* 42*/ { BARCODE_MAXICODE, 0.88f, 24, 600, "emf", 0.528f },
+        /* 43*/ { BARCODE_MAXICODE, 0.88f, 24, 600, "svg", 10.559999f },
+        /* 44*/ { BARCODE_MAXICODE, 0.88f, 47, 1200, "gif", 4.136f }, /* NOTE scale previously documented as 4.1f */
+        /* 45*/ { BARCODE_MAXICODE, 0.88f, 47, 1200, "emf", 1.034f },
+        /* 46*/ { BARCODE_MAXICODE, 0.88f, 47, 1200, "svg", 20.68f },
+        /* 47*/ { BARCODE_MAXICODE, 0.88f, 94, 2400, "gif", 8.272f }, /* NOTE dpmm previously documented as 95, scale as 8.2f */
+        /* 48*/ { BARCODE_MAXICODE, 0.88f, 94, 2400, "emf", 2.0680001f },
+        /* 49*/ { BARCODE_MAXICODE, 0.88f, 94, 2400, "svg", 41.360001f },
+        /* 50*/ { BARCODE_MAXICODE, 0.88f, 189, 4800, "gif", 16.632f }, /* NOTE scale previously documented as 16.4f */
+        /* 51*/ { BARCODE_MAXICODE, 0.88f, 189, 4800, "emf", 4.158f },
+        /* 52*/ { BARCODE_MAXICODE, 0.88f, 189, 4800, "svg", 83.159996f },
+        /* 53*/ { BARCODE_MAXICODE, 0.88f, 378, 9600, "gif", 33.264f },
+        /* 54*/ { BARCODE_MAXICODE, 0.88f, 378, 9600, "emf", 8.316f },
+        /* 55*/ { BARCODE_MAXICODE, 0.88f, 378, 9600, "svg", 166.31999f },
+        /* 56*/ { BARCODE_PDF417, 0.27f, 2, 50, "gif", 0.5f },
+        /* 57*/ { BARCODE_PDF417, 0.27f, 2, 50, "svg", 0.27000001f },
+        /* 58*/ { BARCODE_PDF417, 0.27f, 6, 150, "gif", 1 },
+        /* 59*/ { BARCODE_PDF417, 0.27f, 6, 150, "svg", 0.81000006f },
+        /* 60*/ { BARCODE_PDF417, 0.27f, 12, 300, "gif", 1.5 },
+        /* 61*/ { BARCODE_PDF417, 0.27f, 12, 300, "svg", 1.6200001f },
+        /* 62*/ { BARCODE_PDF417, 0.27f, 24, 600, "gif", 3 },
+        /* 63*/ { BARCODE_PDF417, 0.27f, 24, 600, "emf", 3.2400002f },
+        /* 64*/ { BARCODE_PDF417, 0.27f, 24, 600, "svg", 3.2400002f },
+        /* 65*/ { BARCODE_PHARMA_TWO, 1, 2, 50, "gif", 1 },
+        /* 66*/ { BARCODE_PHARMA_TWO, 1, 2, 50, "svg", 1 },
+        /* 67*/ { BARCODE_PHARMA_TWO, 1, 6, 150, "gif", 3 },
+        /* 68*/ { BARCODE_PHARMA_TWO, 1, 6, 150, "svg", 3 },
+        /* 69*/ { BARCODE_PHARMA_TWO, 1, 8, 200, "gif", 4 },
+        /* 70*/ { BARCODE_PHARMA_TWO, 1, 8, 200, "svg", 4 },
+        /* 71*/ { BARCODE_PHARMA_TWO, 1, 189, 4800, "gif", 94.5f },
+        /* 72*/ { BARCODE_PHARMA_TWO, 1, 189, 4800, "svg", 94.5f },
+        /* 73*/ { BARCODE_PHARMA_TWO, 1, 378, 9600, "gif", 189 },
+        /* 74*/ { BARCODE_PHARMA_TWO, 1, 378, 9600, "svg", 189 },
+        /* 75*/ { BARCODE_PHARMA_TWO, 1, 401, 10200, "gif", 200 }, /* NOTE scale capped to 200 so doesn't round trip */
+        /* 76*/ { BARCODE_PHARMA_TWO, 1, 401, 10200, "svg", 200 },
+        /* 77*/ { BARCODE_CODE128, 0.5, 12, 300, "gif", 3 },
+        /* 78*/ { BARCODE_CODE128, 0, 12, -1, "gif", 0 }, /* x_dim zero */
+        /* 79*/ { BARCODE_CODE128, 200.1f, 12, -1, "gif", 0 }, /* x_dim > 200 */
+        /* 80*/ { BARCODE_CODE128, 0.5f, -0.1f, -1, "gif", 0 }, /* dpmm neg */
+        /* 81*/ { BARCODE_CODE128, 0.5f, 1000.1, -1, "gif", 0 }, /* dpmm > 1000 */
+        /* 82*/ { BARCODE_CODE128, 0.5f, 300, -1, "abcd", 0 }, /* filetype unknown */
+        /* 83*/ { BARCODE_QRCODE, 10, 31, 800, "gif", 155 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+    float ret;
+    float x_dim_from_scale;
+    float dpmm_from_dpi;
+
+    testStart("test_scale_from_xdimdp");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        ret = ZBarcode_Scale_From_XdimDp(data[i].symbology, data[i].x_dim, data[i].dpmm, data[i].filetype);
+        assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g, %g, %s) %.8g != %.8g\n",
+            i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].x_dim, data[i].filetype, ret, data[i].expected);
+
+        if (ret) {
+            dpmm_from_dpi = roundf(data[i].dpi / 25.4f);
+            ret = ZBarcode_Scale_From_XdimDp(data[i].symbology, data[i].x_dim, dpmm_from_dpi, data[i].filetype);
+            assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].x_dim, data[i].filetype, ret, data[i].expected);
+
+            if (data[i].expected > 0.1f && data[i].expected < 200.0f /* Can't round trip scales <= 0.1 or >= 200.0f */
+                    && (data[i].symbology == BARCODE_MAXICODE || strcmp(data[i].filetype, "gif") != 0)) { /* Non-MAXICODE raster rounds to half-increments */
+                x_dim_from_scale = ZBarcode_XdimDp_From_Scale(data[i].symbology, ret, data[i].dpmm, data[i].filetype);
+                x_dim_from_scale = roundf(x_dim_from_scale * 100.0f) / 100.0f;
+                assert_equal(x_dim_from_scale, data[i].x_dim, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != x_dim %.8g\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, data[i].x_dim, data[i].filetype, x_dim_from_scale, data[i].x_dim);
+            }
+        }
+    }
+
+    testFinish();
+}
+
+static void test_xdimdp_from_scale(const testCtx *const p_ctx) {
+
+    struct item {
+        int symbology;
+        float scale;
+        float dpmm; /* Note testing "normal" case that want X-dim, not dpmm */
+        int dpi;
+        char *filetype;
+        float expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { BARCODE_EANX, 1, 6, 150, "gif", 0.33333334f },
+        /*  1*/ { BARCODE_EANX, 1.32f, 8, 200, "gif", 0.33000001f },
+        /*  2*/ { BARCODE_EANX, 1.5f, 8, 200, "gif", 0.375f },
+        /*  3*/ { BARCODE_EANX, 1.98f, 12, 300, "gif", 0.33f },
+        /*  4*/ { BARCODE_EANX, 2, 12, 300, "gif", 0.33333334f },
+        /*  5*/ { BARCODE_EANX, 2, 12, 300, "svg", 0.33333334f },
+        /*  6*/ { BARCODE_EANX, 2.64f, 16, 400, "gif", 0.33f },
+        /*  7*/ { BARCODE_EANX, 2.5f, 16, 400, "gif", 0.3125f },
+        /*  8*/ { BARCODE_EANX, 3.96f, 24, 600, "gif", 0.33f },
+        /*  9*/ { BARCODE_EANX, 3.96f, 24, 600, "svg", 0.33f },
+        /* 10*/ { BARCODE_EANX, 4, 24, 600, "gif", 0.33333334f },
+        /* 11*/ { BARCODE_EANX, 7.755f, 47, 1200, "gif", 0.33f },
+        /* 12*/ { BARCODE_EANX, 8, 47, 1200, "gif", 0.34042552f },
+        /* 13*/ { BARCODE_EANX, 15.51f, 94, 2400, "gif", 0.33f },
+        /* 14*/ { BARCODE_EANX, 15.5f, 94, 2400, "gif", 0.32978722f },
+        /* 15*/ { BARCODE_EANX, 31.185001f, 189, 4800, "gif", 0.33f },
+        /* 16*/ { BARCODE_EANX, 31, 189, 4800, "gif", 0.32804233f },
+        /* 17*/ { BARCODE_MAXICODE, 1, 12, 300, "gif", 0.83333331f },
+        /* 18*/ { BARCODE_MAXICODE, 0.264f, 12, 300, "emf", 0.87999994f },
+        /* 19*/ { BARCODE_MAXICODE, 5.2799997f, 12, 300, "svg", 0.87999994f },
+        /* 20*/ { BARCODE_MAXICODE, 2, 24, 600, "gif", 0.83333331f },
+        /* 21*/ { BARCODE_MAXICODE, 0.528f, 24, 600, "emf", 0.87999994f },
+        /* 22*/ { BARCODE_MAXICODE, 10.559999f, 24, 600, "svg", 0.87999994f },
+        /* 23*/ { BARCODE_CODE128, 0, 12, -1, "gif", 0 }, /* scale zero */
+        /* 24*/ { BARCODE_CODE128, 200.01f, 12, -1, "gif", 0 }, /* scale > 200 */
+        /* 25*/ { BARCODE_CODE128, 0.5f, 0, -1, "gif", 0 }, /* xdim_mm_or_dpmm zero */
+        /* 26*/ { BARCODE_CODE128, 0.5f, 1000.1f, -1, "gif", 0 }, /* xdim_mm_or_dpmm > 1000 */
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+    float ret;
+    float dpmm_from_dpi;
+
+    testStart("test_xdimdp_from_scale");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        ret = ZBarcode_XdimDp_From_Scale(data[i].symbology, data[i].scale, data[i].dpmm, data[i].filetype);
+        assert_equal(ret, data[i].expected, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != %.8g\n",
+            i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].scale, data[i].filetype, ret, data[i].expected);
+
+        if (ret) {
+            dpmm_from_dpi = roundf(data[i].dpi / 25.4f);
+            ret = ZBarcode_XdimDp_From_Scale(data[i].symbology, data[i].scale, dpmm_from_dpi, data[i].filetype);
+            assert_equal(ret, data[i].expected, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].scale, data[i].filetype, ret, data[i].expected);
+        }
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -1404,6 +1604,8 @@ int main(int argc, char *argv[]) {
         { "test_strip_bom", test_strip_bom },
         { "test_zero_outfile", test_zero_outfile },
         { "test_clear", test_clear },
+        { "test_scale_from_xdimdp", test_scale_from_xdimdp },
+        { "test_xdimdp_from_scale", test_xdimdp_from_scale },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

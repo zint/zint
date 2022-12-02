@@ -207,7 +207,7 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
             /* ISO/IEC 16390:2007 Section 4.4 min height 5mm or 15% of symbol width whichever greater where
                (P = character pairs, N = wide/narrow ratio = 3)
                width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
-            /* Taking X = 0.330mm from Annex D.3.1 (application specification) */
+            /* Taking min X = 0.330mm from Annex D.3.1 (application specification) */
             const float min_height_min = stripf(5.0f / 0.33f);
             float min_height = stripf((18.0f * (length / 2) + 9.0f) * 0.15f);
             if (min_height < min_height_min) {
@@ -281,8 +281,11 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
 }
 
 /* Deutsche Post Leitcode */
+/* Documentation (of a very incomplete and non-technical type):
+https://www.deutschepost.de/content/dam/dpag/images/D_d/dialogpost-schwer/dp-dialogpost-schwer-broschuere-072021.pdf
+*/
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, error_number;
+    int i, j, error_number;
     unsigned int count;
     int factor;
     unsigned char localstr[16] = {0};
@@ -311,16 +314,27 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     localstr[13] = c25_check_digit(count);
     localstr[14] = '\0';
     error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
-    ustrcpy(symbol->text, localstr);
+
+    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
+       https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
+    for (i = 0, j = 0; i <= 14; i++) {
+        symbol->text[j++] = localstr[i];
+        if (i == 4 || i == 7 || i == 10) {
+            symbol->text[j++] = '.';
+        }
+    }
 
     /* TODO: Find documentation on BARCODE_DPLEIT dimensions/height */
+    /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
+    (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
     return error_number;
 }
 
 /* Deutsche Post Identcode */
+/* See dpleit() for (sort of) documentation reference */
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, error_number, zeroes;
+    int i, j, error_number, zeroes;
     unsigned int count;
     int factor;
     unsigned char localstr[16] = {0};
@@ -348,9 +362,20 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     localstr[11] = c25_check_digit(count);
     localstr[12] = '\0';
     error_number = c25_inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
-    ustrcpy(symbol->text, localstr);
+
+    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
+    for (i = 0, j = 0; i <= 12; i++) {
+        symbol->text[j++] = localstr[i];
+        if (i == 1 || i == 4 || i == 7) {
+            symbol->text[j++] = '.';
+        } else if (i == 3 || i == 10) {
+            symbol->text[j++] = ' ';
+        }
+    }
 
     /* TODO: Find documentation on BARCODE_DPIDENT dimensions/height */
+    /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
+    (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
     return error_number;
 }

@@ -1079,7 +1079,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
         if (symbol->structapp.id[0]) {
             int id, id_len;
 
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+            for (id_len = 1; id_len < 4 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 3) { /* 255 (8 bits) */
                 strcpy(symbol->errtxt, "538: Structured Append ID too long (3 digit maximum)");

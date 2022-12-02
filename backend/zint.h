@@ -111,6 +111,7 @@ extern "C" {
         int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
+        float dpmm;         /* Resolution of output in dots per mm (BMP/EMF/PCX/PNG/TIF only). Default 0 (none) */
         float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE. Default 0.8 */
         float guard_descent; /* Height in X-dimensions that EAN/UPC guard bars descend. Default 5 */
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
@@ -184,7 +185,8 @@ extern "C" {
 #define BARCODE_PDF417TRUNC     56  /* Legacy */
 #define BARCODE_MAXICODE        57  /* MaxiCode */
 #define BARCODE_QRCODE          58  /* QR Code */
-#define BARCODE_CODE128B        60  /* Code 128 (Subset B) */
+#define BARCODE_CODE128AB       60  /* Code 128 (Suppress subset C) */
+#define BARCODE_CODE128B        60  /* Legacy */
 #define BARCODE_AUSPOST         63  /* Australia Post Standard Customer */
 #define BARCODE_AUSREPLY        66  /* Australia Post Reply Paid */
 #define BARCODE_AUSROUTE        67  /* Australia Post Routing */
@@ -322,7 +324,7 @@ extern "C" {
 #define ZINT_ERROR_USES_ECI         13  /* Error counterpart of warning if WARN_FAIL_ALL set (see below) */
 #define ZINT_ERROR_NONCOMPLIANT     14  /* Error counterpart of warning if WARN_FAIL_ALL set */
 
-/* Warning warn (`symbol->warn_level`) */
+/* Warning level (`symbol->warn_level`) */
 #define WARN_DEFAULT            0  /* Default behaviour */
 #define WARN_FAIL_ALL           2  /* Treat warning as error */
 
@@ -441,6 +443,19 @@ extern "C" {
 
     /* Return the capability flags for symbology `symbol_id` that match `cap_flag` */
     ZINT_EXTERN unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag);
+
+
+    /* Return default X-dimension in mm for symbology `symbol_id`. Returns 0 on error (invalid `symbol_id`) */
+    ZINT_EXTERN float ZBarcode_Default_Xdim(int symbol_id);
+
+    /* Return the scale to use for `symbol_id` for non-zero X-dimension `x_dim_mm` at `dpmm` dots per mm for
+       `filetype`. If `dpmm` zero defaults to 12. If `filetype` NULL/empty, defaults to "GIF". Returns 0 on error */
+    ZINT_EXTERN float ZBarcode_Scale_From_XdimDp(int symbol_id, float x_dim_mm, float dpmm, const char *filetype);
+
+    /* Reverse of `ZBarcode_Scale_From_XdimDp()` above to estimate the X-dimension or dpmm given non-zero `scale` and
+       non-zero `x_dim_mm_or_dpmm`. Return value bound to dpmm max not X-dimension max. Returns 0 on error */
+    ZINT_EXTERN float ZBarcode_XdimDp_From_Scale(int symbol_id, float scale, float x_dim_mm_or_dpmm,
+                        const char *filetype);
 
 
     /* Whether Zint built without PNG support */

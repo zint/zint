@@ -31,7 +31,7 @@ First build zlib:
   cd zlib
 
   nmake -f win32\Makefile.msc clean
-  nmake -f win32\Makefile.msc LOC="-DASMV -DASMINF=" OBJA="inffas32.obj match686.obj"
+  nmake -f win32\Makefile.msc
 
   cd ..
 

@@ -19,19 +19,23 @@ IMAGES = \
 	images/zint.png \
 	images/zint-qt.png \
 	images/gui_main.png \
+	images/gui_delete.png \
+	images/gui_zap.png \
 	images/gui_menus.png \
 	images/gui_composite.png \
 	images/gui_segs.png \
 	images/gui_aztec.png \
 	images/gui_appearance.png \
+	images/gui_scaling.png \
+	images/gui_set_printing_scale.png \
+	images/gui_black_eye.png \
+	images/gui_white_eye.png \
+	images/gui_swap.png \
 	images/gui_colour.png \
 	images/gui_data_dialog.png \
 	images/gui_sequence.png \
 	images/gui_export.png \
 	images/gui_cli_equivalent.png \
-	images/gui_black_eye.png \
-	images/gui_white_eye.png \
-	images/gui_swap.png \
 	images/pdf417_heightperrow.svg \
 	images/code128_box.svg \
 	images/qrcode_box.svg \
@@ -77,7 +81,7 @@ IMAGES = \
 	images/codabar.svg \
 	images/pharma.svg \
 	images/code128.svg \
-	images/code128b.svg \
+	images/code128ab.svg \
 	images/gs1_128.svg \
 	images/ean14.svg \
 	images/nve18.svg \

@@ -66,7 +66,7 @@ zint -b VIN -d "2FTPX28L0XCA15511" --vers=1 --scale=$SCALE_LINEAR -o images/vin.
 zint -b CODABAR --compliantheight -d "A37859B" --scale=$SCALE_LINEAR -o images/codabar.svg
 zint -b PHARMA --compliantheight -d "130170" --scale=$SCALE_LINEAR -o images/pharma.svg
 zint -b CODE128 --bind -d "130170X178" --scale=$SCALE_LINEAR -o images/code128.svg
-zint -b CODE128B -d "130170X178" --scale=$SCALE_LINEAR -o images/code128b.svg
+zint -b CODE128AB -d "130170X178" --scale=$SCALE_LINEAR -o images/code128ab.svg
 zint -b GS1_128 --compliantheight -d "[01]98898765432106[3202]012345[15]991231" --scale=$SCALE_LINEAR -o images/gs1_128.svg
 zint -b EAN14 --compliantheight -d "9889876543210" --scale=$SCALE_LINEAR -o images/ean14.svg
 zint -b NVE18 --compliantheight -d "37612345000001003" --scale=$SCALE_LINEAR -o images/nve18.svg

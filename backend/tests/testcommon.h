@@ -86,11 +86,12 @@ void testFinish(void);
 void testSkip(const char *msg);
 void testReport(void);
 
+#define ZINT_TEST_CTX_EXC_MAX   32
 typedef struct s_testCtx {
     int index;
     int index_end;
-    int exclude;
-    int exclude_end;
+    int exclude[ZINT_TEST_CTX_EXC_MAX];
+    int exclude_end[ZINT_TEST_CTX_EXC_MAX];
     int generate;
     int debug;
 } testCtx;
@@ -163,6 +164,8 @@ int testUtilDirExists(const char *dirname);
 int testUtilMkDir(const char *dirname);
 int testUtilRmDir(const char *dirname);
 int testUtilRename(const char *oldpath, const char *newpath);
+int testUtilCreateROFile(const char *filename);
+int testUtilRmROFile(const char *filename);
 
 int testUtilCmpPngs(const char *file1, const char *file2);
 int testUtilCmpTxts(const char *txt1, const char *txt2);
@@ -170,8 +173,8 @@ int testUtilCmpBins(const char *bin1, const char *bin2);
 int testUtilCmpSvgs(const char *svg1, const char *svg2);
 int testUtilCmpEpss(const char *eps1, const char *eps2);
 
-int testUtilHaveIdentify(void);
-int testUtilVerifyIdentify(const char *filename, int debug);
+const char *testUtilHaveIdentify(void);
+int testUtilVerifyIdentify(const char *const prog, const char *filename, int debug);
 int testUtilHaveLibreOffice(void);
 int testUtilVerifyLibreOffice(const char *filename, int debug);
 int testUtilHaveGhostscript(void);

@@ -232,10 +232,13 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.symbology = BARCODE_CODE128;
     symbol.vector = &vector;
 
-    strcpy(symbol.outfile, "nosuch_dir/out.svg");
+    strcpy(symbol.outfile, "test_svg_out.svg");
+    (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
+    assert_nonzero(testUtilCreateROFile(symbol.outfile), "svg_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     ret = svg_plot(&symbol, 0);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "svg_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+    assert_zero(testUtilRmROFile(symbol.outfile), "svg_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     symbol.output_options |= BARCODE_STDOUT;
 

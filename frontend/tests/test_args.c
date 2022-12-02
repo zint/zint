@@ -162,7 +162,7 @@ static void arg_bool(char *cmd, const char *opt, int val) {
 
 static void arg_double(char *cmd, const char *opt, double val) {
     if (val != -1) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s%g", strlen(cmd) ? " " : "", opt, val);
+        sprintf(cmd + (int) strlen(cmd), "%s%s%.8f", strlen(cmd) ? " " : "", opt, val);
     }
 }
 
@@ -560,6 +560,7 @@ static void test_input(const testCtx *const p_ctx) {
         arg_input(cmd, input_filename, data[i].input);
         arg_data(cmd, "-o ", data[i].outfile);
 
+        if (!data[i].expected) printf("++++ Following Error 778 expected, ignore\n");
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
 
         outfile = data[i].expected;
@@ -731,6 +732,7 @@ static void test_batch_large(const testCtx *const p_ctx) {
         strcat(data_buf, "\n");
         have_input = arg_input(cmd, input_filename, data_buf);
 
+        if (!data[i].expected) printf("++++ Following Error 541 expected, ignore\n");
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
         if (data[i].expected) {
             assert_zero(remove(data[i].expected), "i:%d remove(%s) != 0 (%d: %s)\n", i, data[i].expected, errno, strerror(errno));
@@ -779,38 +781,39 @@ static void test_checks(const testCtx *const p_ctx) {
         /*  2*/ { 13, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
         /*  3*/ { -1, -2,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 107: Invalid border width value (digits only)" },
         /*  4*/ { -1, 1001, -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 108: Border width out of range (0 to 1000), ignoring" },
-        /*  5*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 106: Invalid dot radius value (less than 0.01), ignoring" },
-        /*  6*/ { -1, -1,   -2, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 131: Invalid columns value (digits only)" },
-        /*  7*/ { -1, -1,  201, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 111: Number of columns out of range (1 to 200), ignoring" },
-        /*  8*/ { -1, -1,   -1, -1,    -2,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 138: Invalid ECI value (digits only)" },
-        /*  9*/ { -1, -1,   -1, -1,    1000000, NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 118: ECI code out of range (0 to 999999), ignoring" },
-        /* 10*/ { -1, -1,   -1, -1,    -1,      "jpg", -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 142: File type 'jpg' not supported, ignoring" },
-        /* 11*/ { -1, -1,   -1, -1,    -1,      NULL,  -2,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '-2' out of range (0.5 to 2000), ignoring" },
-        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,   0,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '0' out of range (0.5 to 2000), ignoring" },
-        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL, 2001,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '2001' out of range (0.5 to 2000), ignoring" },
-        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '-2' out of range (0 to 50), ignoring" },
-        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
-        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 148: Invalid mask value (digits only)" },
-        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 147: Mask value out of range (0 to 7), ignoring" },
-        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 116: Mode value out of range (0 to 6), ignoring" },
-        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 117: Invalid rotation value (digits only)" },
-        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring" },
-        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   -1,   -1, "Error 132: Invalid rows value (digits only)" },
-        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, 91, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 112: Number of rows out of range (1 to 90), ignoring" },
-        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   -1,   -1, "Warning 105: Invalid scale value (less than 0.01), ignoring" },
-        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'gif' output" },
-        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   -1,   -1, "Error 149: Invalid Structured Carrier Message version value (digits only)" },
-        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,  100, -1, -1, -1,   -1,   -1, "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring" },
-        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   -1,   -1, "Error 134: Invalid ECC value (digits only)" },
-        /* 28*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1,  9, -1, -1,   -1,   -1, "Warning 114: ECC level out of range (0 to 8), ignoring" },
-        /* 29*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1,   -1,   -1, "Error 128: Invalid separator value (digits only)" },
-        /* 30*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1,  5, -1,   -1,   -1, "Warning 127: Separator value out of range (0 to 4), ignoring" },
-        /* 31*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2,   -1,   -1, "Error 133: Invalid version value (digits only)" },
-        /* 32*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, 1000, -1,   -1, "Warning 113: Version value out of range (1 to 999), ignoring" },
-        /* 33*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -2,   -1, "Error 153: Invalid vertical whitespace value '-2' (digits only)" },
-        /* 34*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 1001,   -1, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring" },
-        /* 35*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -2, "Error 120: Invalid horizontal whitespace value '-2' (digits only)" },
-        /* 36*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1, 1001, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring" },
+        /*  5*/ { -1, -1,   -1, 12345678, -1,   NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 181: Invalid dot radius floating point (integer part must be 7 digits maximum)" },
+        /*  6*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 106: Invalid dot radius value (less than 0.01), ignoring" },
+        /*  7*/ { -1, -1,   -2, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 131: Invalid columns value (digits only)" },
+        /*  8*/ { -1, -1,  201, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 111: Number of columns out of range (1 to 200), ignoring" },
+        /*  9*/ { -1, -1,   -1, -1,    -2,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 138: Invalid ECI value (digits only)" },
+        /* 10*/ { -1, -1,   -1, -1,    1000000, NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 118: ECI code out of range (0 to 999999), ignoring" },
+        /* 11*/ { -1, -1,   -1, -1,    -1,      "jpg", -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 142: File type 'jpg' not supported, ignoring" },
+        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,  -2,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 183: Invalid symbol height floating point (integer part must be digits only)" },
+        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,   0,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '0' out of range (0.5 to 2000), ignoring" },
+        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL, 2001,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '2001' out of range (0.5 to 2000), ignoring" },
+        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 182: Invalid guard bar descent floating point (integer part must be digits only)" },
+        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
+        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 148: Invalid mask value (digits only)" },
+        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 147: Mask value out of range (0 to 7), ignoring" },
+        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 116: Mode value out of range (0 to 6), ignoring" },
+        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 117: Invalid rotation value (digits only)" },
+        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring" },
+        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   -1,   -1, "Error 132: Invalid rows value (digits only)" },
+        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, 91, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 112: Number of rows out of range (1 to 90), ignoring" },
+        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   -1,   -1, "Error 184: Invalid scale floating point (integer part must be digits only)" },
+        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'gif' output" },
+        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   -1,   -1, "Error 149: Invalid Structured Carrier Message version value (digits only)" },
+        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,  100, -1, -1, -1,   -1,   -1, "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring" },
+        /* 28*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   -1,   -1, "Error 134: Invalid ECC value (digits only)" },
+        /* 29*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1,  9, -1, -1,   -1,   -1, "Warning 114: ECC level out of range (0 to 8), ignoring" },
+        /* 30*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1,   -1,   -1, "Error 128: Invalid separator value (digits only)" },
+        /* 31*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1,  5, -1,   -1,   -1, "Warning 127: Separator value out of range (0 to 4), ignoring" },
+        /* 32*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2,   -1,   -1, "Error 133: Invalid version value (digits only)" },
+        /* 33*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, 1000, -1,   -1, "Warning 113: Version value out of range (1 to 999), ignoring" },
+        /* 34*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -2,   -1, "Error 153: Invalid vertical whitespace value '-2' (digits only)" },
+        /* 35*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 1001,   -1, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring" },
+        /* 36*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -2, "Error 120: Invalid horizontal whitespace value '-2' (digits only)" },
+        /* 37*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1, 1001, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -853,7 +856,7 @@ static void test_checks(const testCtx *const p_ctx) {
         strcat(cmd, " 2>&1");
 
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
-        assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s)\n", i, buf, data[i].expected);
+        assert_zero(strcmp(buf, data[i].expected), "i:%d buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
 
         if (strncmp(data[i].expected, "Warning", 7) == 0) {
             assert_zero(remove(outfilename), "i:%d remove(%s) != 0 (%d: %s)\n", i, outfilename, errno, strerror(errno));
@@ -966,115 +969,116 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         /* 88*/ { "MaxiCode", "1", NULL, 0, "BARCODE_MAXICODE (57)," },
         /* 89*/ { "QR CODE", "1", NULL, 0, "BARCODE_QRCODE (58)," },
         /* 90*/ { "qr", "1", NULL, 0, "BARCODE_QRCODE (58)," }, /* Synonym */
-        /* 91*/ { "Code 128 B", "1", NULL, 0, "BARCODE_CODE128B (60)," },
-        /* 92*/ { "AUS POST", "12345678901234567890123", NULL, 0, "BARCODE_AUSPOST (63)," },
-        /* 93*/ { "AusReply", "12345678", NULL, 0, "BARCODE_AUSREPLY (66)," },
-        /* 94*/ { "AUSROUTE", "12345678", NULL, 0, "BARCODE_AUSROUTE (67)," },
-        /* 95*/ { "AUS REDIRECT", "12345678", NULL, 0, "BARCODE_AUSREDIRECT (68)," },
-        /* 96*/ { "isbnx", "123456789", NULL, 0, "BARCODE_ISBNX (69)," },
-        /* 97*/ { "rm4scc", "1", NULL, 0, "BARCODE_RM4SCC (70)," },
-        /* 98*/ { "DataMatrix", "1", NULL, 0, "BARCODE_DATAMATRIX (71)," },
-        /* 99*/ { "EAN14", "1", NULL, 0, "BARCODE_EAN14 (72)," },
-        /*100*/ { "vin", "12345678701234567", NULL, 0, "BARCODE_VIN (73)" },
-        /*101*/ { "CodaBlock-F", "1", NULL, 0, "BARCODE_CODABLOCKF (74)," },
-        /*102*/ { "NVE18", "1", NULL, 0, "BARCODE_NVE18 (75)," },
-        /*103*/ { "Japan Post", "1", NULL, 0, "BARCODE_JAPANPOST (76)," },
-        /*104*/ { "Korea Post", "1", NULL, 0, "BARCODE_KOREAPOST (77)," },
-        /*105*/ { "DBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*106*/ { "rss14stack", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*107*/ { "DataBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*108*/ { "DataBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*109*/ { "DBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*110*/ { "RSS14STACK OMNI", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*111*/ { "DataBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*112*/ { "DataBar Stacked Omn", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*113*/ { "DataBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*114*/ { "DBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*115*/ { "rss_expstack", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*116*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*117*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*118*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*119*/ { "planet", "12345678901", NULL, 0, "BARCODE_PLANET (82)," },
-        /*120*/ { "MicroPDF417", "1", NULL, 0, "BARCODE_MICROPDF417 (84)," },
-        /*121*/ { "USPS IMail", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
-        /*122*/ { "OneCode", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
-        /*123*/ { "plessey", "1", NULL, 0, "BARCODE_PLESSEY (86)," },
-        /*124*/ { "telepen num", "1", NULL, 0, "BARCODE_TELEPEN_NUM (87)," },
-        /*125*/ { "ITF14", "1", NULL, 0, "BARCODE_ITF14 (89)," },
-        /*126*/ { "KIX", "1", NULL, 0, "BARCODE_KIX (90)," },
-        /*127*/ { "Aztec", "1", NULL, 0, "BARCODE_AZTEC (92)," },
-        /*128*/ { "Aztec Code", "1", NULL, 0, "BARCODE_AZTEC (92)," }, /* Synonym */
-        /*129*/ { "daft", "D", NULL, 0, "BARCODE_DAFT (93)," },
-        /*130*/ { "DPD", "0123456789012345678901234567", NULL, 0, "BARCODE_DPD (96)," },
-        /*131*/ { "Micro QR", "1", NULL, 0, "BARCODE_MICROQR (97)," },
-        /*132*/ { "Micro QR Code", "1", NULL, 0, "BARCODE_MICROQR (97)," },
-        /*133*/ { "hibc128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," },
-        /*134*/ { "hibccode128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," }, /* Synonym */
-        /*135*/ { "hibc39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," },
-        /*136*/ { "hibccode39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," }, /* Synonym */
-        /*137*/ { "hibcdatamatrix", "1", NULL, 0, "BARCODE_HIBC_DM (102)," }, /* Synonym */
-        /*138*/ { "hibcdm", "1", NULL, 0, "BARCODE_HIBC_DM (102)," },
-        /*139*/ { "HIBC qr", "1", NULL, 0, "BARCODE_HIBC_QR (104)," },
-        /*140*/ { "HIBC QR Code", "1", NULL, 0, "BARCODE_HIBC_QR (104)," }, /* Synonym */
-        /*141*/ { "HIBCPDF", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," },
-        /*142*/ { "HIBCPDF417", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," }, /* Synonym */
-        /*143*/ { "HIBCMICPDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," },
-        /*144*/ { "HIBC Micro PDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
-        /*145*/ { "HIBC Micro PDF417", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
-        /*146*/ { "HIBC BlockF", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," },
-        /*147*/ { "HIBC CodaBlock-F", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," }, /* Synonym */
-        /*148*/ { "HIBC Aztec", "1", NULL, 0, "BARCODE_HIBC_AZTEC (112)," },
-        /*149*/ { "DotCode", "1", NULL, 0, "BARCODE_DOTCODE (115)," },
-        /*150*/ { "Han Xin", "1", NULL, 0, "BARCODE_HANXIN (116)," },
-        /*151*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK (121)," },
-        /*152*/ { "azrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," },
-        /*153*/ { "aztecrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
-        /*154*/ { "aztecrunes", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
-        /*155*/ { "code32", "1", NULL, 0, "BARCODE_CODE32 (129)," },
-        /*156*/ { "eanx cc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
-        /*157*/ { "eancc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
-        /*158*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
-        /*159*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
-        /*160*/ { "dbaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*161*/ { "rss14 cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*162*/ { "databaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*163*/ { "databaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*164*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*165*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*166*/ { "databarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*167*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*168*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*169*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*170*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*171*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*172*/ { "upcacc", "[20]01", "12345678901", 0, "BARCODE_UPCA_CC (135)," },
-        /*173*/ { "upcecc", "[20]01", "1234567", 0, "BARCODE_UPCE_CC (136)," },
-        /*174*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*175*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*176*/ { "databar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*177*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*178*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*179*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*180*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*181*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*182*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*183*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*184*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*185*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*186*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*187*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*188*/ { "Channel", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
-        /*189*/ { "Channel Code", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
-        /*190*/ { "CodeOne", "1", NULL, 0, "BARCODE_CODEONE (141)," },
-        /*191*/ { "Grid Matrix", "1", NULL, 0, "BARCODE_GRIDMATRIX (142)," },
-        /*192*/ { "UPN QR", "1", NULL, 0, "BARCODE_UPNQR (143)," },
-        /*193*/ { "UPN QR Code", "1", NULL, 0, "BARCODE_UPNQR (143)," }, /* Synonym */
-        /*194*/ { "ultra", "1", NULL, 0, "BARCODE_ULTRA (144)," },
-        /*195*/ { "ultracode", "1", NULL, 0, "BARCODE_ULTRA (144)," }, /* Synonym */
-        /*196*/ { "rMQR", "1", NULL, 0, "BARCODE_RMQR (145)," },
-        /*197*/ { "bc412", "1234567", NULL, 0, "BARCODE_BC412 (146)," },
-        /*198*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
-        /*199*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
+        /* 91*/ { "Code 128 B", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
+        /* 92*/ { "Code 128 aB", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
+        /* 93*/ { "AUS POST", "12345678901234567890123", NULL, 0, "BARCODE_AUSPOST (63)," },
+        /* 94*/ { "AusReply", "12345678", NULL, 0, "BARCODE_AUSREPLY (66)," },
+        /* 95*/ { "AUSROUTE", "12345678", NULL, 0, "BARCODE_AUSROUTE (67)," },
+        /* 96*/ { "AUS REDIRECT", "12345678", NULL, 0, "BARCODE_AUSREDIRECT (68)," },
+        /* 97*/ { "isbnx", "123456789", NULL, 0, "BARCODE_ISBNX (69)," },
+        /* 98*/ { "rm4scc", "1", NULL, 0, "BARCODE_RM4SCC (70)," },
+        /* 99*/ { "DataMatrix", "1", NULL, 0, "BARCODE_DATAMATRIX (71)," },
+        /*100*/ { "EAN14", "1", NULL, 0, "BARCODE_EAN14 (72)," },
+        /*101*/ { "vin", "12345678701234567", NULL, 0, "BARCODE_VIN (73)" },
+        /*102*/ { "CodaBlock-F", "1", NULL, 0, "BARCODE_CODABLOCKF (74)," },
+        /*103*/ { "NVE18", "1", NULL, 0, "BARCODE_NVE18 (75)," },
+        /*104*/ { "Japan Post", "1", NULL, 0, "BARCODE_JAPANPOST (76)," },
+        /*105*/ { "Korea Post", "1", NULL, 0, "BARCODE_KOREAPOST (77)," },
+        /*106*/ { "DBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*107*/ { "rss14stack", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*108*/ { "DataBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*109*/ { "DataBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*110*/ { "DBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*111*/ { "RSS14STACK OMNI", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*112*/ { "DataBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*113*/ { "DataBar Stacked Omn", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*114*/ { "DataBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*115*/ { "DBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*116*/ { "rss_expstack", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*117*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*118*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*119*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*120*/ { "planet", "12345678901", NULL, 0, "BARCODE_PLANET (82)," },
+        /*121*/ { "MicroPDF417", "1", NULL, 0, "BARCODE_MICROPDF417 (84)," },
+        /*122*/ { "USPS IMail", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*123*/ { "OneCode", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*124*/ { "plessey", "1", NULL, 0, "BARCODE_PLESSEY (86)," },
+        /*125*/ { "telepen num", "1", NULL, 0, "BARCODE_TELEPEN_NUM (87)," },
+        /*126*/ { "ITF14", "1", NULL, 0, "BARCODE_ITF14 (89)," },
+        /*127*/ { "KIX", "1", NULL, 0, "BARCODE_KIX (90)," },
+        /*128*/ { "Aztec", "1", NULL, 0, "BARCODE_AZTEC (92)," },
+        /*129*/ { "Aztec Code", "1", NULL, 0, "BARCODE_AZTEC (92)," }, /* Synonym */
+        /*130*/ { "daft", "D", NULL, 0, "BARCODE_DAFT (93)," },
+        /*131*/ { "DPD", "0123456789012345678901234567", NULL, 0, "BARCODE_DPD (96)," },
+        /*132*/ { "Micro QR", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*133*/ { "Micro QR Code", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*134*/ { "hibc128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," },
+        /*135*/ { "hibccode128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," }, /* Synonym */
+        /*136*/ { "hibc39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," },
+        /*137*/ { "hibccode39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," }, /* Synonym */
+        /*138*/ { "hibcdatamatrix", "1", NULL, 0, "BARCODE_HIBC_DM (102)," }, /* Synonym */
+        /*139*/ { "hibcdm", "1", NULL, 0, "BARCODE_HIBC_DM (102)," },
+        /*140*/ { "HIBC qr", "1", NULL, 0, "BARCODE_HIBC_QR (104)," },
+        /*141*/ { "HIBC QR Code", "1", NULL, 0, "BARCODE_HIBC_QR (104)," }, /* Synonym */
+        /*142*/ { "HIBCPDF", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," },
+        /*143*/ { "HIBCPDF417", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," }, /* Synonym */
+        /*144*/ { "HIBCMICPDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," },
+        /*145*/ { "HIBC Micro PDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*146*/ { "HIBC Micro PDF417", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*147*/ { "HIBC BlockF", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," },
+        /*148*/ { "HIBC CodaBlock-F", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," }, /* Synonym */
+        /*149*/ { "HIBC Aztec", "1", NULL, 0, "BARCODE_HIBC_AZTEC (112)," },
+        /*150*/ { "DotCode", "1", NULL, 0, "BARCODE_DOTCODE (115)," },
+        /*151*/ { "Han Xin", "1", NULL, 0, "BARCODE_HANXIN (116)," },
+        /*152*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK (121)," },
+        /*153*/ { "azrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," },
+        /*154*/ { "aztecrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*155*/ { "aztecrunes", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*156*/ { "code32", "1", NULL, 0, "BARCODE_CODE32 (129)," },
+        /*157*/ { "eanx cc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*158*/ { "eancc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*159*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*160*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*161*/ { "dbaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*162*/ { "rss14 cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*163*/ { "databaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*164*/ { "databaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*165*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*166*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*167*/ { "databarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*168*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*169*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*170*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*171*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*172*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*173*/ { "upcacc", "[20]01", "12345678901", 0, "BARCODE_UPCA_CC (135)," },
+        /*174*/ { "upcecc", "[20]01", "1234567", 0, "BARCODE_UPCE_CC (136)," },
+        /*175*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*176*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*177*/ { "databar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*178*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*179*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*180*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*181*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*182*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*183*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*184*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*185*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*186*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*187*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*188*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*189*/ { "Channel", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*190*/ { "Channel Code", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*191*/ { "CodeOne", "1", NULL, 0, "BARCODE_CODEONE (141)," },
+        /*192*/ { "Grid Matrix", "1", NULL, 0, "BARCODE_GRIDMATRIX (142)," },
+        /*193*/ { "UPN QR", "1", NULL, 0, "BARCODE_UPNQR (143)," },
+        /*194*/ { "UPN QR Code", "1", NULL, 0, "BARCODE_UPNQR (143)," }, /* Synonym */
+        /*195*/ { "ultra", "1", NULL, 0, "BARCODE_ULTRA (144)," },
+        /*196*/ { "ultracode", "1", NULL, 0, "BARCODE_ULTRA (144)," }, /* Synonym */
+        /*197*/ { "rMQR", "1", NULL, 0, "BARCODE_RMQR (145)," },
+        /*198*/ { "bc412", "1234567", NULL, 0, "BARCODE_BC412 (146)," },
+        /*199*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
+        /*200*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -1170,6 +1174,18 @@ static void test_other_opts(const testCtx *const p_ctx) {
         /* 44*/ { -1, NULL, -1, " -h", NULL, "Encode input data in a barcode ", 1 },
         /* 45*/ { -1, NULL, -1, " -e", NULL, "3: ISO/IEC 8859-1 ", 1 },
         /* 46*/ { -1, NULL, -1, " -t", NULL, "1 CODE11 ", 1 },
+        /* 47*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12345678", "Error 178: scalexdimdp X-dim invalid floating point (integer part must be 7 digits maximum)", 0 },
+        /* 48*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1234567890123", "Error 176: scalexdimdp X-dim too long", 0 },
+        /* 49*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "123456.12", "Error 178: scalexdimdp X-dim invalid floating point (7 significant digits maximum)", 0 },
+        /* 50*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", ",12.34", "Error 174: scalexdimdp X-dim too short", 0 },
+        /* 51*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34,", "Error 175: scalexdimdp resolution too short", 0 },
+        /* 52*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12mm1", "Error 177: scalexdimdp X-dim units must occur at end", 0 },
+        /* 53*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1inc", "Error 177: scalexdimdp X-dim units must occur at end", 0 },
+        /* 54*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "1234x", "Error 178: scalexdimdp X-dim invalid floating point (integer part must be digits only)", 0 },
+        /* 55*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12.34in,123x", "Error 180: scalexdimdp resolution invalid floating point (integer part must be digits only)", 0 },
+        /* 56*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "12,123.45678", "Error 180: scalexdimdp resolution invalid floating point (7 significant digits maximum)", 0 },
+        /* 57*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10.1,1000", "Warning 185: scalexdimdp X-dim (10.1) out of range (> 10), ignoring", 0 },
+        /* 58*/ { BARCODE_EANX, "501234567890", -1, " --scalexdimdp=", "10,1000.1", "Warning 186: scalexdimdp resolution (1000.1) out of range (> 1000), ignoring", 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

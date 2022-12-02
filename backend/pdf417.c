@@ -1132,7 +1132,7 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
         if (symbol->structapp.id[0]) {
             int id_len;
 
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+            for (id_len = 1; id_len < 31 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 30) { /* 10 triplets */
                 strcpy(symbol->errtxt, "742: Structured Append ID too long (30 digit maximum)");

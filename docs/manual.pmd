@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.11.1.9
-% November 2022
+% December 2022
 
 # 1. Introduction
 
@@ -250,6 +250,17 @@ only show barcodes in the drop-down whose names contain the word `"mail"`. Each
 word entered will match. So typing `"mail post"` will show barcodes whose names
 contain `"mail"` or `"post"` (or both).
 
+The ellipsis button `"..."` to the right of the data text box invokes the Data
+Dialog - see [3.6 Data Dialog] for details. The delete button
+![delete](images/gui_delete.png) next to it will clear the data text box and
+the ECI (Extended Channel Interpretations) drop-down if set.
+
+To set the barcode as a Programming Initialisation symbol click the
+`"Reader Init"` checkbox. The `"1234.."` button to its right invokes the
+Sequence Dialog - see [3.7 Sequence Dialog]. The zap button
+![zap](images/gui_zap.png) will clear all data and reset all settings for the
+barcode to defaults.
+
 The `"BMP"` and `"SVG"` buttons at the bottom will copy the image to the
 clipboard in BMP format and SVG format respectively. Further copy-to-clipboard
 formats are available by clicking the `"Menu"` button, along with
@@ -295,23 +306,40 @@ part of a Structured Append sequence of symbols.
 ![Zint Barcode Studio showing Appearance tab options](images/gui_appearance.png)
 
 The Appearance tab can be used to adjust the dimensions and other properties of
-the symbol. The `"Height"` value affects the height of symbologies which do not
-have a fixed width-to-height ratio, i.e. those other than matrix symbologies.
-Boundary bars (`"Border Type"`) can be added and adjusted (`"Border Width"`) and
-the size of the saved image (`"Printing Scale"`) can be specified.
+the symbol.
 
-## 3.6 Colour Dialog
+The `"Height"` value affects the height of symbologies which do not have a fixed
+width-to-height ratio, i.e. those other than matrix symbologies. For such
+symbologies the `"Automatic Height"` checkbox will be enabled - uncheck this to
+manually adjust the height. The `"Compliant Height"` checkbox applies to
+symbologies that define a standard height - see [4.4 Adjusting Height].
+
+Boundary bars can be added with the `"Border Type"` drop-down and their size
+adjusted with `"Border Width"`, and whitespace can be adjusted both horizontally
+(first spinbox) and vertically (second spinbox), and also through the
+`"Quiet Zones"` checkbox if standard quiet zones are defined for the symbology.
+
+The size of the saved image can be specified with `"Printing Scale"`, and also
+by clicking the ![scaling](images/gui_scaling.png) icon to invoke the "Set
+Printing Scale" dialog - see [4.9 Adjusting Image Size] for further details.
+
+![Adjusting the Print Size](images/gui_set_printing_scale.png)
+
+The foreground and background colours can be set either using the text boxes
+which accept RRGGBBAA hexadecimal values or by clicking the foreground eye
+![eye](images/gui_black_eye.png) and background eye
+![eye](images/gui_white_eye.png) buttons which invoke a colour picker.
 
 ![The colour picker tool](images/gui_colour.png)
 
-A colour dialog is used to adjust the colour of the foreground and background of
-the generated image. In the Appearance tab click on the foreground eye
-![eye](images/gui_black_eye.png) or background eye
-![eye](images/gui_white_eye.png) button respectively. The colours can be reset
-to black-on-white using the `"Reset"` button, and exchanged one for the other
-using the swap ![swap](images/gui_swap.png) button next to it.
+(Note that to change the colours visually, the luminence slider, the long narrow
+column on the right, must be adjusted.)
 
-## 3.7 Data Dialog
+The colours can be reset to black-on-white using the `"Reset"` button, and
+exchanged one for the other using the swap ![swap](images/gui_swap.png) button
+next to it.
+
+## 3.6 Data Dialog
 
 ![Entering longer text input](images/gui_data_dialog.png)
 
@@ -329,7 +357,7 @@ box any separate lines in the data will be escaped as `'\n'` and the
 carriage returns (`CR`) or `CR+LF` pairs, and behaves the same on both
 Windows and Unix. (For details on escape sequences, see [4.1 Inputting Data].)
 
-## 3.8 Sequence Dialog
+## 3.7 Sequence Dialog
 
 ![Creating a sequence of barcode symbols](images/gui_sequence.png)
 
@@ -351,7 +379,7 @@ meanings as given below:
 
 Table: {#tbl:sequence_format_characters tag=": Sequence Format Characters"}
 
-## 3.9 Export Dialog
+## 3.8 Export Dialog
 
 ![Setting filenames for an exported sequence of barcode
 symbols](images/gui_export.png)
@@ -361,7 +389,7 @@ Dialog sets the parameters for exporting a sequence of barcode images. Here you
 can set the filename and the output image format. Note that the symbology,
 colour and other formatting information are taken from the main window.
 
-## 3.10 CLI Equivalent Dialog
+## 3.9 CLI Equivalent Dialog
 
 ![CLI Equivalent Dialog](images/gui_cli_equivalent.png)
 
@@ -510,6 +538,13 @@ for the other supported file types:
 zint -o there.eps -d "This Text"
 ```
 
+The filename can contain directories and sub-directories also, which will be
+created if they don't already exist:
+
+```bash
+zint -o "dir/subdir/filename.eps" -d "This Text"
+```
+
 ## 4.3 Selecting Barcode Type
 
 Selecting which type of barcode you wish to produce (i.e. which symbology to
@@ -613,7 +648,7 @@ Value
 
  58      `BARCODE_QRCODE`          QR Code
 
- 60      `BARCODE_CODE128B`        Code 128 (Subset B)
+ 60      `BARCODE_CODE128AB`       Code 128 (Suppress subset C)
 
  63      `BARCODE_AUSPOST`         Australia Post Standard Customer
 
@@ -929,11 +964,11 @@ The scale of the image can be altered using the `--scale` option followed by a
 multiple of the default X-dimension. The scale is multiplied by 2 (with the
 exception of MaxiCode) before being applied. The default scale is 1.
 
-For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for EMF
+For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for EMF
 vector output, and by 2 otherwise (non-EMF vector output).
 
 For raster output, the default X-dimension is 2 pixels (except for MaxiCode, see
-[4.9.2 MaxiCode Raster Scaling] below). For example for PNG images a scale of 5
+[4.9.3 MaxiCode Raster Scaling] below). For example for PNG images a scale of 5
 will increase the X-dimension to 10 pixels. Scales for raster output should be
 given in increments of 0.5, i.e. 0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the
 X-dimension varying across the symbol due to interpolation. 0.5 increments are
@@ -946,63 +981,73 @@ Dots]).
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2.
 
-The maximum scale for both raster and vector is 100.
+The maximum scale for both raster and vector is 200.
 
-### 4.9.1 Scaling Example
+### 4.9.1 Scaling by X-dimension and Resolution
+
+An alternative way to specify the scale which takes these details into account
+is to use the `--scalexdimdp` option, which has the format
+
+```
+--scalexdimdp=X[,R]
+```
+
+where `X` is the X-dimension (in mm by default) and `R` is the resolution (in
+dpmm, dots per mm, by default). `R` is optional, and defaults to 12 dpmm, and
+`X` may be zero, in which case it uses a symbology-specific default. The units
+may be given in inches for `X` by appending `"in"`, and in dpi (dots per inch)
+for `R` by appending `"dpi"`. For example
+
+```bash
+zint -d "1234" --scalexdimdp=0.013in,300dpi
+```
+
+Explicit metric units may also be given by appending `"mm"` and `"dpmm"` as
+appropriate, and may be mixed with U.S. units:
+
+```bash
+zint -d "1234" --scalexdimdp=0.33mm,300dpi
+```
+
+### 4.9.2 Scaling Example
 
 The GS1 General Specifications Section 5.2.6.6 'Symbol dimensions at nominal
 size' gives an example of an EAN-13 barcode using the X-dimension of 0.33mm. To
-print that example as a PNG at 12 dots per mm (dpmm), the equivalent of 300 dots
-per inch (`dpi = dpmm * 25.4`), specify a scale of 2, since `0.33 * 12 = 3.96`
-pixels, or 4 pixels rounding to the nearest pixel:
+print that example as a PNG at 12 dpmm, the approximate equivalent of 300 dpi
+(`dpi = dpmm * 25.4`), specify a scale of 2, since `0.33 * 12 = 3.96` pixels, or
+4 pixels rounding to the nearest pixel:
 
 ```bash
 zint -b EANX -d "501234567890" --compliantheight --scale=2
 ```
 
-This will result in output of 38.27mm x 26.08mm (WxH) at 300 dpi. The following
-table shows the scale to use (in 0.5 increments) depending on the dpmm desired,
-for a target X-dimension of 0.33mm:
+This will result in output of 37.29mm x 25.56mm (WxH) at 12 dpmm. The same
+result can be achieved using the `--scalexdimdp` option with
 
-dpmm  dpi   scale
-----  ----  -----
-  6    150   1
-  8    200   1.5
- 12    300   2
- 16    400   3
- 24    600   4
- 47   1200   8
- 95   2400  15.5
-189   4800  31
+```bash
+zint -b EANX -d "501234567890" --compliantheight --scalexdimdp=0
+```
 
-Table: {#tbl:scaling_xdim_0_33mm tag=": Scaling for X-dimension 0.33mm"}
+as 0.33mm is the default X-dimension for EAN, and 12 dpmm the default
+resolution.
 
-### 4.9.2 MaxiCode Raster Scaling
+### 4.9.3 MaxiCode Raster Scaling
 
 For MaxiCode symbols, which use hexagons, the scale for raster output is
-multiplied by 10 before being applied. The minimum scale is 0.2, so the minimum
-X-dimension is 2 pixels.
+multiplied by 10 before being applied. The 0.5 increment recommended for normal
+raster output does not apply.
+
+The minimum scale is 0.2, so the minimum X-dimension is 2 pixels. However scales
+below 0.5 are not recommended and may produce symbols that are not within the
+following size ranges.
 
 MaxiCode symbols have fixed size ranges of 24.82mm to 27.93mm in width, and
-23.71mm to 26.69mm in height, excluding quiet zones. The following table shows
-the scale to use depending on the dpmm desired, with dpi equivalents:
+23.71mm to 26.69mm in height, excluding quiet zones. The default X-dimension is
+0.88mm. For example, to output at the default X-dimension at 600 dpi specify:
 
-dpmm  dpi   scale
-----  ----  -----
-  6    150   0.5
-  8    200   0.7
- 12    300   1
- 16    400   1.4
- 24    600   2.1
- 47   1200   4.1
- 95   2400   8.2
-189   4800  16.4
-
-Table: {#tbl:maxicode_raster_scaling tag=": MaxiCode Raster Scaling"}
-
-Note that the 0.5 increment recommended for normal raster output does not apply.
-Scales below 0.5 are not recommended and may produce symbols that are not within
-the minimum/maximum size ranges.
+```bash
+zint -b MAXICODE -d "MaxiCode (19 chars)" --scalexdimdp=0,600dpi
+```
 
 ## 4.10 Input Modes
 
@@ -1269,6 +1314,16 @@ Input                Filenames Generated
 `-o t@es~t~.png`     `t*es0t1.png`, `t*es0t2.png`, `t*es0t3.png`
 
 Table: {#tbl:batch_filename_examples tag=": Batch Filename Examples"}
+
+The special characters can span directories also, which is useful when creating
+a large number of barcodes:
+
+Input                    Filenames Generated
+--------------------     ------------------------------------------------------
+`-o dir~/file~~~.svg`    `dir0/file001.svg`, `dir0/file002.svg`, ...
+                         , `dir0/file999.svg`, `dir1/file000.svg`, ...
+
+Table: {#tbl:batch_dir_examples tag=": Batch Directory Examples"}
 
 ## 4.12 Direct Output
 
@@ -1731,7 +1786,11 @@ Variable Name         Type        Meaning                      Default Value
 `eci`                 integer     Extended Channel              0 (none)
                                   Interpretation code.
 
-`dot_size`            float       Diameter of dots used in      4.0 / 5.0
+`dpmm`                float       Resolution of output in dots  0 (none)
+                                  per mm (BMP/EMF/PCX/PNG/TIF
+                                  only).
+
+`dot_size`            float       Diameter of dots used in      0.8
                                   dotty mode.
 
 `guard_descent`       float       Height of guard bar           5.0
@@ -2142,7 +2201,53 @@ int main(int argc, char **argv)
 A maximum of 256 segments may be specified. Use of multiple segments with GS1
 data is not currently supported.
 
-## 5.12 Verifying Symbology Availability
+## 5.12 Scaling Helpers
+
+To help with scaling the output, the following three function are available:
+
+```c
+float ZBarcode_Default_Xdim(int symbol_id);
+
+float ZBarcode_Scale_From_XdimDp(int symbol_id, float x_dim_mm, float dpmm,
+        const char *filetype) {
+
+float ZBarcode_XdimDP_From_Scale(int symbol_id, float scale,
+        float x_dim_mm_or_dpmm, const char *filetype);
+```
+
+The first `ZBarcode_Default_Xdim()` returns the default X-dimension suggested by
+Zint for symbology `symbol_id`.
+
+The second `ZBarcode_Scale_From_XdimDp()` returns the scale to use to output to
+a file of type `filetype` with X-dimension `x_dim_mm` at `dpmm` dots per mm. The
+given X-dimension must be non-zero and less than or equal to 10mm, however
+`dpmm` may be zero and defaults to 12 dpmm, and `filetype` may be NULL or empty
+in which case a GIF filetype is assumed. For raster output (BMP/GIF/PCX/PNG/TIF)
+the scale is rounded to half-integer increments.
+
+For example:
+
+```c
+my_symbol->symbology = BARCODE_RM4SCC; /* Royal Mail 4-State Customer Code */
+my_symbol->dpmm = 600.0f / 25.4f; /* 600 dpi */
+my_symbol->scale = ZBarcode_Scale_From_XdimDp(
+                        my_symbol->symbology,
+                        ZBarcode_Default_Xdim(my_symbol->symbology),
+                        my_symbol->dpmm, "PNG"); /* 7.5 */
+```
+
+The third function `ZBarcode_XdimDP_From_Scale()` is the "reverse" of
+`ZBarcode_Scale_From_XdimDp()`, returning the X-dimension (in mm) or the dot
+density (in dpmm) given a scale `scale`. Both `scale` and `x_dim_mm_or_dpmm`
+must be non-zero. The returned value is bound to the maximum value of dpmm
+(1000), so must be further bound to 10 on return if the X-dimension is sought.
+
+Note that the X-dimension to use is application dependent, and varies not only
+due to the symbology, resolution and filetype but also due to the type of
+scanner used, the intended scanning distance, and what media ("substrates") the
+barcode appears on.
+
+## 5.13 Verifying Symbology Availability
 
 An additional function available in the API is:
 
@@ -2180,7 +2285,7 @@ if (ZBarcode_BarcodeName(BARCODE_PDF417, name) == 0) {
 
 will print `BARCODE_PDF417`.
 
-## 5.13 Checking Symbology Capabilities
+## 5.14 Checking Symbology Capabilities
 
 It can be useful for frontend programs to know the capabilities of a symbology.
 This can be determined using another additional function:
@@ -2246,7 +2351,7 @@ if (cap & ZINT_CAP_ECI) {
 }
 ```
 
-## 5.14 Zint Version
+## 5.15 Zint Version
 
 Whether the Zint library linked to was built with PNG support may be determined
 with:
@@ -2362,16 +2467,16 @@ bind or bindtop) and leaving the border width 0.
 ![`zint -b DPLEIT -d "9212320967145"`](images/dpleit.svg)
 
 Leitcode is based on Interleaved Code 2 of 5 and is used by Deutsche Post for
-mailing purposes. Leitcode requires a 13-digit numerical input and includes a
-check digit.
+routing purposes. Leitcode requires a 13-digit numerical input to which Zint
+adds a check digit.
 
 #### 6.1.2.8 Deutsche Post Identcode
 
 ![`zint -b DPIDENT -d "91232096712"`](images/dpident.svg)
 
 Identcode is based on Interleaved Code 2 of 5 and is used by Deutsche Post for
-mailing purposes. Identcode requires an 11-digit numerical input and includes a
-check digit.
+identification purposes. Identcode requires an 11-digit numerical input to which
+Zint adds a check digit.
 
 
 \clearpage
@@ -2389,7 +2494,7 @@ to draw a UPC-A symbol with the data 72527270270 with an EAN-5 add-on showing
 the data 12345 use the command:
 
 ```bash
-zint -b UPCA -d 72527270270+12345
+zint -b UPCA -d "72527270270+12345"
 ```
 
 or using the API encode a data string with the + character included:
@@ -2423,7 +2528,7 @@ encoding by entering a 7-digit article number starting with the digit 1. For
 example:
 
 ```bash
-zint -b UPCE -d 1123456
+zint -b UPCE -d "1123456"
 ```
 
 or
@@ -2456,7 +2561,7 @@ data. In addition EAN-2 and EAN-5 add-on symbols can be added to EAN-8 and
 EAN-13 symbols using the + character as with UPC symbols. For example:
 
 ```bash
-zint -b EANX -d 54321
+zint -b EANX -d "54321"
 ```
 
 ![`zint -b EANX --compliantheight -d "54321"`](images/eanx5.svg)
@@ -2464,7 +2569,7 @@ zint -b EANX -d 54321
 will encode a stand-alone EAN-5, whereas
 
 ```bash
-zint -b EANX -d 7432365+54321
+zint -b EANX -d "7432365+54321"
 ```
 
 will encode an EAN-8 symbol with an EAN-5 add-on. As before these results can
@@ -2599,7 +2704,7 @@ PZN encodes a 7-digit number to which Zint will add a modulo-11 check digit.
 --vers=1`](images/logmars.svg)
 
 LOGMARS (Logistics Applications of Automated Marking and Reading Symbols) is a
-variation of the Code 39 symbology used by the US Department of Defense.
+variation of the Code 39 symbology used by the U.S. Department of Defense.
 LOGMARS encodes the same character set as Standard Code 39. It does not require
 a check digit but a modulo-43 check digit can be added by setting `--vers=1`
 (API `option_2 = 1`).
@@ -2669,13 +2774,16 @@ the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128 symbols. The
 ISO/IEC 8859-1 character set is shown in Appendix [A.2 Latin Alphabet No. 1
 (ISO/IEC 8859-1)].
 
-#### 6.1.10.2 Code 128 Subset B
+#### 6.1.10.2 Code 128 Suppress Subset C (Subsets A and B only)
 
-![`zint -b CODE128B -d "130170X178"`](images/code128b.svg)
+![`zint -b CODE128AB -d "130170X178"`](images/code128ab.svg)
 
 It is sometimes advantageous to stop Code 128 from using subset mode C which
-compresses numerical data. The `BARCODE_CODE128B` variant (symbology 60)
-suppresses mode C in favour of mode B.
+compresses numerical data. The `BARCODE_CODE128AB`[^10] variant (symbology 60)
+suppresses mode C in favour of modes A and B.
+
+[^10]: `BARCODE_CODE128AB` previously used the name `BARCODE_CODE128B`, which is
+still recognised.
 
 #### 6.1.10.3 GS1-128
 
@@ -3318,10 +3426,10 @@ these will be appended by Zint if not included in the input data.
 ![`zint -b USPS_IMAIL --compliantheight -d
 "01234567094987654321-01234"`](images/usps_imail.svg)
 
-Also known as the OneCode barcode and used in the US by the United States Postal
-Service (USPS), the Intelligent Mail system replaced the POSTNET and PLANET
-symbologies in 2009. Intelligent Mail is a fixed length (65-bar) symbol which
-combines routing and customer information in a single symbol. Input data
+Also known as the OneCode barcode and used in the U.S. by the United States
+Postal Service (USPS), the Intelligent Mail system replaced the POSTNET and
+PLANET symbologies in 2009. Intelligent Mail is a fixed length (65-bar) symbol
+which combines routing and customer information in a single symbol. Input data
 consists of a 20-digit tracking code, followed by a dash (`-`), followed by a
 delivery point zip-code which can be 0, 5, 9 or 11 digits in length. For example
 all of the following inputs are valid data entries:
@@ -3375,7 +3483,7 @@ zint -b RM4SCC --compliantheight -d "W1J0TR01"
 --square`](images/hibc_dm.svg)
 
 Also known as Semacode this symbology was developed in 1989 by Acuity CiMatrix
-in partnership with the US DoD and NASA. The symbol can encode a large amount
+in partnership with the U.S. DoD and NASA. The symbol can encode a large amount
 of data in a small area. Data Matrix encodes characters in the Latin-1 set by
 default but also supports encoding in other character sets using the ECI
 mechanism. It can also encode GS1 data. The size of the generated symbol can
@@ -3727,7 +3835,7 @@ using the `--structapp` option (see [4.16 Structured Append]) (API `structapp`).
 It does not support specifying an ID.
 
 MaxiCode uses a different scaling than other symbols for raster output, see
-[4.9.2 MaxiCode Raster Scaling], and also for EMF vector output, when the scale
+[4.9.3 MaxiCode Raster Scaling], and also for EMF vector output, when the scale
 is multiplied by 20 instead of 2.
 
 ### 6.6.7 Aztec Code (ISO 24778)

@@ -36,6 +36,7 @@
 #include "mainwindow.h"
 #include "cliwindow.h"
 #include "datawindow.h"
+#include "scalewindow.h"
 #include "sequencewindow.h"
 
 // Shorthand
@@ -190,7 +191,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
         : QWidget(parent, fl), m_optionWidget(nullptr), m_symbology(0),
           m_menu(nullptr),
           m_lblHeightPerRow(nullptr), m_spnHeightPerRow(nullptr),
-          m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr)
+          m_btnHeightPerRowDisable(nullptr), m_btnHeightPerRowDefault(nullptr),
+          m_scaleWindow(nullptr)
 {
     // Undocumented command line debug flag
     m_bc.bc.setDebug(QCoreApplication::arguments().contains(QSL("--verbose")));
@@ -224,6 +226,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     mac_hack_vLayouts(this);
     mac_hack_statusBars(this, "statusBar");
     vLayoutTabData->setContentsMargins(QMargins(20, 0, 20, 0));
+    tabMain->setMinimumSize(QSize(0, 380));
+    tabMain->setMaximumSize(QSize(16777215, 380));
 #endif
 #ifdef _WIN32
     tabMain->setMinimumSize(QSize(0, 316));
@@ -235,6 +239,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     m_fgcolor_geometry = settings.value(QSL("studio/fgcolor_geometry")).toByteArray();
     m_bgcolor_geometry = settings.value(QSL("studio/bgcolor_geometry")).toByteArray();
 
+    btnScale->setIcon(QIcon(QSL(":res/scaling.svg")));
     fgcolor->setIcon(QIcon(QSL(":res/black-eye.svg")));
     bgcolor->setIcon(QIcon(QSL(":res/white-eye.svg")));
     btnReverse->setIcon(QIcon(QSL(":res/shuffle.svg")));
@@ -307,7 +312,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(spnVWhitespace, SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btnMenu, SIGNAL(clicked( bool )), SLOT(menu()));
     connect(btnSave, SIGNAL(clicked( bool )), SLOT(save()));
-    connect(spnScale, SIGNAL(valueChanged( double )), SLOT(change_print_scale()));
+    connect(spnScale, SIGNAL(valueChanged( double )), SLOT(update_preview()));
     connect(btnExit, SIGNAL(clicked( bool )), SLOT(quit_now()));
     connect(btnReset, SIGNAL(clicked( bool )), SLOT(reset_colours()));
     connect(btnReverse, SIGNAL(clicked( bool )), SLOT(reverse_colours()));
@@ -324,6 +329,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(autoheight_ui_set()));
     connect(chkAutoHeight, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(chkCompliantHeight, SIGNAL(toggled( bool )), SLOT(update_preview()));
+    connect(btnScale, SIGNAL(clicked( bool )), SLOT(open_scale_dialog()));
     connect(chkHRTShow, SIGNAL(toggled( bool )), SLOT(HRTShow_ui_set()));
     connect(chkHRTShow, SIGNAL(toggled( bool )), SLOT(update_preview()));
     connect(chkCMYK, SIGNAL(toggled( bool )), SLOT(change_cmyk()));
@@ -426,6 +432,11 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/appearance/rotate"), cmbRotate->currentIndex());
     settings.setValue(QSL("studio/appearance/chk_dotty"), chkDotty->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/dot_size"), spnDotSize->value());
+    // These are "system-wide"
+    settings.setValue(QSL("studio/xdimdpvars/resolution"), m_xdimdpVars.resolution);
+    settings.setValue(QSL("studio/xdimdpvars/resolution_units"), m_xdimdpVars.resolution_units);
+    settings.setValue(QSL("studio/xdimdpvars/filetype"), m_xdimdpVars.filetype);
+    settings.setValue(QSL("studio/xdimdpvars/filetype_maxicode"), m_xdimdpVars.filetype_maxicode);
 
     save_sub_settings(settings, m_bc.bc.symbol());
 }
@@ -472,13 +483,20 @@ void MainWindow::load_settings(QSettings &settings)
     cmbRotate->setCurrentIndex(settings.value(QSL("studio/appearance/rotate"), 0).toInt());
     chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
     spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
+    // These are "system-wide"
+    m_xdimdpVars.resolution_units = settings.value(QSL("studio/xdimdpvars/resolution_units"), 0).toInt();
+    const int defaultResolution = m_xdimdpVars.resolution_units == 1 ? 300 : 12; // 300dpi or 12dpmm
+    m_xdimdpVars.resolution = settings.value(QSL("studio/xdimdpvars/resolution"), defaultResolution).toInt();
+    m_xdimdpVars.filetype = std::max(std::min(settings.value(QSL("studio/xdimdpvars/filetype"), 0).toInt(), 1), 0);
+    m_xdimdpVars.filetype_maxicode
+                = std::max(std::min(settings.value(QSL("studio/xdimdpvars/filetype_maxicode"), 0).toInt(), 2), 0);
 }
 
 QString MainWindow::get_zint_version(void)
 {
     QString zint_version;
 
-    int lib_version = ZBarcode_Version();
+    int lib_version = Zint::QZint::getVersion();
     int version_major = lib_version / 10000;
     int version_minor = (lib_version % 10000) / 100;
     int version_release = lib_version % 100;
@@ -721,7 +739,8 @@ void MainWindow::about()
             "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
             "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
             "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
-                "Git Lost, Alonso Schaich, Andre Maute and many others at SourceForge.</p>"
+                "Git Lost, Alonso Schaich, Andre Maute and many others at "
+                "<a href=\"https://sourceforge.net/projects/zint/\">SourceForge</a>.</p>"
             "<p><table border=1><tr><td>"
 #ifndef Q_OS_MACOS
             "<small>"
@@ -859,7 +878,6 @@ void MainWindow::open_data_dialog_seg(const int seg_no)
     }
     disconnect(&dlg, SIGNAL(dataChanged(const QString&, bool, int)), this,
         SLOT(on_dataChanged(const QString&, bool, int)));
-    update_preview();
 }
 
 void MainWindow::open_data_dialog()
@@ -898,13 +916,21 @@ void MainWindow::zap()
 #if QT_VERSION < 0x60000
     settings.setIniCodec("UTF-8");
 #endif
-    settings.clear();
 
     int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    QString name = get_setting_name(symbology);
+    settings.remove(QSL("studio/bc/%1").arg(name));
+    settings.remove(QSL("studio/data"));
+    settings.remove(QSL("studio/eci"));
 
     load_settings(settings);
+
     setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
     setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+
+    m_xdimdpVars.x_dim = 0.0f;
+    m_xdimdpVars.x_dim_units = 0;
+    m_xdimdpVars.set = 0;
 
     load_sub_settings(settings, symbology);
 
@@ -921,16 +947,42 @@ void MainWindow::on_dataChanged(const QString& text, bool escaped, int seg_no)
     update_preview();
 }
 
+void MainWindow::on_scaleChanged(double scale)
+{
+    spnScale->setValue(scale);
+    size_msg_ui_set();
+}
+
 void MainWindow::open_cli_dialog()
 {
     CLIWindow dlg(&m_bc, chkAutoHeight->isEnabled() && chkAutoHeight->isChecked(),
-                    m_spnHeightPerRow && m_spnHeightPerRow->isEnabled() ? m_spnHeightPerRow->value() : 0.0);
+                    m_spnHeightPerRow && m_spnHeightPerRow->isEnabled() ? m_spnHeightPerRow->value() : 0.0,
+                    &m_xdimdpVars);
 
 #ifdef Q_OS_MACOS
     mac_hack_statusBars(&dlg);
 #endif
 
     (void) dlg.exec();
+}
+
+void MainWindow::open_scale_dialog()
+{
+    double originalScale = spnScale->value();
+    QString originalSizeMsg = lblSizeMsg->text();
+    ScaleWindow dlg(&m_bc, &m_xdimdpVars);
+    m_scaleWindow = &dlg;
+    connect(&dlg, SIGNAL(scaleChanged(double)), this, SLOT(on_scaleChanged(double)));
+    (void) dlg.exec();
+    disconnect(&dlg, SIGNAL(scaleChanged(double)), this, SLOT(on_scaleChanged(double)));
+    if (dlg.Valid) {
+        m_xdimdpVars = dlg.m_vars;
+        update_preview();
+    } else { // Restore
+        spnScale->setValue(originalScale);
+        lblSizeMsg->setText(originalSizeMsg);
+    }
+    m_scaleWindow = nullptr;
 }
 
 void MainWindow::on_fgcolor_clicked()
@@ -1037,6 +1089,9 @@ void MainWindow::autoheight_ui_set()
             m_btnHeightPerRowDisable->setEnabled(enabled && m_spnHeightPerRow->value());
         }
         if (m_btnHeightPerRowDefault) {
+            if (enabled && m_spnHeightPerRow->value() == get_height_per_row_default()) {
+                enabled = false;
+            }
             m_btnHeightPerRowDefault->setEnabled(enabled);
         }
     }
@@ -1163,8 +1218,9 @@ void MainWindow::on_encoded()
     if (!chkAutoHeight->isEnabled() || chkAutoHeight->isChecked() || !heightb->isEnabled()) {
         /* setValue() rounds up/down to precision (decimals 3), we want round up only */
         float height = (float) (ceil(m_bc.bc.height() * 1000.0f) / 1000.0f);
-        heightb->setValue(height);
+        heightb->setValue(height); // This can cause a double-encode unfortunately
     }
+    size_msg_ui_set();
 
     if (m_optionWidget) {
         automatic_info_set();
@@ -1180,6 +1236,7 @@ void MainWindow::on_errored()
     }
     enableActions();
     errtxtBar_set();
+    size_msg_ui_set();
     if (m_optionWidget) {
         automatic_info_set();
     }
@@ -1238,10 +1295,37 @@ void MainWindow::filter_symbologies()
     }
 }
 
-void MainWindow::change_print_scale()
+void MainWindow::size_msg_ui_set()
 {
-    /* This value is only used when printing (saving) to file */
-    m_bc.bc.setScale((float) spnScale->value());
+    if (m_bc.bc.getError() < ZINT_ERROR) {
+        float scale = (float) spnScale->value();
+        struct Zint::QZintXdimDpVars *vars = m_scaleWindow ? &m_scaleWindow->m_vars : &m_xdimdpVars;
+        if (vars->x_dim == 0.0) {
+            vars->x_dim_units = 0;
+            vars->x_dim = m_bc.bc.getXdimDpFromScale(scale, get_dpmm(vars), getFileType(vars));
+        } else {
+            // Scale trumps stored X-dimension
+            double x_dim_mm = vars->x_dim_units == 1 ? vars->x_dim * 25.4 : vars->x_dim;
+            if (m_bc.bc.getScaleFromXdimDp((float) x_dim_mm, get_dpmm(vars), getFileType(vars)) != scale) {
+                x_dim_mm = std::min(m_bc.bc.getXdimDpFromScale(scale, get_dpmm(vars), getFileType(vars)), 10.0f);
+                vars->x_dim = vars->x_dim_units == 1 ? x_dim_mm / 25.4 : x_dim_mm;
+            }
+        }
+        float width_x_dim, height_x_dim;
+        if (m_bc.bc.getWidthHeightXdim((float) vars->x_dim, width_x_dim, height_x_dim)) {
+            const char *fmt = vars->x_dim_units == 1 ? "%.3f x %.3f in @ %d %s (%s)" : "%.2f x %.2f mm @ %d %s (%s)";
+            const char *resolution_units_str = vars->resolution_units == 1 ? "dpi" : "dpmm";
+            lblSizeMsg->setText(QString::asprintf(fmt, width_x_dim, height_x_dim, vars->resolution,
+                                resolution_units_str, getFileType(vars, true /*msg*/)));
+        } else {
+            lblSizeMsg->clear();
+        }
+    } else {
+        lblSizeMsg->clear();
+    }
+    if (m_scaleWindow) {
+        m_scaleWindow->size_msg_ui_set();
+    }
 }
 
 void MainWindow::change_cmyk()
@@ -1323,53 +1407,59 @@ void MainWindow::height_per_row_disable()
     }
 }
 
+double MainWindow::get_height_per_row_default()
+{
+    const QString &name = m_btnHeightPerRowDefault->objectName();
+    double val = 0.0;
+    if (name == QSL("btnPDFHeightPerRowDefault")) {
+        val = 3.0;
+    } else if (name == QSL("btnMPDFHeightPerRowDefault")) {
+        val = 2.0;
+    } else if (name == QSL("btnC16kHeightPerRowDefault")) {
+        if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
+            const int rows = m_bc.bc.encodedRows();
+            val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC16kRowSepHeight")) + 1)) / rows;
+        } else {
+            val = 10.0;
+        }
+    } else if (name == QSL("btnCbfHeightPerRowDefault")) {
+        // Depends on no. of data cols
+        const int cols = (m_bc.bc.encodedWidth() - 57) / 11; // 57 = 4 * 11 (start/subset/checks) + 13 (stop char)
+        val = 0.55 * cols + 3;
+        if (val < 10.0) {
+            val = 10.0;
+        }
+    } else if (name == QSL("btnC49HeightPerRowDefault")) {
+        if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
+            const int rows = m_bc.bc.encodedRows();
+            val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC49RowSepHeight")) + 1)) / rows;
+        } else {
+            val = 10.0;
+        }
+    } else if (name == QSL("btnDBESHeightPerRowDefault")) {
+        val = 34.0;
+    }
+    return val;
+}
+
 void MainWindow::height_per_row_default()
 {
     if (m_spnHeightPerRow && m_btnHeightPerRowDefault) {
-        const QString &name = m_btnHeightPerRowDefault->objectName();
-        double val = 0.0;
-        if (name == QSL("btnPDFHeightPerRowDefault")) {
-            val = 3.0;
-        } else if (name == QSL("btnMPDFHeightPerRowDefault")) {
-            val = 2.0;
-        } else if (name == QSL("btnC16kHeightPerRowDefault")) {
-            if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
-                const int rows = m_bc.bc.encodedRows();
-                val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC16kRowSepHeight")) + 1)) / rows;
-            } else {
-                val = 10.0;
-            }
-        } else if (name == QSL("btnCbfHeightPerRowDefault")) {
-            // Depends on no. of data cols
-            const int cols = (m_bc.bc.encodedWidth() - 57) / 11; // 57 = 4 * 11 (start/subset/checks) + 13 (stop char)
-            val = 0.55 * cols + 3;
-            if (val < 10.0) {
-                val = 10.0;
-            }
-        } else if (name == QSL("btnC49HeightPerRowDefault")) {
-            if (chkCompliantHeight->isEnabled() && chkCompliantHeight->isChecked()) {
-                const int rows = m_bc.bc.encodedRows();
-                val = 10.0 + (double)((rows - 1) * (get_cmb_index(QSL("cmbC49RowSepHeight")) + 1)) / rows;
-            } else {
-                val = 10.0;
-            }
-        } else if (name == QSL("btnDBESHeightPerRowDefault")) {
-            val = 34.0;
-        }
+        double val = get_height_per_row_default();
         if (val) {
             m_spnHeightPerRow->setValue(val);
         }
     }
 }
 
-void MainWindow::guard_reset_upcean()
+void MainWindow::guard_default_upcean()
 {
-    guard_reset(QSL("spnUPCEANGuardDescent"));
+    guard_default(QSL("spnUPCEANGuardDescent"));
 }
 
-void MainWindow::guard_reset_upca()
+void MainWindow::guard_default_upca()
 {
-    guard_reset(QSL("spnUPCAGuardDescent"));
+    guard_default(QSL("spnUPCAGuardDescent"));
 }
 
 void MainWindow::view_context_menu(const QPoint &pos)
@@ -1445,6 +1535,10 @@ void MainWindow::change_options()
 
     setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
     setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+
+    m_xdimdpVars.x_dim = 0.0f;
+    m_xdimdpVars.x_dim_units = 0;
+    m_xdimdpVars.set = 0;
 
     if (symbology == BARCODE_CODE128) {
         QFile file(QSL(":/grpC128.ui"));
@@ -1695,9 +1789,12 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("DAFT"));
+            tabMain->insertTab(1, m_optionWidget, tr("D&AFT"));
             set_smaller_font(QSL("noteTrackerRatios"));
+            connect(get_widget(QSL("spnDAFTTrackerRatio")), SIGNAL(valueChanged( double )), SLOT(daft_ui_set()));
             connect(get_widget(QSL("spnDAFTTrackerRatio")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
+            connect(get_widget(QSL("btnDAFTTrackerDefault")), SIGNAL(clicked( bool )), SLOT(daft_tracker_default()));
+            daft_ui_set();
         }
 
     } else if (symbology == BARCODE_DPD) {
@@ -1975,7 +2072,7 @@ void MainWindow::change_options()
         }
         connect(get_widget(QSL("cmbUPCAAddonGap")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnUPCAGuardDescent")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
-        connect(get_widget(QSL("btnUPCAGuardReset")), SIGNAL(clicked( bool )), SLOT(guard_reset_upca()));
+        connect(get_widget(QSL("btnUPCAGuardDefault")), SIGNAL(clicked( bool )), SLOT(guard_default_upca()));
         connect(get_widget(QSL("chkUPCANoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
@@ -2000,7 +2097,7 @@ void MainWindow::change_options()
         }
         connect(get_widget(QSL("cmbUPCEANAddonGap")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnUPCEANGuardDescent")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
-        connect(get_widget(QSL("btnUPCEANGuardReset")), SIGNAL(clicked( bool )), SLOT(guard_reset_upcean()));
+        connect(get_widget(QSL("btnUPCEANGuardDefault")), SIGNAL(clicked( bool )), SLOT(guard_default_upcean()));
         connect(get_widget(QSL("chkUPCEANNoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_VIN) {
@@ -2232,7 +2329,7 @@ void MainWindow::combobox_item_enabled(QComboBox *comboBox, int index, bool enab
     }
 }
 
-void MainWindow::upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base)
+bool MainWindow::upcean_addon_gap(const QString &comboBoxName, const QString &labelName, int base)
 {
     QComboBox *comboBox = m_optionWidget->findChild<QComboBox*>(comboBoxName);
     QLabel *label = m_optionWidget->findChild<QLabel*>(labelName);
@@ -2251,30 +2348,68 @@ void MainWindow::upcean_addon_gap(const QString &comboBoxName, const QString &la
             m_bc.bc.setOption2(item_val + base);
         }
     }
+    return enabled;
 }
 
-void MainWindow::upcean_guard_descent(const QString &spnBoxName, const QString &labelName)
+void MainWindow::upcean_guard_descent(const QString &spnBoxName, const QString &labelName,
+        const QString &btnDefaultName, bool enabled)
 {
     QDoubleSpinBox *spnBox = m_optionWidget->findChild<QDoubleSpinBox*>(spnBoxName);
     QLabel *label = m_optionWidget->findChild<QLabel*>(labelName);
+    QPushButton *btnDefault = m_optionWidget->findChild<QPushButton*>(btnDefaultName);
 
-    bool enabled = txtData->text().length() > 5;
     if (spnBox) {
         spnBox->setEnabled(enabled);
     }
     if (label) {
         label->setEnabled(enabled);
     }
+    if (btnDefault) {
+        btnDefault->setEnabled(enabled);
+    }
     if (enabled && spnBox) {
         m_bc.bc.setGuardDescent(spnBox->value());
+        if (btnDefault && spnBox->value() == 5.0) {
+            QWidget *focus = QApplication::focusWidget();
+            btnDefault->setEnabled(false);
+            if (focus == btnDefault) {
+                spnBox->setFocus();
+            }
+        }
     }
 }
 
-void MainWindow::guard_reset(const QString &spnBoxName)
+void MainWindow::guard_default(const QString &spnBoxName)
 {
     QDoubleSpinBox *spnBox = m_optionWidget->findChild<QDoubleSpinBox*>(spnBoxName);
     if (spnBox && spnBox->value() != 5.0) {
         spnBox->setValue(5.0);
+        update_preview();
+    }
+}
+
+void MainWindow::daft_ui_set()
+{
+    QDoubleSpinBox *spnBox = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnDAFTTrackerRatio"));
+    QPushButton *btnDefault = m_optionWidget->findChild<QPushButton*>(QSL("btnDAFTTrackerDefault"));
+    if (spnBox && spnBox->value() == 25.0) {
+        if (btnDefault) {
+            QWidget *focus = QApplication::focusWidget();
+            btnDefault->setEnabled(false);
+            if (focus == btnDefault) {
+                spnBox->setFocus();
+            }
+        }
+    } else if (btnDefault && !btnDefault->isEnabled()) {
+        btnDefault->setEnabled(true);
+    }
+}
+
+void MainWindow::daft_tracker_default()
+{
+    QDoubleSpinBox *spnBox = m_optionWidget->findChild<QDoubleSpinBox*>(QSL("spnDAFTTrackerRatio"));
+    if (spnBox && spnBox->value() != 25.0) {
+        spnBox->setValue(25.0);
         update_preview();
     }
 }
@@ -2344,6 +2479,7 @@ void MainWindow::update_preview()
     m_bc.bc.setOption1(-1);
     m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
+    m_bc.bc.setDPMM(m_xdimdpVars.set ? get_dpmm(&m_xdimdpVars) : 0.0f);
     chkData->setEnabled(true);
     if (chkData->isChecked()) {
         m_bc.bc.setInputMode(DATA_MODE);
@@ -2363,7 +2499,7 @@ void MainWindow::update_preview()
 
         case BARCODE_CODE128:
             if (get_rad_val(QSL("radC128CSup")))
-                m_bc.bc.setSymbol(BARCODE_CODE128B);
+                m_bc.bc.setSymbol(BARCODE_CODE128AB);
             else if (get_rad_val(QSL("radC128EAN")))
                 m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_GS1_128_CC : BARCODE_GS1_128);
             else if (get_rad_val(QSL("radC128HIBC")))
@@ -2374,8 +2510,12 @@ void MainWindow::update_preview()
 
         case BARCODE_EANX:
             m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_EANX_CC : BARCODE_EANX);
-            upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"));
+            {
+                bool have_addon = upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
+                bool enable_guard = have_addon || txtData->text().length() > 5;
+                upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
+                                        QSL("btnUPCEANGuardDefault"), enable_guard);
+            }
             if (get_chk_val(QSL("chkUPCEANNoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -2384,7 +2524,8 @@ void MainWindow::update_preview()
         case BARCODE_ISBNX:
             m_bc.bc.setSymbol(symbology);
             upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"));
+            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
+                                    QSL("btnUPCEANGuardDefault"));
             if (get_chk_val(QSL("chkUPCEANNoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -2393,7 +2534,7 @@ void MainWindow::update_preview()
         case BARCODE_UPCA:
             m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_UPCA_CC : BARCODE_UPCA);
             upcean_addon_gap(QSL("cmbUPCAAddonGap"), QSL("lblUPCAAddonGap"), 9 /*base*/);
-            upcean_guard_descent(QSL("spnUPCAGuardDescent"), QSL("lblUPCAGuardDescent"));
+            upcean_guard_descent(QSL("spnUPCAGuardDescent"), QSL("lblUPCAGuardDescent"), QSL("btnUPCAGuardDefault"));
             if (get_chk_val(QSL("chkUPCANoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -2402,7 +2543,8 @@ void MainWindow::update_preview()
         case BARCODE_UPCE:
             m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_UPCE_CC : BARCODE_UPCE);
             upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
-            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"));
+            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
+                                    QSL("btnUPCEANGuardDefault"));
             if (get_chk_val(QSL("chkUPCEANNoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
             }
@@ -2888,8 +3030,8 @@ void MainWindow::update_preview()
         lblECI->setEnabled(cmbECI->isEnabled());
     }
     btnClearData->setEnabled(!txtData->text().isEmpty());
-    chkGS1Parens->setEnabled(m_bc.bc.supportsGS1());
-    chkGS1NoCheck->setEnabled(m_bc.bc.supportsGS1());
+    chkGS1Parens->setEnabled(m_bc.bc.takesGS1AIData(m_symbology) || (m_bc.bc.inputMode() & 0x07) == GS1_MODE);
+    chkGS1NoCheck->setEnabled(chkGS1Parens->isEnabled());
     chkRInit->setEnabled(m_bc.bc.supportsReaderInit() && (m_bc.bc.inputMode() & 0x07) != GS1_MODE);
     chkCompliantHeight->setEnabled(m_bc.bc.hasCompliantHeight());
 
@@ -2926,7 +3068,7 @@ void MainWindow::update_preview()
     }
     m_bc.bc.setFgColor(m_fgcolor);
     m_bc.bc.setBgColor(m_bgcolor);
-    change_print_scale();
+    m_bc.bc.setScale((float) spnScale->value());
     change_cmyk();
     m_bc.setSize(width - 10, height - 10);
     m_bc.update();
@@ -2942,7 +3084,7 @@ void MainWindow::createActions()
     QIcon copyIcon(QIcon::fromTheme(QSL("edit-copy"), QIcon(QSL(":res/copy.svg"))));
     QIcon cliIcon(QSL(":res/zint_black.ico"));
     QIcon saveIcon(QIcon::fromTheme(QSL("document-save"), QIcon(QSL(":res/download.svg"))));
-    QIcon zapIcon(QIcon(QSL(":res/zap.svg")));
+    QIcon zapIcon(QSL(":res/zap.svg"));
     QIcon aboutIcon(QSL(":res/zint-qt.ico"));
     QIcon helpIcon(QIcon::fromTheme(QSL("help-contents"), QIcon(QSL(":res/help-circle.svg"))));
     QIcon quitIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
@@ -3135,7 +3277,7 @@ void MainWindow::errtxtBar_clear()
     if (!errtxtBarContainer->isHidden()) {
         errtxtBarContainer->hide();
         errtxtBarContainer->update();
-        update_preview();
+        update_preview(); // This causes a double-encode unfortunately
     }
 }
 
@@ -3154,7 +3296,7 @@ void MainWindow::errtxtBar_set()
         if (errtxtBarContainer->isHidden()) {
             errtxtBarContainer->show();
             errtxtBarContainer->update();
-            update_preview();
+            update_preview(); // This causes a double-encode unfortunately
         }
     }
 }
@@ -3442,9 +3584,8 @@ QWidget *MainWindow::get_widget(const QString &name)
 /* Return settings subsection name for a symbol */
 QString MainWindow::get_setting_name(int symbology)
 {
-    char name_buf[32];
     switch (symbology) {
-        case BARCODE_CODE128B:
+        case BARCODE_CODE128AB:
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
@@ -3472,6 +3613,21 @@ QString MainWindow::get_setting_name(int symbology)
         case BARCODE_HIBC_QR:
             symbology = BARCODE_QRCODE;
             break;
+        case BARCODE_DBAR_OMN_CC:
+            symbology = BARCODE_DBAR_OMN;
+            break;
+        case BARCODE_DBAR_OMNSTK_CC:
+            symbology = BARCODE_DBAR_OMNSTK;
+            break;
+        case BARCODE_DBAR_LTD_CC:
+            symbology = BARCODE_DBAR_LTD;
+            break;
+        case BARCODE_DBAR_STK_CC:
+            symbology = BARCODE_DBAR_STK;
+            break;
+        case BARCODE_DBAR_EXP_CC:
+            symbology = BARCODE_DBAR_EXP;
+            break;
         case BARCODE_DBAR_EXPSTK_CC:
             symbology = BARCODE_DBAR_EXPSTK;
             break;
@@ -3488,11 +3644,7 @@ QString MainWindow::get_setting_name(int symbology)
             symbology = BARCODE_UPCE;
             break;
     }
-    if (ZBarcode_BarcodeName(symbology, name_buf) != 0) {
-        return QSL("");
-    }
-    QString name(name_buf + 8); // Strip "BARCODE_" prefix
-    return name.toLower();
+    return Zint::QZint::barcodeName(symbology).mid(8).toLower(); // Strip "BARCODE_" prefix
 }
 
 /* Helper to return index of selected radio button in group, checking for NULL */
@@ -3624,7 +3776,7 @@ void MainWindow::set_spn_from_setting(QSettings &settings, const QString &settin
 void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 {
     QString name = get_setting_name(symbology);
-    if (!name.isEmpty()) {
+    if (!name.isEmpty()) { // Should never be empty
         settings.setValue(QSL("studio/bc/%1/data").arg(name), txtData->text());
         if (!grpSegs->isHidden()) {
             settings.setValue(QSL("studio/bc/%1/data_seg1").arg(name), txtDataSeg1->text());
@@ -3683,11 +3835,14 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         settings.setValue(QSL("studio/bc/%1/paper/green").arg(name), m_bgcolor.green());
         settings.setValue(QSL("studio/bc/%1/paper/blue").arg(name), m_bgcolor.blue());
         settings.setValue(QSL("studio/bc/%1/paper/alpha").arg(name), m_bgcolor.alpha());
+        settings.setValue(QSL("studio/bc/%1/xdimdpvars/x_dim").arg(name), m_xdimdpVars.x_dim);
+        settings.setValue(QSL("studio/bc/%1/xdimdpvars/x_dim_units").arg(name), m_xdimdpVars.x_dim_units);
+        settings.setValue(QSL("studio/bc/%1/xdimdpvars/set").arg(name), m_xdimdpVars.set);
     }
 
     switch (symbology) {
         case BARCODE_CODE128:
-        case BARCODE_CODE128B:
+        case BARCODE_CODE128AB:
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
@@ -3999,7 +4154,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 {
     QString name = get_setting_name(symbology);
-    if (!name.isEmpty()) {
+    if (!name.isEmpty()) { // Should never be empty
         const QString &tdata = settings.value(QSL("studio/bc/%1/data").arg(name), QSL("")).toString();
         if (!tdata.isEmpty()) {
             txtData->setText(tdata);
@@ -4071,11 +4226,19 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                         settings.value(QSL("studio/bc/%1/paper/green").arg(name), 0xff).toInt(),
                         settings.value(QSL("studio/bc/%1/paper/blue").arg(name), 0xff).toInt(),
                         settings.value(QSL("studio/bc/%1/paper/alpha").arg(name), 0xff).toInt());
+
+        m_xdimdpVars.x_dim = settings.value(QSL("studio/bc/%1/xdimdpvars/x_dim").arg(name), 0.0).toFloat();
+        m_xdimdpVars.x_dim_units = settings.value(QSL("studio/bc/%1/xdimdpvars/x_dim_units").arg(name), 0).toInt();
+        m_xdimdpVars.set = settings.value(QSL("studio/bc/%1/xdimdpvars/set").arg(name), 0).toInt();
+    } else {
+        m_xdimdpVars.x_dim = 0.0;
+        m_xdimdpVars.x_dim_units = 0;
+        m_xdimdpVars.set = 0;
     }
 
     switch (symbology) {
         case BARCODE_CODE128:
-        case BARCODE_CODE128B:
+        case BARCODE_CODE128AB:
         case BARCODE_GS1_128:
         case BARCODE_GS1_128_CC:
         case BARCODE_HIBC_128:
@@ -4382,6 +4545,16 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/vin/chk_import_char_prefix"), QSL("chkVINImportChar"));
             break;
     }
+}
+
+float MainWindow::get_dpmm(const struct Zint::QZintXdimDpVars* vars) const
+{
+    return (float) (vars->resolution_units == 1 ? vars->resolution / 25.4 : vars->resolution);
+}
+
+const char *MainWindow::getFileType(const struct Zint::QZintXdimDpVars* vars, bool msg) const
+{
+    return Zint::QZintXdimDpVars::getFileType(m_bc.bc.symbol(), vars, msg);
 }
 
 /* vim: set ts=4 sw=4 et : */

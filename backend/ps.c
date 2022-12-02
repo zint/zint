@@ -35,6 +35,7 @@
 #include <math.h>
 #include <stdio.h>
 #include "common.h"
+#include "output.h"
 
 static void colour_to_pscolor(int option, int colour, char *output) {
     *output = '\0';
@@ -174,7 +175,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     if (output_to_stdout) {
         feps = stdout;
     } else {
-        if (!(feps = fopen(symbol->outfile, "w"))) {
+        if (!(feps = out_fopen(symbol->outfile, "w"))) {
             sprintf(symbol->errtxt, "645: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }

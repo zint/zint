@@ -135,9 +135,9 @@
       </widget>
      </item>
      <item row="4" column="0">
-      <widget class="QLabel" name="lblFileFormat">
+      <widget class="QLabel" name="lblFileType">
        <property name="text">
-        <string>File &amp;Format:</string>
+        <string>File &amp;Type:</string>
        </property>
        <property name="toolTip">
         <string>The type of file which you want to create</string>

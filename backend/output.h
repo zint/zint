@@ -37,6 +37,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
+#include <stdio.h> /* For FILE */
+
 INTERNAL int out_check_colour_options(struct zint_symbol *symbol);
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
                 float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
@@ -47,6 +49,7 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row
 INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
                 unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
                 unsigned char textpart4[2]);
+INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
 
 #ifdef __cplusplus
 }

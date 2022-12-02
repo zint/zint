@@ -688,7 +688,8 @@ static void draw_bind_box(const struct zint_symbol *symbol, unsigned char *pixel
             const int width_si = symbol->width * si;
             draw_bar(pixelbuf, xoffset_si, width_si, ybind_top, bwidth_si, image_width, image_height, DEFAULT_INK);
             if (!(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
-                draw_bar(pixelbuf, xoffset_si, width_si, ybind_bot, bwidth_si, image_width, image_height, DEFAULT_INK);
+                draw_bar(pixelbuf, xoffset_si, width_si, ybind_bot, bwidth_si, image_width, image_height,
+                            DEFAULT_INK);
             }
         }
         if (symbol->output_options & BARCODE_BOX) {

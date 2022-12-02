@@ -224,10 +224,13 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.symbology = BARCODE_CODE128;
     symbol.vector = &vector;
 
-    strcpy(symbol.outfile, "nosuch_dir/out.eps");
+    strcpy(symbol.outfile, "test_ps_out.eps");
+    (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
+    assert_nonzero(testUtilCreateROFile(symbol.outfile), "ps_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     ret = ps_plot(&symbol, 0);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "ps_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+    assert_zero(testUtilRmROFile(symbol.outfile), "ps_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     symbol.output_options |= BARCODE_STDOUT;
 

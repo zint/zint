@@ -105,6 +105,7 @@ namespace Zint {
         : m_zintSymbol(nullptr), m_symbol(BARCODE_CODE128), m_input_mode(UNICODE_MODE),
             m_height(0.0f),
             m_option_1(-1), m_option_2(0), m_option_3(0),
+            m_dpmm(0.0f),
             m_scale(1.0f),
             m_dotty(false), m_dot_size(4.0f / 5.0f),
             m_guardDescent(5.0f),
@@ -122,6 +123,7 @@ namespace Zint {
             m_reader_init(false),
             m_warn_level(WARN_DEFAULT), m_debug(false),
             m_encodedWidth(0), m_encodedRows(0),
+            m_vectorWidth(0.0f), m_vectorHeight(0.0f),
             m_error(0),
             target_size_horiz(0), target_size_vert(0) // Legacy
     {
@@ -133,7 +135,7 @@ namespace Zint {
             ZBarcode_Delete(m_zintSymbol);
     }
 
-    void QZint::resetSymbol() {
+    bool QZint::resetSymbol() {
         m_error = 0;
         m_lastError.clear();
 
@@ -142,7 +144,7 @@ namespace Zint {
         } else if (!(m_zintSymbol = ZBarcode_Create())) {
             m_error = ZINT_ERROR_MEMORY;
             m_lastError = QSL("Insufficient memory for Zint structure");
-            return;
+            return false;
         }
 
         m_zintSymbol->symbology = m_symbol;
@@ -194,27 +196,32 @@ namespace Zint {
             m_zintSymbol->input_mode |= GS1NOCHECK_MODE;
         }
         m_zintSymbol->eci = m_eci;
+        m_zintSymbol->dpmm = m_dpmm;
         m_zintSymbol->dot_size = m_dot_size;
         m_zintSymbol->guard_descent = m_guardDescent;
         m_zintSymbol->structapp = m_structapp;
         m_zintSymbol->warn_level = m_warn_level;
         m_zintSymbol->debug = m_debug ? ZINT_DEBUG_PRINT : 0;
+
+        return true;
     }
 
     void QZint::encode() {
-        resetSymbol();
-        if (m_segs.empty()) {
-            QByteArray bstr = m_text.toUtf8();
-            /* Note do our own rotation */
-            m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(), 0);
-        } else {
-            struct zint_seg segs[maxSegs];
-            std::vector<QByteArray> bstrs;
-            int seg_count = convertSegs(segs, bstrs);
-            /* Note do our own rotation */
-            m_error = ZBarcode_Encode_Segs_and_Buffer_Vector(m_zintSymbol, segs, seg_count, 0);
+        if (resetSymbol()) {
+            if (m_segs.empty()) {
+                QByteArray bstr = m_text.toUtf8();
+                /* Note do our own rotation */
+                m_error = ZBarcode_Encode_and_Buffer_Vector(m_zintSymbol, (unsigned char *) bstr.data(),
+                            bstr.length(), 0);
+            } else {
+                struct zint_seg segs[maxSegs];
+                std::vector<QByteArray> bstrs;
+                int seg_count = convertSegs(segs, bstrs);
+                /* Note do our own rotation */
+                m_error = ZBarcode_Encode_Segs_and_Buffer_Vector(m_zintSymbol, segs, seg_count, 0);
+            }
+            m_lastError = m_zintSymbol->errtxt;
         }
-        m_lastError = m_zintSymbol->errtxt;
 
         if (m_error < ZINT_ERROR) {
             m_borderType = m_zintSymbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP);
@@ -224,14 +231,17 @@ namespace Zint {
             m_vwhitespace = m_zintSymbol->whitespace_height;
             m_encodedWidth = m_zintSymbol->width;
             m_encodedRows = m_zintSymbol->rows;
+            m_vectorWidth = m_zintSymbol->vector->width;
+            m_vectorHeight = m_zintSymbol->vector->height;
             emit encoded();
         } else {
-            m_encodedWidth = 0;
-            m_encodedRows = 0;
+            m_encodedWidth = m_encodedRows = 0;
+            m_vectorWidth = m_vectorHeight = 0.0f;
             emit errored();
         }
     }
 
+    /* Symbology to use (see BARCODE_XXX) */
     int QZint::symbol() const {
         return m_symbol;
     }
@@ -240,6 +250,7 @@ namespace Zint {
         m_symbol = symbol;
     }
 
+    /* Input data encoding. Default UNICODE_MODE */
     int QZint::inputMode() const {
         return m_input_mode;
     }
@@ -248,19 +259,23 @@ namespace Zint {
         m_input_mode = input_mode;
     }
 
+    /* Input data (segment 0 text) */
     QString QZint::text() const {
         return m_text;
     }
 
+    /* Set input data. Note: clears segs */
     void QZint::setText(const QString& text) {
         m_text = text;
         m_segs.clear();
     }
 
+    /* Input segments. */
     std::vector<QZintSeg> QZint::segs() const {
         return m_segs;
     }
 
+    /* Set segments. Note: clears text and sets eci */
     void QZint::setSegs(const std::vector<QZintSeg>& segs) {
         m_segs = segs;
         m_text.clear();
@@ -269,6 +284,7 @@ namespace Zint {
         }
     }
 
+    /* Primary message (Maxicode, Composite) */
     QString QZint::primaryMessage() const {
         return m_primaryMessage;
     }
@@ -277,6 +293,7 @@ namespace Zint {
         m_primaryMessage = primaryMessage;
     }
 
+    /* Symbol height in X-dimensions */
     float QZint::height() const {
         return m_height;
     }
@@ -285,6 +302,7 @@ namespace Zint {
         m_height = height;
     }
 
+    /* Symbol-specific options (see "../docs/manual.txt") */
     int QZint::option1() const {
         return m_option_1;
     }
@@ -293,6 +311,7 @@ namespace Zint {
         m_option_1 = option_1;
     }
 
+    /* Symbol-specific options */
     int QZint::option2() const {
         return m_option_2;
     }
@@ -309,6 +328,7 @@ namespace Zint {
         m_option_3 = option;
     }
 
+    /* Scale factor when printing barcode, i.e. adjusts X-dimension */
     float QZint::scale() const {
         return m_scale;
     }
@@ -317,6 +337,16 @@ namespace Zint {
         m_scale = scale;
     }
 
+    /* Resolution of output in dots per mm (BMP/EMF/PCX/PNG/TIF only) */
+    float QZint::dpmm() const {
+        return m_dpmm;
+    }
+
+    void QZint::setDPMM(float dpmm) {
+        m_dpmm = dpmm;
+    }
+
+    /* Dotty mode */
     bool QZint::dotty() const {
         return m_dotty;
     }
@@ -325,6 +355,7 @@ namespace Zint {
         m_dotty = dotty;
     }
 
+    /* Size of dots used in BARCODE_DOTTY_MODE */
     float QZint::dotSize() const {
         return m_dot_size;
     }
@@ -333,6 +364,7 @@ namespace Zint {
         m_dot_size = dotSize;
     }
 
+    /* Height in X-dimensions that EAN/UPC guard bars descend */
     float QZint::guardDescent() const {
         return m_guardDescent;
     }
@@ -341,6 +373,7 @@ namespace Zint {
         m_guardDescent = guardDescent;
     }
 
+    /* Structured Append info */
     int QZint::structAppCount() const {
         return m_structapp.count;
     }
@@ -378,6 +411,7 @@ namespace Zint {
         memset(&m_structapp, 0, sizeof(m_structapp));
     }
 
+    /* Foreground colour */
     QColor QZint::fgColor() const {
         return m_fgColor;
     }
@@ -386,6 +420,7 @@ namespace Zint {
         m_fgColor = fgColor;
     }
 
+    /* Background colour */
     QColor QZint::bgColor() const {
         return m_bgColor;
     }
@@ -394,6 +429,7 @@ namespace Zint {
         m_bgColor = bgColor;
     }
 
+    /* Use CMYK colour space (Encapsulated PostScript and TIF) */
     bool QZint::cmyk() const {
         return m_cmyk;
     }
@@ -402,6 +438,7 @@ namespace Zint {
         m_cmyk = cmyk;
     }
 
+    /* Type of border above/below/around barcode */
     int QZint::borderType() const {
         return m_borderType;
     }
@@ -418,6 +455,7 @@ namespace Zint {
         }
     }
 
+    /* Size of border in X-dimensions */
     int QZint::borderWidth() const {
         return m_borderWidth;
     }
@@ -428,6 +466,7 @@ namespace Zint {
         m_borderWidth = borderWidth;
     }
 
+    /* Width in X-dimensions of whitespace to left & right of barcode */
     int QZint::whitespace() const {
         return m_whitespace;
     }
@@ -436,6 +475,7 @@ namespace Zint {
         m_whitespace = whitespace;
     }
 
+    /* Height in X-dimensions of whitespace above & below the barcode */
     int QZint::vWhitespace() const {
         return m_vwhitespace;
     }
@@ -444,6 +484,7 @@ namespace Zint {
         m_vwhitespace = vWhitespace;
     }
 
+    /* Type of font to use i.e. normal, small, bold or (vector only) small bold */
     int QZint::fontSetting() const {
         return m_fontSetting;
     }
@@ -468,6 +509,7 @@ namespace Zint {
         }
     }
 
+    /* Show (true) or hide (false) Human Readable Text */
     bool QZint::showText() const {
         return m_show_hrt;
     }
@@ -476,6 +518,7 @@ namespace Zint {
         m_show_hrt = showText;
     }
 
+    /* Set to true to use GS (Group Separator) instead of FNC1 as GS1 separator (Data Matrix) */
     bool QZint::gsSep() const {
         return m_gssep;
     }
@@ -484,6 +527,8 @@ namespace Zint {
         m_gssep = gsSep;
     }
 
+    /* Add compliant quiet zones (additional to any specified whitespace)
+       Note: CODE16K, CODE49, CODABLOCKF, ITF14, EAN/UPC have default quiet zones */
     bool QZint::quietZones() const {
         return m_quiet_zones;
     }
@@ -492,6 +537,7 @@ namespace Zint {
         m_quiet_zones = quietZones;
     }
 
+    /* Disable quiet zones, notably those with defaults as listed above */
     bool QZint::noQuietZones() const {
         return m_no_quiet_zones;
     }
@@ -500,6 +546,7 @@ namespace Zint {
         m_no_quiet_zones = noQuietZones;
     }
 
+    /* Warn if height not compliant and use standard height (if any) as default */
     bool QZint::compliantHeight() const {
         return m_compliant_height;
     }
@@ -508,6 +555,7 @@ namespace Zint {
         m_compliant_height = compliantHeight;
     }
 
+    /* Rotate barcode by angle (degrees 0, 90, 180 and 270) */
     int QZint::rotateAngle() const {
         return m_rotate_angle;
     }
@@ -536,6 +584,7 @@ namespace Zint {
         }
     }
 
+    /* Extended Channel Interpretation (segment 0 eci) */
     int QZint::eci() const {
         return m_eci;
     }
@@ -552,6 +601,7 @@ namespace Zint {
         }
     }
 
+    /* Process parentheses as GS1 AI delimiters (instead of square brackets) */
     bool QZint::gs1Parens() const {
         return m_gs1parens;
     }
@@ -560,6 +610,7 @@ namespace Zint {
         m_gs1parens = gs1Parens;
     }
 
+    /* Do not check validity of GS1 data (except that printable ASCII only) */
     bool QZint::gs1NoCheck() const {
         return m_gs1nocheck;
     }
@@ -568,6 +619,7 @@ namespace Zint {
         m_gs1nocheck = gs1NoCheck;
     }
 
+    /* Reader Initialisation (Programming) */
     bool QZint::readerInit() const {
         return m_reader_init;
     }
@@ -576,6 +628,7 @@ namespace Zint {
         m_reader_init = readerInit;
     }
 
+    /* Affects error/warning value returned by Zint API (see `getError()` below) */
     int QZint::warnLevel() const {
         return m_warn_level;
     }
@@ -584,6 +637,7 @@ namespace Zint {
         m_warn_level = warnLevel;
     }
 
+    /* Debugging flags */
     bool QZint::debug() const {
         return m_debug;
     }
@@ -592,6 +646,7 @@ namespace Zint {
         m_debug = debug;
     }
 
+    /* Symbol output info set by Zint on successful `render()` */
     int QZint::encodedWidth() const { // Read-only, encoded width (no. of modules encoded)
         return m_encodedWidth;
     }
@@ -600,7 +655,15 @@ namespace Zint {
         return m_encodedRows;
     }
 
-    /* Legacy */
+    float QZint::vectorWidth() const { // Read-only, scaled width
+        return m_vectorWidth;
+    }
+
+    float QZint::vectorHeight() const { // Read-only, scaled height
+        return m_vectorHeight;
+    }
+
+    /* Legacy property getters/setters */
     void QZint::setWidth(int width) { setOption1(width); }
     int QZint::width() const { return m_option_1; }
     void QZint::setSecurityLevel(int securityLevel) { setOption2(securityLevel); }
@@ -614,6 +677,7 @@ namespace Zint {
     }
     QString QZint::error_message() const { return m_lastError; } /* Same as lastError() */
 
+    /* Test capabilities - `ZBarcode_Cap()` */
     bool QZint::hasHRT(int symbology) const {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_HRT);
     }
@@ -670,50 +734,63 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_COMPLIANT_HEIGHT);
     }
 
+    /* Whether takes GS1 AI-delimited data */
+    bool QZint::takesGS1AIData(int symbology) const {
+        if (symbology == 0) {
+            symbology = m_symbol;
+        }
+        switch (symbology) {
+            case BARCODE_GS1_128:
+            case BARCODE_DBAR_EXP:
+            case BARCODE_DBAR_EXPSTK:
+                return true;
+                break;
+            default:
+                return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
+                break;
+        }
+    }
+
+    /* Error or warning returned by Zint on `render()` or `save_to_file()` */
     int QZint::getError() const {
         return m_error;
     }
 
+    /* Error message returned by Zint on `render()` or `save_to_file()` */
     const QString& QZint::lastError() const {
         return m_lastError;
     }
 
+    /* Whether `lastError()` set */
     bool QZint::hasErrors() const {
         return m_lastError.length();
     }
 
-    bool QZint::noPng() const {
-        return ZBarcode_NoPng() == 1;
-    }
-
-    int QZint::getVersion() const {
-        return ZBarcode_Version();
-    }
-
     bool QZint::save_to_file(const QString& filename) {
-        resetSymbol();
-        strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
-        if (m_segs.empty()) {
-            QByteArray bstr = m_text.toUtf8();
-            m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
-                                                m_rotate_angle);
-        } else {
-            struct zint_seg segs[maxSegs];
-            std::vector<QByteArray> bstrs;
-            int seg_count = convertSegs(segs, bstrs);
-            m_error = ZBarcode_Encode_Segs_and_Print(m_zintSymbol, segs, seg_count, m_rotate_angle);
+        if (resetSymbol()) {
+            strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
+            if (m_segs.empty()) {
+                QByteArray bstr = m_text.toUtf8();
+                m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),
+                                                    m_rotate_angle);
+            } else {
+                struct zint_seg segs[maxSegs];
+                std::vector<QByteArray> bstrs;
+                int seg_count = convertSegs(segs, bstrs);
+                m_error = ZBarcode_Encode_Segs_and_Print(m_zintSymbol, segs, seg_count, m_rotate_angle);
+            }
         }
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
-            m_encodedWidth = 0;
-            m_encodedRows = 0;
+            m_encodedWidth = m_encodedRows = 0;
+            m_vectorWidth = m_vectorHeight = 0.0f;
             emit errored();
             return false;
-        } else {
-            return true;
         }
+        return true;
     }
 
+    /* Convert `zint_vector_rect->colour` to Qt color */
     Qt::GlobalColor QZint::colourToQtColor(int colour) {
         switch (colour) {
             case 1: // Cyan
@@ -756,7 +833,8 @@ namespace Zint {
         return i;
     }
 
-    /* Note: legacy argument `mode` is not used */
+    /* Encode and display barcode in `paintRect` using `painter`.
+       Note: legacy argument `mode` is not used */
     void QZint::render(QPainter& painter, const QRectF& paintRect, AspectRatioMode /*mode*/) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
@@ -923,12 +1001,76 @@ namespace Zint {
         painter.restore();
     }
 
+    /* Returns the default X-dimension (`ZBarcode_Default_Xdim()`).
+       If `symbology` non-zero then used instead of `symbol()` */
+    float QZint::defaultXdim(int symbology) const {
+        return ZBarcode_Default_Xdim(symbology ? symbology : m_symbol);
+    }
+
+    /* Returns the scale to use for X-dimension `x_dim_mm` at `dpmm` for `filetype`.
+       If `symbology` non-zero then used instead of `symbol()` */
+    float QZint::getScaleFromXdimDp(float x_dim_mm, float dpmm, const QString& fileType, int symbology) const {
+        return ZBarcode_Scale_From_XdimDp(symbology ? symbology : m_symbol, x_dim_mm, dpmm, fileType.toLatin1());
+    }
+
+    /* Reverse of `getScaleFromXdimDp()` above, returning the X-dimension or dot density given the scale `scale`.
+       If `symbology` non-zero then used instead of `symbol()` */
+    float QZint::getXdimDpFromScale(float scale, float x_dim_mm_or_dpmm, const QString& fileType,
+                    int symbology) const {
+        return ZBarcode_XdimDp_From_Scale(symbology ? symbology : m_symbol, scale, x_dim_mm_or_dpmm,
+                                            fileType.toLatin1());
+    }
+
+    /* Set `width_x_dim` and `height_x_dim` with estimated size of barcode based on X-dimension `x_dim`. To be called
+       after a successful `render()`. Returns false if `scale()` zero or render is in error, otherwise true */
+    bool QZint::getWidthHeightXdim(float x_dim, float &width_x_dim, float &height_x_dim) const {
+
+        if (m_scale == 0.0f || m_vectorWidth == 0.0f || m_vectorHeight == 0.0f) {
+            width_x_dim = height_x_dim = 0.0f;
+            return false;
+        }
+
+        const float scale = m_scale * 2.0f;
+        const float width = m_vectorWidth / scale;
+        const float height = m_vectorHeight / scale;
+
+        if (rotateAngle() == 90 || rotateAngle() == 270) { // Sideways - swop
+            width_x_dim = (height * x_dim);
+            height_x_dim = (width * x_dim);
+        } else {
+            width_x_dim = (width * x_dim);
+            height_x_dim = (height * x_dim);
+        }
+
+        return true;
+    }
+
+    /* Return the BARCODE_XXX name of `symbology` */
+    QString QZint::barcodeName(const int symbology) {
+        char buf[32];
+        if (ZBarcode_BarcodeName(symbology, buf) == 0) {
+            return QString(buf);
+        }
+        return QSL("");
+    }
+
+    /* Whether Zint library "libzint" built with PNG support or not */
+    bool QZint::noPng() {
+        return ZBarcode_NoPng() == 1;
+    }
+
+    /* Version of Zint library "libzint" linked to */
+    int QZint::getVersion() {
+        return ZBarcode_Version();
+    }
+
     /* Translate settings into Command Line equivalent. Set `win` to use Windows escaping of data.
        If `autoHeight` set then `--height=` option will not be emitted.
        If HEIGHTPERROW_MODE set and non-zero `heightPerRow` given then use that for height instead of internal
        height */
     QString QZint::getAsCLI(const bool win, const bool longOptOnly, const bool barcodeNames, const bool noEXE,
-                    const bool autoHeight, const float heightPerRow, const QString& outfile) const {
+                    const bool autoHeight, const float heightPerRow, const QString& outfile,
+                    const QZintXdimDpVars *xdimdpVars) const {
         QString cmd(win && !noEXE ? QSL("zint.exe") : QSL("zint"));
 
         char name_buf[32];
@@ -1071,7 +1213,9 @@ namespace Zint {
             arg_int(cmd, "--rows=", option3());
         }
 
-        if (scale() != 1.0f) {
+        if (dpmm()) {
+            arg_scalexdimdp(cmd, "--scalexdimdp", scale(), dpmm(), symbol(), xdimdpVars);
+        } else if (scale() != 1.0f) {
             arg_float(cmd, "--scale=", scale());
         }
 
@@ -1201,6 +1345,41 @@ namespace Zint {
                                                         win);
             }
         }
+    }
+
+    void QZint::arg_scalexdimdp(QString& cmd, const char *const opt, const float scale, const float dpmm,
+                                const int symbol, const QZintXdimDpVars *xdimdpVars) {
+        if (dpmm) {
+            float resolution = dpmm;
+            float x_dim;
+            const char *x_dim_units_str = "";
+            const char *resolution_units_str = "";
+            if (xdimdpVars && xdimdpVars->set) {
+                x_dim = xdimdpVars->x_dim;
+                resolution = xdimdpVars->resolution;
+                if (xdimdpVars->x_dim_units || xdimdpVars->resolution_units) {
+                    x_dim_units_str = xdimdpVars->x_dim_units ? "in" : "mm";
+                    resolution_units_str = xdimdpVars->resolution_units ? "dpi" : "dpmm";
+                }
+            } else {
+                x_dim = ZBarcode_XdimDp_From_Scale(symbol, scale, resolution, nullptr);
+            }
+            cmd += QString::asprintf(" %s=%g%s,%g%s",
+                                        opt, x_dim, x_dim_units_str, resolution, resolution_units_str);
+        }
+    }
+
+    /* Helper to return "GIF"/"SVG"(/"EMF") if `msg` false, "raster"/"vector"(/"EMF") otherwise
+       (EMF only if `symbol` is MaxiCode) */
+    const char *QZintXdimDpVars::getFileType(int symbol, const struct QZintXdimDpVars *vars, bool msg) {
+        static const char *filetypes[3] = { "GIF", "SVG", "EMF" };
+        static const char *msg_types[3] = { "raster", "vector", "EMF" };
+
+        if (!vars) return "";
+
+        const int idx = std::max(std::min(symbol == BARCODE_MAXICODE ? vars->filetype_maxicode
+                                                                                : vars->filetype, 2), 0);
+        return msg ? msg_types[idx] : filetypes[idx];
     }
 } /* namespace Zint */
 

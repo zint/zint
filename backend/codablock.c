@@ -563,8 +563,8 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
             }
             symbol->text[0] = '\0'; /* Disable HRT for compatibility with CODABLOCKF */
             if (symbol->output_options & COMPLIANT_HEIGHT) {
-                /* AIM ISS-X-24 Section 4.5.1 minimum row height 8 (for compatibility with CODABLOCKF, not specced for
-                   CODE128) */
+                /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
+                   for CODE128) */
                 error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
             } else {
                 (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);

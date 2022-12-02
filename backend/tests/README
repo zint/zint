@@ -62,21 +62,25 @@ To run a single dataset item in a single test function, use '-i <index>':
 
   backend/tests/test_dotcode -f input -i 2
 
-To run a range of dataset items in a single test function, use '-i <start>,<end>':
+To run a range of dataset items in a single test function, use '-i <start>-<end>':
 
-  backend/tests/test_dotcode -f input -i 2,5
+  backend/tests/test_dotcode -f input -i 2-5
 
 To exclude a single dataset item in a single test function, use '-x <index>':
 
   backend/tests/test_dotcode -f input -x 4
 
-This can also take a range, '-x <start>,<end>':
+This can also take a range, '-x <start>-<end>':
 
   backend/tests/test_dotcode -f input -x 4,6
 
+Exclude can be used multiple times (unlike '-i'):
+
+  backend/tests/test_dotcode -f input -x 4 -x 6-8
+
 The include and exclude options can be used together:
 
-  backend/tests/test_dotcode -f input -i 2,7 -x 4
+  backend/tests/test_dotcode -f input -i 2-7 -x 4 -x 6
 
 To show debug info (if any), use '-d <flag>':
 

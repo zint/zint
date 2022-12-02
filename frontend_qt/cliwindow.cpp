@@ -16,6 +16,7 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
 #include <QSettings>
@@ -23,15 +24,15 @@
 #include <QMimeData>
 
 #include "cliwindow.h"
-#include "barcodeitem.h"
 
 // Shorthand
 #define QSL QStringLiteral
 
 static const int tempMessageTimeout = 2000;
 
-CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double heightPerRow)
-    : m_bc(bc), m_autoHeight(autoHeight), m_heightPerRow(heightPerRow)
+CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double heightPerRow,
+                        const struct Zint::QZintXdimDpVars* xdimdpVars)
+    : m_bc(bc), m_autoHeight(autoHeight), m_heightPerRow(heightPerRow), m_xdimdpVars(xdimdpVars)
 {
     setupUi(this);
     QSettings settings;
@@ -106,7 +107,8 @@ void CLIWindow::generate_cli()
         chkCLINoEXE->setEnabled(false);
     }
     QString cmd = m_bc->bc.getAsCLI(radCLIWin->isChecked(), chkCLILongOpts->isChecked(),
-                    chkCLIBarcodeName->isChecked(), noEXE, m_autoHeight, m_heightPerRow);
+                    chkCLIBarcodeName->isChecked(), noEXE, m_autoHeight, m_heightPerRow, QSL("") /*outfile*/,
+                    m_xdimdpVars);
 
     txtCLICmd->setPlainText(cmd);
     statusBarCLI->clearMessage();

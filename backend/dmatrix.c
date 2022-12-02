@@ -1686,7 +1686,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
         if (symbol->structapp.id[0]) {
             int id, id_len, id1_err, id2_err;
 
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+            for (id_len = 1; id_len < 7 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 6) { /* ID1 * 1000 + ID2 */
                 strcpy(symbol->errtxt, "722: Structured Append ID too long (6 digit maximum)");

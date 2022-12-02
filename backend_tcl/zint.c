@@ -28,6 +28,7 @@
     OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
     SUCH DAMAGE.
 */
+/* SPDX-License-Identifier: BSD-3-Clause */
 /*
  History
 
@@ -151,6 +152,11 @@
 - Added BC412
 2022-08-20 GL
 - Added CEPNet
+2022-11-10 GL
+- Added -bindtop option
+2022-12-02 GL
+- Added -scalexdimdp option
+- Renamed CODE128B to CODE128AB
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -258,7 +264,7 @@ static const char *s_code_list[] = {
     "PDF417Compact",
     "MaxiCode",
     "QR",
-    "Code128B",
+    "Code128AB",
     "AusPost",
     "AusReply",
     "AusRoute",
@@ -358,7 +364,7 @@ static const int s_code_number[] = {
     BARCODE_PDF417COMP,
     BARCODE_MAXICODE,
     BARCODE_QRCODE,
-    BARCODE_CODE128B,
+    BARCODE_CODE128AB,
     BARCODE_AUSPOST,
     BARCODE_AUSREPLY,
     BARCODE_AUSROUTE,
@@ -522,6 +528,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -rotate angle: Image rotation by 0,90 or 270 degrees\n"
     "   -rows integer: Codablock F, PDF417: number of rows\n"
     "   -scale double: Scale the image to this factor\n"
+    "   -scalexdimdp {xdim ?resolution?}: Scale with X-dimension mm, resolution dpmm\n"
     "   -scmvv integer: Prefix SCM with [)>\\R01\\Gvv (vv is integer) (MaxiCode)\n"
     "   -secure integer: EC Level (Aztec, GridMatrix, HanXin, PDF417, QR, UltraCode)\n"
     "   -segN {eci data}: Set the ECI & data content for segment N where N is 1 to 9\n"
@@ -734,6 +741,8 @@ static int Encode(Tcl_Interp *interp, int objc,
     Tcl_Obj *pSegDataObjs[10] = {0};
     Tcl_DString segInputs[10];
     struct zint_seg segs[10];
+    double xdim = 0.0;
+    double resolution = 0.0;
     /*------------------------------------------------------------------------*/
     /* >> Check if at least data and object is given and a pair number of */
     /* >> options */
@@ -765,7 +774,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
-            "-reverse", "-rotate", "-rows", "-scale", "-scmvv", "-secure",
+            "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
             "-seg1", "-seg2", "-seg3", "-seg4", "-seg5", "-seg6", "-seg7", "-seg8", "-seg9",
             "-separator", "-smalltext", "-square", "-structapp",
             "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
@@ -777,7 +786,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
-            iReverse, iRotate, iRows, iScale, iSCMvv, iSecure,
+            iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
             iSeg1, iSeg2, iSeg3, iSeg4, iSeg5, iSeg6, iSeg7, iSeg8, iSeg9,
             iSeparator, iSmallText, iSquare, iStructApp,
             iTo, iVers, iVWhiteSp, iWError, iWhiteSp
@@ -1100,6 +1109,42 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->scale = (float)doubleValue;
             }
             break;
+        case iScaleXdimDp:
+            /* >> Decode the -scalexdimdp parameter as list of xdim ?resolution? */
+            {
+                Tcl_Obj *poParam;
+                xdim = resolution = 0.0;
+                if (TCL_OK != Tcl_ListObjLength(interp,
+                    objv[optionPos+1], &lStr))
+                {
+                    fError = 1;
+                } else if ( ! ( lStr == 1 || lStr == 2 ) ) {
+                    Tcl_SetObjResult(interp,
+                        Tcl_NewStringObj(
+                        "option -scalexdimdp not a list of 1 or 2", -1));
+                    fError = 1;
+                } else {
+                    if (TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                        0, &poParam)
+                        || TCL_OK != Tcl_GetDoubleFromObj(interp, poParam, &xdim)
+                        || xdim < 0.0)
+                    {
+                        fError = 1;
+                    }
+                    if (!fError && lStr == 2 && (
+                        TCL_OK != Tcl_ListObjIndex(interp, objv[optionPos+1],
+                            1, &poParam)
+                        || TCL_OK != Tcl_GetDoubleFromObj(interp, poParam, &resolution)
+                        || resolution < 0.0))
+                    {
+                        fError = 1;
+                    }
+                    if (!fError && resolution == 0.0) {
+                        resolution = 12.0; /* Default 12 dpmm (~300 dpi) */
+                    }
+                }
+            }
+            break;
         case iBorder:
             if (intValue < 0 || intValue > 1000) {
                 Tcl_SetObjResult(interp,
@@ -1373,6 +1418,16 @@ static int Encode(Tcl_Interp *interp, int objc,
                 || my_symbol->symbology == BARCODE_CODE16K
                 || my_symbol->symbology == BARCODE_CODE49) {
             my_symbol->option_1 = rows;
+        }
+    }
+    if (resolution) {
+        float scale;
+        if (xdim == 0.0) {
+            xdim = ZBarcode_Default_Xdim(my_symbol->symbology);
+        }
+        scale = ZBarcode_Scale_From_XdimDp(my_symbol->symbology, (float)xdim, (float)resolution, NULL /*filetype*/);
+        if (scale > 0.0f) {
+            my_symbol->scale = scale;
         }
     }
     /*------------------------------------------------------------------------*/

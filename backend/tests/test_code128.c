@@ -55,10 +55,10 @@ static void test_large(const testCtx *const p_ctx) {
         /*  4*/ { BARCODE_CODE128, "\351A", 41, ZINT_ERROR_TOO_LONG, -1 }, /* 41 chars (+ 20 shifts) */
         /*  5*/ { BARCODE_CODE128, "0", 120, 0, 695 },
         /*  6*/ { BARCODE_CODE128, "0", 121, ZINT_ERROR_TOO_LONG, -1 },
-        /*  7*/ { BARCODE_CODE128B, "A", 60, 0, 695 },
-        /*  8*/ { BARCODE_CODE128B, "A", 61, ZINT_ERROR_TOO_LONG, -1 },
-        /*  9*/ { BARCODE_CODE128B, "0", 60, 0, 695 },
-        /* 10*/ { BARCODE_CODE128B, "0", 61, ZINT_ERROR_TOO_LONG, -1 },
+        /*  7*/ { BARCODE_CODE128AB, "A", 60, 0, 695 },
+        /*  8*/ { BARCODE_CODE128AB, "A", 61, ZINT_ERROR_TOO_LONG, -1 },
+        /*  9*/ { BARCODE_CODE128AB, "0", 60, 0, 695 },
+        /* 10*/ { BARCODE_CODE128AB, "0", 61, ZINT_ERROR_TOO_LONG, -1 },
         /* 11*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890", -1, 0, 706 }, /* 116 nos + 3 FNC1s */
         /* 12*/ { BARCODE_GS1_128, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234[93]1234", -1, ZINT_ERROR_TOO_LONG, -1 }, /* 116 nos + 4 FNC1s */
         /* 13*/ { BARCODE_GS1_128, "A", 161, ZINT_ERROR_TOO_LONG, -1 },
@@ -198,13 +198,13 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, "1234567890", -1, "1234567890" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, "\000ABC\000DEF\000", 9, " ABC DEF " },
-        /*  2*/ { BARCODE_CODE128B, UNICODE_MODE, -1, "12345\00067890", 11, "12345 67890" },
+        /*  2*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, "12345\00067890", 11, "12345 67890" },
         /*  3*/ { BARCODE_CODE128, UNICODE_MODE, -1, "12345\01167890\037\177", -1, "12345 67890  " },
         /*  4*/ { BARCODE_CODE128, UNICODE_MODE, -1, "abcdé", -1, "abcdé" },
         /*  5*/ { BARCODE_CODE128, DATA_MODE, -1, "abcd\351", -1, "abcdé" },
         /*  6*/ { BARCODE_CODE128, DATA_MODE, -1, "ab\240cd\351", -1, "ab\302\240cdé" }, /* NBSP */
-        /*  7*/ { BARCODE_CODE128B, UNICODE_MODE, -1, "abcdé", -1, "abcdé" },
-        /*  8*/ { BARCODE_CODE128B, DATA_MODE, -1, "abcd\351", -1, "abcdé" },
+        /*  7*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, "abcdé", -1, "abcdé" },
+        /*  8*/ { BARCODE_CODE128AB, DATA_MODE, -1, "abcd\351", -1, "abcdé" },
         /*  9*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "1234567890", -1, "*+12345678900*" },
         /* 10*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "a99912345", -1, "*+A999123457*" }, /* Converts to upper */
         /* 11*/ { BARCODE_DPD, UNICODE_MODE, -1, "000393206219912345678101040", -1, "0003 932 0621 9912 3456 78 101 040 9" }, /* DPDAPPD 4.0.2 - Illustration 7 */
@@ -281,7 +281,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "A", 0, 1, 57, "(5) 104 96 33 60 106", "StartA FNC3 A" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "12", 0, 1, 68, "(6) 104 96 99 12 22 106", "StartB FNC3 CodeC 12" },
-        /*  2*/ { BARCODE_CODE128B, UNICODE_MODE, READER_INIT, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
+        /*  2*/ { BARCODE_CODE128AB, UNICODE_MODE, READER_INIT, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
         /*  3*/ { BARCODE_GS1_128, GS1_MODE, READER_INIT, "[90]12", 0, 1, 68, "(6) 105 102 90 12 11 106", "StartC FNC1 90 12 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  4*/ { BARCODE_EAN14, GS1_MODE, READER_INIT, "12", 0, 1, 134, "(12) 105 102 1 0 0 0 0 0 1 23 12 106", "StartC FNC1 01 00 (5) 01 23 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", 0, 1, 156, "(14) 105 102 0 0 0 0 0 0 0 0 1 23 58 106", "StartC FNC1 00 (8) 01 23 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
@@ -766,13 +766,13 @@ static void test_encode(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, "AIM", 0, 1, 68, 1, "ISO/IEC 15417:2007 Figure 1",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
-        /*  1*/ { BARCODE_CODE128B, UNICODE_MODE, -1, "AIM", 0, 1, 68, 1, "128B same",
+        /*  1*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, "AIM", 0, 1, 68, 1, "128B same",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, "1234567890", 0, 1, 90, 1, "",
                     "110100111001011001110010001011000111000101101100001010011011110110100111100101100011101011"
                 },
-        /*  3*/ { BARCODE_CODE128B, UNICODE_MODE, -1, "1234567890", 0, 1, 145, 1, "",
+        /*  3*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, "1234567890", 0, 1, 145, 1, "",
                     "1101001000010011100110110011100101100101110011001001110110111001001100111010011101101110111010011001110010110010011101100101000110001100011101011"
                 },
         /*  4*/ { BARCODE_CODE128, DATA_MODE, -1, "\101\102\103\104\105\106\200\200\200\200\200", 0, 1, 178, 1, "",

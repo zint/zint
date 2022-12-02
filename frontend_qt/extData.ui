@@ -51,6 +51,9 @@
      </property>
      <item>
       <widget class="QPushButton" name="btnFromFile">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>&amp;From File...</string>
        </property>
@@ -75,6 +78,9 @@ Note that Line Feeds (0x0A) are not included,&lt;br/&gt; but any present will be
      </item>
      <item>
       <widget class="QPushButton" name="btnDataClear">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string> C&amp;lear</string>
        </property>
@@ -98,6 +104,9 @@ Note that Line Feeds (0x0A) are not included,&lt;br/&gt; but any present will be
      </item>
      <item>
       <widget class="QPushButton" name="btnOK">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string> &amp;OK</string>
        </property>
@@ -109,6 +118,9 @@ Line Feeds (0xA0) will be escaped as &quot;\n&quot;</string>
      </item>
      <item>
       <widget class="QPushButton" name="btnCancel">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
        <property name="text">
         <string>&amp;Cancel</string>
        </property>

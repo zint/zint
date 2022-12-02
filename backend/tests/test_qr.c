@@ -91,10 +91,12 @@ static void test_qr_options(const testCtx *const p_ctx) {
         /* 38*/ { -1, -1, 4, 1, { 3, 16, "123" }, "12345678901", 0, 0, 21, -1, "" },
         /* 39*/ { -1, -1, 4, 1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 750: Structured Append count out of range (2-16)" },
         /* 40*/ { -1, -1, 4, 1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 751: Structured Append index out of range (1-2)" },
-        /* 41*/ { -1, -1, 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 754: Structured Append ID '256' out of range (0-255)" },
-        /* 42*/ { GS1_MODE, 3, -1, -1, { 0, 0, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" },
-        /* 43*/ { GS1_MODE, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 756: Using Structured Append in GS1 mode not supported by GS1 standards" },
-        /* 44*/ { GS1_MODE, 3, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
+        /* 41*/ { -1, -1, 4, 1, { 1, 2, "1234" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 752: Structured Append ID too long (3 digit maximum)" },
+        /* 42*/ { -1, -1, 4, 1, { 1, 2, "12A" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 753: Invalid Structured Append ID (digits only)" },
+        /* 43*/ { -1, -1, 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 754: Structured Append ID '256' out of range (0-255)" },
+        /* 44*/ { GS1_MODE, 3, -1, -1, { 0, 0, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" },
+        /* 45*/ { GS1_MODE, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 756: Using Structured Append in GS1 mode not supported by GS1 standards" },
+        /* 46*/ { GS1_MODE, 3, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

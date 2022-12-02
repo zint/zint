@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2021 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -16,21 +16,21 @@
     with this program; if not, write to the Free Software Foundation, Inc.,
     51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
 */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: GPL-3.0-or-later */
 
 #ifndef CLIWINDOW_H
 #define CLIWINDOW_H
 
 #include "ui_extCLI.h"
-
-class BarcodeItem;
+#include "barcodeitem.h"
 
 class CLIWindow : public QDialog, private Ui::CLIDialog
 {
     Q_OBJECT
 
 public:
-    CLIWindow(BarcodeItem *bc, const bool autoHeight, const double heightPerRow);
+    CLIWindow(BarcodeItem *bc, const bool autoHeight, const double heightPerRow,
+                const struct Zint::QZintXdimDpVars* xdimdpVars);
     virtual ~CLIWindow();
 
 private slots:
@@ -41,6 +41,8 @@ protected:
     BarcodeItem *m_bc;
     bool m_autoHeight;
     double m_heightPerRow;
+    const Zint::QZintXdimDpVars *m_xdimdpVars;
 };
 
+/* vim: set ts=4 sw=4 et : */
 #endif

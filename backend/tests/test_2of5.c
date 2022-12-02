@@ -135,10 +135,10 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 15*/ { BARCODE_C25IND, -1, "123456789", "123456789" },
         /* 16*/ { BARCODE_C25IND, 1, "123456789", "1234567895" },
         /* 17*/ { BARCODE_C25IND, 2, "123456789", "123456789" },
-        /* 18*/ { BARCODE_DPLEIT, -1, "123456789", "00001234567890" }, /* Leading zeroes added to make 13 + appended checksum */
-        /* 19*/ { BARCODE_DPLEIT, -1, "1234567890123", "12345678901236" },
-        /* 20*/ { BARCODE_DPIDENT, -1, "123456789", "001234567890" }, /* Leading zeroes added to make 11 + appended checksum */
-        /* 21*/ { BARCODE_DPIDENT, -1, "12345678901", "123456789016" },
+        /* 18*/ { BARCODE_DPLEIT, -1, "123456789", "00001.234.567.890" }, /* Leading zeroes added to make 13 + appended checksum */
+        /* 19*/ { BARCODE_DPLEIT, -1, "1234567890123", "12345.678.901.236" },
+        /* 20*/ { BARCODE_DPIDENT, -1, "123456789", "00.12 3.456.789 0" }, /* Leading zeroes added to make 11 + appended checksum */
+        /* 21*/ { BARCODE_DPIDENT, -1, "12345678901", "12.34 5.678.901 6" },
         /* 22*/ { BARCODE_ITF14, -1, "123456789", "00001234567895" }, /* Leading zeroes added to make 13 + appended checksum */
         /* 23*/ { BARCODE_ITF14, -1, "1234567890123", "12345678901231" },
     };
@@ -282,25 +282,31 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 15*/ { BARCODE_DPLEIT, -1, "0000087654321", 0, 1, 135, "Deutsche Post Leitcode; verified manually against tec-it",
                     "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
                 },
-        /* 16*/ { BARCODE_DPLEIT, -1, "5082300702800", 0, 1, 135, "Deutsche Post Leitcode https://de.wikipedia.org/wiki/Leitcode example",
+        /* 16*/ { BARCODE_DPLEIT, -1, "2045703000360", 0, 1, 135, "Deutsche Post DIALOGPOST SCHWER brochure 3.1 example",
+                    "101010111010001000111010001011100010111010101000111000111011101110100010001010101110001110001011101110001000101010001011100011101011101"
+                },
+        /* 17*/ { BARCODE_DPLEIT, -1, "5082300702800", 0, 1, 135, "Deutsche Post Leitcode https://de.wikipedia.org/wiki/Leitcode example",
                     "101011101011100010001011101000101110100011101110100010001010101110111000100010100011101110100011101010001110001010001011100011101011101"
                 },
-        /* 17*/ { BARCODE_DPIDENT, -1, "00087654321", 0, 1, 117, "Deutsche Post Identcode; verified manually against tec-it",
+        /* 18*/ { BARCODE_DPIDENT, -1, "00087654321", 0, 1, 117, "Deutsche Post Identcode; verified manually against tec-it (HRT differently formatted)",
                     "101010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000100010111011101"
                 },
-        /* 18*/ { BARCODE_DPIDENT, -1, "39601313414", 0, 1, 117, "Deutsche Post Identcode https://de.wikipedia.org/wiki/Leitcode example",
+        /* 19*/ { BARCODE_DPIDENT, -1, "80420000001", 0, 1, 117, "Deutsche Post DIALOGPOST SCHWER brochure 3.1 example",
+                    "101011101010001110001010100011101011100010101110001110001010101110001110001010101110001110001011101010001000111011101"
+                },
+        /* 20*/ { BARCODE_DPIDENT, -1, "39601313414", 0, 1, 117, "Deutsche Post Identcode https://de.wikipedia.org/wiki/Leitcode example",
                     "101011101110001010001010111011100010001011100010001010111011100010001010111010001011101011100010101110001000111011101"
                 },
-        /* 19*/ { BARCODE_ITF14, -1, "0000087654321", 0, 1, 135, "ITF-14; verified manually against tec-it",
+        /* 21*/ { BARCODE_ITF14, -1, "0000087654321", 0, 1, 135, "ITF-14; verified manually against tec-it",
                     "101010101110001110001010101110001110001010001011101110001010100010001110111011101011100010100011101110001010100011101000101011100011101"
                 },
-        /* 20*/ { BARCODE_ITF14, -1, "0950110153000", 0, 1, 135, "GS1 General Specifications Figure 5.1-2",
+        /* 22*/ { BARCODE_ITF14, -1, "0950110153000", 0, 1, 135, "GS1 General Specifications Figure 5.1-2",
                     "101010100011101110001011101011100010001011100010101011100010001011101110100011100010001110101010101110001110001010001000111011101011101"
                 },
-        /* 21*/ { BARCODE_ITF14, -1, "1540014128876", 0, 1, 135, "GS1 General Specifications Figure 5.3.2.4-1",
+        /* 23*/ { BARCODE_ITF14, -1, "1540014128876", 0, 1, 135, "GS1 General Specifications Figure 5.3.2.4-1",
                     "101011100010100010111010101110001000111010001011101110100010001011101011100010001110101000111011101010111000100010001110001110101011101"
                 },
-        /* 22*/ { BARCODE_ITF14, -1, "0950110153001", 0, 1, 135, "GS1 General Specifications Figure 5.3.6-1",
+        /* 24*/ { BARCODE_ITF14, -1, "0950110153001", 0, 1, 135, "GS1 General Specifications Figure 5.3.6-1",
                     "101010100011101110001011101011100010001011100010101011100010001011101110100011100010001110101010101110001110001011101010001000111011101"
                 },
     };

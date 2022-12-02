@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "ZINT" "1" "November 2022" "Version 2.11.1.9" ""
+.TH "ZINT" "1" "December 2022" "Version 2.11.1.9" ""
 .hy
 .SH NAME
 .PP
@@ -348,11 +348,29 @@ for MaxiCode) before being applied.
 The default scale is 1.
 .RS
 .PP
-For MaxiCode, the scale is multiplied by 10 for raster output, by 20 for
+For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for
 EMF output, and by 2 otherwise.
 .PP
 Increments of 0.5 (half-integers) are recommended for non-MaxiCode
 raster output (BMP, GIF, PCX, PNG and TIF).
+.PP
+See also \f[V]--scalexdimdp\f[R] below.
+.RE
+.TP
+\f[V]--scalexdimdp=X[,R]\f[R]
+Scale the image according to X-dimension \f[I]X\f[R] and resolution
+\f[I]R\f[R], where \f[I]X\f[R] is in mm and \f[I]R\f[R] is in dpmm (dots
+per mm).
+\f[I]X\f[R] and \f[I]R\f[R] may be floating-point.
+\f[I]R\f[R] is optional and defaults to 12 dpmm (approximately 300 dpi).
+.RS
+.PP
+The scaling takes into account the output filetype, and deals with all
+the details mentioned above.
+Units may be specified for \f[I]X\f[R] by appending \[lq]in\[rq] (inch)
+or \[lq]mm\[rq], and for \f[I]R\f[R] by appending \[lq]dpi\[rq] (dots
+per inch) or \[lq]dpmm\[rq] -
+e.g.\ \f[V]--scalexdimdp=0.013in,300dpi\f[R].
 .RE
 .TP
 \f[V]--scmvv=INTEGER\f[R]
@@ -400,9 +418,9 @@ For Data Matrix symbols, exclude rectangular sizes when considering
 automatic sizes.
 .TP
 \f[V]--structapp=I,C[,ID]\f[R]
-Set Structured Append info, where \f[V]I\f[R] is the 1-based index,
-\f[V]C\f[R] is the total number of symbols in the sequence, and
-\f[V]ID\f[R], which is optional, is the identifier that all symbols in
+Set Structured Append info, where \f[I]I\f[R] is the 1-based index,
+\f[I]C\f[R] is the total number of symbols in the sequence, and
+\f[I]ID\f[R], which is optional, is the identifier that all symbols in
 the sequence share.
 Structured Append is supported by Aztec Code, Code One, Data Matrix,
 DotCode, Grid Matrix, MaxiCode, MicroPDF417, PDF417, QR Code and

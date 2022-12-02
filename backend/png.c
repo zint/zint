@@ -33,6 +33,7 @@
 #ifndef ZINT_NO_PNG
 
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <fcntl.h>
@@ -42,6 +43,7 @@
 #include <zlib.h>
 #include <setjmp.h>
 #include "common.h"
+#include "output.h"
 
 /* Note if change this need to change "backend/tests/test_png.c" definition also */
 struct wpng_error_type {
@@ -232,7 +234,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #endif
         outfile = stdout;
     } else {
-        if (!(outfile = fopen(symbol->outfile, "wb"))) {
+        if (!(outfile = out_fopen(symbol->outfile, "wb"))) {
             sprintf(symbol->errtxt, "632: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
         }
@@ -277,6 +279,11 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     compression_strategy = guess_compression_strategy(symbol, pixelbuf);
     if (compression_strategy != Z_DEFAULT_STRATEGY) {
         png_set_compression_strategy(png_ptr, compression_strategy);
+    }
+
+    if (symbol->dpmm) {
+        int resolution = (int) roundf(stripf(symbol->dpmm * 1000.0f)); /* pixels per metre */
+        png_set_pHYs(png_ptr, info_ptr, resolution, resolution, PNG_RESOLUTION_METER);
     }
 
     /* set Header block */

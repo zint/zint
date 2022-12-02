@@ -33,6 +33,7 @@
 #include <assert.h>
 #include <errno.h>
 #include <limits.h>
+#include <math.h>
 #include <stdio.h>
 #include "common.h"
 #include "eci.h"
@@ -41,12 +42,12 @@
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056 */
-typedef char static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
+typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 : 1];
 
-typedef char static_assert_uint16_is_16bits[sizeof(uint16_t) != 2 ? -1 : 1];
-typedef char static_assert_int32_is_32bits[sizeof(int32_t) != 4 ? -1 : 1];
-typedef char static_assert_uint32_is_32bits[sizeof(uint32_t) != 4 ? -1 : 1];
-typedef char static_assert_uint64_at_least_64bits[sizeof(uint64_t) < 8 ? -1 : 1];
+typedef char static_assert_uint16_is_16bits[sizeof(uint16_t) * CHAR_BIT != 16 ? -1 : 1];
+typedef char static_assert_int32_is_32bits[sizeof(int32_t) * CHAR_BIT != 32 ? -1 : 1];
+typedef char static_assert_uint32_is_32bits[sizeof(uint32_t) * CHAR_BIT != 32 ? -1 : 1];
+typedef char static_assert_uint64_at_least_64bits[sizeof(uint64_t) * CHAR_BIT < 64 ? -1 : 1];
 
 /* Create and initialize a symbol structure */
 struct zint_symbol *ZBarcode_Create(void) {
@@ -203,8 +204,10 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int length); /* BC412 */
 
 /* Output handlers */
-INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to PNG/BMP/PCX */
-INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type); /* Plot to EPS/EMF/SVG */
+/* Plot to BMP/GIF/PCX/PNG/TIF */
+INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type);
+/* Plot to EMF/EPS/SVG */
+INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type);
 
 /* Prefix error message with Error/Warning */
 static int error_tag(struct zint_symbol *symbol, int error_number, const char *error_string) {
@@ -1047,8 +1050,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     /* Check other symbol fields */
-    if ((symbol->scale < 0.01f) || (symbol->scale > 100.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "227: Scale out of range (0.01 to 100)");
+    if ((symbol->scale < 0.01f) || (symbol->scale > 200.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "227: Scale out of range (0.01 to 200)");
     }
     if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "221: Dot size out of range (0.01 to 20)");
@@ -1207,6 +1210,33 @@ static int check_output_args(struct zint_symbol *symbol, int rotate_angle) {
     return 0;
 }
 
+struct zint_filetypes { const char extension[4]; int is_raster; int filetype; };
+static const struct zint_filetypes filetypes[] = {
+    { "BMP", 1, OUT_BMP_FILE }, { "EMF", 0, OUT_EMF_FILE }, { "EPS", 0, OUT_EPS_FILE },
+    { "GIF", 1, OUT_GIF_FILE }, { "PCX", 1, OUT_PCX_FILE }, { "PNG", 1, OUT_PNG_FILE },
+    { "SVG", 0, OUT_SVG_FILE }, { "TIF", 1, OUT_TIF_FILE }, { "TXT", 0, 0 }
+};
+
+/* Return index of `extension` in `filetypes`, or -1 if not found */
+static int filetype_idx(const char *extension) {
+    char uc_extension[4] = {0};
+    int i;
+
+    if (strlen(extension) != 3) {
+        return -1;
+    }
+    memcpy(uc_extension, extension, 3);
+    to_upper((unsigned char *) uc_extension, 3);
+
+    for (i = 0; i < ARRAY_SIZE(filetypes); i++) {
+        if (strcmp(uc_extension, filetypes[i].extension) == 0) {
+            break;
+        }
+    }
+
+    return i == ARRAY_SIZE(filetypes) ? -1 : i;
+}
+
 /* Output a previously encoded symbol to file `symbol->outfile` */
 int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     int error_number;
@@ -1218,40 +1248,17 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
 
     len = (int) strlen(symbol->outfile);
     if (len > 3) {
-        char output[4];
-        output[0] = symbol->outfile[len - 3];
-        output[1] = symbol->outfile[len - 2];
-        output[2] = symbol->outfile[len - 1];
-        output[3] = '\0';
-        to_upper((unsigned char *) output, 3);
-
-        if (!(strcmp(output, "PNG"))) {
-            error_number = plot_raster(symbol, rotate_angle, OUT_PNG_FILE);
-
-        } else if (!(strcmp(output, "BMP"))) {
-            error_number = plot_raster(symbol, rotate_angle, OUT_BMP_FILE);
-
-        } else if (!(strcmp(output, "PCX"))) {
-            error_number = plot_raster(symbol, rotate_angle, OUT_PCX_FILE);
-
-        } else if (!(strcmp(output, "GIF"))) {
-            error_number = plot_raster(symbol, rotate_angle, OUT_GIF_FILE);
-
-        } else if (!(strcmp(output, "TIF"))) {
-            error_number = plot_raster(symbol, rotate_angle, OUT_TIF_FILE);
-
-        } else if (!(strcmp(output, "TXT"))) {
-            error_number = dump_plot(symbol);
-
-        } else if (!(strcmp(output, "EPS"))) {
-            error_number = plot_vector(symbol, rotate_angle, OUT_EPS_FILE);
-
-        } else if (!(strcmp(output, "SVG"))) {
-            error_number = plot_vector(symbol, rotate_angle, OUT_SVG_FILE);
-
-        } else if (!(strcmp(output, "EMF"))) {
-            error_number = plot_vector(symbol, rotate_angle, OUT_EMF_FILE);
-
+        int i = filetype_idx(symbol->outfile + len - 3);
+        if (i >= 0) {
+            if (filetypes[i].filetype) {
+                if (filetypes[i].is_raster) {
+                    error_number = plot_raster(symbol, rotate_angle, filetypes[i].filetype);
+                } else {
+                    error_number = plot_vector(symbol, rotate_angle, filetypes[i].filetype);
+                }
+            } else {
+                error_number = dump_plot(symbol);
+            }
         } else {
             return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "225: Unknown output format");
         }
@@ -1597,7 +1604,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "BARCODE_MAXICODE", BARCODE_MAXICODE, 57 },
         { "BARCODE_QRCODE", BARCODE_QRCODE, 58 },
         { "", -1, 59 },
-        { "BARCODE_CODE128B", BARCODE_CODE128B, 60 },
+        { "BARCODE_CODE128AB", BARCODE_CODE128AB, 60 },
         { "", -1, 61 },
         { "", -1, 62 },
         { "BARCODE_AUSPOST", BARCODE_AUSPOST, 63 },
@@ -1761,7 +1768,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
         /* Note does not include HIBC versions */
         switch (symbol_id) {
             case BARCODE_CODE128: /* Note does not include GS1_128 or NVE18 */
-            case BARCODE_CODE128B:
+            case BARCODE_CODE128AB:
             case BARCODE_CODE16K:
             case BARCODE_CODABLOCKF:
             case BARCODE_PDF417:
@@ -1831,7 +1838,7 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
             case BARCODE_C25LOGIC:
             case BARCODE_C25IND:
             case BARCODE_CODE128: /* Left to application */
-            case BARCODE_CODE128B:
+            case BARCODE_CODE128AB:
             case BARCODE_DPLEIT: /* TODO: Find doc */
             case BARCODE_DPIDENT: /* TODO: Find doc */
             case BARCODE_FLAT: /* TODO: Find doc */
@@ -1854,6 +1861,243 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     }
 
     return result;
+}
+
+/* Return default X-dimension in mm for symbology `symbol_id`. Returns 0 on error (invalid `symbol_id`) */
+float ZBarcode_Default_Xdim(int symbol_id) {
+    float x_dim_mm;
+
+    if (!ZBarcode_ValidID(symbol_id)) {
+        return 0.0f;
+    }
+    switch (symbol_id) {
+        /* Postal 2/4-track */
+        case BARCODE_AUSPOST:
+        case BARCODE_AUSREPLY:
+        case BARCODE_AUSROUTE:
+        case BARCODE_AUSREDIRECT:
+            /* Australia Post Customer Barcoding Technical Specifications, average of 0.4 to 0.6 mm */
+            x_dim_mm = 0.5f;
+            break;
+        case BARCODE_CEPNET:
+        case BARCODE_POSTNET:
+        case BARCODE_PLANET:
+        case BARCODE_USPS_IMAIL:
+            /* USPS-B-3200 Section 2.3.1, height 0.145" (average of 0.125, 0.165) / 6.235 (Zint height), same as
+               USPS DMM 300 Section 708.4.2.5 using bar pitch (1" / 43) ~ 0.023" */
+            x_dim_mm = 0.591f;
+            break;
+        case BARCODE_RM4SCC:
+        case BARCODE_KIX:
+        case BARCODE_MAILMARK:
+            /* Royal Mail Mailmark Barcode Definition Document, height 5.1mm / 8 (Zint height) == 0.6375 */
+            x_dim_mm = 0.638f; /* Seems better fit to round up to 3 d.p. */
+            break;
+        case BARCODE_JAPANPOST:
+            x_dim_mm = 0.6f; /* Japan Post Zip/Barcode Manual */
+            break;
+
+        /* GS1 (excluding GS1-128, ITF-14, GS1 QRCODE & GS1 DATAMATRIX - see default) */
+        case BARCODE_EANX:
+        case BARCODE_EANX_CHK:
+        case BARCODE_EANX_CC:
+        case BARCODE_ISBNX:
+        case BARCODE_UPCA:
+        case BARCODE_UPCA_CHK:
+        case BARCODE_UPCA_CC:
+        case BARCODE_UPCE:
+        case BARCODE_UPCE_CHK:
+        case BARCODE_UPCE_CC:
+        case BARCODE_DBAR_OMN:
+        case BARCODE_DBAR_OMN_CC:
+        case BARCODE_DBAR_LTD:
+        case BARCODE_DBAR_LTD_CC:
+        case BARCODE_DBAR_EXP:
+        case BARCODE_DBAR_EXP_CC:
+        case BARCODE_DBAR_STK:
+        case BARCODE_DBAR_STK_CC:
+        case BARCODE_DBAR_OMNSTK:
+        case BARCODE_DBAR_OMNSTK_CC:
+        case BARCODE_DBAR_EXPSTK:
+        case BARCODE_DBAR_EXPSTK_CC:
+            x_dim_mm = 0.33f; /* GS1 General Standards 22.0 Section 5.12.3 Table 1 except DBAR_LTD Table 4 */
+            break;
+
+        /* Specific */
+        case BARCODE_BC412:
+            x_dim_mm = 0.12f; /* SEMI T1-95 Table 1 */
+            break;
+        case BARCODE_CODABAR:
+            x_dim_mm = 0.38f; /* EN 798:1996 Appendix D.1 (d), average of 0.33 to 0.43 mm */
+            break;
+        case BARCODE_CODE32:
+            x_dim_mm = 0.25f; /* Allegato A Caratteristiche tecniche del bollino farmaceutico, 0.25mm */
+            break;
+        case BARCODE_DPD:
+            x_dim_mm = 0.375f; /* DPD Parcel Label Specification Version 2.4.1 (19.01.2021) Section 4.6.1.2 */
+            break;
+        case BARCODE_FIM:
+            /* USPS DMM 300 Section 708.9.3, 0.03125" */
+            x_dim_mm = 0.79375f;
+            break;
+        case BARCODE_LOGMARS:
+            x_dim_mm = 0.34925f; /* MIL-STD-1189 Rev. B Section 5.2, average of 0.0075" and 0.02" */
+            break;
+        case BARCODE_MAXICODE:
+            /* ISO/IEC 16023:2000 Table 7, based on L = 25.5mm */
+            x_dim_mm =  0.88f;
+            break;
+        case BARCODE_PHARMA:
+            x_dim_mm = 0.5f; /* Laetus Pharmacode Guide Section 1.2, standard 0.5mm */
+            break;
+        case BARCODE_PHARMA_TWO:
+            x_dim_mm = 1.0f; /* Laetus Pharmacode Guide Section 1.4, standard 1mm */
+            break;
+        case BARCODE_PZN:
+            x_dim_mm = 0.25f; /* Technical Information regarding PZN, "normal" X 0.25mm */
+            break;
+        case BARCODE_TELEPEN:
+        case BARCODE_TELEPEN_NUM:
+            /* Telepen Barcode Symbology information and History, average of between 0.010" and 0.0125" */
+            x_dim_mm = 0.28575f;
+            break;
+
+        /* Stacked (excluding GS1 DataBar) */
+        case BARCODE_CODE16K: /* Application-defined */
+        case BARCODE_CODE49: /* ANSI/AIM BC6-2000 Appendix D.2.4, C grade if > 0.25mm */
+        case BARCODE_CODABLOCKF: /* Application-defined */
+        case BARCODE_HIBC_BLOCKF:
+        case BARCODE_PDF417: /* Maybe 0.27mm following ISO/IEC 15438:2015 Annex S.2.2 example? */
+        case BARCODE_PDF417COMP:
+        case BARCODE_HIBC_PDF:
+        case BARCODE_MICROPDF417:
+        case BARCODE_HIBC_MICPDF:
+            /* Fairly arbitrarily using ISO/IEC 15416:2016 Section 5.3.1 Table 1, aperature diameters 0.125 & 0.250
+              (also fits in 0.25 <= X < 0.5 range for aperature 0.2 from ISO/IEC 15415:2011 Annex D Table D.1) */
+            x_dim_mm = 0.33f;
+            break;
+
+        /* Application defined (and hence pretty arbitrary) */
+        default:
+            if (is_fixed_ratio(symbol_id)) {
+                /* GS1 General Standards 22.0 Section 5.12.3 Table 1 (general retail) */
+                x_dim_mm = 0.625f;
+            } else {
+                /* GS1 General Standards 22.0 Section 5.12.3.4 GS1-128 Tables 2, 4, 5, 6, 8 */
+                x_dim_mm = 0.495f;
+            }
+            break;
+    }
+
+    return x_dim_mm;
+}
+
+/* Return the scale to use for `symbol_id` for non-zero X-dimension `x_dim_mm` at `dpmm` dots per mm for
+   `filetype`. If `dpmm` zero defaults to 12. If `filetype` NULL/empty, defaults to "GIF". Returns 0 on error */
+float ZBarcode_Scale_From_XdimDp(int symbol_id, float x_dim_mm, float dpmm, const char *filetype) {
+    int i;
+    float scale;
+
+    if (!ZBarcode_ValidID(symbol_id)) {
+        return 0.0f;
+    }
+    if (x_dim_mm <= 0.0f || x_dim_mm > 10.0f) { /* 10mm == 0.39" */
+        return 0.0f;
+    }
+    if (dpmm == 0.0f) {
+        dpmm = 12.0f; /* ~300 dpi */
+    } else if (dpmm < 0.0f || dpmm > 1000.0f) { /* 1000 dpmm == 25400 dpi */
+        return 0.0f;
+    }
+    if (filetype && *filetype) {
+        if ((i = filetype_idx(filetype)) < 0 || filetypes[i].filetype == 0) { /* Not found or TXT */
+            return 0.0f;
+        }
+    } else {
+        i = filetype_idx("GIF"); /* Default to raster */
+    }
+
+    scale = stripf(stripf(x_dim_mm) * stripf(dpmm));
+
+    if (symbol_id == BARCODE_MAXICODE) {
+        if (filetypes[i].is_raster) {
+            scale /= 10.0f;
+        } else if (filetypes[i].filetype == OUT_EMF_FILE) {
+            scale /= 40.0f;
+        } else {
+            scale /= 2.0f;
+        }
+    } else {
+        if (filetypes[i].is_raster) {
+            scale = roundf(scale) / 2.0f; /* Half-integer increments */
+        } else {
+            scale /= 2.0f;
+        }
+    }
+    scale = stripf(scale);
+
+    if (scale > 200.0f) {
+        scale = 200.0f;
+    } else {
+        if (filetypes[i].is_raster) {
+            if (symbol_id == BARCODE_MAXICODE) {
+                if (scale < 0.2f) {
+                    scale = 0.2f;
+                }
+            } else if (scale < 0.5f) {
+                scale = 0.5f; /* Note if dotty mode needs further bounding to 1.0 */
+            }
+        } else {
+            if (scale < 0.1f) {
+                scale = 0.1f;
+            }
+        }
+    }
+
+    return scale;
+}
+
+/* Reverse of `ZBarcode_Scale_From_XdimDp()` above to estimate the X-dimension or dpmm given non-zero `scale` and
+   non-zero `x_dim_mm_or_dpmm`. Return value bound to dpmm max not X-dimension max. Returns 0 on error */
+float ZBarcode_XdimDp_From_Scale(int symbol_id, float scale, float xdim_mm_or_dpmm, const char *filetype) {
+    int i;
+
+    if (!ZBarcode_ValidID(symbol_id)) {
+        return 0.0f;
+    }
+    if (scale <= 0.0f || scale > 200.0f) {
+        return 0.0f;
+    }
+    if (xdim_mm_or_dpmm <= 0.0f || xdim_mm_or_dpmm > 1000.0f) { /* 1000 dpmm == 25400 dpi */
+        return 0.0f;
+    }
+    if (filetype && *filetype) {
+        if ((i = filetype_idx(filetype)) < 0 || filetypes[i].filetype == 0) { /* Not found or TXT */
+            return 0.0f;
+        }
+    } else {
+        i = filetype_idx("GIF"); /* Default to raster */
+    }
+
+    if (symbol_id == BARCODE_MAXICODE) {
+        if (filetypes[i].is_raster) {
+            scale *= 10.0f;
+        } else if (filetypes[i].filetype == OUT_EMF_FILE) {
+            scale *= 40.0f;
+        } else {
+            scale *= 2.0f;
+        }
+    } else {
+        scale *= 2.0f;
+    }
+
+    xdim_mm_or_dpmm = stripf(stripf(scale) / stripf(xdim_mm_or_dpmm));
+
+    if (xdim_mm_or_dpmm > 1000.0f) { /* Note if X-dimension sought needs to be further bound to <= 10 on return */
+        xdim_mm_or_dpmm = 1000.0f;
+    }
+
+    return xdim_mm_or_dpmm;
 }
 
 /* Whether Zint built without PNG support */

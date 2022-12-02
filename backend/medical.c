@@ -188,7 +188,8 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Laetus Pharmacode Guide 1.4
-           Two-track height min 8mm / 2mm (X max) = 4, standard 8mm / 1mm = 8, max 12mm / 0.8mm (X min) = 15 */
+           Two-track height min 8mm / 2mm (X max) = 4X (2X per row), standard 8mm / 1mm = 8X,
+           max 12mm / 0.8mm (X min) = 15X */
         error_number = set_height(symbol, 2.0f, 8.0f, 15.0f, 0 /*no_errtxt*/);
     } else {
         (void) set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
@@ -270,11 +271,11 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
-        /* BS EN 798:1995 4.4.1 (d) max of 5mm / 0.191mm (X) ~ 26.178 or 15% of width where (taking N = narrow/wide
-           ratio as 2 and I = X) width = ((2 * N + 5) * C + (N – 1) * (D + 2)) * X + I * (C – 1) + 2Q
+        /* BS EN 798:1995 4.4.1 (d) max of 5mm / 0.43mm (X max) ~ 11.628 or 15% of width where (taking N =
+           narrow/wide ratio as 2 and I = X) width = ((2 * N + 5) * C + (N – 1) * (D + 2)) * X + I * (C – 1) + 2Q
            = ((4 + 5) * C + (D + 2) + C - 1 + 2 * 10) * X = (10 * C + D + 21) * X
            Length (C) includes start/stop chars */
-        const float min_height_min = stripf(5.0f / 0.191f);
+        const float min_height_min = stripf(5.0f / 0.43f);
         float min_height = stripf((10.0f * ((add_checksum ? length + 1 : length) + 2.0f) + d_chars + 21.0f) * 0.15f);
         if (min_height < min_height_min) {
             min_height = min_height_min;

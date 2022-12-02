@@ -63,7 +63,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
     char data_buf[8 * 2 + 1];
 
-    int have_identify = testUtilHaveIdentify();
+    const char *const have_identify = testUtilHaveIdentify();
 
     testStart("test_pixel_plot");
 
@@ -98,7 +98,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
         if (ret < ZINT_ERROR) {
             if (have_identify) {
-                ret = testUtilVerifyIdentify(symbol->outfile, debug);
+                ret = testUtilVerifyIdentify(have_identify, symbol->outfile, debug);
                 assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
             }
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
@@ -214,7 +214,7 @@ static void test_print(const testCtx *const p_ctx) {
     int escaped_size = 1024;
     char *text;
 
-    int have_identify = testUtilHaveIdentify();
+    const char *const have_identify = testUtilHaveIdentify();
 
     testStart("test_print");
 
@@ -288,7 +288,7 @@ static void test_print(const testCtx *const p_ctx) {
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_identify) {
-                ret = testUtilVerifyIdentify(expected_file, debug);
+                ret = testUtilVerifyIdentify(have_identify, expected_file, debug);
                 assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
@@ -321,10 +321,13 @@ static void test_outfile(const testCtx *const p_ctx) {
     symbol.bitmap = data;
     symbol.bitmap_width = symbol.bitmap_height = 1;
 
-    strcpy(symbol.outfile, "nosuch_dir/out.png");
+    strcpy(symbol.outfile, "test_png_out.png");
+    (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
+    assert_nonzero(testUtilCreateROFile(symbol.outfile), "png_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     ret = png_pixel_plot(&symbol, data);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "png_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+    assert_zero(testUtilRmROFile(symbol.outfile), "png_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
     symbol.output_options |= BARCODE_STDOUT;
 

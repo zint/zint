@@ -18,11 +18,13 @@ HEADERS += barcodeitem.h \
          datawindow.h \
          exportwindow.h \
          mainwindow.h \
+         scalewindow.h \
          sequencewindow.h
 
 FORMS += extCLI.ui \
          extData.ui \
          extExport.ui \
+         extScale.ui \
          extSequence.ui \
          grpAztec.ui \
          grpC11.ui \
@@ -64,6 +66,7 @@ SOURCES += barcodeitem.cpp \
         exportwindow.cpp \
         main.cpp \
         mainwindow.cpp \
+        scalewindow.cpp \
         sequencewindow.cpp
 
 TRANSLATIONS = frontend_de.ts

@@ -262,7 +262,7 @@ INTERNAL int is_stackable(const int symbology) {
     }
 
     switch (symbology) {
-        case BARCODE_CODE128B:
+        case BARCODE_CODE128AB:
         case BARCODE_ISBNX:
         case BARCODE_EAN14:
         case BARCODE_NVE18:

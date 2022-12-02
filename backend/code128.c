@@ -448,7 +448,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     indexchaine = 0;
 
     mode = c128_parunmodd(source[indexchaine]);
-    if ((symbol->symbology == BARCODE_CODE128B) && (mode == C128_ABORC)) {
+    if ((symbol->symbology == BARCODE_CODE128AB) && (mode == C128_ABORC)) {
         mode = C128_AORB;
     }
 
@@ -461,7 +461,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             }
             mode = c128_parunmodd(source[indexchaine]);
-            if ((symbol->symbology == BARCODE_CODE128B) && (mode == C128_ABORC)) {
+            if ((symbol->symbology == BARCODE_CODE128AB) && (mode == C128_ABORC)) {
                 mode = C128_AORB;
             }
         }
@@ -1169,7 +1169,8 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
                 } else if (!is_sane(NEON_F, local_source + length - 6, 3)) { /* 3-digit Service Code */
                     strcpy(symbol->errtxt, "832: Service Code (characters 6-4 from end) should be numeric");
                 } else { /* Last 10 characters of Tracking No. */
-                    strcpy(symbol->errtxt, "833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
+                    strcpy(symbol->errtxt,
+                        "833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
                 }
                 error_number = ZINT_WARN_NONCOMPLIANT;
             }

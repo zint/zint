@@ -10,12 +10,14 @@ HEADERS += barcodeitem.h \
          datawindow.h \
          exportwindow.h \
          mainwindow.h \
+         scalewindow.h \
          sequencewindow.h
 
 FORMS += extCLI.ui \
          extData.ui \
          extExport.ui \
          extSequence.ui \
+         extScale.ui \
          grpAztec.ui \
          grpC11.ui \
          grpC128.ui \
@@ -56,6 +58,7 @@ SOURCES += barcodeitem.cpp \
         exportwindow.cpp \
         main.cpp \
         mainwindow.cpp \
+        scalewindow.cpp \
         sequencewindow.cpp
 
 RESOURCES += resources.qrc

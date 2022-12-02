@@ -37,7 +37,7 @@
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056 */
-typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ? -1 : 1];
+typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 : 1];
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
@@ -60,57 +60,57 @@ typedef int static_assert_int_at_least_32bits[CHAR_BIT != 8 || sizeof(int) < 4 ?
 
 /* Print list of supported symbologies */
 static void types(void) {
-    printf( " # Name        Description               # Name           Description\n"
-            " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
-            " 2 C25STANDARD Standard 2 of 5          75 NVE18          NVE-18\n"
-            " 3 C25INTER    Interleaved 2 of 5       76 JAPANPOST      Japanese Post\n"
-            " 4 C25IATA     IATA 2 of 5              77 KOREAPOST      Korea Post\n"
-            " 6 C25LOGIC    Data Logic 2 of 5        79 DBAR_STK       GS1 DataBar Stacked\n"
-            " 7 C25IND      Industrial 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
-            " 8 CODE39      Code 39                  81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
-            " 9 EXCODE39    Extended Code 39         82 PLANET         USPS PLANET\n"
-            "13 EANX        EAN-2 to EAN-13          84 MICROPDF417    MicroPDF417\n"
-            "14 EANX_CHK    EAN + Check Digit        85 USPS_IMAIL     USPS Intelligent Mail\n"
-            "16 GS1_128     GS1-128                  86 PLESSEY        UK Plessey\n"
-            "18 CODABAR     Codabar                  87 TELEPEN_NUM    Telepen Numeric\n"
-            "20 CODE128     Code 128                 89 ITF14          ITF-14\n"
-            "21 DPLEIT      Deutsche Post Leitcode   90 KIX            Dutch Post KIX Code\n"
-            "22 DPIDENT     Deutsche Post Identcode  92 AZTEC          Aztec Code\n"
-            "23 CODE16K     Code 16K                 93 DAFT           DAFT Code\n"
-            "24 CODE49      Code 49                  96 DPD            DPD Parcel Code 128\n"
-            "25 CODE93      Code 93                  97 MICROQR        Micro QR Code\n"
-            "28 FLAT        Flattermarken            98 HIBC_128       HIBC Code 128\n"
-            "29 DBAR_OMN    GS1 DataBar Omni         99 HIBC_39        HIBC Code 39\n"
-            "30 DBAR_LTD    GS1 DataBar Limited     102 HIBC_DM        HIBC Data Matrix\n"
-            "31 DBAR_EXP    GS1 DataBar Expanded    104 HIBC_QR        HIBC QR Code\n"
-            "32 TELEPEN     Telepen Alpha           106 HIBC_PDF       HIBC PDF417\n"
-            "34 UPCA        UPC-A                   108 HIBC_MICPDF    HIBC MicroPDF417\n"
-            "35 UPCA_CHK    UPC-A + Check Digit     110 HIBC_BLOCKF    HIBC Codablock-F\n"
-            "37 UPCE        UPC-E                   112 HIBC_AZTEC     HIBC Aztec Code\n"
-            "38 UPCE_CHK    UPC-E + Check Digit     115 DOTCODE        DotCode\n"
-            "40 POSTNET     USPS POSTNET            116 HANXIN         Han Xin Code\n"
-            "47 MSI_PLESSEY MSI Plessey             121 MAILMARK       Royal Mail Mailmark\n"
-            "49 FIM         Facing Ident Mark       128 AZRUNE         Aztec Runes\n"
-            "50 LOGMARS     LOGMARS Code 39         129 CODE32         Code 32\n"
-            "51 PHARMA      Pharmacode One-Track    130 EANX_CC        Composite EAN\n"
-            "52 PZN         Pharmazentralnummer     131 GS1_128_CC     Composite GS1-128\n"
-            "53 PHARMA_TWO  Pharmacode Two-Track    132 DBAR_OMN_CC    Comp DataBar Omni\n"
-            "54 CEPNET      Brazilian CEPNet        133 DBAR_LTD_CC    Comp DataBar Limited\n"
-            "55 PDF417      PDF417                  134 DBAR_EXP_CC    Comp DataBar Expanded\n"
-            "56 PDF417COMP  Compact PDF417          135 UPCA_CC        Composite UPC-A\n"
-            "57 MAXICODE    MaxiCode                136 UPCE_CC        Composite UPC-E\n"
-            "58 QRCODE      QR Code                 137 DBAR_STK_CC    Comp DataBar Stacked\n"
-            "60 CODE128B    Code 128 (Subset B)     138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
-            "63 AUSPOST     AP Standard Customer    139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
-            "66 AUSREPLY    AP Reply Paid           140 CHANNEL        Channel Code\n"
-            "67 AUSROUTE    AP Routing              141 CODEONE        Code One\n"
-            "68 AUSREDIRECT AP Redirection          142 GRIDMATRIX     Grid Matrix\n"
-            "69 ISBNX       ISBN                    143 UPNQR          UPN QR Code\n"
-            "70 RM4SCC      Royal Mail 4SCC         144 ULTRA          Ultracode\n"
-            "71 DATAMATRIX  Data Matrix             145 RMQR           Rectangular Micro QR\n"
-            "72 EAN14       EAN-14                  146 BC412          BC412\n"
-            "73 VIN         Vehicle Information No.\n"
-            );
+    /* Breaking up strings so don't get too long (i.e. 500 or so) */
+    fputs(" # Name        Description               # Name           Description\n"
+          " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
+          " 2 C25STANDARD Standard 2 of 5          75 NVE18          NVE-18\n"
+          " 3 C25INTER    Interleaved 2 of 5       76 JAPANPOST      Japanese Post\n"
+          " 4 C25IATA     IATA 2 of 5              77 KOREAPOST      Korea Post\n", stdout);
+    fputs(" 6 C25LOGIC    Data Logic 2 of 5        79 DBAR_STK       GS1 DataBar Stacked\n"
+          " 7 C25IND      Industrial 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
+          " 8 CODE39      Code 39                  81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
+          " 9 EXCODE39    Extended Code 39         82 PLANET         USPS PLANET\n"
+          "13 EANX        EAN-2 to EAN-13          84 MICROPDF417    MicroPDF417\n", stdout);
+    fputs("14 EANX_CHK    EAN + Check Digit        85 USPS_IMAIL     USPS Intelligent Mail\n"
+          "16 GS1_128     GS1-128                  86 PLESSEY        UK Plessey\n"
+          "18 CODABAR     Codabar                  87 TELEPEN_NUM    Telepen Numeric\n"
+          "20 CODE128     Code 128                 89 ITF14          ITF-14\n"
+          "21 DPLEIT      Deutsche Post Leitcode   90 KIX            Dutch Post KIX Code\n", stdout);
+    fputs("22 DPIDENT     Deutsche Post Identcode  92 AZTEC          Aztec Code\n"
+          "23 CODE16K     Code 16K                 93 DAFT           DAFT Code\n"
+          "24 CODE49      Code 49                  96 DPD            DPD Parcel Code 128\n"
+          "25 CODE93      Code 93                  97 MICROQR        Micro QR Code\n"
+          "28 FLAT        Flattermarken            98 HIBC_128       HIBC Code 128\n", stdout);
+    fputs("29 DBAR_OMN    GS1 DataBar Omni         99 HIBC_39        HIBC Code 39\n"
+          "30 DBAR_LTD    GS1 DataBar Limited     102 HIBC_DM        HIBC Data Matrix\n"
+          "31 DBAR_EXP    GS1 DataBar Expanded    104 HIBC_QR        HIBC QR Code\n"
+          "32 TELEPEN     Telepen Alpha           106 HIBC_PDF       HIBC PDF417\n"
+          "34 UPCA        UPC-A                   108 HIBC_MICPDF    HIBC MicroPDF417\n", stdout);
+    fputs("35 UPCA_CHK    UPC-A + Check Digit     110 HIBC_BLOCKF    HIBC Codablock-F\n"
+          "37 UPCE        UPC-E                   112 HIBC_AZTEC     HIBC Aztec Code\n"
+          "38 UPCE_CHK    UPC-E + Check Digit     115 DOTCODE        DotCode\n"
+          "40 POSTNET     USPS POSTNET            116 HANXIN         Han Xin Code\n"
+          "47 MSI_PLESSEY MSI Plessey             121 MAILMARK       Royal Mail Mailmark\n", stdout);
+    fputs("49 FIM         Facing Ident Mark       128 AZRUNE         Aztec Runes\n"
+          "50 LOGMARS     LOGMARS Code 39         129 CODE32         Code 32\n"
+          "51 PHARMA      Pharmacode One-Track    130 EANX_CC        Composite EAN\n"
+          "52 PZN         Pharmazentralnummer     131 GS1_128_CC     Composite GS1-128\n"
+          "53 PHARMA_TWO  Pharmacode Two-Track    132 DBAR_OMN_CC    Comp DataBar Omni\n", stdout);
+    fputs("54 CEPNET      Brazilian CEPNet        133 DBAR_LTD_CC    Comp DataBar Limited\n"
+          "55 PDF417      PDF417                  134 DBAR_EXP_CC    Comp DataBar Expanded\n"
+          "56 PDF417COMP  Compact PDF417          135 UPCA_CC        Composite UPC-A\n"
+          "57 MAXICODE    MaxiCode                136 UPCE_CC        Composite UPC-E\n"
+          "58 QRCODE      QR Code                 137 DBAR_STK_CC    Comp DataBar Stacked\n", stdout);
+    fputs("60 CODE128AB   Code 128 (Suppress C)   138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
+          "63 AUSPOST     AP Standard Customer    139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
+          "66 AUSREPLY    AP Reply Paid           140 CHANNEL        Channel Code\n"
+          "67 AUSROUTE    AP Routing              141 CODEONE        Code One\n"
+          "68 AUSREDIRECT AP Redirection          142 GRIDMATRIX     Grid Matrix\n", stdout);
+    fputs("69 ISBNX       ISBN                    143 UPNQR          UPN QR Code\n"
+          "70 RM4SCC      Royal Mail 4SCC         144 ULTRA          Ultracode\n"
+          "71 DATAMATRIX  Data Matrix             145 RMQR           Rectangular Micro QR\n"
+          "72 EAN14       EAN-14                  146 BC412          BC412\n"
+          "73 VIN         Vehicle Information No.\n", stdout);
 }
 
 /* Output version information */
@@ -141,116 +141,114 @@ static void usage(int no_png) {
 
     version(no_png);
 
-    printf( "Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n"
-            "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
-            "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for EAN/UPC\n"
-            "  --batch               Treat each line of input file as a separate data set\n"
-            "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
-            "  --binary              Treat input as raw binary data\n"
-            "  --bind                Add boundary bars\n"
-            "  --bindtop             Add top boundary bar only\n"
-            "  --bold                Use bold text\n"
-            "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
-            "  --box                 Add a box around the symbol\n"
-            "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
-            "  --cols=NUMBER         Set the number of data columns in symbol\n"
-            "  --compliantheight     Warn if height not compliant, and use standard default\n"
-            "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
-            "  --direct              Send output to stdout\n"
-            "  --dmre                Allow Data Matrix Rectangular Extended\n"
-            "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
-            "  --dotty               Use dots instead of squares for matrix symbols\n"
-            "  --dump                Dump hexadecimal representation to stdout\n"
-            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n"
-            "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
-            "  --esc                 Process escape characters in input data\n"
-            "  --fast                Use faster encodation (Data Matrix)\n"
-            "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n"
-            "  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n"
-            "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
-            "  --gs1                 Treat input as GS1 compatible data\n"
-            "  --gs1nocheck          Do not check validity of GS1 data\n"
-            "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
-            "  --gssep               Use separator GS for GS1 (Data Matrix)\n"
-            "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (EAN/UPC)\n"
-            "  -h, --help            Display help message\n"
-            "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
-            "  --heightperrow        Treat height as per-row\n"
-            "  -i, --input=FILE      Read input data from FILE\n"
-            "  --init                Create Reader Initialisation (Programming) symbol\n"
-            "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
-            "  --mirror              Use batch data to determine filename\n"
-            "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n"
-            "  --nobackground        Remove background (EMF/EPS/GIF%s/SVG/TIF only)\n"
-            "  --noquietzones        Disable default quiet zones\n"
-            "  --notext              Remove human readable text\n"
-            "  -o, --output=FILE     Send output to FILE. Default is out.%s\n"
-            "  --primary=STRING      Set primary message (MaxiCode/Composite)\n"
-            "  --quietzones          Add compliant quiet zones\n"
-            "  -r, --reverse         Reverse colours (white on black)\n"
-            "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
-            "  --rows=NUMBER         Set number of rows (Codablock-F/PDF417)\n"
-            "  --scale=NUMBER        Adjust size of X-dimension\n"
-            "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
-            "  --secure=NUMBER       Set error correction level (ECC)\n"
-            "  --segN=ECI,DATA       Set the ECI & data content for segment N, where N 1 to 9\n"
-            "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
-            "  --small               Use small text\n"
-            "  --square              Force Data Matrix symbols to be square\n"
-            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
-            "  -t, --types           Display table of barcode types\n"
-            "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
-            "  -v, --version         Display Zint version\n"
-            "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
-            "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
-            "  --werror              Convert all warnings into errors\n",
-            no_png_type, no_png_type, no_png_type, no_png_ext
-            );
+    printf("Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n", no_png_type);
+    fputs( "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
+           "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for EAN/UPC\n"
+           "  --batch               Treat each line of input file as a separate data set\n"
+           "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
+           "  --binary              Treat input as raw binary data\n", stdout);
+    fputs( "  --bind                Add boundary bars\n"
+           "  --bindtop             Add top boundary bar only\n"
+           "  --bold                Use bold text\n"
+           "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
+           "  --box                 Add a box around the symbol\n", stdout);
+    fputs( "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
+           "  --cols=NUMBER         Set the number of data columns in symbol\n"
+           "  --compliantheight     Warn if height not compliant, and use standard default\n"
+           "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
+           "  --direct              Send output to stdout\n", stdout);
+    fputs( "  --dmre                Allow Data Matrix Rectangular Extended\n"
+           "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
+           "  --dotty               Use dots instead of squares for matrix symbols\n"
+           "  --dump                Dump hexadecimal representation to stdout\n"
+           "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
+    fputs( "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
+           "  --esc                 Process escape characters in input data\n"
+           "  --fast                Use faster encodation (Data Matrix)\n"
+           "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n", stdout);
+    printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
+    fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
+           "  --gs1                 Treat input as GS1 compatible data\n"
+           "  --gs1nocheck          Do not check validity of GS1 data\n"
+           "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
+           "  --gssep               Use separator GS for GS1 (Data Matrix)\n", stdout);
+    fputs( "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (EAN/UPC)\n"
+           "  -h, --help            Display help message\n"
+           "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
+           "  --heightperrow        Treat height as per-row\n"
+           "  -i, --input=FILE      Read input data from FILE\n", stdout);
+    fputs( "  --init                Create Reader Initialisation (Programming) symbol\n"
+           "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
+           "  --mirror              Use batch data to determine filename\n"
+           "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n", stdout);
+    printf("  --nobackground        Remove background (EMF/EPS/GIF%s/SVG/TIF only)\n", no_png_type);
+    fputs( "  --noquietzones        Disable default quiet zones\n"
+           "  --notext              Remove human readable text\n", stdout);
+    printf("  -o, --output=FILE     Send output to FILE. Default is out.%s\n", no_png_ext);
+    fputs( "  --primary=STRING      Set primary message (MaxiCode/Composite)\n"
+           "  --quietzones          Add compliant quiet zones\n"
+           "  -r, --reverse         Reverse colours (white on black)\n"
+           "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
+           "  --rows=NUMBER         Set number of rows (Codablock-F/PDF417)\n", stdout);
+    fputs( "  --scale=NUMBER        Adjust size of X-dimension\n"
+           "  --scalexdimdp=X[,R]   Adjust size to X-dimension X at resolution R\n"
+           "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
+           "  --secure=NUMBER       Set error correction level (ECC)\n"
+           "  --segN=ECI,DATA       Set the ECI & data content for segment N, where N 1 to 9\n", stdout);
+    fputs( "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
+           "  --small               Use small text\n"
+           "  --square              Force Data Matrix symbols to be square\n"
+           "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
+           "  -t, --types           Display table of barcode types\n", stdout);
+    fputs( "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
+           "  -v, --version         Display Zint version\n"
+           "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
+           "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
+           "  --werror              Convert all warnings into errors\n", stdout);
 }
 
 /* Display supported ECI codes */
 static void show_eci(void) {
-    printf( "  3: ISO/IEC 8859-1 - Latin alphabet No. 1 (default)\n"
-            "  4: ISO/IEC 8859-2 - Latin alphabet No. 2\n"
-            "  5: ISO/IEC 8859-3 - Latin alphabet No. 3\n"
-            "  6: ISO/IEC 8859-4 - Latin alphabet No. 4\n"
-            "  7: ISO/IEC 8859-5 - Latin/Cyrillic alphabet\n"
-            "  8: ISO/IEC 8859-6 - Latin/Arabic alphabet\n"
-            "  9: ISO/IEC 8859-7 - Latin/Greek alphabet\n"
-            " 10: ISO/IEC 8859-8 - Latin/Hebrew alphabet\n"
-            " 11: ISO/IEC 8859-9 - Latin alphabet No. 5 (Turkish)\n"
-            " 12: ISO/IEC 8859-10 - Latin alphabet No. 6 (Nordic)\n"
-            " 13: ISO/IEC 8859-11 - Latin/Thai alphabet\n"
-            " 15: ISO/IEC 8859-13 - Latin alphabet No. 7 (Baltic)\n"
-            " 16: ISO/IEC 8859-14 - Latin alphabet No. 8 (Celtic)\n"
-            " 17: ISO/IEC 8859-15 - Latin alphabet No. 9\n"
-            " 18: ISO/IEC 8859-16 - Latin alphabet No. 10\n"
-            " 20: Shift JIS (JIS X 0208 and JIS X 0201)\n"
-            " 21: Windows 1250 - Latin 2 (Central Europe)\n"
-            " 22: Windows 1251 - Cyrillic\n"
-            " 23: Windows 1252 - Latin 1\n"
-            " 24: Windows 1256 - Arabic\n"
-            " 25: UTF-16BE (High order byte first)\n"
-            " 26: UTF-8\n"
-            " 27: ASCII (ISO/IEC 646 IRV)\n"
-            " 28: Big5 (Taiwan) Chinese Character Set\n"
-            " 29: GB 2312 (PRC) Chinese Character Set\n"
-            " 30: Korean Character Set EUC-KR (KS X 1001:2002)\n"
-            " 31: GBK Chinese Character Set\n"
-            " 32: GB 18030 Chinese Character Set\n"
-            " 33: UTF-16LE (Low order byte first)\n"
-            " 34: UTF-32BE (High order bytes first)\n"
-            " 35: UTF-32LE (Low order bytes first)\n"
-            "170: ISO/IEC 646 Invariant (ASCII subset)\n"
-            "899: 8-bit binary data\n"
-    );
+    fputs("  3: ISO/IEC 8859-1 - Latin alphabet No. 1 (default)\n"
+          "  4: ISO/IEC 8859-2 - Latin alphabet No. 2\n"
+          "  5: ISO/IEC 8859-3 - Latin alphabet No. 3\n"
+          "  6: ISO/IEC 8859-4 - Latin alphabet No. 4\n"
+          "  7: ISO/IEC 8859-5 - Latin/Cyrillic alphabet\n", stdout);
+    fputs("  8: ISO/IEC 8859-6 - Latin/Arabic alphabet\n"
+          "  9: ISO/IEC 8859-7 - Latin/Greek alphabet\n"
+          " 10: ISO/IEC 8859-8 - Latin/Hebrew alphabet\n"
+          " 11: ISO/IEC 8859-9 - Latin alphabet No. 5 (Turkish)\n"
+          " 12: ISO/IEC 8859-10 - Latin alphabet No. 6 (Nordic)\n", stdout);
+    fputs(" 13: ISO/IEC 8859-11 - Latin/Thai alphabet\n"
+          " 15: ISO/IEC 8859-13 - Latin alphabet No. 7 (Baltic)\n"
+          " 16: ISO/IEC 8859-14 - Latin alphabet No. 8 (Celtic)\n"
+          " 17: ISO/IEC 8859-15 - Latin alphabet No. 9\n"
+          " 18: ISO/IEC 8859-16 - Latin alphabet No. 10\n", stdout);
+    fputs(" 20: Shift JIS (JIS X 0208 and JIS X 0201)\n"
+          " 21: Windows 1250 - Latin 2 (Central Europe)\n"
+          " 22: Windows 1251 - Cyrillic\n"
+          " 23: Windows 1252 - Latin 1\n"
+          " 24: Windows 1256 - Arabic\n", stdout);
+    fputs(" 25: UTF-16BE (High order byte first)\n"
+          " 26: UTF-8\n"
+          " 27: ASCII (ISO/IEC 646 IRV)\n"
+          " 28: Big5 (Taiwan) Chinese Character Set\n"
+          " 29: GB 2312 (PRC) Chinese Character Set\n", stdout);
+    fputs(" 30: Korean Character Set EUC-KR (KS X 1001:2002)\n"
+          " 31: GBK Chinese Character Set\n"
+          " 32: GB 18030 Chinese Character Set\n"
+          " 33: UTF-16LE (Low order byte first)\n"
+          " 34: UTF-32BE (High order bytes first)\n", stdout);
+    fputs(" 35: UTF-32LE (Low order bytes first)\n"
+          "170: ISO/IEC 646 Invariant (ASCII subset)\n"
+          "899: 8-bit binary data\n", stdout);
 }
 
 /* Verifies that a string (length <= 9) only uses digits. On success returns value in arg */
-static int validate_int(const char source[], int *p_val) {
+static int validate_int(const char source[], int len, int *p_val) {
     int val = 0;
     int i;
-    const int length = (int) strlen(source);
+    const int length = len == -1 ? (int) strlen(source) : len;
 
     if (length > 9) { /* Prevent overflow */
         return 0;
@@ -267,13 +265,67 @@ static int validate_int(const char source[], int *p_val) {
     return 1;
 }
 
+/* Verifies that a string is a simplified form of floating point, max 7 significant decimal digits with
+   optional decimal point. On success returns val in arg. On failure sets `errbuf` */
+static int validate_float(const char source[], float *p_val, char errbuf[64]) {
+    static const float fract_muls[7] = { 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f };
+    int val = 0;
+    const char *dot = strchr(source, '.');
+    int int_len = dot ? (int) (dot - source) : (int) strlen(source);
+    if (int_len > 9) {
+        strcpy(errbuf, "integer part must be 7 digits maximum"); /* Say 7 not 9 to "manage expections" */
+        return 0;
+    }
+    if (int_len) {
+        int tmp_val;
+        if (!validate_int(source, int_len, &val)) {
+            strcpy(errbuf, "integer part must be digits only");
+            return 0;
+        }
+        for (int_len = 0, tmp_val = val; tmp_val; tmp_val /= 10, int_len++); /* log10(val) */
+        if (int_len > 7) {
+            strcpy(errbuf, "integer part must be 7 digits maximum");
+            return 0;
+        }
+    }
+    if (dot && *++dot) {
+        int val2, fract_len;
+        const char *e;
+        for (e = dot + strlen(dot) - 1; e > dot && *e == '0'; e--); /* Ignore trailing zeroes */
+        fract_len = (int) (e + 1 - dot);
+        if (fract_len) {
+            if (fract_len > 7) {
+                strcpy(errbuf, "fractional part must be 7 digits maximum");
+                return 0;
+            }
+            if (!validate_int(dot, fract_len, &val2)) {
+                strcpy(errbuf, "fractional part must be digits only");
+                return 0;
+            }
+            if (val2 && int_len + fract_len > 7) {
+                if (val) {
+                    strcpy(errbuf, "7 significant digits maximum");
+                } else {
+                    strcpy(errbuf, "fractional part must be 7 digits maximum");
+                }
+                return 0;
+            }
+            *p_val = val + val2 * fract_muls[fract_len - 1];
+        } else {
+            *p_val = (float) val;
+        }
+    } else {
+        *p_val = (float) val;
+    }
+    return 1;
+}
+
 /* Converts an integer value to its hexadecimal character */
 static char itoc(const int source) {
     if ((source >= 0) && (source <= 9)) {
         return ('0' + source);
-    } else {
-        return ('A' + (source - 10));
     }
+    return ('A' - 10 + source);
 }
 
 /* Converts upper case characters to lower case in a string source[] */
@@ -327,7 +379,8 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_CODABLOCKF, "codablockf" },
         { BARCODE_CODE11, "code11" },
         { BARCODE_CODE128, "code128" },
-        { BARCODE_CODE128B, "code128b" },
+        { BARCODE_CODE128AB, "code128ab" },
+        { BARCODE_CODE128AB, "code128b" }, /* Synonym */
         { BARCODE_CODE16K, "code16k" },
         { BARCODE_C25LOGIC, "code2of5datalogic" }, /* Synonym */
         { BARCODE_C25IATA, "code2of5iata" }, /* Synonym */
@@ -616,6 +669,87 @@ static int is_raster(const char *filetype, const int no_png) {
     return 0;
 }
 
+/* Helper for `validate_scalexdimdp()` to search for units, returning -2 on error, -1 if not found, else index */
+static int validate_units(char *buf, const char *units[], int units_size) {
+    int i;
+    char *unit;
+
+    to_lower(buf);
+    for (i = 0; i < units_size; i++) {
+        if ((unit = strstr(buf, units[i])) != NULL) {
+            if (strlen(units[i]) != strlen(unit)) {
+                return -2;
+            }
+            *unit = '\0';
+            break;
+        }
+    }
+    if (i == units_size) {
+        i = -1;
+    }
+    return i;
+}
+
+/* Parse and validate argument "xdim[,resolution]" to "--scalexdimdp" */
+static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_dpmm) {
+    static const char *x_units[] = { "mm", "in" };
+    static const char *r_units[] = { "dpmm", "dpi" };
+    char x_buf[7 + 1 + 4 + 1] = {0}; /* Allow for 7 digits + dot + 4-char unit + NUL */
+    char r_buf[7 + 1 + 4 + 1] = {0}; /* As above */
+    int units_i; /* For `validate_units()` */
+    char errbuf[64]; /* For `validate_float()` */
+    const char *comma = strchr(optarg, ',');
+    if (comma) {
+        if (comma == optarg || comma - optarg >= ARRAY_SIZE(x_buf)) {
+            fprintf(stderr, "Error 174: scalexdimdp X-dim too %s\n", comma == optarg ? "short" : "long");
+            return 0;
+        }
+        strncpy(x_buf, optarg, comma - optarg);
+        comma++;
+        if (!*comma || strlen(comma) >= ARRAY_SIZE(r_buf)) {
+            fprintf(stderr, "Error 175: scalexdimdp resolution too %s\n", !*comma ? "short" : "long");
+            return 0;
+        }
+        strcpy(r_buf, comma);
+    } else {
+        if (!*optarg || strlen(optarg) >= ARRAY_SIZE(x_buf)) {
+            fprintf(stderr, "Error 176: scalexdimdp X-dim too %s\n", !*optarg ? "short" : "long");
+            return 0;
+        }
+        strcpy(x_buf, optarg);
+    }
+    if ((units_i = validate_units(x_buf, x_units, ARRAY_SIZE(x_units))) == -2) {
+        fprintf(stderr, "Error 177: scalexdimdp X-dim units must occur at end\n");
+        return 0;
+    }
+    if (!validate_float(x_buf, p_x_dim_mm, errbuf)) {
+        fprintf(stderr, "Error 178: scalexdimdp X-dim invalid floating point (%s)\n", errbuf);
+        return 0;
+    }
+    if (units_i > 0) { /* Ignore mm */
+        *p_x_dim_mm /= 25.4f /*in*/;
+    }
+    *p_dpmm = 0.0f;
+    if (comma) {
+        if ((units_i = validate_units(r_buf, r_units, ARRAY_SIZE(r_units))) == -2) {
+            fprintf(stderr, "Error 179: scalexdimdp resolution units must occur at end\n");
+            return 0;
+        }
+        if (!validate_float(r_buf, p_dpmm, errbuf)) {
+            fprintf(stderr, "Error 180: scalexdimdp resolution invalid floating point (%s)\n", errbuf);
+            return 0;
+        }
+        if (units_i > 0) { /* Ignore dpmm */
+            *p_dpmm /= 25.4f /*dpi*/;
+        }
+    }
+    if (*p_dpmm == 0.0f) {
+        *p_dpmm = 12.0f; /* 300 dpi */
+    }
+
+    return 1;
+}
+
 /* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
 int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
     char index[10] = {0}, count[10] = {0};
@@ -651,11 +785,11 @@ int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
         }
         strcpy(count, comma);
     }
-    if (!validate_int(index, &structapp->index)) {
+    if (!validate_int(index, -1 /*len*/, &structapp->index)) {
         fprintf(stderr, "Error 160: Invalid Structured Append index (digits only)\n");
         return 0;
     }
-    if (!validate_int(count, &structapp->count)) {
+    if (!validate_int(count, -1 /*len*/, &structapp->count)) {
         fprintf(stderr, "Error 161: Invalid Structured Append count (digits only)\n");
         return 0;
     }
@@ -680,7 +814,7 @@ static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10
         return 0;
     }
     strncpy(eci, optarg, comma - optarg);
-    if (!validate_int(eci, &segs[N].eci)) {
+    if (!validate_int(eci, -1 /*len*/, &segs[N].eci)) {
         fprintf(stderr, "Error 167: Invalid segment ECI (digits only)\n");
         return 0;
     }
@@ -991,7 +1125,9 @@ int main(int argc, char **argv) {
     char *outfile_extension;
     int data_arg_num = 0;
     int seg_count = 0;
+    float x_dim_mm = 0.0f, dpmm = 0.0f;
     float float_opt;
+    char errbuf[64]; /* For `validate_float()` */
     arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
     int no_getopt_error = 1;
 
@@ -1022,7 +1158,7 @@ int main(int argc, char **argv) {
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
-            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCMVV, OPT_SECURE,
+            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
             OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
             OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
@@ -1079,6 +1215,7 @@ int main(int argc, char **argv) {
             {"rotate", 1, NULL, OPT_ROTATE},
             {"rows", 1, NULL, OPT_ROWS},
             {"scale", 1, NULL, OPT_SCALE},
+            {"scalexdimdp", 1, NULL, OPT_SCALEXDIM},
             {"scmvv", 1, NULL, OPT_SCMVV},
             {"secure", 1, NULL, OPT_SECURE},
             {"seg1", 1, NULL, OPT_SEG1},
@@ -1108,7 +1245,7 @@ int main(int argc, char **argv) {
 
         switch (c) {
             case OPT_ADDONGAP:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 139: Invalid add-on gap value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1146,7 +1283,7 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= BOLD_TEXT;
                 break;
             case OPT_BORDER:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 107: Invalid border width value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1165,7 +1302,7 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= CMYK_COLOUR;
                 break;
             case OPT_COLS:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 131: Invalid columns value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1190,13 +1327,16 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_DOTSIZE:
-                my_symbol->dot_size = (float) (atof(optarg));
-                if (my_symbol->dot_size < 0.01f) {
-                    /* Zero and negative values are not permitted */
+                if (!validate_float(optarg, &float_opt, errbuf)) {
+                    fprintf(stderr, "Error 181: Invalid dot radius floating point (%s)\n", errbuf);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (float_opt >= 0.01f) {
+                    my_symbol->dot_size = float_opt;
+                } else {
                     fprintf(stderr, "Warning 106: Invalid dot radius value (less than 0.01), ignoring\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
-                    my_symbol->dot_size = 4.0f / 5.0f;
                 }
                 break;
             case OPT_DOTTY:
@@ -1207,7 +1347,7 @@ int main(int argc, char **argv) {
                 strcpy(my_symbol->outfile, "dummy.txt");
                 break;
             case OPT_ECI:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 138: Invalid ECI value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1230,7 +1370,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_FILETYPE:
                 /* Select the type of output file */
-                if (!supported_filetype(optarg, no_png, &png_refused)) {
+                if (supported_filetype(optarg, no_png, &png_refused)) {
+                    strncpy(filetype, optarg, (size_t) 3);
+                } else {
                     if (png_refused) {
                         fprintf(stderr, "Warning 152: PNG format disabled at compile time, ignoring\n");
                     } else {
@@ -1238,12 +1380,10 @@ int main(int argc, char **argv) {
                     }
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
-                } else {
-                    strncpy(filetype, optarg, (size_t) 3);
                 }
                 break;
             case OPT_FONTSIZE:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 130: Invalid font size value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1271,7 +1411,10 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
                 break;
             case OPT_GUARDDESCENT:
-                float_opt = (float) atof(optarg);
+                if (!validate_float(optarg, &float_opt, errbuf)) {
+                    fprintf(stderr, "Error 182: Invalid guard bar descent floating point (%s)\n", errbuf);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
                 if (float_opt >= 0.0f && float_opt <= 50.0f) {
                     my_symbol->guard_descent = float_opt;
                 } else {
@@ -1282,7 +1425,10 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_HEIGHT:
-                float_opt = (float) atof(optarg);
+                if (!validate_float(optarg, &float_opt, errbuf)) {
+                    fprintf(stderr, "Error 183: Invalid symbol height floating point (%s)\n", errbuf);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
                 if (float_opt >= 0.5f && float_opt <= 2000.0f) {
                     my_symbol->height = float_opt;
                 } else {
@@ -1303,7 +1449,7 @@ int main(int argc, char **argv) {
                 mirror_mode = 1;
                 break;
             case OPT_MASK:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 148: Invalid mask value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1317,7 +1463,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_MODE:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 136: Invalid mode value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1352,7 +1498,7 @@ int main(int argc, char **argv) {
                 break;
             case OPT_ROTATE:
                 /* Only certain inputs allowed */
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 117: Invalid rotation value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1374,7 +1520,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_ROWS:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 132: Invalid rows value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1387,17 +1533,37 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_SCALE:
-                my_symbol->scale = (float) (atof(optarg));
-                if (my_symbol->scale < 0.01f) {
-                    /* Zero and negative values are not permitted */
+                if (!validate_float(optarg, &float_opt, errbuf)) {
+                    fprintf(stderr, "Error 184: Invalid scale floating point (%s)\n", errbuf);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (float_opt >= 0.01f) {
+                    my_symbol->scale = float_opt;
+                } else {
                     fprintf(stderr, "Warning 105: Invalid scale value (less than 0.01), ignoring\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
-                    my_symbol->scale = 1.0f;
+                }
+                break;
+            case OPT_SCALEXDIM:
+                if (!validate_scalexdimdp(optarg, &x_dim_mm, &dpmm)) {
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (x_dim_mm > 10.0f || dpmm > 1000.0f) {
+                    if (x_dim_mm > 10.0f) {
+                        fprintf(stderr,
+                            "Warning 185: scalexdimdp X-dim (%g) out of range (> 10), ignoring\n", x_dim_mm);
+                    } else {
+                        fprintf(stderr,
+                            "Warning 186: scalexdimdp resolution (%g) out of range (> 1000), ignoring\n", dpmm);
+                    }
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                    x_dim_mm = dpmm = 0.0f;
                 }
                 break;
             case OPT_SCMVV:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 149: Invalid Structured Carrier Message version value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1412,7 +1578,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_SECURE:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 134: Invalid ECC value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1452,7 +1618,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_SEPARATOR:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 128: Invalid separator value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1481,7 +1647,7 @@ int main(int argc, char **argv) {
                 my_symbol->debug = 1;
                 break;
             case OPT_VERS:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 133: Invalid version value (digits only)\n");
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1494,7 +1660,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_VWHITESP:
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 153: Invalid vertical whitespace value '%s' (digits only)\n", optarg);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1528,7 +1694,7 @@ int main(int argc, char **argv) {
                 break;
 
             case 'b':
-                if (!validate_int(optarg, &val) && !(val = get_barcode_name(optarg))) {
+                if (!validate_int(optarg, -1 /*len*/, &val) && !(val = get_barcode_name(optarg))) {
                     fprintf(stderr, "Error 119: Invalid barcode type '%s'\n", optarg);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1536,7 +1702,7 @@ int main(int argc, char **argv) {
                 break;
 
             case 'w':
-                if (!validate_int(optarg, &val)) {
+                if (!validate_int(optarg, -1 /*len*/, &val)) {
                     fprintf(stderr, "Error 120: Invalid horizontal whitespace value '%s' (digits only)\n", optarg);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1570,7 +1736,7 @@ int main(int argc, char **argv) {
                     input_cnt++;
                 } else {
                     fprintf(stderr, "Warning 143: Can only define one input file in batch mode, ignoring '%s'\n",
-                        optarg);
+                            optarg);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1600,6 +1766,15 @@ int main(int argc, char **argv) {
                 return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
                 break;
         }
+    }
+    if (optind != argc) {
+        if (optind + 1 == argc) {
+            fprintf(stderr, "Warning 191: extra argument '%s' ignored\n", argv[optind]);
+        } else {
+            fprintf(stderr, "Warning 192: extra arguments beginning with '%s' ignored\n", argv[optind]);
+        }
+        fflush(stderr);
+        warn_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if (data_arg_num) {
@@ -1648,11 +1823,26 @@ int main(int argc, char **argv) {
                     strcpy(filetype, no_png ? "gif" : "png");
                 }
             }
+            if (dpmm) { /* Allow `x_dim_mm` to be zero */
+                if (x_dim_mm == 0.0f) {
+                    x_dim_mm = ZBarcode_Default_Xdim(symbology);
+                }
+                float_opt = ZBarcode_Scale_From_XdimDp(symbology, x_dim_mm, dpmm, filetype);
+                if (float_opt > 0.0f) {
+                    my_symbol->scale = float_opt;
+                    my_symbol->dpmm = dpmm;
+                } else {
+                    fprintf(stderr, "Warning 187: Invalid scalexdimdp X-dim (%g), resolution (%g) combo, ignoring\n",
+                            x_dim_mm, dpmm);
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                }
+            }
             if (((symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
                     && is_raster(filetype, no_png)) {
                 const int min = symbology != BARCODE_MAXICODE ? 5 : 2;
                 fprintf(stderr, "Warning 145: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
-                    filetype);
+                        filetype);
                 fflush(stderr);
                 warn_number = ZINT_WARN_INVALID_OPTION;
             }
@@ -1681,11 +1871,26 @@ int main(int argc, char **argv) {
             if (filetype[0] != '\0') {
                 set_extension(my_symbol->outfile, filetype);
             }
+            if (dpmm) { /* Allow `x_dim_mm` to be zero */
+                if (x_dim_mm == 0.0f) {
+                    x_dim_mm = ZBarcode_Default_Xdim(symbology);
+                }
+                float_opt = ZBarcode_Scale_From_XdimDp(symbology, x_dim_mm, dpmm, get_extension(my_symbol->outfile));
+                if (float_opt > 0.0f) {
+                    my_symbol->scale = float_opt;
+                    my_symbol->dpmm = dpmm;
+                } else {
+                    fprintf(stderr, "Warning 190: Invalid scalexdimdp X-dim (%g), resolution (%g) combo, ignoring\n",
+                            x_dim_mm, dpmm);
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                }
+            }
             if (((symbology != BARCODE_MAXICODE && my_symbol->scale < 0.5f) || my_symbol->scale < 0.2f)
                     && is_raster(get_extension(my_symbol->outfile), no_png)) {
                 const int min = symbology != BARCODE_MAXICODE ? 5 : 2;
                 fprintf(stderr, "Warning 146: Scaling less than 0.%d will be set to 0.%d for '%s' output\n", min, min,
-                    get_extension(my_symbol->outfile));
+                        get_extension(my_symbol->outfile));
                 fflush(stderr);
                 warn_number = ZINT_WARN_INVALID_OPTION;
             }

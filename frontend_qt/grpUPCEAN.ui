@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lblUPCEANAddonGap">
        <property name="text">
-        <string>A&amp;dd-on Gap:</string>
+        <string>Add-o&amp;n Gap:</string>
        </property>
        <property name="toolTip">
         <string>Horizontal space in X-dimensions between
@@ -139,13 +139,13 @@ descend below the main bars (default 5X)
         </widget>
        </item>
        <item>
-        <widget class="QPushButton" name="btnUPCEANGuardReset">
+        <widget class="QPushButton" name="btnUPCEANGuardDefault">
          <property name="toolTip">
           <string>Reset guard bars descent height
 to default 5X</string>
          </property>
          <property name="text">
-          <string>&amp;Reset</string>
+          <string>De&amp;fault</string>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">

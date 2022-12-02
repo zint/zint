@@ -8,14 +8,14 @@ project(zint-qt)
 set(CMAKE_AUTORCC ON)
 
 set(${PROJECT_NAME}_SRCS barcodeitem.cpp main.cpp mainwindow.cpp
-                            cliwindow.cpp datawindow.cpp sequencewindow.cpp exportwindow.cpp)
+                            cliwindow.cpp datawindow.cpp scalewindow.cpp sequencewindow.cpp exportwindow.cpp)
 
 if(USE_QT6)
-    qt6_wrap_cpp(zint-qt_SRCS mainwindow.h cliwindow.h datawindow.h sequencewindow.h exportwindow.h)
-    qt6_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extSequence.ui extExport.ui)
+    qt6_wrap_cpp(zint-qt_SRCS mainwindow.h cliwindow.h datawindow.h scalewindow.h sequencewindow.h exportwindow.h)
+    qt6_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extScale.ui extSequence.ui extExport.ui)
 else()
-    qt5_wrap_cpp(zint-qt_SRCS mainwindow.h cliwindow.h datawindow.h sequencewindow.h exportwindow.h)
-    qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extSequence.ui extExport.ui)
+    qt5_wrap_cpp(zint-qt_SRCS mainwindow.h cliwindow.h datawindow.h scalewindow.h sequencewindow.h exportwindow.h)
+    qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extScale.ui extSequence.ui extExport.ui)
 endif()
 
 #               grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMaxicode.ui  grpQR.ui      grpUPNQR.ui

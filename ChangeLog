@@ -13,6 +13,10 @@ Version 2.11.1.9 (dev) not released yet
   compliant
 - Legacy and never-used output option BARCODE_NO_ASCII removed (value now used
   by new output option BARCODE_BIND_TOP)
+- Symbology BARCODE_CODE128B (Suppress subset C) renamed to BARCODE_CODE128AB
+  to more accurately reflect its behaviour (old name still recognised)
+- CLI now expects floating point arguments to be in simple decimal point
+  notation (i.e. not scientific notation) with a maximum of 7 significant digits
 
 Changes
 -------
@@ -36,6 +40,35 @@ Changes
   (will add back in future if go fully CMake)
 - NO_PNG -> ZINT_NO_PNG and new API function `Zint_NoPng()` to determine if no
   PNG support in libzint; replace use in GUI with backend_qt method `noPng()`
+- API: add new zint_symbol `dpmm` field for output resolution (BMP/EMF/PCX/PNG/
+  TIF only, i.e. excluding EPS, GIF & SVG)
+- Add support for specifying scale by X-dimension and resolution with new option
+  `--scalexdimdp` for CLI/Tcl & new API function `ZBarcode_Scale_From_XdimDp()`
+  (plus `ZBarcode_XdimDp_From_Scale()` and `ZBarcode_Default_Xdim()`) and new
+  GUI popup; manual: document
+- BMP/EMF/PCX/PNG/TIF: use new `dpmm` resolution field (for EMF following
+  Inkscape)
+- backend_qt: add `dpmm()`, `vectorWidth()`, `vectorHeight()`, `noPng()`,
+  `getVersion()`, `takesGS1AIData()`, & `XdimDp` stuff incl. new `QZintXdimDp`
+  struct for passing around scale vars & use in `getAsCLI()`; add comments
+- Raise `scale` limit to 200 (from 100) to allow for large dpmm
+- output: create directories & subdirectories as necessary for output path using
+  new function `out_fopen()` and use in BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF
+- DPLEIT/DPIDENT: format HRT according to (incomplete) documentation, and set
+  default height to 72X (from 50X)
+- CODE128B renamed to CODE128AB as can use subsets A and/or B
+- MAILMARK: better error message if input < 14 characters
+- GUI: add "Default" button for DAFT tracker ratio & enable/disable various
+  default buttons; use new `takesGS1AIData()` to enable/disable GS1-specific
+  checkboxes
+- CLI: use new `validate_float()` to parse float options (7 significant digits
+  allowed only, no scientific notation)
+- DATAMATRIX/GRIDMATRIX/PDF417/QR/ULTRA: micro-optimize structapp ID parse
+- library/CLI: fiddle with static asserts (make CHAR_BIT sensitive, supposedly)
+- win32/README: update building libpng (assembly removed)
+- README.linux: document incompatibility of Qt6 >= 6.3
+- manual: expand Barcode Studio waffle
+- test suite: change range separator to hyphen and allow multiple excludes
 
 Bugs
 ----
@@ -65,6 +98,10 @@ Bugs
   Text segments to avoid affecting 1st char of 2nd segment
 - GUI: only skip encoded/errored signal processing if active modal ExportDialog
   (wasn't clearing/setting error text bar correctly)
+- CODABAR: fix minimum height calc
+- EMF: fix indexing of handles (zero-based not 1-based)
+- GUI: fix symbology zap (previous technique of clearing and re-loading settings
+  without doing a sync no longer works); fix UPCEAN guard descent enable
 
 
 Version 2.11.1 (2022-08-22)
@@ -909,3 +946,5 @@ Version 0.1 (as Zebar) 2006-11-13
 Draws UPC-A. UPC-E, EAN-8, EAN-13, Interlaced 2 of 5,
 Codabar, Code 39, Extended Code 39 and Code 93 barcodes and Add-on codes EAN-2
 and EAN-5 without parity.
+
+# vim: syntax=off :

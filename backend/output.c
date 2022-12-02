@@ -31,8 +31,14 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
+#include <errno.h>
 #include <math.h>
-#include <stdio.h>
+#ifdef _WIN32
+#include <windows.h>
+#include <direct.h>
+#else
+#include <sys/stat.h> /* mkdir(2) */
+#endif
 #include "common.h"
 #include "output.h"
 #include "font.h"
@@ -241,7 +247,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             done = 1;
             break;
         case BARCODE_CODE128:
-        case BARCODE_CODE128B:
+        case BARCODE_CODE128AB:
         case BARCODE_HIBC_128:
         case BARCODE_NVE18:
             /* ISO/IEC 15417:2007 4.4.2 */
@@ -250,7 +256,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             break;
         case BARCODE_DPLEIT:
         case BARCODE_DPIDENT:
-            /* Using CODE39 values TODO: Find doc */
+            /* Using C25INTER values TODO: Find doc */
             *left = *right = 10.0f;
             done = 1;
             break;
@@ -486,7 +492,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
 #ifdef ZINT_TEST /* Wrapper for direct testing */
 INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom) {
-	return out_quiet_zones(symbol, hide_text, left, right, top, bottom);
+    return out_quiet_zones(symbol, hide_text, left, right, top, bottom);
 }
 #endif
 
@@ -740,6 +746,92 @@ INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
         }
         textpart3[6] = '\0';
     }
+}
+
+/* Make a directory; already existing dir okay */
+/* Adapted from https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950 and
+   https://nachtimwald.com/2019/07/10/recursive-create-directory-in-c-revisited/ */
+static int out_maybe_mkdir(const char* path)
+{
+#ifdef _WIN32
+    DWORD dwAttrib;
+
+    /* Try to make the directory */
+    if (CreateDirectory(path, NULL) != 0) { /* Non-zero on success */
+        return 0;
+    }
+    /* If it fails for any reason but already exists, fail */
+    if (GetLastError() != ERROR_ALREADY_EXISTS) {
+        return -1;
+    }
+    /* Check if the existing path is a directory */
+    if ((dwAttrib = GetFileAttributes(path)) == (DWORD) -1 || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+        return -1;
+    }
+#else
+    struct stat st;
+
+    /* Try to make the directory */
+    if (mkdir(path, 0777) == 0) {
+        return 0;
+    }
+    /* If it fails for any reason but already exists, fail */
+    if (errno != EEXIST) {
+        return -1;
+    }
+    /* Check if the existing path is a directory */
+    if (stat(path, &st) != 0 || !S_ISDIR(st.st_mode)) {
+        return -1;
+    }
+#endif
+
+    return 0;
+}
+
+/* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
+INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
+    FILE *outfile;
+
+    if (!(outfile = fopen(filename, mode))) {
+        char dirname[256];
+        char *d;
+#ifdef _WIN32
+        char *dirend = strrchr(filename, '\\');
+        if (!dirend) {
+            dirend = strrchr(filename, '/');
+        }
+#else
+        char *dirend = strrchr(filename, '/');
+#endif
+        if (!dirend) {
+            return outfile;
+        }
+
+        /* Adapted from https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950 */
+        /* Remove filename, leaving directories */
+        memcpy(dirname, filename, dirend - filename);
+        dirname[dirend - filename] = '/';
+        dirname[dirend - filename + 1] = '\0';
+#if _WIN32
+        for (d = dirname; *d; d++) { /* Convert to Unix separators */
+            if (*d == '\\') {
+                *d = '/';
+            }
+        }
+#endif
+        for (d = dirname + 1; *d; d++) { /* Ignore slash at start if any */
+            if (*d == '/' && *(d - 1) != '/') { /* Ignore double-slashes */
+                *d = '\0'; /* Temporarily truncate */
+                if (out_maybe_mkdir(dirname) != 0) {
+                    return NULL;
+                }
+                *d = '/'; /* Restore */
+            }
+        }
+        outfile = fopen(filename, mode);
+    }
+
+    return outfile;
 }
 
 /* vim: set ts=4 sw=4 et : */

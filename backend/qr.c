@@ -1620,9 +1620,9 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         if (symbol->structapp.id[0]) {
             int id, id_len;
 
-            for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
+            for (id_len = 1; id_len < 4 && symbol->structapp.id[id_len]; id_len++);
 
-            if (id_len > 3) { /* 255 */
+            if (id_len > 3) { /* Max value 255 */
                 strcpy(symbol->errtxt, "752: Structured Append ID too long (3 digit maximum)");
                 return ZINT_ERROR_INVALID_OPTION;
             }

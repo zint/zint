@@ -202,7 +202,7 @@ static int validate_int_range(const char src[], int *p_val, int *p_val_end) {
 
     for (i = 0; i < length; i++) {
         if (src[i] < '0' || src[i] > '9') {
-            if (src[i] != ',') {
+            if (src[i] != '-') {
                 return 0;
             }
             val_end = 0;
@@ -236,9 +236,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     char *optarg;
     char *func = NULL;
     char func_buf[256 + 5];
+    int exclude_idx = 0;
     testCtx ctx;
 
-    ctx.index = ctx.index_end = ctx.exclude = ctx.exclude_end = -1;
+    ctx.index = ctx.index_end = -1;
+    for (i = 0; i < ZINT_TEST_CTX_EXC_MAX; i++) {
+        ctx.exclude[i] = ctx.exclude_end[i] = -1;
+    }
     ctx.generate = ctx.debug = 0;
 
     if (argc) {
@@ -303,9 +307,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                 fprintf(stderr, "testRun: -x exclude value missing, ignored\n");
             } else {
                 optarg = argv[++i];
-                if (!validate_int_range(optarg, &ctx.exclude, &ctx.exclude_end)) {
+                if (exclude_idx + 1 == ZINT_TEST_CTX_EXC_MAX) {
+                    fprintf(stderr, "testRun: too many -x exclude values, ignored\n");
+                } else if (!validate_int_range(optarg, &ctx.exclude[exclude_idx], &ctx.exclude_end[exclude_idx])) {
                     fprintf(stderr, "testRun: -x exclude value invalid, ignored\n");
-                    ctx.exclude = ctx.exclude_end = -1;
+                    ctx.exclude[exclude_idx] = ctx.exclude_end[exclude_idx] = -1;
+                } else {
+                    exclude_idx++;
                 }
             }
         } else {
@@ -329,6 +337,7 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
 
 /* Call in a dataset loop to determine if a datum should be tested according to -i & -x args */
 int testContinue(const testCtx *const p_ctx, const int i) {
+    int j;
     if (p_ctx->index != -1) {
         if (p_ctx->index_end != -1) {
             if (i < p_ctx->index || (p_ctx->index_end && i > p_ctx->index_end)) {
@@ -338,12 +347,12 @@ int testContinue(const testCtx *const p_ctx, const int i) {
             return 1;
         }
     }
-    if (p_ctx->exclude != -1) {
-        if (p_ctx->exclude_end != -1) {
-            if (i >= p_ctx->exclude && (p_ctx->exclude_end == 0 || i <= p_ctx->exclude_end)) {
+    for (j = 0; j < ZINT_TEST_CTX_EXC_MAX && p_ctx->exclude[j] != -1; j++) {
+        if (p_ctx->exclude_end[j] != -1) {
+            if (i >= p_ctx->exclude[j] && (p_ctx->exclude_end[j] == 0 || i <= p_ctx->exclude_end[j])) {
                 return 1;
             }
-        } else if (i == p_ctx->exclude) {
+        } else if (i == p_ctx->exclude[j]) {
             return 1;
         }
     }
@@ -1351,13 +1360,44 @@ int testUtilRmDir(const char *dirname) {
 #endif
 }
 
-/* Rename a file (Windows compatibility). */
+/* Rename a file (Windows compatibility) */
 int testUtilRename(const char *oldpath, const char *newpath) {
 #ifdef _MSVC
     int ret = remove(newpath);
     if (ret != 0) return ret;
 #endif
     return rename(oldpath, newpath);
+}
+
+/* Create read-only file */
+int testUtilCreateROFile(const char *filename) {
+    FILE *fp = fopen(filename, "w+");
+    if (fp == NULL) {
+        return 0;
+    }
+    if (fclose(fp) != 0) {
+        return 0;
+    }
+#ifdef _WIN32
+    if (SetFileAttributesA(filename, GetFileAttributesA(filename) | FILE_ATTRIBUTE_READONLY) == 0) {
+        return 0;
+    }
+#else
+    if (chmod(filename, S_IRUSR | S_IRGRP | S_IROTH) != 0) {
+        return 0;
+    }
+#endif
+    return 1;
+}
+
+/* Remove read-only file (Windows compatibility) */
+int testUtilRmROFile(const char *filename) {
+#ifdef _WIN32
+    if (SetFileAttributesA(filename, GetFileAttributesA(filename) & ~FILE_ATTRIBUTE_READONLY) == 0) {
+        return -1;
+    }
+#endif
+    return remove(filename);
 }
 
 /* Compare 2 PNG files */
@@ -1730,12 +1770,19 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
 #endif
 
 /* Whether ImageMagick's identify utility available on system */
-int testUtilHaveIdentify(void) {
-    return system("magick -version " DEV_NULL) == 0;
+const char *testUtilHaveIdentify(void) {
+    static const char *progs[2] = { "magick identify", "identify" };
+    if (system("magick -version " DEV_NULL_STDERR) == 0) {
+        return progs[0];
+    }
+    if (system("identify -version " DEV_NULL_STDERR) == 0) {
+        return progs[1];
+    }
+    return NULL;
 }
 
 /* Check raster files */
-int testUtilVerifyIdentify(const char *filename, int debug) {
+int testUtilVerifyIdentify(const char *const prog, const char *filename, int debug) {
     char cmd[512 + 128];
 
     if (strlen(filename) > 512) {
@@ -1745,12 +1792,12 @@ int testUtilVerifyIdentify(const char *filename, int debug) {
     if (debug & ZINT_DEBUG_TEST_PRINT) {
         /* Verbose very noisy though so for quick check just return default output */
         if (debug & ZINT_DEBUG_TEST_LESS_NOISY) {
-            sprintf(cmd, "magick identify %s", filename);
+            sprintf(cmd, "%s %s", prog, filename);
         } else {
-            sprintf(cmd, "magick identify -verbose %s", filename);
+            sprintf(cmd, "%s -verbose %s", prog, filename);
         }
     } else {
-        sprintf(cmd, "magick identify -verbose %s " DEV_NULL, filename);
+        sprintf(cmd, "%s -verbose %s " DEV_NULL, prog, filename);
     }
 
     return system(cmd);
@@ -1981,7 +2028,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 1, 1, 1, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
-        { "", BARCODE_CODE128B, 60, 0, 0, 0, 0, 0, },
+        { "", BARCODE_CODE128AB, 60, 0, 0, 0, 0, 0, },
         { "", -1, 61, 0, 0, 0, 0, 0, },
         { "", -1, 62, 0, 0, 0, 0, 0, },
         { "auspost", BARCODE_AUSPOST, 63, 0, 0, 0, 0, 0, },
@@ -3324,7 +3371,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "MaxiCode", BARCODE_MAXICODE, 57, },
         { "QRCode", BARCODE_QRCODE, 58, },
         { "", -1, 59, },
-        { "Code128", BARCODE_CODE128B, 60, },
+        { "Code128", BARCODE_CODE128AB, 60, },
         { "", -1, 61, },
         { "", -1, 62, },
         { "", BARCODE_AUSPOST, 63, },

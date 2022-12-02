@@ -66,6 +66,22 @@
        </property>
       </widget>
      </item>
+     <item>
+      <widget class="QPushButton" name="btnDAFTTrackerDefault">
+       <property name="maximumSize">
+        <size>
+         <width>80</width>
+         <height>16777215</height>
+        </size>
+       </property>
+       <property name="toolTip">
+        <string>Reset tracker ratio to default 25%</string>
+       </property>
+       <property name="text">
+        <string>De&amp;fault</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

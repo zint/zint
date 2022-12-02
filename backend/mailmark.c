@@ -154,13 +154,15 @@ INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int le
     ustrcpy(local_source, source);
 
     if (length < 22) {
+        if (length < 14) {
+            strcpy(symbol->errtxt, "588: Input too short (14 character minimum)");
+            return ZINT_ERROR_TOO_LONG;
+        }
         for (i = length; i <= 22; i++) {
             strcat(local_source, " ");
         }
         length = 22;
-    }
-
-    if ((length > 22) && (length < 26)) {
+    } else if ((length > 22) && (length < 26)) {
         for (i = length; i <= 26; i++) {
             strcat(local_source, " ");
         }

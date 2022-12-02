@@ -115,6 +115,10 @@ private slots:
         bc.setScale(scale);
         QCOMPARE(bc.scale(), scale);
 
+        float dpmm = 11.811f;
+        bc.setDPMM(dpmm);
+        QCOMPARE(bc.dpmm(), dpmm);
+
         bool dotty = true;
         bc.setDotty(dotty);
         QCOMPARE(bc.dotty(), dotty);
@@ -260,6 +264,12 @@ private slots:
 
         QCOMPARE(bc.encodedWidth(), 0); // Read-only
         QCOMPARE(bc.encodedRows(), 0); // Read-only
+
+        QCOMPARE(bc.vectorWidth(), 0.0f); // Read-only
+        QCOMPARE(bc.vectorHeight(), 0.0f); // Read-only
+
+        QCOMPARE(bc.takesGS1AIData(BARCODE_CODE128), false);
+        QCOMPARE(bc.takesGS1AIData(BARCODE_GS1_128), true);
     }
 
     void setGetECIValueTest_data()
@@ -370,10 +380,12 @@ private slots:
         QTest::addColumn<QString>("error_message");
         QTest::addColumn<int>("encodedWidth");
         QTest::addColumn<int>("encodedRows");
+        QTest::addColumn<float>("vectorWidth");
+        QTest::addColumn<float>("vectorHeight");
 
-        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21;
+        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21 << 42.0f << 42.0f;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 778: No input data (segment 0 empty)" << 0 << 0;
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 778: No input data (segment 0 empty)" << 0 << 0 << 0.0f << 0.0f;
         }
     }
 
@@ -398,6 +410,8 @@ private slots:
         QFETCH(QString, error_message);
         QFETCH(int, encodedWidth);
         QFETCH(int, encodedRows);
+        QFETCH(float, vectorWidth);
+        QFETCH(float, vectorHeight);
 
         bc.setSymbol(symbology);
         bc.setText(text);
@@ -416,6 +430,8 @@ private slots:
         QCOMPARE(bc.hasErrors(), getError != 0);
         QCOMPARE(bc.encodedWidth(), encodedWidth);
         QCOMPARE(bc.encodedRows(), encodedRows);
+        QCOMPARE(bc.vectorWidth(), vectorWidth);
+        QCOMPARE(bc.vectorHeight(), vectorHeight);
 
         if (getError) {
             QCOMPARE(spyEncoded.count(), 0);
@@ -476,6 +492,7 @@ private slots:
         QTest::addColumn<int>("option2");
         QTest::addColumn<int>("option3");
         QTest::addColumn<float>("scale");
+        QTest::addColumn<float>("dpmm");
         QTest::addColumn<bool>("dotty");
         QTest::addColumn<float>("dotSize");
         QTest::addColumn<float>("guardDescent");
@@ -503,341 +520,403 @@ private slots:
         QTest::addColumn<int>("warnLevel");
         QTest::addColumn<bool>("debug");
 
+        QTest::addColumn<double>("xdimdp_xdim");
+        QTest::addColumn<int>("xdimdp_xdim_units");
+        QTest::addColumn<int>("xdimdp_resolution");
+        QTest::addColumn<int>("xdimdp_resolution_units");
+        QTest::addColumn<int>("xdimdp_filetype");
+        QTest::addColumn<int>("xdimdp_filetype_maxicode");
+
         QTest::addColumn<QString>("expected_cmd");
         QTest::addColumn<QString>("expected_win");
         QTest::addColumn<QString>("expected_longOptOnly");
         QTest::addColumn<QString>("expected_barcodeNames");
         QTest::addColumn<QString>("expected_noexe");
+        QTest::addColumn<QString>("expected_xdimdp");
 
         QTest::newRow("BARCODE_AUSPOST") << true << 0.0f << ""
             << BARCODE_AUSPOST << DATA_MODE // symbology-inputMode
             << "12345678" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 63 --binary --compliantheight -d '12345678'"
             << "zint.exe -b 63 --binary --compliantheight -d \"12345678\""
             << "zint --barcode=63 --binary --compliantheight --data='12345678'"
             << "zint -b AUSPOST --binary --compliantheight -d '12345678'"
-            << "zint -b 63 --binary --compliantheight -d \"12345678\"";
+            << "zint -b 63 --binary --compliantheight -d \"12345678\""
+            << "";
 
         QTest::newRow("BARCODE_AZTEC") << false << 0.0f << ""
             << BARCODE_AZTEC << UNICODE_MODE // symbology-inputMode
             << "12345678Ж0%var%" << "" // text-primary
-            << 0.0f << 1 << 0 << 0 << 4.0f << true << 0.9f // height-dotSize
+            << 0.0f << 1 << 0 << 0 << 4.0f << 0.0f << true << 0.9f // height-dotSize
             << 5.0f << 2 << 1 << "as\"dfa'sdf" << QColor(Qt::blue) << QColor(Qt::white) // guardDescent-bgColor
             << true << 0 << 0 << 2 << 3 << 0 // cmyk-fontSetting
             << true << false << false << false << false << 0 // showText-rotateAngle
             << 7 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 92 --cmyk --eci=7 -d '12345678Ж0%var%' --dotsize=0.9 --dotty --fg=0000FF --scale=4"
                 " --secure=1 --structapp='1,2,as\"dfa'\\''sdf' --vwhitesp=3 -w 2"
             << "zint.exe -b 92 --cmyk --eci=7 -d \"12345678Ж0%var%\" --dotsize=0.9 --dotty --fg=0000FF --scale=4"
                 " --secure=1 --structapp=\"1,2,as\\\"dfa'sdf\" --vwhitesp=3 -w 2"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_C25INTER") << true << 0.0f << ""
             << BARCODE_C25INTER << UNICODE_MODE // symbology-inputMode
             << "12345" << "" // text-primary
-            << 0.0f << -1 << 2 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 0.0f << -1 << 2 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << SMALL_TEXT // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 3 --compliantheight -d '12345' --small --vers=2"
             << "zint.exe -b 3 --compliantheight -d \"12345\" --small --vers=2"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_CHANNEL") << false << 0.0f << ""
             << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
             << "453678" << "" // text-primary
-            << 19.7f << -1 << 7 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(255, 255, 255, 0) // guardDescent-bgColor
             << false << 1 << 2 << 0 << 0 << BOLD_TEXT // cmyk-fontSetting
             << true << false << true << false << false << 90 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
             << "zint.exe -b 140 --bind --bold --border=2 -d \"453678\" --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_GS1_128_CC") << false << 0.0f << ""
             << BARCODE_GS1_128_CC << UNICODE_MODE // symbology-inputMode
             << "[01]12345678901231[15]121212" << "[11]901222[99]ABCDE" // text-primary
-            << 71.142f << 3 << 0 << 0 << 3.5f << false << 0.8f // height-dotSize
+            << 71.142f << 3 << 0 << 0 << 3.5f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << false << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 131 --compliantheight -d '[11]901222[99]ABCDE' --height=71.142 --mode=3 --notext"
                 " --primary='[01]12345678901231[15]121212' --quietzones --scale=3.5"
             << "zint.exe -b 131 --compliantheight -d \"[11]901222[99]ABCDE\" --height=71.142 --mode=3 --notext"
                 " --primary=\"[01]12345678901231[15]121212\" --quietzones --scale=3.5"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_CODE16K") << false << 11.7f << ""
             << BARCODE_CODE16K << (UNICODE_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "12345678901234567890123456789012" << "" // text-primary
-            << 0.0f << 4 << 0 << 2 << 1.0f << false << 0.8f // height-dotSize
+            << 0.0f << 4 << 0 << 2 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 1 << 1 << 0 << 0 << SMALL_TEXT // cmyk-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 23 --compliantheight -d '12345678901234567890123456789012'"
                 " --height=11.7 --heightperrow --noquietzones --rows=4 --separator=2 --small"
             << "zint.exe -b 23 --compliantheight -d \"12345678901234567890123456789012\""
                 " --height=11.7 --heightperrow --noquietzones --rows=4 --separator=2 --small"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_CODE49") << true << 0.0f << ""
             << BARCODE_CODE49 << UNICODE_MODE // symbology-inputMode
             << "12345678901234567890" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 24 --compliantheight -d '12345678901234567890'"
             << "zint.exe -b 24 --compliantheight -d \"12345678901234567890\""
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_CODABLOCKF") << true << 0.0f << ""
             << BARCODE_CODABLOCKF << (DATA_MODE | ESCAPE_MODE) // symbology-inputMode
             << "T\\n\\xA0t\\\"" << "" // text-primary
-            << 0.0f << 2 << 5 << 3 << 3.0f << false << 0.8f // height-dotSize
+            << 0.0f << 2 << 5 << 3 << 3.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 2 << 4 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << true << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 74 --binary --border=4 --box --cols=5 --compliantheight -d 'T\\n\\xA0t\\\"' --esc --init"
                 " --rows=2 --scale=3 --separator=3"
             << "zint.exe -b 74 --binary --border=4 --box --cols=5 --compliantheight -d \"T\\n\\xA0t\\\\\"\" --esc --init"
                 " --rows=2 --scale=3 --separator=3"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DAFT") << false << 0.0f << ""
             << BARCODE_DAFT << UNICODE_MODE // symbology-inputMode
             << "daft" << "" // text-primary
-            << 9.2f << -1 << 251 << 0 << 1.0f << false << 0.7f // height-dotSize
+            << 9.2f << -1 << 251 << 0 << 1.0f << 0.0f << false << 0.7f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(0x30, 0x31, 0x32, 0x33) << QColor(0xBF, 0xBE, 0xBD, 0xBC) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 93 --bg=BFBEBDBC -d 'daft' --fg=30313233 --height=9.2 --vers=251"
             << "zint.exe -b 93 --bg=BFBEBDBC -d \"daft\" --fg=30313233 --height=9.2 --vers=251"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DATAMATRIX") << true << 0.0f << ""
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
-            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << false << 0.7f // height-dotSize
+            << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 -d '[20]12' --gs1 --gssep --square"
             << "zint.exe -b 71 -d \"[20]12\" --gs1 --gssep --square"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DATAMATRIX") << false << 0.0f << ""
             << BARCODE_DATAMATRIX << (DATA_MODE | ESCAPE_MODE | FAST_MODE) // symbology-inputMode
             << "ABCDEFGH\\x01I" << "" // text-primary
-            << 0.0f << -1 << 0 << 0 << 1.0f << false << 0.7f // height-dotSize
+            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.7f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 71 --binary -d 'ABCDEFGH\\x01I' --esc --fast"
             << "zint.exe -b 71 --binary -d \"ABCDEFGH\\x01I\" --esc --fast"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DBAR_EXPSTK_CC") << false << 40.8f << ""
             << BARCODE_DBAR_EXPSTK_CC << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "[91]ABCDEFGHIJKL" << "[11]901222[99]ABCDE" // text-primary
-            << 0.0f << -1 << 0 << 2 << 1.0f << true << 0.9f // height-dotSize
+            << 0.0f << -1 << 0 << 2 << 1.0f << 0.0f << true << 0.9f // height-dotSize
             << 3.0f << 2 << 1 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 139 --binary --compliantheight -d '[11]901222[99]ABCDE' --height=40.8 --heightperrow"
                 " --primary='[91]ABCDEFGHIJKL' --rows=2"
             << "zint.exe -b 139 --binary --compliantheight -d \"[11]901222[99]ABCDE\" --height=40.8 --heightperrow"
                 " --primary=\"[91]ABCDEFGHIJKL\" --rows=2"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DOTCODE") << false << 1.0f << ""
             << BARCODE_DOTCODE << GS1_MODE // symbology-inputMode
             << "[20]01" << "" // text-primary
-            << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << false << 0.7f // height-dotSize
+            << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f // height-dotSize
             << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 115 --cols=8 -d '[20]01' --dotsize=0.7 --gs1 --mask=0"
             << "zint.exe -b 115 --cols=8 -d \"[20]01\" --dotsize=0.7 --gs1 --mask=0"
-            << "" << "" << "";
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_DOTCODE") << false << 1.0f << ""
+            << BARCODE_DOTCODE << GS1_MODE // symbology-inputMode
+            << "[20]01" << "" // text-primary
+            << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f // height-dotSize
+            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 115 --cols=8 -d '[20]01' --dotsize=0.7 --gs1 --mask=0"
+            << "zint.exe -b 115 --cols=8 -d \"[20]01\" --dotsize=0.7 --gs1 --mask=0"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_DPD") << true << 0.0f << ""
+            << BARCODE_DPD << UNICODE_MODE // symbology-inputMode
+            << "1234567890123456789012345678" << "" // text-primary
+            << 0.0f << -1 << 0 << 0 << 4.5f << 24.0f << true << 0.8f // height-dotSize
+            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.375 << 0 << 600 << 1 << 0 << 0 // xdimdp
+            << "zint -b 96 --compliantheight -d '1234567890123456789012345678' --scalexdimdp=0.375,24"
+            << "zint.exe -b 96 --compliantheight -d \"1234567890123456789012345678\" --scalexdimdp=0.375,24"
+            << "" << "" << ""
+            << "zint -b 96 --compliantheight -d '1234567890123456789012345678' --scalexdimdp=0.375mm,600dpi";
 
         QTest::newRow("BARCODE_EANX") << true << 0.0f << ""
             << BARCODE_EANX << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
-            << 0.0f << -1 << 8 << 0 << 1.0f << true << 0.8f // height-dotSize
+            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f // height-dotSize
             << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 13 --addongap=8 --compliantheight -d '123456789012+12' --guarddescent=0"
             << "zint.exe -b 13 --addongap=8 --compliantheight -d \"123456789012+12\" --guarddescent=0"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_GRIDMATRIX") << false << 0.0f << ""
             << BARCODE_GRIDMATRIX << UNICODE_MODE // symbology-inputMode
             << "Your Data Here!" << "" // text-primary
-            << 0.0f << 1 << 5 << 0 << 0.5f << false << 0.8f // height-dotSize
+            << 0.0f << 1 << 5 << 0 << 0.5f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << true << false << true << 270 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 142 -d 'Your Data Here!' --quietzones --rotate=270 --scale=0.5 --secure=1 --vers=5"
             << "zint.exe -b 142 -d \"Your Data Here!\" --quietzones --rotate=270 --scale=0.5 --secure=1 --vers=5"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_HANXIN") << false << 0.0f << ""
             << BARCODE_HANXIN << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "éβÿ啊\\e\"'" << "" // text-primary
-            << 30.0f << 2 << 5 << ((0 + 1) << 8) << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << 2 << 5 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 29 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 116 --eci=29 -d 'éβÿ啊\\e\"'\\''' --esc --mask=0 --secure=2 --vers=5"
             << "zint.exe -b 116 --eci=29 -d \"éβÿ啊\\e\\\"'\" --esc --mask=0 --secure=2 --vers=5"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_HIBC_DM") << false << 10.0f << ""
             << BARCODE_HIBC_DM << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
-            << 0.0f << -1 << 8 << DM_DMRE << 1.0f << false << 0.7f // height-dotSize
+            << 0.0f << -1 << 8 << DM_DMRE << 1.0f << 0.0f << false << 0.7f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 102 -d '1234' --dmre --vers=8"
             << "zint.exe -b 102 -d \"1234\" --dmre --vers=8"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_HIBC_PDF") << false << 0.0f << ""
             << BARCODE_HIBC_PDF << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "TEXT" << "" // text-primary
-            << 3.5f << 3 << 4 << 10 << 10.0f << false << 0.8f // height-dotSize
+            << 3.5f << 3 << 4 << 10 << 10.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 2 << 1 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 106 --binary --cols=4 -d 'TEXT' --height=3.5 --heightperrow --quietzones"
                 " --rows=10 --scale=10 --secure=3 --structapp=1,2"
             << "zint.exe -b 106 --binary --cols=4 -d \"TEXT\" --height=3.5 --heightperrow --quietzones"
                 " --rows=10 --scale=10 --secure=3 --structapp=1,2"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_ITF14") << true << 0.0f << ""
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 89 --compliantheight -d '9212320967145'"
             << "zint.exe -b 89 --compliantheight -d \"9212320967145\""
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_ITF14") << true << 0.0f << ""
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
-            << 30.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 1 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 89 --border=1 --compliantheight -d '9212320967145'"
             << "zint.exe -b 89 --border=1 --compliantheight -d \"9212320967145\""
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_MAXICODE") << true << 0.0f << ""
             << BARCODE_MAXICODE << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "152382802840001"
             << "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E" // text-primary
-            << 0.0f << -1 << (96 + 1) << 0 << 2.5f << false << 0.8f // height-dotSize
+            << 0.0f << -1 << (96 + 1) << 0 << 2.5f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 57 -d '1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E'"
                 " --esc --primary='152382802840001' --quietzones --scale=2.5 --scmvv=96"
             << "zint.exe -b 57 -d \"1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E\""
                 " --esc --primary=\"152382802840001\" --quietzones --scale=2.5 --scmvv=96"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_MICROQR") << false << 0.0f << ""
             << BARCODE_MICROQR << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
-            << 30.0f << 2 << 3 << (ZINT_FULL_MULTIBYTE | (3 + 1) << 8) << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << 2 << 3 << (ZINT_FULL_MULTIBYTE | (3 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 97 -d '1234' --fullmultibyte --mask=3 --secure=2 --vers=3"
             << "zint.exe -b 97 -d \"1234\" --fullmultibyte --mask=3 --secure=2 --vers=3"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_QRCODE") << true << 0.0f << ""
             << BARCODE_QRCODE << GS1_MODE // symbology-inputMode
             << "(01)12" << "" // text-primary
-            << 0.0f << 1 << 5 << (ZINT_FULL_MULTIBYTE | (0 + 1) << 8) << 1.0f << false << 0.8f // height-dotSize
+            << 0.0f << 1 << 5 << (ZINT_FULL_MULTIBYTE | (0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << true << true << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 58 -d '(01)12' --fullmultibyte --gs1 --gs1parens --gs1nocheck --mask=0 --quietzones"
                 " --secure=1 --vers=5"
             << "zint.exe -b 58 -d \"(01)12\" --fullmultibyte --gs1 --gs1parens --gs1nocheck --mask=0 --quietzones"
                 " --secure=1 --vers=5"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_RMQR") << true << 0.0f << ""
             << BARCODE_RMQR << UNICODE_MODE // symbology-inputMode
             << "テ" << "" // text-primary
-            << 30.0f << -1 << 8 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 30.0f << -1 << 8 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 180 // showText-rotateAngle
             << 20 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 145 --eci=20 -d 'テ' --rotate=180 --vers=8"
             << "zint.exe -b 145 --eci=20 -d \"テ\" --rotate=180 --vers=8"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_ULTRA") << false << 0.0f << ""
             << BARCODE_ULTRA << (GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE) // symbology-inputMode
             << "(01)1" << "" // text-primary
-            << 0.0f << 6 << 2 << 0 << 1.0f << true << 0.8f // height-dotSize
+            << 0.0f << 6 << 2 << 0 << 1.0f << 0.0f << true << 0.8f // height-dotSize
             << 5.0f << 2 << 1 << "4" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 144 -d '(01)1' --gs1 --gs1parens --gs1nocheck --secure=6 --structapp='1,2,4' --vers=2"
             << "zint.exe -b 144 -d \"(01)1\" --gs1 --gs1parens --gs1nocheck --secure=6 --structapp=\"1,2,4\" --vers=2"
-            << "" << "" << "";
+            << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_UPCE_CC") << true << 0.0f << "out.svg"
             << BARCODE_UPCE_CC << UNICODE_MODE // symbology-inputMode
             << "12345670+1234" << "[11]901222[99]ABCDE" // text-primary
-            << 0.0f << -1 << 0 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 6.5f << 0 << 0 << "" << QColor(0xEF, 0x29, 0x29) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // cmyk-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_FAIL_ALL << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 136 --bold --compliantheight -d '[11]901222[99]ABCDE' --fg=EF2929 --guarddescent=6.5"
                 " --noquietzones -o 'out.svg' --primary='12345670+1234' --small --werror"
             << "zint.exe -b 136 --bold --compliantheight -d \"[11]901222[99]ABCDE\" --fg=EF2929 --guarddescent=6.5"
@@ -847,19 +926,21 @@ private slots:
             << "zint -b UPCE_CC --bold --compliantheight -d '[11]901222[99]ABCDE' --fg=EF2929 --guarddescent=6.5"
                 " --noquietzones -o 'out.svg' --primary='12345670+1234' --small --werror"
             << "zint -b 136 --bold --compliantheight -d \"[11]901222[99]ABCDE\" --fg=EF2929 --guarddescent=6.5"
-                " --noquietzones -o \"out.svg\" --primary=\"12345670+1234\" --small --werror";
+                " --noquietzones -o \"out.svg\" --primary=\"12345670+1234\" --small --werror"
+            << "";
 
         QTest::newRow("BARCODE_VIN") << false << 2.0f << ""
             << BARCODE_VIN << UNICODE_MODE // symbology-inputMode
             << "12345678701234567" << "" // text-primary
-            << 20.0f << -1 << 1 << 0 << 1.0f << false << 0.8f // height-dotSize
+            << 20.0f << -1 << 1 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
             << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
             << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 73 -d '12345678701234567' --height=20 --vers=1"
             << "zint.exe -b 73 -d \"12345678701234567\" --height=20 --vers=1"
-            << "" << "" << "";
+            << "" << "" << "" << "";
     }
 
     void getAsCLITest()
@@ -881,6 +962,7 @@ private slots:
         QFETCH(int, option2);
         QFETCH(int, option3);
         QFETCH(float, scale);
+        QFETCH(float, dpmm);
         QFETCH(bool, dotty);
         QFETCH(float, dotSize);
         QFETCH(float, guardDescent);
@@ -908,11 +990,19 @@ private slots:
         QFETCH(int, warnLevel);
         QFETCH(bool, debug);
 
+        QFETCH(double, xdimdp_xdim);
+        QFETCH(int, xdimdp_xdim_units);
+        QFETCH(int, xdimdp_resolution);
+        QFETCH(int, xdimdp_resolution_units);
+        QFETCH(int, xdimdp_filetype);
+        QFETCH(int, xdimdp_filetype_maxicode);
+
         QFETCH(QString, expected_cmd);
         QFETCH(QString, expected_win);
         QFETCH(QString, expected_longOptOnly);
         QFETCH(QString, expected_barcodeNames);
         QFETCH(QString, expected_noexe);
+        QFETCH(QString, expected_xdimdp);
 
         bc.setSymbol(symbology);
         bc.setInputMode(inputMode);
@@ -927,6 +1017,7 @@ private slots:
         bc.setOption2(option2);
         bc.setOption3(option3);
         bc.setScale(scale);
+        bc.setDPMM(dpmm);
         bc.setDotty(dotty);
         bc.setDotSize(dotSize);
         bc.setGuardDescent(guardDescent);
@@ -977,6 +1068,16 @@ private slots:
                         autoHeight, heightPerRow, outfile);
             QCOMPARE(cmd, expected_noexe);
         }
+
+        if (xdimdp_xdim) {
+            struct Zint::QZintXdimDpVars vars = {
+                xdimdp_xdim, xdimdp_xdim_units, xdimdp_resolution, xdimdp_resolution_units, xdimdp_filetype,
+                xdimdp_filetype_maxicode, 1 /*set*/
+            };
+            cmd = bc.getAsCLI(false /*win*/, false /*longOptOnly*/, false /*barcodeNames*/, false /*noEXE*/,
+                        autoHeight, heightPerRow, outfile, &vars);
+            QCOMPARE(cmd, expected_xdimdp);
+        }
     }
 
     void getAsCLISegsTest()
@@ -1017,7 +1118,7 @@ private slots:
         QCOMPARE(cmd, expected_win);
     }
 
-    void qZintAndLibZintEqual_data()
+    void qZintAndLibZintEqualTest_data()
     {
         QTest::addColumn<int>("symbology");
         QTest::addColumn<int>("rotateAngles");
@@ -1030,7 +1131,7 @@ private slots:
         QTest::newRow("symbology=BARCODE_QRCODE      rotateAngles=270 text=Hello%20World") << BARCODE_QRCODE     << 270 << "Hello%20World";
     }
 
-    void qZintAndLibZintEqual()
+    void qZintAndLibZintEqualTest()
     {
         QFETCH(int, symbology);
         QFETCH(int, rotateAngles);
@@ -1063,6 +1164,25 @@ private slots:
 
         QFile::remove(fileNameForLibZint);
         QFile::remove(fileNameForQZint);
+    }
+
+    void barcodeNameTest_data()
+    {
+        QTest::addColumn<int>("symbology");
+        QTest::addColumn<QString>("expected_name");
+
+        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "BARCODE_MAXICODE";
+        QTest::newRow("BARCODE_CODE128AB") << BARCODE_CODE128AB << "BARCODE_CODE128AB";
+        QTest::newRow("BARCODE_CODE128B") << BARCODE_CODE128B << "BARCODE_CODE128AB";
+    }
+
+    void barcodeNameTest()
+    {
+        QFETCH(int, symbology);
+        QFETCH(QString, expected_name);
+
+        QString name = Zint::QZint::barcodeName(symbology);
+        QCOMPARE(name, expected_name);
     }
 };
 

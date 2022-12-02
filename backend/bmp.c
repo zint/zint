@@ -31,12 +31,14 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
+#include <math.h>
 #include <stdio.h>
 #ifdef _MSC_VER
 #include <io.h>
 #include <fcntl.h>
 #endif
 #include "common.h"
+#include "output.h"
 #include "bmp.h"        /* Bitmap header structure */
 
 INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
@@ -44,6 +46,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int row_size;
     int bits_per_pixel;
     int colour_count;
+    int resolution;
     unsigned int data_offset, data_size, file_size;
     unsigned char *bitmap_file_start, *bmp_posn;
     unsigned char *bitmap;
@@ -157,8 +160,9 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     info_header.bits_per_pixel = bits_per_pixel;
     info_header.compression_method = 0; /* BI_RGB */
     info_header.image_size = 0;
-    info_header.horiz_res = 0;
-    info_header.vert_res = 0;
+    resolution = symbol->dpmm ? (int) roundf(stripf(symbol->dpmm * 1000.0f)) : 0; /* pixels per metre */
+    info_header.horiz_res = resolution;
+    info_header.vert_res = resolution;
     info_header.colours = colour_count;
     info_header.important_colours = colour_count;
 
@@ -194,7 +198,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 #endif
         bmp_file = stdout;
     } else {
-        if (!(bmp_file = fopen(symbol->outfile, "wb"))) {
+        if (!(bmp_file = out_fopen(symbol->outfile, "wb"))) {
             free(bitmap_file_start);
             sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_ACCESS;
