@@ -209,7 +209,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--mirror`
 
-:   Use the batch data to determine the filename in batch mode (`--batch`).
+:   Use the batch data to determine the filename in batch mode (`--batch`). The `-o` | `--output` option can be used
+    to specify an output directory (any filename will be ignored).
 
 `--mode=INTEGER`
 

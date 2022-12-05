@@ -480,6 +480,9 @@ static void test_input(const testCtx *const p_ctx) {
 
 #define TEST_INPUT_LONG "test_67890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
 
+#define TEST_MIRRORED_DIR_LONG "testdir_9012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789/"
+#define TEST_MIRRORED_DIR_TOO_LONG "testdir_901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901/"
+
 #ifndef _WIN32
 #define TEST_INPUT_AMPERSAND_EXPECTED "***1.gif\000***2.gif"
 #else
@@ -506,24 +509,27 @@ static void test_input(const testCtx *const p_ctx) {
         /*  3*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n789\n", "#####.gif", 3, "    1.gif\000    2.gif\000    3.gif" },
         /*  4*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", "test_batch~.gif", 2, "test_batch1.gif\000test_batch2.gif" },
         /*  5*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\n", NULL, 3, "123.gif\000456.gif\0007890123456789.gif" },
-        /*  6*/ { BARCODE_CODE128, 1, -1, 1, "svg", "123\n456\n7890123456789\n", NULL, 3, "123.svg\000456.svg\0007890123456789.svg" },
-        /*  7*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_xA0B.gif" },
-        /*  8*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
-        /*  9*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_u00A0B.gif" },
-        /* 10*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
-        /* 11*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1!2\"3*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "1_2_3_.gif\000__45_6_.gif\000_7890__12345_6789_.gif\000A_U0000A0B.gif" },
-        /* 12*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "!\"*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "___.gif\000__45_6_.gif\000_7890_12345_6789_.gif\000A_B.gif" },
-        /* 13*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1\\d123*9\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1_d123_9.gif\000_o1234_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
-        /* 14*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "1\\d123*2\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1__2.gif\000_4_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
-        /* 15*/ { BARCODE_CODE128, 1, -1, 0, "gif", "\n", "test_batch.gif", 0, NULL },
-        /* 16*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", TEST_INPUT_LONG "~.gif", 2, TEST_INPUT_LONG "1.gif\000" TEST_INPUT_LONG "2.gif" },
-        /* 17*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
-        /* 18*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
-        /* 19*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.gif" },
-        /* 20*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpg", 1, "test_batch.gif" },
-        /* 21*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.emf" },
-        /* 22*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpg", 1, "test_batch.emf" },
-        /* 23*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
+        /*  6*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\n", "test_input_dir/", 3, "test_input_dir/123.gif\000test_input_dir/456.gif\000test_input_dir/7890123456789.gif" },
+        /*  7*/ { BARCODE_CODE128, 1, -1, 1, "svg", "123\n456\n7890123456789\n", NULL, 3, "123.svg\000456.svg\0007890123456789.svg" },
+        /*  8*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_xA0B.gif" },
+        /*  9*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\xA0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
+        /* 10*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_u00A0B.gif" },
+        /* 11*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "123\n456\n7890123456789\nA\\u00A0B\n", NULL, 4, "123.gif\000456.gif\0007890123456789.gif\000A_B.gif" },
+        /* 12*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1!2\"3*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "1_2_3_.gif\000__45_6_.gif\000_7890__12345_6789_.gif\000A_U0000A0B.gif" },
+        /* 13*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "!\"*\n/:45<6>\n?7890\\\\12345|6789\177\nA\\U0000A0B\n", NULL, 4, "___.gif\000__45_6_.gif\000_7890_12345_6789_.gif\000A_B.gif" },
+        /* 14*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1\\d123*9\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1_d123_9.gif\000_o1234_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
+        /* 15*/ { BARCODE_CODE128, 1, ESCAPE_MODE, 1, "gif", "1\\d123*2\n\\o1234:5\n#$%&'()+,-.;=@[]^`{}\n", NULL, 3, "1__2.gif\000_4_5.gif\000#$%&'()+,-.;=@[]^`{}.gif" },
+        /* 16*/ { BARCODE_CODE128, 1, -1, 0, "gif", "\n", "test_batch.gif", 0, NULL },
+        /* 17*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n456\n", TEST_INPUT_LONG "~.gif", 2, TEST_INPUT_LONG "1.gif\000" TEST_INPUT_LONG "2.gif" },
+        /* 18*/ { BARCODE_CODE128, 0, -1, 0, "svg", "123", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 19*/ { BARCODE_CODE128, 1, -1, 0, "svg", "123\n", TEST_INPUT_LONG "1.gif", 1, TEST_INPUT_LONG "1.svg" },
+        /* 20*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.gif" },
+        /* 21*/ { BARCODE_CODE128, 1, -1, 0, "gif", "123\n", "test_batch.jpg", 1, "test_batch.gif" },
+        /* 22*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpeg", 1, "test_batch.jpeg.emf" },
+        /* 23*/ { BARCODE_CODE128, 1, -1, 0, "emf", "123\n", "test_batch.jpg", 1, "test_batch.emf" },
+        /* 24*/ { BARCODE_CODE128, 1, -1, 0, "eps", "123\n", "test_batch.ps", 1, "test_batch.eps" },
+        /* 25*/ { BARCODE_CODE128, 1, -1, 1, "gif", "1234567890123456789012345678901\n1234567890123456789012345678902\n", TEST_MIRRORED_DIR_LONG, 2, TEST_MIRRORED_DIR_LONG "1234567890123456789012345678901.gif\000" TEST_MIRRORED_DIR_LONG "1234567890123456789012345678902.gif" },
+        /* 26*/ { BARCODE_CODE128, 1, -1, 1, "gif", "123\n456\n", TEST_MIRRORED_DIR_TOO_LONG, 2, "123.gif\000456.gif" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -560,7 +566,11 @@ static void test_input(const testCtx *const p_ctx) {
         arg_input(cmd, input_filename, data[i].input);
         arg_data(cmd, "-o ", data[i].outfile);
 
-        if (!data[i].expected) printf("++++ Following Error 778 expected, ignore\n");
+        if (!data[i].expected) {
+            printf("++++ Following Error 778 expected, ignore\n");
+        } else if (data[i].batch && data[i].mirror && data[i].outfile && data[i].outfile[0] && strcmp(data[i].outfile, TEST_MIRRORED_DIR_LONG) == 0) {
+            printf("++++ Following Warning 188 expected, ignore\n");
+        }
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
 
         outfile = data[i].expected;
@@ -571,6 +581,9 @@ static void test_input(const testCtx *const p_ctx) {
         }
 
         assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
+        if (data[i].batch && data[i].mirror && data[i].outfile && data[i].outfile[0] && strcmp(data[i].outfile, TEST_MIRRORED_DIR_TOO_LONG) != 0) {
+            assert_zero(testUtilRmDir(data[i].outfile), "i:%d testUtilRmDir(%s) != 0 (%d: %s)\n", i, data[i].outfile, errno, strerror(errno));
+        }
     }
 
     testFinish();

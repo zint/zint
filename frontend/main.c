@@ -838,15 +838,40 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     char number[12], reverse_number[12];
     int inpos, local_line_count;
     char format_string[256], reversed_string[256], format_char;
-    int format_len, i, o;
+    int format_len, i, o, mirror_start_o = 0;
     char adjusted[2] = {0};
 
-    if (symbol->outfile[0] == '\0' || !output_given) {
-        strcpy(format_string, "~~~~~.");
-        strncat(format_string, filetype, 3);
+    if (mirror_mode) {
+        /* Use directory if any from outfile */
+        if (output_given && symbol->outfile[0]) {
+#ifndef _WIN32
+            const char *dir = strrchr(symbol->outfile, '/');
+#else
+            const char *dir = strrchr(symbol->outfile, '\\');
+            if (!dir) {
+                dir = strrchr(symbol->outfile, '/');
+            }
+#endif
+            if (dir) {
+                mirror_start_o = (int) (dir + 1 - symbol->outfile);
+                if (mirror_start_o > 221) { /* Insist on leaving at least ~30 chars for filename */
+                    fprintf(stderr, "Warning 188: directory for mirrored batch output too long (> 220), ignored\n");
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
+                    mirror_start_o = 0;
+                } else {
+                    memcpy(output_file, symbol->outfile, mirror_start_o);
+                }
+            }
+        }
     } else {
-        strcpy(format_string, symbol->outfile);
-        set_extension(format_string, filetype);
+        if (symbol->outfile[0] == '\0' || !output_given) {
+            strcpy(format_string, "~~~~~.");
+            strncat(format_string, filetype, 3);
+        } else {
+            strcpy(format_string, symbol->outfile);
+            set_extension(format_string, filetype);
+        }
     }
 
     if (!strcmp(filename, "-")) {
@@ -938,7 +963,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
             } else {
                 /* Name the output file from the data being processed */
                 i = 0;
-                o = 0;
+                o = mirror_start_o;
                 do {
                     if (buffer[i] < 0x20) {
                         output_file[o] = '_';

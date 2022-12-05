@@ -1372,7 +1372,8 @@ so the filename may vary from the data if the data includes non-printable
 characters, for example, and may be shortened if the data input is long.
 
 To set the output file format use the `--filetype` option as detailed above in
-[4.12 Direct Output].
+[4.12 Direct Output]. To output to a specific directory use the `-o` option
+giving the name of the directory (any filename will be ignored).
 
 ## 4.14 Working with Dots
 
