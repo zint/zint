@@ -164,7 +164,7 @@ static void usage(int no_png) {
            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
     fputs( "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
            "  --esc                 Process escape characters in input data\n"
-           "  --fast                Use faster encodation (Data Matrix)\n"
+           "  --fast                Use faster encodation or other shortcuts if available\n"
            "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"

@@ -33,7 +33,9 @@
 #include "test_ksx1001_tab.h"
 #include "../ksx1001.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-/* #define TEST_JUST_SAY_GNO */
+#if 0
+#define TEST_JUST_SAY_GNO
+#endif
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/ksx1001_gnu.h"
 #endif
@@ -121,6 +123,7 @@ static void test_u_ksx1001_int(const testCtx *const p_ctx) {
         if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
         val = val2 = 0;
         ret = u_ksx1001_int(i, &val);
         ret2 = u_ksx1001_int2(i, &val2);

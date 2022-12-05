@@ -1281,7 +1281,7 @@ static void qr_add_format_info(unsigned char *grid, const int size, const int ec
 }
 
 static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_level, const int user_mask,
-            const int debug_print) {
+            const int fast_encode, const int debug_print) {
     int x, y;
     int r, k;
     int bit;
@@ -1302,23 +1302,29 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
                 if (((y + x) & 1) == 0) {
                     mask[r + x] |= 0x01;
                 }
-                if ((y & 1) == 0) {
-                    mask[r + x] |= 0x02;
+                if (!fast_encode) {
+                    if ((y & 1) == 0) {
+                        mask[r + x] |= 0x02;
+                    }
                 }
                 if ((x % 3) == 0) {
                     mask[r + x] |= 0x04;
                 }
-                if (((y + x) % 3) == 0) {
-                    mask[r + x] |= 0x08;
+                if (!fast_encode) {
+                    if (((y + x) % 3) == 0) {
+                        mask[r + x] |= 0x08;
+                    }
                 }
                 if ((((y / 2) + (x / 3)) & 1) == 0) {
                     mask[r + x] |= 0x10;
                 }
-                if ((y * x) % 6 == 0) { /* Equivalent to (y * x) % 2 + (y * x) % 3 == 0 */
-                    mask[r + x] |= 0x20;
-                }
-                if (((((y * x) & 1) + ((y * x) % 3)) & 1) == 0) {
-                    mask[r + x] |= 0x40;
+                if (!fast_encode) {
+                    if ((y * x) % 6 == 0) { /* Equivalent to (y * x) % 2 + (y * x) % 3 == 0 */
+                        mask[r + x] |= 0x20;
+                    }
+                    if (((((y * x) & 1) + ((y * x) % 3)) & 1) == 0) {
+                        mask[r + x] |= 0x40;
+                    }
                 }
                 if (((((y + x) & 1) + ((y * x) % 3)) & 1) == 0) {
                     mask[r + x] |= 0x80;
@@ -1335,7 +1341,9 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
          * desired pattern.*/
         best_pattern = 0;
         for (pattern = 0; pattern < 8; pattern++) {
-
+            if (fast_encode && pattern != 0 && pattern != 2 && pattern != 4 && pattern != 7) {
+                continue;
+            }
             bit = 1 << pattern;
             for (k = 0; k < size_squared; k++) {
                 if (mask[k] & bit) {
@@ -1355,9 +1363,13 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     }
 
     if (debug_print) {
-        printf("Mask: %d (%s)", best_pattern, user_mask ? "specified" : "automatic");
+        printf("Mask: %d (%s)", best_pattern, user_mask ? "specified" : fast_encode ? "fast automatic": "automatic");
         if (!user_mask) {
-            for (pattern = 0; pattern < 8; pattern++) printf(" %d:%d", pattern, penalty[pattern]);
+            if (fast_encode) {
+                printf(" 0:%d  2:%d  4:%d  7:%d", penalty[0], penalty[2], penalty[4], penalty[7]);
+            } else {
+                for (pattern = 0; pattern < 8; pattern++) printf(" %d:%d", pattern, penalty[pattern]);
+            }
         }
         printf("\n");
     }
@@ -1365,7 +1377,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
 #ifdef ZINTLOG
     char str[15];
     sprintf(str, "%d", best_val);
-    write_log("choosed pattern:");
+    write_log("chose pattern:");
     write_log(str);
 #endif
 
@@ -1586,6 +1598,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
     int size_squared;
     const struct zint_structapp *p_structapp = NULL;
     const int gs1 = ((symbol->input_mode & 0x07) == GS1_MODE);
+    const int fast_encode = symbol->input_mode & FAST_MODE;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1835,7 +1848,7 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         qr_add_version_info(grid, size, version);
     }
 
-    bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, debug_print);
+    bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, fast_encode, debug_print);
 
     qr_add_format_info(grid, size, ecc_level, bitmask);
 
@@ -2767,6 +2780,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     int size_squared;
     struct zint_seg segs[1];
     const int seg_count = 1;
+    const int fast_encode = symbol->input_mode & FAST_MODE;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     unsigned char *datastream;
     unsigned char *fullstream;
@@ -2811,8 +2825,8 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     segs[0].length = length;
     segs[0].eci = 4;
 
-    est_binlen = qr_calc_binlen_segs(15, mode, ddata, segs, seg_count, NULL /*p_structapp*/, 1 /*mode_preset*/, 0,
-                    debug_print);
+    est_binlen = qr_calc_binlen_segs(15, mode, ddata, segs, seg_count, NULL /*p_structapp*/, 1 /*mode_preset*/,
+                    0 /*gs1*/, debug_print);
 
     ecc_level = QR_LEVEL_M;
 
@@ -2847,7 +2861,7 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     qr_add_version_info(grid, size, version);
 
-    bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, debug_print);
+    bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, fast_encode, debug_print);
 
     qr_add_format_info(grid, size, ecc_level, bitmask);
 

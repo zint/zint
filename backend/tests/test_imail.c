@@ -41,7 +41,9 @@
 
 #define TEST_CSV_PERF_ITERATIONS    100
 
-/* #define TEST_IMAIL_CSV_MAX 300 */
+#if 0
+#define TEST_IMAIL_CSV_MAX 300
+#endif
 
 static void test_csv(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;

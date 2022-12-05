@@ -1858,6 +1858,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("radQRGS1")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radQRHIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkQRFullMultibyte")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("chkQRFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbQRStructAppCount")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbQRStructAppCount")), SIGNAL(currentIndexChanged( int )), SLOT(structapp_ui_set()));
         connect(get_widget(QSL("cmbQRStructAppIndex")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
@@ -1871,6 +1872,7 @@ void MainWindow::change_options()
             load_sub_settings(settings, symbology);
             tabMain->insertTab(1, m_optionWidget, tr("UP&NQR"));
             connect(get_widget(QSL("cmbUPNQRMask")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+            connect(get_widget(QSL("chkUPNQRFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
     } else if (symbology == BARCODE_RMQR) {
@@ -2843,6 +2845,9 @@ void MainWindow::update_preview()
             if (get_chk_val(QSL("chkQRFullMultibyte"))) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
             }
+            if (get_chk_val(QSL("chkQRFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
+            }
             if ((item_val = get_cmb_index(QSL("cmbQRStructAppCount"))) != 0) {
                 QString id;
                 int id_val = get_spn_val(QSL("spnQRStructAppID"));
@@ -2871,6 +2876,9 @@ void MainWindow::update_preview()
             cmbECI->setCurrentIndex(2 /*ECI 4*/);
             if ((item_val = get_cmb_index(QSL("cmbUPNQRMask"))) != 0) {
                 m_bc.bc.setOption3((item_val << 8) | m_bc.bc.option3());
+            }
+            if (get_chk_val(QSL("chkUPNQRFast"))) {
+                m_bc.bc.setInputMode(FAST_MODE | m_bc.bc.inputMode());
             }
             break;
 
@@ -4010,6 +4018,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/qrcode/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radDM200Stand") << QSL("radQRGS1") << QSL("radQRHIBC")));
             settings.setValue(QSL("studio/bc/qrcode/chk_full_multibyte"), get_chk_val(QSL("chkQRFullMultibyte")));
+            settings.setValue(QSL("studio/bc/qrcode/chk_fast_mode"), get_chk_val(QSL("chkQRFast")));
             settings.setValue(QSL("studio/bc/qrcode/structapp_count"), get_cmb_index(QSL("cmbQRStructAppCount")));
             settings.setValue(QSL("studio/bc/qrcode/structapp_index"), get_cmb_index(QSL("cmbQRStructAppIndex")));
             settings.setValue(QSL("studio/bc/qrcode/structapp_id"), get_spn_val(QSL("spnQRStructAppID")));
@@ -4017,6 +4026,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_UPNQR:
             settings.setValue(QSL("studio/bc/upnqr/mask"), get_cmb_index(QSL("cmbUPNQRMask")));
+            settings.setValue(QSL("studio/bc/upnqr/chk_fast_mode"), get_chk_val(QSL("chkUPNQRFast")));
             break;
 
         case BARCODE_RMQR:
@@ -4411,6 +4421,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_rad_from_setting(settings, QSL("studio/bc/qrcode/encoding_mode"),
                 QStringList() << QSL("radDM200Stand") << QSL("radQRGS1") << QSL("radQRHIBC"));
             set_chk_from_setting(settings, QSL("studio/bc/qrcode/chk_full_multibyte"), QSL("chkQRFullMultibyte"));
+            set_chk_from_setting(settings, QSL("studio/bc/qrcode/chk_fast_mode"), QSL("chkQRFast"));
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/structapp_count"), QSL("cmbQRStructAppCount"));
             set_cmb_from_setting(settings, QSL("studio/bc/qrcode/structapp_index"), QSL("cmbQRStructAppIndex"));
             set_spn_from_setting(settings, QSL("studio/bc/qrcode/structapp_id"), QSL("spnQRStructAppID"), 0);
@@ -4418,6 +4429,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_UPNQR:
             set_cmb_from_setting(settings, QSL("studio/bc/upnqr/mask"), QSL("cmbUPNQRMask"));
+            set_chk_from_setting(settings, QSL("studio/bc/upnqr/chk_fast_mode"), QSL("chkUPNQRFast"));
             break;
 
         case BARCODE_RMQR:

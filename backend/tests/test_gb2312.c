@@ -33,7 +33,9 @@
 #include "test_gb2312_tab.h"
 #include "../eci.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-/* #define TEST_JUST_SAY_GNO */
+#if 0
+#define TEST_JUST_SAY_GNO
+#endif
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/gb2312_gnu.c"
 #endif
@@ -102,6 +104,7 @@ static void test_u_gb2312_int(const testCtx *const p_ctx) {
         if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
         val = val2 = 0;
         ret = u_gb2312_int_test(i, &val);
         ret2 = u_gb2312_int2(i, &val2);

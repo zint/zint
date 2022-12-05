@@ -2101,9 +2101,9 @@ property. Valid values are shown in the table below.
   HEIGHTPERROW_MODE   Interpret the height variable as per-row rather than as
                       overall height.
 
-  FAST_MODE           Use faster if less optimal encodation for symbologies that
-                      support it (currently DATAMATRIX, MICROPDF417 and PDF417
-                      only).
+  FAST_MODE           Use faster if less optimal encodation or other shortcuts if
+                      available (affects DATAMATRIX, MICROPDF417, PDF417, QRCODE
+                      and UPNQR only).
   -------------------------------------------------------------------------------
 
   : Table  : API input_mode Values
@@ -3501,6 +3501,10 @@ option_3 = (N + 1) << 8 where N is 0-7. To use with ZINT_FULL_MULTIBYTE set
 
     option_3 = ZINT_FULL_MULTIBYTE | (N + 1) << 8
 
+The --fast option (API input_mode |= FAST_MODE) may be used when leaving Zint to
+automatically select a mask to reduce the number of masks to try to four (0, 2,
+4, 7).
+
 QR Code supports Structured Append of up to 16 symbols and a numeric ID
 (parity), which can be set by using the --structapp option (see 4.16 Structured
 Append) (API structapp). The parity ID ranges from 0 (default) to 255, and for
@@ -3626,6 +3630,8 @@ Latin-2, or if your data is already Latin-2 formatted use the --binary switch
 The following example creates a symbol from data saved as a Latin-2 file:
 
     zint -o upnqr.png -b 143 --scale=3 --binary -i upn.txt
+
+A mask may be manually specified or the --fast option used as with QRCODE.
 
 6.6.6 MaxiCode (ISO 16023)
 
@@ -4421,8 +4427,8 @@ OPTIONS
 
 --fast
 
-    Use faster if less optimal encodation (currently affects Data Matrix,
-    MicroPDF417 & PDF417 only).
+    Use faster if less optimal encodation or other shortcuts (affects Data
+    Matrix, MicroPDF417, PDF417, QRCODE & UPNQR only).
 
 --fg=COLOUR
 

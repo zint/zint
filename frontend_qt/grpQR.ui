@@ -431,6 +431,20 @@ and Latin data</string>
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkQRFast">
+     <property name="text">
+      <string>&amp;Fast mode</string>
+     </property>
+     <property name="toolTip">
+      <string>Only try four masks (0, 2, 4, 7) not eight
+when automatically selecting a mask</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QGroupBox" name="groupBoxQRStructApp">
      <property name="title">
       <string>Structured Append</string>

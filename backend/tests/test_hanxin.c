@@ -3644,7 +3644,7 @@ static void test_perf(const testCtx *const p_ctx) {
     struct item data[] = {
         /*  0*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1,
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。",
-                    0, 43, 43, "98 chars, Region One and Text" },
+                    ZINT_WARN_NONCOMPLIANT, 43, 43, "98 chars, Region One and Text" },
         /*  1*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1,
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
@@ -3656,7 +3656,7 @@ static void test_perf(const testCtx *const p_ctx) {
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。",
-                    0, 121, 121, "980 chars, Region One and Text" },
+                    ZINT_WARN_NONCOMPLIANT, 121, 121, "980 chars, Region One and Text" },
         /*  2*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1,
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
@@ -3673,7 +3673,7 @@ static void test_perf(const testCtx *const p_ctx) {
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。"
                     "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。",
-                    0, 147, 147, "1470 chars, Region One and Text" },
+                    ZINT_WARN_NONCOMPLIANT, 147, 147, "1470 chars, Region One and Text" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

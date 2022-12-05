@@ -3974,6 +3974,52 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111111000011"
                     "111111101000010110101"
                 },
+        /*126*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 1, "Automatic mask 3",
+                    "111111100000001111111"
+                    "100000100111101000001"
+                    "101110100000001011101"
+                    "101110100110001011101"
+                    "101110101100101011101"
+                    "100000100011001000001"
+                    "111111101010101111111"
+                    "000000001101100000000"
+                    "001100111101111010000"
+                    "100111011101100101110"
+                    "010011111000101001010"
+                    "110100001001011011010"
+                    "011101110001100101111"
+                    "000000001011110001011"
+                    "111111101100111110111"
+                    "100000100100101110000"
+                    "101110100111101011111"
+                    "101110101111110010010"
+                    "101110101000100101100"
+                    "100000100001111110000"
+                    "111111100101000111010"
+                },
+        /*127*/ { BARCODE_QRCODE, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 1, "Fast automatic mask 2",
+                    "111111101000001111111"
+                    "100000101010001000001"
+                    "101110101110101011101"
+                    "101110100110001011101"
+                    "101110100001001011101"
+                    "100000101101101000001"
+                    "111111101010101111111"
+                    "000000001000000000000"
+                    "001110101011011100111"
+                    "100111011101100101110"
+                    "111110110101000100111"
+                    "000010011111101101100"
+                    "011101110001100101111"
+                    "000000001110011100110"
+                    "111111100010001000001"
+                    "100000100100101110000"
+                    "101110101010000110010"
+                    "101110101001000100100"
+                    "101110101000100101100"
+                    "100000100100010011101"
+                    "111111100011110001100"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -4398,7 +4444,9 @@ static void test_qr_encode_segs(const testCtx *const p_ctx) {
 
 #include <time.h>
 
-#define TEST_PERF_ITERATIONS    1000
+#define TEST_PERF_ITER_MILLES   5
+#define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
+#define TEST_PERF_TIME(arg)     (((arg) * 1000.0) / CLOCKS_PER_SEC)
 
 /* Not a real test, just performance indicator */
 static void test_qr_perf(const testCtx *const p_ctx) {
@@ -4417,10 +4465,23 @@ static void test_qr_perf(const testCtx *const p_ctx) {
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, "12345678901234", 0, 21, 21, "14 chars, Numeric mode" },
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, "ABC 123 ABC 123 ABCD", 0, 21, 21, "20 chars, Alphanumeric" },
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, "ABCde fG H 123456 IJKlmn, 1234567890 opQ Rst uvwxyz. 1234", 0, 29, 29, "57 chars, Alphanumeric" },
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
                     ZINT_WARN_NONCOMPLIANT, 37, 37, "107 chars, Mixed modes" },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
+                    ZINT_WARN_NONCOMPLIANT, 53, 53, "214 chars, Mixed modes" },
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
+                    ZINT_WARN_NONCOMPLIANT, 73, 73, "428 chars, Mixed modes" },
+        /*  6*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
@@ -4431,25 +4492,99 @@ static void test_qr_perf(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
                     ZINT_WARN_NONCOMPLIANT, 105, 105, "963 chars, Mixed modes" },
+        /*  7*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1,
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点"
+                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz 12345678901234567890123456 点点点点点点点点点点点点点点点点点点点点点点点点点点",
+                    ZINT_WARN_NONCOMPLIANT, 133, 133, "1498 chars, Mixed modes" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
+    struct zint_symbol *symbol;
 
-    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
+    clock_t start;
+    clock_t total_create = 0, total_encode = 0, total_buffer = 0;
+    clock_t diff_create, diff_encode, diff_buffer;
+    int comment_max = 0;
 
     if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
         return;
     }
 
+    for (i = 0; i < data_size; i++) if ((int) strlen(data[i].comment) > comment_max) comment_max = (int) strlen(data[i].comment);
+
+    printf("Iterations %d\n", TEST_PERF_ITERATIONS);
+
+    printf("FAST_MODE\n");
     for (i = 0; i < data_size; i++) {
         int j;
 
         if (testContinue(p_ctx, i)) continue;
 
-        diff_encode = diff_buffer = 0;
+        diff_create = diff_encode = diff_buffer = 0;
 
         for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            struct zint_symbol *symbol = ZBarcode_Create();
+            int input_mode = data[i].input_mode == -1 ? FAST_MODE : (data[i].input_mode | FAST_MODE);
+            start = clock();
+            symbol = ZBarcode_Create();
+            diff_create += clock() - start;
+            assert_nonnull(symbol, "Symbol not created\n");
+
+            length = testUtilSetSymbol(symbol, data[i].symbology, input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+            start = clock();
+            ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+            diff_encode += clock() - start;
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+            #if 0
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            #endif
+
+            start = clock();
+            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
+            diff_buffer += clock() - start;
+            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
+
+            ZBarcode_Delete(symbol);
+        }
+
+        printf("%*s: encode % 8gms, buffer % 8gms, create % 8gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_create));
+
+        total_create += diff_create;
+        total_encode += diff_encode;
+        total_buffer += diff_buffer;
+    }
+    if (p_ctx->index != -1) {
+        printf("%*s: encode % 8gms, buffer % 8gms, create % 8gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_create));
+    }
+
+    printf("OPTIMIZED\n");
+    for (i = 0; i < data_size; i++) {
+        int j;
+
+        if (testContinue(p_ctx, i)) continue;
+
+        diff_create = diff_encode = diff_buffer = 0;
+
+        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
+            start = clock();
+            symbol = ZBarcode_Create();
+            diff_create += clock() - start;
             assert_nonnull(symbol, "Symbol not created\n");
 
             length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
@@ -4470,13 +4605,16 @@ static void test_qr_perf(const testCtx *const p_ctx) {
             ZBarcode_Delete(symbol);
         }
 
-        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("%*s: encode % 8gms, buffer % 8gms, create % 8gms\n", comment_max, data[i].comment,
+                TEST_PERF_TIME(diff_encode), TEST_PERF_TIME(diff_buffer), TEST_PERF_TIME(diff_create));
 
+        total_create += diff_create;
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
     if (p_ctx->index != -1) {
-        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("%*s: encode % 8gms, buffer % 8gms, create % 8gms\n", comment_max, "totals",
+                TEST_PERF_TIME(total_encode), TEST_PERF_TIME(total_buffer), TEST_PERF_TIME(total_create));
     }
 }
 
@@ -6222,7 +6360,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     "10111010111000101010000010001111001111011001010101101001101011001000001000101"
                     "10000010001101100100010110101010010010001110010010010010110010010010100101001"
                     "11111110100011011001111101001100101100000010111001100000111111111001000100010"
-               },
+                },
         /*  1*/ { UNICODE_MODE, -1, -1, -1, "UPNQR\012SI56020170014356205\012\012\012SI003528-990\012Združenje bank Slovenije\012Šubičeva 2\0121000 Ljubljana\01200000128067\012\012\012ADVA\012Plačilo avansa-ponudba 2016/12\012\012SI56051008010486080\012SI00123456-67890-12345\012Novo podjetje d.o.o.\012Lepa cesta 15\0123698 Loški Potok\012238\012                                                                                                                                                              ", 0, 77, 77, "Example B",
                     "11111110000111011101000010011000101001000000001000111011101100110000001111111"
                     "10000010110011111100001100011111010101001001100001010101010101110010101000001"
@@ -6301,7 +6439,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     "10111010111111010100110001101100110100111010111110001010001010100101101010001"
                     "10000010001110111011101001101101010101011101110100110101010001000101100000101"
                     "11111110101101000011101011000010100010000010001101101110011110100111001110011"
-               },
+                },
         /*  2*/ { UNICODE_MODE, -1, -1, -1, "UPNQR\012\012\012\012\012Janez Novak\012Dunajska 1\0121000 Ljubljana\01200000008105\012\012\012RENT\012Plačilo najemnine 10/2016\01215.11.2016\012SI56051008010486080\012RF45SBO2010\012Novo podjetje d.o.o.\012Lepa cesta 15\0123698 Loški Potok\012188\012                                                                                                                                                                                                                ", 0, 77, 77, "Example H",
                     "11111110000111000010011001010010001001000000101010111011100111100000001111111"
                     "10000010110011101110001010110101010101001111000101010101010110110010101000001"
@@ -6380,7 +6518,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     "10111010111011000101100001101100101100111011100110001010001010100111101111001"
                     "10000010001010100100100001101101010101001000000101010101110011011111100111001"
                     "11111110101101000110111011000010100010001100001111101110110001100111001110111"
-               },
+                },
         /*  3*/ { UNICODE_MODE, -1, -1, 2 << 8, "UPNQR\012\012\012\012\012Janez Novak\012Dunajska 1\0121000 Ljubljana\01200000008105\012\012\012RENT\012Plačilo najemnine 10/2016\01215.11.2016\012SI56051008010486080\012RF45SBO2010\012Novo podjetje d.o.o.\012Lepa cesta 15\0123698 Loški Potok\012188\012                                                                                                                                                                                                                ", 0, 77, 77, "Example H with explicit mask 001 (auto-mask 000)",
                     "11111110110010010111001100000111011100010101111111101110110010110100001111111"
                     "10000010000110111011011111100000000000011010010000000000000011100110101000001"
@@ -6459,7 +6597,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     "10111010101110010000110100111001111001101110110011011111011111110010111010011"
                     "10000010011111110001110100111000000000011101010000000000100110001010110010011"
                     "11111110111000010011101110010111110111011001011010111011100100110010011011101"
-               },
+                },
         /*  4*/ { UNICODE_MODE, -1, -1, -1, "Ą˘Ł¤ĽŚ§¨ŠŞŤŹŽŻ°ą˛ł´ľśˇ¸šşťź˝žżŔÁÂĂÄĹĆÇČÉĘËĚÍÎĎĐŃŇÓÔŐÖ×ŘŮÚŰÜÝŢßŕáâăäĺćçčéęëěíîďđńňóôőö÷řůúűüýţ˙", 0, 77, 77, "ISO 8859-2",
                     "11111110000111101001000110101100101001111110111011001111111000110000001111111"
                     "10000010001011100100110111111011110100001011110000100001001110011010101000001"
@@ -6538,7 +6676,86 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     "10111010101011111111010111011111110100001010011011000001111000110011100101010"
                     "10000010011100010001111111000000001011100000001000111111100001011101111000001"
                     "11111110110101111101111001011101111100101101111101100101000101100100011101000"
-               },
+                },
+        /*  5*/ { UNICODE_MODE, -1, -1, -1, "UPNQR\012\012\012\012\012Janez Novak\012Dunajska 1\0121000 Ljubljana\01200000008105\012\012\012COST\012Plačilo obveznosti 10/2016\012\012SI56051008010486080\012SI0598765432100\012Novo podjetje d.o.o.\012Lepa cesta 15\0123698 Loški Potok\012183\012                                                                                                                                                                                                                     ", 0, 77, 77, "Example A fast automatic mask 0 (not 3)",
+                    "11111110111111111100010011100010110001111000010010000011011111010000001111111"
+                    "10000010100011011111111001110100100100111110110100100100100111100010101000001"
+                    "10111010001000100000110111010001001000001000001101001001001001011000101011101"
+                    "10111010101000111111100101110000011010110100010001010110010010111000101011101"
+                    "10111010001000001001001011111100000110101100001111110101110011110111101011101"
+                    "10000010001111111001010010001001001000001000001000101001011001101010001000001"
+                    "11111110101010101010101010101010101010101010101010101010101010101010101111111"
+                    "00000000110100001001111110001101011101000100101000100100100100100100100000000"
+                    "10110111001011100111111111111011000001101011011111101101010000000101001001011"
+                    "11001001101111111100011011010011101000111100110110000001000110000010011010010"
+                    "10010011010011001101011011110101100100100110100110100100111100100101100100000"
+                    "10100000010000010100110110001000001001001001001101011011000001011001001001000"
+                    "11000110111001011001100000101001001011110000000011000110001011000111110000010"
+                    "01100000001000001010001010000101000110101100000100100111110000100100001100100"
+                    "11011010001110100011010100011001011001001001001001001011001001001000001001101"
+                    "01100101000011101111001001011100110111010010010110011000011010010010010010011"
+                    "01011011110011001110010110000111101100100110110101001010110101100001100110100"
+                    "00000101101101100110100111101110101010100001101001010000001101011001100001011"
+                    "00000011000011011001011001010011010110010010010000011000110010010011010110110"
+                    "11100101110001011000111101110100110110100100100000001101000100100100100000101"
+                    "00011010011000100011111101110011011011101011000011000110011000001011011111011"
+                    "11101000111110111101100000101011110010011010110111000001110110000000000010010"
+                    "10001011110111101111111001111100111100100100101101100110000100100001100000101"
+                    "00100000001000110101001110010000001111000001001011011000101001001001101101010"
+                    "11111111110101101000100011111000011100111000001111100111000011010100111111010"
+                    "11101000100100011011011010001101100110100100001000100101000000110000100011101"
+                    "00111010110010001010010010101001001101001001001010101001101011001111101011100"
+                    "01101000100011111100011110001010010000011010001000101010010110010010100010101"
+                    "10001111100101011010000111111110101110010110111111101001110000100001111110010"
+                    "00011000010101110110101111110001101001010001110000010001101110011010011110001"
+                    "01101010101101011001000100111010010010010010010110110010010011010011011010101"
+                    "01100101110001010010111010111100100000110101011000100100100010100110111011000"
+                    "10111010001110111000010101110011000001101010100001101100111010001100001001111"
+                    "01001001001010111000000101001010110110011010110011100011010100100001000100010"
+                    "00000110111010100100111010001100100100110101110101100100100100100100111001010"
+                    "01011001111110011000100111110001001001010100000000001000001111001011011010001"
+                    "00111011010010000010110111001110011010111000000110010111101001010110110011100"
+                    "01111100011111110001111011111100000110101111000101110101010000010010100110100"
+                    "01001010110110000011110111100101001001011011001001101001010001001001010101101"
+                    "00100000000111011011011101101110010010010110010010010010010010010000000110011"
+                    "10001110000101001100110001011100101101100001101000000000110110001000000000100"
+                    "00110001010111011000100111010011101011001000000000011000000100011001001101001"
+                    "01010010001111001110110101011100010011010011010010010010010011111010010110110"
+                    "11010101111000010110001010111000100100100100001100100100100000111100101100101"
+                    "10100010001001000010001100110101000001101110101101001011001100111101100001001"
+                    "01101001011100010101001101101110110000011110110011000111000001000010010000010"
+                    "11101111111001110000001011111010100100100101101111100010110101000100111110000"
+                    "00111000110101111110000010001100001000001101001000101001001001111001100011000"
+                    "01111010100010111010110010101011000010110000001010110110000011000110101010010"
+                    "11011000101011001011011010001100000110001010001000110111100000100100100010100"
+                    "10001111111100100100000111111010011000001111001111100001001001001001111111101"
+                    "11100001001110110011111000111010010010010010010010000010010010000011011010011"
+                    "11000111010101101011000010000110111101000110100100110000110101110000100100100"
+                    "10110001010110000001010000001010101011100001111101010010001101001001001001001"
+                    "01010011111110111110111010111100010010010010010011011100010010010010010000110"
+                    "01111101011001100100101010011110010101100100100100101100100100100101101100101"
+                    "10010010101001000111101010111011000001101011001001001111011000001101101001001"
+                    "01011101011000111010101001000010101101011010100110001111010110000011010010010"
+                    "11110111111011001000011101001001111001100100100101100000100100100100000110010"
+                    "00101101100110101001001100001011011001001001001001001001001001001000000001010"
+                    "01001110101000011100110000011010010010110000010100011100100011010010110010000"
+                    "01011001110011001100010011101001001010101100010000110000000000110001100100010"
+                    "11011110101100100101101111110111011001001001001010000111001001001101101010000"
+                    "10110000001001111010001001110000000010011010010000011000010010010011011010001"
+                    "00011011010000111010011010100101001010011110100100101000010101100010000100100"
+                    "01100101010110100001100110001101101011000001110111011000101101011001001000011"
+                    "01001111100111100110111110110101101110010010011011111010110000010011010001100"
+                    "00001001111101000000101011011110100000100100101101111101100100100111001101101"
+                    "01111010101101000011101111111001000001100011011111111101111111001101111110011"
+                    "00000000101101101110101110001110110100001010111000101010110111000000100011010"
+                    "11111110110001001100010110101010100100100100111010100100100011100101101010000"
+                    "10000010110110110101000110001011001001001001101000101001001111001001100010100"
+                    "10111010010110001000101011111010011100101001101111110110100111010111111111110"
+                    "10111010111111011111010010100000000110101100000111110101100010010110000000100"
+                    "10111010111000101010000010001111001111011001010101101001101011001000001000101"
+                    "10000010001101100100010110101010010010001110010010010010110010010010100101001"
+                    "11111110100011011001111101001100101100000010111001100000111111111001000100010"
+                },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -6574,7 +6791,7 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     testUtilErrorName(data[i].ret),
                     symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
-            printf("               },\n");
+            printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
                 int width, row;

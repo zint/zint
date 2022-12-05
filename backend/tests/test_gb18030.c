@@ -34,7 +34,9 @@
 #include "test_gbk_tab.h"
 #include "../eci.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-/* #define TEST_JUST_SAY_GNO */
+#if 0
+#define TEST_JUST_SAY_GNO */
+#endif
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/gb18030_gnu.c"
 #include "../just_say_gno/gb2312_gnu.c"
@@ -183,6 +185,7 @@ static void test_u_gb18030_int(const testCtx *const p_ctx) {
         if (i >= 0xD800 && i <= 0xDFFF) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
         val1_1 = val1_2 = val2_1 = val2_2 = 0;
         ret = u_gb18030_int_test(i, &val1_1, &val1_2);
         ret2 = u_gb18030_int2(i, &val2_1, &val2_2);
@@ -525,7 +528,7 @@ static void test_u_gbk_int(const testCtx *const p_ctx) {
     testFinish();
 }
 
-#define TEST_PERF_ITER_MILLES   50
+#define TEST_PERF_ITER_MILLES   100
 #define TEST_PERF_ITERATIONS    (TEST_PERF_ITER_MILLES * 1000)
 
 /* Not a real test, just performance indicator */

@@ -148,7 +148,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--fast`
 
-:   Use faster if less optimal encodation (currently affects Data Matrix, MicroPDF417 & PDF417 only).
+:   Use faster if less optimal encodation or other shortcuts (affects Data Matrix, MicroPDF417, PDF417, QRCODE & UPNQR
+    only).
 
 `--fg=COLOUR`
 

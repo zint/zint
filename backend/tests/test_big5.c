@@ -32,7 +32,9 @@
 #include "testcommon.h"
 #include "test_big5_tab.h"
 /* For local "private" testing using previous libiconv adaptation, not included for licensing reasons */
-/* #define TEST_JUST_SAY_GNO */
+#if 0
+#define TEST_JUST_SAY_GNO
+#endif
 #ifdef TEST_JUST_SAY_GNO
 #include "../just_say_gno/big5_gnu.h"
 #endif
@@ -105,6 +107,7 @@ static void test_u_big5_int(const testCtx *const p_ctx) {
         if (i >= 0xD800 && i < 0xE000) { /* UTF-16 surrogates */
             continue;
         }
+        if (testContinue(p_ctx, i)) continue;
         val = val2 = 0;
         ret = u_big5_int(i, &val);
         ret2 = u_big5_int2(i, &val2);
