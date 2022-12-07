@@ -10,14 +10,13 @@
  *
  *   php backend/tools/gen_gs1_lint.php > backend/gs1_lint.h
  *
- * or to use local copy of "gs1-format_spec.txt":
+ * or to use local copy of "gs1-syntax-dictionary.txt":
  *
- *   php backend/tools/gen_gs1_lint.php -f <local-path>/gs1-format-spec.txt backend/gs1_lint.h
+ *   php backend/tools/gen_gs1_lint.php -f <local-path>/gs1-syntax-dictionary.txt backend/gs1_lint.h
  *
  *************************************************************************************************
- * NOTE: for up-to-update version requires syntax dictionary that will be available from
- * https://github.com/gs1/gs1-syntax-dictionary
- * on its release. For now this generator should only be run by someone with a pre-release copy!!!
+ * NOTE: up-to-update version requires syntax dictionary available from
+ * https://ref.gs1.org/tools/gs1-barcode-syntax-resource/syntax-dictionary/
  *************************************************************************************************
  */
 
@@ -28,11 +27,7 @@ $dirdirname = basename(dirname($dirname)) . '/' . basename($dirname);
 $opts = getopt('c:f:h:l:t:');
 
 $print_copyright = isset($opts['c']) ? (bool) $opts['c'] : true;
-if (!isset($opts['f'])) { // TODO: temporary hack
-    exit("$basename:" . __LINE__
-        . " ERROR: For now this generator must only be run locally with a pre-release syntax dictionary" . PHP_EOL);
-}
-$file = $opts['f'];
+$file = isset($opts['f']) ? $opts['f'] : 'https://ref.gs1.org/tools/gs1-barcode-syntax-resource/syntax-dictionary/';
 $print_h_guard = isset($opts['h']) ? (bool) $opts['h'] : true;
 $use_length_only = isset($opts['l']) ? (bool) $opts['l'] : true;
 $tab = isset($opts['t']) ? $opts['t'] : '    ';
@@ -40,9 +35,13 @@ $tab = isset($opts['t']) ? $opts['t'] : '    ';
 if (($get = file_get_contents($file)) === false) {
     exit("$basename:" . __LINE__ . " ERROR: Could not read file \"$file\"" . PHP_EOL);
 }
-// Strip to last 2 directories TODO: temporary hack
-$stripped_dir = dirname($file);
-$stripped_file = basename(dirname($stripped_dir)) . '/' . basename($stripped_dir) . '/' . basename($file);
+if (strncasecmp($file, "http", 4) != 0) {
+    // Strip to last 2 directories
+    $stripped_dir = dirname($file);
+    $stripped_file = basename(dirname($stripped_dir)) . '/' . basename($stripped_dir) . '/' . basename($file);
+} else {
+    $stripped_file = $file;
+}
 
 $lines = explode("\n", $get);
 
