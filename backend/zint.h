@@ -236,7 +236,9 @@ extern "C" {
 #define BARCODE_HANXIN          116 /* Han Xin (Chinese Sensible) Code */
 
     /* Tbarcode 11 codes */
-#define BARCODE_MAILMARK        121 /* Royal Mail 4-State Mailmark */
+#define BARCODE_MAILMARK_2D     119 /* Royal Mail 2D Mailmark (CMDM) (Data Matrix) */
+#define BARCODE_MAILMARK_4S     121 /* Royal Mail 4-State Mailmark */
+#define BARCODE_MAILMARK        121 /* Legacy */
 
     /* Zint specific */
 #define BARCODE_AZRUNE          128 /* Aztec Runes */

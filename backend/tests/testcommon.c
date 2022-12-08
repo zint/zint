@@ -2087,9 +2087,9 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "hanxin", BARCODE_HANXIN, 116, 0, 0, 0, 0, 0, },
         { "", -1, 117, 0, 0, 0, 0, 0, },
         { "", -1, 118, 0, 0, 0, 0, 0, },
-        { "", -1, 119, 0, 0, 0, 0, 0, },
+        { "mailmark", BARCODE_MAILMARK_2D, 119, 0, 1, 0, 0, 0, },
         { "", -1, 120, 0, 0, 0, 0, 0, },
-        { "", BARCODE_MAILMARK, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is Data Matrix variant */
+        { "", BARCODE_MAILMARK_4S, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is BARCODE_MAILMARK_2D above */
         { "", -1, 122, 0, 0, 0, 0, 0, },
         { "", -1, 123, 0, 0, 0, 0, 0, },
         { "", -1, 124, 0, 0, 0, 0, 0, },
@@ -2187,6 +2187,14 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         if (option_2 > 32) {
             if (debug & ZINT_DEBUG_TEST_PRINT) {
                 printf("i:%d %s not BWIPP compatible, auto width (option_2 > 32) not supported\n",
+                        index, testUtilBarcodeName(symbology));
+            }
+            return NULL;
+        }
+    } else if (symbology == BARCODE_MAILMARK_2D) {
+        if (option_2 < 1) {
+            if (debug & ZINT_DEBUG_TEST_PRINT) {
+                printf("i:%d %s not BWIPP compatible, version (option_2) must be specified\n",
                         index, testUtilBarcodeName(symbology));
             }
             return NULL;
@@ -2882,6 +2890,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssemi", strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
+            } else if (symbology == BARCODE_MAILMARK_2D) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%stype=%d",
+                        strlen(bwipp_opts_buf) ? " " : "", symbol->option_2 - 1);
+                bwipp_opts = bwipp_opts_buf;
             }
         }
 
@@ -3430,9 +3442,9 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "HanXin", BARCODE_HANXIN, 116, },
         { "", -1, 117, },
         { "", -1, 118, },
-        { "", -1, 119, },
+        { "DataMatrix", BARCODE_MAILMARK_2D, 119, },
         { "", -1, 120, },
-        { "", BARCODE_MAILMARK, 121, },
+        { "", BARCODE_MAILMARK_4S, 121, },
         { "", -1, 122, },
         { "", -1, 123, },
         { "", -1, 124, },

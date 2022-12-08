@@ -157,6 +157,11 @@
 2022-12-02 GL
 - Added -scalexdimdp option
 - Renamed CODE128B to CODE128AB
+    *** Potential incompatibility ***
+2022-12-08 GL
+- Added MAILMARK_2D
+- Renamed MAILMARK to MAILMARK_4S
+    *** Potential incompatibility ***
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -176,7 +181,7 @@
 
 #include <zint.h>
 /* Load version defines */
-#include <zintconfig.h>
+#include "../backend/zintconfig.h"
 #include <string.h>
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -302,7 +307,8 @@ static const char *s_code_list[] = {
     "HIBCAztec",
     "DotCode",
     "HanXin",
-    "MailMark",
+    "MailMark-2D",
+    "MailMark-4S",
     "AztecRunes",
     "Code32",
     "EAN-CC",
@@ -402,7 +408,8 @@ static const int s_code_number[] = {
     BARCODE_HIBC_AZTEC,
     BARCODE_DOTCODE,
     BARCODE_HANXIN,
-    BARCODE_MAILMARK,
+    BARCODE_MAILMARK_2D,
+    BARCODE_MAILMARK_4S,
     BARCODE_AZRUNE,
     BARCODE_CODE32,
     BARCODE_EANX_CC,
@@ -1062,7 +1069,6 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iFG:
             strncpy(my_symbol->fgcolour, pStr, lStr);
             my_symbol->fgcolour[lStr]='\0';
-            printf("my_symbol->fgcolour %s\n", my_symbol->fgcolour);
             break;
         case iBG:
             strncpy(my_symbol->bgcolour, pStr, lStr);

@@ -196,8 +196,10 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
 INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 /* VIN Code (Vehicle Identification Number) */
 INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length);
+/* Royal Mail 2D Mailmark */
+INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length);
 /* Royal Mail 4-state Mailmark */
-INTERNAL int mailmark(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length);
 INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
@@ -495,7 +497,8 @@ static int has_hrt(const int symbology) {
         case BARCODE_HIBC_PDF:
         case BARCODE_HIBC_MICPDF:
         case BARCODE_HIBC_BLOCKF:
-        case BARCODE_MAILMARK:
+        case BARCODE_MAILMARK_2D:
+        case BARCODE_MAILMARK_4S:
         case BARCODE_DBAR_STK_CC:
         case BARCODE_DBAR_OMNSTK_CC:
         case BARCODE_DBAR_EXPSTK_CC:
@@ -539,8 +542,8 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
           NULL,        NULL,        hibc,        NULL,        hibc, /*100-104*/
           NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
           hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
-       dotcode,      hanxin,        NULL,        NULL,        NULL, /*115-119*/
-          NULL,    mailmark,        NULL,        NULL,        NULL, /*120-124*/
+       dotcode,      hanxin,        NULL,        NULL, mailmark_2d, /*115-119*/
+          NULL, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
           NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
@@ -1009,7 +1012,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             }
             symbol->symbology = BARCODE_CODE128;
         } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
-            if (symbol->symbology != 121) { /* BARCODE_MAILMARK */
+            if (symbol->symbology != 119 && symbol->symbology != 121) { /* BARCODE_MAILMARK_2D/4S */
                 warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "215: Symbology out of range");
                 if (warn_number >= ZINT_ERROR) {
                     return warn_number;
@@ -1663,9 +1666,9 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "BARCODE_HANXIN", BARCODE_HANXIN, 116 },
         { "", -1, 117 },
         { "", -1, 118 },
-        { "", -1, 119 },
+        { "BARCODE_MAILMARK_2D", BARCODE_MAILMARK_2D, 119 },
         { "", -1, 120 },
-        { "BARCODE_MAILMARK", BARCODE_MAILMARK, 121 },
+        { "BARCODE_MAILMARK_4S", BARCODE_MAILMARK_4S, 121 },
         { "", -1, 122 },
         { "", -1, 123 },
         { "", -1, 124 },
@@ -1889,9 +1892,13 @@ float ZBarcode_Default_Xdim(int symbol_id) {
             break;
         case BARCODE_RM4SCC:
         case BARCODE_KIX:
-        case BARCODE_MAILMARK:
+        case BARCODE_MAILMARK_4S:
             /* Royal Mail Mailmark Barcode Definition Document, height 5.1mm / 8 (Zint height) == 0.6375 */
             x_dim_mm = 0.638f; /* Seems better fit to round up to 3 d.p. */
+            break;
+        case BARCODE_MAILMARK_2D:
+            /* Royal Mail Mailmark Barcode Definition Document, Section 2.4 */
+            x_dim_mm = 0.5f;
             break;
         case BARCODE_JAPANPOST:
             x_dim_mm = 0.6f; /* Japan Post Zip/Barcode Manual */

@@ -117,10 +117,11 @@ IMAGES = \
 	images/ausredirect.svg \
 	images/kix.svg \
 	images/rm4scc.svg \
-	images/mailmark.svg \
+	images/mailmark_4s.svg \
 	images/usps_imail.svg \
 	images/japanpost.svg \
 	images/hibc_dm.svg \
+	images/mailmark_2d.svg \
 	images/qrcode.svg \
 	images/microqr.svg \
 	images/rmqr.svg \

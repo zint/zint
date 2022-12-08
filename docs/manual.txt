@@ -154,18 +154,19 @@ December 2022
         -   6.5.7 DAFT Code
     -   6.6 Matrix Symbols
         -   6.6.1 Data Matrix (ISO 16022)
-        -   6.6.2 QR Code (ISO 18004)
-        -   6.6.3 Micro QR Code (ISO 18004)
-        -   6.6.4 Rectangular Micro QR Code (rMQR) (ISO 23941)
-        -   6.6.5 UPNQR (Univerzalnega Plačilnega Naloga QR)
-        -   6.6.6 MaxiCode (ISO 16023)
-        -   6.6.7 Aztec Code (ISO 24778)
-        -   6.6.8 Aztec Runes (ISO 24778)
-        -   6.6.9 Code One
-        -   6.6.10 Grid Matrix
-        -   6.6.11 DotCode
-        -   6.6.12 Han Xin Code (ISO 20830)
-        -   6.6.13 Ultracode
+        -   6.6.2 Royal Mail 2D Mailmark (CMDM) (Data Matrix)
+        -   6.6.3 QR Code (ISO 18004)
+        -   6.6.4 Micro QR Code (ISO 18004)
+        -   6.6.5 Rectangular Micro QR Code (rMQR) (ISO 23941)
+        -   6.6.6 UPNQR (Univerzalnega Plačilnega Naloga QR)
+        -   6.6.7 MaxiCode (ISO 16023)
+        -   6.6.8 Aztec Code (ISO 24778)
+        -   6.6.9 Aztec Runes (ISO 24778)
+        -   6.6.10 Code One
+        -   6.6.11 Grid Matrix
+        -   6.6.12 DotCode
+        -   6.6.13 Han Xin Code (ISO 20830)
+        -   6.6.14 Ultracode
     -   6.7 Other Barcode-Like Markings
         -   6.7.1 Facing Identification Mark (FIM)
         -   6.7.2 Flattermarken
@@ -859,7 +860,9 @@ underscores are optional.
 
   116       BARCODE_HANXIN            Han Xin (Chinese Sensible) Code
 
-  121       BARCODE_MAILMARK          Royal Mail 4-State Mailmark
+  119       BARCODE_MAILMARK_2D       Royal Mail 2D Mailmark (CMDM) (Data Matrix)
+
+  121       BARCODE_MAILMARK_4S       Royal Mail 4-State Mailmark
 
   128       BARCODE_AZRUNE            Aztec Runes
 
@@ -3304,7 +3307,7 @@ Zint.
 
 6.5.4 Royal Mail 4-State Mailmark
 
-[zint -b MAILMARK --compliantheight -d "1100000000000XY11"]
+[zint -b MAILMARK_4S --compliantheight -d "1100000000000XY11"]
 
 Developed in 2014 as a replacement for RM4SCC this 4-state symbol includes Reed
 Solomon error correction. Input is a pre-formatted alphanumeric string of 22
@@ -3317,7 +3320,7 @@ the following table.
   1 digit   1 digit      1 alphanum.   2 digits (C) or   8 digits   9 alphanumerics
   (0-4)     (0-3)        (0-9A-E)      6 digits (L)                 (1 of 6 patterns)
 
-  : Table : Royal Mail Mailmark Input Fields:
+  : Table : Royal Mail 4-State Mailmark Input Fields:
 
 The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
 patterns are 'FNFNLLNLS', 'FFNNLLNLS', 'FFNNNLLNL', 'FFNFNLLNL', 'FNNLLNLSS' and
@@ -3326,6 +3329,9 @@ alphabetic (A-Z less 'CIKMOV'), 'N' for numeric (0-9), and 'S' for space.
 
 Four of the permitted patterns include a number of trailing space characters -
 these will be appended by Zint if not included in the input data.
+
+For the two-dimensional Data Matrix-based version, see 6.6.2 Royal Mail 2D
+Mailmark (CMDM) (Data Matrix).
 
 6.5.5 USPS Intelligent Mail
 
@@ -3441,7 +3447,58 @@ number ID1 * 1000 + ID2, so for instance ID1 "123" and ID2 "234" would be given
 as "123234". Note that both ID1 and ID2 must be non-zero, so e.g. "123000" or
 "000123" would be invalid IDs. If an ID is not given it defaults to "001001".
 
-6.6.2 QR Code (ISO 18004)
+6.6.2 Royal Mail 2D Mailmark (CMDM) (Data Matrix)
+
+[zint -b MAILMARK_2D -d "JGB 01Z999999900000001EC1A1AA1A0SN35TQ" --vers=30]
+
+This variant of Data Matrix, also known as “Complex Mail Data Mark” (CMDM), was
+introduced by Royal Mail along with 6.5.4 Royal Mail 4-State Mailmark, and
+offers space for customer data following the initial pre-formatted 45 character
+section, an expanded version of the 4-state one, as summarized below.
+
+  Field Name         Length        Values
+  ------------------ ------------- --------------------------------
+  UPU Country ID     4             "JGB "
+  Information Type   1             Alphanumeric
+  Version ID         1             "1"
+  Class              1             Alphanumeric
+  Supply Chain ID    7             Numeric
+  Item ID            8             Numeric
+  Destination+DPS    9             Alphanumeric (1 of 6 patterns)
+  Service Type       1             Numeric
+  RTS Post Code      7             Alphanumeric (1 of 6 patterns)
+  Reserved           6             Spaces
+  Customer Data      6, 45 or 29   Anything (Latin-1 plus ASCII)
+
+  : Table : Royal Mail 2D Mailmark Input Fields:
+
+The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
+patterns are the same as for the 4-state. The 6 RTS (Return to Sender) Post Code
+patterns are the same also except without the additional DPS 'NL', i.e.
+'FNFNLLS', 'FFNNLLS', 'FFNNNLL', 'FFNFNLL', 'FNNLLSS' and 'FNNNLLS'.
+
+Three sizes are defined, one rectangular, with varying maximum amounts of
+optional customer data:
+
+  Name      Size      Customer Data   Zint Version
+  --------- --------- --------------- --------------
+  Type 7    24 x 24   6 characters    8
+  Type 9    32 x 32   45 characters   10
+  Type 29   16 x 48   29 characters   30
+
+  : Table : Royal Mail 2D Mailmark Sizes:
+
+Zint will automatically select a size based on the amount of customer data, or
+it can be specified using the --vers option (API option_2), which takes the Zint
+version number (one more than the Royal Mail Type number). Zint will prefix the
+input data with "JGB " if it’s missing, and also space-pad the input to 45
+characters when there is no customer data. As with Data Matrix, the rectangular
+symbol Type 29 can be excluded from automatic size selection by using the option
+--square (API option_3 = DM_SQUARE).
+
+GS1 data, the ECI mechanism, and Structured Append are not supported.
+
+6.6.3 QR Code (ISO 18004)
 
 [zint -b QRCODE -d "QR Code Symbol" --mask=5]
 
@@ -3513,7 +3570,7 @@ full compliance should be set to the value obtained by XOR-ing together each
 byte of the complete data forming the sequence. Currently this calculation must
 be done outside of Zint.
 
-6.6.3 Micro QR Code (ISO 18004)
+6.6.4 Micro QR Code (ISO 18004)
 
 [zint -b MICROQR -d "01234567"]
 
@@ -3567,7 +3624,7 @@ option_3 = (N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set
 
     option_3 = ZINT_FULL_MULTIBYTE | (N + 1) << 8
 
-6.6.4 Rectangular Micro QR Code (rMQR) (ISO 23941)
+6.6.5 Rectangular Micro QR Code (rMQR) (ISO 23941)
 
 [zint -b RMQR -d "0123456"]
 
@@ -3617,7 +3674,7 @@ For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or in the API by setting
 option_3 = ZINT_FULL_MULTIBYTE.
 
-6.6.5 UPNQR (Univerzalnega Plačilnega Naloga QR)
+6.6.6 UPNQR (Univerzalnega Plačilnega Naloga QR)
 
 [zint -b UPNQR -i upn_utf8.txt --quietzones]
 
@@ -3634,7 +3691,7 @@ The following example creates a symbol from data saved as a Latin-2 file:
 
 A mask may be manually specified or the --fast option used as with QRCODE.
 
-6.6.6 MaxiCode (ISO 16023)
+6.6.7 MaxiCode (ISO 16023)
 
 [zint -b MAXICODE -d "1Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G1 MAIN ST\GNY\GNY\R\E" --esc --primary="152382802000000" --scmvv=96]
 
@@ -3725,7 +3782,7 @@ MaxiCode uses a different scaling than other symbols for raster output, see
 4.9.3 MaxiCode Raster Scaling, and also for EMF vector output, when the scale is
 multiplied by 20 instead of 2.
 
-6.6.7 Aztec Code (ISO 24778)
+6.6.8 Aztec Code (ISO 24778)
 
 [zint -b AZTEC -d "123456789012"]
 
@@ -3789,7 +3846,7 @@ alphanumeric ID of up to 32 characters, which can be set by using the
 --structapp option (see 4.16 Structured Append) (API structapp). The ID cannot
 contain spaces. If an ID is not given, no ID is encoded.
 
-6.6.8 Aztec Runes (ISO 24778)
+6.6.9 Aztec Runes (ISO 24778)
 
 [zint -b AZRUNE -d "125"]
 
@@ -3797,7 +3854,7 @@ A truncated version of compact Aztec Code for encoding whole integers between 0
 and 255, as defined in ISO/IEC 24778 Annex A. Includes Reed-Solomon error
 correction. It does not support Structured Append.
 
-6.6.9 Code One
+6.6.10 Code One
 
 [zint -b CODEONE -d "1234567890123456789012"]
 
@@ -3843,7 +3900,7 @@ using the --structapp option (see 4.16 Structured Append) (API structapp). It
 does not support specifying an ID. Structured Append is not supported with GS1
 data nor for Version S symbols.
 
-6.6.10 Grid Matrix
+6.6.11 Grid Matrix
 
 [zint -b GRIDMATRIX --eci=29 -d "AAT2556 电池充电器+降压转换器  200mA至2A tel:86 019 82512738"]
 
@@ -3889,7 +3946,7 @@ Grid Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file signature), which can be set by using the --structapp option (see 4.16
 Structured Append) (API structapp). The ID ranges from 0 (default) to 255.
 
-6.6.11 DotCode
+6.6.12 DotCode
 
 [zint -b DOTCODE -d "[01]00012345678905[17]201231[10]ABC123456" --gs1]
 
@@ -3913,7 +3970,7 @@ DotCode supports Structured Append of up to 35 symbols, which can be set by
 using the --structapp option (see 4.16 Structured Append) (API structapp). It
 does not support specifying an ID.
 
-6.6.12 Han Xin Code (ISO 20830)
+6.6.13 Han Xin Code (ISO 20830)
 
 [zint -b HANXIN -d "Hanxin Code symbol"]
 
@@ -3983,7 +4040,7 @@ option_3 = (N + 1) << 8 where N is 0-3. To use with ZINT_FULL_MULTIBYTE set
 
     option_3 = ZINT_FULL_MULTIBYTE | (N + 1) << 8
 
-6.6.13 Ultracode
+6.6.14 Ultracode
 
 [zint -b ULTRA -d "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS"]
 

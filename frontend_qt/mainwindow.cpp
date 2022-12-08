@@ -127,8 +127,9 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("POSTNET"), BARCODE_POSTNET },
     { QSL("QR Code (ISO 18004) (and HIBC)"), BARCODE_QRCODE },
     { QSL("Rectangular Micro QR (rMQR) (ISO 23941)"), BARCODE_RMQR },
-    { QSL("Royal Mail 4-state Barcode (RM4SCC)"), BARCODE_RM4SCC },
-    { QSL("Royal Mail 4-state Mailmark"), BARCODE_MAILMARK },
+    { QSL("Royal Mail 2D Mailmark (CMDM) (Data Matrix)"), BARCODE_MAILMARK_2D },
+    { QSL("Royal Mail 4-state Customer Code (RM4SCC)"), BARCODE_RM4SCC },
+    { QSL("Royal Mail 4-state Mailmark"), BARCODE_MAILMARK_4S },
     { QSL("Telepen"), BARCODE_TELEPEN },
     { QSL("Telepen Numeric"), BARCODE_TELEPEN_NUM },
     { QSL("UK Plessey"), BARCODE_PLESSEY },
@@ -1831,6 +1832,18 @@ void MainWindow::change_options()
         connect(get_widget(QSL("spnDMStructAppID")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnDMStructAppID2")), SIGNAL(valueChanged( int )), SLOT(update_preview()));
 
+    } else if (symbology == BARCODE_MAILMARK_2D) {
+        QFile file(QSL(":/grpMailmark2D.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            structapp_ui_set();
+            tabMain->insertTab(1, m_optionWidget, tr("2D M&ailmark"));
+            connect(get_widget(QSL("cmbMailmark2DSize")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+            connect(get_widget(QSL("chkMailmark2DRectangle")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_ITF14) {
         btype->setItemText(0, tr("Default (box, 5X width)"));
         QFile file(QSL(":/grpITF14.ui"));
@@ -2818,6 +2831,28 @@ void MainWindow::update_preview()
             }
             break;
 
+        case BARCODE_MAILMARK_2D:
+            m_bc.bc.setSymbol(BARCODE_MAILMARK_2D);
+
+            if ((item_val = get_cmb_index(QSL("cmbMailmark2DSize")))) {
+                m_bc.bc.setOption2(item_val == 1 ? 8 : item_val == 2 ? 10 : 30);
+            }
+
+            if (!item_val) {
+                // Suppressing rectangles only makes sense if in automatic size mode
+                m_optionWidget->findChild<QLabel*>(QSL("lblMailmark2DAutoSize"))->setEnabled(true);
+                m_optionWidget->findChild<QCheckBox*>(QSL("chkMailmark2DRectangle"))->setEnabled(true);
+                if (m_optionWidget->findChild<QCheckBox*>(QSL("chkMailmark2DRectangle"))->isChecked()) {
+                    m_bc.bc.setOption3(DM_SQUARE);
+                }
+            } else {
+                m_optionWidget->findChild<QLabel*>(QSL("lblMailmark2DAutoSize"))->setEnabled(false);
+                m_optionWidget->findChild<QCheckBox*>(QSL("chkMailmark2DRectangle"))->setEnabled(false);
+                m_bc.bc.setOption3(0);
+            }
+
+            break;
+
         case BARCODE_ITF14:
             m_bc.bc.setSymbol(BARCODE_ITF14);
             if (get_chk_val(QSL("chkITF14NoQuietZones"))) {
@@ -3442,6 +3477,24 @@ void MainWindow::automatic_info_set()
             }
         }
 
+    } else if (symbology == BARCODE_MAILMARK_2D) {
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMailmark2DSize")))) {
+            if (!isError && cmb->currentIndex() == 0) {
+                const int r = m_bc.bc.encodedRows();
+                const int w = m_bc.bc.encodedWidth();
+                int z;
+                if (r == w) {
+                    z = r <= 26 ? 8 : 10;
+                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d) - Type %d)", r, w, z, z - 1));
+                } else {
+                    z = 30;
+                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d) - Type %d)", r, w, z, z - 1));
+                }
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+
     } else if (symbology == BARCODE_DOTCODE) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbDotCols")))) {
             if (!isError && cmb->currentIndex() == 0) {
@@ -4006,6 +4059,11 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/datamatrix/structapp_id2"), get_spn_val(QSL("spnDMStructAppID2")));
             break;
 
+        case BARCODE_MAILMARK_2D:
+            settings.setValue(QSL("studio/bc/mailmark2d/size"), get_cmb_index(QSL("cmbMailmark2DSize")));
+            settings.setValue(QSL("studio/bc/mailmark2d/chk_suppress_rect"), get_chk_val(QSL("chkMailmark2DRectangle")));
+            break;
+
         case BARCODE_ITF14:
             settings.setValue(QSL("studio/bc/itf14/chk_no_quiet_zones"), get_chk_val(QSL("chkITF14NoQuietZones")));
             break;
@@ -4407,6 +4465,11 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/datamatrix/structapp_index"), QSL("cmbDMStructAppIndex"));
             set_spn_from_setting(settings, QSL("studio/bc/datamatrix/structapp_id"), QSL("spnDMStructAppID"), 1);
             set_spn_from_setting(settings, QSL("studio/bc/datamatrix/structapp_id2"), QSL("spnDMStructAppID2"), 1);
+            break;
+
+        case BARCODE_MAILMARK_2D:
+            set_cmb_from_setting(settings, QSL("studio/bc/mailmark2d/size"), QSL("cmbMailmark2DSize"));
+            set_chk_from_setting(settings, QSL("studio/bc/mailmark2d/chk_suppress_rect"), QSL("chkMailmark2DRectangle"));
             break;
 
         case BARCODE_ITF14:

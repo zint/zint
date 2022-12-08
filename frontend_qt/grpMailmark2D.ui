@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>grpMailmark2D</class>
+ <widget class="QWidget" name="grpMailmark2D">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>463</width>
+    <height>339</height>
+   </rect>
+  </property>
+  <property name="maximumSize">
+   <size>
+    <width>600</width>
+    <height>16777215</height>
+   </size>
+  </property>
+  <property name="windowTitle">
+   <string>Form</string>
+  </property>
+  <layout class="QVBoxLayout" name="verticalLayoutMailmark2D">
+   <item>
+    <layout class="QGridLayout" name="gridLayoutMailmark2D">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblMailmark2DSize">
+       <property name="text">
+        <string>Si&amp;ze:</string>
+       </property>
+       <property name="toolTip">
+        <string>Set height and width (H x W) of symbol</string>
+       </property>
+       <property name="buddy">
+        <cstring>cmbMailmark2DSize</cstring>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbMailmark2DSize">
+       <property name="toolTip">
+        <string>Set height and width (H x W) of symbol</string>
+       </property>
+       <property name="maxVisibleItems">
+        <number>21</number>
+       </property>
+       <item>
+        <property name="text">
+         <string>Automatic</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>24 x 24 (Zint 8) - Type 7</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>32 x 32 (Zint 10) - Type 9</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>16 x 48 (Zint 30) - Type 29</string>
+        </property>
+       </item>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblMailmark2DAutoSize">
+       <property name="text">
+        <string>Automatic Size:</string>
+       </property>
+       <property name="toolTip">
+        <string>Selection criteria when considering
+automatic sizes
+(ignored if disabled)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <layout class="QHBoxLayout" name="horzLayoutMailmark2DAutoSizeChecks">
+       <item>
+        <widget class="QCheckBox" name="chkMailmark2DRectangle">
+         <property name="text">
+          <string>Only Squa&amp;re</string>
+         </property>
+         <property name="toolTip">
+          <string>Only consider square versions 8 and 10 on automatic symbol
+size selection, suppressing rectangular version 30
+(ignored if disabled)</string>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <spacer name="verticalSpacerMailmark2D">
+     <property name="orientation">
+      <enum>Qt::Vertical</enum>
+     </property>
+     <property name="sizeHint" stdset="0">
+      <size>
+       <width>20</width>
+       <height>0</height>
+      </size>
+     </property>
+    </spacer>
+   </item>
+  </layout>
+ </widget>
+ <resources/>
+ <connections/>
+</ui>

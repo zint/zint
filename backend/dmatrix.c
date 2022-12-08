@@ -1031,6 +1031,7 @@ static int dm_define_mode(struct zint_symbol *symbol, char modes[], const unsign
             mode_len = 0;
         }
     }
+
     if (debug_print) {
         printf("modes (%d): ", length);
         for (i = 0; i < length; i++) printf("%c", dm_smodes[(int) modes[i]][0]);
@@ -1239,6 +1240,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
 static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], const int length, int *p_sp,
             unsigned char target[], int *p_tp, int process_buffer[8], int *p_process_p, int *p_b256_start,
             int *p_current_mode, const int gs1, const int debug_print) {
+    const int mailmark = symbol->symbology == BARCODE_MAILMARK_2D;
     int sp = *p_sp;
     int tp = *p_tp;
     int process_p = *p_process_p;
@@ -1248,6 +1250,23 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
 
     /* step (a) */
     int next_mode = DM_ASCII;
+
+    if (mailmark) { /* First 45 characters C40 */
+        assert(length >= 45);
+        next_mode = DM_C40;
+        tp = dm_switch_mode(next_mode, target, tp, p_b256_start, debug_print);
+        while (sp < 45) {
+            assert(!(sp & 0x80));
+            process_buffer[process_p++] = dm_c40_value[source[sp]];
+
+            if (process_p >= 3) {
+                process_p = dm_ctx_buffer_xfer(process_buffer, process_p, target, &tp, debug_print);
+            }
+            sp++;
+        }
+        current_mode = next_mode;
+        not_first = 1;
+    }
 
     while (sp < length) {
 
@@ -1502,7 +1521,8 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         if (debug_print) printf("ECI %d ", eci + 1);
     }
 
-    if (symbol->input_mode & FAST_MODE) { /* If FAST_MODE, do Annex J-based encodation */
+    /* If FAST_MODE or MAILMARK_2D, do Annex J-based encodation */
+    if ((symbol->input_mode & FAST_MODE) || symbol->symbology == BARCODE_MAILMARK_2D) {
         error_number = dm_isoenc(symbol, source, length, &sp, target, &tp, process_buffer, &process_p,
                                     &b256_start, &current_mode, gs1, debug_print);
     } else { /* Do default minimal encodation */

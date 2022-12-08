@@ -322,6 +322,7 @@ INTERNAL int is_dotty(const int symbology) {
         case BARCODE_CODEONE:
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
+        case BARCODE_MAILMARK_2D:
         case BARCODE_DOTCODE:
         case BARCODE_UPNQR:
         case BARCODE_RMQR:

@@ -103,10 +103,11 @@ zint -b AUSREPLY --compliantheight -d "12345678" --scale=$SCALE_TRACK -o images/
 zint -b AUSREDIRECT --compliantheight -d "98765432" --scale=$SCALE_TRACK -o images/ausredirect.svg
 zint -b KIX --compliantheight -d "2500GG30250" --scale=$SCALE_TRACK -o images/kix.svg
 zint -b RM4SCC --compliantheight -d "W1J0TR01" --scale=$SCALE_TRACK -o images/rm4scc.svg
-zint -b MAILMARK --compliantheight -d "1100000000000XY11" --scale=$SCALE_TRACK -o images/mailmark.svg
+zint -b MAILMARK_4S --compliantheight -d "1100000000000XY11" --scale=$SCALE_TRACK -o images/mailmark_4s.svg
 zint -b USPS_IMAIL --compliantheight -d "01234567094987654321-01234" --scale=$SCALE_TRACK -o images/usps_imail.svg
 zint -b JAPANPOST --compliantheight -d "15400233-16-4-205" --scale=$SCALE_TRACK -o images/japanpost.svg
 zint -b HIBC_DM -d "/ACMRN123456/V200912190833" --fast --square --scale=$SCALE_2D_BIGGER -o images/hibc_dm.svg
+zint -b MAILMARK_2D -d "JGB 01Z999999900000001EC1A1AA1A0SN35TQ" --vers=30 --scale=$SCALE_2D_BIGGER -o images/mailmark_2d.svg
 zint -b QRCODE -d "QR Code Symbol" --mask=5 --scale=$SCALE_2D_BIGGER -o images/qrcode.svg
 zint -b MICROQR -d "01234567" --scale=$SCALE_2D_BIGGER -o images/microqr.svg
 zint -b RMQR -d "0123456" --scale=$SCALE_2D_BIGGER -o images/rmqr.svg

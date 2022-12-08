@@ -15,6 +15,8 @@ Version 2.11.1.9 (dev) not released yet
   by new output option BARCODE_BIND_TOP)
 - Symbology BARCODE_CODE128B (Suppress subset C) renamed to BARCODE_CODE128AB
   to more accurately reflect its behaviour (old name still recognised)
+- Symbology BARCODE_MAILMARK renamed to BARCODE_MAILMARK_4S due to introduction
+  of BARCODE_MAILMARK_2D
 - CLI now expects floating point arguments to be in simple decimal point
   notation (i.e. not scientific notation) with a maximum of 7 significant digits
 
@@ -66,6 +68,9 @@ Changes
 - CLI: mirror: use -o directory if any (ticket #193)
 - QRCODE/UPNQR: add FAST_MODE (try 4 not 8 masks automatically)
 - GS1: add new AI 7011 (GSCN 22-163)
+- Add new symbology BARCODE_MAILMARK_2D (Royal Mail 2D Mailmark), renaming
+  previous BARCODE_MAILMARK (Royal Mail 4-State Mailmark) to BARCODE_MAILMARK_4S
+- backend_tcl: update TEA
 - DATAMATRIX/GRIDMATRIX/PDF417/QR/ULTRA: micro-optimize structapp ID parse
 - library/CLI: fiddle with static asserts (make CHAR_BIT sensitive, supposedly)
 - win32/README: update building libpng (assembly removed)

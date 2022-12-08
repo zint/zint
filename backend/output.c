@@ -385,7 +385,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             done = 1;
             break;
         case BARCODE_RM4SCC:
-            /* Royal Mail Know How User's Manual Appendix C: using CBC, same as MAILMARK, 2mm all round,
+            /* Royal Mail Know How User's Manual Appendix C: using CBC, same as MAILMARK_4S, 2mm all round,
                use X max (25.4mm / 39) i.e. 20 bars per 25.4mm */
             *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
             done = 1;
@@ -423,7 +423,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             break;
 
         case BARCODE_KIX:
-            /* Handleiding KIX code brochure - same as RM4SCC/MAILMARK */
+            /* Handleiding KIX code brochure - same as RM4SCC/MAILMARK_4S */
             *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
             done = 1;
             break;
@@ -447,10 +447,15 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             *left = *right = *top = *bottom = 3.0f;
             done = 1;
             break;
-        case BARCODE_MAILMARK:
+        case BARCODE_MAILMARK_4S:
             /* Royal Mail Mailmark Barcode Definition Document Section 3.5.2, 2mm all round, use X max (25.4mm / 39)
                i.e. 20 bars per 25.4mm */
             *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
+            done = 1;
+            break;
+        case BARCODE_MAILMARK_2D:
+            /* Royal Mail Mailmark Barcode Definition Document, Section 2.4 */
+            *left = *right = *top = *bottom = 4.0f;
             done = 1;
             break;
         case BARCODE_CHANNEL:

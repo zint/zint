@@ -38,6 +38,7 @@ FORMS += extCLI.ui \
          grpGrid.ui \
          grpHX.ui \
          grpITF14.ui \
+         grpMailmark2D.ui \
          grpMaxicode.ui \
          grpMicroPDF.ui \
          grpMQR.ui \

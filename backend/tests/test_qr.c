@@ -3974,7 +3974,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111111000011"
                     "111111101000010110101"
                 },
-        /*126*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 1, "Automatic mask 3",
+        /*126*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, "Automatic mask 011; BWIPP uses mask 111",
                     "111111100000001111111"
                     "100000100111101000001"
                     "101110100000001011101"
@@ -3997,7 +3997,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001111110000"
                     "111111100101000111010"
                 },
-        /*127*/ { BARCODE_QRCODE, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 1, "Fast automatic mask 2",
+        /*127*/ { BARCODE_QRCODE, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, "Fast automatic mask 010; BWIPP uses mask 111",
                     "111111101000001111111"
                     "100000101010001000001"
                     "101110101110101011101"

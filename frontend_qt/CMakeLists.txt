@@ -18,11 +18,11 @@ else()
     qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extScale.ui extSequence.ui extExport.ui)
 endif()
 
-#               grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMaxicode.ui  grpQR.ui      grpUPNQR.ui
-#               grpC11.ui    grpC49.ui      grpCodeOne.ui     grpDPD.ui      grpMicroPDF.ui  grpRMQR.ui    grpVIN.ui
-#               grpC128.ui   grpC93.ui      grpDAFT.ui        grpGrid.ui     grpMQR.ui       grpUltra.ui
-#               grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpHX.ui       grpMSICheck.ui  grpUPCA.ui
-#               grpC25.ui    grpCodabar.ui  grpDM.ui          grpITF14.ui    grpPDF417.ui    grpUPCEAN.ui
+#           grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMailmark2D.ui  grpPDF417.ui  grpUPCEAN.ui
+#           grpC11.ui    grpC49.ui      grpCodeOne.ui     grpDPD.ui      grpMaxicode.ui    grpQR.ui      grpUPNQR.ui
+#           grpC128.ui   grpC93.ui      grpDAFT.ui        grpGrid.ui     grpMicroPDF.ui    grpRMQR.ui    grpVIN.ui
+#           grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpHX.ui       grpMQR.ui         grpUltra.ui
+#           grpC25.ui    grpCodabar.ui  grpDM.ui          grpITF14.ui    grpMSICheck.ui    grpUPCA.ui
 
 if(APPLE)
     # https://doc.qt.io/qt-5/appicon.html

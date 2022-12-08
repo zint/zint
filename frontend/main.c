@@ -90,27 +90,27 @@ static void types(void) {
           "37 UPCE        UPC-E                   112 HIBC_AZTEC     HIBC Aztec Code\n"
           "38 UPCE_CHK    UPC-E + Check Digit     115 DOTCODE        DotCode\n"
           "40 POSTNET     USPS POSTNET            116 HANXIN         Han Xin Code\n"
-          "47 MSI_PLESSEY MSI Plessey             121 MAILMARK       Royal Mail Mailmark\n", stdout);
-    fputs("49 FIM         Facing Ident Mark       128 AZRUNE         Aztec Runes\n"
-          "50 LOGMARS     LOGMARS Code 39         129 CODE32         Code 32\n"
-          "51 PHARMA      Pharmacode One-Track    130 EANX_CC        Composite EAN\n"
-          "52 PZN         Pharmazentralnummer     131 GS1_128_CC     Composite GS1-128\n"
-          "53 PHARMA_TWO  Pharmacode Two-Track    132 DBAR_OMN_CC    Comp DataBar Omni\n", stdout);
-    fputs("54 CEPNET      Brazilian CEPNet        133 DBAR_LTD_CC    Comp DataBar Limited\n"
-          "55 PDF417      PDF417                  134 DBAR_EXP_CC    Comp DataBar Expanded\n"
-          "56 PDF417COMP  Compact PDF417          135 UPCA_CC        Composite UPC-A\n"
-          "57 MAXICODE    MaxiCode                136 UPCE_CC        Composite UPC-E\n"
-          "58 QRCODE      QR Code                 137 DBAR_STK_CC    Comp DataBar Stacked\n", stdout);
-    fputs("60 CODE128AB   Code 128 (Suppress C)   138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
-          "63 AUSPOST     AP Standard Customer    139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
-          "66 AUSREPLY    AP Reply Paid           140 CHANNEL        Channel Code\n"
-          "67 AUSROUTE    AP Routing              141 CODEONE        Code One\n"
-          "68 AUSREDIRECT AP Redirection          142 GRIDMATRIX     Grid Matrix\n", stdout);
-    fputs("69 ISBNX       ISBN                    143 UPNQR          UPN QR Code\n"
-          "70 RM4SCC      Royal Mail 4SCC         144 ULTRA          Ultracode\n"
-          "71 DATAMATRIX  Data Matrix             145 RMQR           Rectangular Micro QR\n"
-          "72 EAN14       EAN-14                  146 BC412          BC412\n"
-          "73 VIN         Vehicle Information No.\n", stdout);
+          "47 MSI_PLESSEY MSI Plessey             119 MAILMARK_2D    Royal Mail 2D Mailmark\n", stdout);
+    fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-state Mailmark\n"
+          "50 LOGMARS     LOGMARS Code 39         128 AZRUNE         Aztec Runes\n"
+          "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32\n"
+          "52 PZN         Pharmazentralnummer     130 EANX_CC        Composite EAN\n"
+          "53 PHARMA_TWO  Pharmacode Two-Track    131 GS1_128_CC     Composite GS1-128\n", stdout);
+    fputs("54 CEPNET      Brazilian CEPNet        132 DBAR_OMN_CC    Comp DataBar Omni\n"
+          "55 PDF417      PDF417                  133 DBAR_LTD_CC    Comp DataBar Limited\n"
+          "56 PDF417COMP  Compact PDF417          134 DBAR_EXP_CC    Comp DataBar Expanded\n"
+          "57 MAXICODE    MaxiCode                135 UPCA_CC        Composite UPC-A\n"
+          "58 QRCODE      QR Code                 136 UPCE_CC        Composite UPC-E\n", stdout);
+    fputs("60 CODE128AB   Code 128 (Suppress C)   137 DBAR_STK_CC    Comp DataBar Stacked\n"
+          "63 AUSPOST     AP Standard Customer    138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
+          "66 AUSREPLY    AP Reply Paid           139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
+          "67 AUSROUTE    AP Routing              140 CHANNEL        Channel Code\n"
+          "68 AUSREDIRECT AP Redirection          141 CODEONE        Code One\n", stdout);
+    fputs("69 ISBNX       ISBN                    142 GRIDMATRIX     Grid Matrix\n"
+          "70 RM4SCC      Royal Mail 4SCC         143 UPNQR          UPN QR Code\n"
+          "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
+          "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
+          "73 VIN         Vehicle Information No. 146 BC412          BC412\n", stdout);
 }
 
 /* Output version information */
@@ -487,7 +487,10 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_KIX, "kix" },
         { BARCODE_KOREAPOST, "koreapost" },
         { BARCODE_LOGMARS, "logmars" },
-        { BARCODE_MAILMARK, "mailmark" },
+        { BARCODE_MAILMARK_4S, "mailmark" }, /* Synonym */
+        { BARCODE_MAILMARK_2D, "mailmark2d" },
+        { BARCODE_MAILMARK_4S, "mailmark4s" },
+        { BARCODE_MAILMARK_4S, "mailmark4state" }, /* Synonym */
         { BARCODE_MAXICODE, "maxicode" },
         { BARCODE_MICROPDF417, "micropdf417" },
         { BARCODE_MICROQR, "microqr" },
