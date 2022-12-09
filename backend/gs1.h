@@ -40,6 +40,7 @@ extern "C" {
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
                 unsigned char reduced[]);
 INTERNAL char gs1_check_digit(const unsigned char source[], const int src_len);
+INTERNAL int gs1_iso3166_alpha2(const unsigned char *cc);
 
 #ifdef __cplusplus
 }

@@ -1180,8 +1180,6 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     return error_number;
 }
 
-INTERNAL int iso3166_alpha2(const char *cc); /* In "iso3166.h" which is included by "gs1.c" */
-
 /* Universal Postal Union S10 */
 /* https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf */
 INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length) {
@@ -1247,7 +1245,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     } else if (strchr("FHIOXY", local_source[0]) != NULL) { /* These aren't allocated as of spec Oct 2017 */
         strcpy(symbol->errtxt, "840: Non-standard Service Indicator (first 2 characters)");
         error_number = ZINT_WARN_NONCOMPLIANT;
-    } else if (!iso3166_alpha2((const char *) (local_source + 11))) {
+    } else if (!gs1_iso3166_alpha2(local_source + 11)) {
         strcpy(symbol->errtxt, "841: Country code (last two characters) is not ISO 3166-1");
         error_number = ZINT_WARN_NONCOMPLIANT;
     }

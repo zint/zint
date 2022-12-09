@@ -162,6 +162,8 @@
 - Added MAILMARK_2D
 - Renamed MAILMARK to MAILMARK_4S
     *** Potential incompatibility ***
+2022-12-09 GL
+- Added UPU_S10
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -308,6 +310,7 @@ static const char *s_code_list[] = {
     "DotCode",
     "HanXin",
     "MailMark-2D",
+    "UPU-S10",
     "MailMark-4S",
     "AztecRunes",
     "Code32",
@@ -409,6 +412,7 @@ static const int s_code_number[] = {
     BARCODE_DOTCODE,
     BARCODE_HANXIN,
     BARCODE_MAILMARK_2D,
+    BARCODE_UPU_S10,
     BARCODE_MAILMARK_4S,
     BARCODE_AZRUNE,
     BARCODE_CODE32,

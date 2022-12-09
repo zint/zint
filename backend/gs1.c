@@ -1428,4 +1428,9 @@ INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
     return itoc((10 - (count % 10)) % 10);
 }
 
+/* Helper to expose `iso3166_alpha2()` */
+INTERNAL int gs1_iso3166_alpha2(const unsigned char *cc) {
+    return iso3166_alpha2((const char *) cc);
+}
+
 /* vim: set ts=4 sw=4 et : */

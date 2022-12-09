@@ -62,7 +62,7 @@ static int iso3166_numeric(int cc) {
 }
 
 /* Whether ISO 3166-1 alpha2 */
-INTERNAL int iso3166_alpha2(const char *cc) {
+static int iso3166_alpha2(const char *cc) {
     static const unsigned char codes[85] = {
         0x78, 0x59, 0xDF, 0xEE, 0xEF, 0xBD, 0xDD, 0xDE,
         0x27, 0x3F, 0x84, 0x15, 0x80, 0xD4, 0x00, 0x0E,
