@@ -122,7 +122,7 @@ namespace Zint {
             m_gs1parens(false), m_gs1nocheck(false),
             m_reader_init(false),
             m_warn_level(WARN_DEFAULT), m_debug(false),
-            m_encodedWidth(0), m_encodedRows(0),
+            m_encodedWidth(0), m_encodedRows(0), m_encodedHeight(0.0f),
             m_vectorWidth(0.0f), m_vectorHeight(0.0f),
             m_error(0),
             target_size_horiz(0), target_size_vert(0) // Legacy
@@ -231,12 +231,13 @@ namespace Zint {
             m_vwhitespace = m_zintSymbol->whitespace_height;
             m_encodedWidth = m_zintSymbol->width;
             m_encodedRows = m_zintSymbol->rows;
+            m_encodedHeight = m_zintSymbol->height;
             m_vectorWidth = m_zintSymbol->vector->width;
             m_vectorHeight = m_zintSymbol->vector->height;
             emit encoded();
         } else {
             m_encodedWidth = m_encodedRows = 0;
-            m_vectorWidth = m_vectorHeight = 0.0f;
+            m_encodedHeight = m_vectorWidth = m_vectorHeight = 0.0f;
             emit errored();
         }
     }
@@ -655,6 +656,13 @@ namespace Zint {
         return m_encodedRows;
     }
 
+    float QZint::encodedHeight() const { // Read-only, in X-dimensions
+        if (m_symbol == BARCODE_MAXICODE) { // Maxicode encoded height is meaningless, so return fixed value
+            return 33 * 0.866f; // √3 / 2
+        }
+        return m_encodedHeight;
+    }
+
     float QZint::vectorWidth() const { // Read-only, scaled width
         return m_vectorWidth;
     }
@@ -783,7 +791,7 @@ namespace Zint {
         if (m_error >= ZINT_ERROR) {
             m_lastError = m_zintSymbol->errtxt;
             m_encodedWidth = m_encodedRows = 0;
-            m_vectorWidth = m_vectorHeight = 0.0f;
+            m_encodedHeight = m_vectorWidth = m_vectorHeight = 0.0f;
             emit errored();
             return false;
         }

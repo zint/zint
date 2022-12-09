@@ -264,6 +264,7 @@ private slots:
 
         QCOMPARE(bc.encodedWidth(), 0); // Read-only
         QCOMPARE(bc.encodedRows(), 0); // Read-only
+        QCOMPARE(bc.encodedHeight(), 0.0f); // Read-only
 
         QCOMPARE(bc.vectorWidth(), 0.0f); // Read-only
         QCOMPARE(bc.vectorHeight(), 0.0f); // Read-only
@@ -376,17 +377,24 @@ private slots:
     {
         QTest::addColumn<int>("symbology");
         QTest::addColumn<QString>("text");
+        QTest::addColumn<float>("scale");
         QTest::addColumn<int>("getError");
         QTest::addColumn<QString>("error_message");
         QTest::addColumn<int>("encodedWidth");
         QTest::addColumn<int>("encodedRows");
+        QTest::addColumn<float>("encodedHeight");
         QTest::addColumn<float>("vectorWidth");
         QTest::addColumn<float>("vectorHeight");
 
-        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0 << "" << 21 << 21 << 42.0f << 42.0f;
+        QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128 << "1234" << 0.0f << 0 << "" << 57 << 1 << 50.0f << 114.0f << 100.0f;
+        QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128 << "1234" << 2.0f << 0 << "" << 57 << 1 << 50.0f << 228.0f << 200.0f;
+        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0.0f << 0 << "" << 21 << 21 << 21.0f << 42.0f << 42.0f;
+        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 1.5f << 0 << "" << 21 << 21 << 21.0f << 63.0f << 63.0f;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << ZINT_ERROR_INVALID_DATA << "Error 778: No input data (segment 0 empty)" << 0 << 0 << 0.0f << 0.0f;
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << 0.0f << ZINT_ERROR_INVALID_DATA << "Error 778: No input data (segment 0 empty)" << 0 << 0 << 0.0f << 0.0f << 0.0f;
         }
+        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 0.0f << 0 << "" << 30 << 33 << 28.578f << 60.0f << 57.7334f;
+        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 2.0f << 0 << "" << 30 << 33 << 28.578f << 120.0f << 115.467f;
     }
 
     void renderTest()
@@ -406,15 +414,21 @@ private slots:
 
         QFETCH(int, symbology);
         QFETCH(QString, text);
+        QFETCH(float, scale);
         QFETCH(int, getError);
         QFETCH(QString, error_message);
         QFETCH(int, encodedWidth);
         QFETCH(int, encodedRows);
+        QFETCH(float, encodedHeight);
         QFETCH(float, vectorWidth);
         QFETCH(float, vectorHeight);
 
         bc.setSymbol(symbology);
         bc.setText(text);
+        bc.setShowText(false);
+        if (scale) {
+            bc.setScale(scale);
+        }
 
         bRet = painter.begin(&paintDevice);
         QCOMPARE(bRet, true);
@@ -430,6 +444,7 @@ private slots:
         QCOMPARE(bc.hasErrors(), getError != 0);
         QCOMPARE(bc.encodedWidth(), encodedWidth);
         QCOMPARE(bc.encodedRows(), encodedRows);
+        QCOMPARE(bc.encodedHeight(), encodedHeight);
         QCOMPARE(bc.vectorWidth(), vectorWidth);
         QCOMPARE(bc.vectorHeight(), vectorHeight);
 

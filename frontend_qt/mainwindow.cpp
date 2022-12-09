@@ -137,6 +137,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("UPC-A (ISO 15420)"), BARCODE_UPCA },
     { QSL("UPC-E (ISO 15420)"), BARCODE_UPCE },
     { QSL("UPNQR"), BARCODE_UPNQR },
+    { QSL("UPU S10"), BARCODE_UPU_S10 },
     { QSL("USPS Intelligent Mail (OneCode)"), BARCODE_USPS_IMAIL },
     { QSL("VIN (Vehicle Identification Number)"), BARCODE_VIN },
 };
@@ -1855,6 +1856,16 @@ void MainWindow::change_options()
             connect(get_widget(QSL("chkITF14NoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
+    } else if (symbology == BARCODE_PZN) {
+        QFile file(QSL(":/grpPZN.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            tabMain->insertTab(1, m_optionWidget, tr("PZN"));
+            connect(get_widget(QSL("chkPZN7")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_QRCODE) {
         QFile file(QSL(":/grpQR.ui"));
         if (!file.open(QIODevice::ReadOnly))
@@ -2857,6 +2868,13 @@ void MainWindow::update_preview()
             m_bc.bc.setSymbol(BARCODE_ITF14);
             if (get_chk_val(QSL("chkITF14NoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
+            }
+            break;
+
+        case BARCODE_PZN:
+            m_bc.bc.setSymbol(BARCODE_PZN);
+            if (get_chk_val(QSL("chkPZN7"))) {
+                m_bc.bc.setOption2(1);
             }
             break;
 
@@ -4068,6 +4086,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/itf14/chk_no_quiet_zones"), get_chk_val(QSL("chkITF14NoQuietZones")));
             break;
 
+        case BARCODE_PZN:
+            settings.setValue(QSL("studio/bc/pzn/chk_pzn7"), get_chk_val(QSL("chkPZN7")));
+            break;
+
         case BARCODE_QRCODE:
         case BARCODE_HIBC_QR:
             settings.setValue(QSL("studio/bc/qrcode/size"), get_cmb_index(QSL("cmbQRSize")));
@@ -4474,6 +4496,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_ITF14:
             set_chk_from_setting(settings, QSL("studio/bc/itf14/chk_no_quiet_zones"), QSL("chkITF14NoQuietZones"));
+            break;
+
+        case BARCODE_PZN:
+            set_chk_from_setting(settings, QSL("studio/bc/pzn/chk_pzn7"), QSL("chkPZN7"));
             break;
 
         case BARCODE_QRCODE:

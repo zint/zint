@@ -62,36 +62,36 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 static void types(void) {
     /* Breaking up strings so don't get too long (i.e. 500 or so) */
     fputs(" # Name        Description               # Name           Description\n"
-          " 1 CODE11      Code 11                  74 CODABLOCKF     Codablock-F\n"
-          " 2 C25STANDARD Standard 2 of 5          75 NVE18          NVE-18\n"
-          " 3 C25INTER    Interleaved 2 of 5       76 JAPANPOST      Japanese Post\n"
-          " 4 C25IATA     IATA 2 of 5              77 KOREAPOST      Korea Post\n", stdout);
-    fputs(" 6 C25LOGIC    Data Logic 2 of 5        79 DBAR_STK       GS1 DataBar Stacked\n"
-          " 7 C25IND      Industrial 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
-          " 8 CODE39      Code 39                  81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
-          " 9 EXCODE39    Extended Code 39         82 PLANET         USPS PLANET\n"
-          "13 EANX        EAN-2 to EAN-13          84 MICROPDF417    MicroPDF417\n", stdout);
-    fputs("14 EANX_CHK    EAN + Check Digit        85 USPS_IMAIL     USPS Intelligent Mail\n"
-          "16 GS1_128     GS1-128                  86 PLESSEY        UK Plessey\n"
-          "18 CODABAR     Codabar                  87 TELEPEN_NUM    Telepen Numeric\n"
-          "20 CODE128     Code 128                 89 ITF14          ITF-14\n"
-          "21 DPLEIT      Deutsche Post Leitcode   90 KIX            Dutch Post KIX Code\n", stdout);
-    fputs("22 DPIDENT     Deutsche Post Identcode  92 AZTEC          Aztec Code\n"
-          "23 CODE16K     Code 16K                 93 DAFT           DAFT Code\n"
-          "24 CODE49      Code 49                  96 DPD            DPD Parcel Code 128\n"
-          "25 CODE93      Code 93                  97 MICROQR        Micro QR Code\n"
-          "28 FLAT        Flattermarken            98 HIBC_128       HIBC Code 128\n", stdout);
-    fputs("29 DBAR_OMN    GS1 DataBar Omni         99 HIBC_39        HIBC Code 39\n"
-          "30 DBAR_LTD    GS1 DataBar Limited     102 HIBC_DM        HIBC Data Matrix\n"
-          "31 DBAR_EXP    GS1 DataBar Expanded    104 HIBC_QR        HIBC QR Code\n"
-          "32 TELEPEN     Telepen Alpha           106 HIBC_PDF       HIBC PDF417\n"
-          "34 UPCA        UPC-A                   108 HIBC_MICPDF    HIBC MicroPDF417\n", stdout);
-    fputs("35 UPCA_CHK    UPC-A + Check Digit     110 HIBC_BLOCKF    HIBC Codablock-F\n"
-          "37 UPCE        UPC-E                   112 HIBC_AZTEC     HIBC Aztec Code\n"
-          "38 UPCE_CHK    UPC-E + Check Digit     115 DOTCODE        DotCode\n"
-          "40 POSTNET     USPS POSTNET            116 HANXIN         Han Xin Code\n"
-          "47 MSI_PLESSEY MSI Plessey             119 MAILMARK_2D    Royal Mail 2D Mailmark\n", stdout);
-    fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-state Mailmark\n"
+          " 1 CODE11      Code 11                  75 NVE18          NVE-18\n"
+          " 2 C25STANDARD Standard 2 of 5          76 JAPANPOST      Japanese Post\n"
+          " 3 C25INTER    Interleaved 2 of 5       77 KOREAPOST      Korea Post\n"
+          " 4 C25IATA     IATA 2 of 5              79 DBAR_STK       GS1 DataBar Stacked\n", stdout);
+    fputs(" 6 C25LOGIC    Data Logic 2 of 5        80 DBAR_OMNSTK    GS1 DataBar Stack Omni\n"
+          " 7 C25IND      Industrial 2 of 5        81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
+          " 8 CODE39      Code 39                  82 PLANET         USPS PLANET\n"
+          " 9 EXCODE39    Extended Code 39         84 MICROPDF417    MicroPDF417\n"
+          "13 EANX        EAN-2 to EAN-13          85 USPS_IMAIL     USPS Intelligent Mail\n", stdout);
+    fputs("14 EANX_CHK    EAN + Check Digit        86 PLESSEY        UK Plessey\n"
+          "16 GS1_128     GS1-128                  87 TELEPEN_NUM    Telepen Numeric\n"
+          "18 CODABAR     Codabar                  89 ITF14          ITF-14\n"
+          "20 CODE128     Code 128                 90 KIX            Dutch Post KIX Code\n"
+          "21 DPLEIT      Deutsche Post Leitcode   92 AZTEC          Aztec Code\n", stdout);
+    fputs("22 DPIDENT     Deutsche Post Identcode  93 DAFT           DAFT Code\n"
+          "23 CODE16K     Code 16K                 96 DPD            DPD Parcel Code 128\n"
+          "24 CODE49      Code 49                  97 MICROQR        Micro QR Code\n"
+          "25 CODE93      Code 93                  98 HIBC_128       HIBC Code 128\n"
+          "28 FLAT        Flattermarken            99 HIBC_39        HIBC Code 39\n", stdout);
+    fputs("29 DBAR_OMN    GS1 DataBar Omni        102 HIBC_DM        HIBC Data Matrix\n"
+          "30 DBAR_LTD    GS1 DataBar Limited     104 HIBC_QR        HIBC QR Code\n"
+          "31 DBAR_EXP    GS1 DataBar Expanded    106 HIBC_PDF       HIBC PDF417\n"
+          "32 TELEPEN     Telepen Alpha           108 HIBC_MICPDF    HIBC MicroPDF417\n"
+          "34 UPCA        UPC-A                   110 HIBC_BLOCKF    HIBC Codablock-F\n", stdout);
+    fputs("35 UPCA_CHK    UPC-A + Check Digit     112 HIBC_AZTEC     HIBC Aztec Code\n"
+          "37 UPCE        UPC-E                   115 DOTCODE        DotCode\n"
+          "38 UPCE_CHK    UPC-E + Check Digit     116 HANXIN         Han Xin Code\n"
+          "40 POSTNET     USPS POSTNET            119 MAILMARK_2D    Royal Mail 2D Mailmark\n"
+          "47 MSI_PLESSEY MSI Plessey             120 UPU_S10        UPU S10\n", stdout);
+    fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-State Mailmark\n"
           "50 LOGMARS     LOGMARS Code 39         128 AZRUNE         Aztec Runes\n"
           "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32\n"
           "52 PZN         Pharmazentralnummer     130 EANX_CC        Composite EAN\n"
@@ -111,6 +111,7 @@ static void types(void) {
           "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
           "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
           "73 VIN         Vehicle Information No. 146 BC412          BC412\n", stdout);
+    fputs("74 CODABLOCKF  Codablock-F\n", stdout);
 }
 
 /* Output version information */
@@ -537,6 +538,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_UPCE_CHK, "upcechk" },
         { BARCODE_UPNQR, "upnqr" },
         { BARCODE_UPNQR, "upnqrcode" }, /* Synonym */
+        { BARCODE_UPU_S10, "upus10" },
         { BARCODE_USPS_IMAIL, "uspsimail" },
         { BARCODE_VIN, "vin" },
     };

@@ -2699,7 +2699,13 @@ shown in the Human Readable Text, but may be shown by setting `--vers=1` (API
 ![`zint -b PZN --compliantheight -d "2758089"`](images/pzn.svg)
 
 PZN is a Code 39 based symbology used by the pharmaceutical industry in Germany.
-PZN encodes a 7-digit number to which Zint will add a modulo-11 check digit.
+PZN encodes a 7-digit number to which Zint will add a modulo-11 check digit
+(PZN8). Input less than 7 digits will be zero-filled. An 8-digit input can be
+supplied in which case Zint will validate the check digit.
+
+To encode a PZN7 (obsolete since 2013) instead set `--vers=1` (API
+`option_2 = 1`) and supply up to 7 digits. As with PZN8, a modulo-11 check digit
+will be added or if 7 digits supplied the check digit validated.
 
 #### 6.1.7.5 LOGMARS
 
@@ -2879,6 +2885,19 @@ leave the border width 0.
 A DPD Code can be marked as a "relabel" by specifying `--vers=1` (API
 `option_2 = 1`), which omits the identification tag and prints the barcode at
 half height. In this case, an input of 27 alphanumeric characters is required.
+
+#### 6.1.10.8 UPU S10
+
+![`zint -b UPU_S10 --compliantheight -d "EE876543216CA"`](images/upu_s10.svg)
+
+The Universal Postal Union S10 variant of Code 128 encodes 13 characters in the
+format `"SSNNNNNNNNXCC"`, where `"SS"` is a two-character alphabetic service
+indicator, `"NNNNNNNN"` is an 8-digit serial number, `"X"` is a modulo-11 check
+digit, and `"CC"` is a two-character ISO 3166-1 country code.
+
+The check digit may be omitted in which case Zint will add it. Warnings will be
+generated if the service indicator is non-standard or the country code is not
+ISO 3361-1.
 
 ### 6.1.11 GS1 DataBar (ISO 24724)
 

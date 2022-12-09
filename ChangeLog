@@ -70,6 +70,8 @@ Changes
 - GS1: add new AI 7011 (GSCN 22-163)
 - Add new symbology BARCODE_MAILMARK_2D (Royal Mail 2D Mailmark), renaming
   previous BARCODE_MAILMARK (Royal Mail 4-State Mailmark) to BARCODE_MAILMARK_4S
+- Add new symbology BARCODE_UPU_S10
+- PZN: allow check digit to be given; add space after hyphen in HRT; PZN7 option
 - backend_tcl: update TEA
 - DATAMATRIX/GRIDMATRIX/PDF417/QR/ULTRA: micro-optimize structapp ID parse
 - library/CLI: fiddle with static asserts (make CHAR_BIT sensitive, supposedly)

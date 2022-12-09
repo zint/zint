@@ -107,7 +107,7 @@ extern "C" {
         int option_1;       /* Symbol-specific options (see "../docs/manual.txt") */
         int option_2;       /* Symbol-specific options */
         int option_3;       /* Symbol-specific options */
-        int show_hrt;       /* Show (1) or hide (0) Human Readable Text. Default 1 */
+        int show_hrt;       /* Show (1) or hide (0) Human Readable Text (HRT). Default 1 */
         int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
@@ -117,7 +117,7 @@ extern "C" {
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
-        unsigned char text[128]; /* Human Readable Text (if any), UTF-8, NUL-terminated (output only) */
+        unsigned char text[128]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
@@ -237,6 +237,7 @@ extern "C" {
 
     /* Tbarcode 11 codes */
 #define BARCODE_MAILMARK_2D     119 /* Royal Mail 2D Mailmark (CMDM) (Data Matrix) */
+#define BARCODE_UPU_S10         120 /* Universal Postal Union S10 */
 #define BARCODE_MAILMARK_4S     121 /* Royal Mail 4-State Mailmark */
 #define BARCODE_MAILMARK        121 /* Legacy */
 

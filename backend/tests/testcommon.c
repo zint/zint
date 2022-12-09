@@ -2020,7 +2020,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "symbol", BARCODE_FIM, 49, 0, 0, 0, 0, 0, },
         { "code39", BARCODE_LOGMARS, 50, 0, 1, 0, 0, 0, },
         { "pharmacode", BARCODE_PHARMA, 51, 0, 0, 0, 1 /*linear_row_height*/, 0, },
-        { "pzn", BARCODE_PZN, 52, 0, 0, 0, 0, 0, },
+        { "pzn", BARCODE_PZN, 52, 0, 1, 0, 0, 0, },
         { "pharmacode2", BARCODE_PHARMA_TWO, 53, 0, 0, 0, 0, 0, },
         { "", BARCODE_CEPNET, 54, 0, 0, 0, 0, 0, },
         { "pdf417", BARCODE_PDF417, 55, 1, 1, 1, 0, 0, },
@@ -2088,7 +2088,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 117, 0, 0, 0, 0, 0, },
         { "", -1, 118, 0, 0, 0, 0, 0, },
         { "mailmark", BARCODE_MAILMARK_2D, 119, 0, 1, 0, 0, 0, },
-        { "", -1, 120, 0, 0, 0, 0, 0, },
+        { "code128", BARCODE_UPU_S10, 120, 0, 0, 0, 0, 0, },
         { "", BARCODE_MAILMARK_4S, 121, 0, 0, 0, 0, 0, }, /* Note BWIPP mailmark is BARCODE_MAILMARK_2D above */
         { "", -1, 122, 0, 0, 0, 0, 0, },
         { "", -1, 123, 0, 0, 0, 0, 0, },
@@ -2591,7 +2591,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         strlen(bwipp_opts_buf) ? " " : "");
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_PZN) {
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%spzn8", strlen(bwipp_opts_buf) ? " " : "");
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%spzn%c",
+                        strlen(bwipp_opts_buf) ? " " : "", option_2 == 1 ? '7' : '8');
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_TELEPEN_NUM) {
                 if (data_len & 1) { /* Add leading zero */
@@ -2892,7 +2893,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_MAILMARK_2D) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%stype=%d",
-                        strlen(bwipp_opts_buf) ? " " : "", symbol->option_2 - 1);
+                        strlen(bwipp_opts_buf) ? " " : "", option_2 - 1);
                 bwipp_opts = bwipp_opts_buf;
             }
         }
@@ -3375,7 +3376,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_FIM, 49, },
         { "Code39", BARCODE_LOGMARS, 50, },
         { "", BARCODE_PHARMA, 51, },
-        { "", BARCODE_PZN, 52, }, /* TODO: Code39 with prefix and mod-11 checksum */
+        { "Code39", BARCODE_PZN, 52, },
         { "", BARCODE_PHARMA_TWO, 53, },
         { "", -1, 54, },
         { "PDF417", BARCODE_PDF417, 55, },
@@ -3443,7 +3444,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 117, },
         { "", -1, 118, },
         { "DataMatrix", BARCODE_MAILMARK_2D, 119, },
-        { "", -1, 120, },
+        { "Code128", BARCODE_UPU_S10, 120, },
         { "", BARCODE_MAILMARK_4S, 121, },
         { "", -1, 122, },
         { "", -1, 123, },
@@ -3688,6 +3689,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
                         ? (char *) z_alloca(expected_len + 3 + 1) : NULL;
     char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
+    char *pzn = symbology == BARCODE_PZN ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
 
     int ret;
     int ret_memcmp;
@@ -3954,6 +3956,16 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         dpd[0] = '%';
         memcpy(dpd + 1, expected, expected_len);
         expected = dpd;
+        expected_len++;
+
+    } else if (symbology == BARCODE_PZN) {
+        /* Add hyphen at start */
+        pzn[0] = '-';
+        memcpy(pzn + 1, expected, expected_len);
+        if ((symbol->option_2 == 0 && expected_len != 8) || (symbol->option_2 == 1 && expected_len != 7)) {
+            cmp_len--; /* Don't bother with check digit */
+        }
+        expected = pzn;
         expected_len++;
     }
 

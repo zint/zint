@@ -1180,4 +1180,103 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     return error_number;
 }
 
+INTERNAL int iso3166_alpha2(const char *cc); /* In "iso3166.h" which is included by "gs1.c" */
+
+/* Universal Postal Union S10 */
+/* https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf */
+INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i, j;
+    unsigned char local_source[13 + 1];
+    unsigned char have_check_digit = '\0';
+    int check_digit;
+    static char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
+    int error_number = 0, warn_number = 0;
+
+    if (length != 12 && length != 13) {
+        strcpy(symbol->errtxt, "834: Input must be 12 or 13 characters long");
+        return ZINT_ERROR_TOO_LONG;
+    }
+    if (length == 13) { /* Includes check digit - remove for now */
+        have_check_digit = source[10];
+        memcpy(local_source, source, 10);
+        ustrcpy(local_source + 10, source + 11);
+    } else {
+        ustrcpy(local_source, source);
+    }
+    to_upper(local_source, length);
+
+    if (!z_isupper(local_source[0]) || !z_isupper(local_source[1])) {
+        strcpy(symbol->errtxt, "835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    if (!is_sane(NEON_F, local_source + 2, 12 - 4) || (have_check_digit && !z_isdigit(have_check_digit))) {
+        sprintf(symbol->errtxt, "836: Invalid character in Serial Number (middle %d characters) (digits only)",
+                have_check_digit ? 9 : 8);
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    if (!z_isupper(local_source[10]) || !z_isupper(local_source[11])) {
+        strcpy(symbol->errtxt, "837: Invalid character in Country Code (last 2 characters) (alphabetic only)");
+        return ZINT_ERROR_INVALID_DATA;
+    }
+
+    check_digit = 0;
+    for (i = 2; i < 10; i++) { /* Serial Number only */
+        check_digit += ctoi(local_source[i]) * weights[i - 2];
+    }
+    check_digit %= 11;
+    check_digit = 11 - check_digit;
+    if (check_digit == 10) {
+        check_digit = 0;
+    } else if (check_digit == 11) {
+        check_digit = 5;
+    }
+    if (have_check_digit && ctoi(have_check_digit) != check_digit) {
+        sprintf(symbol->errtxt, "838: Invalid check digit '%c', expecting '%c'", have_check_digit, itoc(check_digit));
+        return ZINT_ERROR_INVALID_CHECK;
+    }
+    /* Add in (back) check digit */
+    local_source[12] = local_source[11];
+    local_source[11] = local_source[10];
+    local_source[10] = itoc(check_digit);
+    local_source[13] = '\0';
+
+    /* Do some checks on the Service Indicator (first char only) and Country Code */
+    if (strchr("JKSTW", local_source[0]) != NULL) { /* These are reserved & cannot be assigned */
+        strcpy(symbol->errtxt, "839: Invalid Service Indicator (first character should not be any of \"JKSTW\")");
+        error_number = ZINT_WARN_NONCOMPLIANT;
+    } else if (strchr("FHIOXY", local_source[0]) != NULL) { /* These aren't allocated as of spec Oct 2017 */
+        strcpy(symbol->errtxt, "840: Non-standard Service Indicator (first 2 characters)");
+        error_number = ZINT_WARN_NONCOMPLIANT;
+    } else if (!iso3166_alpha2((const char *) (local_source + 11))) {
+        strcpy(symbol->errtxt, "841: Country code (last two characters) is not ISO 3166-1");
+        error_number = ZINT_WARN_NONCOMPLIANT;
+    }
+
+    (void) code128(symbol, local_source, 13); /* Only error returned is TOO_LONG which can't happen */
+
+    j = 0;
+    for (i = 0; i < 13; i++) {
+        if (i == 2 || i == 5 || i == 8 || i == 11) {
+            symbol->text[j++] = ' ';
+        }
+        symbol->text[j++] = local_source[i];
+    }
+    symbol->text[j] = '\0';
+
+    if (symbol->output_options & COMPLIANT_HEIGHT) {
+        /* Universal Postal Union S10 Section 8, using max X 0.51mm & minimum height 12.5mm or 15% of width */
+        const float min_height_min = stripf(12.5f / 0.51f);
+        float min_height = stripf(symbol->width * 0.15f);
+        if (min_height < min_height_min) {
+            min_height = min_height_min;
+        }
+        /* Using 50 as default as none recommended */
+        warn_number = set_height(symbol, min_height, min_height > 50.0f ? min_height : 50.0f, 0.0f, 0 /*no_errtxt*/);
+    } else {
+        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+
+    return error_number ? error_number : warn_number;
+}
+
 /* vim: set ts=4 sw=4 et : */

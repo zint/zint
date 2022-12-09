@@ -212,6 +212,7 @@ public:
     /* Symbol output info set by Zint on successful `render()` */
     int encodedWidth() const; // Read-only, encoded width (no. of modules encoded)
     int encodedRows() const; // Read-only, no. of rows encoded
+    float encodedHeight() const; // Read-only, in X-dimensions
     float vectorWidth() const; // Read-only, scaled width
     float vectorHeight() const; // Read-only, scaled height
 
@@ -370,6 +371,7 @@ private:
     bool m_debug;
     int m_encodedWidth;
     int m_encodedRows;
+    float m_encodedHeight;
     float m_vectorWidth;
     float m_vectorHeight;
     QString m_lastError;

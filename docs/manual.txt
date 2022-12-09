@@ -112,6 +112,7 @@ December 2022
             -   6.1.10.5 NVE-18 (SSCC-18)
             -   6.1.10.6 HIBC Code 128
             -   6.1.10.7 DPD Code
+            -   6.1.10.8 UPU S10
         -   6.1.11 GS1 DataBar (ISO 24724)
             -   6.1.11.1 GS1 DataBar Omnidirectional and GS1 DataBar Truncated
             -   6.1.11.2 GS1 DataBar Limited
@@ -2652,7 +2653,13 @@ option_2 = 1).
 [zint -b PZN --compliantheight -d "2758089"]
 
 PZN is a Code 39 based symbology used by the pharmaceutical industry in Germany.
-PZN encodes a 7-digit number to which Zint will add a modulo-11 check digit.
+PZN encodes a 7-digit number to which Zint will add a modulo-11 check digit
+(PZN8). Input less than 7 digits will be zero-filled. An 8-digit input can be
+supplied in which case Zint will validate the check digit.
+
+To encode a PZN7 (obsolete since 2013) instead set --vers=1 (API option_2 = 1)
+and supply up to 7 digits. As with PZN8, a modulo-11 check digit will be added
+or if 7 digits supplied the check digit validated.
 
 6.1.7.5 LOGMARS
 
@@ -2819,6 +2826,19 @@ border width 0.
 A DPD Code can be marked as a “relabel” by specifying --vers=1 (API
 option_2 = 1), which omits the identification tag and prints the barcode at half
 height. In this case, an input of 27 alphanumeric characters is required.
+
+6.1.10.8 UPU S10
+
+[zint -b UPU_S10 --compliantheight -d "EE876543216CA"]
+
+The Universal Postal Union S10 variant of Code 128 encodes 13 characters in the
+format "SSNNNNNNNNXCC", where "SS" is a two-character alphabetic service
+indicator, "NNNNNNNN" is an 8-digit serial number, "X" is a modulo-11 check
+digit, and "CC" is a two-character ISO 3166-1 country code.
+
+The check digit may be omitted in which case Zint will add it. Warnings will be
+generated if the service indicator is non-standard or the country code is not
+ISO 3361-1.
 
 6.1.11 GS1 DataBar (ISO 24724)
 
@@ -4745,6 +4765,7 @@ OPTIONS
         Channel Code    3 to 8    (no. of channels)
         DAFT            50 to 900 (permille tracker ratio)
         DPD             1         (relabel)
+        PZN             1         (PZN7 instead of default PZN8)
         Ultracode       2         (revision 2)
         VIN             1         (add international prefix)
 

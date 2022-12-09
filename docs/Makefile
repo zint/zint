@@ -87,6 +87,7 @@ IMAGES = \
 	images/nve18.svg \
 	images/hibc_128.svg \
 	images/dpd.svg \
+	images/upu_s10.svg \
 	images/dbar_omn.svg \
 	images/dbar_truncated.svg \
 	images/dbar_ltd.svg \

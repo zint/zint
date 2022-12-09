@@ -453,6 +453,11 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
             done = 1;
             break;
+        case BARCODE_UPU_S10:
+            /* Universal Postal Union S10 Section 8 */
+            *left = *right = 10.0f;
+            done = 1;
+            break;
         case BARCODE_MAILMARK_2D:
             /* Royal Mail Mailmark Barcode Definition Document, Section 2.4 */
             *left = *right = *top = *bottom = 4.0f;

@@ -385,6 +385,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         Channel Code    3 to 8    (no. of channels)
         DAFT            50 to 900 (permille tracker ratio)
         DPD             1         (relabel)
+        PZN             1         (PZN7 instead of default PZN8)
         Ultracode       2         (revision 2)
         VIN             1         (add international prefix)
 

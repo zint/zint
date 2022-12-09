@@ -200,6 +200,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length);
 /* Royal Mail 4-state Mailmark */
 INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length);
+INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length); /* Universal Postal Union S10 */
 INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* Ultracode */
 INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
@@ -543,7 +544,7 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
           NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
           hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
        dotcode,      hanxin,        NULL,        NULL, mailmark_2d, /*115-119*/
-          NULL, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
+       upu_s10, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
           NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
@@ -1012,7 +1013,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             }
             symbol->symbology = BARCODE_CODE128;
         } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
-            if (symbol->symbology != 119 && symbol->symbology != 121) { /* BARCODE_MAILMARK_2D/4S */
+            if (symbol->symbology < 119 || symbol->symbology > 121) { /* BARCODE_MAILMARK_2D/4S/UPU_S10 */
                 warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "215: Symbology out of range");
                 if (warn_number >= ZINT_ERROR) {
                     return warn_number;
@@ -1667,7 +1668,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "", -1, 117 },
         { "", -1, 118 },
         { "BARCODE_MAILMARK_2D", BARCODE_MAILMARK_2D, 119 },
-        { "", -1, 120 },
+        { "BARCODE_UPU_S10", BARCODE_UPU_S10, 120 },
         { "BARCODE_MAILMARK_4S", BARCODE_MAILMARK_4S, 121 },
         { "", -1, 122 },
         { "", -1, 123 },
@@ -1896,10 +1897,6 @@ float ZBarcode_Default_Xdim(int symbol_id) {
             /* Royal Mail Mailmark Barcode Definition Document, height 5.1mm / 8 (Zint height) == 0.6375 */
             x_dim_mm = 0.638f; /* Seems better fit to round up to 3 d.p. */
             break;
-        case BARCODE_MAILMARK_2D:
-            /* Royal Mail Mailmark Barcode Definition Document, Section 2.4 */
-            x_dim_mm = 0.5f;
-            break;
         case BARCODE_JAPANPOST:
             x_dim_mm = 0.6f; /* Japan Post Zip/Barcode Manual */
             break;
@@ -1950,6 +1947,10 @@ float ZBarcode_Default_Xdim(int symbol_id) {
         case BARCODE_LOGMARS:
             x_dim_mm = 0.34925f; /* MIL-STD-1189 Rev. B Section 5.2, average of 0.0075" and 0.02" */
             break;
+        case BARCODE_MAILMARK_2D:
+            /* Royal Mail Mailmark Barcode Definition Document, Section 2.4 */
+            x_dim_mm = 0.5f;
+            break;
         case BARCODE_MAXICODE:
             /* ISO/IEC 16023:2000 Table 7, based on L = 25.5mm */
             x_dim_mm =  0.88f;
@@ -1967,6 +1968,9 @@ float ZBarcode_Default_Xdim(int symbol_id) {
         case BARCODE_TELEPEN_NUM:
             /* Telepen Barcode Symbology information and History, average of between 0.010" and 0.0125" */
             x_dim_mm = 0.28575f;
+            break;
+        case BARCODE_UPU_S10:
+            x_dim_mm = 0.42f; /* Universal Postal Union S10 Section 8, average of 0.33mm & 0.51mm */
             break;
 
         /* Stacked (excluding GS1 DataBar) */

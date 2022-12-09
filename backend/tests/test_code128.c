@@ -236,6 +236,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 37*/ { BARCODE_DPD, UNICODE_MODE, -1, "008182709980000020054352276", -1, "0081 827 0998 0000 0200 54 352 276 B" }, /* DPDPLS Section 9.4 */
         /* 38*/ { BARCODE_DPD, UNICODE_MODE, -1, "008182709980000020055191276", -1, "0081 827 0998 0000 0200 55 191 276 A" }, /* DPDPLS Section 9.5 */
         /* 39*/ { BARCODE_DPD, UNICODE_MODE, -1, "008182709980000020056237276", -1, "0081 827 0998 0000 0200 56 237 276 K" }, /* DPDPLS Section 9.6 */
+        /* 40*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, "EE876543216CA", -1, "EE 876 543 216 CA" }, /* UPU S10 Annex A */
         /* BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c */
     };
     int data_size = ARRAY_SIZE(data);
@@ -743,6 +744,75 @@ static void test_dpd_input(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_upu_s10_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    struct item data[] = {
+        /*  0*/ { "AB123456789ABC", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input must be 12 or 13 characters long", "" },
+        /*  1*/ { "AB1234567AB", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input must be 12 or 13 characters long", "" },
+        /*  2*/ { "1B123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
+        /*  3*/ { "1B12345678AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
+        /*  4*/ { "A2123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
+        /*  5*/ { "A212345678AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
+        /*  6*/ { "ABX23456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 836: Invalid character in Serial Number (middle 9 characters) (digits only)", "" },
+        /*  7*/ { "AB12345678XAB", ZINT_ERROR_INVALID_DATA, 0, "Error 836: Invalid character in Serial Number (middle 9 characters) (digits only)", "" },
+        /*  8*/ { "ABX2345678AB", ZINT_ERROR_INVALID_DATA, 0, "Error 836: Invalid character in Serial Number (middle 8 characters) (digits only)", "" },
+        /*  9*/ { "AB1234567XAB", ZINT_ERROR_INVALID_DATA, 0, "Error 836: Invalid character in Serial Number (middle 8 characters) (digits only)", "" },
+        /* 10*/ { "AB1234567891B", ZINT_ERROR_INVALID_DATA, 0, "Error 837: Invalid character in Country Code (last 2 characters) (alphabetic only)", "" },
+        /* 11*/ { "AB123456781B", ZINT_ERROR_INVALID_DATA, 0, "Error 837: Invalid character in Country Code (last 2 characters) (alphabetic only)", "" },
+        /* 12*/ { "AB123456789A2", ZINT_ERROR_INVALID_DATA, 0, "Error 837: Invalid character in Country Code (last 2 characters) (alphabetic only)", "" },
+        /* 13*/ { "AB12345678A2", ZINT_ERROR_INVALID_DATA, 0, "Error 837: Invalid character in Country Code (last 2 characters) (alphabetic only)", "" },
+        /* 14*/ { "AB123456789AB", ZINT_ERROR_INVALID_CHECK, 0, "Error 838: Invalid check digit '9', expecting '5'", "" },
+        /* 15*/ { "JB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 839: Invalid Service Indicator (first character should not be any of \"JKSTW\")", "" },
+        /* 16*/ { "FB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 840: Non-standard Service Indicator (first 2 characters)", "" },
+        /* 17*/ { "AB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 841: Country code (last two characters) is not ISO 3166-1", "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    char escaped[1024];
+    char escaped2[1024];
+
+    testStart("test_upu_s10_input");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_UPU_S10, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (p_ctx->generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width,
+                    testUtilEscape(symbol->errtxt, (int) strlen(symbol->errtxt), escaped2, sizeof(escaped2)), data[i].comment);
+        } else {
+            if (ret < ZINT_ERROR) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_encode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -874,10 +944,10 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 36*/ { BARCODE_GS1_128, GS1_MODE, -1, "[01]12345678901231[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234", 0, 1, 684, 1, "Max length",
                     "110100111001111010111011001101100101100111001000101100011100010110110000101001101111011010110011100110110001101101111011010110011100100010110001110001011011000010100110111101101011001110010001011000111000101101100001010011011110110101100111001000101100011100010110110000101001101111011011110101110111101101101011001110010001011000111000101101100001010011011110110101100111001000101100011100010110110000101001101111011010110011100100010110001110001011011000010100110111101101011001110010001011000111000101101100001010011011110110101100111001000101100011100010110110000101001101111011010110011100100010110001110001011011000010100110111101101011001110010001011000100011110101100011101011"
                 },
-        /* 37*/ { BARCODE_EAN14, GS1_MODE, -1, "4070071967072", 0, 1, 134, 1, "Verified manually against tec-it",
+        /* 37*/ { BARCODE_EAN14, GS1_MODE, -1, "4070071967072", 0, 1, 134, 1, "Verified manually against TEC-IT",
                     "11010011100111101011101100110110011000101000101100001001001100010011001011100100001011001001100010011001001110110111001001100011101011"
                 },
-        /* 38*/ { BARCODE_NVE18, GS1_MODE, -1, "40700000071967072", 0, 1, 156, 1, "Verified manually against tec-it",
+        /* 38*/ { BARCODE_NVE18, GS1_MODE, -1, "40700000071967072", 0, 1, 156, 1, "Verified manually against TEC-IT",
                     "110100111001111010111011011001100110001010001011000010011011001100110110011001001100010011001011100100001011001001100010011001001110110111011101100011101011"
                 },
         /* 39*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "83278F8G9H0J2G", 0, 1, 211, 1, "ANSI/HIBC 2.6 - 2016 Section 4.1, not same, uses different encoding (eg begins StartA instead of StartB)",
@@ -892,7 +962,7 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 42*/ { BARCODE_DPD, UNICODE_MODE, -1, "%000393206219912345678101040", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustrations 2, 7, 8, same; NOTE: correct HRT given by Illustration 7 only",
                     "1101001000010001001100100111011001011101111011011001100110100010001100011011010011001000110111001001011101111010110011100100010110001110001011011000010100110010001001100100010011000101000101011110001100011101011"
                 },
-        /* 43*/ { BARCODE_DPD, UNICODE_MODE, -1, "%007110601782532948375101276", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustration 6 **NOT SAME** HRT incorrect, also uses CodeA and inefficient encoding; verified against tec-it",
+        /* 43*/ { BARCODE_DPD, UNICODE_MODE, -1, "%007110601782532948375101276", 0, 1, 211, 1, "DPDAPPD 4.0.2 - Illustration 6 **NOT SAME** HRT incorrect, also uses CodeA and inefficient encoding; verified against TEC-IT",
                     "1101001000010001001100100111011001011101111010011000100110001001001001100100011001101100110000101001110010110011000110110100010111101011110010011000010010110010001001011001110011001010000100010111101100011101011"
                 },
         /* 44*/ { BARCODE_DPD, UNICODE_MODE, -1, "0123456789012345678901234567", 0, 1, 189, 1, "DPDAPPD 4.0.2 - Illustration 9, same (allowing for literal HRT)",
@@ -912,6 +982,9 @@ static void test_encode(const testCtx *const p_ctx) {
                 },
         /* 49*/ { BARCODE_DPD, UNICODE_MODE, 1, "006376209980000020044118276", 0, 1, 200, 1, "DPDPLS Section 8.7.2 relabel, **NOT SAME**, figure begins StartB then immediate CodeC, zint just StartC",
                     "11010011100110110011001010011000011001010000110010011101011101111010100111100110110011001101100110011001001110100100011001100010001011001110010111011001001011110111011001110100110111011101100011101011"
+                },
+        /* 50*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, "EE876543216CA", 0, 1, 156, 1, "",
+                    "110100100001000110100010001101000111010011001011101111011001010000111010110001100011011010011101100101111011101000100011010100011000111000101101100011101011"
                 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -1100,6 +1173,7 @@ int main(int argc, char *argv[]) {
         { "test_hibc_input", test_hibc_input },
         { "test_ean14_input", test_ean14_input },
         { "test_dpd_input", test_dpd_input },
+        { "test_upu_s10_input", test_upu_s10_input },
         { "test_encode", test_encode },
         { "test_perf", test_perf },
     };

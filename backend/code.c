@@ -352,19 +352,25 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     return error_number;
 }
 
-/* Pharmazentral Nummer (PZN) */
+/* Pharmazentralnummer (PZN) */
 /* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/IFA_Info_Code_39_EN.pdf */
 /* PZN https://www.ifaffm.de/mandanten/1/documents/04_ifa_coding_system/
        IFA-Info_Check_Digit_Calculations_PZN_PPN_UDI_EN.pdf */
 INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number, zeroes;
-    unsigned int count, check_digit;
-    char localstr[11];
+    int count, check_digit;
+    unsigned char have_check_digit = '\0';
+    char localstr[1 + 8 + 1]; /* '-' prefix + 8 digits + NUL */
+    const int pzn7 = symbol->option_2 == 1;
 
-    if (length > 7) {
-        strcpy(symbol->errtxt, "325: Input wrong length (7 character maximum)");
+    if (length > 8 - pzn7) {
+        sprintf(symbol->errtxt, "325: Input wrong length (%d character maximum)", 8 - pzn7);
         return ZINT_ERROR_TOO_LONG;
+    }
+    if (length == 8 - pzn7) {
+        have_check_digit = source[7 - pzn7];
+        length--;
     }
     if (!is_sane(NEON_F, source, length)) {
         strcpy(symbol->errtxt, "326: Invalid character in data (digits only)");
@@ -372,14 +378,14 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     localstr[0] = '-';
-    zeroes = 7 - length + 1;
+    zeroes = 7 - pzn7 - length + 1;
     for (i = 1; i < zeroes; i++)
         localstr[i] = '0';
     ustrcpy(localstr + zeroes, source);
 
     count = 0;
-    for (i = 1; i < 8; i++) {
-        count += i * ctoi(localstr[i]);
+    for (i = 1; i < 8 - pzn7; i++) {
+        count += (i + pzn7) * ctoi(localstr[i]);
     }
 
     check_digit = count % 11;
@@ -392,11 +398,26 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
         strcpy(symbol->errtxt, "327: Invalid PZN, check digit is '10'");
         return ZINT_ERROR_INVALID_DATA;
     }
-    localstr[8] = itoc(check_digit);
-    localstr[9] = '\0';
-    error_number = code39(symbol, (unsigned char *) localstr, 9);
-    ustrcpy(symbol->text, "PZN ");
-    ustrcat(symbol->text, localstr);
+    if (have_check_digit && ctoi(have_check_digit) != check_digit) {
+        sprintf(symbol->errtxt, "890: Invalid check digit '%c', expecting '%c'", have_check_digit, itoc(check_digit));
+        return ZINT_ERROR_INVALID_CHECK;
+    }
+
+    localstr[8 - pzn7] = itoc(check_digit);
+    localstr[9 - pzn7] = '\0';
+
+    if (pzn7) {
+        symbol->option_2 = 0; /* Need to overwrite this so `code39()` doesn't add a check digit itself */
+    }
+
+    error_number = code39(symbol, (unsigned char *) localstr, 9 - pzn7);
+
+    if (pzn7) {
+        symbol->option_2 = 1; /* Restore */
+    }
+
+    ustrcpy(symbol->text, "PZN - "); /* Note changed to put space after hyphen */
+    ustrcat(symbol->text, localstr + 1);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Technical Information regarding PZN Coding V 2.1 (25 Feb 2019) Code size
