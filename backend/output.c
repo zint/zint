@@ -767,7 +767,7 @@ static int out_maybe_mkdir(const char* path)
     DWORD dwAttrib;
 
     /* Try to make the directory */
-    if (CreateDirectory(path, NULL) != 0) { /* Non-zero on success */
+    if (CreateDirectoryA(path, NULL) != 0) { /* Non-zero on success */
         return 0;
     }
     /* If it fails for any reason but already exists, fail */
@@ -775,7 +775,7 @@ static int out_maybe_mkdir(const char* path)
         return -1;
     }
     /* Check if the existing path is a directory */
-    if ((dwAttrib = GetFileAttributes(path)) == (DWORD) -1 || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+    if ((dwAttrib = GetFileAttributesA(path)) == (DWORD) -1 || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
         return -1;
     }
 #else
