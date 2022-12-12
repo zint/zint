@@ -1,5 +1,5 @@
-Version 2.11.1.9 (dev) not released yet
-=======================================
+Version 2.12.0 (2022-12-12)
+===========================
 
 **Incompatible changes**
 ------------------------
@@ -14,9 +14,10 @@ Version 2.11.1.9 (dev) not released yet
 - Legacy and never-used output option BARCODE_NO_ASCII removed (value now used
   by new output option BARCODE_BIND_TOP)
 - Symbology BARCODE_CODE128B (Suppress subset C) renamed to BARCODE_CODE128AB
-  to more accurately reflect its behaviour (old name still recognised)
+  to more accurately reflect its behaviour (old name still recognised, except in
+  Tcl backend)
 - Symbology BARCODE_MAILMARK renamed to BARCODE_MAILMARK_4S due to introduction
-  of BARCODE_MAILMARK_2D
+  of BARCODE_MAILMARK_2D (old name still recognised, except in Tcl backend)
 - CLI now expects floating point arguments to be in simple decimal point
   notation (i.e. not scientific notation) with a maximum of 7 significant digits
 

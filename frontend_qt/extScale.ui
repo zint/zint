@@ -337,7 +337,7 @@
         <string>Close window without updating the Printing Scale</string>
        </property>
        <property name="text">
-        <string>&amp;Close</string>
+        <string>&amp;Cancel</string>
        </property>
       </widget>
      </item>

@@ -1,5 +1,5 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
-% Version 2.11.1.9
+% Version 2.12.0
 % December 2022
 
 # 1. Introduction
@@ -335,9 +335,9 @@ which accept RRGGBBAA hexadecimal values or by clicking the foreground eye
 (Note that to change the colours visually, the luminence slider, the long narrow
 column on the right, must be adjusted.)
 
-The colours can be reset to black-on-white using the `"Reset"` button, and
-exchanged one for the other using the swap ![swap](images/gui_swap.png) button
-next to it.
+Back in the Appearance tab, the colours can be reset to black-on-white using the
+`"Reset"` button, and exchanged one for the other using the swap
+![swap](images/gui_swap.png) button next to it.
 
 ## 3.6 Data Dialog
 
@@ -4300,7 +4300,7 @@ those owners, companies or organisations.
 
 ## 7.3 Version Information
 
-The current stable version of Zint is 2.11.1, released on 22nd August 2022.
+The current stable version of Zint is 2.12.0, released on 12th December 2022.
 
 See `"ChangeLog"` in the project root directory for information on all releases.
 
