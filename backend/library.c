@@ -478,6 +478,7 @@ static int has_hrt(const int symbology) {
         case BARCODE_FIM:
         case BARCODE_PHARMA:
         case BARCODE_PHARMA_TWO:
+        case BARCODE_CEPNET:
         case BARCODE_PDF417:
         case BARCODE_PDF417COMP:
         case BARCODE_AUSPOST:

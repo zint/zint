@@ -348,6 +348,159 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_has_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        char *data;
+        char *composite;
+    };
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE11, "1234567890", "" },
+        /*  1*/ { BARCODE_C25STANDARD, "1234567890", "" },
+        /*  2*/ { BARCODE_C25INTER, "1234567890", "" },
+        /*  3*/ { BARCODE_C25IATA, "1234567890", "" },
+        /*  4*/ { BARCODE_C25LOGIC, "1234567890", "" },
+        /*  5*/ { BARCODE_C25IND, "1234567890", "" },
+        /*  6*/ { BARCODE_CODE39, "1234567890", "" },
+        /*  7*/ { BARCODE_EXCODE39, "1234567890", "" },
+        /*  8*/ { BARCODE_EANX, "123456789012", "" },
+        /*  9*/ { BARCODE_EANX_CHK, "1234567890128", "" },
+        /* 10*/ { BARCODE_GS1_128, "[01]12345678901231", "" },
+        /* 11*/ { BARCODE_CODABAR, "A00000000B", "" },
+        /* 12*/ { BARCODE_CODE128, "1234567890", "" },
+        /* 13*/ { BARCODE_DPLEIT, "1234567890123", "" },
+        /* 14*/ { BARCODE_DPIDENT, "12345678901", "" },
+        /* 15*/ { BARCODE_CODE16K, "1234567890", "" },
+        /* 16*/ { BARCODE_CODE49, "1234567890", "" },
+        /* 17*/ { BARCODE_CODE93, "1234567890", "" },
+        /* 18*/ { BARCODE_FLAT, "1234567890", "" },
+        /* 19*/ { BARCODE_DBAR_OMN, "1234567890123", "" },
+        /* 20*/ { BARCODE_DBAR_LTD, "1234567890123", "" },
+        /* 21*/ { BARCODE_DBAR_EXP, "[01]12345678901231", "" },
+        /* 22*/ { BARCODE_TELEPEN, "1234567890", "" },
+        /* 23*/ { BARCODE_UPCA, "12345678901", "" },
+        /* 24*/ { BARCODE_UPCA_CHK, "123456789012", "" },
+        /* 25*/ { BARCODE_UPCE, "1234567", "" },
+        /* 26*/ { BARCODE_UPCE_CHK, "12345670", "" },
+        /* 27*/ { BARCODE_POSTNET, "12345678901", "" },
+        /* 28*/ { BARCODE_MSI_PLESSEY, "1234567890", "" },
+        /* 29*/ { BARCODE_FIM, "A", "" },
+        /* 30*/ { BARCODE_LOGMARS, "1234567890", "" },
+        /* 31*/ { BARCODE_PHARMA, "123456", "" },
+        /* 32*/ { BARCODE_PZN, "123456", "" },
+        /* 33*/ { BARCODE_PHARMA_TWO, "12345678", "" },
+        /* 34*/ { BARCODE_CEPNET, "12345678", "" },
+        /* 35*/ { BARCODE_PDF417, "1234567890", "" },
+        /* 36*/ { BARCODE_PDF417COMP, "1234567890", "" },
+        /* 37*/ { BARCODE_MAXICODE, "1234567890", "" },
+        /* 38*/ { BARCODE_QRCODE, "1234567890AB", "" },
+        /* 39*/ { BARCODE_CODE128AB, "1234567890", "" },
+        /* 40*/ { BARCODE_AUSPOST, "12345678901234567890123", "" },
+        /* 41*/ { BARCODE_AUSREPLY, "12345678", "" },
+        /* 42*/ { BARCODE_AUSROUTE, "12345678", "" },
+        /* 43*/ { BARCODE_AUSREDIRECT, "12345678", "" },
+        /* 44*/ { BARCODE_ISBNX, "123456789", "" },
+        /* 45*/ { BARCODE_RM4SCC, "1234567890", "" },
+        /* 46*/ { BARCODE_DATAMATRIX, "ABC", "" },
+        /* 47*/ { BARCODE_EAN14, "1234567890123", "" },
+        /* 48*/ { BARCODE_VIN, "12345678701234567", "" },
+        /* 49*/ { BARCODE_CODABLOCKF, "1234567890", "" },
+        /* 50*/ { BARCODE_NVE18, "12345678901234567", "" },
+        /* 51*/ { BARCODE_JAPANPOST, "1234567890", "" },
+        /* 52*/ { BARCODE_KOREAPOST, "123456", "" },
+        /* 53*/ { BARCODE_DBAR_STK, "1234567890123", "" },
+        /* 54*/ { BARCODE_DBAR_OMNSTK, "1234567890123", "" },
+        /* 55*/ { BARCODE_DBAR_EXPSTK, "[01]12345678901231", "" },
+        /* 56*/ { BARCODE_PLANET, "12345678901", "" },
+        /* 57*/ { BARCODE_MICROPDF417, "1234567890", "" },
+        /* 58*/ { BARCODE_USPS_IMAIL, "12345678901234567890", "" },
+        /* 59*/ { BARCODE_PLESSEY, "1234567890", "" },
+        /* 60*/ { BARCODE_TELEPEN_NUM, "1234567890", "" },
+        /* 61*/ { BARCODE_ITF14, "1234567890", "" },
+        /* 62*/ { BARCODE_KIX, "123456ABCDE", "" },
+        /* 63*/ { BARCODE_AZTEC, "1234567890AB", "" },
+        /* 64*/ { BARCODE_DAFT, "DAFTDAFTDAFTDAFT", "" },
+        /* 65*/ { BARCODE_DPD, "0123456789012345678901234567", "" },
+        /* 66*/ { BARCODE_MICROQR, "12345", "" },
+        /* 67*/ { BARCODE_HIBC_128, "1234567890", "" },
+        /* 68*/ { BARCODE_HIBC_39, "1234567890", "" },
+        /* 69*/ { BARCODE_HIBC_DM, "ABC", "" },
+        /* 70*/ { BARCODE_HIBC_QR, "1234567890AB", "" },
+        /* 71*/ { BARCODE_HIBC_PDF, "1234567890", "" },
+        /* 72*/ { BARCODE_HIBC_MICPDF, "1234567890", "" },
+        /* 73*/ { BARCODE_HIBC_BLOCKF, "1234567890", "" },
+        /* 74*/ { BARCODE_HIBC_AZTEC, "1234567890AB", "" },
+        /* 75*/ { BARCODE_DOTCODE, "ABC", "" },
+        /* 76*/ { BARCODE_HANXIN, "1234567890AB", "" },
+        /* 77*/ { BARCODE_MAILMARK_2D, "012100123412345678AB19XY1A 0", "" },
+        /* 78*/ { BARCODE_UPU_S10, "EE876543216CA", "" },
+        /* 79*/ { BARCODE_MAILMARK_4S, "01000000000000000AA00AA0A", "" },
+        /* 80*/ { BARCODE_AZRUNE, "255", "" },
+        /* 81*/ { BARCODE_CODE32, "12345678", "" },
+        /* 82*/ { BARCODE_EANX_CC, "123456789012", "[20]01" },
+        /* 83*/ { BARCODE_GS1_128_CC, "[01]12345678901231", "[20]01" },
+        /* 84*/ { BARCODE_DBAR_OMN_CC, "1234567890123", "[20]01" },
+        /* 85*/ { BARCODE_DBAR_LTD_CC, "1234567890123", "[20]01" },
+        /* 86*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231", "[20]01" },
+        /* 87*/ { BARCODE_UPCA_CC, "12345678901", "[20]01" },
+        /* 88*/ { BARCODE_DBAR_STK_CC, "1234567890123", "[20]01" },
+        /* 89*/ { BARCODE_DBAR_OMNSTK_CC, "1234567890123", "[20]01" },
+        /* 90*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231", "[20]01" },
+        /* 91*/ { BARCODE_CHANNEL, "01", "" },
+        /* 92*/ { BARCODE_CODEONE, "12345678901234567890", "" },
+        /* 93*/ { BARCODE_GRIDMATRIX, "ABC", "" },
+        /* 94*/ { BARCODE_UPNQR, "1234567890AB", "" },
+        /* 95*/ { BARCODE_ULTRA, "1234567890", "" },
+        /* 96*/ { BARCODE_RMQR, "12345", "" },
+        /* 97*/ { BARCODE_BC412, "1234567", "" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    char *text;
+    unsigned int has_hrt;
+
+    testStart("test_has_hrt");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->symbology = data[i].symbology;
+        symbol->input_mode = UNICODE_MODE;
+        symbol->debug |= debug;
+
+        if (strlen(data[i].composite)) {
+            text = data[i].composite;
+            strcpy(symbol->primary, data[i].data);
+        } else {
+            text = data[i].data;
+        }
+        length = (int) strlen(text);
+
+        ret = ZBarcode_Encode_and_Buffer_Vector(symbol, (unsigned char *) text, length, 0);
+        assert_zero(ret, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+        assert_nonnull(symbol->vector, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
+
+        has_hrt = ZBarcode_Cap(symbol->symbology, ZINT_CAP_HRT) == ZINT_CAP_HRT;
+        if (has_hrt) {
+            assert_nonnull(symbol->vector->strings, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector->strings NULL\n", i, data[i].symbology);
+        } else {
+            assert_null(symbol->vector->strings, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector->strings not NULL\n", i, data[i].symbology);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_upcean_hrt(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -2348,6 +2501,7 @@ int main(int argc, char *argv[]) {
     testFunction funcs[] = { /* name, func */
         { "test_options", test_options },
         { "test_buffer_vector", test_buffer_vector },
+        { "test_has_hrt", test_has_hrt },
         { "test_upcean_hrt", test_upcean_hrt },
         { "test_row_separator", test_row_separator },
         { "test_stacking", test_stacking },
