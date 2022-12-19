@@ -597,7 +597,8 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (!is_sane(RUBIDIUM_F, local_source, 45)) {
-        strcpy(symbol->errtxt, "866: Invalid character in data (alphanumerics and space only in first 45 characters)");
+        strcpy(symbol->errtxt,
+                "866: Invalid character in data (alphanumerics and space only in first 45 characters)");
         return ZINT_ERROR_INVALID_DATA;
     }
 

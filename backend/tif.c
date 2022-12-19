@@ -398,7 +398,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                 file_pos = ftell(tif_file);
                 if (!tif_lzw_encode(&lzw_state, tif_file, strip_buf, bytes_put)) { /* Only fails if can't malloc */
                     tif_lzw_cleanup(&lzw_state);
-                    fclose(tif_file); /* Only use LZW if not STDOUT, so ok to close */
+                    (void) fclose(tif_file); /* Only use LZW if not STDOUT, so ok to close */
                     strcpy(symbol->errtxt, "673: Failed to malloc LZW hash table");
                     return ZINT_ERROR_MEMORY;
                 }
@@ -603,15 +603,29 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         total_bytes_put += 6 * color_map_size;
     }
 
+    if (ferror(tif_file)) {
+        sprintf(symbol->errtxt, "679: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(tif_file);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(tif_file);
+        if (fflush(tif_file) != 0) {
+            sprintf(symbol->errtxt, "980: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
         if (ftell(tif_file) != total_bytes_put) {
-            fclose(tif_file);
+            (void) fclose(tif_file);
             strcpy(symbol->errtxt, "674: Failed to write all output");
             return ZINT_ERROR_FILE_WRITE;
         }
-        fclose(tif_file);
+        if (fclose(tif_file) != 0) {
+            sprintf(symbol->errtxt, "981: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     return 0;

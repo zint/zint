@@ -249,11 +249,11 @@ INTERNAL int error_tag_test(struct zint_symbol *symbol, int error_number, const 
 static int dump_plot(struct zint_symbol *symbol) {
     FILE *f;
     int i, r;
-    char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8',
-        '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+    static const char hex[] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
     int space = 0;
+    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 
-    if (symbol->output_options & BARCODE_STDOUT) {
+    if (output_to_stdout) {
         f = stdout;
     } else {
         f = fopen(symbol->outfile, "w");
@@ -295,10 +295,24 @@ static int dump_plot(struct zint_symbol *symbol) {
         space = 0;
     }
 
-    if (symbol->output_options & BARCODE_STDOUT) {
-        fflush(f);
+    if (ferror(f)) {
+        sprintf(symbol->errtxt, "790: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(f);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
+    if (output_to_stdout) {
+        if (fflush(f) != 0) {
+            sprintf(symbol->errtxt, "791: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(f);
+        if (fclose(f) != 0) {
+            sprintf(symbol->errtxt, "792: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     return 0;
@@ -1426,18 +1440,28 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         file_opened = 1;
 
         /* Get file length */
-        fseek(file, 0, SEEK_END);
+        if (fseek(file, 0, SEEK_END) != 0) {
+            sprintf(symbol->errtxt, "792: Unable to seek input file (%d: %.30s)", errno, strerror(errno));
+            (void) fclose(file);
+            return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
+        }
+
         fileLen = ftell(file);
-        fseek(file, 0, SEEK_SET);
 
         /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
         if (fileLen <= 0 || fileLen == LONG_MAX) {
-            fclose(file);
+            (void) fclose(file);
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "235: Input file empty or unseekable");
         }
         if (fileLen > ZINT_MAX_DATA_LEN) {
-            fclose(file);
+            (void) fclose(file);
             return error_tag(symbol, ZINT_ERROR_TOO_LONG, "230: Input file too long");
+        }
+
+        if (fseek(file, 0, SEEK_SET) != 0) {
+            sprintf(symbol->errtxt, "793: Unable to seek input file (%d: %.30s)", errno, strerror(errno));
+            (void) fclose(file);
+            return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
         }
     }
 
@@ -1445,7 +1469,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
     buffer = (unsigned char *) malloc(fileLen);
     if (!buffer) {
         if (file_opened) {
-            fclose(file);
+            (void) fclose(file);
         }
         return error_tag(symbol, ZINT_ERROR_MEMORY, "231: Insufficient memory for file read buffer");
     }
@@ -1456,17 +1480,21 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
             sprintf(symbol->errtxt, "241: Input file read error (%d: %.30s)", errno, strerror(errno));
-            if (file_opened) {
-                fclose(file);
-            }
             free(buffer);
+            if (file_opened) {
+                (void) fclose(file);
+            }
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
         }
         nRead += n;
     } while (!feof(file) && (0 < n) && ((long) nRead < fileLen));
 
     if (file_opened) {
-        fclose(file);
+        if (fclose(file) != 0) {
+            sprintf(symbol->errtxt, "794: Failure on closing input file (%d: %.30s)", errno, strerror(errno));
+            free(buffer);
+            return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
+        }
     }
     ret = ZBarcode_Encode(symbol, buffer, (int) nRead);
     free(buffer);

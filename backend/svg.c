@@ -136,6 +136,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char colour_code[7];
     int len, html_len;
 
+    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     char *html_string;
 
     for (i = 0; i < 6; i++) {
@@ -181,7 +182,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         strcpy(symbol->errtxt, "681: Vector header NULL");
         return ZINT_ERROR_INVALID_DATA;
     }
-    if (symbol->output_options & BARCODE_STDOUT) {
+    if (output_to_stdout) {
         fsvg = stdout;
     } else {
         if (!(fsvg = out_fopen(symbol->outfile, "w"))) {
@@ -193,14 +194,14 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     locale = setlocale(LC_ALL, "C");
 
     /* Start writing the header */
-    fprintf(fsvg, "<?xml version=\"1.0\" standalone=\"no\"?>\n");
-    fprintf(fsvg, "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n");
-    fprintf(fsvg, "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n");
+    fputs("<?xml version=\"1.0\" standalone=\"no\"?>\n"
+          "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n"
+          "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n", fsvg);
     fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n",
             (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    fprintf(fsvg, "   xmlns=\"http://www.w3.org/2000/svg\">\n");
-    fprintf(fsvg, "   <desc>Zint Generated Symbol\n");
-    fprintf(fsvg, "   </desc>\n");
+    fputs("   xmlns=\"http://www.w3.org/2000/svg\">\n"
+          "   <desc>Zint Generated Symbol\n"
+          "   </desc>\n", fsvg);
     fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
     if (bg_alpha != 0) {
@@ -209,7 +210,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         if (bg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
         }
-        fprintf(fsvg, " />\n");
+        fputs(" />\n", fsvg);
     }
 
     rect = symbol->vector->rectangles;
@@ -223,7 +224,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
         }
-        fprintf(fsvg, " />\n");
+        fputs(" />\n", fsvg);
         rect = rect->next;
     }
 
@@ -268,7 +269,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
         }
-        fprintf(fsvg, " />\n");
+        fputs(" />\n", fsvg);
         hex = hex->next;
     }
 
@@ -300,7 +301,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
                 fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
             }
         }
-        fprintf(fsvg, " />\n");
+        fputs(" />\n", fsvg);
         circle = circle->next;
     }
 
@@ -312,7 +313,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"%s\"\n", string->x, string->y, halign);
         fprintf(fsvg, "         font-family=\"%s\" font-size=\"%.1f\"", font_family, string->fsize);
         if (bold) {
-            fprintf(fsvg, " font-weight=\"bold\"");
+            fputs(" font-weight=\"bold\"", fsvg);
         }
         if (fg_alpha != 0xff) {
             fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
@@ -320,24 +321,38 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         if (string->rotation != 0) {
             fprintf(fsvg, " transform=\"rotate(%d,%.2f,%.2f)\"", string->rotation, string->x, string->y);
         }
-        fprintf(fsvg, " >\n");
+        fputs(" >\n", fsvg);
         make_html_friendly(string->text, html_string);
         fprintf(fsvg, "         %s\n", html_string);
-        fprintf(fsvg, "      </text>\n");
+        fputs("      </text>\n", fsvg);
         string = string->next;
     }
 
-    fprintf(fsvg, "   </g>\n");
-    fprintf(fsvg, "</svg>\n");
-
-    if (symbol->output_options & BARCODE_STDOUT) {
-        fflush(fsvg);
-    } else {
-        fclose(fsvg);
-    }
+    fputs("   </g>\n"
+          "</svg>\n", fsvg);
 
     if (locale)
         setlocale(LC_ALL, locale);
+
+    if (ferror(fsvg)) {
+        sprintf(symbol->errtxt, "682: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(fsvg);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
+    if (output_to_stdout) {
+        if (fflush(fsvg) != 0) {
+            sprintf(symbol->errtxt, "683: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
+    } else {
+        if (fclose(fsvg) != 0) {
+            sprintf(symbol->errtxt, "684: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
+    }
 
     return error_number;
 }

@@ -271,38 +271,38 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     /* Start writing the header */
-    fprintf(feps, "%%!PS-Adobe-3.0 EPSF-3.0\n");
+    fputs("%!PS-Adobe-3.0 EPSF-3.0\n", feps);
     if (ZINT_VERSION_BUILD) {
         fprintf(feps, "%%%%Creator: Zint %d.%d.%d.%d\n",
                 ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
     } else {
         fprintf(feps, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
     }
-    fprintf(feps, "%%%%Title: Zint Generated Symbol\n");
-    fprintf(feps, "%%%%Pages: 0\n");
+    fputs("%%Title: Zint Generated Symbol\n"
+          "%%Pages: 0\n", feps);
     fprintf(feps, "%%%%BoundingBox: 0 0 %d %d\n",
             (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    fprintf(feps, "%%%%EndComments\n");
+    fputs("%%EndComments\n", feps);
 
     /* Definitions */
     if (have_circles_without_width) {
         /* Disc: x y radius TD */
-        fprintf(feps, "/TD { newpath 0 360 arc fill } bind def\n");
+        fputs("/TD { newpath 0 360 arc fill } bind def\n", feps);
     }
     if (have_circles_with_width) {
         /* Circle (ring): x y radius width TC (adapted from BWIPP renmaxicode.ps) */
-        fprintf(feps, "/TC { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
-                        " bind def\n");
+        fputs("/TC { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
+                " bind def\n", feps);
     }
     if (symbol->vector->hexagons) {
-        fprintf(feps, "/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n");
+        fputs("/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n", feps);
     }
-    fprintf(feps, "/TB { 2 copy } bind def\n");
-    fprintf(feps, "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill }"
-                    " bind def\n");
-    fprintf(feps, "/TE { pop pop } bind def\n");
+    fputs("/TB { 2 copy } bind def\n"
+          "/TR { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill }"
+            " bind def\n"
+          "/TE { pop pop } bind def\n", feps);
 
-    fprintf(feps, "newpath\n");
+    fputs("newpath\n", feps);
 
     /* Now the actual representation */
 
@@ -315,7 +315,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         }
 
         fprintf(feps, "%.2f 0.00 TB 0.00 %.2f TR\n", symbol->vector->height, symbol->vector->width);
-        fprintf(feps, "TE\n");
+        fputs("TE\n", feps);
     }
 
     if (symbol->symbology != BARCODE_ULTRA) {
@@ -344,7 +344,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                 }
                 fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n",
                         rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
-                fprintf(feps, "TE\n");
+                fputs("TE\n", feps);
             }
             rect = rect->next;
         }
@@ -361,7 +361,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                     }
                     fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n",
                             rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
-                    fprintf(feps, "TE\n");
+                    fputs("TE\n", feps);
                 }
                 rect = rect->next;
             }
@@ -371,7 +371,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         while (rect) {
             fprintf(feps, "%.2f %.2f TB %.2f %.2f TR\n",
                     rect->height, (symbol->vector->height - rect->y) - rect->height, rect->x, rect->width);
-            fprintf(feps, "TE\n");
+            fputs("TE\n", feps);
             rect = rect->next;
         }
     }
@@ -473,17 +473,17 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         if (iso_latin1) {
             /* Change encoding to ISO 8859-1, see Postscript Language Reference Manual 2nd Edition Example 5.6 */
             fprintf(feps, "/%s findfont\n", font);
-            fprintf(feps, "dup length dict begin\n");
-            fprintf(feps, "{1 index /FID ne {def} {pop pop} ifelse} forall\n");
-            fprintf(feps, "/Encoding ISOLatin1Encoding def\n");
-            fprintf(feps, "currentdict\n");
-            fprintf(feps, "end\n");
-            fprintf(feps, "/Helvetica-ISOLatin1 exch definefont pop\n");
+            fputs("dup length dict begin\n"
+                  "{1 index /FID ne {def} {pop pop} ifelse} forall\n"
+                  "/Encoding ISOLatin1Encoding def\n"
+                  "currentdict\n"
+                  "end\n"
+                  "/Helvetica-ISOLatin1 exch definefont pop\n", feps);
             font = "Helvetica-ISOLatin1";
         }
         do {
             ps_convert(string->text, ps_string);
-            fprintf(feps, "matrix currentmatrix\n");
+            fputs("matrix currentmatrix\n", feps);
             fprintf(feps, "/%s findfont\n", font);
             fprintf(feps, "%.2f scalefont setfont\n", string->fsize);
             fprintf(feps, " 0 0 moveto %.2f %.2f translate 0.00 rotate 0 0 moveto\n",
@@ -492,30 +492,44 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                 fprintf(feps, " (%s) stringwidth\n", ps_string);
             }
             if (string->rotation != 0) {
-                fprintf(feps, "gsave\n");
+                fputs("gsave\n", feps);
                 fprintf(feps, "%d rotate\n", 360 - string->rotation);
             }
             if (string->halign == 0 || string->halign == 2) {
-                fprintf(feps, "pop\n");
+                fputs("pop\n", feps);
                 fprintf(feps, "%s 0 rmoveto\n", string->halign == 2 ? "neg" : "-2 div");
             }
             fprintf(feps, " (%s) show\n", ps_string);
             if (string->rotation != 0) {
-                fprintf(feps, "grestore\n");
+                fputs("grestore\n", feps);
             }
-            fprintf(feps, "setmatrix\n");
+            fputs("setmatrix\n", feps);
             string = string->next;
         } while (string);
     }
 
-    if (output_to_stdout) {
-        fflush(feps);
-    } else {
-        fclose(feps);
-    }
-
     if (locale)
         setlocale(LC_ALL, locale);
+
+    if (ferror(feps)) {
+        sprintf(symbol->errtxt, "647: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(feps);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
+    if (output_to_stdout) {
+        if (fflush(feps) != 0) {
+            sprintf(symbol->errtxt, "648: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
+    } else {
+        if (fclose(feps) != 0) {
+            sprintf(symbol->errtxt, "649: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
+    }
 
     return error_number;
 }

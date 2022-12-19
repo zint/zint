@@ -492,15 +492,20 @@ Sequence    Equivalent
 
 `\\`        0x5C        `\`     Backslash
 
-`\dNNN`     NNN                 Any 8-bit character where NNN is decimal (0-255)
+`\dNNN`     NNN                 Any 8-bit character where NNN is decimal
+                                (000-255)
+
+`\oNNN`     0oNNN               Any 8-bit character where NNN is octal
+                                (000-377)
 
 `\xNN`      0xNN                Any 8-bit character where NN is hexadecimal
+                                (00-FF)
 
 `\uNNNN`                        Any 16-bit Unicode BMP[^2] character where
-                                NNNN is hexadecimal
+                                NNNN is hexadecimal (0000-FFFF)
 
 `\UNNNNNN`                      Any 21-bit Unicode character where NNNNNN
-                                is hexadecimal (maximum 0x10FFFF)
+                                is hexadecimal (000000-10FFFF)
 ---------------------------------------------------------------------------
 
 Table: {#tbl:escape_sequences tag=": Escape Sequences"}
@@ -593,7 +598,7 @@ Value
 
  18      `BARCODE_CODABAR`         Codabar
 
- 20      `BARCODE_CODE128`         Code 128 (automatic subset switching)
+ 20      `BARCODE_CODE128`         Code 128 (automatic Code Set switching)
 
  21      `BARCODE_DPLEIT`          Deutsche Post Leitcode
 
@@ -648,7 +653,7 @@ Value
 
  58      `BARCODE_QRCODE`          QR Code
 
- 60      `BARCODE_CODE128AB`       Code 128 (Suppress subset C)
+ 60      `BARCODE_CODE128AB`       Code 128 (Suppress Code Set C)
 
  63      `BARCODE_AUSPOST`         Australia Post Standard Customer
 
@@ -2776,20 +2781,22 @@ pharmaceuticals. The symbology is able to encode whole numbers between 3 and
 
 One of the most ubiquitous one-dimensional barcode symbologies, Code 128 was
 developed in 1981 by Computer Identics. This symbology supports full ASCII text
-and uses a three-mode system to compress the data into a smaller symbol. Zint
-automatically switches between modes and adds a modulo-103 check digit. Code
-128 is the default barcode symbology used by Zint. In addition Zint supports
-the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128 symbols. The
-ISO/IEC 8859-1 character set is shown in Appendix [A.2 Latin Alphabet No. 1
-(ISO/IEC 8859-1)].
+and uses a three-Code Set system to compress the data into a smaller symbol.
+Zint automatically switches between Code Sets A, B and C and adds a modulo-103
+check digit.
 
-#### 6.1.10.2 Code 128 Suppress Subset C (Subsets A and B only)
+Code 128 is the default barcode symbology used by Zint. In addition Zint
+supports the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128
+symbols. The ISO/IEC 8859-1 character set is shown in Appendix [A.2 Latin
+Alphabet No. 1 (ISO/IEC 8859-1)].
+
+#### 6.1.10.2 Code 128 Suppress Code Set C (Code Sets A and B only)
 
 ![`zint -b CODE128AB -d "130170X178"`](images/code128ab.svg)
 
-It is sometimes advantageous to stop Code 128 from using subset mode C which
+It is sometimes advantageous to stop Code 128 from using Code Set C which
 compresses numerical data. The `BARCODE_CODE128AB`[^10] variant (symbology 60)
-suppresses mode C in favour of modes A and B.
+suppresses Code Set C in favour of Code Sets A and B.
 
 [^10]: `BARCODE_CODE128AB` previously used the name `BARCODE_CODE128B`, which is
 still recognised.

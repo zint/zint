@@ -832,10 +832,24 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     fwrite(&emr_eof, sizeof(emr_eof_t), 1, emf_file);
 
+    if (ferror(emf_file)) {
+        sprintf(symbol->errtxt, "644: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(emf_file);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(emf_file);
+        if (fflush(emf_file) != 0) {
+            sprintf(symbol->errtxt, "940: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(emf_file);
+        if (fclose(emf_file) != 0) {
+            sprintf(symbol->errtxt, "941: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
     return error_number;
 }

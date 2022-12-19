@@ -199,18 +199,35 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         bmp_file = stdout;
     } else {
         if (!(bmp_file = out_fopen(symbol->outfile, "wb"))) {
-            free(bitmap_file_start);
             sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", errno, strerror(errno));
+            free(bitmap_file_start);
             return ZINT_ERROR_FILE_ACCESS;
         }
     }
 
     fwrite(bitmap_file_start, file_header.file_size, 1, bmp_file);
 
+    if (ferror(bmp_file)) {
+        sprintf(symbol->errtxt, "603: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        free(bitmap_file_start);
+        if (!output_to_stdout) {
+            (void) fclose(bmp_file);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(bmp_file);
+        if (fflush(bmp_file) != 0) {
+            sprintf(symbol->errtxt, "604: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            free(bitmap_file_start);
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(bmp_file);
+        if (fclose(bmp_file) != 0) {
+            sprintf(symbol->errtxt, "605: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            free(bitmap_file_start);
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     free(bitmap_file_start);

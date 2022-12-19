@@ -7,11 +7,14 @@ Version 2.12.0.9 (dev) not released yet
 
 Changes
 -------
-- None yet
+- BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT: check for errors on writing to output
+  file (ticket #275)
+- manual/man page: document octal escape; Code 128 subset/mode -> Code Set
 
 Bugs
 ----
 - CEPNET: fix no HRT (library: `has_hrt()`)
+- man page: fix Code 11 check digit info
 
 
 Version 2.12.0 (2022-12-12)

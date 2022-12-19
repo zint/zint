@@ -1013,7 +1013,7 @@ static int append_log(char log) {
 
     file = fopen("zintlog.txt", "a+");
     fprintf(file, "%c", log);
-    fclose(file);
+    (void) fclose(file);
     return 0;
 }
 
@@ -1023,7 +1023,7 @@ static int write_log(char log[]) {
     file = fopen("zintlog.txt", "a+");
     fprintf(file, log); /*writes*/
     fprintf(file, "\r\n"); /*writes*/
-    fclose(file);
+    (void) fclose(file);
     return 0;
 }
 #endif

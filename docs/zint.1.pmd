@@ -139,8 +139,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         \\       (0x5C)    \    Backslash
         \dNNN    (NNN)          Any 8-bit character where NNN is
                                 decimal (000-255)
+        \oNNN    (0oNNN)        Any 8-bit character where NNN is
+                                octal (000-377)
         \xNN     (0xNN)         Any 8-bit character where NN is
-                                hexadecimal
+                                hexadecimal (00-FF)
         \uNNNN   (U+NNNN)       Any 16-bit Unicode BMP character
                                 where NNNN is hexadecimal
         \UNNNNNN (U+NNNNNN)     Any 21-bit Unicode character
@@ -368,8 +370,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         C25LOGIC        ditto
         C25STANDARD     ditto
         Codabar         1 or 2 (add hidden or visible check digit)
-        Code 11         0 or 1 (no or 1 visible check digit only)
-                               (default is 2 visible check digits)
+        Code 11         0 to 2 (2 visible check digits to none)
+                        0      (default 2 visible check digits)
+                        1      (1 visible check digit)
+                        2      (no check digits)
         Code 39         1      (add visible check digit)
         Code 93         1      (hide the default check characters)
         EXCODE39        1      (add visible check digit)

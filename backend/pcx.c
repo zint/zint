@@ -207,10 +207,24 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         }
     }
 
+    if (ferror(pcx_file)) {
+        sprintf(symbol->errtxt, "622: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(pcx_file);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(pcx_file);
+        if (fflush(pcx_file) != 0) {
+            sprintf(symbol->errtxt, "623: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(pcx_file);
+        if (fclose(pcx_file) != 0) {
+            sprintf(symbol->errtxt, "624: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     return 0;

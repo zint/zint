@@ -42,31 +42,34 @@
 extern "C" {
 #endif /* __cplusplus */
 
+    /* Vector elements - see vector header `zint_vector` below */
     struct zint_vector_rect {
-        float x, y, height, width;
+        float x, y;         /* Top left */
+        float height, width;
         int colour;         /* -1 for foreground, 1-8 for Cyan, Blue, Magenta, Red, Yellow, Green, Black, White */
         struct zint_vector_rect *next; /* Pointer to next rectangle */
     };
 
     struct zint_vector_hexagon {
-        float x, y, diameter;
-        int rotation;       /* 0, 90, 180, 270 degrees */
+        float x, y;         /* Centre */
+        float diameter;     /* Short (minimal) diameter (i.e. diameter of inscribed circle) */
+        int rotation;       /* 0, 90, 180, 270 degrees, where 0 has apex at top, i.e. short diameter is horizontal */
         struct zint_vector_hexagon *next; /* Pointer to next hexagon */
     };
 
     struct zint_vector_string {
-        float x, y;         /* x, y position relative to halign */
+        float x, y;         /* Top with x relative to halign (i.e. centre, left, right) */
         float fsize;        /* Font size */
         float width;        /* Suggested string width, may be 0 if none recommended */
         int length;         /* Number of characters */
         int rotation;       /* 0, 90, 180, 270 degrees */
         int halign;         /* Horizontal alignment: 0 for centre, 1 for left, 2 for right (end) */
-        unsigned char *text;
+        unsigned char *text; /* UTF-8, NUL-terminated */
         struct zint_vector_string *next; /* Pointer to next string */
     };
 
     struct zint_vector_circle {
-        float x, y;
+        float x, y;         /* Centre */
         float diameter;     /* Circle diameter. Does not include width (if any) */
         float width;        /* Width of circle perimeter (circumference). 0 for fill (disc) */
         int colour;         /* Non-zero for draw with background colour (else draw with foreground colour) */
@@ -185,7 +188,7 @@ extern "C" {
 #define BARCODE_PDF417TRUNC     56  /* Legacy */
 #define BARCODE_MAXICODE        57  /* MaxiCode */
 #define BARCODE_QRCODE          58  /* QR Code */
-#define BARCODE_CODE128AB       60  /* Code 128 (Suppress subset C) */
+#define BARCODE_CODE128AB       60  /* Code 128 (Suppress Code Set C) */
 #define BARCODE_CODE128B        60  /* Legacy */
 #define BARCODE_AUSPOST         63  /* Australia Post Standard Customer */
 #define BARCODE_AUSREPLY        66  /* Australia Post Reply Paid */

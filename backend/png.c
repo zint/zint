@@ -245,7 +245,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (!png_ptr) {
         strcpy(symbol->errtxt, "633: Insufficient memory for PNG write structure buffer");
         if (!output_to_stdout) {
-            fclose(outfile);
+            (void) fclose(outfile);
         }
         return ZINT_ERROR_MEMORY;
     }
@@ -255,7 +255,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         png_destroy_write_struct(&png_ptr, NULL);
         strcpy(symbol->errtxt, "634: Insufficient memory for PNG info structure buffer");
         if (!output_to_stdout) {
-            fclose(outfile);
+            (void) fclose(outfile);
         }
         return ZINT_ERROR_MEMORY;
     }
@@ -264,7 +264,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (setjmp(wpng_error.jmpbuf)) {
         png_destroy_write_struct(&png_ptr, &info_ptr);
         if (!output_to_stdout) {
-            fclose(outfile);
+            (void) fclose(outfile);
         }
         return ZINT_ERROR_MEMORY;
     }
@@ -343,10 +343,24 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* make sure we have disengaged */
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
+    if (ferror(outfile)) {
+        sprintf(symbol->errtxt, "638: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(outfile);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(outfile);
+        if (fflush(outfile) != 0) {
+            sprintf(symbol->errtxt, "639: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(outfile);
+        if (fclose(outfile) != 0) {
+            sprintf(symbol->errtxt, "960: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     return 0;

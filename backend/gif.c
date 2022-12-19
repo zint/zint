@@ -584,7 +584,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     State.InLen = bitmapSize;
     if (!(State.pOut = (unsigned char *) malloc(lzoutbufSize))) {
         if (!output_to_stdout) {
-            fclose(gif_file);
+            (void) fclose(gif_file);
         }
         strcpy(symbol->errtxt, "614: Insufficient memory for LZW buffer");
         return ZINT_ERROR_MEMORY;
@@ -596,7 +596,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (byte_out <= 0) {
         free(State.pOut);
         if (!output_to_stdout) {
-            fclose(gif_file);
+            (void) fclose(gif_file);
         }
         strcpy(symbol->errtxt, "613: Insufficient memory for LZW buffer");
         return ZINT_ERROR_MEMORY;
@@ -606,10 +606,25 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* GIF terminator */
     fputc('\x3b', gif_file);
+
+    if (ferror(gif_file)) {
+        sprintf(symbol->errtxt, "615: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        if (!output_to_stdout) {
+            (void) fclose(gif_file);
+        }
+        return ZINT_ERROR_FILE_WRITE;
+    }
+
     if (output_to_stdout) {
-        fflush(gif_file);
+        if (fflush(gif_file) != 0) {
+            sprintf(symbol->errtxt, "616: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     } else {
-        fclose(gif_file);
+        if (fclose(gif_file) != 0) {
+            sprintf(symbol->errtxt, "617: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
+            return ZINT_ERROR_FILE_WRITE;
+        }
     }
 
     return 0;
