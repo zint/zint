@@ -760,7 +760,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     in_posn += 2;
                     break;
                 case 'd':
-                case 'o': /* Undocumented (as not very useful for most people) */
+                case 'o':
                 case 'x':
                     if ((val = esc_base(symbol, input_string, length, in_posn + 2, ch)) == -1) {
                         return ZINT_ERROR_INVALID_DATA;
@@ -860,7 +860,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     unsigned char *local_source;
     struct zint_seg *local_segs;
     unsigned char *local_sources;
-    local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     if (!symbol) return ZINT_ERROR_INVALID_DATA;
 
@@ -871,6 +870,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (seg_count > ZINT_MAX_SEG_COUNT) {
         return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "771: Too many input segments (max 256)");
     }
+    local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     if ((symbol->input_mode & 0x07) > 2) {
         symbol->input_mode = DATA_MODE; /* Reset completely TODO: in future, warn/error */
