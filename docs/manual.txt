@@ -372,11 +372,13 @@ Homebrew input the following line into the macOS terminal
     /bin/bash -c "$(curl -fsSL \
         https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 
-Once Homebrew is installed use the following command to install the Zint.
+Once Homebrew is installed use the following command to install the CLI and
+library
 
     brew install zint
 
-To build from source see "README.macos" in the project root directory.
+To build from source (and install the GUI) see "README.macos" in the project
+root directory.
 
 2.4 Zint Tcl Backend
 

@@ -194,13 +194,15 @@ install Homebrew input the following line into the macOS terminal
     https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
 ```
 
-Once Homebrew is installed use the following command to install the Zint.
+Once Homebrew is installed use the following command to install the CLI and
+library
 
 ```bash
 brew install zint
 ```
 
-To build from source see `"README.macos"` in the project root directory.
+To build from source (and install the GUI) see `"README.macos"` in the project
+root directory.
 
 [^1]: See the Homebrew website [https://brew.sh](https://brew.sh).
 
