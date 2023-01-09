@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.5)
@@ -27,6 +27,10 @@ option(ZINT_STATIC   "Build static library"            OFF)
 option(ZINT_USE_PNG  "Build with PNG support"          ON)
 option(ZINT_USE_QT   "Build with Qt support"           ON)
 option(ZINT_QT6      "If ZINT_USE_QT, use Qt6"         OFF)
+
+if(NOT ZINT_SHARED AND NOT ZINT_STATIC)
+    message(SEND_ERROR "Either ZINT_SHARED or ZINT_STATIC or both must be set")
+endif()
 
 include(SetPaths.cmake)
 

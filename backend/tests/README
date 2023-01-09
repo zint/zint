@@ -17,8 +17,11 @@ can be provided via --config:
   cd <project-dir>
   mkdir build
   cd build
-  cmake -DZINT_TEST=ON ..
+  cmake -DZINT_TEST=ON -DCMAKE_BUILD_TYPE=Debug ..
   cmake --build . --config Debug
+
+Note specifying a matching CMAKE_BUILD_TYPE is required to set the test PATH
+environment for Windows.
   
 ------------------------------------------------------------------------------
 
@@ -33,7 +36,11 @@ exporting LD_LIBRARY_PATH to the path containing the zint library, which is
 
 Setting LD_LIBRARY_PATH is not required if the zint library to be tested is
 installed into a system library path ( /usr/lib for example ) prior to running
-the tests.
+the tests, or if the tests are not run individually.
+
+(On Windows, the PATH may need to be set to include the DLL location.)
+
+------------------------------------------------------------------------------
 
 To run all tests (within <build-dir>):
 
@@ -72,7 +79,7 @@ To exclude a single dataset item in a single test function, use '-x <index>':
 
 This can also take a range, '-x <start>-<end>':
 
-  backend/tests/test_dotcode -f input -x 4,6
+  backend/tests/test_dotcode -f input -x 4-6
 
 Exclude can be used multiple times (unlike '-i'):
 
