@@ -303,6 +303,20 @@
    <item>
     <layout class="QHBoxLayout" name="horzLayoutScaleBtns">
      <item>
+      <widget class="QPushButton" name="btnScaleUnset">
+       <property name="autoDefault">
+        <bool>false</bool>
+       </property>
+       <property name="text">
+        <string> &amp;Unset</string>
+       </property>
+       <property name="toolTip">
+        <string>Reset the scale to the original value and
+mark the settings as unset</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <spacer name="horzSpacerScaleBtns">
        <property name="orientation">
         <enum>Qt::Horizontal</enum>

@@ -1,7 +1,7 @@
 /* code128.c - Handles Code 128 and derivatives */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -97,14 +97,14 @@ INTERNAL int c128_parunmodd(const unsigned char llyth) {
 }
 
 /**
- * bring together same type blocks
+ * Bring together same type blocks
  */
-static void c128_grwp(int list[2][C128_MAX], int *indexliste) {
+static void c128_grwp(int list[2][C128_MAX], int *p_indexliste) {
 
     /* bring together same type blocks */
-    if (*(indexliste) > 1) {
+    if (*p_indexliste > 1) {
         int i = 1;
-        while (i < *(indexliste)) {
+        while (i < *p_indexliste) {
             if (list[1][i - 1] == list[1][i]) {
                 int j;
                 /* bring together */
@@ -112,12 +112,12 @@ static void c128_grwp(int list[2][C128_MAX], int *indexliste) {
                 j = i + 1;
 
                 /* decrease the list */
-                while (j < *(indexliste)) {
+                while (j < *p_indexliste) {
                     list[0][j - 1] = list[0][j];
                     list[1][j - 1] = list[1][j];
                     j++;
                 }
-                *(indexliste) = *(indexliste) - 1;
+                *p_indexliste = *p_indexliste - 1;
                 i--;
             }
             i++;
@@ -128,10 +128,11 @@ static void c128_grwp(int list[2][C128_MAX], int *indexliste) {
 /**
  * Implements rules from ISO 15417 Annex E
  */
-INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
+INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char *manual_set) {
     int i, last, next;
+    const int indexliste = *p_indexliste;
 
-    for (i = 0; i < *(indexliste); i++) {
+    for (i = 0; i < indexliste; i++) {
         int current = list[1][i]; /* Either C128_ABORC, C128_AORB, C128_SHIFTA or C128_SHIFTB */
         int length = list[0][i];
         if (i != 0) {
@@ -139,7 +140,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
         } else {
             last = 0;
         }
-        if (i != *(indexliste) - 1) {
+        if (i != indexliste - 1) {
             next = list[1][i + 1];
         } else {
             next = 0;
@@ -147,7 +148,10 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
 
         if (i == 0) { /* first block */
             if (current == C128_ABORC) {
-                if ((*(indexliste) == 1) && (length == 2)) {
+                if (manual_set && manual_set[i]) {
+                    list[1][i] = manual_set[i];
+                    current = manual_set[i];
+                } else if ((indexliste == 1) && (length == 2)) {
                     /* Rule 1a */
                     list[1][i] = C128_LATCHC;
                     current = C128_LATCHC;
@@ -160,7 +164,9 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
                 }
             }
             if (current == C128_AORB) {
-                if (next == C128_SHIFTA) {
+                if (manual_set && (manual_set[i] == 'A' || manual_set[i] == 'B')) {
+                    list[1][i] = manual_set[i];
+                } else if (next == C128_SHIFTA) {
                     /* Rule 1c */
                     list[1][i] = C128_LATCHA;
                 } else {
@@ -170,14 +176,17 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
             } else if (current == C128_SHIFTA) {
                 /* Rule 1c */
                 list[1][i] = C128_LATCHA;
-            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHC set above, can only be C128_SHIFTB */
+            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHX set above, can only be C128_SHIFTB */
                 /* Rule 1d */
                 list[1][i] = C128_LATCHB;
             }
         } else {
             if (current == C128_ABORC) {
-                if (length >= 4) {
-                    /* Rule 3 */
+                if (manual_set && manual_set[i]) {
+                    list[1][i] = manual_set[i];
+                    current = manual_set[i];
+                } else if (length >= 4) {
+                    /* Rule 3 - note Rule 3b (odd C blocks) dealt with later */
                     list[1][i] = C128_LATCHC;
                     current = C128_LATCHC;
                 } else {
@@ -185,7 +194,9 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
                 }
             }
             if (current == C128_AORB) {
-                if (last == C128_LATCHA || last == C128_SHIFTB) { /* Maintain state */
+                if (manual_set && (manual_set[i] == 'A' || manual_set[i] == 'B')) {
+                    list[1][i] = manual_set[i];
+                } else if (last == C128_LATCHA || last == C128_SHIFTB) { /* Maintain state */
                     list[1][i] = C128_LATCHA;
                 } else if (last == C128_LATCHB || last == C128_SHIFTA) { /* Maintain state */
                     list[1][i] = C128_LATCHB;
@@ -195,7 +206,9 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
                     list[1][i] = C128_LATCHB;
                 }
             } else if (current == C128_SHIFTA) {
-                if (length > 1) {
+                if (manual_set && manual_set[i] == 'A') {
+                    list[1][i] = C128_LATCHA;
+                } else if (length > 1) {
                     /* Rule 4 */
                     list[1][i] = C128_LATCHA;
                 } else if (last == C128_LATCHA || last == C128_SHIFTB) { /* Maintain state */
@@ -203,8 +216,10 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
                 } else if (last == C128_LATCHC) {
                     list[1][i] = C128_LATCHA;
                 }
-            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHC set above, can only be C128_SHIFTB */
-                if (length > 1) {
+            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHX set above, can only be C128_SHIFTB */
+                if (manual_set && manual_set[i] == 'B') {
+                    list[1][i] = C128_LATCHB;
+                } else if (length > 1) {
                     /* Rule 5 */
                     list[1][i] = C128_LATCHB;
                 } else if (last == C128_LATCHB || last == C128_SHIFTA) { /* Maintain state */
@@ -216,7 +231,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste) {
         } /* Rule 2 is implemented elsewhere, Rule 6 is implied */
     }
 
-    c128_grwp(list, indexliste);
+    c128_grwp(list, p_indexliste);
 }
 
 /**
@@ -273,25 +288,13 @@ INTERNAL void c128_set_c(const unsigned char source_a, const unsigned char sourc
 
 /* Put set data into set[]. If source given (GS1_MODE) then resolves odd C blocks */
 INTERNAL void c128_put_in_set(int list[2][C128_MAX], const int indexliste, char set[C128_MAX],
-                unsigned char *source) {
+                const unsigned char *source) {
     int read = 0;
     int i, j;
 
     for (i = 0; i < indexliste; i++) {
         for (j = 0; j < list[0][i]; j++) {
-            switch (list[1][i]) {
-                case C128_SHIFTA: set[read] = 'a';
-                    break;
-                case C128_LATCHA: set[read] = 'A';
-                    break;
-                case C128_SHIFTB: set[read] = 'b';
-                    break;
-                case C128_LATCHB: set[read] = 'B';
-                    break;
-                case C128_LATCHC: set[read] = 'C';
-                    break;
-            }
-            read++;
+            set[read++] = list[1][i];
         }
     }
     if (source) {
@@ -380,6 +383,9 @@ INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsig
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, k, values[C128_MAX] = {0}, bar_characters = 0, read, total_sum;
     int error_number = 0, indexchaine, indexliste, f_state = 0;
+    unsigned char src_buf[C128_MAX + 1];
+    unsigned char *src = source;
+    char manual_set[C128_MAX] = {0};
     int list[2][C128_MAX] = {{0}};
     char set[C128_MAX] = {0}, fset[C128_MAX], mode, last_set, current_set = ' ';
     int glyph_count = 0; /* Codeword estimate times 2 */
@@ -396,9 +402,47 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         return ZINT_ERROR_TOO_LONG;
     }
 
+    /* Detect special Code Set escapes for Code 128 in extra escape mode only */
+    if ((symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128) {
+        char manual_ch = '\0';
+        j = 0;
+        for (i = 0; i < length; i++) {
+            if (source[i] == '\\' && i + 2 < length && source[i + 1] == '^'
+                    && ((source[i + 2] >= 'A' && source[i + 2] <= 'C') || source[i + 2] == '^')) {
+                if (source[i + 2] != '^') {
+                    i += 2;
+                    manual_ch = source[i];
+                } else { /* Escape sequence '\^^' */
+                    manual_set[j] = manual_ch;
+                    src_buf[j++] = source[i++];
+                    manual_set[j] = manual_ch;
+                    src_buf[j++] = source[i++];
+                    /* Drop second '^' */
+                }
+            } else {
+                manual_set[j] = manual_ch;
+                src_buf[j++] = source[i];
+            }
+        }
+        if (j != length) {
+            length = j;
+            if (length == 0) {
+                strcpy(symbol->errtxt, "842: No input data");
+                return ZINT_ERROR_INVALID_DATA;
+            }
+            src = src_buf;
+            src[length] = '\0';
+            if (symbol->debug & ZINT_DEBUG_PRINT) {
+                printf("MSet: ");
+                for (i = 0; i < length; i++) printf("%c", manual_set[i] ? manual_set[i] : '.');
+                printf("\n");
+            }
+        }
+    }
+
     /* Detect extended ASCII characters */
     for (i = 0; i < length; i++) {
-        fset[i] = source[i] >= 128 ? 'f' : ' ';
+        fset[i] = src[i] >= 128 ? 'f' : ' ';
     }
 
     /* Decide when to latch to extended mode - Annex E note 3 */
@@ -447,8 +491,10 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     indexliste = 0;
     indexchaine = 0;
 
-    mode = c128_parunmodd(source[indexchaine]);
-    if ((symbol->symbology == BARCODE_CODE128AB) && (mode == C128_ABORC)) {
+    mode = c128_parunmodd(src[indexchaine]);
+    if (mode == C128_ABORC
+            && (symbol->symbology == BARCODE_CODE128AB
+                || (manual_set[indexchaine] == 'A' || manual_set[indexchaine] == 'B'))) {
         mode = C128_AORB;
     }
 
@@ -460,15 +506,28 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             if (indexchaine == length) {
                 break;
             }
-            mode = c128_parunmodd(source[indexchaine]);
-            if ((symbol->symbology == BARCODE_CODE128AB) && (mode == C128_ABORC)) {
+            mode = c128_parunmodd(src[indexchaine]);
+            if (mode == C128_ABORC
+                    && (symbol->symbology == BARCODE_CODE128AB
+                        || (manual_set[indexchaine] == 'A' || manual_set[indexchaine] == 'B'))) {
                 mode = C128_AORB;
+            }
+            if (manual_set[indexchaine] != manual_set[indexchaine - 1]) {
+                break;
             }
         }
         indexliste++;
     } while (indexchaine < length);
 
-    c128_dxsmooth(list, &indexliste);
+    if (src == src_buf) {
+        /* Need to re-index `manual_set` to have sames indexes as `list` blocks for `c128_dxsmooth()` */
+        j = 0;
+        for (i = 1; i < indexliste; i++) {
+            j += list[0][i - 1];
+            manual_set[i] = manual_set[j];
+        }
+    }
+    c128_dxsmooth(list, &indexliste, src == src_buf ? manual_set : NULL);
 
     /* Resolve odd length C128_LATCHC blocks */
     if ((list[1][0] == C128_LATCHC) && (list[0][0] & 1)) {
@@ -495,7 +554,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     c128_put_in_set(list, indexliste, set, NULL /*source*/);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Data: %.*s (%d)\n", length, source, length);
+        printf("Data: %.*s (%d)\n", length, src, length);
         printf(" Set: %.*s\n", length, set);
         printf("FSet: %.*s\n", length, fset);
     }
@@ -668,14 +727,14 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
         switch (set[read]) { /* Encode data characters */
             case 'a':
-            case 'A': c128_set_a(source[read], values, &bar_characters);
+            case 'A': c128_set_a(src[read], values, &bar_characters);
                 read++;
                 break;
             case 'b':
-            case 'B': (void) c128_set_b(source[read], values, &bar_characters);
+            case 'B': (void) c128_set_b(src[read], values, &bar_characters);
                 read++;
                 break;
-            case 'C': c128_set_c(source[read], source[read + 1], values, &bar_characters);
+            case 'C': c128_set_c(src[read], src[read + 1], values, &bar_characters);
                 read += 2;
                 break;
         }
@@ -720,7 +779,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* ISO/IEC 15417:2007 leaves dimensions/height as application specification */
 
-    c128_hrt_cpy_iso8859_1(symbol, source, length);
+    c128_hrt_cpy_iso8859_1(symbol, src, length);
 
     return error_number;
 }
@@ -782,7 +841,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         indexliste++;
     } while (indexchaine < reduced_length);
 
-    c128_dxsmooth(list, &indexliste);
+    c128_dxsmooth(list, &indexliste, NULL /*manual_set*/);
 
     /* Put set data into set[], resolving odd C blocks */
     c128_put_in_set(list, indexliste, set, reduced);

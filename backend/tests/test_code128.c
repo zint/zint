@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -356,52 +356,82 @@ static void test_input(const testCtx *const p_ctx) {
         /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, 1, "Error 204: Invalid character in input data (ISO/IEC 8859-1 only)", "PAD not in ISO 8859-1" },
         /*  1*/ { DATA_MODE, "\200", -1, 0, 57, 1, "(5) 103 101 64 23 106", "PAD ok using binary" },
         /*  2*/ { UNICODE_MODE, "AIM1234", -1, 0, 101, 1, "(9) 104 33 41 45 99 12 34 87 106", "Example from Annex A.1, check char value 87" },
-        /*  3*/ { GS1_MODE, "[90]12", -1, ZINT_ERROR_INVALID_OPTION, 0, 1, "Error 220: Selected symbology does not support GS1 mode", "" },
-        /*  4*/ { UNICODE_MODE, "1", -1, 0, 46, 1, "(4) 104 17 18 106", "StartB 1" },
-        /*  5*/ { UNICODE_MODE, "12", -1, 0, 46, 1, "(4) 105 12 14 106", "StartC 12" },
-        /*  6*/ { UNICODE_MODE, "123", -1, 0, 68, 1, "(6) 104 17 18 19 8 106", "StartB 1 2 3" },
-        /*  7*/ { UNICODE_MODE, "1234", -1, 0, 57, 1, "(5) 105 12 34 82 106", "StartC 12 34" },
-        /*  8*/ { UNICODE_MODE, "12345", -1, 0, 79, 1, "(7) 105 12 34 100 21 54 106", "StartC 12 34 CodeB 5" },
-        /*  9*/ { UNICODE_MODE, "\037", -1, 0, 46, 1, "(4) 103 95 95 106", "StartA US" },
-        /* 10*/ { UNICODE_MODE, "1\037", -1, 0, 57, 1, "(5) 103 17 95 1 106", "StartA 1 US" },
-        /* 11*/ { UNICODE_MODE, "12\037", -1, 0, 68, 1, "(6) 103 17 18 95 29 106", "StartA 1 2 US" },
-        /* 12*/ { UNICODE_MODE, "a\037a", -1, 0, 79, 1, "(7) 104 65 98 95 65 86 106", "StartB a Shift US a" },
-        /* 13*/ { UNICODE_MODE, "1234\037a", -1, 0, 101, 0, "(9) 105 12 34 101 95 98 65 100 106", "StartC 12 34 CodeA US Shift a; BWIPP different encodation" },
-        /* 14*/ { UNICODE_MODE, "\037AAa\037", -1, 0, 101, 1, "(9) 103 95 33 33 98 65 95 2 106", "StartA US A A Shift a US" },
-        /* 15*/ { UNICODE_MODE, "\037AAaa\037", -1, 0, 123, 0, "(11) 103 95 33 33 100 65 65 98 95 40 106", "StartA US A A CodeB a a Shift US; BWIPP different encodation" },
-        /* 16*/ { UNICODE_MODE, "AAAa12345aAA", -1, 0, 167, 1, "(15) 104 33 33 33 65 17 99 23 45 100 65 33 33 54 106", "StartB A (3) a 1 CodeC 23 45 CodeB a A A" },
-        /* 17*/ { UNICODE_MODE, "a\037Aa\037\037a\037aa\037a", -1, 0, 222, 1, "(20) 104 65 98 95 33 65 101 95 95 98 65 95 100 65 65 98 95 65 96 106", "StartB a Shift US A a CodeA US US Shift a US CodeB a a Shift US a" },
-        /* 18*/ { UNICODE_MODE, "\000\037ß", 4, 0, 79, 1, "(7) 103 64 95 101 63 88 106", "StartA NUL US FNC4 ß" },
-        /* 19*/ { UNICODE_MODE, "\000\037é", 4, 0, 90, 0, "(8) 103 64 95 101 98 73 78 106", "StartA NUL US FNC4 Shift é; BWIPP different encodation" },
-        /* 20*/ { UNICODE_MODE, "\000\037éa", 5, 0, 101, 0, "(9) 103 64 95 100 100 73 65 61 106", "StartA NUL US LatchB FNC4 é a; BWIPP different encodation" },
-        /* 21*/ { UNICODE_MODE, "abß", -1, 0, 79, 1, "(7) 104 65 66 100 63 29 106", "StartB a b FNC4 ß" },
-        /* 22*/ { DATA_MODE, "\141\142\237", -1, 0, 90, 0, "(8) 104 65 66 100 98 95 26 106", "StartB a b FNC4 Shift APC; BWIPP different encodation" },
-        /* 23*/ { DATA_MODE, "\141\142\237\037", -1, 0, 101, 0, "(9) 104 65 66 101 101 95 95 96 106", "StartB a b LatchA FNC4 APC US; BWIPP different encodation" },
-        /* 24*/ { UNICODE_MODE, "ééé", -1, 0, 90, 1, "(8) 104 100 100 73 73 73 44 106", "StartB LatchFNC4 é é é" },
-        /* 25*/ { UNICODE_MODE, "aééééb", -1, 0, 145, 1, "(13) 104 65 100 73 100 73 100 73 100 73 66 49 106", "StartB a FNC4 é (4) b" },
-        /* 26*/ { UNICODE_MODE, "aéééééb", -1, 0, 145, 1, "(13) 104 65 100 100 73 73 73 73 73 100 66 93 106", "StartB a Latch é (5) Shift b" },
-        /* 27*/ { UNICODE_MODE, "aééééébc", -1, 0, 167, 1, "(15) 104 65 100 100 73 73 73 73 73 100 66 100 67 40 106", "StartB a Latch é (5) Shift b Shift c" },
-        /* 28*/ { UNICODE_MODE, "aééééébcd", -1, 0, 178, 1, "(16) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 66 106", "StartB a Latch é (5) Unlatch b c d" },
-        /* 29*/ { UNICODE_MODE, "aééééébcde", -1, 0, 189, 1, "(17) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 2 106", "StartB a Latch é (5) Unlatch b c d e" },
-        /* 30*/ { UNICODE_MODE, "aééééébcdeé", -1, 0, 211, 0, "(19) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 95 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é; BWIPP different encodation" },
-        /* 31*/ { UNICODE_MODE, "aééééébcdeéé", -1, 0, 233, 0, "(21) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 100 73 19 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é (2); BWIPP different encodation" },
-        /* 32*/ { UNICODE_MODE, "aééééébcdeééé", -1, 0, 244, 1, "(22) 104 65 100 100 73 73 73 73 73 100 66 100 67 100 68 100 69 73 73 73 83 106", "StartB a Latch é (5) Shift b Shift c Shift d Shift e é (3)" },
-        /* 33*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, 1, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
-        /* 34*/ { DATA_MODE, "\200\200\200\200\200\101\060\060\060\060\101\200", -1, 0, 222, 1, "(20) 103 101 101 64 64 64 64 64 101 101 33 99 0 0 101 33 101 64 73 106", "StartA Latch PAD (4) Unlatch A CodeC 00 00 CodeA A FNC4 PAD" },
-        /* 35*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code128/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
-        /* 36*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 233, 0, "(21) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 100 33 91 106", "Above with trailing non-shifted (as still latched) extended; BWIPP different encodation" },
-        /* 37*/ { DATA_MODE | ESCAPE_MODE, "@g(\302\302\302\302\3025555\302\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 100 34 34 34 34 34 34 34 34 25 106", "Okapi code128/extended-mode-with-short-embedded-code-set-c.png (chose different solution); BWIPP different encodation" },
-        /* 38*/ { DATA_MODE | ESCAPE_MODE, "@g(\302\302\302\302\302555555\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 55 100 34 34 34 34 34 34 34 76 106", "Above with extra 55 instead of \xC2; BWIPP different encodation" },
-        /* 39*/ { UNICODE_MODE, "ÁÁèÁÁFç7Z", -1, 0, 189, 0, "(17) 104 100 100 33 33 72 33 33 100 38 71 100 100 23 58 95 106", "Okapi code128/extended-mode-shift.png; BWIPP different encodation" },
-        /* 40*/ { UNICODE_MODE, "m\nm\nm", -1, 0, 112, 1, "(10) 104 77 98 74 77 98 74 77 11 106", "Okapi code128/code-set-b-a-b-a-b.png" },
-        /* 41*/ { UNICODE_MODE, "c\naDEF", -1, 0, 112, 1, "(10) 104 67 98 74 65 36 37 38 75 106", "Okapi bug-36-1.png" },
-        /* 42*/ { UNICODE_MODE, "\na\nDEF", -1, 0, 112, 1, "(10) 103 74 98 65 74 36 37 38 90 106", "Okapi bug-36-2.png" },
-        /* 43*/ { UNICODE_MODE, "ÿ\012àa\0121\012àAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 98 74 17 98 74 100 64 33 100 64 61 106", "BWIPP different encodation, ShA instead of CodeA" },
-        /* 44*/ { UNICODE_MODE, "ÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, shorter" },
-        /* 45*/ { UNICODE_MODE, "yÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 89 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100", "BWIPP different encodation, CodeA instead of ShA, shorter" },
-        /* 46*/ { UNICODE_MODE, "ÿy1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 100 95 89 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100", "BWIPP different encodation, CodeA instead of ShA, shorter" },
-        /* 47*/ { UNICODE_MODE, "ÿÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 409, 0, "(37) 104 100 95 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33", "BWIPP different encodation, CodeA instead of ShA, shorter" },
-        /* 48*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 684, 0, "(62) 104 100 95 99 12 34 56 78 101 74 101 98 64 99 12 34 56 78 100 65 66 67 68 69 70 98 74", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /*  3*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B12345\\^C6789", -1, 0, 123, 0, "(11) 104 17 18 19 20 21 99 67 89 11 106", "Ticket #204 ZPL example; BWIPP no manual mode" },
+        /*  4*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B12345\\^D6789", -1, 0, 167, 0, "(15) 104 17 18 19 20 21 60 62 36 22 23 24 25 1 106", "Unrecognized extra escape ignored; BWIPP no manual mode" },
+        /*  5*/ { UNICODE_MODE | ESCAPE_MODE | EXTRA_ESCAPE_MODE, "\\^B12345\\^D6789", -1, 0, 167, 0, "(15) 104 17 18 19 20 21 60 62 36 22 23 24 25 1 106", "Unrecognized extra escape ignored; BWIPP no manual mode" },
+        /*  6*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A\\^B\\^C", -1, ZINT_ERROR_INVALID_DATA, 0, 1, "Error 842: No input data", "" },
+        /*  7*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A\\^^B\\^C", -1, 0, 68, 0, "(6) 103 60 62 34 80 106", "BWIPP no manual mode" },
+        /*  8*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A\\^B\\^^C", -1, 0, 68, 1, "(6) 104 60 62 35 84 106", "" },
+        /*  9*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^^A\\^B\\^^C", -1, 0, 101, 1, "(9) 104 60 62 33 60 62 35 14 106", "" },
+        /* 10*/ { UNICODE_MODE | ESCAPE_MODE | EXTRA_ESCAPE_MODE, "\\^^A\\^B\\^^C", -1, 0, 101, 1, "(9) 104 60 62 33 60 62 35 14 106", "" },
+        /* 11*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^^A", -1, 0, 68, 1, "(6) 104 60 62 33 78 106", "" },
+        /* 12*/ { GS1_MODE, "[90]12", -1, ZINT_ERROR_INVALID_OPTION, 0, 1, "Error 220: Selected symbology does not support GS1 mode", "" },
+        /* 13*/ { UNICODE_MODE, "1", -1, 0, 46, 1, "(4) 104 17 18 106", "StartB 1" },
+        /* 14*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A1", -1, 0, 46, 0, "(4) 103 17 17 106", "StartA 1; BWIPP no manual mode" },
+        /* 15*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1", -1, 0, 46, 1, "(4) 104 17 18 106", "StartB 1 (manual C ignored as odd); BWIPP no manual mode" },
+        /* 16*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1\\^A", -1, 0, 46, 1, "(4) 104 17 18 106", "StartB 1 (escape at end ignored); BWIPP no manual mode" },
+        /* 17*/ { UNICODE_MODE, "12", -1, 0, 46, 1, "(4) 105 12 14 106", "StartC 12" },
+        /* 18*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C12", -1, 0, 46, 1, "(4) 105 12 14 106", "StartC 12" },
+        /* 19*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B12", -1, 0, 57, 0, "(5) 104 17 18 54 106", "StartB 1 2; BWIPP no manual mode" },
+        /* 20*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A12", -1, 0, 57, 0, "(5) 103 17 18 53 106", "StartA 1 2; BWIPP no manual mode" },
+        /* 21*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A1\\^B2", -1, 0, 68, 0, "(6) 103 17 100 18 65 106", "StartA 1 CodeB 2; BWIPP no manual mode" },
+        /* 22*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B1\\^A2", -1, 0, 68, 0, "(6) 104 17 101 18 68 106", "StartB 1 CodeA 2; BWIPP no manual mode" },
+        /* 23*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A1\\^C2", -1, 0, 57, 0, "(5) 103 17 18 53 106", "StartA 1 2 (manual C ignored as odd); BWIPP no manual mode" },
+        /* 24*/ { UNICODE_MODE, "123", -1, 0, 68, 1, "(6) 104 17 18 19 8 106", "StartB 1 2 3" },
+        /* 25*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^A123", -1, 0, 68, 0, "(6) 103 17 18 19 7 106", "StartA 1 2 3; BWIPP no manual mode" },
+        /* 26*/ { UNICODE_MODE, "1234", -1, 0, 57, 1, "(5) 105 12 34 82 106", "StartC 12 34" },
+        /* 27*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B1234", -1, 0, 79, 0, "(7) 104 17 18 19 20 88 106", "StartB 1 2 3 4; BWIPP no manual mode" },
+        /* 28*/ { UNICODE_MODE, "12345", -1, 0, 79, 1, "(7) 105 12 34 100 21 54 106", "StartC 12 34 CodeB 5" },
+        /* 29*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\\^A5", -1, 0, 79, 0, "(7) 105 12 34 101 21 57 106", "StartC 12 34 CodeA 5; BWIPP no manual mode" },
+        /* 30*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B1\\^C2345", -1, 0, 79, 0, "(7) 104 17 99 23 45 53 106", "StartB 1 CodeC 23 45; BWIPP no manual mode" },
+        /* 31*/ { UNICODE_MODE, "\037", -1, 0, 46, 1, "(4) 103 95 95 106", "StartA US" },
+        /* 32*/ { UNICODE_MODE, "1\037", -1, 0, 57, 1, "(5) 103 17 95 1 106", "StartA 1 US" },
+        /* 33*/ { UNICODE_MODE, "12\037", -1, 0, 68, 1, "(6) 103 17 18 95 29 106", "StartA 1 2 US" },
+        /* 34*/ { UNICODE_MODE, "a\037a", -1, 0, 79, 1, "(7) 104 65 98 95 65 86 106", "StartB a Shift US a" },
+        /* 35*/ { UNICODE_MODE, "1234\037a", -1, 0, 101, 0, "(9) 105 12 34 101 95 98 65 100 106", "StartC 12 34 CodeA US Shift a; BWIPP different encodation" },
+        /* 36*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\037\\^Ba", -1, 0, 101, 1, "(9) 105 12 34 101 95 100 65 7 106", "StartC 12 34 CodeA US CodeB a" },
+        /* 37*/ { UNICODE_MODE, "\037AAa\037", -1, 0, 101, 1, "(9) 103 95 33 33 98 65 95 2 106", "StartA US A A Shift a US" },
+        /* 38*/ { UNICODE_MODE, "\037AAaa\037", -1, 0, 123, 0, "(11) 103 95 33 33 100 65 65 98 95 40 106", "StartA US A A CodeB a a Shift US; BWIPP different encodation" },
+        /* 39*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\037AAaa\\^A\037", -1, 0, 123, 1, "(11) 103 95 33 33 100 65 65 101 95 61 106", "StartA US A A CodeB a a CodeA US" },
+        /* 40*/ { UNICODE_MODE, "AAAa12345aAA", -1, 0, 167, 1, "(15) 104 33 33 33 65 17 99 23 45 100 65 33 33 54 106", "StartB A (3) a 1 CodeC 23 45 CodeB a A A" },
+        /* 41*/ { UNICODE_MODE, "a\037Aa\037\037a\037aa\037a", -1, 0, 222, 1, "(20) 104 65 98 95 33 65 101 95 95 98 65 95 100 65 65 98 95 65 96 106", "StartB a Shift US A a CodeA US US Shift a US CodeB a a Shift US a" },
+        /* 42*/ { UNICODE_MODE, "\000\037ß", 4, 0, 79, 1, "(7) 103 64 95 101 63 88 106", "StartA NUL US FNC4 ß" },
+        /* 43*/ { UNICODE_MODE, "\000\037é", 4, 0, 90, 0, "(8) 103 64 95 101 98 73 78 106", "StartA NUL US FNC4 Shift é; BWIPP different encodation (CodeB instead of Shift)" },
+        /* 44*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\000\037\\^Bé", 7, 0, 90, 0, "(8) 103 64 95 100 100 73 83 106", "StartA NUL US CodeB FNC4 é; BWIPP different encodation (FNC4 before CodeB)" },
+        /* 45*/ { UNICODE_MODE, "\000\037éa", 5, 0, 101, 0, "(9) 103 64 95 100 100 73 65 61 106", "StartA NUL US CodeB FNC4 é a; BWIPP different encodation (FNC4 before CodeB)" },
+        /* 46*/ { UNICODE_MODE, "abß", -1, 0, 79, 1, "(7) 104 65 66 100 63 29 106", "StartB a b FNC4 ß" },
+        /* 47*/ { DATA_MODE, "\141\142\237", -1, 0, 90, 0, "(8) 104 65 66 100 98 95 26 106", "StartB a b FNC4 Shift APC; BWIPP different encodation" },
+        /* 48*/ { DATA_MODE, "\141\142\237\037", -1, 0, 101, 0, "(9) 104 65 66 101 101 95 95 96 106", "StartB a b CodeA FNC4 APC US; BWIPP different encodation" },
+        /* 49*/ { UNICODE_MODE, "ééé", -1, 0, 90, 1, "(8) 104 100 100 73 73 73 44 106", "StartB LatchFNC4 é é é" },
+        /* 50*/ { UNICODE_MODE, "aééééb", -1, 0, 145, 1, "(13) 104 65 100 73 100 73 100 73 100 73 66 49 106", "StartB a FNC4 é (4) b" },
+        /* 51*/ { UNICODE_MODE, "aéééééb", -1, 0, 145, 1, "(13) 104 65 100 100 73 73 73 73 73 100 66 93 106", "StartB a Latch é (5) Shift b" },
+        /* 52*/ { UNICODE_MODE, "aééééébc", -1, 0, 167, 1, "(15) 104 65 100 100 73 73 73 73 73 100 66 100 67 40 106", "StartB a Latch é (5) Shift b Shift c" },
+        /* 53*/ { UNICODE_MODE, "aééééébcd", -1, 0, 178, 1, "(16) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 66 106", "StartB a Latch é (5) Unlatch b c d" },
+        /* 54*/ { UNICODE_MODE, "aééééébcde", -1, 0, 189, 1, "(17) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 2 106", "StartB a Latch é (5) Unlatch b c d e" },
+        /* 55*/ { UNICODE_MODE, "aééééébcdeé", -1, 0, 211, 0, "(19) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 95 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é; BWIPP different encodation" },
+        /* 56*/ { UNICODE_MODE, "aééééébcdeéé", -1, 0, 233, 0, "(21) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 100 73 19 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é (2); BWIPP different encodation" },
+        /* 57*/ { UNICODE_MODE, "aééééébcdeééé", -1, 0, 244, 1, "(22) 104 65 100 100 73 73 73 73 73 100 66 100 67 100 68 100 69 73 73 73 83 106", "StartB a Latch é (5) Shift b Shift c Shift d Shift e é (3)" },
+        /* 58*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, 1, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
+        /* 59*/ { DATA_MODE, "\200\200\200\200\200\101\060\060\060\060\101\200", -1, 0, 222, 1, "(20) 103 101 101 64 64 64 64 64 101 101 33 99 0 0 101 33 101 64 73 106", "StartA Latch PAD (4) Unlatch A CodeC 00 00 CodeA A FNC4 PAD" },
+        /* 60*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code128/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
+        /* 61*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 233, 0, "(21) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 100 33 91 106", "Above with trailing non-shifted (as still latched) extended; BWIPP different encodation" },
+        /* 62*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "@g(\302\302\302\302\3025555\302\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 100 34 34 34 34 34 34 34 34 25 106", "Okapi code128/extended-mode-with-short-embedded-code-set-c.png (chose different solution); BWIPP different encodation" },
+        /* 63*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "@g(\302\302\302\302\302555555\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 55 100 34 34 34 34 34 34 34 76 106", "Above with extra 55 instead of \xC2; BWIPP different encodation" },
+        /* 64*/ { UNICODE_MODE, "ÁÁèÁÁFç7Z", -1, 0, 189, 0, "(17) 104 100 100 33 33 72 33 33 100 38 71 100 100 23 58 95 106", "Okapi code128/extended-mode-shift.png; BWIPP different encodation" },
+        /* 65*/ { UNICODE_MODE, "m\nm\nm", -1, 0, 112, 1, "(10) 104 77 98 74 77 98 74 77 11 106", "Okapi code128/code-set-b-a-b-a-b.png" },
+        /* 66*/ { UNICODE_MODE, "c\naDEF", -1, 0, 112, 1, "(10) 104 67 98 74 65 36 37 38 75 106", "Okapi bug-36-1.png" },
+        /* 67*/ { UNICODE_MODE, "\na\nDEF", -1, 0, 112, 1, "(10) 103 74 98 65 74 36 37 38 90 106", "Okapi bug-36-2.png" },
+        /* 68*/ { UNICODE_MODE, "ÿ\012àa\0121\012àAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 98 74 17 98 74 100 64 33 100 64 61 106", "BWIPP different encodation, ShA instead of CodeA" },
+        /* 69*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ\012àa\\^A\0121\012\\^BàAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 101 74 17 74 100 100 64 33 100 64 30 106", "BWIPP different encodation, FNC4 before CodeB" },
+        /* 70*/ { UNICODE_MODE, "ÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /* 71*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ1234\012à\\^Aa\0121\012\\^C7890\\^BàAàDà\012à", -1, 0, 376, 0, "(34) 104 100 95 99 12 34 101 74 101 98 64 98 65 74 17 74 99 78 90 100 100 64 33 100 64 36", "BWIPP different encodation, FNC4 before CodeB, same width" },
+        /* 72*/ { UNICODE_MODE, "yÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 89 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /* 73*/ { UNICODE_MODE, "ÿy1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 100 95 89 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33 100", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /* 74*/ { UNICODE_MODE, "ÿÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 409, 0, "(37) 104 100 95 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /* 75*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 684, 0, "(62) 104 100 95 99 12 34 56 78 101 74 101 98 64 99 12 34 56 78 100 65 66 67 68 69 70 98 74", "BWIPP different encodation, CodeA instead of ShA, shorter" },
+        /* 76*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^A12\\^C34\\^A\\^B5\\^C67\\^A\\^B\\^CA\\^B\\^A", -1, 0, 145, 0, "(13) 103 17 18 99 34 100 21 99 67 100 33 69 106", "BWIPP no manual mode" },
+        /* 77*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 100 33 34 35 99 12 101 74 36 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
+        /* 78*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -428,14 +458,14 @@ static void test_input(const testCtx *const p_ctx) {
         length = testUtilSetSymbol(symbol, BARCODE_CODE128, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->width, data[i].bwipp_cmp, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(ret), symbol->width, data[i].bwipp_cmp, symbol->errtxt, data[i].comment);
         } else {
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (width %d)\n", i, symbol->errtxt, data[i].expected, symbol->width);
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
 
@@ -667,43 +697,46 @@ static void test_dpd_input(const testCtx *const p_ctx) {
 
     struct item {
         int option_2;
+        int output_options;
         char *data;
         int ret;
         int expected_width;
+        float expected_height;
         char *expected;
         char *comment;
     };
     struct item data[] = {
-        /*  0*/ { -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
-        /*  1*/ { 1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
-        /*  2*/ { -1, "123456789012345678901234567", 0, 211, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "27 chars ok now, ident tag prefixed" },
-        /*  3*/ { -1, "%123456789012345678901234567", 0, 211, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "" },
-        /*  4*/ { 1, "123456789012345678901234567", 0, 200, "(18) 105 12 34 56 78 90 12 34 56 78 90 12 34 56 100 23 102 106", "27 chars also ok (and necessary) for relabel" },
-        /*  5*/ { -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
-        /*  6*/ { 1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
-        /*  7*/ { -1, "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, "Error 299: Invalid character in data (alphanumerics only after first character)", "Alphanumerics only in body" },
-        /*  8*/ { -1, "12345678901234567890123456,", ZINT_ERROR_INVALID_DATA, -1, "Error 300: Invalid character in data (alphanumerics only)", "Alphanumerics only in body" },
-        /*  9*/ { -1, ",234567890123456789012345678", 0, 211, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD ident tag (Barcode ID) allowed" },
-        /* 10*/ { -1, "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Control char <US> as DPD ident tag" },
-        /* 11*/ { -1, "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD ident tag" },
-        /* 12*/ { -1, "12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 222, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 13*/ { -1, "%12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 222, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 14*/ { 1, "12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 200, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 15*/ { -1, "123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 233, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 16*/ { -1, "%123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 233, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 17*/ { 1, "123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 211, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
-        /* 18*/ { -1, "12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 19*/ { -1, "%12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 20*/ { 1, "12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 222, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 21*/ { -1, "123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 22*/ { -1, "%123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 23*/ { 1, "123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 222, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
-        /* 24*/ { -1, "12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 233, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
-        /* 25*/ { -1, "%12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 233, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
-        /* 26*/ { 1, "12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 211, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
-        /* 27*/ { -1, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
-        /* 28*/ { -1, "%12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 244, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
-        /* 29*/ { 1, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 222, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /*  0*/ { -1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
+        /*  1*/ { 1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
+        /*  2*/ { -1, -1, "123456789012345678901234567", 0, 211, 50, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "27 chars ok now, ident tag prefixed" },
+        /*  3*/ { -1, -1, "%123456789012345678901234567", 0, 211, 50, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "" },
+        /*  4*/ { 1, -1, "123456789012345678901234567", 0, 200, 25, "(18) 105 12 34 56 78 90 12 34 56 78 90 12 34 56 100 23 102 106", "27 chars also ok (and necessary) for relabel" },
+        /*  5*/ { -1, -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
+        /*  6*/ { 1, -1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
+        /*  7*/ { -1, -1, "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 299: Invalid character in data (alphanumerics only after first character)", "Alphanumerics only in body" },
+        /*  8*/ { -1, -1, "12345678901234567890123456,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 300: Invalid character in data (alphanumerics only)", "Alphanumerics only in body" },
+        /*  9*/ { -1, -1, ",234567890123456789012345678", 0, 211, 50, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD ident tag (Barcode ID) allowed" },
+        /* 10*/ { -1, -1, "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Control char <US> as DPD ident tag" },
+        /* 11*/ { -1, -1, "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD ident tag" },
+        /* 12*/ { -1, -1, "12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 222, 50, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 13*/ { -1, -1, "%12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 222, 50, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 14*/ { 1, -1, "12345678901234567890123456A", ZINT_WARN_NONCOMPLIANT, 200, 25, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 15*/ { -1, -1, "123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 233, 50, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 16*/ { -1, -1, "%123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 233, 50, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 17*/ { 1, -1, "123456789012345678901234A67", ZINT_WARN_NONCOMPLIANT, 211, 25, "Warning 831: Destination Country Code (last 3 characters) should be numeric", "" },
+        /* 18*/ { -1, -1, "12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 19*/ { -1, -1, "%12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 20*/ { 1, -1, "12345678901234567890123A567", ZINT_WARN_NONCOMPLIANT, 222, 25, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 21*/ { -1, -1, "123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 22*/ { -1, -1, "%123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 23*/ { 1, -1, "123456789012345678901A34567", ZINT_WARN_NONCOMPLIANT, 222, 25, "Warning 832: Service Code (characters 6-4 from end) should be numeric", "" },
+        /* 24*/ { -1, -1, "12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 233, 50, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 25*/ { -1, -1, "%12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 233, 50, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 26*/ { 1, -1, "12345678901234567890A234567", ZINT_WARN_NONCOMPLIANT, 211, 25, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 27*/ { -1, -1, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 28*/ { -1, -1, "%12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 244, 50, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 29*/ { 1, -1, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 222, 25, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
+        /* 30*/ { 1, COMPLIANT_HEIGHT, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 222, 33.333332, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -722,18 +755,20 @@ static void test_dpd_input(const testCtx *const p_ctx) {
 
         symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_DPD, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DPD, UNICODE_MODE, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %d, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+            printf("        /*%3d*/ { %d, %s, \"%s\", %s, %d, %.8g, \"%s\", \"%s\" },\n",
+                    i, data[i].option_2, testUtilOutputOptionsName(data[i].output_options),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->height, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %.8g != %.8g (%s)\n", i, symbol->height, data[i].expected_height, data[i].data);
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
@@ -773,6 +808,8 @@ static void test_upu_s10_input(const testCtx *const p_ctx) {
         /* 15*/ { "JB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 839: Invalid Service Indicator (first character should not be any of \"JKSTW\")", "" },
         /* 16*/ { "FB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 840: Non-standard Service Indicator (first 2 characters)", "" },
         /* 17*/ { "AB123456785AB", ZINT_WARN_NONCOMPLIANT, 156, "Warning 841: Country code (last two characters) is not ISO 3166-1", "" },
+        /* 18*/ { "AB123100000IE", 0, 156, "", "Check digit 10 -> 0" },
+        /* 19*/ { "AB000000005IE", 0, 156, "", "Check digit 11 -> 5" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

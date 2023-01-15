@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -453,6 +453,7 @@ const char *testUtilInputModeName(int input_mode) {
         { "GS1NOCHECK_MODE", GS1NOCHECK_MODE, 0x0020 },
         { "HEIGHTPERROW_MODE", HEIGHTPERROW_MODE, 0x0040 },
         { "FAST_MODE", FAST_MODE, 0x0080 },
+        { "EXTRA_ESCAPE_MODE", EXTRA_ESCAPE_MODE, 0x0100 },
     };
     static const int data_size = ARRAY_SIZE(data);
     int set, i;
@@ -2308,14 +2309,31 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 /*case 'x': val = 0; TODO: implement break; */
                 case '\\': val = '\\'; break;
                 /*case 'u': val = 0; TODO: implement break; */
+                case '^': val = -1; break; /* Code 128 special escapes */
                 default: fprintf(stderr, "testUtilBwippEscape: unknown escape %c\n", *d); return NULL; break;
             }
-            if (b + 4 >= be) {
-                fprintf(stderr, "testUtilBwippEscape: loop bwipp_data buffer full (%d)\n", bwipp_data_size);
-                return NULL;
+            if (val >= 0) {
+                if (b + 4 >= be) {
+                    fprintf(stderr, "testUtilBwippEscape: loop bwipp_data buffer full (%d)\n", bwipp_data_size);
+                    return NULL;
+                }
+                sprintf(b, "^%03d", val);
+                b += 4;
+            } else {
+                if (d + 1 < de && *(d + 1) >= 'A' && *(d + 1) <= 'C') {
+                    d++;
+                } else {
+                    if (b + 8 >= be) {
+                        fprintf(stderr, "testUtilBwippEscape: loop bwipp_data buffer full (%d)\n", bwipp_data_size);
+                        return NULL;
+                    }
+                    sprintf(b, "^%03d^%03d", '\\', *d);
+                    b += 8;
+                    if (*d == '^') {
+                        d++;
+                    }
+                }
             }
-            sprintf(b, "^%03d", val);
-            b += 4;
             d++;
             *parse = 1;
         } else {
@@ -2565,8 +2583,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 /* sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : ""); */
             }
         } else {
-            if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, symbol->input_mode & ESCAPE_MODE,
-                    eci, &parse, &parsefnc) == NULL) {
+            if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len,
+                    symbol->input_mode & (ESCAPE_MODE | EXTRA_ESCAPE_MODE), eci, &parse, &parsefnc) == NULL) {
                 return -1;
             }
             if (parse) {
@@ -2832,7 +2850,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             strlen(bwipp_opts_buf) ? " " : "", mode);
                     bwipp_opts = bwipp_opts_buf;
                 }
-                if (primary_len) {
+                if (primary_len >= 6) { /* Keep gcc happy */
                     char prefix_buf[30];
                     int prefix_len;
                     int postcode_len = primary_len - 6;
@@ -3669,7 +3687,8 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 
     const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || is_dbar_exp;
-    const int is_escaped = symbol->input_mode & ESCAPE_MODE;
+    const int is_extra_escaped = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
+    const int is_escaped = (symbol->input_mode & ESCAPE_MODE) || is_extra_escaped;
     const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
     const int have_c25checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
     const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
@@ -3677,13 +3696,14 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                                 || symbology == BARCODE_DPIDENT;
     const int is_upcean = is_extendable(symbology);
     const int need_dpd_prefix = (symbology == BARCODE_DPD && expected_len == 27 && symbol->option_2 != 1);
+    const int is_vin_international = symbology == BARCODE_VIN && (symbol->option_2 & 1);
 
     char *reduced = gs1 ? (char *) z_alloca(expected_len + 1) : NULL;
     char *escaped = is_escaped ? (char *) z_alloca(expected_len + 1) : NULL;
     char *hibc = is_hibc ? (char *) z_alloca(expected_len + 2 + 1) : NULL;
     char *maxi = symbology == BARCODE_MAXICODE && primary
                     ? (char *) z_alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
-    char *vin = symbology == BARCODE_VIN && (symbol->option_2 & 1) ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
+    char *vin = is_vin_international ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *c25inter = have_c25inter ? (char *) z_alloca(expected_len + 13 + 1 + 1) : NULL;
     char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
@@ -3704,10 +3724,31 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 
     if (is_escaped) {
         memcpy(escaped, expected, expected_len);
-        ret = escape_char_process_test(symbol, (unsigned char *) escaped, &expected_len);
-        if (ret != 0) {
-            sprintf(msg, "escape_char_process %d != 0", ret);
-            return 3;
+        if (symbol->input_mode & ESCAPE_MODE) {
+            ret = escape_char_process_test(symbol, (unsigned char *) escaped, &expected_len);
+            if (ret != 0) {
+                sprintf(msg, "escape_char_process %d != 0", ret);
+                return 3;
+            }
+        }
+        if (is_extra_escaped) {
+            /* Remove any Code 128 special escapes */
+            int j = 0;
+            for (i = 0; i < expected_len; i++) {
+                if (escaped[i] == '\\' && i + 2 < expected_len && escaped[i + 1] == '^'
+                        && ((escaped[i + 2] >= 'A' && escaped[i + 2] <= 'C') || escaped[i + 2] == '^')) {
+                    if (escaped[i + 2] != '^') {
+                        i += 2;
+                    } else {
+                        escaped[j++] = escaped[i++];
+                        escaped[j++] = escaped[i++];
+                    }
+                } else {
+                    escaped[j++] = escaped[i];
+                }
+            }
+            expected_len = j;
+            escaped[expected_len] = '\0';
         }
         expected = escaped;
     }
@@ -3778,13 +3819,11 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         if (symbol->option_2 == 1 || symbol->option_2 == 2) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
         }
-    } else if (symbology == BARCODE_VIN) {
-        if (symbol->option_2 & 1) {
-            vin[0] = 'I';
-            memcpy(vin + 1, expected, expected_len);
-            vin[++expected_len] = '\0';
-            expected = vin;
-        }
+    } else if (is_vin_international) {
+        vin[0] = 'I';
+        memcpy(vin + 1, expected, expected_len);
+        vin[++expected_len] = '\0';
+        expected = vin;
     } else if (have_c25inter) {
         if (symbology == BARCODE_C25INTER) {
             if ((expected_len & 1) || have_c25checkdigit) {

@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2021-2022 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2021-2023 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -606,6 +606,19 @@ private slots:
                 " --rotate=90 --verbose --vers=7"
             << "zint.exe -b 140 --bind --bold --border=2 -d \"453678\" --height=19.7 --nobackground --quietzones"
                 " --rotate=90 --verbose --vers=7"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_CODE128") << false << 0.0f << ""
+            << BARCODE_CODE128 << (UNICODE_MODE | EXTRA_ESCAPE_MODE) // symbology-inputMode
+            << "1234\\^A56" << "" // text-primary
+            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
+            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
+            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << false << false << true << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 20 -d '1234\\^A56' --extraesc --notext --quietzones"
+            << "zint.exe -b 20 -d \"1234\\^A56\" --extraesc --notext --quietzones"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_GS1_128_CC") << false << 0.0f << ""

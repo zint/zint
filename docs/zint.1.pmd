@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.12.0.9
 %
-% December 2022
+% January 2023
 
 # NAME
 
@@ -147,6 +147,11 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                                 where NNNN is hexadecimal
         \UNNNNNN (U+NNNNNN)     Any 21-bit Unicode character
                                 where NNNNNN is hexadecimal
+
+`--extraesc`
+
+:   Process the special escape sequences `\^A`, `\^B` and `\^C` that allow manual switching of Code Sets (Code 128
+    only). The sequence `\^^` can be used to encode data that contains special escape sequences.
 
 `--fast`
 
@@ -506,7 +511,7 @@ ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)
 
 # COPYRIGHT
 
-Copyright © 2022 Robin Stuart. Released under GNU GPL 3.0 or later.
+Copyright © 2023 Robin Stuart. Released under GNU GPL 3.0 or later.
 
 # AUTHOR
 

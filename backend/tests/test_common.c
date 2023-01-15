@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -380,6 +380,8 @@ static void test_set_height(const testCtx *const p_ctx) {
 
     testFinish();
 }
+
+INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
 
 static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;

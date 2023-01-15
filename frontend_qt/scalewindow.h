@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -32,7 +32,7 @@ private:
     BarcodeItem *m_bc;
 
 public:
-    ScaleWindow(BarcodeItem *bc, struct Zint::QZintXdimDpVars *vars);
+    ScaleWindow(BarcodeItem *bc, struct Zint::QZintXdimDpVars *vars, double originalScale);
     ~ScaleWindow();
 
     bool Valid;
@@ -45,6 +45,7 @@ signals:
 public slots:
     void size_msg_ui_set();
 private slots:
+    void unset_scale();
     void okay();
     void update_scale();
     void x_dim_units_change();
@@ -57,6 +58,8 @@ private:
     float get_dpmm() const;
     const char *getFileType() const;
     double update_vars();
+    double m_originalScale;
+    bool m_unset;
 };
 
 /* vim: set ts=4 sw=4 et : */

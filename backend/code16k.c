@@ -1,7 +1,7 @@
 /* code16k.c - Handles Code 16k stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -108,7 +108,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         indexliste++;
     } while (indexchaine < length);
 
-    c128_dxsmooth(list, &indexliste);
+    c128_dxsmooth(list, &indexliste, NULL /*manual_set*/);
 
     /* Put set data into set[], resolving odd C blocks */
     c128_put_in_set(list, indexliste, set, source);

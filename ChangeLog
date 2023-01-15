@@ -10,6 +10,11 @@ Changes
 - BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF/TXT: check for errors on writing to output
   file (ticket #275)
 - manual/man page: document octal escape; Code 128 subset/mode -> Code Set
+- Add special symbology-specific escape sequences (Code 128 only) for manual
+  Code Set switching via `input_mode` flag `EXTRA_ESCAPE_MODE` (CLI --extraesc)
+  (ticket #204)
+- GUI: disable "Reset" colour if default; add "Unset" to Printing Scale dialog
+  (allows unsetting of X-dim/resolution settings without having to zap)
 
 Bugs
 ----

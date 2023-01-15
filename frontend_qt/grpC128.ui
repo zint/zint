@@ -37,15 +37,26 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC128CSup">
         <property name="text">
-         <string>Subset &amp;C Suppression</string>
+         <string>Code Set &amp;C Suppression</string>
         </property>
         <property name="toolTip">
-         <string>Do not use Subset C mode
+         <string>Do not use Code Set C
 (numeric compression)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="0">
+      <item row="1" column="0" colspan="2">
+       <widget class="QRadioButton" name="radC128ExtraEsc">
+        <property name="text">
+         <string>&amp;Manual Code Sets (Extra Escape Mode)</string>
+        </property>
+        <property name="toolTip">
+         <string>Process special escape sequences &quot;\^A&quot;, &quot;\^B&quot; and
+&quot;\^C&quot; allowing manual Code Set selection</string>
+        </property>
+       </widget>
+      </item>
+      <item row="2" column="0">
        <widget class="QRadioButton" name="radC128EAN">
         <property name="text">
          <string>GS&amp;1-128</string>
@@ -56,7 +67,7 @@ formatted with Application Identifiers (AIs)</string>
         </property>
        </widget>
       </item>
-      <item row="1" column="1">
+      <item row="2" column="1">
        <widget class="QRadioButton" name="radC128HIBC">
         <property name="text">
          <string>H&amp;IBC</string>

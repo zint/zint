@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.12.0.9
-December 2022
+January 2023
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -664,6 +664,9 @@ sequences are shown in the table below.
   ----------------------------------------------------------------------------
 
   : Table : Escape Sequences:
+
+(Special escape sequences are available for Code 128 only to manually switch
+Code Sets - see 6.1.10.1 Standard Code 128 (ISO 15417) for details.)
 
 Input data can be read directly from file using the -i or --input switch as
 shown below. The input file is assumed to be UTF-8 formatted unless an
@@ -1559,9 +1562,9 @@ wish.
 5.1 Creating and Deleting Symbols
 
 The symbols manipulated by Zint are held in a zint_symbol structure defined in
-"zint.h". These symbols are created with the ZBarcode_Create() function and
-deleted using the ZBarcode_Delete() function. For example the following code
-creates and then deletes a symbol:
+"zint.h". These symbol structures are created with the ZBarcode_Create()
+function and deleted using the ZBarcode_Delete() function. For example the
+following code creates and then deletes a symbol:
 
     #include <zint.h>
     #include <stdio.h>
@@ -2116,6 +2119,9 @@ property. Valid values are shown in the table below.
   FAST_MODE           Use faster if less optimal encodation or other shortcuts if
                       available (affects DATAMATRIX, MICROPDF417, PDF417, QRCODE
                       and UPNQR only).
+
+  EXTRA_ESCAPE_MODE   Process special symbology-specific escape sequences
+                      (CODE128 only).
   -------------------------------------------------------------------------------
 
   : Table  : API input_mode Values
@@ -2124,8 +2130,8 @@ The default mode is DATA_MODE. (Note that this differs from the default for the
 CLI and GUI, which is UNICODE_MODE.)
 
 DATA_MODE, UNICODE_MODE and GS1_MODE are mutually exclusive, whereas
-ESCAPE_MODE, GS1PARENS_MODE, GS1NOCHECK_MODE, HEIGHTPERROW_MODE and FAST_MODE
-are optional. So, for example, you can set
+ESCAPE_MODE, GS1PARENS_MODE, GS1NOCHECK_MODE, HEIGHTPERROW_MODE, FAST_MODE and
+EXTRA_ESCAPE_MODE are optional. So, for example, you can set
 
     my_symbol->input_mode = UNICODE_MODE | ESCAPE_MODE;
 
@@ -2139,8 +2145,10 @@ whereas
 
 is not valid.
 
-Permissible escape sequences are listed in Table : Escape Sequences. An example
-of GS1PARENS_MODE usage is given in section 6.1.10.3 GS1-128.
+Permissible escape sequences (ESCAPE_MODE) are listed in Table
+: Escape Sequences, and the special Code 128-only EXTRA_ESCAPE_MODE escape
+sequences are given in 6.1.10.1 Standard Code 128 (ISO 15417). An example of
+GS1PARENS_MODE usage is given in section 6.1.10.3 GS1-128.
 
 GS1NOCHECK_MODE is for use with legacy systems that have data that does not
 conform to the current GS1 standard. Printable ASCII input is still checked for,
@@ -2150,6 +2158,10 @@ DataBar Omnidirectional/Limited/etc.).
 For HEIGHTPERROW_MODE, see --heightperrow in section 4.4 Adjusting Height. The
 height variable should be set to the desired per-row value on input (it will be
 set to the overall height on output).
+
+FAST_MODE causes a less optimal encodation scheme to be used for Data Matrix,
+MicroPDF417 and PDF417. For QR Code and UPNQR, it affects Zint’s automatic mask
+selection - see 6.6.3 QR Code (ISO 18004) for details.
 
 5.11 Multiple Segments
 
@@ -2234,7 +2246,7 @@ For example:
     my_symbol->scale = ZBarcode_Scale_From_XdimDp(
                             my_symbol->symbology,
                             ZBarcode_Default_Xdim(my_symbol->symbology),
-                            my_symbol->dpmm, "PNG"); /* 7.5 */
+                            my_symbol->dpmm, "PNG"); /* Returns 7.5 */
 
 The third function ZBarcode_XdimDP_From_Scale() is the “reverse” of
 ZBarcode_Scale_From_XdimDp(), returning the X-dimension (in mm) or the dot
@@ -2736,8 +2748,24 @@ pharmaceuticals. The symbology is able to encode whole numbers between 3 and
 One of the most ubiquitous one-dimensional barcode symbologies, Code 128 was
 developed in 1981 by Computer Identics. This symbology supports full ASCII text
 and uses a three-Code Set system to compress the data into a smaller symbol.
-Zint automatically switches between Code Sets A, B and C and adds a modulo-103
-check digit.
+Zint automatically switches between Code Sets A, B and C (but see the special
+escapes below) and adds a modulo-103 check digit.
+
+Manual switching of Code Sets is possible using the --extraesc option (API
+input_mode |= EXTRA_ESCAPE_MODE) and the Code 128-specific escapes \^A, \^B,
+\^C. For instance the following will force switching to Code Set B for the data
+"5678" (normally Code Set C would be used throughout):
+
+    zint -b CODE128 -d "1234\^B5678" --extraesc
+
+The manually selected Code Set will apply until the next Code Set escape
+sequence, with the exception that data that cannot be represented in that Code
+Set will be switched as appropriate. If the data contains a special code
+sequence, it can be escaped by doubling the caret (^). For instance
+
+    zint -b CODE128 -d "\^AABC\^^BDEF" --extraesc
+
+will encode the data "ABC\^BDEF" in Code Set A.
 
 Code 128 is the default barcode symbology used by Zint. In addition Zint
 supports the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128
@@ -2751,6 +2779,9 @@ Alphabet No. 1 (ISO/IEC 8859-1).
 It is sometimes advantageous to stop Code 128 from using Code Set C which
 compresses numerical data. The BARCODE_CODE128AB[10] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
+
+Note that the special escapes to manually switch Code Sets mentioned above are
+not available for this variant (nor for any other).
 
 6.1.10.3 GS1-128
 
@@ -4138,7 +4169,7 @@ maximum of 90 digits and does not include a check digit.
 
 7.1 License
 
-Zint, libzint and Zint Barcode Studio are Copyright © 2022 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2023 Robin Stuart. All
 historical versions are distributed under the GNU General Public License version
 3 or later. Versions 2.5 and later are released under a dual license: the
 encoding library is released under the BSD (3 clause) license whereas the GUI,
@@ -4346,7 +4377,7 @@ defined.
 
 Annex B. Man Page ZINT(1)
 
-% ZINT(1) Version 2.12.0.9 % % December 2022
+% ZINT(1) Version 2.12.0.9 % % January 2023
 
 NAME
 
@@ -4513,6 +4544,12 @@ OPTIONS
                                 where NNNN is hexadecimal
         \UNNNNNN (U+NNNNNN)     Any 21-bit Unicode character
                                 where NNNNNN is hexadecimal
+
+--extraesc
+
+    Process the special escape sequences \^A, \^B and \^C that allow manual
+    switching of Code Sets (Code 128 only). The sequence \^^ can be used to
+    encode data that contains special escape sequences.
 
 --fast
 
@@ -4892,7 +4929,7 @@ AIM ITS/04-023 (2022)
 
 COPYRIGHT
 
-Copyright © 2022 Robin Stuart. Released under GNU GPL 3.0 or later.
+Copyright © 2023 Robin Stuart. Released under GNU GPL 3.0 or later.
 
 AUTHOR
 

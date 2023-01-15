@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2022 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -58,6 +58,9 @@ static const QKeySequence copyTIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_T);
 static const QKeySequence factoryResetSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_R);
 
 static const QRegularExpression colorRE(QSL("^[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"));
+
+static const QColor fgcolorDefault(0, 0, 0, 0xff);
+static const QColor bgcolorDefault(0xff, 0xff, 0xff, 0xff);
 
 struct bstyle_item {
     const QString text;
@@ -561,8 +564,8 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::reset_colours()
 {
-    m_fgcolor.setRgb(0, 0, 0, 0xff);
-    m_bgcolor.setRgb(0xff, 0xff, 0xff, 0xff);
+    m_fgcolor = fgcolorDefault;
+    m_bgcolor = bgcolorDefault;
     setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
     setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
     update_preview();
@@ -733,7 +736,7 @@ void MainWindow::about()
             "<p>A free barcode generator</p>"
             "<p>Instruction manual is available at the project homepage:<br>"
             "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
-            "<p>Copyright &copy; 2006-2022 Robin Stuart and others.<br>"
+            "<p>Copyright &copy; 2006-2023 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
             "<p>Qt version %2</p>"
@@ -972,7 +975,7 @@ void MainWindow::open_scale_dialog()
 {
     double originalScale = spnScale->value();
     QString originalSizeMsg = lblSizeMsg->text();
-    ScaleWindow dlg(&m_bc, &m_xdimdpVars);
+    ScaleWindow dlg(&m_bc, &m_xdimdpVars, originalScale);
     m_scaleWindow = &dlg;
     connect(&dlg, SIGNAL(scaleChanged(double)), this, SLOT(on_scaleChanged(double)));
     (void) dlg.exec();
@@ -1558,6 +1561,7 @@ void MainWindow::change_options()
         connect(get_widget(QSL("radC128EAN")), SIGNAL(toggled( bool )), SLOT(composite_ean_check()));
         connect(get_widget(QSL("radC128EAN")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC128HIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("radC128ExtraEsc")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_PDF417) {
         QFile file(QSL(":/grpPDF417.ui"));
@@ -2502,6 +2506,7 @@ void MainWindow::update_preview()
             m_bc.bc.setText(txtData->text());
         }
     }
+    btnReset->setEnabled(m_fgcolor != fgcolorDefault || m_bgcolor != bgcolorDefault);
     m_bc.bc.setOption1(-1);
     m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
@@ -2524,14 +2529,18 @@ void MainWindow::update_preview()
     switch (symbology) {
 
         case BARCODE_CODE128:
-            if (get_rad_val(QSL("radC128CSup")))
+            if (get_rad_val(QSL("radC128CSup"))) {
                 m_bc.bc.setSymbol(BARCODE_CODE128AB);
-            else if (get_rad_val(QSL("radC128EAN")))
+            } else if (get_rad_val(QSL("radC128EAN"))) {
                 m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_GS1_128_CC : BARCODE_GS1_128);
-            else if (get_rad_val(QSL("radC128HIBC")))
+            } else if (get_rad_val(QSL("radC128HIBC"))) {
                 m_bc.bc.setSymbol(BARCODE_HIBC_128);
-            else
+            } else if (get_rad_val(QSL("radC128ExtraEsc"))) {
                 m_bc.bc.setSymbol(BARCODE_CODE128);
+                m_bc.bc.setInputMode(m_bc.bc.inputMode() | EXTRA_ESCAPE_MODE);
+            } else {
+                m_bc.bc.setSymbol(BARCODE_CODE128);
+            }
             break;
 
         case BARCODE_EANX:
@@ -3927,7 +3936,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_128:
             settings.setValue(QSL("studio/bc/code128/encoding_mode"), get_rad_grp_index(
                 QStringList() << QSL("radC128Stand") << QSL("radC128EAN") << QSL("radC128CSup")
-                                << QSL("radC128HIBC")));
+                                << QSL("radC128HIBC") << QSL("radC128ExtraEsc")));
             break;
 
         case BARCODE_PDF417:
@@ -4334,7 +4343,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_HIBC_128:
             set_rad_from_setting(settings, QSL("studio/bc/code128/encoding_mode"),
                 QStringList() << QSL("radC128Stand") << QSL("radC128EAN") << QSL("radC128CSup")
-                                << QSL("radC128HIBC"));
+                                << QSL("radC128HIBC") << QSL("radC128ExtraEsc"));
             break;
 
         case BARCODE_PDF417:

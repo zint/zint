@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -392,7 +392,10 @@ static void test_perf(const testCtx *const p_ctx) {
     int i, length, ret;
 
     struct zint_symbol symbol = {0};
-    int ret_length, ret_length2;
+    int ret_length;
+#ifdef TEST_JUST_SAY_GNO
+    int ret_length2;
+#endif
     unsigned int ddata[8192];
     unsigned char dest[8192];
     int ret2 = 0;
@@ -424,25 +427,27 @@ static void test_perf(const testCtx *const p_ctx) {
         diff = diff_gno = diff_eci = diff_eci_gno = 0;
 
         for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            ret_length = ret_length2 = length;
+            ret_length = length;
 
             start = clock();
             ret = gb2312_utf8(&symbol, (unsigned char *) data[i].data, &ret_length, ddata);
             diff += clock() - start;
 
 #ifdef TEST_JUST_SAY_GNO
+            ret_length2 = length;
             start = clock();
             ret2 = gb2312_utf8_wctomb(&symbol, (unsigned char *) data[i].data, &ret_length2, ddata2);
             diff_gno += clock() - start;
 #endif
 
-            ret_length = ret_length2 = length;
+            ret_length = length;
 
             start = clock();
             (void)utf8_to_eci(29, (unsigned char *) data[i].data, dest, &ret_length);
             diff_eci += clock() - start;
 
 #ifdef TEST_JUST_SAY_GNO
+            ret_length2 = length;
             start = clock();
             (void)utf8_to_eci_wctomb(29, (unsigned char *) data[i].data, dest2, &ret_length2);
             diff_eci_gno += clock() - start;

@@ -1,7 +1,7 @@
 /*  zint.h - definitions for libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -61,7 +61,7 @@ extern "C" {
         float x, y;         /* Top with x relative to halign (i.e. centre, left, right) */
         float fsize;        /* Font size */
         float width;        /* Suggested string width, may be 0 if none recommended */
-        int length;         /* Number of characters */
+        int length;         /* Number of characters (bytes) */
         int rotation;       /* 0, 90, 180, 270 degrees */
         int halign;         /* Horizontal alignment: 0 for centre, 1 for left, 2 for right (end) */
         unsigned char *text; /* UTF-8, NUL-terminated */
@@ -303,6 +303,8 @@ extern "C" {
 #define HEIGHTPERROW_MODE       0x0040  /* Interpret `height` as per-row rather than as overall height */
 #define FAST_MODE               0x0080  /* Use faster if less optimal encodation or other shortcuts if available */
                                         /* Note: affects DATAMATRIX, MICROPDF417, PDF417, QRCODE & UPNQR only */
+#define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences */
+                                        /* Note: currently Code 128 only */
 
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100     /* Only consider square versions on automatic symbol size selection */

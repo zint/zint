@@ -1,7 +1,7 @@
 /* zint_tcl.c TCL binding for zint */
 /*
     zint - the open source tcl binding to the zint barcode library
-    Copyright (C) 2014-2022 Harald Oehlmann <oehhar@users.sourceforge.net>
+    Copyright (C) 2014-2023 Harald Oehlmann <oehhar@users.sourceforge.net>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -164,6 +164,8 @@
     *** Potential incompatibility ***
 2022-12-09 GL
 - Added UPU_S10
+2023-01-15 GL
+- Added -esc and -extraesc options
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -511,7 +513,8 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --dump not supported */
     /* cli option --ecinos not supported */
     "   -eci choice: ECI to use\n"
-    /* cli option --esc not supported */
+    "   -esc bool: Process escape sequences in input data\n"
+    "   -extraesc bool: Process symbology-specific escape sequences (Code 128 only)\n"
     "   -fast bool: use fast encodation (Data Matrix)\n"
     "   -fg color: set foreground color as 6 or 8 hex rrggbbaa\n"
     /* replaces cli options --binary and --gs1 */
@@ -781,7 +784,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         static const char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
-            "-eci", "-fast", "-fg", "-format", "-fullmultibyte",
+            "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
@@ -793,7 +796,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
-            iECI, iFast, iFG, iFormat, iFullMultiByte,
+            iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
@@ -824,6 +827,8 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iCompliantHeight:
         case iDMRE:
         case iDotty:
+        case iEsc:
+        case iExtraEsc:
         case iFast:
         case iGS1NoCheck:
         case iGS1Parens:
@@ -995,6 +1000,20 @@ static int Encode(Tcl_Interp *interp, int objc,
                 my_symbol->output_options |= BARCODE_DOTTY_MODE;
             } else {
                 my_symbol->output_options &= ~BARCODE_DOTTY_MODE;
+            }
+            break;
+        case iEsc:
+            if (intValue) {
+                my_symbol->input_mode |= ESCAPE_MODE;
+            } else {
+                my_symbol->input_mode &= ~ESCAPE_MODE;
+            }
+            break;
+        case iExtraEsc:
+            if (intValue) {
+                my_symbol->input_mode |= EXTRA_ESCAPE_MODE;
+            } else {
+                my_symbol->input_mode &= ~EXTRA_ESCAPE_MODE;
             }
             break;
         case iFast:

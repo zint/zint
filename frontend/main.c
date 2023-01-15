@@ -164,7 +164,8 @@ static void usage(int no_png) {
            "  --dump                Dump hexadecimal representation to stdout\n"
            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
     fputs( "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
-           "  --esc                 Process escape characters in input data\n"
+           "  --esc                 Process escape sequences in input data\n"
+           "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
            "  --fast                Use faster encodation or other shortcuts if available\n"
            "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
@@ -1184,7 +1185,7 @@ int main(int argc, char **argv) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-            OPT_ECI, OPT_ESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
+            OPT_ECI, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
@@ -1217,6 +1218,7 @@ int main(int argc, char **argv) {
             {"eci", 1, NULL, OPT_ECI},
             {"ecinos", 0, NULL, 'e'},
             {"esc", 0, NULL, OPT_ESC},
+            {"extraesc", 0, NULL, OPT_EXTRAESC},
             {"fast", 0, NULL, OPT_FAST},
             {"fg", 1, 0, OPT_FG},
             {"filetype", 1, NULL, OPT_FILETYPE},
@@ -1391,6 +1393,9 @@ int main(int argc, char **argv) {
                 break;
             case OPT_ESC:
                 my_symbol->input_mode |= ESCAPE_MODE;
+                break;
+            case OPT_EXTRAESC:
+                my_symbol->input_mode |= EXTRA_ESCAPE_MODE;
                 break;
             case OPT_FAST:
                 my_symbol->input_mode |= FAST_MODE;

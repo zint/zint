@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -296,7 +296,7 @@ static int dump_plot(struct zint_symbol *symbol) {
     }
 
     if (ferror(f)) {
-        sprintf(symbol->errtxt, "790: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
+        sprintf(symbol->errtxt, "795: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
         if (!output_to_stdout) {
             (void) fclose(f);
         }
@@ -305,7 +305,7 @@ static int dump_plot(struct zint_symbol *symbol) {
 
     if (output_to_stdout) {
         if (fflush(f) != 0) {
-            sprintf(symbol->errtxt, "791: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "796: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
             return ZINT_ERROR_FILE_WRITE;
         }
     } else {
@@ -710,6 +710,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
     int i;
     unsigned long unicode;
     unsigned char *escaped_string = (unsigned char *) z_alloca(length + 1);
+    const int extra_escape_mode = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
 
     in_posn = 0;
     out_posn = 0;
@@ -725,6 +726,19 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
             switch (ch) {
                 case '0': escaped_string[out_posn] = 0x00; /* Null */
                     in_posn += 2;
+                    break;
+                case '^': /* CODE128 specific */
+                    if (!extra_escape_mode) {
+                        strcpy(symbol->errtxt, "798: Escape '\\^' only valid for Code 128 in extra escape mode");
+                        return ZINT_ERROR_INVALID_DATA;
+                    }
+                    /* Pass thru unaltered */
+                    escaped_string[out_posn++] = '\\';
+                    escaped_string[out_posn] = '^';
+                    in_posn += 2;
+                    if (in_posn < length) { /* Note allowing '\\^' on its own at end */
+                        escaped_string[++out_posn] = input_string[in_posn++];
+                    }
                     break;
                 case 'E': escaped_string[out_posn] = 0x04; /* End of Transmission */
                     in_posn += 2;
@@ -1095,6 +1109,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (symbol->rows >= 200) { /* Check for stacking too many symbols */
         return error_tag(symbol, ZINT_ERROR_TOO_LONG, "770: Too many stacked symbols");
     }
+    if (symbol->rows < 0) { /* Silently defend against out-of-bounds access */
+        symbol->rows = 0;
+    }
 
     if ((symbol->input_mode & 0x07) == GS1_MODE && !gs1_compliant(symbol->symbology)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "220: Selected symbology does not support GS1 mode");
@@ -1441,7 +1458,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
 
         /* Get file length */
         if (fseek(file, 0, SEEK_END) != 0) {
-            sprintf(symbol->errtxt, "792: Unable to seek input file (%d: %.30s)", errno, strerror(errno));
+            sprintf(symbol->errtxt, "797: Unable to seek input file (%d: %.30s)", errno, strerror(errno));
             (void) fclose(file);
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
         }

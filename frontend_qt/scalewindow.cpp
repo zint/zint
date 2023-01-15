@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -44,8 +44,8 @@ static int resolution_standard(int inch, int val)
     return 0;
 }
 
-ScaleWindow::ScaleWindow(BarcodeItem *bc, Zint::QZintXdimDpVars *vars)
-        : m_bc(bc), Valid(false), m_vars(*vars)
+ScaleWindow::ScaleWindow(BarcodeItem *bc, Zint::QZintXdimDpVars *vars, double originalScale)
+        : m_bc(bc), Valid(false), m_vars(*vars), m_originalScale(originalScale), m_unset(false)
 {
     setupUi(this);
 
@@ -90,11 +90,15 @@ ScaleWindow::ScaleWindow(BarcodeItem *bc, Zint::QZintXdimDpVars *vars)
     size_msg_ui_set();
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
+    QIcon unsetIcon(QSL(":res/delete.svg"));
     QIcon okIcon(QIcon(QSL(":res/check.svg")));
     btnCancel->setIcon(closeIcon);
+    btnScaleUnset->setIcon(unsetIcon);
+    btnScaleUnset->setEnabled(m_vars.set);
     btnOK->setIcon(okIcon);
 
     connect(btnCancel, SIGNAL(clicked( bool )), SLOT(close()));
+    connect(btnScaleUnset, SIGNAL( clicked( bool )), SLOT(unset_scale()));
     connect(btnOK, SIGNAL(clicked( bool )), SLOT(okay()));
     connect(spnXdim, SIGNAL(valueChanged( double )), SLOT(update_scale()));
     connect(cmbXdimUnits, SIGNAL(currentIndexChanged( int )), SLOT(x_dim_units_change()));
@@ -143,11 +147,25 @@ void ScaleWindow::size_msg_ui_set()
     }
 }
 
+void ScaleWindow::unset_scale()
+{
+    m_vars.x_dim = m_bc->bc.getXdimDpFromScale(m_originalScale, get_dpmm(), getFileType());
+    m_vars.set = 0;
+
+    if (cmbXdimUnits->currentIndex() == 1) { // Inches
+        spnXdim->setValue(m_vars.x_dim / 25.4);
+    } else {
+        spnXdim->setValue(m_vars.x_dim);
+    }
+    m_unset = true;
+    btnScaleUnset->setEnabled(false);
+}
+
 void ScaleWindow::okay()
 {
     if (update_vars()) {
         Valid = true;
-        m_vars.set = 1;
+        m_vars.set = m_unset ? 0 : 1;
     }
     close();
 }
@@ -159,6 +177,8 @@ void ScaleWindow::update_scale()
         // Need up-to-date `vectorWidth()` and `vectorHeight()` to estimate size including borders, whitespace & text,
         // so tell main window to encode and it will update UI here via `size_msg_ui_set()`
         emit scaleChanged(scale);
+        m_unset = false;
+        btnScaleUnset->setEnabled(true);
     }
 }
 

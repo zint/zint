@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "ZINT" "1" "December 2022" "Version 2.12.0.9" ""
+.TH "ZINT" "1" "January 2023" "Version 2.12.0.9" ""
 .hy
 .SH NAME
 .PP
@@ -198,6 +198,13 @@ The escape sequences are:
 \f[R]
 .fi
 .RE
+.TP
+\f[V]--extraesc\f[R]
+Process the special escape sequences \f[V]\[rs]\[ha]A\f[R],
+\f[V]\[rs]\[ha]B\f[R] and \f[V]\[rs]\[ha]C\f[R] that allow manual
+switching of Code Sets (Code 128 only).
+The sequence \f[V]\[rs]\[ha]\[ha]\f[R] can be used to encode data that
+contains special escape sequences.
 .TP
 \f[V]--fast\f[R]
 Use faster if less optimal encodation or other shortcuts (affects Data
@@ -627,7 +634,7 @@ ISO/IEC 16390:2007, ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC
 (2022)
 .SH COPYRIGHT
 .PP
-Copyright \[co] 2022 Robin Stuart.
+Copyright \[co] 2023 Robin Stuart.
 Released under GNU GPL 3.0 or later.
 .SH AUTHOR
 .PP

@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2022 Robin Stuart                                  *
+ *   Copyright (C) 2010-2023 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -1163,6 +1163,7 @@ namespace Zint {
         }
 
         arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);
+        arg_bool(cmd, "--extraesc", inputMode() & EXTRA_ESCAPE_MODE);
         arg_bool(cmd, "--fast", inputMode() & FAST_MODE);
 
         if (fgColor() != Qt::black) {

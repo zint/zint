@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -424,7 +424,7 @@ static void test_input(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
-    int last_fast_num_cwds;
+    int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
     char cmp_buf[32768];
@@ -3925,7 +3925,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
-    int last_fast_num_cwds;
+    int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
     char cmp_buf[32768];
@@ -4663,7 +4663,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
     struct zint_symbol *symbol;
-    int last_fast_num_cwds;
+    int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
     char cmp_buf[32768];
