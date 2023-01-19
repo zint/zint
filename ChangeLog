@@ -22,6 +22,8 @@ Bugs
 - man page: fix Code 11 check digit info
 - CMake: allow ctest to be run without having to install zint or manually set
   LD_LIBRARY_PATH and PATH (ticket #279, props Alexey Dokuchaev)
+- GUI: fg/bgcolor text edit: fix right-click context menu not working properly
+  by checking for it on FocusOut
 
 
 Version 2.12.0 (2022-12-12)

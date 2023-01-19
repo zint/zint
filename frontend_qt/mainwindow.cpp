@@ -552,10 +552,14 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
     }
 
     if ((watched == txt_fgcolor || watched == txt_bgcolor) && event->type() == QEvent::FocusOut) {
-        if (watched == txt_fgcolor) {
-            setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-        } else {
-            setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+        // Exclude right-click context menu pop-up (Undo/Redo/Cut/Copy/Paste etc.)
+        QFocusEvent *focusEvent = static_cast<QFocusEvent *>(event);
+        if (focusEvent->reason() != Qt::PopupFocusReason) {
+            if (watched == txt_fgcolor) {
+                setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+            } else {
+                setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+            }
         }
     }
 
@@ -592,9 +596,12 @@ QString MainWindow::getColorStr(const QColor color, bool alpha_always) {
 }
 
 void MainWindow::setColorTxtBtn(const QColor color, QLineEdit *txt, QPushButton* btn) {
-    int cursorPos = txt->cursorPosition();
-    txt->setText(getColorStr(color));
-    txt->setCursorPosition(cursorPos);
+    QString colorStr = getColorStr(color);
+    if (colorStr != txt->text()) {
+        int cursorPos = txt->cursorPosition();
+        txt->setText(colorStr);
+        txt->setCursorPosition(cursorPos);
+    }
     btn->setStyleSheet(QSL("QPushButton {background-color:") + color.name() + QSL(";}"));
 }
 
