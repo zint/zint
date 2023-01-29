@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -109,6 +109,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 50*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg" },
         /* 51*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg" },
         /* 52*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg" },
+        /* 53*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -493,13 +493,15 @@ Adjusting Image Size for further details.
 [Adjusting the Print Size]
 
 The foreground and background colours can be set either using the text boxes
-which accept RRGGBBAA hexadecimal values or by clicking the foreground eye [eye]
-and background eye [eye] buttons which invoke a colour picker.
+which accept "RRGGBBAA" hexadecimal values and "C,M,Y,K" decimal percentage
+values, or by clicking the foreground eye [eye] and background eye [eye] buttons
+which invoke a colour picker.
 
 [The colour picker tool]
 
 (Note that to change the colours visually, the luminence slider, the long narrow
-column on the right, must be adjusted.)
+column on the right, must be adjusted.) The color picker only deals in RGB(A),
+and will overwrite any CMYK values with RGB(A) values once "OK" is selected.
 
 Back in the Appearance tab, the colours can be reset to black-on-white using the
 "Reset" button, and exchanged one for the other using the swap [swap] button
@@ -1032,8 +1034,10 @@ but white-on-black is allowed by the Aztec Code, Data Matrix, DotCode, Han Xin
 Code, Grid Matrix and QR Code symbology specifications.
 
 For more specific needs the foreground (ink) and background (paper) colours can
-be specified using the --fg and --bg options followed by a number in RRGGBB
-hexadecimal notation (the same system used in HTML). For example the command
+be specified using the --fg and --bg options followed by a number in "RRGGBB"
+hexadecimal notation (the same system used in HTML) or in "C,M,Y,K" decimal
+percentages format (the latter normally used with the --cmyk option - see
+below). For example the command
 
     zint --fg=00FF00 -d "This Text"
 
@@ -1041,24 +1045,32 @@ alters the symbol to a bright green.
 
 [zint -d "This Text" --fg=00FF00]
 
-Zint also supports RGBA colour information for some output file formats which
-support alpha channels (currently only PNG, SVG and TIF) in a RRGGBBAA format.
-For example:
+Zint also supports RGBA colour information for those output file formats which
+support alpha channels (currently only GIF, PCX, PNG, SVG and TIF, with GIF
+supporting either a background or foreground alpha but not both) in a "RRGGBBAA"
+format. For example:
 
     zint --fg=00ff0055 -d "This Text"
 
 [zint -d "This Text" --fg=00FF0055]
 
 will produce a semi-transparent green foreground with standard (white)
-background. Note that transparency is handled differently for raster and vector
-files so that…
+background. Note that transparency is treated differently by raster and vector
+(SVG) output formats, as for vector output the background will “shine through” a
+transparent foreground. For instance
 
     zint --bg=ff0000 --fg=ffffff00 ...
 
 will give different results for PNG and SVG. Experimentation is advised!
 
-In addition the --nobackground option will simply remove the background from
-EMF, EPS, GIF, PNG, SVG and TIF files.
+In addition the --nobackground option will remove the background from all output
+formats except BMP.[4]
+
+The --cmyk option is specific to output in Encapsulated PostScript (EPS) and
+TIF, and selects the CMYK colour space. Custom colours should then usually be
+given in the comma-separated "C,M,Y,K" format, where C, M, Y and K are expressed
+as decimal percentage values from 0 to 100. RGB values may still be used, in
+which case they will be converted formulaically to CMYK approximations.
 
 4.8 Rotating the Symbol
 
@@ -1178,7 +1190,7 @@ Latin-2 (ISO/IEC 8859-2 plus ASCII).
   Han Xin         Latin-1                    GB 18030 (includes ASCII)
   MaxiCode        Latin-1                    None
   MicroPDF417     Latin-1                    None
-  Micro QR Code   Latin-1                    Shift JIS (includes ASCII[4])
+  Micro QR Code   Latin-1                    Shift JIS (includes ASCII[5])
   PDF417          Latin-1                    None
   QR Code         Latin-1                    Shift JIS (see above)
   rMQR            Latin-1                    Shift JIS (see above)
@@ -1280,7 +1292,7 @@ formatted. Zint automatically translates the data into the target encoding.
   33         UTF-16LE (Low order byte first)
   34         UTF-32BE (High order bytes first)
   35         UTF-32LE (Low order bytes first)
-  170        ISO/IEC 646 Invariant[5]
+  170        ISO/IEC 646 Invariant[6]
   899        8-bit binary data
 
   : Table : ECI Codes:
@@ -1537,10 +1549,6 @@ Zint can output a representation of the symbol data as a set of hexadecimal
 values if asked to output to a text file ("*.txt") or if given the option
 --filetype=txt. This can be used for test and diagnostic purposes.
 
-The --cmyk option is specific to output in Encapsulated PostScript and TIF, and
-converts the RGB colours used to the CMYK colour space. Setting custom colours
-at the command line will still need to be done in RRGGBB format.
-
 Additional options are available which are specific to certain symbologies.
 These may, for example, control the amount of error correction data or the size
 of the symbol. These options are discussed in section 6. Types of Symbology of
@@ -1735,7 +1743,7 @@ routines available:
     struct zint_vector_circle *circle;
 
     prepare_canvas(my_symbol->vector->width, my_symbol->vector->height,
-                   my_symbol->scale, my_symbol->fgcolour, my_symbol->bgcolor,
+                   my_symbol->scale, my_symbol->fgcolour, my_symbol->bgcolour,
                    rotate_angle);
 
     for (rect = my_symbol->vector->rectangles; rect; rect = rect->next) {
@@ -1772,7 +1780,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
 
   height                float        Symbol height, excluding     Symbol dependent
                                      fixed width-to-height
-                                     symbols.[6]
+                                     symbols.[7]
 
   scale                 float        Scale factor for adjusting   1.0
                                      size of image.
@@ -1789,16 +1797,16 @@ encoding stages. The zint_symbol structure consists of the following variables:
                                      Options).
 
   fgcolour              character    Foreground (ink) colour as   "000000"
-                        string       RGB/RGBA hexadecimal string.
-                                     Must be 6 or 8 characters
-                                     followed by a terminating
-                                     NUL.
+                        string       RGB/RGBA hexadecimal string
+                                     or "C,M,Y,K" decimal
+                                     percentages string, with a
+                                     terminating NUL.
 
   bgcolour              character    Background (paper) colour as "ffffff"
-                        string       RGB/RGBA hexadecimal string.
-                                     Must be 6 or 8 characters
-                                     followed by a terminating
-                                     NUL.
+                        string       RGB/RGBA hexadecimal string
+                                     or "C,M,Y,K" decimal
+                                     percentages string, with a
+                                     terminating NUL.
 
   fgcolor               pointer      Points to fgcolour allowing
                                      alternate spelling.
@@ -1918,11 +1926,10 @@ plotted in green.
         return 0;
     }
 
-Background removal for EMF, EPS, GIF, PNG, SVG and TIF files can be achieved by
-setting the background alpha to "00" where the values for R, G and B will be
-ignored:
+Background removal for all outputs except BMP can be achieved by setting the
+background alpha to "00" where the values for R, G and B will be ignored:
 
-    strcpy(my_symbol->bgcolour, "55555500");
+        strcpy(my_symbol->bgcolour, "55555500");
 
 5.7 Handling Errors
 
@@ -2020,7 +2027,7 @@ To catch errors use an integer variable as shown in the code below:
 
 This code will exit with the appropriate message:
 
-    Error 653: Malformed foreground colour 'NONSENSE' (hexadecimal only)
+    Error 691: Malformed foreground RGB colour 'nonsense' (hexadecimal only)
 
 To treat all warnings as errors, set symbol->warn_level to WARN_FAIL_ALL.
 
@@ -2048,10 +2055,10 @@ together when adjusting this value:
   -------------------------- ----------------------------------------------------
   0                          No options selected.
 
-  BARCODE_BIND_TOP           Boundary bar above the symbol only.[7]
+  BARCODE_BIND_TOP           Boundary bar above the symbol only.[8]
 
   BARCODE_BIND               Boundary bars above and below the symbol and between
-                             rows if stacking multiple symbols.[8]
+                             rows if stacking multiple symbols.[9]
 
   BARCODE_BOX                Add a box surrounding the symbol and whitespace.
 
@@ -2076,7 +2083,7 @@ together when adjusting this value:
                              separate colour channels (OUT_BUFFER only).
 
   BARCODE_QUIET_ZONES        Add compliant quiet zones (additional to any
-                             specified whitespace).[9]
+                             specified whitespace).[10]
 
   BARCODE_NO_QUIET_ZONES     Disable quiet zones, notably those with defaults.
 
@@ -2777,7 +2784,7 @@ Alphabet No. 1 (ISO/IEC 8859-1).
 [zint -b CODE128AB -d "130170X178"]
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[10] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[11] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special escapes to manually switch Code Sets mentioned above are
@@ -4428,8 +4435,8 @@ OPTIONS
     “00002.png” etc., which can be changed by using the -o | --output option.
 
 --bg=COLOUR
-    Specify a background (paper) colour where COLOUR is in hex RRGGBB or
-    RRGGBBAA format.
+    Specify a background (paper) colour where COLOUR is in hexadecimal RRGGBB or
+    RRGGBBAA format or in decimal C,M,Y,K percentages format.
 
 --binary
     Treat input data as raw 8-bit binary data instead of the default UTF-8.
@@ -4558,8 +4565,8 @@ OPTIONS
 
 --fg=COLOUR
 
-    Specify a foreground (ink) colour where COLOUR is in hex RRGGBB or RRGGBBAA
-    format.
+    Specify a foreground (ink) colour where COLOUR is in hexadecimal RRGGBB or
+    RRGGBBAA format or in decimal C,M,Y,K percentages format.
 
 --filetype=TYPE
 
@@ -4947,25 +4954,29 @@ Not to be confused with the Windows Bitmap file format BMP!
 now deprecated but are still recognised by Zint and will continue to be
 supported in future versions.
 
-[4] Shift JIS (JIS X 0201 Roman) re-maps two ASCII characters: backslash (\) to
+[4] The background is omitted for vector outputs EMF, EPS and SVG when
+--nobackground is given. For raster outputs GIF, PCX, PNG and TIF, the
+background’s alpha channel is set to zero (fully transparent).
+
+[5] Shift JIS (JIS X 0201 Roman) re-maps two ASCII characters: backslash (\) to
 the yen sign (¥), and tilde (~) to overline (U+203E).
 
-[5] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
+[6] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
 $, @, [, \, ], ^, `, {, |, }, ~.
 
-[6] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
+[7] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
 One, Data Matrix (including HIBC), DotCode, Grid Matrix, Han Xin, MaxiCode, QR
 Code (including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which
 have a fixed width-to-height ratio (or, in the case of Code One, a fixed
 height).
 
-[7] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD Code.
+[8] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD Code.
 
-[8] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
+[9] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[9] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
+[10] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.
 
-[10] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[11] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.

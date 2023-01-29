@@ -1,7 +1,7 @@
 /* gif.c - Handles output to gif file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@
 
 typedef struct s_statestruct {
     unsigned char *pOut;
-    unsigned char *pIn;
+    const unsigned char *pIn;
     unsigned int InLen;
     unsigned int OutLength;
     unsigned int OutPosCur;
@@ -297,6 +297,10 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     unsigned char backgroundColourIndex;
     unsigned char RGBCur[3];
     unsigned char RGBUnused[3] = {0,0,0};
+    unsigned char RGBfg[3];
+    unsigned char RGBbg[3];
+    unsigned char fgalpha;
+    unsigned char bgalpha;
 
     int colourIndex;
 
@@ -310,6 +314,9 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (lzoutbufSize > GIF_LZW_PAGE_SIZE) {
         lzoutbufSize = GIF_LZW_PAGE_SIZE;
     }
+
+    (void) out_colour_get_rgb(symbol->fgcolour, &RGBfg[0], &RGBfg[1], &RGBfg[2], &fgalpha);
+    (void) out_colour_get_rgb(symbol->bgcolour, &RGBbg[0], &RGBbg[1], &RGBbg[2], &bgalpha);
 
     /*
      * Build a table of the used palette items.
@@ -364,14 +371,10 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         /* Get RGB value */
         switch (pixelColour) {
             case '0': /* standard background */
-                RGBCur[0] = (unsigned char) (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-                RGBCur[1] = (unsigned char) (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-                RGBCur[2] = (unsigned char) (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+                RGBCur[0] = RGBbg[0]; RGBCur[1] = RGBbg[1]; RGBCur[2] = RGBbg[2];
                 break;
             case '1': /* standard foreground */
-                RGBCur[0] = (unsigned char) (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-                RGBCur[1] = (unsigned char) (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-                RGBCur[2] = (unsigned char) (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+                RGBCur[0] = RGBfg[0]; RGBCur[1] = RGBfg[1]; RGBCur[2] = RGBfg[2];
                 break;
             case 'W': /* white */
                 RGBCur[0] = 255; RGBCur[1] = 255; RGBCur[2] = 255;
@@ -436,17 +439,12 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* Note: does not allow both transparent foreground and background -
      * background takes priority */
     transparent_index = -1;
-    if (strlen(symbol->fgcolour) > 6) {
-        if ((symbol->fgcolour[6] == '0') && (symbol->fgcolour[7] == '0')) {
-            /* Transparent foreground */
-            transparent_index = fgindex;
-        }
-    }
-    if (strlen(symbol->bgcolour) > 6) {
-        if ((symbol->bgcolour[6] == '0') && (symbol->bgcolour[7] == '0')) {
-            /* Transparent background */
-            transparent_index = bgindex;
-        }
+    if (bgalpha == 0) {
+        /* Transparent background */
+        transparent_index = bgindex;
+    } else if (fgalpha == 0) {
+        /* Transparent foreground */
+        transparent_index = fgindex;
     }
 
     /* find palette bit size from palette size*/

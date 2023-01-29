@@ -1,7 +1,7 @@
 /*  output.c - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,36 +43,151 @@
 #include "output.h"
 #include "font.h"
 
-#define SSET_F  (IS_NUM_F | IS_UHX_F) /* SSET "0123456789ABCDEF" */
+#define OUT_SSET_F  (IS_NUM_F | IS_UHX_F | IS_LHX_F) /* SSET "0123456789ABCDEFabcdef" */
 
-/* Check colour options are good. Note: using raster.c error nos 651-654 */
-INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
-    int fg_len = (int) strlen(symbol->fgcolour);
-    int bg_len = (int) strlen(symbol->bgcolour);
+/* Helper to check an individual colour option is good */
+static int out_check_colour(struct zint_symbol *symbol, const char *colour, const char *name) {
+    const char *comma1, *comma2, *comma3;
+    int val;
 
-    if ((fg_len != 6) && (fg_len != 8)) {
-        strcpy(symbol->errtxt, "651: Malformed foreground colour (6 or 8 characters only)");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
-    if ((bg_len != 6) && (bg_len != 8)) {
-        strcpy(symbol->errtxt, "652: Malformed background colour (6 or 8 characters only)");
-        return ZINT_ERROR_INVALID_OPTION;
-    }
+    if ((comma1 = strchr(colour, ',')) == NULL) {
+        const int len = (int) strlen(colour);
+        if ((len != 6) && (len != 8)) {
+            sprintf(symbol->errtxt, "690: Malformed %s RGB colour (6 or 8 characters only)", name);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
+        if (!is_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
+            sprintf(symbol->errtxt, "691: Malformed %s RGB colour '%s' (hexadecimal only)", name, colour);
+            return ZINT_ERROR_INVALID_OPTION;
+        }
 
-    to_upper((unsigned char *) symbol->fgcolour, fg_len);
-    to_upper((unsigned char *) symbol->bgcolour, bg_len);
-
-    if (!is_sane(SSET_F, (unsigned char *) symbol->fgcolour, fg_len)) {
-        sprintf(symbol->errtxt, "653: Malformed foreground colour '%s' (hexadecimal only)", symbol->fgcolour);
-        return ZINT_ERROR_INVALID_OPTION;
+        return 0;
     }
 
-    if (!is_sane(SSET_F, (unsigned char *) symbol->bgcolour, bg_len)) {
-        sprintf(symbol->errtxt, "654: Malformed background colour '%s' (hexadecimal only)", symbol->bgcolour);
+    /* CMYK comma-separated percentages */
+    if ((comma2 = strchr(comma1 + 1, ',')) == NULL || (comma3 = strchr(comma2 + 1, ',')) == NULL
+            || strchr(comma3 + 1, ',') != NULL) {
+        sprintf(symbol->errtxt, "692: Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if (comma1 - colour > 3 || comma2 - (comma1 + 1) > 3 || comma3 - (comma2 + 1) > 3 || strlen(comma3 + 1) > 3) {
+        sprintf(symbol->errtxt, "693: Malformed %s CMYK colour (3 digit maximum per number)", name);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+
+    if ((val = to_int((const unsigned char *) colour, (int) (comma1 - colour))) == -1 || val > 100) {
+        sprintf(symbol->errtxt, "694: Malformed %s CMYK colour C (decimal 0-100 only)", name);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if ((val = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
+        sprintf(symbol->errtxt, "695: Malformed %s CMYK colour M (decimal 0-100 only)", name);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if ((val = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
+        sprintf(symbol->errtxt, "696: Malformed %s CMYK colour Y (decimal 0-100 only)", name);
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if ((val = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
+        sprintf(symbol->errtxt, "697: Malformed %s CMYK colour K (decimal 0-100 only)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     return 0;
+}
+
+/* Check colour options are good (`symbol->fgcolour`, `symbol->bgcolour`) */
+INTERNAL int out_check_colour_options(struct zint_symbol *symbol) {
+
+    if (out_check_colour(symbol, symbol->fgcolour, "foreground") != 0) {
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if (out_check_colour(symbol, symbol->bgcolour, "background") != 0) {
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+
+    return 0;
+}
+
+/* Return RGB(A) from (well-formed) colour string. Returns 0 if RGB or converted CMYK, 1 if RGBA */
+INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned char *green, unsigned char *blue,
+                unsigned char *alpha) {
+    const char *comma1, *comma2, *comma3;
+    int black, val;
+
+    if ((comma1 = strchr(colour, ',')) == NULL) {
+        *red = 16 * ctoi(colour[0]) + ctoi(colour[1]);
+        *green = 16 * ctoi(colour[2]) + ctoi(colour[3]);
+        *blue = 16 * ctoi(colour[4]) + ctoi(colour[5]);
+        if (alpha) {
+            *alpha = colour[6] ? 16 * ctoi(colour[6]) + ctoi(colour[7]) : 0xFF;
+            return colour[6] ? 1 : 0;
+        }
+        return 0;
+    }
+    comma2 = strchr(comma1 + 1, ',');
+    comma3 = strchr(comma2 + 1, ',');
+
+    black = 100 - to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
+
+    val = 100 - to_int((const unsigned char *) colour, (int) (comma1 - colour)); /* Cyan */
+    *red = (int) roundf((0xFF * val * black) / 10000.0f);
+
+    val = 100 - to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
+    *green = (int) roundf((0xFF * val * black) / 10000.0f);
+
+    val = 100 - to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
+    *blue = (int) roundf((0xFF * val * black) / 10000.0f);
+
+    if (alpha) {
+        *alpha = 0xFF;
+    }
+
+    return 0;
+}
+
+/* Return CMYK from (well-formed) colour string. Returns 0 if CMYK, 1 if converted RBG, 2 if converted RGBA */
+INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, int *yellow, int *black,
+                unsigned char *rgb_alpha) {
+    const char *comma1;
+    unsigned char red, green, blue, alpha;
+    int have_alpha, k;
+
+    if ((comma1 = strchr(colour, ',')) != NULL) {
+        const char *const comma2 = strchr(comma1 + 1, ',');
+        const char *const comma3 = strchr(comma2 + 1, ',');
+        *cyan = to_int((const unsigned char *) colour, (int) (comma1 - colour));
+        *magenta = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)));
+        *yellow = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)));
+        *black = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
+        if (rgb_alpha) {
+            *rgb_alpha = 0xFF;
+        }
+        return 0;
+    }
+    have_alpha = out_colour_get_rgb(colour, &red, &green, &blue, &alpha);
+
+    k = red;
+    if (green > k) {
+        k = green;
+    }
+    if (blue > k) {
+        k = blue;
+    }
+    if (k == 0) {
+        *cyan = *magenta = *yellow = 0;
+        *black = 100;
+    } else {
+        *cyan = (int) roundf((k - red) * 100.0f / k);
+        *magenta = (int) roundf((k - green) * 100.0f / k);
+        *yellow = (int) roundf((k - blue) * 100.0f / k);
+        *black = (int) roundf(((0xFF - k) * 100.0f) / 0xFF);
+    }
+
+    if (rgb_alpha) {
+        *rgb_alpha = have_alpha ? alpha : 0xFF;
+    }
+
+    return 1 + have_alpha;
 }
 
 /* Return minimum quiet zones for each symbology */
@@ -761,8 +876,7 @@ INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
 /* Make a directory; already existing dir okay */
 /* Adapted from https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950 and
    https://nachtimwald.com/2019/07/10/recursive-create-directory-in-c-revisited/ */
-static int out_maybe_mkdir(const char* path)
-{
+static int out_maybe_mkdir(const char* path) {
 #ifdef _WIN32
     DWORD dwAttrib;
 

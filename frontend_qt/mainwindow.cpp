@@ -57,10 +57,48 @@ static const QKeySequence copyTIFSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_T);
 
 static const QKeySequence factoryResetSeq(Qt::SHIFT | Qt::CTRL | Qt::Key_R);
 
-static const QRegularExpression colorRE(QSL("^[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"));
+// RGB hexadecimal 6 or 8 in length or CMYK comma-separated decimal percentages "C,M,Y,K"
+static const QRegularExpression colorRE(
+                                QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
 
-static const QColor fgcolorDefault(0, 0, 0, 0xff);
-static const QColor bgcolorDefault(0xff, 0xff, 0xff, 0xff);
+static const QString fgDefault(QSL("000000"));
+static const QString bgDefault(QSL("FFFFFF"));
+static const QString fgDefaultAlpha(QSL("000000FF"));
+static const QString bgDefaultAlpha(QSL("FFFFFFFF"));
+
+static QString qcolor_to_str(const QColor &color)
+{
+    if (color.alpha() == 0xFF) {
+        return QString::asprintf("%02X%02X%02X", color.red(), color.green(), color.blue());
+    }
+    return QString::asprintf("%02X%02X%02X%02X", color.red(), color.green(), color.blue(), color.alpha());
+}
+
+static QColor str_to_qcolor(const QString &str)
+{
+    QColor color;
+    int r, g, b, a;
+    if (str.contains(',')) {
+        int comma1 = str.indexOf(',');
+        int comma2 = str.indexOf(',', comma1 + 1);
+        int comma3 = str.indexOf(',', comma2 + 1);
+        int black = 100 - str.mid(comma3 + 1).toInt();
+        int val = 100 - str.mid(0, comma1).toInt();
+        r = (int) roundf((0xFF * val * black) / 10000.0f);
+        val = 100 - str.mid(comma1 + 1, comma2 - comma1 - 1).toInt();
+        g = (int) roundf((0xFF * val * black) / 10000.0f);
+        val = 100 - str.mid(comma2 + 1, comma3 - comma2 - 1).toInt();
+        b = (int) roundf((0xFF * val * black) / 10000.0f);
+        a = 0xFF;
+    } else {
+        r = str.mid(0, 2).toInt(nullptr, 16);
+        g = str.mid(2, 2).toInt(nullptr, 16);
+        b = str.mid(4, 2).toInt(nullptr, 16);
+        a = str.length() == 8 ? str.mid(6, 2).toInt(nullptr, 16) : 0xFF;
+    }
+    color.setRgb(r, g, b, a);
+    return color;
+}
 
 struct bstyle_item {
     const QString text;
@@ -402,14 +440,8 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/bgcolor_geometry"), m_bgcolor_geometry);
     settings.setValue(QSL("studio/tab_index"), tabMain->currentIndex());
     settings.setValue(QSL("studio/symbology"), bstyle->currentIndex());
-    settings.setValue(QSL("studio/ink/red"), m_fgcolor.red());
-    settings.setValue(QSL("studio/ink/green"), m_fgcolor.green());
-    settings.setValue(QSL("studio/ink/blue"), m_fgcolor.blue());
-    settings.setValue(QSL("studio/ink/alpha"), m_fgcolor.alpha());
-    settings.setValue(QSL("studio/paper/red"), m_bgcolor.red());
-    settings.setValue(QSL("studio/paper/green"), m_bgcolor.green());
-    settings.setValue(QSL("studio/paper/blue"), m_bgcolor.blue());
-    settings.setValue(QSL("studio/paper/alpha"), m_bgcolor.alpha());
+    settings.setValue(QSL("studio/ink/text"), m_fgstr);
+    settings.setValue(QSL("studio/paper/text"), m_bgstr);
     settings.setValue(QSL("studio/data"), txtData->text());
     /* Seg data not saved so don't restore */
     settings.setValue(QSL("studio/composite_text"), txtComposite->toPlainText());
@@ -451,14 +483,28 @@ void MainWindow::load_settings(QSettings &settings)
     bool initial_load = m_symbology == 0;
     QString initialData(initial_load ? tr("Your Data Here!") : "");
 
-    m_fgcolor.setRgb(settings.value(QSL("studio/ink/red"), 0).toInt(),
+    m_fgstr = settings.value(QSL("studio/ink/text"), QSL("")).toString();
+    if (m_fgstr.isEmpty()) {
+        QColor color(settings.value(QSL("studio/ink/red"), 0).toInt(),
                     settings.value(QSL("studio/ink/green"), 0).toInt(),
                     settings.value(QSL("studio/ink/blue"), 0).toInt(),
                     settings.value(QSL("studio/ink/alpha"), 0xff).toInt());
-    m_bgcolor.setRgb(settings.value(QSL("studio/paper/red"), 0xff).toInt(),
-                    settings.value(QSL("studio/paper/green"), 0xff).toInt(),
-                    settings.value(QSL("studio/paper/blue"), 0xff).toInt(),
+        m_fgstr = qcolor_to_str(color);
+    }
+    if (m_fgstr.indexOf(colorRE) != 0) {
+        m_fgstr = fgDefault;
+    }
+    m_bgstr = settings.value(QSL("studio/paper/text"), QSL("")).toString();
+    if (m_bgstr.isEmpty()) {
+        QColor color(settings.value(QSL("studio/paper/red"), 0).toInt(),
+                    settings.value(QSL("studio/paper/green"), 0).toInt(),
+                    settings.value(QSL("studio/paper/blue"), 0).toInt(),
                     settings.value(QSL("studio/paper/alpha"), 0xff).toInt());
+        m_bgstr = qcolor_to_str(color);
+    }
+    if (m_bgstr.indexOf(colorRE) != 0) {
+        m_bgstr = bgDefault;
+    }
 
     txtData->setText(settings.value(QSL("studio/data"), initialData).toString());
     /* Don't save seg data */
@@ -556,9 +602,9 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
         QFocusEvent *focusEvent = static_cast<QFocusEvent *>(event);
         if (focusEvent->reason() != Qt::PopupFocusReason) {
             if (watched == txt_fgcolor) {
-                setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+                setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
             } else {
-                setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+                setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
             }
         }
     }
@@ -568,41 +614,30 @@ bool MainWindow::eventFilter(QObject *watched, QEvent *event)
 
 void MainWindow::reset_colours()
 {
-    m_fgcolor = fgcolorDefault;
-    m_bgcolor = bgcolorDefault;
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+    m_fgstr = fgDefault;
+    m_bgstr = bgDefault;
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
     update_preview();
 }
 
 void MainWindow::reverse_colours()
 {
-    QColor temp = m_fgcolor;
-    m_fgcolor = m_bgcolor;
-    m_bgcolor = temp;
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+    QString temp = m_fgstr;
+    m_fgstr = m_bgstr;
+    m_bgstr = temp;
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
     update_preview();
 }
 
-QString MainWindow::getColorStr(const QColor color, bool alpha_always) {
-    QString ret;
-    if (color.alpha() != 0xFF || alpha_always) {
-        ret = QString::asprintf("%02X%02X%02X%02X", color.red(), color.green(), color.blue(), color.alpha());
-    } else {
-        ret = QString::asprintf("%02X%02X%02X", color.red(), color.green(), color.blue());
-    }
-    return ret;
-}
-
-void MainWindow::setColorTxtBtn(const QColor color, QLineEdit *txt, QPushButton* btn) {
-    QString colorStr = getColorStr(color);
+void MainWindow::setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QPushButton* btn) {
     if (colorStr != txt->text()) {
         int cursorPos = txt->cursorPosition();
         txt->setText(colorStr);
         txt->setCursorPosition(cursorPos);
     }
-    btn->setStyleSheet(QSL("QPushButton {background-color:") + color.name() + QSL(";}"));
+    btn->setStyleSheet(QSL("QPushButton {background-color:") + str_to_qcolor(colorStr).name() + QSL(";}"));
 }
 
 bool MainWindow::save()
@@ -718,12 +753,13 @@ void MainWindow::factory_reset()
     int symbology = bstyle_items[bstyle->currentIndex()].symbology;
 
     load_settings(settings);
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
 
     load_sub_settings(settings, symbology);
 
     settings.sync();
+
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
 
     txtData->setFocus(Qt::OtherFocusReason);
     update_preview();
@@ -937,14 +973,14 @@ void MainWindow::zap()
 
     load_settings(settings);
 
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
-
     m_xdimdpVars.x_dim = 0.0f;
     m_xdimdpVars.x_dim_units = 0;
     m_xdimdpVars.set = 0;
 
     load_sub_settings(settings, symbology);
+
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
 
     txtData->setFocus(Qt::OtherFocusReason);
     update_preview();
@@ -999,45 +1035,45 @@ void MainWindow::open_scale_dialog()
 
 void MainWindow::on_fgcolor_clicked()
 {
-    color_clicked(m_fgcolor, txt_fgcolor, fgcolor, tr("Set foreground colour"), m_fgcolor_geometry,
+    color_clicked(m_fgstr, txt_fgcolor, fgcolor, tr("Set foreground colour"), m_fgcolor_geometry,
                     SLOT(fgcolor_changed(const QColor&)));
 }
 
 void MainWindow::on_bgcolor_clicked()
 {
-    color_clicked(m_bgcolor, txt_bgcolor, bgcolor, tr("Set background colour"), m_bgcolor_geometry,
+    color_clicked(m_bgstr, txt_bgcolor, bgcolor, tr("Set background colour"), m_bgcolor_geometry,
                     SLOT(bgcolor_changed(const QColor&)));
 }
 
-void MainWindow::color_clicked(QColor &color, QLineEdit *txt, QPushButton *btn, const QString& title,
+void MainWindow::color_clicked(QString &colorStr, QLineEdit *txt, QPushButton *btn, const QString& title,
                                 QByteArray& geometry, const char *color_changed)
 {
-    QColor original = color;
+    QString original = colorStr;
 
     QColorDialog color_dialog(nullptr /*parent*/);
     color_dialog.setWindowTitle(title);
     color_dialog.setOptions(QColorDialog::DontUseNativeDialog | QColorDialog::ShowAlphaChannel);
-    color_dialog.setCurrentColor(color);
+    color_dialog.setCurrentColor(str_to_qcolor(colorStr));
     color_dialog.restoreGeometry(geometry);
     connect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this, color_changed);
 
     if (color_dialog.exec() && color_dialog.selectedColor().isValid()) {
-        color = color_dialog.selectedColor();
+        colorStr = qcolor_to_str(color_dialog.selectedColor());
     } else {
-        color = original;
+        colorStr = original;
     }
     geometry = color_dialog.saveGeometry();
     disconnect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this, color_changed);
 
-    setColorTxtBtn(color, txt, btn);
+    setColorTxtBtn(colorStr, txt, btn);
     update_preview();
 }
 
 void MainWindow::fgcolor_changed(const QColor& color)
 {
     if (color.isValid()) {
-        m_fgcolor = color;
-        setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
+        m_fgstr = qcolor_to_str(color);
+        setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
         update_preview();
     }
 }
@@ -1045,39 +1081,30 @@ void MainWindow::fgcolor_changed(const QColor& color)
 void MainWindow::bgcolor_changed(const QColor& color)
 {
     if (color.isValid()) {
-        m_bgcolor = color;
-        setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+        m_bgstr = qcolor_to_str(color);
+        setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
         update_preview();
     }
 }
 
 void MainWindow::fgcolor_edited()
 {
-    color_edited(m_fgcolor, txt_fgcolor, fgcolor);
+    color_edited(m_fgstr, txt_fgcolor, fgcolor);
 }
 
 void MainWindow::bgcolor_edited()
 {
-    color_edited(m_bgcolor, txt_bgcolor, bgcolor);
+    color_edited(m_bgstr, txt_bgcolor, bgcolor);
 }
 
-void MainWindow::color_edited(QColor &color, QLineEdit *txt, QPushButton *btn)
+void MainWindow::color_edited(QString &colorStr, QLineEdit *txt, QPushButton *btn)
 {
-    QColor new_color;
-    QString new_text = txt->text().trimmed();
-    if (new_text.indexOf(colorRE) != 0) {
+    QString new_str = txt->text().trimmed();
+    if (new_str.indexOf(colorRE) != 0) {
         return;
     }
-    int r = new_text.mid(0, 2).toInt(nullptr, 16);
-    int g = new_text.mid(2, 2).toInt(nullptr, 16);
-    int b = new_text.mid(4, 2).toInt(nullptr, 16);
-    int a = new_text.length() == 8 ? new_text.mid(6, 2).toInt(nullptr, 16) : 0xFF;
-    new_color.setRgb(r, g, b, a);
-    if (!new_color.isValid()) {
-        return;
-    }
-    color = new_color;
-    setColorTxtBtn(color, txt, btn);
+    colorStr = new_str;
+    setColorTxtBtn(colorStr, txt, btn);
     update_preview();
 }
 
@@ -1545,8 +1572,8 @@ void MainWindow::change_options()
     m_btnHeightPerRowDisable = nullptr;
     m_btnHeightPerRowDefault = nullptr;
 
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
 
     m_xdimdpVars.x_dim = 0.0f;
     m_xdimdpVars.x_dim_units = 0;
@@ -2199,8 +2226,8 @@ void MainWindow::change_options()
     chkQuietZones->setEnabled(!m_bc.bc.hasDefaultQuietZones(symbology));
     chkDotty->setEnabled(m_bc.bc.isDotty(symbology));
 
-    setColorTxtBtn(m_fgcolor, txt_fgcolor, fgcolor);
-    setColorTxtBtn(m_bgcolor, txt_bgcolor, bgcolor);
+    setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
+    setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
 
     data_ui_set();
     composite_ui_set();
@@ -2513,7 +2540,8 @@ void MainWindow::update_preview()
             m_bc.bc.setText(txtData->text());
         }
     }
-    btnReset->setEnabled(m_fgcolor != fgcolorDefault || m_bgcolor != bgcolorDefault);
+    btnReset->setEnabled((m_fgstr != fgDefault && m_fgstr != fgDefaultAlpha)
+                        || (m_bgstr != bgDefault && m_bgstr != bgDefaultAlpha));
     m_bc.bc.setOption1(-1);
     m_bc.bc.setOption2(0);
     m_bc.bc.setOption3(0);
@@ -3143,8 +3171,8 @@ void MainWindow::update_preview()
     if (m_symbology == BARCODE_DOTCODE || (chkDotty->isEnabled() && chkDotty->isChecked())) {
         m_bc.bc.setDotSize(spnDotSize->value());
     }
-    m_bc.bc.setFgColor(m_fgcolor);
-    m_bc.bc.setBgColor(m_bgcolor);
+    m_bc.bc.setFgStr(m_fgstr);
+    m_bc.bc.setBgStr(m_bgstr);
     m_bc.bc.setScale((float) spnScale->value());
     change_cmyk();
     m_bc.setSize(width - 10, height - 10);
@@ -3169,7 +3197,7 @@ void MainWindow::createActions()
     btnMenu->setIcon(menuIcon);
     btnCopyBMP->setIcon(copyIcon);
     btnCopySVG->setIcon(copyIcon);
-    //btnSave->setIcon(saveIcon); // Makes it too big
+    btnSave->setIcon(saveIcon); // Makes it (too) big but live with it for a while after "Save As..." -> "Save..."
     btnExit->setIcon(quitIcon);
 
     m_copyBMPAct = new QAction(copyIcon, tr("Copy as &BMP"), this);
@@ -3236,7 +3264,7 @@ void MainWindow::createActions()
     m_helpAct->setShortcut(QKeySequence::HelpContents);
     connect(m_helpAct, SIGNAL(triggered()), this, SLOT(help()));
 
-    m_aboutAct = new QAction(aboutIcon, tr("&About"), this);
+    m_aboutAct = new QAction(aboutIcon, tr("&About..."), this);
     m_aboutAct->setStatusTip(tr("About Zint Barcode Studio"));
     connect(m_aboutAct, SIGNAL(triggered()), this, SLOT(about()));
 
@@ -3922,14 +3950,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/%1/appearance/chk_dotty").arg(name), chkDotty->isChecked() ? 1 : 0);
             settings.setValue(QSL("studio/bc/%1/appearance/dot_size").arg(name), spnDotSize->value());
         }
-        settings.setValue(QSL("studio/bc/%1/ink/red").arg(name), m_fgcolor.red());
-        settings.setValue(QSL("studio/bc/%1/ink/green").arg(name), m_fgcolor.green());
-        settings.setValue(QSL("studio/bc/%1/ink/blue").arg(name), m_fgcolor.blue());
-        settings.setValue(QSL("studio/bc/%1/ink/alpha").arg(name), m_fgcolor.alpha());
-        settings.setValue(QSL("studio/bc/%1/paper/red").arg(name), m_bgcolor.red());
-        settings.setValue(QSL("studio/bc/%1/paper/green").arg(name), m_bgcolor.green());
-        settings.setValue(QSL("studio/bc/%1/paper/blue").arg(name), m_bgcolor.blue());
-        settings.setValue(QSL("studio/bc/%1/paper/alpha").arg(name), m_bgcolor.alpha());
+        settings.setValue(QSL("studio/bc/%1/ink/text").arg(name), m_fgstr);
+        settings.setValue(QSL("studio/bc/%1/paper/text").arg(name), m_bgstr);
         settings.setValue(QSL("studio/bc/%1/xdimdpvars/x_dim").arg(name), m_xdimdpVars.x_dim);
         settings.setValue(QSL("studio/bc/%1/xdimdpvars/x_dim_units").arg(name), m_xdimdpVars.x_dim_units);
         settings.setValue(QSL("studio/bc/%1/xdimdpvars/set").arg(name), m_xdimdpVars.set);
@@ -4095,7 +4117,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_MAILMARK_2D:
             settings.setValue(QSL("studio/bc/mailmark2d/size"), get_cmb_index(QSL("cmbMailmark2DSize")));
-            settings.setValue(QSL("studio/bc/mailmark2d/chk_suppress_rect"), get_chk_val(QSL("chkMailmark2DRectangle")));
+            settings.setValue(
+                        QSL("studio/bc/mailmark2d/chk_suppress_rect"), get_chk_val(QSL("chkMailmark2DRectangle")));
             break;
 
         case BARCODE_ITF14:
@@ -4314,7 +4337,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             chkHRTShow->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }
-        chkCMYK->setChecked(settings.value(QSL("studio/bc/%1/appearance/cmyk").arg(name), 0).toInt() ? true : false);
+        chkCMYK->setChecked(settings.value(
+            QSL("studio/bc/%1/appearance/chk_cmyk").arg(name), 0).toInt() ? true : false);
         chkQuietZones->setChecked(settings.value(
             QSL("studio/bc/%1/appearance/chk_quietzones").arg(name), 0).toInt() ? true : false);
         cmbRotate->setCurrentIndex(settings.value(QSL("studio/bc/%1/appearance/rotate").arg(name), 0).toInt());
@@ -4324,15 +4348,28 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             spnDotSize->setValue(settings.value(
                 QSL("studio/bc/%1/appearance/dot_size").arg(name), 0.4f / 0.5f).toFloat());
         }
-        m_fgcolor.setRgb(settings.value(QSL("studio/bc/%1/ink/red").arg(name), 0).toInt(),
+        m_fgstr = settings.value(QSL("studio/bc/%1/ink/text").arg(name), QSL("")).toString();
+        if (m_fgstr.isEmpty()) {
+            QColor color(settings.value(QSL("studio/bc/%1/ink/red").arg(name), 0).toInt(),
                         settings.value(QSL("studio/bc/%1/ink/green").arg(name), 0).toInt(),
                         settings.value(QSL("studio/bc/%1/ink/blue").arg(name), 0).toInt(),
                         settings.value(QSL("studio/bc/%1/ink/alpha").arg(name), 0xff).toInt());
-        m_bgcolor.setRgb(settings.value(QSL("studio/bc/%1/paper/red").arg(name), 0xff).toInt(),
+            m_fgstr = qcolor_to_str(color);
+        }
+        if (m_fgstr.indexOf(colorRE) != 0) {
+            m_fgstr = fgDefault;
+        }
+        m_bgstr = settings.value(QSL("studio/bc/%1/paper/text").arg(name), QSL("")).toString();
+        if (m_bgstr.isEmpty()) {
+            QColor color(settings.value(QSL("studio/bc/%1/paper/red").arg(name), 0xff).toInt(),
                         settings.value(QSL("studio/bc/%1/paper/green").arg(name), 0xff).toInt(),
                         settings.value(QSL("studio/bc/%1/paper/blue").arg(name), 0xff).toInt(),
                         settings.value(QSL("studio/bc/%1/paper/alpha").arg(name), 0xff).toInt());
-
+            m_bgstr = qcolor_to_str(color);
+        }
+        if (m_bgstr.indexOf(colorRE) != 0) {
+            m_bgstr = bgDefault;
+        }
         m_xdimdpVars.x_dim = settings.value(QSL("studio/bc/%1/xdimdpvars/x_dim").arg(name), 0.0).toFloat();
         m_xdimdpVars.x_dim_units = settings.value(QSL("studio/bc/%1/xdimdpvars/x_dim_units").arg(name), 0).toInt();
         m_xdimdpVars.set = settings.value(QSL("studio/bc/%1/xdimdpvars/set").arg(name), 0).toInt();
@@ -4507,7 +4544,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
 
         case BARCODE_MAILMARK_2D:
             set_cmb_from_setting(settings, QSL("studio/bc/mailmark2d/size"), QSL("cmbMailmark2DSize"));
-            set_chk_from_setting(settings, QSL("studio/bc/mailmark2d/chk_suppress_rect"), QSL("chkMailmark2DRectangle"));
+            set_chk_from_setting(settings, QSL("studio/bc/mailmark2d/chk_suppress_rect"),
+                                            QSL("chkMailmark2DRectangle"));
             break;
 
         case BARCODE_ITF14:

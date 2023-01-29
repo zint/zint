@@ -72,7 +72,7 @@ extern "C" {
         float x, y;         /* Centre */
         float diameter;     /* Circle diameter. Does not include width (if any) */
         float width;        /* Width of circle perimeter (circumference). 0 for fill (disc) */
-        int colour;         /* Non-zero for draw with background colour (else draw with foreground colour) */
+        int colour;         /* Zero for draw with foreground colour (else draw with background colour (legacy)) */
         struct zint_vector_circle *next; /* Pointer to next circle */
     };
 
@@ -101,8 +101,8 @@ extern "C" {
         int whitespace_height; /* Height in X-dimensions of whitespace above & below the barcode */
         int border_width;   /* Size of border in X-dimensions */
         int output_options; /* Various output parameters (bind, box etc, see below) */
-        char fgcolour[10];  /* Foreground as RGB/RGBA hexadecimal string, 6 or 8 characters, NUL-terminated */
-        char bgcolour[10];  /* Background as RGB/RGBA hexadecimal string, 6 or 8 characters, NUL-terminated */
+        char fgcolour[16];  /* Foreground as hexadecimal RGB/RGBA or decimal "C,M,Y,K" string, NUL-terminated */
+        char bgcolour[16];  /* Background as hexadecimal RGB/RGBA or decimal "C,M,Y,K" string, NUL-terminated */
         char *fgcolor;      /* Pointer to fgcolour (alternate spelling) */
         char *bgcolor;      /* Pointer to bgcolour (alternate spelling) */
         char outfile[256];  /* Name of file to output to, NUL-terminated. Default "out.png" ("out.gif" if no PNG) */

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,6 +35,172 @@
 #include <windows.h>
 #include <direct.h>
 #endif
+
+static void test_check_colour_options(const testCtx *const p_ctx) {
+    struct item {
+        char *fgcolour;
+        char *bgcolour;
+        int ret;
+        char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { "FFFFFF", "000000", 0, "" },
+        /*  1*/ { "ffffff", "ffffff", 0, "" },
+        /*  2*/ { "77777777", "33333333", 0, "" },
+        /*  3*/ { "FFFFF", "000000", ZINT_ERROR_INVALID_OPTION, "690: Malformed foreground RGB colour (6 or 8 characters only)" },
+        /*  4*/ { "FFFFFFF", "000000", ZINT_ERROR_INVALID_OPTION, "690: Malformed foreground RGB colour (6 or 8 characters only)" },
+        /*  5*/ { "FFFFFG", "000000", ZINT_ERROR_INVALID_OPTION, "691: Malformed foreground RGB colour 'FFFFFG' (hexadecimal only)" },
+        /*  6*/ { "FFFFFF", "000000000", ZINT_ERROR_INVALID_OPTION, "690: Malformed background RGB colour (6 or 8 characters only)" },
+        /*  7*/ { "FFFFFF", "0000000Z", ZINT_ERROR_INVALID_OPTION, "691: Malformed background RGB colour '0000000Z' (hexadecimal only)" },
+        /*  8*/ { "100,100,100,100", "0,1,2,3", 0, "" },
+        /*  9*/ { "100,,100,100", ",1,2,", 0, "" },
+        /* 10*/ { "100,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "692: Malformed foreground CMYK colour (4 decimal numbers, comma-separated)" },
+        /* 11*/ { "100,100,99,1001", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "693: Malformed foreground CMYK colour (3 digit maximum per number)" },
+        /* 12*/ { "101,100,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "694: Malformed foreground CMYK colour C (decimal 0-100 only)" },
+        /* 13*/ { "100,101,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "695: Malformed foreground CMYK colour M (decimal 0-100 only)" },
+        /* 14*/ { "100,100,101,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "696: Malformed foreground CMYK colour Y (decimal 0-100 only)" },
+        /* 15*/ { "100,100,100,101", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "697: Malformed foreground CMYK colour K (decimal 0-100 only)" },
+        /* 16*/ { "100,100,100,100", "0,1,", ZINT_ERROR_INVALID_OPTION, "692: Malformed background CMYK colour (4 decimal numbers, comma-separated)" },
+        /* 17*/ { "100,100,100,100", "0,0123,3,4", ZINT_ERROR_INVALID_OPTION, "693: Malformed background CMYK colour (3 digit maximum per number)" },
+        /* 18*/ { "100,100,100,100", "0,1,2,101", ZINT_ERROR_INVALID_OPTION, "697: Malformed background CMYK colour K (decimal 0-100 only)" },
+        /* 19*/ { "100,100,100,100", "0,1,2,3,", ZINT_ERROR_INVALID_OPTION, "692: Malformed background CMYK colour (4 decimal numbers, comma-separated)" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, ret;
+    struct zint_symbol symbol;
+
+    testStart("test_check_colour_options");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        strcpy(symbol.fgcolour, data[i].fgcolour);
+        strcpy(symbol.bgcolour, data[i].bgcolour);
+        symbol.errtxt[0] = '\0';
+
+        ret = out_check_colour_options(&symbol);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol.errtxt);
+        assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d symbol.errtxt (%s) != expected (%s)\n", i, symbol.errtxt, data[i].expected);
+    }
+
+    testFinish();
+}
+
+static void test_colour_get_rgb(const testCtx *const p_ctx) {
+    struct item {
+        char *colour;
+        int ret;
+        unsigned char red;
+        unsigned char green;
+        unsigned char blue;
+        unsigned char alpha;
+        char *expected_cmyk;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { "FFFFFF", 0, 0xFF, 0xFF, 0xFF, 0xFF, "0,0,0,0" },
+        /*  1*/ { "000000", 0, 0x00, 0x00, 0x00, 0xFF, "0,0,0,100" },
+        /*  2*/ { "FEDCBA", 0, 0xFE, 0xDC, 0xBA, 0xFF, "0,13,27,0" },
+        /*  3*/ { "EEDD9900", 1, 0xEE, 0xDD, 0x99, 0x00, "0,7,36,7" },
+        /*  4*/ { "98765432", 1, 0x98, 0x76, 0x54, 0x32, "0,22,45,40" },
+        /*  5*/ { "147AD0", 0, 0x14, 0x7A, 0xD0, 0xFF, "90,41,0,18" },
+        /*  6*/ { "FC9630", 0, 0xFC, 0x96, 0x30, 0xFF, "0,40,81,1" },
+        /*  7*/ { "112233", 0, 0x11, 0x22, 0x33, 0xFF, "67,33,0,80" },
+        /*  8*/ { "CCDDEE", 0, 0xCC, 0xDD, 0xEE, 0xFF, "14,7,0,7" },
+        /*  9*/ { "0,0,0,0", 0, 0xFF, 0xFF, 0xFF, 0xFF, "0,0,0,0" },
+        /* 10*/ { "80,30,60,0", 0, 0x33, 0xB3, 0x66, 0xFF, "72,0,43,30" },
+        /* 11*/ { "50,50,50,50", 0, 0x40, 0x40, 0x40, 0xFF, "0,0,0,75" },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, ret;
+
+    testStart("test_colour_get_rgb");
+
+    for (i = 0; i < data_size; i++) {
+        unsigned char red, green, blue, alpha, rgb_alpha;
+        int cyan, magenta, yellow, black;
+        int have_alpha;
+        char rgb[9];
+        char cmyk[16];
+
+        if (testContinue(p_ctx, i)) continue;
+
+        ret = out_colour_get_rgb(data[i].colour, &red, &green, &blue, &alpha);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(red, data[i].red, "i:%d red 0x%02X (%d) != 0x%02X (%d) (green 0x%02X, blue 0x%02X)\n", i, red, red, data[i].red, data[i].red, green, blue);
+        assert_equal(green, data[i].green, "i:%d green %d (0x%02X) != %d (0x%02X)\n", i, green, green, data[i].green, data[i].green);
+        assert_equal(blue, data[i].blue, "i:%d blue %d (0x%02X) != %d (0x%02X)\n", i, blue, blue, data[i].blue, data[i].blue);
+        assert_equal(alpha, data[i].alpha, "i:%d alpha %d (0x%02X) != %d (0x%02X)\n", i, alpha, alpha, data[i].alpha, data[i].alpha);
+
+        have_alpha = ret == 1;
+        if (have_alpha) {
+            sprintf(rgb, "%02X%02X%02X%02X", red, green, blue, alpha);
+        } else {
+            sprintf(rgb, "%02X%02X%02X", red, green, blue);
+        }
+        ret = out_colour_get_cmyk(rgb, &cyan, &magenta, &yellow, &black, &rgb_alpha);
+        assert_equal(ret, 1 + have_alpha, "i:%d out_colour_get_cmyk(%s) ret %d != %d\n", i, rgb, ret, 1 + have_alpha);
+        assert_equal(rgb_alpha, alpha, "i:%d rgb_alpha %d (0x%02X) != %d (0x%02X)\n", i, rgb_alpha, rgb_alpha, alpha, alpha);
+
+        sprintf(cmyk, "%d,%d,%d,%d", cyan, magenta, yellow, black);
+        assert_zero(strcmp(cmyk, data[i].expected_cmyk), "i:%d strcmp(%s, %s) != 0\n", i, cmyk, data[i].expected_cmyk);
+    }
+
+    testFinish();
+}
+
+static void test_colour_get_cmyk(const testCtx *const p_ctx) {
+    struct item {
+        char *colour;
+        int ret;
+        int cyan;
+        int magenta;
+        int yellow;
+        int black;
+        unsigned char alpha;
+        char *expected_rgb;
+        int ret_rgb;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { "80,30,60,0", 0, 80, 30, 60, 0, 0xFF, "33B366FF", 0 },
+        /*  1*/ { "50,50,50,50", 0, 50, 50, 50, 50, 0xFF, "404040FF", 0 },
+        /*  2*/ { "0,0,0,100", 0, 0, 0, 0, 100, 0xFF, "000000FF", 0 },
+        /*  3*/ { "71,0,40,44", 0, 71, 0, 40, 44, 0xFF, "298F56FF", 0 },
+        /*  4*/ { "123456", 1, 79, 40, 0, 44, 0xFF, "123456FF", 0 },
+        /*  5*/ { "12345678", 2, 79, 40, 0, 44, 0x78, "12345678", 1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, ret;
+
+    testStart("test_colour_get_cmyk");
+
+    for (i = 0; i < data_size; i++) {
+        int cyan, magenta, yellow, black;
+        unsigned char red, green, blue, alpha, rgb_alpha;
+        char rgb[9];
+
+        if (testContinue(p_ctx, i)) continue;
+
+        ret = out_colour_get_cmyk(data[i].colour, &cyan, &magenta, &yellow, &black, &alpha);
+        assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(cyan, data[i].cyan, "i:%d cyan %d != %d (magenta %d, yellow %d, black %d)\n", i, cyan, data[i].cyan, magenta, yellow, black);
+        assert_equal(magenta, data[i].magenta, "i:%d magenta %d != %d\n", i, magenta, data[i].magenta);
+        assert_equal(yellow, data[i].yellow, "i:%d yellow %d != %d\n", i, yellow, data[i].yellow);
+        assert_equal(alpha, data[i].alpha, "i:%d alpha %d != %d\n", i, alpha, data[i].alpha);
+
+        ret = out_colour_get_rgb(data[i].colour, &red, &green, &blue, &rgb_alpha);
+        assert_equal(ret, data[i].ret_rgb, "i:%d out_colour_get_rgb(%s) ret %d != %d\n", i, rgb, ret, data[i].ret_rgb);
+        assert_equal(rgb_alpha, alpha, "i:%d rgb_alpha %d != %d\n", i, rgb_alpha, alpha);
+
+        sprintf(rgb, "%02X%02X%02X%02X", red, green, blue, rgb_alpha);
+        assert_zero(strcmp(rgb, data[i].expected_rgb), "i:%d strcmp(%s, %s) != 0\n", i, rgb, data[i].expected_rgb);
+    }
+
+    testFinish();
+}
 
 INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
                             float *left, float *right, float *top, float *bottom);
@@ -161,6 +327,9 @@ static void test_fopen(const testCtx *const p_ctx) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
+        { "test_check_colour_options", test_check_colour_options },
+        { "test_colour_get_rgb", test_colour_get_rgb },
+        { "test_colour_get_cmyk", test_colour_get_cmyk },
         { "test_quiet_zones", test_quiet_zones },
         { "test_fopen", test_fopen },
     };

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -54,6 +54,7 @@ static void test_print(const testCtx *const p_ctx) {
         /*  1*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, -1, 20, "FFFFFF", "000000", 0, "1234567890123456789012345678901234567890", "codeblockf_reverse.pcx" },
         /*  2*/ { BARCODE_QRCODE, -1, -1, -1, -1, 2, 1, "", "D2E3F4", 0, "1234567890", "qr_bg.pcx" },
         /*  3*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, "FF0000", "0000FF", 0, "ULTRACODE_123456789!", "ultra_fg_bg_hvwsp1_box1.pcx" },
+        /*  4*/ { BARCODE_CODE11, -1, -1, -1, -1, -1, -1, "12345678", "FEDCBA98", 0, "123", "code11_fgbgtrans.pcx" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

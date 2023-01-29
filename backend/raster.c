@@ -1,7 +1,7 @@
 /* raster.c - Handles output to raster files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,18 +50,18 @@
 #define UPCEAN_TEXT     1
 
 #ifndef ZINT_NO_PNG
-INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
 #endif /* ZINT_NO_PNG */
-INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
-INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
-INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
-INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
+INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
+INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
+INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
 
 static const char ultra_colour[] = "0CBMRYGKW";
 
 static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     /* Place pixelbuffer into symbol */
-    int fgalpha, bgalpha;
+    unsigned char fgalpha, bgalpha;
     unsigned char map[91][3] = {
         {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, /* 0x00-0F */
         {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, {0}, /* 0x10-1F */
@@ -77,25 +77,13 @@ static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf
     int plot_alpha = 0;
     const size_t bm_bitmap_width = (size_t) symbol->bitmap_width * 3;
 
-    map[DEFAULT_INK][0] = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    map[DEFAULT_INK][1] = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    map[DEFAULT_INK][2] = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    map[DEFAULT_PAPER][0] = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    map[DEFAULT_PAPER][1] = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    map[DEFAULT_PAPER][2] = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
-    if (strlen(symbol->fgcolour) > 6) {
-        fgalpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
+    if (out_colour_get_rgb(symbol->fgcolour, &map[DEFAULT_INK][0], &map[DEFAULT_INK][1], &map[DEFAULT_INK][2],
+            &fgalpha)) {
         plot_alpha = 1;
-    } else {
-        fgalpha = 0xff;
     }
-
-    if (strlen(symbol->bgcolour) > 6) {
-        bgalpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
+    if (out_colour_get_rgb(symbol->bgcolour, &map[DEFAULT_PAPER][0], &map[DEFAULT_PAPER][1], &map[DEFAULT_PAPER][2],
+            &bgalpha)) {
         plot_alpha = 1;
-    } else {
-        bgalpha = 0xff;
     }
 
     /* Free any previous bitmap */

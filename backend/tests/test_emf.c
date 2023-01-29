@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -81,6 +81,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 25*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 600.f / 25.4f, "E0E0E0", "700070", 0, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_#185_600dpi.emf", "#185 Maxicode scaling" },
         /* 26*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 0, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg.emf", "" },
         /* 27*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 300.0f, "", "FFFFFF00", 90, "THIS IS A 93 CHARACTER CODE SET A MESSAGE THAT FILLS A MODE 4, UNAPPENDED, MAXICODE SYMBOL...", "maxicode_rotate_90_nobg_300dpi.emf", "" },
+        /* 28*/ { BARCODE_UPU_S10, -1, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, "71,0,40,44", "FFFFFF00", 0, "QA47312482PS", "upu_s10_cmyk_nobg.emf", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

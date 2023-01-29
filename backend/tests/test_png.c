@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -202,6 +202,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 56*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 4, 7, "Z1.txt" }, "", "", "3456", "", 0, "aztec_z1_seq4of7.png", "" },
         /* 57*/ { BARCODE_PDF417, -1, -1, BARCODE_NO_QUIET_ZONES, -1, -1, -1, 5, 8, 16, 1.5, { 0, 0, "" }, "", "", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAABBBBBBBBBBBBBBBBBBBBBBBBBBBBBB", "", ZINT_WARN_NONCOMPLIANT, "pdf417_#204.png", "Ticket #204 Blank line in PDF417" },
         /* 58*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "", 0, "dpd_compliant.png", "Now with bind top 3X default" },
+        /* 59*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "100,85,0,20", "FFFFFF00", "123", "", 0, "channel_cmyk_nobg.png", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

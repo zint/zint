@@ -29,6 +29,7 @@
 #include <QFontMetrics>
 /* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
 #include <QPainterPath>
+#include <QRegularExpression>
 
 // Shorthand
 #define QSL QStringLiteral
@@ -40,6 +41,41 @@ namespace Zint {
 
     static const int maxSegs = 256;
     static const int maxCLISegs = 10; /* CLI restricted to 10 segments (including main data) */
+
+    static const QRegularExpression colorRE(
+                                QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
+
+    static QString qcolor_to_str(const QColor &color) {
+        if (color.alpha() == 0xFF) {
+            return QString::asprintf("%02X%02X%02X", color.red(), color.green(), color.blue());
+        }
+        return QString::asprintf("%02X%02X%02X%02X", color.red(), color.green(), color.blue(), color.alpha());
+    }
+
+    static QColor str_to_qcolor(const QString &text) {
+        QColor color;
+        int r, g, b, a;
+        if (text.contains(',')) {
+            int comma1 = text.indexOf(',');
+            int comma2 = text.indexOf(',', comma1 + 1);
+            int comma3 = text.indexOf(',', comma2 + 1);
+            int black = 100 - text.mid(comma3 + 1).toInt();
+            int val = 100 - text.mid(0, comma1).toInt();
+            r = (int) roundf((0xFF * val * black) / 10000.0f);
+            val = 100 - text.mid(comma1 + 1, comma2 - comma1 - 1).toInt();
+            g = (int) roundf((0xFF * val * black) / 10000.0f);
+            val = 100 - text.mid(comma2 + 1, comma3 - comma2 - 1).toInt();
+            b = (int) roundf((0xFF * val * black) / 10000.0f);
+            a = 0xFF;
+        } else {
+            r = text.mid(0, 2).toInt(nullptr, 16);
+            g = text.mid(2, 2).toInt(nullptr, 16);
+            b = text.mid(4, 2).toInt(nullptr, 16);
+            a = text.length() == 8 ? text.mid(6, 2).toInt(nullptr, 16) : 0xFF;
+        }
+        color.setRgb(r, g, b, a);
+        return color;
+    }
 
     /* Helper to convert ECI combo index to ECI value */
     static int ECIIndexToECI(const int ECIIndex) {
@@ -109,7 +145,7 @@ namespace Zint {
             m_scale(1.0f),
             m_dotty(false), m_dot_size(4.0f / 5.0f),
             m_guardDescent(5.0f),
-            m_fgColor(Qt::black), m_bgColor(Qt::white), m_cmyk(false),
+            m_fgStr(QSL("000000")), m_bgStr(QSL("FFFFFF")), m_cmyk(false),
             m_borderType(0), m_borderWidth(0),
             m_whitespace(0), m_vwhitespace(0),
             m_fontSetting(0),
@@ -175,14 +211,8 @@ namespace Zint {
         if (m_reader_init) {
             m_zintSymbol->output_options |= READER_INIT;
         }
-        strcpy(m_zintSymbol->fgcolour, m_fgColor.name().toLatin1().right(6));
-        if (m_fgColor.alpha() != 0xFF) {
-            strcat(m_zintSymbol->fgcolour, m_fgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
-        }
-        strcpy(m_zintSymbol->bgcolour, m_bgColor.name().toLatin1().right(6));
-        if (m_bgColor.alpha() != 0xFF) {
-            strcat(m_zintSymbol->bgcolour, m_bgColor.name(QColor::HexArgb).toLatin1().mid(1,2));
-        }
+        strcpy(m_zintSymbol->fgcolour, m_fgStr.toLatin1().left(15));
+        strcpy(m_zintSymbol->bgcolour, m_bgStr.toLatin1().left(15));
         strcpy(m_zintSymbol->primary, m_primaryMessage.toLatin1().left(127));
         m_zintSymbol->option_1 = m_option_1;
         m_zintSymbol->option_2 = m_option_2;
@@ -412,22 +442,48 @@ namespace Zint {
         memset(&m_structapp, 0, sizeof(m_structapp));
     }
 
-    /* Foreground colour */
+    /* Foreground colour (may be RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string) */
+    QString QZint::fgStr() const {
+        return m_fgStr;
+    }
+
+    bool QZint::setFgStr(const QString& fgStr) {
+        if (fgStr.indexOf(colorRE) == 0) {
+            m_fgStr = fgStr;
+            return true;
+        }
+        return false;
+    }
+
+    /* Foreground colour as QColor */
     QColor QZint::fgColor() const {
-        return m_fgColor;
+        return str_to_qcolor(m_fgStr);
     }
 
     void QZint::setFgColor(const QColor& fgColor) {
-        m_fgColor = fgColor;
+        m_fgStr = qcolor_to_str(fgColor);
     }
 
-    /* Background colour */
+    /* Background colour (may be RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string) */
+    QString QZint::bgStr() const {
+        return m_bgStr;
+    }
+
+    bool QZint::setBgStr(const QString& bgStr) {
+        if (bgStr.indexOf(colorRE) == 0) {
+            m_bgStr = bgStr;
+            return true;
+        }
+        return false;
+    }
+
+    /* Background colour as QColor */
     QColor QZint::bgColor() const {
-        return m_bgColor;
+        return str_to_qcolor(m_bgStr);
     }
 
     void QZint::setBgColor(const QColor& bgColor) {
-        m_bgColor = bgColor;
+        m_bgStr = qcolor_to_str(bgColor);
     }
 
     /* Use CMYK colour space (Encapsulated PostScript and TIF) */
@@ -848,6 +904,8 @@ namespace Zint {
         struct zint_vector_hexagon *hex;
         struct zint_vector_circle *circle;
         struct zint_vector_string *string;
+        QColor fgColor = str_to_qcolor(m_fgStr);
+        QColor bgColor = str_to_qcolor(m_bgStr);
 
         encode();
 
@@ -897,8 +955,10 @@ namespace Zint {
         painter.translate(xtr, ytr);
         painter.scale(scale, scale);
 
-        QBrush bgBrush(m_bgColor);
-        painter.fillRect(QRectF(0, 0, gwidth, gheight), bgBrush);
+        QBrush bgBrush(bgColor);
+        if (bgColor.alpha() != 0) {
+            painter.fillRect(QRectF(0, 0, gwidth, gheight), bgBrush);
+        }
 
         // Plot rectangles
         rect = m_zintSymbol->vector->rectangles;
@@ -908,7 +968,7 @@ namespace Zint {
             QBrush brush(Qt::SolidPattern);
             while (rect) {
                 if (rect->colour == -1) {
-                    brush.setColor(m_fgColor);
+                    brush.setColor(fgColor);
                 } else {
                     brush.setColor(colourToQtColor(rect->colour));
                 }
@@ -924,7 +984,7 @@ namespace Zint {
         hex = m_zintSymbol->vector->hexagons;
         if (hex) {
             painter.setRenderHint(QPainter::Antialiasing);
-            QBrush fgBrush(m_fgColor);
+            QBrush fgBrush(fgColor);
             qreal previous_diameter = 0.0, radius = 0.0, half_radius = 0.0, half_sqrt3_radius = 0.0;
             while (hex) {
                 if (previous_diameter != hex->diameter) {
@@ -953,20 +1013,20 @@ namespace Zint {
         if (circle) {
             painter.setRenderHint(QPainter::Antialiasing);
             QPen p;
-            QBrush fgBrush(m_fgColor);
+            QBrush fgBrush(fgColor);
             qreal previous_diameter = 0.0, radius = 0.0;
             while (circle) {
                 if (previous_diameter != circle->diameter) {
                     previous_diameter = circle->diameter;
                     radius = 0.5 * previous_diameter;
                 }
-                if (circle->colour) { // Set means use background colour
-                    p.setColor(m_bgColor);
+                if (circle->colour) { // Set means use background colour (legacy, no longer used)
+                    p.setColor(bgColor);
                     p.setWidthF(circle->width);
                     painter.setPen(p);
                     painter.setBrush(circle->width ? Qt::NoBrush : bgBrush);
                 } else {
-                    p.setColor(m_fgColor);
+                    p.setColor(fgColor);
                     p.setWidthF(circle->width);
                     painter.setPen(p);
                     painter.setBrush(circle->width ? Qt::NoBrush : fgBrush);
@@ -981,7 +1041,7 @@ namespace Zint {
         if (string) {
             painter.setRenderHint(QPainter::Antialiasing);
             QPen p;
-            p.setColor(m_fgColor);
+            p.setColor(fgColor);
             painter.setPen(p);
             bool bold = (m_zintSymbol->output_options & BOLD_TEXT)
                             && (!isExtendable() || (m_zintSymbol->output_options & SMALL_TEXT));
@@ -1080,6 +1140,7 @@ namespace Zint {
                     const bool autoHeight, const float heightPerRow, const QString& outfile,
                     const QZintXdimDpVars *xdimdpVars) const {
         QString cmd(win && !noEXE ? QSL("zint.exe") : QSL("zint"));
+        bool nobackground = bgColor().alpha() == 0;
 
         char name_buf[32];
         if (barcodeNames && ZBarcode_BarcodeName(m_symbol, name_buf) == 0) {
@@ -1093,8 +1154,8 @@ namespace Zint {
             arg_int(cmd, "--addongap=", option2());
         }
 
-        if (bgColor() != Qt::white && bgColor() != QColor(0xFF, 0xFF, 0xFF, 0)) {
-            arg_color(cmd, "--bg=", bgColor());
+        if (bgStr() != QSL("FFFFFF") && !nobackground) {
+            arg_str(cmd, "--bg=", bgStr());
         }
 
         bool default_bind = false, default_bind_top = false, default_box = false, default_border = false;
@@ -1166,8 +1227,8 @@ namespace Zint {
         arg_bool(cmd, "--extraesc", inputMode() & EXTRA_ESCAPE_MODE);
         arg_bool(cmd, "--fast", inputMode() & FAST_MODE);
 
-        if (fgColor() != Qt::black) {
-            arg_color(cmd, "--fg=", fgColor());
+        if (fgStr() != QSL("000000") && fgStr() != QSL("000000FF")) {
+            arg_str(cmd, "--fg=", fgStr());
         }
 
         arg_bool(cmd, "--fullmultibyte", supportsFullMultibyte() && (option3() & 0xFF) == ZINT_FULL_MULTIBYTE);
@@ -1202,7 +1263,7 @@ namespace Zint {
             arg_int(cmd, "--mode=", option1());
         }
 
-        arg_bool(cmd, "--nobackground", bgColor() == QColor(0xFF, 0xFF, 0xFF, 0));
+        arg_bool(cmd, "--nobackground", nobackground);
         arg_bool(cmd, "--noquietzones", hasDefaultQuietZones() && noQuietZones());
         arg_bool(cmd, "--notext", hasHRT() && !showText());
         arg_data(cmd, longOptOnly ? "--output=" : "-o ", outfile, win);
@@ -1297,14 +1358,6 @@ namespace Zint {
     void QZint::arg_bool(QString& cmd, const char *const opt, const bool val) {
         if (val) {
             cmd += QString::asprintf(" %s", opt);
-        }
-    }
-
-    void QZint::arg_color(QString& cmd, const char *const opt, const QColor val) {
-        if (val.alpha() != 0xFF) {
-            cmd += QString::asprintf(" %s%02X%02X%02X%02X", opt, val.red(), val.green(), val.blue(), val.alpha());
-        } else {
-            cmd += QString::asprintf(" %s%02X%02X%02X", opt, val.red(), val.green(), val.blue());
         }
     }
 

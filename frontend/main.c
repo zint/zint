@@ -1,7 +1,7 @@
 /* main.c - Command line handling routines for Zint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -146,7 +146,7 @@ static void usage(int no_png) {
     fputs( "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
            "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for EAN/UPC\n"
            "  --batch               Treat each line of input file as a separate data set\n"
-           "  --bg=COLOUR           Specify a background colour (in hex RGB/RGBA)\n"
+           "  --bg=COLOUR           Specify a background colour (as RGB(A) or \"C,M,Y,K\")\n"
            "  --binary              Treat input as raw binary data\n", stdout);
     fputs( "  --bind                Add boundary bars\n"
            "  --bindtop             Add top boundary bar only\n"
@@ -167,7 +167,7 @@ static void usage(int no_png) {
            "  --esc                 Process escape sequences in input data\n"
            "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
            "  --fast                Use faster encodation or other shortcuts if available\n"
-           "  --fg=COLOUR           Specify a foreground colour (in hex RGB/RGBA)\n", stdout);
+           "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
@@ -863,7 +863,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                 if (mirror_start_o > 221) { /* Insist on leaving at least ~30 chars for filename */
                     fprintf(stderr, "Warning 188: directory for mirrored batch output too long (> 220), ignored\n");
                     fflush(stderr);
-                    warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
+                    warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning ZINT_WARN_INVALID_INPUT? */
                     mirror_start_o = 0;
                 } else {
                     memcpy(output_file, symbol->outfile, mirror_start_o);
@@ -1201,6 +1201,8 @@ int main(int argc, char **argv) {
             {"batch", 0, NULL, OPT_BATCH},
             {"binary", 0, NULL, OPT_BINARY},
             {"bg", 1, 0, OPT_BG},
+            {"bgcolor", 1, 0, OPT_BG}, /* Synonym */
+            {"bgcolour", 1, 0, OPT_BG}, /* Synonym */
             {"bind", 0, NULL, OPT_BIND},
             {"bindtop", 0, NULL, OPT_BIND_TOP},
             {"bold", 0, NULL, OPT_BOLD},
@@ -1221,6 +1223,8 @@ int main(int argc, char **argv) {
             {"extraesc", 0, NULL, OPT_EXTRAESC},
             {"fast", 0, NULL, OPT_FAST},
             {"fg", 1, 0, OPT_FG},
+            {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
+            {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
             {"filetype", 1, NULL, OPT_FILETYPE},
             {"fontsize", 1, NULL, OPT_FONTSIZE},
             {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
@@ -1300,7 +1304,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_BG:
-                strncpy(my_symbol->bgcolour, optarg, 9);
+                strncpy(my_symbol->bgcolour, optarg, 15); /* Allow for "CCC,MMM,YYY,KKK" */
                 break;
             case OPT_BINARY:
                 my_symbol->input_mode = (my_symbol->input_mode & ~0x07) | DATA_MODE;
@@ -1401,7 +1405,7 @@ int main(int argc, char **argv) {
                 my_symbol->input_mode |= FAST_MODE;
                 break;
             case OPT_FG:
-                strncpy(my_symbol->fgcolour, optarg, 9);
+                strncpy(my_symbol->fgcolour, optarg, 15); /* Allow for "CCC,MMM,YYY,KKK" */
                 break;
             case OPT_FILETYPE:
                 /* Select the type of output file */

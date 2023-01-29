@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -188,19 +188,20 @@ static void test_print(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "00000099", "FEDCBACC", "A", "", "code128_fgbgalpha.tif", "" },
         /*  6*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "C00000", "FEDCBA", "A", "", "code128_cmyk.tif", "" },
         /*  7*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "C0000099", "FEDCBACC", "A", "", "code128_cmyk_fgbgalpha.tif", "" },
-        /*  8*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "ultra_bgalpha.tif", "" },
-        /*  9*/ { BARCODE_ULTRA, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "ultra_cmyk_bgalpha.tif", "" },
-        /* 10*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "ultra_fgalpha.tif", "" },
-        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "ultra_fgbgalpha.tif", "" },
-        /* 12*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "ultra_fgalpha_nobg.tif", "" },
-        /* 13*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "ultra_bgalpha_nofg.tif", "" },
-        /* 14*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "ultra_odd.tif", "" },
-        /* 15*/ { BARCODE_ULTRA, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "", "", "1234", "", "ultra_cmyk.tif", "" },
-        /* 16*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "FF0000", "0000FF", "1234", "", "ultra_fgbg_hvwsp1_box1.tif", "" },
-        /* 17*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "hanxin_v84_l4_scale2.tif", "" },
-        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "aztec_v32_fg.tif", "" },
-        /* 19*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 8, 0.5f, "", "", "F", "", "daft_height8_scale0.5.tif", "" },
-        /* 20*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "DAFT", "", "daft_height1_scale0.5.tif", "" },
+        /*  8*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "71,0,40,44", "10,0,20,5", "A", "", "code128_cmyk_fgbgcmyk.tif", "" },
+        /*  9*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "ultra_bgalpha.tif", "" },
+        /* 10*/ { BARCODE_ULTRA, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "C00000", "FEDCBACC", "1234", "", "ultra_cmyk_bgalpha.tif", "" },
+        /* 11*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "FEDCBA", "1234", "", "ultra_fgalpha.tif", "" },
+        /* 12*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "FEDCBACC", "1234", "", "ultra_fgbgalpha.tif", "" },
+        /* 13*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "000000BB", "", "1234", "", "ultra_fgalpha_nobg.tif", "" },
+        /* 14*/ { BARCODE_ULTRA, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "", "FEDCBACC", "1234", "", "ultra_bgalpha_nofg.tif", "" },
+        /* 15*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0.5f, "", "", "1", "", "ultra_odd.tif", "" },
+        /* 16*/ { BARCODE_ULTRA, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "", "", "1234", "", "ultra_cmyk.tif", "" },
+        /* 17*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 1, 1, -1, -1, -1, 0, 0, "FF0000", "0000FF", "1234", "", "ultra_fgbg_hvwsp1_box1.tif", "" },
+        /* 18*/ { BARCODE_HANXIN, UNICODE_MODE, -1, -1, -1, -1, -1, 4, 84, 0, 2, "", "", "1", "", "hanxin_v84_l4_scale2.tif", "" },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "aztec_v32_fg.tif", "" },
+        /* 20*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 8, 0.5f, "", "", "F", "", "daft_height8_scale0.5.tif", "" },
+        /* 21*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "DAFT", "", "daft_height1_scale0.5.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -431,7 +431,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 75*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 684, 0, "(62) 104 100 95 99 12 34 56 78 101 74 101 98 64 99 12 34 56 78 100 65 66 67 68 69 70 98 74", "BWIPP different encodation, CodeA instead of ShA, shorter" },
         /* 76*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^A12\\^C34\\^A\\^B5\\^C67\\^A\\^B\\^CA\\^B\\^A", -1, 0, 145, 0, "(13) 103 17 18 99 34 100 21 99 67 100 33 69 106", "BWIPP no manual mode" },
         /* 77*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 100 33 34 35 99 12 101 74 36 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
-        /* 78*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
+        /* 78*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

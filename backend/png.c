@@ -1,7 +1,7 @@
 /* png.c - Handles output to PNG file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -73,7 +73,7 @@ INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg) 
 #endif
 
 /* Guestimate best compression strategy */
-static int guess_compression_strategy(struct zint_symbol *symbol, unsigned char *pixelbuf) {
+static int guess_compression_strategy(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     (void)pixelbuf;
 
     /* TODO: Do properly */
@@ -92,7 +92,7 @@ static int guess_compression_strategy(struct zint_symbol *symbol, unsigned char 
     return Z_FILTERED;
 }
 
-INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
+INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     struct wpng_error_type wpng_error;
     FILE *outfile;
     png_structp png_ptr;
@@ -108,30 +108,14 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     int num_trans;
     int bit_depth;
     int compression_strategy;
-    unsigned char *pb;
+    const unsigned char *pb;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     unsigned char *outdata = (unsigned char *) z_alloca(symbol->bitmap_width);
 
     wpng_error.symbol = symbol;
 
-    fg.red = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fg.green = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fg.blue = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    bg.red = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bg.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bg.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
-    if (strlen(symbol->fgcolour) > 6) {
-        fg_alpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
-    } else {
-        fg_alpha = 0xff;
-    }
-
-    if (strlen(symbol->bgcolour) > 6) {
-        bg_alpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
-    } else {
-        bg_alpha = 0xff;
-    }
+    (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, &fg_alpha);
+    (void) out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, &bg_alpha);
 
     num_trans = 0;
     if (symbol->symbology == BARCODE_ULTRA) {

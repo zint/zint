@@ -178,7 +178,7 @@
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>24</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -195,7 +195,7 @@ or import from file</string>
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
-                    <height>16777215</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -468,7 +468,7 @@ or import from file</string>
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
-                    <height>16777215</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -626,7 +626,7 @@ Remember to place [square brackets] around AI identifiers</string>
                     <property name="maximumSize">
                      <size>
                       <width>22</width>
-                      <height>16777215</height>
+                      <height>26</height>
                      </size>
                     </property>
                     <property name="toolTip">
@@ -929,7 +929,7 @@ Extended Channel Interpretation (ECI)</string>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>24</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -946,7 +946,7 @@ or import from file</string>
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
-                    <height>16777215</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1190,7 +1190,7 @@ or import from file</string>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>24</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1207,7 +1207,7 @@ or import from file</string>
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
-                    <height>16777215</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1451,7 +1451,7 @@ or import from file</string>
                   <property name="minimumSize">
                    <size>
                     <width>0</width>
-                    <height>24</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1468,7 +1468,7 @@ or import from file</string>
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
-                    <height>16777215</height>
+                    <height>26</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1693,41 +1693,6 @@ and use standard height (if any) for default
               </widget>
              </item>
              <item row="2" column="0">
-              <widget class="QLabel" name="lblBorderWidth">
-               <property name="toolTip">
-                <string>Width of boundary bars or border in X-dimensions</string>
-               </property>
-               <property name="text">
-                <string>B&amp;order Width:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>bwidth</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="2" column="1" colspan="2">
-              <widget class="QSpinBox" name="bwidth">
-               <property name="toolTip">
-                <string>Width of boundary bars or border in X-dimensions</string>
-               </property>
-               <property name="suffix">
-                <string> X</string>
-               </property>
-               <property name="minimum">
-                <number>0</number>
-               </property>
-               <property name="maximum">
-                <number>16</number>
-               </property>
-               <property name="value">
-                <number>0</number>
-               </property>
-              </widget>
-             </item>
-             <item row="3" column="0">
               <widget class="QLabel" name="lblBorderType">
                <property name="toolTip">
                 <string>Add border or box</string>
@@ -1743,7 +1708,7 @@ and use standard height (if any) for default
                </property>
               </widget>
              </item>
-             <item row="3" column="1" colspan="2">
+             <item row="2" column="1" colspan="2">
               <widget class="QComboBox" name="btype">
                <property name="toolTip">
                 <string>Add border or box</string>
@@ -1773,6 +1738,41 @@ and use standard height (if any) for default
                </item>
               </widget>
              </item>
+             <item row="3" column="0">
+              <widget class="QLabel" name="lblBorderWidth">
+               <property name="toolTip">
+                <string>Width of boundary bars or border in X-dimensions</string>
+               </property>
+               <property name="text">
+                <string>B&amp;order Width:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>bwidth</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="3" column="1" colspan="2">
+              <widget class="QSpinBox" name="bwidth">
+               <property name="toolTip">
+                <string>Width of boundary bars or border in X-dimensions</string>
+               </property>
+               <property name="suffix">
+                <string> X</string>
+               </property>
+               <property name="minimum">
+                <number>0</number>
+               </property>
+               <property name="maximum">
+                <number>16</number>
+               </property>
+               <property name="value">
+                <number>0</number>
+               </property>
+              </widget>
+             </item>
              <item row="4" column="0">
               <widget class="QLabel" name="lblWhitespace">
                <property name="toolTip">
@@ -1794,8 +1794,8 @@ and use standard height (if any) for default
                <item row="0" column="0">
                 <widget class="QSpinBox" name="spnWhitespace">
                  <property name="toolTip">
-                  <string>Width of horizontal whitespace on either side of barcode
-in X-dimensions</string>
+                  <string>Width of horizontal whitespace on either side
+of barcode in X-dimensions</string>
                  </property>
                  <property name="suffix">
                   <string> X</string>
@@ -1808,8 +1808,8 @@ in X-dimensions</string>
                <item row="0" column="1">
                 <widget class="QSpinBox" name="spnVWhitespace">
                  <property name="toolTip">
-                  <string>Height of vertical whitespace above and below the barcode
-in X-dimensions</string>
+                  <string>Height of vertical whitespace above and below
+the barcode in X-dimensions</string>
                  </property>
                  <property name="suffix">
                   <string> X</string>
@@ -1821,89 +1821,21 @@ in X-dimensions</string>
                </item>
               </layout>
              </item>
-             <item row="5" column="0">
-              <widget class="QLabel" name="lblScale">
+             <item row="5" column="0" colspan="2">
+              <widget class="QCheckBox" name="chkHRTShow">
                <property name="toolTip">
-                <string>Image scale when output to file
-(adjusts the X-dimension)</string>
+                <string>Show Human Readable Text in image
+(ignored if disabled)</string>
                </property>
                <property name="text">
-                <string>&amp;Printing Scale:</string>
+                <string>Show Te&amp;xt</string>
                </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-               <property name="buddy">
-                <cstring>spnScale</cstring>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="1">
-              <widget class="QDoubleSpinBox" name="spnScale">
-               <property name="toolTip">
-                <string>Image scale when output to file
-(adjusts the X-dimension)</string>
-               </property>
-               <property name="suffix">
-                <string/>
-               </property>
-               <property name="decimals">
-                <number>2</number>
-               </property>
-               <property name="minimum">
-                <double>0.100000000000000</double>
-               </property>
-               <property name="maximum">
-                <double>100.000000000000000</double>
-               </property>
-               <property name="singleStep">
-                <double>0.500000000000000</double>
-               </property>
-               <property name="value">
-                <double>1.000000000000000</double>
-               </property>
-              </widget>
-             </item>
-             <item row="5" column="2">
-              <widget class="QPushButton" name="btnScale">
-               <property name="maximumSize">
-                <size>
-                 <width>22</width>
-                 <height>16777215</height>
-                </size>
-               </property>
-               <property name="toolTip">
-                <string>Set Printing Scale by X-dimension and resolution</string>
-               </property>
-               <property name="text">
-                <string/>
+               <property name="checked">
+                <bool>true</bool>
                </property>
               </widget>
              </item>
              <item row="6" column="0">
-              <widget class="QLabel" name="lblSize">
-               <property name="toolTip">
-                <string>Image size (width x height) of barcode at given dot density</string>
-               </property>
-               <property name="text">
-                <string>Print Size:</string>
-               </property>
-               <property name="alignment">
-                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
-               </property>
-              </widget>
-             </item>
-             <item row="6" column="1" colspan="5">
-              <widget class="QLabel" name="lblSizeMsg">
-               <property name="toolTip">
-                <string>Image size (width x height) of barcode at given dot density</string>
-               </property>
-               <property name="text">
-                <string/>
-               </property>
-              </widget>
-             </item>
-             <item row="7" column="0">
               <widget class="QLabel" name="lblFontSetting">
                <property name="toolTip">
                 <string>Set font characteristics
@@ -1920,7 +1852,7 @@ in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="1" colspan="2">
+             <item row="6" column="1" colspan="2">
               <widget class="QComboBox" name="cmbFontSetting">
                <property name="toolTip">
                 <string>Set font characteristics
@@ -1948,17 +1880,87 @@ in X-dimensions</string>
                </item>
               </widget>
              </item>
-             <item row="8" column="0" colspan="2">
-              <widget class="QCheckBox" name="chkHRTShow">
+             <item row="7" column="0">
+              <widget class="QLabel" name="lblScale">
                <property name="toolTip">
-                <string>Show Human Readable Text in image
-(ignored if disabled)</string>
+                <string>Image scale when output to file
+(adjusts the X-dimension)</string>
                </property>
                <property name="text">
-                <string>Show Te&amp;xt</string>
+                <string>&amp;Printing Scale:</string>
                </property>
-               <property name="checked">
-                <bool>true</bool>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>spnScale</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QDoubleSpinBox" name="spnScale">
+               <property name="toolTip">
+                <string>Image scale when output to file
+(adjusts the X-dimension)</string>
+               </property>
+               <property name="suffix">
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>2</number>
+               </property>
+               <property name="minimum">
+                <double>0.100000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>100.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.500000000000000</double>
+               </property>
+               <property name="value">
+                <double>1.000000000000000</double>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <widget class="QPushButton" name="btnScale">
+               <property name="maximumSize">
+                <size>
+                 <width>22</width>
+                 <height>26</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Set Printing Scale by X-dimension and resolution</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
+              <widget class="QLabel" name="lblSize">
+               <property name="toolTip">
+                <string>Image size (width x height) of barcode
+at given dot density</string>
+               </property>
+               <property name="text">
+                <string>Print Size:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="1" colspan="5">
+              <widget class="QLabel" name="lblSizeMsg">
+               <property name="toolTip">
+                <string>Image size (width x height) of barcode
+at given dot density</string>
+               </property>
+               <property name="text">
+                <string/>
                </property>
               </widget>
              </item>
@@ -1990,12 +1992,12 @@ in X-dimensions</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Change ink colour, format
-is hexadecimal &quot;RRGGBB&quot;
-or &quot;RRGGBBAA&quot; (alpha)</string>
+                <string>Change ink colour, format is
+hexadecimal &quot;RRGGBB&quot; or &quot;RRGGBBAA&quot; (alpha)
+or decimal &quot;C,M,Y,K&quot; percentages (0-100)</string>
                </property>
                <property name="maxLength">
-                <number>8</number>
+                <number>15</number>
                </property>
               </widget>
              </item>
@@ -2004,7 +2006,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                <property name="maximumSize">
                 <size>
                  <width>22</width>
-                 <height>16777215</height>
+                 <height>26</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -2043,12 +2045,14 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Change paper colour, format
-is hexadecimal &quot;RRGGBB&quot;
-or &quot;RRGGBBAA&quot; (alpha)</string>
+                <string>Change paper colour, format is
+hexadecimal &quot;RRGGBB&quot; or &quot;RRGGBBAA&quot; (alpha)
+or decimal &quot;C,M,Y,K&quot; percentages (0-100).
+For no background, set alpha channel to zero,
+e.g. &quot;FFFFFF00&quot;</string>
                </property>
                <property name="maxLength">
-                <number>8</number>
+                <number>15</number>
                </property>
               </widget>
              </item>
@@ -2057,7 +2061,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                <property name="maximumSize">
                 <size>
                  <width>22</width>
-                 <height>16777215</height>
+                 <height>26</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -2108,7 +2112,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                <property name="maximumSize">
                 <size>
                  <width>22</width>
-                 <height>16777215</height>
+                 <height>26</height>
                 </size>
                </property>
                <property name="toolTip">
@@ -2190,7 +2194,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                </item>
               </widget>
              </item>
-             <item row="7" column="4" colspan="2">
+             <item row="6" column="4" colspan="2">
               <widget class="QCheckBox" name="chkDotty">
                <property name="toolTip">
                 <string>Use dots instead of squares for matrix symbols
@@ -2204,7 +2208,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="3">
+             <item row="7" column="3">
               <widget class="QLabel" name="lblDotSize">
                <property name="enabled">
                 <bool>false</bool>
@@ -2224,7 +2228,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="4" colspan="2">
+             <item row="7" column="4" colspan="2">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="enabled">
                 <bool>false</bool>
@@ -2284,7 +2288,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
         <string>Show menu</string>
        </property>
        <property name="text">
-        <string>Men&amp;u</string>
+        <string> Men&amp;u</string>
        </property>
       </widget>
      </item>
@@ -2327,7 +2331,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
         <string>Output image to file (BMP/EMF/EPS/GIF/PCX/PNG/SVG/TIF)</string>
        </property>
        <property name="text">
-        <string>&amp;Save As…</string>
+        <string> &amp;Save...</string>
        </property>
       </widget>
      </item>
@@ -2337,7 +2341,7 @@ or &quot;RRGGBBAA&quot; (alpha)</string>
         <string>Exit Zint Barcode Studio</string>
        </property>
        <property name="text">
-        <string>&amp;Quit</string>
+        <string> &amp;Quit</string>
        </property>
       </widget>
      </item>

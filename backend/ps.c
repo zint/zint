@@ -1,7 +1,7 @@
 /* ps.c - Post Script output */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -137,10 +137,12 @@ INTERNAL void ps_convert_test(const unsigned char *string, unsigned char *ps_str
 
 INTERNAL int ps_plot(struct zint_symbol *symbol) {
     FILE *feps;
-    int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
-    float red_ink, green_ink, blue_ink, red_paper, green_paper, blue_paper;
-    float cyan_ink, magenta_ink, yellow_ink, black_ink;
-    float cyan_paper, magenta_paper, yellow_paper, black_paper;
+    unsigned char fgred, fggrn, fgblu, bgred, bggrn, bgblu, bgalpha;
+    int fgcyan, fgmagenta, fgyellow, fgblack, bgcyan, bgmagenta, bgyellow, bgblack;
+    float red_ink = 0.0f, green_ink = 0.0f, blue_ink = 0.0f; /* Suppress `-Wmaybe-uninitialized` */
+    float red_paper = 0.0f, green_paper = 0.0f, blue_paper = 0.0f;
+    float cyan_ink = 0.0f, magenta_ink = 0.0f, yellow_ink = 0.0f, black_ink = 0.0f;
+    float cyan_paper = 0.0f, magenta_paper = 0.0f, yellow_paper = 0.0f, black_paper = 0.0f;
     int error_number = 0;
     float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float previous_diameter;
@@ -166,12 +168,6 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    if (strlen(symbol->bgcolour) > 6) {
-        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
-            draw_background = 0;
-        }
-    }
-
     if (output_to_stdout) {
         feps = stdout;
     } else {
@@ -183,64 +179,31 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     locale = setlocale(LC_ALL, "C");
 
-    fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-    red_ink = (float) (fgred / 256.0);
-    green_ink = (float) (fggrn / 256.0);
-    blue_ink = (float) (fgblu / 256.0);
-    red_paper = (float) (bgred / 256.0);
-    green_paper = (float) (bggrn / 256.0);
-    blue_paper = (float) (bgblu / 256.0);
+    if ((symbol->output_options & CMYK_COLOUR) == 0) {
+        (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
+        red_ink = fgred / 255.0f;
+        green_ink = fggrn / 255.0f;
+        blue_ink = fgblu / 255.0f;
 
-    /* Convert RGB to CMYK */
-    if (red_ink > green_ink) {
-        if (blue_ink > red_ink) {
-            black_ink = 1.0f - blue_ink;
-        } else {
-            black_ink = 1.0f - red_ink;
-        }
+        (void) out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
+        red_paper = bgred / 255.0f;
+        green_paper = bggrn / 255.0f;
+        blue_paper = bgblu / 255.0f;
     } else {
-        if (blue_ink > red_ink) {
-            black_ink = 1.0f - blue_ink;
-        } else {
-            black_ink = 1.0f - green_ink;
-        }
-    }
-    if (black_ink < 1.0f) {
-        cyan_ink = (1.0f - red_ink - black_ink) / (1.0f - black_ink);
-        magenta_ink = (1.0f - green_ink - black_ink) / (1.0f - black_ink);
-        yellow_ink = (1.0f - blue_ink - black_ink) / (1.0f - black_ink);
-    } else {
-        cyan_ink = 0.0f;
-        magenta_ink = 0.0f;
-        yellow_ink = 0.0f;
-    }
+        (void) out_colour_get_cmyk(symbol->fgcolour, &fgcyan, &fgmagenta, &fgyellow, &fgblack, NULL /*rgb_alpha*/);
+        cyan_ink = fgcyan / 100.0f;
+        magenta_ink = fgmagenta / 100.0f;
+        yellow_ink = fgyellow / 100.0f;
+        black_ink = fgblack / 100.0f;
 
-    if (red_paper > green_paper) {
-        if (blue_paper > red_paper) {
-            black_paper = 1.0f - blue_paper;
-        } else {
-            black_paper = 1.0f - red_paper;
-        }
-    } else {
-        if (blue_paper > red_paper) {
-            black_paper = 1.0f - blue_paper;
-        } else {
-            black_paper = 1.0f - green_paper;
-        }
+        (void) out_colour_get_cmyk(symbol->bgcolour, &bgcyan, &bgmagenta, &bgyellow, &bgblack, &bgalpha);
+        cyan_paper = bgcyan / 100.0f;
+        magenta_paper = bgmagenta / 100.0f;
+        yellow_paper = bgyellow / 100.0f;
+        black_paper = bgblack / 100.0f;
     }
-    if (black_paper < 1.0f) {
-        cyan_paper = (1.0f - red_paper - black_paper) / (1.0f - black_paper);
-        magenta_paper = (1.0f - green_paper - black_paper) / (1.0f - black_paper);
-        yellow_paper = (1.0f - blue_paper - black_paper) / (1.0f - black_paper);
-    } else {
-        cyan_paper = 0.0f;
-        magenta_paper = 0.0f;
-        yellow_paper = 0.0f;
+    if (bgalpha == 0) {
+        draw_background = 0;
     }
 
     for (i = 0, len = (int) ustrlen(symbol->text); i < len; i++) {
@@ -426,7 +389,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             previous_diameter = circle->diameter - circle->width;
             radius = (float) (0.5 * previous_diameter);
         }
-        if (circle->colour) {
+        if (circle->colour) { /* Legacy - no longer used */
             /* A 'white' circle */
             if ((symbol->output_options & CMYK_COLOUR) == 0) {
                 fprintf(feps, "%.2f %.2f %.2f setrgbcolor\n", red_paper, green_paper, blue_paper);

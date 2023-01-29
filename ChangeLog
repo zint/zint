@@ -3,7 +3,10 @@ Version 2.12.0.9 (dev) not released yet
 
 **Incompatible changes**
 ------------------------
-- None yet
+- zint_symbol fgcolour and bgcolour buffer lengths extended 10 -> 16 to allow
+  for "C,M,Y,K" comma-separated decimal percentage strings
+- CMYK values for EPS (slightly) and TIF (significantly) have changed - now use
+  the same RGB -> CMYK formula
 
 Changes
 -------
@@ -15,6 +18,13 @@ Changes
   (ticket #204)
 - GUI: disable "Reset" colour if default; add "Unset" to Printing Scale dialog
   (allows unsetting of X-dim/resolution settings without having to zap)
+- API/CLI/GUI: allow foreground/background colours to be specified as
+  comma-separated decimal percentage strings "C,M,Y,K" where "C", "M" etc. are
+  0-100 (ticket #281, 3rd point)
+- PCX: add alpha support
+- GUI: Rearrange some Appearance tab inputs (Border Type <-> Width, Show Text
+  <-> Font, Text/Font <-> Printing Scale/Size) to flow more naturally;
+  save button "Save As..." -> "Save..." and add icon
 
 Bugs
 ----
@@ -24,6 +34,7 @@ Bugs
   LD_LIBRARY_PATH and PATH (ticket #279, props Alexey Dokuchaev)
 - GUI: fg/bgcolor text edit: fix right-click context menu not working properly
   by checking for it on FocusOut
+- GUI: fix fg/gbcolor icon background not being reset on zap
 
 
 Version 2.12.0 (2022-12-12)

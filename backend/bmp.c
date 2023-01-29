@@ -1,7 +1,7 @@
 /* bmp.c - Handles output to Windows Bitmap file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,7 +41,7 @@
 #include "output.h"
 #include "bmp.h"        /* Bitmap header structure */
 
-INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf) {
     int i, row, column;
     int row_size;
     int bits_per_pixel;
@@ -57,18 +57,19 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     color_ref_t fg_color_ref;
     color_ref_t ultra_color_ref[8];
     int ultra_fg_index = 9;
+    unsigned char map[128];
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
 
-    fg_color_ref.red = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fg_color_ref.green = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fg_color_ref.blue = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
+    (void) out_colour_get_rgb(symbol->fgcolour, &fg_color_ref.red, &fg_color_ref.green, &fg_color_ref.blue,
+                NULL /*alpha*/);
     fg_color_ref.reserved = 0x00;
-    bg_color_ref.red = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bg_color_ref.green = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bg_color_ref.blue = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
+
+    (void) out_colour_get_rgb(symbol->bgcolour, &bg_color_ref.red, &bg_color_ref.green, &bg_color_ref.blue,
+                NULL /*alpha*/);
     bg_color_ref.reserved = 0x00;
 
     if (symbol->symbology == BARCODE_ULTRA) {
+        static const int ultra_chars[8] = { 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
         for (i = 0; i < 8; i++) {
             ultra_color_ref[i].red = colour_to_red(i + 1);
             ultra_color_ref[i].green = colour_to_green(i + 1);
@@ -77,12 +78,17 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             if (memcmp(&ultra_color_ref[i], &fg_color_ref, sizeof(fg_color_ref)) == 0) {
                 ultra_fg_index = i + 1;
             }
+            map[ultra_chars[i]] = i + 1;
         }
         bits_per_pixel = 4;
         colour_count = ultra_fg_index == 9 ? 10 : 9;
+        map['0'] = 0;
+        map['1'] = ultra_fg_index;
     } else {
         bits_per_pixel = 1;
         colour_count = 2;
+        map['0'] = 0;
+        map['1'] = 0x80;
     }
     row_size = 4 * ((bits_per_pixel * symbol->bitmap_width + 31) / 32);
     data_size = symbol->bitmap_height * row_size;
@@ -102,46 +108,16 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* Pixel Plotting */
     if (symbol->symbology == BARCODE_ULTRA) {
         for (row = 0; row < symbol->bitmap_height; row++) {
+            const unsigned char *pb = pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1));
             for (column = 0; column < symbol->bitmap_width; column++) {
-                i = (column / 2) + (row * row_size);
-                switch (*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) {
-                    case 'C': /* Cyan */
-                        bitmap[i] += 1 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'B': /* Blue */
-                        bitmap[i] += 2 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'M': /* Magenta */
-                        bitmap[i] += 3 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'R': /* Red */
-                        bitmap[i] += 4 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'Y': /* Yellow */
-                        bitmap[i] += 5 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'G': /* Green */
-                        bitmap[i] += 6 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'K': /* Black */
-                        bitmap[i] += 7 << (4 * (1 - (column % 2)));
-                        break;
-                    case 'W': /* White */
-                        bitmap[i] += 8 << (4 * (1 - (column % 2)));
-                        break;
-                    case '1': /* Foreground */
-                        bitmap[i] += ultra_fg_index << (4 * (1 - (column % 2)));
-                        break;
-                }
+                bitmap[(column >> 1) + (row * row_size)] |= map[pb[column]] << (!(column & 1) << 2);
             }
         }
     } else {
         for (row = 0; row < symbol->bitmap_height; row++) {
+            const unsigned char *pb = pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1));
             for (column = 0; column < symbol->bitmap_width; column++) {
-                i = (column / 8) + (row * row_size);
-                if ((*(pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1)) + column)) == '1') {
-                    bitmap[i] += (0x01 << (7 - (column % 8)));
-                }
+                bitmap[(column >> 3) + (row * row_size)] |= map[pb[column]] >> (column & 7);
             }
         }
     }

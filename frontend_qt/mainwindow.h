@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2022 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -129,11 +129,10 @@ protected:
 
     bool clear_data_eci_seg(int seg_no);
 
-    void color_clicked(QColor &color, QLineEdit *txt, QPushButton *btn, const QString& title, QByteArray& geometry,
-            const char *color_changed);
-    void color_edited(QColor &color, QLineEdit *txt, QPushButton *btn);
-    QString getColorStr(const QColor color, bool alpha_always = false);
-    void setColorTxtBtn(const QColor color, QLineEdit *txt, QPushButton* btn);
+    void color_clicked(QString &colorStr, QLineEdit *txt, QPushButton *btn, const QString& title,
+            QByteArray& geometry, const char *color_changed);
+    void color_edited(QString &colorStr, QLineEdit *txt, QPushButton *btn);
+    void setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QPushButton* btn);
 
     virtual void resizeEvent(QResizeEvent *event) override;
     virtual bool event(QEvent *event) override;
@@ -201,7 +200,7 @@ protected:
     const char *getFileType(const struct Zint::QZintXdimDpVars *vars, bool msg = false) const;
 
 private:
-    QColor m_fgcolor, m_bgcolor;
+    QString m_fgstr, m_bgstr;
     QByteArray m_fgcolor_geometry, m_bgcolor_geometry;
     BarcodeItem m_bc;
     QWidget *m_optionWidget;

@@ -1,7 +1,7 @@
 /*  emf.c - Support for Microsoft Enhanced Metafile Format */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -168,7 +168,7 @@ static int utfle_length(unsigned char *input, int length) {
 INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int i;
     FILE *emf_file;
-    int fgred, fggrn, fgblu, bgred, bggrn, bgblu;
+    unsigned char fgred, fggrn, fgblu, bgred, bggrn, bgblu, bgalpha;
     int error_number = 0;
     int rectangle_count, this_rectangle;
     int circle_count, this_circle;
@@ -248,17 +248,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    fgred = (16 * ctoi(symbol->fgcolour[0])) + ctoi(symbol->fgcolour[1]);
-    fggrn = (16 * ctoi(symbol->fgcolour[2])) + ctoi(symbol->fgcolour[3]);
-    fgblu = (16 * ctoi(symbol->fgcolour[4])) + ctoi(symbol->fgcolour[5]);
-    bgred = (16 * ctoi(symbol->bgcolour[0])) + ctoi(symbol->bgcolour[1]);
-    bggrn = (16 * ctoi(symbol->bgcolour[2])) + ctoi(symbol->bgcolour[3]);
-    bgblu = (16 * ctoi(symbol->bgcolour[4])) + ctoi(symbol->bgcolour[5]);
-
-    if (strlen(symbol->bgcolour) > 6) {
-        if ((ctoi(symbol->bgcolour[6]) == 0) && (ctoi(symbol->bgcolour[7]) == 0)) {
-            draw_background = 0;
-        }
+    (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
+    (void) out_colour_get_rgb(symbol->bgcolour, &bgred, &bggrn, &bgblu, &bgalpha);
+    if (bgalpha == 0) {
+        draw_background = 0;
     }
 
     rectangle_count = count_rectangles(symbol);

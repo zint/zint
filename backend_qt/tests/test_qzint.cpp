@@ -137,13 +137,27 @@ private slots:
         QCOMPARE(bc.structAppIndex(), structapp.index);
         QCOMPARE(bc.structAppID(), QString(structapp.id));
 
+        QString fgStr("12344567");
+        bc.setFgStr(fgStr);
+        QCOMPARE(bc.fgStr(), fgStr);
+
         QColor fgColor(0x12, 0x34, 0x45, 0x67);
         bc.setFgColor(fgColor);
         QCOMPARE(bc.fgColor(), fgColor);
+        QCOMPARE(bc.fgStr(), fgStr);
+
+        QString bgStr("89ABCDEF");
+        bc.setBgStr(bgStr);
+        QCOMPARE(bc.bgStr(), bgStr);
 
         QColor bgColor(0x89, 0xAB, 0xCD, 0xEF);
         bc.setBgColor(bgColor);
         QCOMPARE(bc.bgColor(), bgColor);
+        QCOMPARE(bc.bgStr(), bgStr);
+
+        QString bgStr2("71,0,40,44");
+        bc.setBgStr(bgStr2);
+        QCOMPARE(bc.bgStr(), bgStr2);
 
         bool cmyk = true;
         bc.setCMYK(cmyk);
@@ -500,8 +514,10 @@ private slots:
 
         QTest::addColumn<int>("symbology");
         QTest::addColumn<int>("inputMode");
+
         QTest::addColumn<QString>("text");
         QTest::addColumn<QString>("primary");
+
         QTest::addColumn<float>("height");
         QTest::addColumn<int>("option1");
         QTest::addColumn<int>("option2");
@@ -510,24 +526,31 @@ private slots:
         QTest::addColumn<float>("dpmm");
         QTest::addColumn<bool>("dotty");
         QTest::addColumn<float>("dotSize");
+
         QTest::addColumn<float>("guardDescent");
         QTest::addColumn<int>("structAppCount");
         QTest::addColumn<int>("structAppIndex");
         QTest::addColumn<QString>("structAppID");
+
+        QTest::addColumn<QString>("fgStr");
+        QTest::addColumn<QString>("bgStr");
         QTest::addColumn<QColor>("fgColor");
         QTest::addColumn<QColor>("bgColor");
         QTest::addColumn<bool>("cmyk");
+
         QTest::addColumn<int>("borderTypeIndex");
         QTest::addColumn<int>("borderWidth");
         QTest::addColumn<int>("whitespace");
         QTest::addColumn<int>("vWhitespace");
         QTest::addColumn<int>("fontSetting");
+
         QTest::addColumn<bool>("showText");
         QTest::addColumn<bool>("gsSep");
         QTest::addColumn<bool>("quietZones");
         QTest::addColumn<bool>("noQuietZones");
         QTest::addColumn<bool>("compliantHeight");
         QTest::addColumn<int>("rotateAngle");
+
         QTest::addColumn<int>("eci");
         QTest::addColumn<bool>("gs1Parens");
         QTest::addColumn<bool>("gs1NoCheck");
@@ -553,8 +576,9 @@ private slots:
             << BARCODE_AUSPOST << DATA_MODE // symbology-inputMode
             << "12345678" << "" // text-primary
             << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -569,8 +593,9 @@ private slots:
             << BARCODE_AZTEC << UNICODE_MODE // symbology-inputMode
             << "12345678Ж0%var%" << "" // text-primary
             << 0.0f << 1 << 0 << 0 << 4.0f << 0.0f << true << 0.9f // height-dotSize
-            << 5.0f << 2 << 1 << "as\"dfa'sdf" << QColor(Qt::blue) << QColor(Qt::white) // guardDescent-bgColor
-            << true << 0 << 0 << 2 << 3 << 0 // cmyk-fontSetting
+            << 5.0f << 2 << 1 << "as\"dfa'sdf" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::blue) << QColor(Qt::white) << true // fgStr-cmyk
+            << 0 << 0 << 2 << 3 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << false << 0 // showText-rotateAngle
             << 7 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -580,12 +605,29 @@ private slots:
                 " --secure=1 --structapp=\"1,2,as\\\"dfa'sdf\" --vwhitesp=3 -w 2"
             << "" << "" << "" << "";
 
+        QTest::newRow("BARCODE_AZTEC") << false << 0.0f << ""
+            << BARCODE_AZTEC << UNICODE_MODE // symbology-inputMode
+            << "12345678Ж0%var%" << "" // text-primary
+            << 0.0f << 1 << 0 << 0 << 4.0f << 0.0f << true << 0.9f // height-dotSize
+            << 5.0f << 2 << 1 << "as\"dfa'sdf" // guardDescent-structAppID
+            << "71,0,40,44" << "0,0,0,0" << QColor(Qt::black) << QColor(Qt::white) << true // fgStr-cmyk
+            << 0 << 0 << 2 << 3 << 0 // borderTypeIndex-fontSetting
+            << true << false << false << false << false << 0 // showText-rotateAngle
+            << 7 << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 92 --bg=0,0,0,0 --cmyk --eci=7 -d '12345678Ж0%var%' --dotsize=0.9 --dotty --fg=71,0,40,44 --scale=4"
+                " --secure=1 --structapp='1,2,as\"dfa'\\''sdf' --vwhitesp=3 -w 2"
+            << "zint.exe -b 92 --bg=0,0,0,0 --cmyk --eci=7 -d \"12345678Ж0%var%\" --dotsize=0.9 --dotty --fg=71,0,40,44 --scale=4"
+                " --secure=1 --structapp=\"1,2,as\\\"dfa'sdf\" --vwhitesp=3 -w 2"
+            << "" << "" << "" << "";
+
         QTest::newRow("BARCODE_C25INTER") << true << 0.0f << ""
             << BARCODE_C25INTER << UNICODE_MODE // symbology-inputMode
             << "12345" << "" // text-primary
             << 0.0f << -1 << 2 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << SMALL_TEXT // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << SMALL_TEXT // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -597,8 +639,41 @@ private slots:
             << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
             << "453678" << "" // text-primary
             << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(255, 255, 255, 0) // guardDescent-bgColor
-            << false << 1 << 2 << 0 << 0 << BOLD_TEXT // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(255, 255, 255, 0) << false // fgStr-cmyk
+            << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
+            << true << false << true << false << false << 90 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
+                " --rotate=90 --verbose --vers=7"
+            << "zint.exe -b 140 --bind --bold --border=2 -d \"453678\" --height=19.7 --nobackground --quietzones"
+                " --rotate=90 --verbose --vers=7"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_CHANNEL") << false << 0.0f << ""
+            << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
+            << "453678" << "" // text-primary
+            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "FFFFFF00" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
+            << true << false << true << false << false << 90 // showText-rotateAngle
+            << 0 << false << false << false << WARN_DEFAULT << true // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 140 --bind --bold --border=2 -d '453678' --height=19.7 --nobackground --quietzones"
+                " --rotate=90 --verbose --vers=7"
+            << "zint.exe -b 140 --bind --bold --border=2 -d \"453678\" --height=19.7 --nobackground --quietzones"
+                " --rotate=90 --verbose --vers=7"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_CHANNEL") << false << 0.0f << ""
+            << BARCODE_CHANNEL << UNICODE_MODE // symbology-inputMode
+            << "453678" << "" // text-primary
+            << 19.7f << -1 << 7 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "12345600" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 1 << 2 << 0 << 0 << BOLD_TEXT // borderTypeIndex-fontSetting
             << true << false << true << false << false << 90 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << true // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -612,8 +687,9 @@ private slots:
             << BARCODE_CODE128 << (UNICODE_MODE | EXTRA_ESCAPE_MODE) // symbology-inputMode
             << "1234\\^A56" << "" // text-primary
             << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << false << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -625,8 +701,9 @@ private slots:
             << BARCODE_GS1_128_CC << UNICODE_MODE // symbology-inputMode
             << "[01]12345678901231[15]121212" << "[11]901222[99]ABCDE" // text-primary
             << 71.142f << 3 << 0 << 0 << 3.5f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << false << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -640,8 +717,9 @@ private slots:
             << BARCODE_CODE16K << (UNICODE_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "12345678901234567890123456789012" << "" // text-primary
             << 0.0f << 4 << 0 << 2 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 1 << 1 << 0 << 0 << SMALL_TEXT // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 1 << 1 << 0 << 0 << SMALL_TEXT // borderTypeIndex-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -655,8 +733,9 @@ private slots:
             << BARCODE_CODE49 << UNICODE_MODE // symbology-inputMode
             << "12345678901234567890" << "" // text-primary
             << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -668,8 +747,9 @@ private slots:
             << BARCODE_CODABLOCKF << (DATA_MODE | ESCAPE_MODE) // symbology-inputMode
             << "T\\n\\xA0t\\\"" << "" // text-primary
             << 0.0f << 2 << 5 << 3 << 3.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 2 << 4 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 2 << 4 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << true << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -683,8 +763,9 @@ private slots:
             << BARCODE_DAFT << UNICODE_MODE // symbology-inputMode
             << "daft" << "" // text-primary
             << 9.2f << -1 << 251 << 0 << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(0x30, 0x31, 0x32, 0x33) << QColor(0xBF, 0xBE, 0xBD, 0xBC) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(0x30, 0x31, 0x32, 0x33) << QColor(0xBF, 0xBE, 0xBD, 0xBC) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -696,8 +777,9 @@ private slots:
             << BARCODE_DATAMATRIX << GS1_MODE // symbology-inputMode
             << "[20]12" << "" // text-primary
             << 0.0f << -1 << 0 << DM_SQUARE << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -709,8 +791,9 @@ private slots:
             << BARCODE_DATAMATRIX << (DATA_MODE | ESCAPE_MODE | FAST_MODE) // symbology-inputMode
             << "ABCDEFGH\\x01I" << "" // text-primary
             << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -722,8 +805,9 @@ private slots:
             << BARCODE_DBAR_EXPSTK_CC << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "[91]ABCDEFGHIJKL" << "[11]901222[99]ABCDE" // text-primary
             << 0.0f << -1 << 0 << 2 << 1.0f << 0.0f << true << 0.9f // height-dotSize
-            << 3.0f << 2 << 1 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 3.0f << 2 << 1 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -737,8 +821,9 @@ private slots:
             << BARCODE_DOTCODE << GS1_MODE // symbology-inputMode
             << "[20]01" << "" // text-primary
             << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -750,8 +835,9 @@ private slots:
             << BARCODE_DOTCODE << GS1_MODE // symbology-inputMode
             << "[20]01" << "" // text-primary
             << 30.0f << -1 << 8 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -763,8 +849,9 @@ private slots:
             << BARCODE_DPD << UNICODE_MODE // symbology-inputMode
             << "1234567890123456789012345678" << "" // text-primary
             << 0.0f << -1 << 0 << 0 << 4.5f << 24.0f << true << 0.8f // height-dotSize
-            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.375 << 0 << 600 << 1 << 0 << 0 // xdimdp
@@ -777,8 +864,9 @@ private slots:
             << BARCODE_EANX << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
             << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f // height-dotSize
-            << 0.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -790,8 +878,9 @@ private slots:
             << BARCODE_GRIDMATRIX << UNICODE_MODE // symbology-inputMode
             << "Your Data Here!" << "" // text-primary
             << 0.0f << 1 << 5 << 0 << 0.5f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 270 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -803,8 +892,9 @@ private slots:
             << BARCODE_HANXIN << (UNICODE_MODE | ESCAPE_MODE) // symbology-inputMode
             << "éβÿ啊\\e\"'" << "" // text-primary
             << 30.0f << 2 << 5 << ((0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 29 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -816,8 +906,9 @@ private slots:
             << BARCODE_HIBC_DM << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
             << 0.0f << -1 << 8 << DM_DMRE << 1.0f << 0.0f << false << 0.7f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << true << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -829,8 +920,9 @@ private slots:
             << BARCODE_HIBC_PDF << (DATA_MODE | HEIGHTPERROW_MODE) // symbology-inputMode
             << "TEXT" << "" // text-primary
             << 3.5f << 3 << 4 << 10 << 10.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 2 << 1 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 2 << 1 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -844,8 +936,9 @@ private slots:
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
             << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -857,8 +950,9 @@ private slots:
             << BARCODE_ITF14 << UNICODE_MODE // symbology-inputMode
             << "9212320967145" << "" // text-primary
             << 30.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 1 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 1 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -871,8 +965,9 @@ private slots:
             << "152382802840001"
             << "1Z00004951\\GUPSN\\G06X610\\G159\\G1234567\\G1/1\\G\\GY\\G1 MAIN ST\\GTOWN\\GNY\\R\\E" // text-primary
             << 0.0f << -1 << (96 + 1) << 0 << 2.5f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -886,8 +981,9 @@ private slots:
             << BARCODE_MICROQR << UNICODE_MODE // symbology-inputMode
             << "1234" << "" // text-primary
             << 30.0f << 2 << 3 << (ZINT_FULL_MULTIBYTE | (3 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -899,8 +995,9 @@ private slots:
             << BARCODE_QRCODE << GS1_MODE // symbology-inputMode
             << "(01)12" << "" // text-primary
             << 0.0f << 1 << 5 << (ZINT_FULL_MULTIBYTE | (0 + 1) << 8) << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << true << false << true << 0 // showText-rotateAngle
             << 0 << true << true << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -914,8 +1011,9 @@ private slots:
             << BARCODE_RMQR << UNICODE_MODE // symbology-inputMode
             << "テ" << "" // text-primary
             << 30.0f << -1 << 8 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 180 // showText-rotateAngle
             << 20 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -927,8 +1025,9 @@ private slots:
             << BARCODE_ULTRA << (GS1_MODE | GS1PARENS_MODE | GS1NOCHECK_MODE) // symbology-inputMode
             << "(01)1" << "" // text-primary
             << 0.0f << 6 << 2 << 0 << 1.0f << 0.0f << true << 0.8f // height-dotSize
-            << 5.0f << 2 << 1 << "4" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 2 << 1 << "4" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -940,8 +1039,9 @@ private slots:
             << BARCODE_UPCE_CC << UNICODE_MODE // symbology-inputMode
             << "12345670+1234" << "[11]901222[99]ABCDE" // text-primary
             << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 6.5f << 0 << 0 << "" << QColor(0xEF, 0x29, 0x29) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // cmyk-fontSetting
+            << 6.5f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(0xEF, 0x29, 0x29) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << (BOLD_TEXT | SMALL_TEXT) // borderTypeIndex-fontSetting
             << true << false << false << true << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_FAIL_ALL << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -961,8 +1061,9 @@ private slots:
             << BARCODE_VIN << UNICODE_MODE // symbology-inputMode
             << "12345678701234567" << "" // text-primary
             << 20.0f << -1 << 1 << 0 << 1.0f << 0.0f << false << 0.8f // height-dotSize
-            << 5.0f << 0 << 0 << "" << QColor(Qt::black) << QColor(Qt::white) // guardDescent-bgColor
-            << false << 0 << 0 << 0 << 0 << 0 // cmyk-fontSetting
+            << 5.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
@@ -997,6 +1098,8 @@ private slots:
         QFETCH(int, structAppCount);
         QFETCH(int, structAppIndex);
         QFETCH(QString, structAppID);
+        QFETCH(QString, fgStr);
+        QFETCH(QString, bgStr);
         QFETCH(QColor, fgColor);
         QFETCH(QColor, bgColor);
         QFETCH(bool, cmyk);
@@ -1050,8 +1153,16 @@ private slots:
         bc.setDotSize(dotSize);
         bc.setGuardDescent(guardDescent);
         bc.setStructApp(structAppCount, structAppIndex, structAppID);
-        bc.setFgColor(fgColor);
-        bc.setBgColor(bgColor);
+        if (fgStr.isEmpty()) {
+            bc.setFgColor(fgColor);
+        } else {
+            bc.setFgStr(fgStr);
+        }
+        if (bgStr.isEmpty()) {
+            bc.setBgColor(bgColor);
+        } else {
+            bc.setBgStr(bgStr);
+        }
         bc.setCMYK(cmyk);
         bc.setBorderType(borderTypeIndex);
         bc.setBorderWidth(borderWidth);

@@ -1,7 +1,7 @@
 /* svg.c - Scalable Vector Graphics */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -113,6 +113,7 @@ static void make_html_friendly(unsigned char *string, char *html_version) {
 }
 
 INTERNAL int svg_plot(struct zint_symbol *symbol) {
+    static const char font_family[] = "Helvetica, sans-serif";
     FILE *fsvg;
     int error_number = 0;
     const char *locale = NULL;
@@ -122,10 +123,9 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     int i;
     char fgcolour_string[7];
     char bgcolour_string[7];
-    int bg_alpha = 0xff;
-    int fg_alpha = 0xff;
-    float fg_alpha_opacity = 0.0f, bg_alpha_opacity = 0.0f;
-    const char font_family[] = "Helvetica, sans-serif";
+    unsigned char fgred, fggreen, fgblue, fg_alpha;
+    unsigned char bgred, bggreen, bgblue, bg_alpha;
+    float fg_alpha_opacity = 0.0f, bg_alpha_opacity = 0.0f; /* Suppress `-Wmaybe-uninitialized` */
     int bold;
 
     struct zint_vector_rect *rect;
@@ -139,25 +139,16 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     char *html_string;
 
-    for (i = 0; i < 6; i++) {
-        fgcolour_string[i] = symbol->fgcolour[i];
-        bgcolour_string[i] = symbol->bgcolour[i];
+    (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggreen, &fgblue, &fg_alpha);
+    if (fg_alpha != 0xff) {
+        fg_alpha_opacity = fg_alpha / 255.0f;
     }
-    fgcolour_string[6] = '\0';
-    bgcolour_string[6] = '\0';
-
-    if (strlen(symbol->fgcolour) > 6) {
-        fg_alpha = (16 * ctoi(symbol->fgcolour[6])) + ctoi(symbol->fgcolour[7]);
-        if (fg_alpha != 0xff) {
-            fg_alpha_opacity = (float) (fg_alpha / 255.0);
-        }
+    sprintf(fgcolour_string, "%02X%02X%02X", fgred, fggreen, fgblue);
+    (void) out_colour_get_rgb(symbol->bgcolour, &bgred, &bggreen, &bgblue, &bg_alpha);
+    if (bg_alpha != 0xff) {
+        bg_alpha_opacity = bg_alpha / 255.0f;
     }
-    if (strlen(symbol->bgcolour) > 6) {
-        bg_alpha = (16 * ctoi(symbol->bgcolour[6])) + ctoi(symbol->bgcolour[7]);
-        if (bg_alpha != 0xff) {
-            bg_alpha_opacity = (float) (bg_alpha / 255.0);
-        }
-    }
+    sprintf(bgcolour_string, "%02X%02X%02X", bgred, bggreen, bgblue);
 
     len = (int) ustrlen(symbol->text);
     html_len = len + 1;
@@ -283,7 +274,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.*f\"",
                 circle->x, circle->y, circle->width ? 3 : 2, radius);
 
-        if (circle->colour) {
+        if (circle->colour) { /* Legacy - no longer used */
             if (circle->width) {
                 fprintf(fsvg, " stroke=\"#%s\" stroke-width=\"%.3f\" fill=\"none\"", bgcolour_string, circle->width);
             } else {

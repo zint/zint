@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2022 Robin Stuart                                  *
+ *   Copyright (C) 2010-2023 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -124,11 +124,19 @@ public:
     void setStructApp(const int count, const int index, const QString& id);
     void clearStructApp();
 
-    /* Foreground colour */
+    /* Foreground colour (may be RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string) */
+    QString fgStr() const; // `symbol->fgcolour`
+    bool setFgStr(const QString& fgStr); // Returns false if not valid colour string
+
+    /* Foreground colour as QColor */
     QColor fgColor() const; // `symbol->fgcolour`
     void setFgColor(const QColor& fgColor);
 
-    /* Background colour */
+    /* Background colour (may be RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string) */
+    QString bgStr() const; // `symbol->bgcolour`
+    bool setBgStr(const QString& bgStr); // Returns false if not valid colour string
+
+    /* Background colour as QColor */
     QColor bgColor() const; // `symbol->bgcolour`
     void setBgColor(const QColor& bgColor);
 
@@ -322,7 +330,6 @@ private:
     static void arg_str(QString& cmd, const char *const opt, const QString& val);
     static void arg_int(QString& cmd, const char *const opt, const int val, const bool allowZero = false);
     static void arg_bool(QString& cmd, const char *const opt, const bool val);
-    static void arg_color(QString& cmd, const char *const opt, const QColor val);
     static void arg_data(QString& cmd, const char *const opt, const QString& val, const bool win);
     static void arg_seg(QString& cmd, const int seg_no, const QZintSeg& val, const bool win);
     static void arg_data_esc(QString& cmd, const char *const opt, QString& text, const bool win);
@@ -349,8 +356,8 @@ private:
     float m_dot_size;
     float m_guardDescent;
     struct zint_structapp m_structapp;
-    QColor m_fgColor;
-    QColor m_bgColor;
+    QString m_fgStr;
+    QString m_bgStr;
     bool m_cmyk;
     int m_borderType;
     int m_borderWidth;
