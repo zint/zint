@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,7 +29,11 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <math.h>
 #include "testcommon.h"
+
+/* Round to 3 decimal places (avoids rounding differences on various platforms) */
+#define rnd3dpf(m) stripf(roundf((m) * 1000) / 1000)
 
 static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, float y, float width, float height) {
     struct zint_vector_rect *rect;
@@ -37,19 +41,23 @@ static struct zint_vector_rect *find_rect(struct zint_symbol *symbol, float x, f
     if (symbol->vector == NULL) {
         return NULL;
     }
+    x = rnd3dpf(x);
+    y = rnd3dpf(y);
+    width = rnd3dpf(width);
+    height = rnd3dpf(height);
     for (rect = symbol->vector->rectangles; rect != NULL; rect = rect->next) {
-        /* printf("x %.8g, y %.8g, width %.8g, height %.8g\n", rect->x, rect->y, rect->width, rect->height); */
-        if (rect->x == stripf(x) && rect->y == stripf(y)) {
+        /* printf("x %.9g, y %.9g, width %.9g, height %.9g\n", rect->x, rect->y, rect->width, rect->height); */
+        if (rnd3dpf(rect->x) == x && rnd3dpf(rect->y) == y) {
             if (height && width) {
-                if (rect->height == stripf(height) && rect->width == stripf(width)) {
+                if (rnd3dpf(rect->height) == height && rnd3dpf(rect->width) == width) {
                     break;
                 }
             } else if (height) {
-                if (rect->height == stripf(height)) {
+                if (rnd3dpf(rect->height) == height) {
                     break;
                 }
             } else if (width) {
-                if (rect->width == stripf(width)) {
+                if (rnd3dpf(rect->width) == width) {
                     break;
                 }
             } else {
@@ -67,11 +75,14 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
     if (symbol->vector == NULL) {
         return NULL;
     }
+    x = rnd3dpf(x);
+    y = rnd3dpf(y);
+    diameter = rnd3dpf(diameter);
     for (circle = symbol->vector->circles; circle != NULL; circle = circle->next) {
         /* printf("x %.8g, y %.8g, diamter %.8g\n", circle->x, circle->y, circle->diameter); */
-        if (circle->x == stripf(x) && circle->y == stripf(y)) {
+        if (rnd3dpf(circle->x) == x && rnd3dpf(circle->y) == y) {
             if (diameter) {
-                if (circle->diameter == stripf(diameter)) {
+                if (rnd3dpf(circle->diameter) == diameter) {
                     break;
                 }
             } else {
@@ -81,6 +92,374 @@ static struct zint_vector_circle *find_circle(struct zint_symbol *symbol, float 
     }
 
     return circle;
+}
+
+static struct zint_vector_string *find_string(struct zint_symbol *symbol, float x, float y) {
+    struct zint_vector_string *string;
+
+    if (symbol->vector == NULL) {
+        return NULL;
+    }
+    x = rnd3dpf(x);
+    y = rnd3dpf(y);
+    for (string = symbol->vector->strings; string != NULL; string = string->next) {
+        /* printf("string->x %.9g, string->y %.9g\n", string->x, string->y); */
+        if (rnd3dpf(string->x) == x && rnd3dpf(string->y) == y) {
+            break;
+        }
+    }
+
+    return string;
+}
+
+/* Helper to check string vectors */
+static int check_vector_strings(const struct zint_symbol *symbol, char errmsg[128]) {
+    const int has_hrt = ZBarcode_Cap(symbol->symbology, ZINT_CAP_HRT) == ZINT_CAP_HRT;
+    const struct zint_vector *vector = symbol->vector;
+    const struct zint_vector_string *string;
+    int i, length;
+
+    if (!vector) {
+        strcpy(errmsg, "vector NULL");
+        return 0;
+    }
+    if (symbol->show_hrt && has_hrt) {
+        if (!symbol->vector->strings) {
+            strcpy(errmsg, "vector->strings NULL");
+            return 0;
+        }
+        for (string = symbol->vector->strings, i = 0; string; string = string->next, i++) {
+            if (string->x < 0.0f) {
+                sprintf(errmsg, "string[%d]->x %g negative", i, string->x);
+                return 0;
+            }
+            if (string->x >= vector->width) {
+                sprintf(errmsg, "string[%d]->x %g >= vector->width %g", i, string->x, vector->width);
+                return 0;
+            }
+            if (string->y < 0.0f) {
+                sprintf(errmsg, "string[%d]->y %g negative", i, string->y);
+                return 0;
+            }
+            if (string->y >= vector->height) {
+                sprintf(errmsg, "string[%d]->y %g >= vector->height %g", i, string->y, vector->height);
+                return 0;
+            }
+            if (string->fsize < 1.0f) {
+                sprintf(errmsg, "string[%d]->fsize %g < 1", i, string->fsize);
+                return 0;
+            }
+            if (string->width <= 0.0f) {
+                sprintf(errmsg, "string[%d]->width %g zero or negative", i, string->width);
+                return 0;
+            }
+            if (string->rotation != 0 && string->rotation != 90 && string->rotation != 180 && string->rotation != 270) {
+                sprintf(errmsg, "string[%d]->rotation %d not 0, 90, 180, 270", i, string->rotation);
+                return 0;
+            }
+            if (!string->text) {
+                sprintf(errmsg, "string[%d]->text NULL", i);
+                return 0;
+            }
+            length = (int) ustrlen(string->text);
+            if (string->length != length) {
+                sprintf(errmsg, "string[%d]->length != %d", string->length, length);
+                return 0;
+            }
+        }
+        if (is_extendable(symbol->symbology)) {
+            const unsigned char *addon = (const unsigned char *) strchr((const char *) symbol->text, '+');
+            const int has_addon = addon != NULL;
+            const int text_len = has_addon ? (int) (addon - symbol->text) : (int) ustrlen(symbol->text);
+            int num = -1;
+            switch (symbol->symbology) {
+                case BARCODE_EANX:
+                case BARCODE_EANX_CHK:
+                case BARCODE_ISBNX:
+                case BARCODE_EANX_CC:
+                    num = text_len <= 8 ? text_len <= 5 ? 1 : 2 : 3;
+                    break;
+                case BARCODE_UPCA:
+                case BARCODE_UPCA_CHK:
+                case BARCODE_UPCA_CC:
+                    num = 4;
+                    break;
+                case BARCODE_UPCE:
+                case BARCODE_UPCE_CHK:
+                case BARCODE_UPCE_CC:
+                    num = 3;
+                    break;
+                default:
+                    strcpy(errmsg, "unhandled EAN/UPC");
+                    return 0;
+                    break;
+            }
+            if (i != num + has_addon) {
+                printf("num %d, text_len %d, has_addon %d\n", num, text_len, has_addon);
+                sprintf(errmsg, "no. of strings %d != %d", i, num + has_addon);
+                return 0;
+            }
+        } else {
+            if (i > 1) {
+                sprintf(errmsg, "no. of strings %d > 1", i);
+                return 0;
+            }
+        }
+    } else {
+        if (symbol->vector->strings) {
+            strcpy(errmsg, "vector->strings not NULL");
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Helper to check rectangle vectors */
+static int check_vector_rectangles(const struct zint_symbol *symbol, char errmsg[128]) {
+    const struct zint_vector *vector = symbol->vector;
+    const struct zint_vector_rect *rect;
+    const int have_border = symbol->border_width && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP));
+    const int dotty = is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
+    int i;
+
+    if (!vector) {
+        strcpy(errmsg, "vector NULL");
+        return 0;
+    }
+    if (have_border) {
+        if (!vector->rectangles) {
+            strcpy(errmsg, "rectangles NULL");
+            return 0;
+        }
+    } else {
+        if (symbol->symbology == BARCODE_DOTCODE || symbol->symbology == BARCODE_MAXICODE) {
+            if (vector->rectangles) {
+                strcpy(errmsg, "rectangles not NULL");
+                return 0;
+            }
+        } else {
+            if (!dotty) {
+                if (!vector->rectangles) {
+                    strcpy(errmsg, "rectangles NULL");
+                    return 0;
+                }
+            }
+        }
+    }
+    for (rect = vector->rectangles, i = 0; rect; rect = rect->next, i++) {
+        if (rect->x < 0.0f) {
+            sprintf(errmsg, "rect[%d]->x %g negative", i, rect->x);
+            return 0;
+        }
+        if (rect->x >= vector->width) {
+            sprintf(errmsg, "rect[%d]->x %g >= vector->width %g", i, rect->x, vector->width);
+            return 0;
+        }
+        if (rect->y < 0.0f) {
+            sprintf(errmsg, "rect[%d]->y %g negative", i, rect->y);
+            return 0;
+        }
+        if (rect->y >= vector->height) {
+            sprintf(errmsg, "rect[%d]->y %g >= vector->height %g", i, rect->y, vector->height);
+            return 0;
+        }
+        if (rect->width <= 0.0f) {
+            sprintf(errmsg, "rect[%d]->width %g <= 0", i, rect->width);
+            return 0;
+        }
+        if (rect->width > vector->width) {
+            sprintf(errmsg, "rect[%d]->width %g > vector->width %g", i, rect->width, vector->width);
+            return 0;
+        }
+        if (stripf(rect->x + rect->width) > vector->width) {
+            sprintf(errmsg, "rect[%d]->x + width %g > vector->width %g", i, rect->x + rect->width, vector->width);
+            return 0;
+        }
+        if (rect->height <= 0.0f) {
+            sprintf(errmsg, "rect[%d]->height %g <= 0", i, rect->height);
+            return 0;
+        }
+        if (rect->height > vector->height) {
+            sprintf(errmsg, "rect[%d]->height %g > vector->height %g", i, rect->height, vector->height);
+            return 0;
+        }
+        if (stripf(rect->y + rect->height) > vector->height) {
+            sprintf(errmsg, "rect[%d]->y + height %g > vector->height %g", i, rect->y + rect->height, vector->height);
+            return 0;
+        }
+
+        if (symbol->symbology == BARCODE_ULTRA) {
+            if (rect->colour != -1 && (rect->colour < 1 || rect->colour > 8)) {
+                sprintf(errmsg, "rect[%d]->colour %d != -1 and not 1-8", i, rect->colour);
+                return 0;
+            }
+        } else {
+            if (rect->colour != -1) {
+                sprintf(errmsg, "rect[%d]->colour %d != -1", i, rect->colour);
+                return 0;
+            }
+        }
+    }
+    return 1;
+}
+
+/* Helper to check circle vectors */
+static int check_vector_circles(const struct zint_symbol *symbol, char errmsg[128]) {
+    const struct zint_vector *vector = symbol->vector;
+    const struct zint_vector_circle *circle;
+    const int dotty = is_dotty(symbol->symbology) && (symbol->output_options & BARCODE_DOTTY_MODE);
+    int i;
+
+    if (!vector) {
+        strcpy(errmsg, "vector NULL");
+        return 0;
+    }
+    if (symbol->symbology == BARCODE_DOTCODE || symbol->symbology == BARCODE_MAXICODE) {
+        if (!vector->circles) {
+            strcpy(errmsg, "circles NULL");
+            return 0;
+        }
+    } else {
+        if (vector->circles) {
+            if (!dotty) {
+                strcpy(errmsg, "circles not NULL");
+                return 0;
+            }
+        } else {
+            if (dotty) {
+                strcpy(errmsg, "circles NULL");
+                return 0;
+            }
+        }
+    }
+    for (circle = vector->circles, i = 0; circle; circle = circle->next, i++) {
+        if (circle->x < 0.0f) {
+            sprintf(errmsg, "circle[%d]->x %g negative", i, circle->x);
+            return 0;
+        }
+        if (circle->x >= vector->width) {
+            sprintf(errmsg, "circle[%d]->x %g >= vector->width %g", i, circle->x, vector->width);
+            return 0;
+        }
+        if (circle->y < 0.0f) {
+            sprintf(errmsg, "circle[%d]->y %g negative", i, circle->y);
+            return 0;
+        }
+        if (circle->y >= vector->height) {
+            sprintf(errmsg, "circle[%d]->y %g >= vector->height %g", i, circle->y, vector->height);
+            return 0;
+        }
+        if (circle->diameter <= 0.0f) {
+            sprintf(errmsg, "circle[%d]->diameter %g <= 0", i, circle->diameter);
+            return 0;
+        }
+        if (circle->diameter > vector->width) {
+            sprintf(errmsg, "circle[%d]->diameter %g > vector->diameter %g", i, circle->diameter, vector->width);
+            return 0;
+        }
+        if (circle->diameter > vector->height) {
+            sprintf(errmsg, "circle[%d]->diameter %g > vector->height %g", i, circle->diameter, vector->height);
+            return 0;
+        }
+        if (stripf(circle->x + circle->diameter / 2) > vector->width) {
+            sprintf(errmsg, "circle[%d]->x + diameter / 2 %g > vector->width %g", i, circle->x + circle->diameter / 2, vector->width);
+            return 0;
+        }
+        if (stripf(circle->y + circle->diameter / 2) > vector->height) {
+            sprintf(errmsg, "circle[%d]->y + diameter / 2 %g > vector->height %g", i, circle->y + circle->diameter / 2, vector->height);
+            return 0;
+        }
+
+        if (circle->colour != 0) {
+            sprintf(errmsg, "circle[%d]->colour %d != 0", i, circle->colour);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Helper to check hexagon vectors */
+static int check_vector_hexagons(const struct zint_symbol *symbol, char errmsg[128]) {
+    const struct zint_vector *vector = symbol->vector;
+    const struct zint_vector_hexagon *hex;
+    int i;
+
+    if (!vector) {
+        strcpy(errmsg, "vector NULL");
+        return 0;
+    }
+    if (symbol->symbology == BARCODE_MAXICODE) {
+        if (!vector->hexagons) {
+            strcpy(errmsg, "hexagons NULL");
+            return 0;
+        }
+    } else {
+        if (vector->hexagons) {
+            strcpy(errmsg, "hexagons not NULL");
+            return 0;
+        }
+    }
+    for (hex = vector->hexagons, i = 0; hex; hex = hex->next, i++) {
+        if (hex->x < 0.0f) {
+            sprintf(errmsg, "hex[%d]->x %g negative", i, hex->x);
+            return 0;
+        }
+        if (hex->x >= vector->width) {
+            sprintf(errmsg, "hex[%d]->x %g >= vector->width %g", i, hex->x, vector->width);
+            return 0;
+        }
+        if (hex->y < 0.0f) {
+            sprintf(errmsg, "hex[%d]->y %g negative", i, hex->y);
+            return 0;
+        }
+        if (hex->y >= vector->height) {
+            sprintf(errmsg, "hex[%d]->y %g >= vector->height %g", i, hex->y, vector->height);
+            return 0;
+        }
+        if (hex->diameter <= 0.0f) {
+            sprintf(errmsg, "hex[%d]->diameter %g <= 0", i, hex->diameter);
+            return 0;
+        }
+        if (hex->diameter > vector->width) {
+            sprintf(errmsg, "hex[%d]->diameter %g > vector->diameter %g", i, hex->diameter, vector->width);
+            return 0;
+        }
+        if (hex->diameter > vector->height) {
+            sprintf(errmsg, "hex[%d]->diameter %g > vector->height %g", i, hex->diameter, vector->height);
+            return 0;
+        }
+        if (stripf(hex->x + hex->diameter / 2) > vector->width) {
+            sprintf(errmsg, "hex[%d]->x + diameter / 2 %g > vector->width %g", i, hex->x + hex->diameter / 2, vector->width);
+            return 0;
+        }
+        if (stripf(hex->y + hex->diameter / 2) > vector->height) {
+            sprintf(errmsg, "hex[%d]->y + diameter / 2 %g > vector->height %g", i, hex->y + hex->diameter / 2, vector->height);
+            return 0;
+        }
+
+        if (hex->rotation != 0 && hex->rotation != 90 && hex->rotation != 180 && hex->rotation != 270) {
+            sprintf(errmsg, "hex[%d]->rotation %d not 0, 90, 180, 270", i, hex->rotation);
+            return 0;
+        }
+    }
+    return 1;
+}
+
+/* Helper to check vectors */
+static int check_vectors(const struct zint_symbol *symbol, char errmsg[128]) {
+    if (!check_vector_strings(symbol, errmsg)) {
+        return 0;
+    }
+    if (!check_vector_rectangles(symbol, errmsg)) {
+        return 0;
+    }
+    if (!check_vector_circles(symbol, errmsg)) {
+        return 0;
+    }
+    if (!check_vector_hexagons(symbol, errmsg)) {
+        return 0;
+    }
+    return 1;
 }
 
 static void test_options(const testCtx *const p_ctx) {
@@ -169,22 +548,22 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_C25IND, "1234567890", "", 50, 1, 159, 318, 118.900002 },
         /*  6*/ { BARCODE_CODE39, "1234567890", "", 50, 1, 155, 310, 118.900002 },
         /*  7*/ { BARCODE_EXCODE39, "1234567890", "", 50, 1, 155, 310, 118.900002 },
-        /*  8*/ { BARCODE_EANX, "123456789012", "", 50, 1, 95, 226, 116.400002 },
-        /*  9*/ { BARCODE_EANX_CHK, "1234567890128", "", 50, 1, 95, 226, 116.400002 },
-        /* 10*/ { BARCODE_EANX, "123456789012+12", "", 50, 1, 122, 276, 116.400002 },
-        /* 11*/ { BARCODE_EANX_CHK, "1234567890128+12", "", 50, 1, 122, 276, 116.400002 },
-        /* 12*/ { BARCODE_EANX, "123456789012+12345", "", 50, 1, 149, 330, 116.400002 },
-        /* 13*/ { BARCODE_EANX_CHK, "1234567890128+12345", "", 50, 1, 149, 330, 116.400002 },
-        /* 14*/ { BARCODE_EANX, "1234567", "", 50, 1, 67, 162, 116.400002 },
-        /* 15*/ { BARCODE_EANX_CHK, "12345670", "", 50, 1, 67, 162, 116.400002 },
-        /* 16*/ { BARCODE_EANX, "1234567+12", "", 50, 1, 94, 216, 116.400002 },
-        /* 17*/ { BARCODE_EANX_CHK, "12345670+12", "", 50, 1, 94, 216, 116.400002 },
-        /* 18*/ { BARCODE_EANX, "1234567+12345", "", 50, 1, 121, 270, 116.400002 },
-        /* 19*/ { BARCODE_EANX_CHK, "12345670+12345", "", 50, 1, 121, 270, 116.400002 },
-        /* 20*/ { BARCODE_EANX, "1234", "", 50, 1, 47, 118, 116.400002 },
-        /* 21*/ { BARCODE_EANX_CHK, "1234", "", 50, 1, 47, 118, 116.400002 },
-        /* 22*/ { BARCODE_EANX, "12", "", 50, 1, 20, 64, 116.400002 },
-        /* 23*/ { BARCODE_EANX_CHK, "12", "", 50, 1, 20, 64, 116.400002 },
+        /*  8*/ { BARCODE_EANX, "123456789012", "", 50, 1, 95, 226, 116.9 },
+        /*  9*/ { BARCODE_EANX_CHK, "1234567890128", "", 50, 1, 95, 226, 116.9 },
+        /* 10*/ { BARCODE_EANX, "123456789012+12", "", 50, 1, 122, 276, 116.9 },
+        /* 11*/ { BARCODE_EANX_CHK, "1234567890128+12", "", 50, 1, 122, 276, 116.9 },
+        /* 12*/ { BARCODE_EANX, "123456789012+12345", "", 50, 1, 149, 330, 116.9 },
+        /* 13*/ { BARCODE_EANX_CHK, "1234567890128+12345", "", 50, 1, 149, 330, 116.9 },
+        /* 14*/ { BARCODE_EANX, "1234567", "", 50, 1, 67, 162, 116.9 },
+        /* 15*/ { BARCODE_EANX_CHK, "12345670", "", 50, 1, 67, 162, 116.9 },
+        /* 16*/ { BARCODE_EANX, "1234567+12", "", 50, 1, 94, 216, 116.9 },
+        /* 17*/ { BARCODE_EANX_CHK, "12345670+12", "", 50, 1, 94, 216, 116.9 },
+        /* 18*/ { BARCODE_EANX, "1234567+12345", "", 50, 1, 121, 270, 116.9 },
+        /* 19*/ { BARCODE_EANX_CHK, "12345670+12345", "", 50, 1, 121, 270, 116.9 },
+        /* 20*/ { BARCODE_EANX, "1234", "", 50, 1, 47, 118, 116.9 },
+        /* 21*/ { BARCODE_EANX_CHK, "1234", "", 50, 1, 47, 118, 116.9 },
+        /* 22*/ { BARCODE_EANX, "12", "", 50, 1, 20, 64, 116.9 },
+        /* 23*/ { BARCODE_EANX_CHK, "12", "", 50, 1, 20, 64, 116.9 },
         /* 24*/ { BARCODE_GS1_128, "[01]12345678901231", "", 50, 1, 134, 268, 118.900002 },
         /* 25*/ { BARCODE_CODABAR, "A00000000B", "", 50, 1, 102, 204, 118.900002 },
         /* 26*/ { BARCODE_CODE128, "1234567890", "", 50, 1, 90, 180, 118.900002 },
@@ -198,18 +577,18 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /* 34*/ { BARCODE_DBAR_LTD, "1234567890123", "", 50, 1, 79, 158, 118.900002 },
         /* 35*/ { BARCODE_DBAR_EXP, "[01]12345678901231", "", 34, 1, 134, 268, 86.9000015 },
         /* 36*/ { BARCODE_TELEPEN, "1234567890", "", 50, 1, 208, 416, 118.900002 },
-        /* 37*/ { BARCODE_UPCA, "12345678901", "", 50, 1, 95, 226, 116.400002 },
-        /* 38*/ { BARCODE_UPCA_CHK, "123456789012", "", 50, 1, 95, 226, 116.400002 },
-        /* 39*/ { BARCODE_UPCA, "12345678901+12", "", 50, 1, 124, 276, 116.400002 },
-        /* 40*/ { BARCODE_UPCA_CHK, "123456789012+12", "", 50, 1, 124, 276, 116.400002 },
-        /* 41*/ { BARCODE_UPCA, "12345678901+12345", "", 50, 1, 151, 330, 116.400002 },
-        /* 42*/ { BARCODE_UPCA_CHK, "123456789012+12345", "", 50, 1, 151, 330, 116.400002 },
-        /* 43*/ { BARCODE_UPCE, "1234567", "", 50, 1, 51, 134, 116.400002 },
-        /* 44*/ { BARCODE_UPCE_CHK, "12345670", "", 50, 1, 51, 134, 116.400002 },
-        /* 45*/ { BARCODE_UPCE, "1234567+12", "", 50, 1, 78, 184, 116.400002 },
-        /* 46*/ { BARCODE_UPCE_CHK, "12345670+12", "", 50, 1, 78, 184, 116.400002 },
-        /* 47*/ { BARCODE_UPCE, "1234567+12345", "", 50, 1, 105, 238, 116.400002 },
-        /* 48*/ { BARCODE_UPCE_CHK, "12345670+12345", "", 50, 1, 105, 238, 116.400002 },
+        /* 37*/ { BARCODE_UPCA, "12345678901", "", 50, 1, 95, 226, 116.9 },
+        /* 38*/ { BARCODE_UPCA_CHK, "123456789012", "", 50, 1, 95, 226, 116.9 },
+        /* 39*/ { BARCODE_UPCA, "12345678901+12", "", 50, 1, 124, 276, 116.9 },
+        /* 40*/ { BARCODE_UPCA_CHK, "123456789012+12", "", 50, 1, 124, 276, 116.9 },
+        /* 41*/ { BARCODE_UPCA, "12345678901+12345", "", 50, 1, 151, 330, 116.9 },
+        /* 42*/ { BARCODE_UPCA_CHK, "123456789012+12345", "", 50, 1, 151, 330, 116.9 },
+        /* 43*/ { BARCODE_UPCE, "1234567", "", 50, 1, 51, 134, 116.9 },
+        /* 44*/ { BARCODE_UPCE_CHK, "12345670", "", 50, 1, 51, 134, 116.9 },
+        /* 45*/ { BARCODE_UPCE, "1234567+12", "", 50, 1, 78, 184, 116.9 },
+        /* 46*/ { BARCODE_UPCE_CHK, "12345670+12", "", 50, 1, 78, 184, 116.9 },
+        /* 47*/ { BARCODE_UPCE, "1234567+12345", "", 50, 1, 105, 238, 116.9 },
+        /* 48*/ { BARCODE_UPCE_CHK, "12345670+12345", "", 50, 1, 105, 238, 116.9 },
         /* 49*/ { BARCODE_POSTNET, "12345678901", "", 12, 2, 123, 246, 24 },
         /* 50*/ { BARCODE_MSI_PLESSEY, "1234567890", "", 50, 1, 127, 254, 118.900002 },
         /* 51*/ { BARCODE_FIM, "A", "", 50, 1, 17, 34, 100 },
@@ -227,9 +606,9 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /* 63*/ { BARCODE_AUSREPLY, "12345678", "", 8, 3, 73, 146, 16 },
         /* 64*/ { BARCODE_AUSROUTE, "12345678", "", 8, 3, 73, 146, 16 },
         /* 65*/ { BARCODE_AUSREDIRECT, "12345678", "", 8, 3, 73, 146, 16 },
-        /* 66*/ { BARCODE_ISBNX, "123456789", "", 50, 1, 95, 226, 116.400002 },
-        /* 67*/ { BARCODE_ISBNX, "123456789+12", "", 50, 1, 122, 276, 116.400002 },
-        /* 68*/ { BARCODE_ISBNX, "123456789+12345", "", 50, 1, 149, 330, 116.400002 },
+        /* 66*/ { BARCODE_ISBNX, "123456789", "", 50, 1, 95, 226, 116.9 },
+        /* 67*/ { BARCODE_ISBNX, "123456789+12", "", 50, 1, 122, 276, 116.9 },
+        /* 68*/ { BARCODE_ISBNX, "123456789+12345", "", 50, 1, 149, 330, 116.9 },
         /* 69*/ { BARCODE_RM4SCC, "1234567890", "", 8, 3, 91, 182, 16 },
         /* 70*/ { BARCODE_DATAMATRIX, "ABC", "", 10, 10, 10, 20, 20 },
         /* 71*/ { BARCODE_EAN14, "1234567890123", "", 50, 1, 134, 268, 118.900002 },
@@ -267,22 +646,22 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /*103*/ { BARCODE_MAILMARK_4S, "01000000000000000AA00AA0A", "", 10, 3, 155, 310, 20 },
         /*104*/ { BARCODE_AZRUNE, "255", "", 11, 11, 11, 22, 22 },
         /*105*/ { BARCODE_CODE32, "12345678", "", 50, 1, 103, 206, 118.900002 },
-        /*106*/ { BARCODE_EANX_CC, "123456789012", "[20]01", 50, 7, 99, 234, 116.400002 },
-        /*107*/ { BARCODE_EANX_CC, "123456789012+12", "[20]01", 50, 7, 126, 284, 116.400002 },
-        /*108*/ { BARCODE_EANX_CC, "123456789012+12345", "[20]01", 50, 7, 153, 338, 116.400002 },
-        /*109*/ { BARCODE_EANX_CC, "1234567", "[20]01", 50, 8, 72, 172, 116.400002 },
-        /*110*/ { BARCODE_EANX_CC, "1234567+12", "[20]01", 50, 8, 99, 226, 116.400002 },
-        /*111*/ { BARCODE_EANX_CC, "1234567+12345", "[20]01", 50, 8, 126, 280, 116.400002 },
+        /*106*/ { BARCODE_EANX_CC, "123456789012", "[20]01", 50, 7, 99, 234, 116.9 },
+        /*107*/ { BARCODE_EANX_CC, "123456789012+12", "[20]01", 50, 7, 126, 284, 116.9 },
+        /*108*/ { BARCODE_EANX_CC, "123456789012+12345", "[20]01", 50, 7, 153, 338, 116.9 },
+        /*109*/ { BARCODE_EANX_CC, "1234567", "[20]01", 50, 8, 72, 172, 116.9 },
+        /*110*/ { BARCODE_EANX_CC, "1234567+12", "[20]01", 50, 8, 99, 226, 116.9 },
+        /*111*/ { BARCODE_EANX_CC, "1234567+12345", "[20]01", 50, 8, 126, 280, 116.9 },
         /*112*/ { BARCODE_GS1_128_CC, "[01]12345678901231", "[20]01", 50, 5, 145, 290, 118.900002 },
         /*113*/ { BARCODE_DBAR_OMN_CC, "1234567890123", "[20]01", 21, 5, 100, 200, 60.9000015 },
         /*114*/ { BARCODE_DBAR_LTD_CC, "1234567890123", "[20]01", 19, 6, 79, 158, 56.9000015 },
         /*115*/ { BARCODE_DBAR_EXP_CC, "[01]12345678901231", "[20]01", 41, 5, 134, 268, 100.900002 },
-        /*116*/ { BARCODE_UPCA_CC, "12345678901", "[20]01", 50, 7, 99, 234, 116.400002 },
-        /*117*/ { BARCODE_UPCA_CC, "12345678901+12", "[20]01", 50, 7, 128, 284, 116.400002 },
-        /*118*/ { BARCODE_UPCA_CC, "12345678901+12345", "[20]01", 50, 7, 155, 338, 116.400002 },
-        /*119*/ { BARCODE_UPCE_CC, "1234567", "[20]01", 50, 9, 55, 142, 116.400002 },
-        /*120*/ { BARCODE_UPCE_CC, "1234567+12", "[20]01", 50, 9, 82, 192, 116.400002 },
-        /*121*/ { BARCODE_UPCE_CC, "1234567+12345", "[20]01", 50, 9, 109, 246, 116.400002 },
+        /*116*/ { BARCODE_UPCA_CC, "12345678901", "[20]01", 50, 7, 99, 234, 116.9 },
+        /*117*/ { BARCODE_UPCA_CC, "12345678901+12", "[20]01", 50, 7, 128, 284, 116.9 },
+        /*118*/ { BARCODE_UPCA_CC, "12345678901+12345", "[20]01", 50, 7, 155, 338, 116.9 },
+        /*119*/ { BARCODE_UPCE_CC, "1234567", "[20]01", 50, 9, 55, 142, 116.9 },
+        /*120*/ { BARCODE_UPCE_CC, "1234567+12", "[20]01", 50, 9, 82, 192, 116.9 },
+        /*121*/ { BARCODE_UPCE_CC, "1234567+12345", "[20]01", 50, 9, 109, 246, 116.9 },
         /*122*/ { BARCODE_DBAR_STK_CC, "1234567890123", "[20]01", 24, 9, 56, 112, 48 },
         /*123*/ { BARCODE_DBAR_OMNSTK_CC, "1234567890123", "[20]01", 80, 11, 56, 112, 160 },
         /*124*/ { BARCODE_DBAR_EXPSTK_CC, "[01]12345678901231", "[20]01", 78, 9, 102, 204, 156 },
@@ -299,6 +678,7 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
     struct zint_symbol *symbol;
 
     char *text;
+    char errmsg[128];
 
     testStart("test_buffer_vector");
 
@@ -333,13 +713,19 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
                     i, testUtilBarcodeName(data[i].symbology), data[i].data, data[i].composite,
                     symbol->height, symbol->rows, symbol->width, symbol->vector->width, symbol->vector->height);
         } else {
-            assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %.8g != %.8g\n", i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n", i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%s) symbol->height %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%s) symbol->rows %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%s) symbol->width %d != %d\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->width, data[i].expected_width);
             assert_equal(symbol->vector->width, data[i].expected_vector_width, "i:%d (%s) symbol->vector->width %.8g != %.8g\n",
                 i, testUtilBarcodeName(data[i].symbology), symbol->vector->width, data[i].expected_vector_width);
             assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %.8g != %.8g\n",
                 i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
+
+            assert_nonzero(check_vectors(symbol, errmsg), "i:%d (%s) %s\n",
+                i, testUtilBarcodeName(data[i].symbology), errmsg);
         }
 
         ZBarcode_Delete(symbol);
@@ -461,7 +847,7 @@ static void test_has_hrt(const testCtx *const p_ctx) {
     struct zint_symbol *symbol;
 
     char *text;
-    unsigned int has_hrt;
+    char errmsg[128];
 
     testStart("test_has_hrt");
 
@@ -488,12 +874,8 @@ static void test_has_hrt(const testCtx *const p_ctx) {
         assert_zero(ret, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
         assert_nonnull(symbol->vector, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
 
-        has_hrt = ZBarcode_Cap(symbol->symbology, ZINT_CAP_HRT) == ZINT_CAP_HRT;
-        if (has_hrt) {
-            assert_nonnull(symbol->vector->strings, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector->strings NULL\n", i, data[i].symbology);
-        } else {
-            assert_null(symbol->vector->strings, "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) vector->strings not NULL\n", i, data[i].symbology);
-        }
+        assert_nonzero(check_vectors(symbol, errmsg), "i:%d ZBarcode_Encode_and_Buffer_Vector(%d) %s\n",
+            i, data[i].symbology, errmsg);
 
         ZBarcode_Delete(symbol);
     }
@@ -520,45 +902,45 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_EANX, -1, "123456789012", 0, 50, 1, 95, 226, 116.4, 12, -1 }, /* EAN-13 */
+        /*  0*/ { BARCODE_EANX, -1, "123456789012", 0, 50, 1, 95, 226, 116.9, 12.2, -1 }, /* EAN-13 */
         /*  1*/ { BARCODE_EANX, 0, "123456789012", 0, 50, 1, 95, 226, 110, -1, -1 }, /* EAN-13 */
-        /*  2*/ { BARCODE_EANX_CHK, -1, "1234567890128", 0, 50, 1, 95, 226, 116.4, 12, -1 }, /* EAN-13 */
+        /*  2*/ { BARCODE_EANX_CHK, -1, "1234567890128", 0, 50, 1, 95, 226, 116.9, 12.2, -1 }, /* EAN-13 */
         /*  3*/ { BARCODE_EANX_CHK, 0, "1234567890128", 0, 50, 1, 95, 226, 110, -1, -1 }, /* EAN-13 */
-        /*  4*/ { BARCODE_ISBNX, -1, "9784567890120", 0, 50, 1, 95, 226, 116.4, 12, -1 },
+        /*  4*/ { BARCODE_ISBNX, -1, "9784567890120", 0, 50, 1, 95, 226, 116.9, 12.2, -1 },
         /*  5*/ { BARCODE_ISBNX, 0, "9784567890120", 0, 50, 1, 95, 226, 110, -1, -1 },
-        /*  6*/ { BARCODE_EANX, -1, "1234567", 0, 50, 1, 67, 162, 116.4, 48, -1 }, /* EAN-8 */
+        /*  6*/ { BARCODE_EANX, -1, "1234567", 0, 50, 1, 67, 162, 116.9, 49, -1 }, /* EAN-8 */
         /*  7*/ { BARCODE_EANX, 0, "1234567", 0, 50, 1, 67, 162, 110, -1, -1 }, /* EAN-8 */
-        /*  8*/ { BARCODE_EANX, -1, "1234", 0, 50, 1, 47, 118, 116.4, 61, -1 }, /* EAN-5 */
+        /*  8*/ { BARCODE_EANX, -1, "1234", 0, 50, 1, 47, 118, 116.9, 61, -1 }, /* EAN-5 */
         /*  9*/ { BARCODE_EANX, 0, "1234", 0, 50, 1, 47, 118, 100, -1, -1 }, /* EAN-5 */
-        /* 10*/ { BARCODE_EANX, -1, "12", 0, 50, 1, 20, 64, 116.4, 34, -1 }, /* EAN-2 */
+        /* 10*/ { BARCODE_EANX, -1, "12", 0, 50, 1, 20, 64, 116.9, 34, -1 }, /* EAN-2 */
         /* 11*/ { BARCODE_EANX, 0, "12", 0, 50, 1, 20, 64, 100, -1, -1 }, /* EAN-2 */
-        /* 12*/ { BARCODE_UPCA, -1, "12345678901", 0, 50, 1, 95, 226, 116.4, 8, -1 },
+        /* 12*/ { BARCODE_UPCA, -1, "12345678901", 0, 50, 1, 95, 226, 116.9, 8.7, -1 },
         /* 13*/ { BARCODE_UPCA, 0, "12345678901", 0, 50, 1, 95, 226, 110, -1, -1 },
-        /* 14*/ { BARCODE_UPCA_CHK, -1, "123456789012", 0, 50, 1, 95, 226, 116.4, 8, -1 },
+        /* 14*/ { BARCODE_UPCA_CHK, -1, "123456789012", 0, 50, 1, 95, 226, 116.9, 8.7, -1 },
         /* 15*/ { BARCODE_UPCA_CHK, 0, "123456789012", 0, 50, 1, 95, 226, 110, -1, -1 },
-        /* 16*/ { BARCODE_UPCE, -1, "1234567", 0, 50, 1, 51, 134, 116.4, 8, -1 },
+        /* 16*/ { BARCODE_UPCE, -1, "1234567", 0, 50, 1, 51, 134, 116.9, 8.7, -1 },
         /* 17*/ { BARCODE_UPCE, 0, "1234567", 0, 50, 1, 51, 134, 110, -1, -1 },
-        /* 18*/ { BARCODE_UPCE_CHK, -1, "12345670", 0, 50, 1, 51, 134, 116.4, 8, -1 },
+        /* 18*/ { BARCODE_UPCE_CHK, -1, "12345670", 0, 50, 1, 51, 134, 116.9, 8.7, -1 },
         /* 19*/ { BARCODE_UPCE_CHK, 0, "12345670", 0, 50, 1, 51, 134, 110, -1, -1 },
-        /* 20*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276.0, 116.4, 12, 70 }, /* EAN-13 + EAN-2 */
+        /* 20*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276.0, 116.9, 12.2, 71 }, /* EAN-13 + EAN-2 */
         /* 21*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276.0, 110, -1, -1 }, /* EAN-13 + EAN-2 */
-        /* 22*/ { BARCODE_ISBNX, -1, "9784567890120+12", 0, 50, 1, 122, 276.0, 116.4, 12, 70 }, /* ISBN + EAN-2 */
+        /* 22*/ { BARCODE_ISBNX, -1, "9784567890120+12", 0, 50, 1, 122, 276.0, 116.9, 12.2, 71 }, /* ISBN + EAN-2 */
         /* 23*/ { BARCODE_ISBNX, 0, "9784567890120+12", 0, 50, 1, 122, 276.0, 110, -1, -1 }, /* ISBN + EAN-2 */
-        /* 24*/ { BARCODE_EANX, -1, "123456789012+12345", 0, 50, 1, 149, 330.0, 116.4, 12, 70 }, /* EAN-13 + EAN-5 */
+        /* 24*/ { BARCODE_EANX, -1, "123456789012+12345", 0, 50, 1, 149, 330.0, 116.9, 12.2, 71 }, /* EAN-13 + EAN-5 */
         /* 25*/ { BARCODE_EANX, 0, "123456789012+12345", 0, 50, 1, 149, 330.0, 110, -1, -1 }, /* EAN-13 + EAN-5 */
-        /* 26*/ { BARCODE_ISBNX, -1, "9784567890120+12345", 0, 50, 1, 149, 330.0, 116.4, 12, 70 }, /* ISBN + EAN-5 */
+        /* 26*/ { BARCODE_ISBNX, -1, "9784567890120+12345", 0, 50, 1, 149, 330.0, 116.9, 12.2, 71 }, /* ISBN + EAN-5 */
         /* 27*/ { BARCODE_ISBNX, 0, "9784567890120+12345", 0, 50, 1, 149, 330.0, 110, -1, -1 }, /* ISBN + EAN-5 */
-        /* 28*/ { BARCODE_EANX, -1, "1234567+12", 0, 50, 1, 94, 216.0, 116.4, 48, 114 }, /* EAN-8 + EAN-2 */
+        /* 28*/ { BARCODE_EANX, -1, "1234567+12", 0, 50, 1, 94, 216.0, 116.9, 49, 113 }, /* EAN-8 + EAN-2 */
         /* 29*/ { BARCODE_EANX, 0, "1234567+12", 0, 50, 1, 94, 216.0, 110, -1, -1 }, /* EAN-8 + EAN-2 */
-        /* 30*/ { BARCODE_EANX, -1, "1234567+12345", 0, 50, 1, 121, 270.0, 116.4, 48, 114 }, /* EAN-8 + EAN-5 */
+        /* 30*/ { BARCODE_EANX, -1, "1234567+12345", 0, 50, 1, 121, 270.0, 116.9, 49, 113 }, /* EAN-8 + EAN-5 */
         /* 31*/ { BARCODE_EANX, 0, "1234567+12345", 0, 50, 1, 121, 270.0, 110, -1, -1 }, /* EAN-8 + EAN-5 */
-        /* 32*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 8, 72 },
+        /* 32*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.9, 8.7, 74 },
         /* 33*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 110, -1, -1 },
-        /* 34*/ { BARCODE_UPCA, -1, "12345678901+12345", 0, 50, 1, 151, 330, 116.4, 8, 72 },
+        /* 34*/ { BARCODE_UPCA, -1, "12345678901+12345", 0, 50, 1, 151, 330, 116.9, 8.7, 74 },
         /* 35*/ { BARCODE_UPCA, 0, "12345678901+12345", 0, 50, 1, 151, 330, 110, -1, -1 },
-        /* 36*/ { BARCODE_UPCE, -1, "1234567+12", 0, 50, 1, 78, 184.0, 116.4, 8, 66 },
+        /* 36*/ { BARCODE_UPCE, -1, "1234567+12", 0, 50, 1, 78, 184.0, 116.9, 8.7, 67 },
         /* 37*/ { BARCODE_UPCE, 0, "1234567+12", 0, 50, 1, 78, 184.0, 110, -1, -1 },
-        /* 38*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238.0, 116.4, 8, 66 },
+        /* 38*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238.0, 116.9, 8.7, 67 },
         /* 39*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238.0, 110, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
@@ -1074,9 +1456,9 @@ static void test_scale(const testCtx *const p_ctx) {
         /*  1*/ { BARCODE_PDF417, -1, -1, -1, 0, 0.1, "1", "", 0, 15, 5, 103, 206 * 0.1, 3, 1, 5.2000003, 0, 8 * 0.1, 6 * 0.1 },
         /*  2*/ { BARCODE_PDF417, -1, -1, -1, 0, 0.3, "1", "", 0, 15, 5, 103, 61.8000031, 30 * 0.3, 1, 52 * 0.3, 0, 2.4000001, 1.8000001 },
         /*  3*/ { BARCODE_PDF417, -1, -1, -1, 0, 0.6, "1", "", 0, 15, 5, 103, 123.600006, 30 * 0.6, 1, 52 * 0.6, 0, 4.8000002, 3.6000001 },
-        /*  4*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142, 116.400002, 1, 34, 36, 2, 64 }, /* With no scaling */
-        /*  5*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 0.1, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142 * 0.1, 11.6400003, 1, 34 * 0.1, 3.6000001, 2 * 0.1, 64 * 0.1 },
-        /*  6*/ { BARCODE_UPCE_CC, -1, -1, -1, 0.1, 0.1, "1234567", "[17]010615[10]A123456\"", 0, 18.5, 10, 55, 142 * 0.1, 5.34000015, 1, 34 * 0.1, 3.6000001, 2 * 0.1, 0.1 }, /* Height specified */
+        /*  4*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 0, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142, 116.9, 1, 34, 36, 2, 64 }, /* With no scaling */
+        /*  5*/ { BARCODE_UPCE_CC, -1, -1, -1, 0, 0.1, "1234567", "[17]010615[10]A123456\"", 0, 50, 10, 55, 142 * 0.1, 11.6900005, 1, 34 * 0.1, 3.6000001, 2 * 0.1, 64 * 0.1 },
+        /*  6*/ { BARCODE_UPCE_CC, -1, -1, -1, 0.1, 0.1, "1234567", "[17]010615[10]A123456\"", 0, 18.5, 10, 55, 142 * 0.1, 5.39000034, 1, 34 * 0.1, 3.6000001, 2 * 0.1, 0.1 }, /* Height specified */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1171,40 +1553,40 @@ static void test_guard_descent(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_UPCE, -1, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 110 },
-        /*  1*/ { BARCODE_UPCE, 0, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 100 },
-        /*  2*/ { BARCODE_UPCE, 3, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 106 },
-        /*  3*/ { BARCODE_UPCE, 8, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 116 },
-        /*  4*/ { BARCODE_UPCE, 8.2, "1234567", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 116.4 },
-        /*  5*/ { BARCODE_UPCE, 8.25, "1234567", 0, 50, 1, 51, 134, 116.5, 18, 0, 2, 116.5 },
-        /*  6*/ { BARCODE_UPCE, 8.3, "1234567", 0, 50, 1, 51, 134, 116.6, 18, 0, 2, 116.6 },
+        /*  0*/ { BARCODE_UPCE, -1, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 110 },
+        /*  1*/ { BARCODE_UPCE, 0, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 100 },
+        /*  2*/ { BARCODE_UPCE, 3, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 106 },
+        /*  3*/ { BARCODE_UPCE, 8, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 116 },
+        /*  4*/ { BARCODE_UPCE, 8.2, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 116.4 },
+        /*  5*/ { BARCODE_UPCE, 8.25, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 116.5 },
+        /*  6*/ { BARCODE_UPCE, 8.3, "1234567", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 116.6 },
         /*  7*/ { BARCODE_UPCE, 19.6, "1234567", 0, 50, 1, 51, 134, 139.2, 18, 0, 2, 139.2 },
-        /*  8*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 110 },
-        /*  9*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
-        /* 10*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 100 },
-        /* 11*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
-        /* 12*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 118, 0, 2, 108 },
-        /* 13*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.4, 134, 19, 2, 81 },
-        /* 14*/ { BARCODE_UPCA, -1, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 110 },
-        /* 15*/ { BARCODE_UPCA, 0, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 100 },
-        /* 16*/ { BARCODE_UPCA, 6, "12345678901", 0, 50, 1, 95, 226, 116.4, 188, 0, 4, 112 },
-        /* 17*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 188, 0, 4, 110 },
-        /* 18*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 262, 19, 4, 81 },
-        /* 19*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 188, 0, 4, 100 },
-        /* 20*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.4, 262, 19, 4, 81 },
+        /*  8*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 118, 0, 2, 110 },
+        /*  9*/ { BARCODE_UPCE, -1, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 134, 16.9, 2, 83.1 },
+        /* 10*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 118, 0, 2, 100 },
+        /* 11*/ { BARCODE_UPCE, 0, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 134, 16.9, 2, 83.1 },
+        /* 12*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 118, 0, 2, 108 },
+        /* 13*/ { BARCODE_UPCE, 4, "1234567+12345", 0, 50, 1, 105, 238, 116.9, 134, 16.9, 2, 83.1 },
+        /* 14*/ { BARCODE_UPCA, -1, "12345678901", 0, 50, 1, 95, 226, 116.9, 188, 0, 4, 110 },
+        /* 15*/ { BARCODE_UPCA, 0, "12345678901", 0, 50, 1, 95, 226, 116.9, 188, 0, 4, 100 },
+        /* 16*/ { BARCODE_UPCA, 6, "12345678901", 0, 50, 1, 95, 226, 116.9, 188, 0, 4, 112 },
+        /* 17*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.9, 188, 0, 4, 110 },
+        /* 18*/ { BARCODE_UPCA, -1, "12345678901+12", 0, 50, 1, 124, 276, 116.9, 262, 16.9, 4, 83.1 },
+        /* 19*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.9, 188, 0, 4, 100 },
+        /* 20*/ { BARCODE_UPCA, 0, "12345678901+12", 0, 50, 1, 124, 276, 116.9, 262, 16.9, 4, 83.1 },
         /* 21*/ { BARCODE_UPCA, 9, "12345678901+12", 0, 50, 1, 124, 276, 118, 188, 0, 4, 118 },
-        /* 22*/ { BARCODE_UPCA, 9, "12345678901+12", 0, 50, 1, 124, 276, 118, 262, 19, 4, 81 },
-        /* 23*/ { BARCODE_EANX, -1, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /* 24*/ { BARCODE_EANX, 0, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 100 },
-        /* 25*/ { BARCODE_EANX, 7, "123456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 114 },
-        /* 26*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 22, 0, 2, 110 },
-        /* 27*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 91 },
-        /* 28*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 22, 0, 2, 100 },
-        /* 29*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 81 },
-        /* 30*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.42, 22, 0, 2, 116.42 },
-        /* 31*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.42, 262, 19, 4, 97.42 },
-        /* 32*/ { BARCODE_ISBNX, -1, "123456789", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /* 33*/ { BARCODE_ISBNX, 0, "123456789", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 100 },
+        /* 22*/ { BARCODE_UPCA, 9, "12345678901+12", 0, 50, 1, 124, 276, 118, 262, 16.9, 4, 83.1 },
+        /* 23*/ { BARCODE_EANX, -1, "123456789012", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /* 24*/ { BARCODE_EANX, 0, "123456789012", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 100 },
+        /* 25*/ { BARCODE_EANX, 7, "123456789012", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 114 },
+        /* 26*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 22, 0, 2, 110 },
+        /* 27*/ { BARCODE_EANX, -1, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 262, 16.9, 4, 93.1 },
+        /* 28*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 22, 0, 2, 100 },
+        /* 29*/ { BARCODE_EANX, 0, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 262, 16.9, 4, 83.1 },
+        /* 30*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 22, 0, 2, 116.42 },
+        /* 31*/ { BARCODE_EANX, 8.21, "123456789012+12", 0, 50, 1, 122, 276, 116.9, 262, 16.9, 4, 99.52 },
+        /* 32*/ { BARCODE_ISBNX, -1, "123456789", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /* 33*/ { BARCODE_ISBNX, 0, "123456789", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 100 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1300,30 +1682,30 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /* 14*/ { BARCODE_CODE39, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 50, 1, 77, 194, 118.9, 20, 0, 2, 100 },
         /* 15*/ { BARCODE_EXCODE39, -1, -1, -1, "1234", 0, 50, 1, 77, 154, 118.9, 0, 0, 2, 100 },
         /* 16*/ { BARCODE_EXCODE39, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 50, 1, 77, 194, 118.9, 20, 0, 2, 100 },
-        /* 17*/ { BARCODE_EANX, -1, -1, -1, "023456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /* 18*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /* 19*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 1, 95, 212, 116.4, 22, 0, 2, 110 },
+        /* 17*/ { BARCODE_EANX, -1, -1, -1, "023456789012", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /* 18*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /* 19*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 1, 95, 212, 116.9, 22, 0, 2, 110 },
         /* 20*/ { BARCODE_EANX, -1, -1, 0, "023456789012", 0, 50, 1, 95, 226, 110, 22, 0, 2, 110 }, /* Hide text */
         /* 21*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, 0, "023456789012", 0, 50, 1, 95, 226, 110, 22, 0, 2, 110 }, /* Hide text */
         /* 22*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, 0, "023456789012", 0, 50, 1, 95, 190, 110, 0, 0, 2, 110 }, /* Hide text */
-        /* 23*/ { BARCODE_EANX, -1, -1, -1, "023456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 91 },
-        /* 24*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "023456789012+12", 0, 50, 1, 122, 276, 116.4, 262, 19, 4, 91 },
-        /* 25*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012+12", 0, 50, 1, 122, 266, 116.4, 262, 19, 4, 91 },
-        /* 26*/ { BARCODE_EANX, -1, -1, 0, "023456789012+12", 0, 50, 1, 122, 276, 110, 262, 19, 4, 91 }, /* Hide text */
-        /* 27*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, 0, "023456789012+12", 0, 50, 1, 122, 276, 110, 262, 19, 4, 91 }, /* Hide text */
-        /* 28*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, 0, "023456789012+12", 0, 50, 1, 122, 244, 110, 240, 19, 4, 91 }, /* Hide text */
-        /* 29*/ { BARCODE_EANX_CHK, -1, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 330, 116.4, 318, 19, 2, 91 },
-        /* 30*/ { BARCODE_EANX_CHK, BARCODE_QUIET_ZONES, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 330, 116.4, 318, 19, 2, 91 },
-        /* 31*/ { BARCODE_EANX_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 320, 116.4, 318, 19, 2, 91 },
-        /* 32*/ { BARCODE_EANX, -1, -1, -1, "0234567", 0, 50, 1, 67, 162, 116.4, 14, 0, 2, 110 }, /* EAN-8 */
-        /* 33*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "0234567", 0, 50, 1, 67, 162, 116.4, 14, 0, 2, 110 }, /* EAN-8 */
-        /* 34*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "0234567", 0, 50, 1, 67, 134, 116.4, 0, 0, 2, 110 }, /* EAN-8 */
-        /* 35*/ { BARCODE_EANX, -1, -1, -1, "02345", 0, 50, 1, 47, 118, 116.4, 14, 0, 2, 100 }, /* EAN-5 */
-        /* 36*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "02345", 0, 50, 1, 47, 118, 116.4, 14, 0, 2, 100 }, /* EAN-5 */
-        /* 37*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "02345", 0, 50, 1, 47, 94, 116.4, 0, 0, 2, 100 }, /* EAN-5 */
-        /* 38*/ { BARCODE_EANX, -1, -1, -1, "02", 0, 50, 1, 20, 64, 116.4, 14, 0, 2, 100 }, /* EAN-2 */
-        /* 39*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "02", 0, 50, 1, 20, 64, 116.4, 14, 0, 2, 100 }, /* EAN-2 */
-        /* 40*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "02", 0, 50, 1, 20, 40, 116.4, 0, 0, 2, 100 }, /* EAN-2 */
+        /* 23*/ { BARCODE_EANX, -1, -1, -1, "023456789012+12", 0, 50, 1, 122, 276, 116.9, 262, 16.9, 4, 93.1 },
+        /* 24*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "023456789012+12", 0, 50, 1, 122, 276, 116.9, 262, 16.9, 4, 93.1 },
+        /* 25*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012+12", 0, 50, 1, 122, 266, 116.9, 262, 16.9, 4, 93.1 },
+        /* 26*/ { BARCODE_EANX, -1, -1, 0, "023456789012+12", 0, 50, 1, 122, 276, 110, 262, 16.9, 4, 93.1 }, /* Hide text */
+        /* 27*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, 0, "023456789012+12", 0, 50, 1, 122, 276, 110, 262, 16.9, 4, 93.1 }, /* Hide text */
+        /* 28*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, 0, "023456789012+12", 0, 50, 1, 122, 244, 110, 240, 16.9, 4, 93.1 }, /* Hide text */
+        /* 29*/ { BARCODE_EANX_CHK, -1, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 330, 116.9, 318, 16.9, 2, 93.1 },
+        /* 30*/ { BARCODE_EANX_CHK, BARCODE_QUIET_ZONES, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 330, 116.9, 318, 16.9, 2, 93.1 },
+        /* 31*/ { BARCODE_EANX_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "0234567890129+12345", 0, 50, 1, 149, 320, 116.9, 318, 16.9, 2, 93.1 },
+        /* 32*/ { BARCODE_EANX, -1, -1, -1, "0234567", 0, 50, 1, 67, 162, 116.9, 14, 0, 2, 110 }, /* EAN-8 */
+        /* 33*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "0234567", 0, 50, 1, 67, 162, 116.9, 14, 0, 2, 110 }, /* EAN-8 */
+        /* 34*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "0234567", 0, 50, 1, 67, 134, 116.9, 0, 0, 2, 110 }, /* EAN-8 */
+        /* 35*/ { BARCODE_EANX, -1, -1, -1, "02345", 0, 50, 1, 47, 118, 116.9, 14, 0, 2, 100 }, /* EAN-5 */
+        /* 36*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "02345", 0, 50, 1, 47, 118, 116.9, 14, 0, 2, 100 }, /* EAN-5 */
+        /* 37*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "02345", 0, 50, 1, 47, 94, 116.9, 0, 0, 2, 100 }, /* EAN-5 */
+        /* 38*/ { BARCODE_EANX, -1, -1, -1, "02", 0, 50, 1, 20, 64, 116.9, 14, 0, 2, 100 }, /* EAN-2 */
+        /* 39*/ { BARCODE_EANX, BARCODE_QUIET_ZONES, -1, -1, "02", 0, 50, 1, 20, 64, 116.9, 14, 0, 2, 100 }, /* EAN-2 */
+        /* 40*/ { BARCODE_EANX, BARCODE_NO_QUIET_ZONES, -1, -1, "02", 0, 50, 1, 20, 40, 116.9, 0, 0, 2, 100 }, /* EAN-2 */
         /* 41*/ { BARCODE_GS1_128, -1, -1, -1, "[20]02", 0, 50, 1, 68, 136, 118.9, 0, 0, 4, 100 },
         /* 42*/ { BARCODE_GS1_128, BARCODE_QUIET_ZONES, -1, -1, "[20]02", 0, 50, 1, 68, 176, 118.9, 20, 0, 4, 100 },
         /* 43*/ { BARCODE_CODABAR, -1, -1, -1, "A0B", 0, 50, 1, 32, 64, 118.9, 0, 0, 2, 100 },
@@ -1356,42 +1738,42 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /* 70*/ { BARCODE_DBAR_EXP, BARCODE_NO_QUIET_ZONES, -1, -1, "[20]02", 0, 34, 1, 102, 204, 86.900002, 2, 0, 2, 68 },
         /* 71*/ { BARCODE_TELEPEN, -1, -1, -1, "1234", 0, 50, 1, 112, 224, 118.9, 0, 0, 2, 100 },
         /* 72*/ { BARCODE_TELEPEN, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 50, 1, 112, 264, 118.9, 20, 0, 2, 100 },
-        /* 73*/ { BARCODE_UPCA, -1, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.4, 18, 0, 2, 110 },
-        /* 74*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.4, 18, 0, 2, 110 },
-        /* 75*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.4, 18, 0, 2, 110 },
+        /* 73*/ { BARCODE_UPCA, -1, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.9, 18, 0, 2, 110 },
+        /* 74*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.9, 18, 0, 2, 110 },
+        /* 75*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 1, 95, 226, 116.9, 18, 0, 2, 110 },
         /* 76*/ { BARCODE_UPCA, -1, -1, 0, "01457137763", 0, 50, 1, 95, 226, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 77*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, 0, "01457137763", 0, 50, 1, 95, 226, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 78*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, 0, "01457137763", 0, 50, 1, 95, 190, 110, 0, 0, 2, 110 }, /* Hide text */
-        /* 79*/ { BARCODE_UPCA, -1, -1, -1, "01457137763+12", 0, 50, 1, 124, 276, 116.4, 18, 0, 2, 110 },
-        /* 80*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, -1, "01457137763+12", 0, 50, 1, 124, 276, 116.4, 18, 0, 2, 110 },
-        /* 81*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763+12", 0, 50, 1, 124, 266, 116.4, 18, 0, 2, 110 },
+        /* 79*/ { BARCODE_UPCA, -1, -1, -1, "01457137763+12", 0, 50, 1, 124, 276, 116.9, 18, 0, 2, 110 },
+        /* 80*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, -1, "01457137763+12", 0, 50, 1, 124, 276, 116.9, 18, 0, 2, 110 },
+        /* 81*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763+12", 0, 50, 1, 124, 266, 116.9, 18, 0, 2, 110 },
         /* 82*/ { BARCODE_UPCA, -1, -1, 0, "01457137763+12", 0, 50, 1, 124, 276, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 83*/ { BARCODE_UPCA, BARCODE_QUIET_ZONES, -1, 0, "01457137763+12", 0, 50, 1, 124, 276, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 84*/ { BARCODE_UPCA, BARCODE_NO_QUIET_ZONES, -1, 0, "01457137763+12", 0, 50, 1, 124, 248, 110, 0, 0, 2, 110 }, /* Hide text */
-        /* 85*/ { BARCODE_UPCA_CHK, -1, -1, -1, "014571377638+12345", 0, 50, 1, 151, 330, 116.4, 18, 0, 2, 110 },
-        /* 86*/ { BARCODE_UPCA_CHK, BARCODE_QUIET_ZONES, -1, -1, "014571377638+12345", 0, 50, 1, 151, 330, 116.4, 18, 0, 2, 110 },
-        /* 87*/ { BARCODE_UPCA_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "014571377638+12345", 0, 50, 1, 151, 320, 116.4, 18, 0, 2, 110 },
+        /* 85*/ { BARCODE_UPCA_CHK, -1, -1, -1, "014571377638+12345", 0, 50, 1, 151, 330, 116.9, 18, 0, 2, 110 },
+        /* 86*/ { BARCODE_UPCA_CHK, BARCODE_QUIET_ZONES, -1, -1, "014571377638+12345", 0, 50, 1, 151, 330, 116.9, 18, 0, 2, 110 },
+        /* 87*/ { BARCODE_UPCA_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "014571377638+12345", 0, 50, 1, 151, 320, 116.9, 18, 0, 2, 110 },
         /* 88*/ { BARCODE_UPCA_CHK, -1, -1, 0, "014571377638+12345", 0, 50, 1, 151, 330, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 89*/ { BARCODE_UPCA_CHK, BARCODE_QUIET_ZONES, -1, 0, "014571377638+12345", 0, 50, 1, 151, 330, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 90*/ { BARCODE_UPCA_CHK, BARCODE_NO_QUIET_ZONES, -1, 0, "014571377638+12345", 0, 50, 1, 151, 302, 110, 0, 0, 2, 110 }, /* Hide text */
-        /* 91*/ { BARCODE_UPCE, -1, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 110 },
-        /* 92*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 110 },
-        /* 93*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.4, 18, 0, 2, 110 },
+        /* 91*/ { BARCODE_UPCE, -1, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 110 },
+        /* 92*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 110 },
+        /* 93*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713", 0, 50, 1, 51, 134, 116.9, 18, 0, 2, 110 },
         /* 94*/ { BARCODE_UPCE, -1, -1, 0, "8145713", 0, 50, 1, 51, 134, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 95*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, 0, "8145713", 0, 50, 1, 51, 134, 110, 18, 0, 2, 110 }, /* Hide text */
         /* 96*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, 0, "8145713", 0, 50, 1, 51, 102, 110, 0, 0, 2, 110 }, /* Hide text */
-        /* 97*/ { BARCODE_UPCE_CHK, -1, -1, -1, "81457132+12", 0, 50, 1, 78, 184, 116.4, 170, 19, 4, 81 },
-        /* 98*/ { BARCODE_UPCE_CHK, BARCODE_QUIET_ZONES, -1, -1, "81457132+12", 0, 50, 1, 78, 184, 116.4, 170, 19, 4, 81 },
-        /* 99*/ { BARCODE_UPCE_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "81457132+12", 0, 50, 1, 78, 174, 116.4, 170, 19, 4, 81 },
-        /*100*/ { BARCODE_UPCE_CHK, -1, -1, 0, "81457132+12", 0, 50, 1, 78, 184, 110, 170, 19, 4, 81 }, /* Hide text */
-        /*101*/ { BARCODE_UPCE_CHK, BARCODE_QUIET_ZONES, -1, 0, "81457132+12", 0, 50, 1, 78, 184, 110, 170, 19, 4, 81 }, /* Hide text */
-        /*102*/ { BARCODE_UPCE_CHK, BARCODE_NO_QUIET_ZONES, -1, 0, "81457132+12", 0, 50, 1, 78, 156, 110, 152, 19, 4, 81 }, /* Hide text */
-        /*103*/ { BARCODE_UPCE, -1, -1, -1, "8145713+12345", 0, 50, 1, 105, 238, 116.4, 226, 19, 2, 81 },
-        /*104*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, -1, "8145713+12345", 0, 50, 1, 105, 238, 116.4, 226, 19, 2, 81 },
-        /*105*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713+12345", 0, 50, 1, 105, 228, 116.4, 226, 19, 2, 81 },
-        /*106*/ { BARCODE_UPCE, -1, -1, 0, "8145713+12345", 0, 50, 1, 105, 238, 110, 226, 19, 2, 81 }, /* Hide text */
-        /*107*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, 0, "8145713+12345", 0, 50, 1, 105, 238, 110, 226, 19, 2, 81 }, /* Hide text */
-        /*108*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, 0, "8145713+12345", 0, 50, 1, 105, 210, 110, 208, 19, 2, 81 }, /* Hide text */
+        /* 97*/ { BARCODE_UPCE_CHK, -1, -1, -1, "81457132+12", 0, 50, 1, 78, 184, 116.9, 170, 16.9, 4, 83.1 },
+        /* 98*/ { BARCODE_UPCE_CHK, BARCODE_QUIET_ZONES, -1, -1, "81457132+12", 0, 50, 1, 78, 184, 116.9, 170, 16.9, 4, 83.1 },
+        /* 99*/ { BARCODE_UPCE_CHK, BARCODE_NO_QUIET_ZONES, -1, -1, "81457132+12", 0, 50, 1, 78, 174, 116.9, 170, 16.9, 4, 83.1 },
+        /*100*/ { BARCODE_UPCE_CHK, -1, -1, 0, "81457132+12", 0, 50, 1, 78, 184, 110, 170, 16.9, 4, 83.1 }, /* Hide text */
+        /*101*/ { BARCODE_UPCE_CHK, BARCODE_QUIET_ZONES, -1, 0, "81457132+12", 0, 50, 1, 78, 184, 110, 170, 16.9, 4, 83.1 }, /* Hide text */
+        /*102*/ { BARCODE_UPCE_CHK, BARCODE_NO_QUIET_ZONES, -1, 0, "81457132+12", 0, 50, 1, 78, 156, 110, 152, 16.9, 4, 83.1 }, /* Hide text */
+        /*103*/ { BARCODE_UPCE, -1, -1, -1, "8145713+12345", 0, 50, 1, 105, 238, 116.9, 226, 16.9, 2, 83.1 },
+        /*104*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, -1, "8145713+12345", 0, 50, 1, 105, 238, 116.9, 226, 16.9, 2, 83.1 },
+        /*105*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713+12345", 0, 50, 1, 105, 228, 116.9, 226, 16.9, 2, 83.1 },
+        /*106*/ { BARCODE_UPCE, -1, -1, 0, "8145713+12345", 0, 50, 1, 105, 238, 110, 226, 16.9, 2, 83.1 }, /* Hide text */
+        /*107*/ { BARCODE_UPCE, BARCODE_QUIET_ZONES, -1, 0, "8145713+12345", 0, 50, 1, 105, 238, 110, 226, 16.9, 2, 83.1 }, /* Hide text */
+        /*108*/ { BARCODE_UPCE, BARCODE_NO_QUIET_ZONES, -1, 0, "8145713+12345", 0, 50, 1, 105, 210, 110, 208, 16.9, 2, 83.1 }, /* Hide text */
         /*109*/ { BARCODE_POSTNET, -1, -1, -1, "12345", 0, 12, 2, 63, 126, 24, 0, 0, 2, 24 },
         /*110*/ { BARCODE_POSTNET, BARCODE_QUIET_ZONES, -1, -1, "12345", 0, 12, 2, 63, 146, 30.4, 10, 3.2, 2, 24 },
         /*111*/ { BARCODE_MSI_PLESSEY, -1, -1, -1, "1234", 0, 50, 1, 55, 110, 118.9, 0, 0, 4, 100 },
@@ -1426,9 +1808,9 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*140*/ { BARCODE_AUSROUTE, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 8, 3, 73, 186, 29.333332, 20, 6.6666665, 2, 10 },
         /*141*/ { BARCODE_AUSREDIRECT, -1, -1, -1, "1234", 0, 8, 3, 73, 146, 16, 0, 0, 2, 10 },
         /*142*/ { BARCODE_AUSREDIRECT, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 8, 3, 73, 186, 29.333332, 20, 6.6666665, 2, 10 },
-        /*143*/ { BARCODE_ISBNX, -1, -1, -1, "123456789X", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /*144*/ { BARCODE_ISBNX, BARCODE_QUIET_ZONES, -1, -1, "123456789X", 0, 50, 1, 95, 226, 116.4, 22, 0, 2, 110 },
-        /*145*/ { BARCODE_ISBNX, BARCODE_NO_QUIET_ZONES, -1, -1, "123456789X", 0, 50, 1, 95, 212, 116.4, 22, 0, 2, 110 },
+        /*143*/ { BARCODE_ISBNX, -1, -1, -1, "123456789X", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /*144*/ { BARCODE_ISBNX, BARCODE_QUIET_ZONES, -1, -1, "123456789X", 0, 50, 1, 95, 226, 116.9, 22, 0, 2, 110 },
+        /*145*/ { BARCODE_ISBNX, BARCODE_NO_QUIET_ZONES, -1, -1, "123456789X", 0, 50, 1, 95, 212, 116.9, 22, 0, 2, 110 },
         /*146*/ { BARCODE_RM4SCC, -1, -1, -1, "1234", 0, 8, 3, 43, 86, 16, 0, 0, 2, 10 },
         /*147*/ { BARCODE_RM4SCC, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 8, 3, 43, 98.283463, 28.283464, 6.1417322, 6.1417322, 2, 10 },
         /*148*/ { BARCODE_DATAMATRIX, -1, -1, -1, "1234", 0, 10, 10, 10, 20, 20, 0, 0, 2, 2 },
@@ -1513,9 +1895,9 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*227*/ { BARCODE_AZRUNE, BARCODE_NO_QUIET_ZONES, -1, -1, "123", 0, 11, 11, 11, 22, 22, 0, 0, 8, 2 },
         /*228*/ { BARCODE_CODE32, -1, -1, -1, "1234", 0, 50, 1, 103, 206, 118.9, 0, 0, 2, 100 },
         /*229*/ { BARCODE_CODE32, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 50, 1, 103, 246, 118.9, 20, 0, 2, 100 },
-        /*230*/ { BARCODE_EANX_CC, -1, -1, -1, "023456789012", 0, 50, 7, 99, 234, 116.4, 32, 24, 2, 86 },
-        /*231*/ { BARCODE_EANX_CC, BARCODE_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 7, 99, 234, 116.4, 32, 24, 2, 86 },
-        /*232*/ { BARCODE_EANX_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 7, 99, 220, 116.4, 32, 24, 2, 86 },
+        /*230*/ { BARCODE_EANX_CC, -1, -1, -1, "023456789012", 0, 50, 7, 99, 234, 116.9, 32, 24, 2, 86 },
+        /*231*/ { BARCODE_EANX_CC, BARCODE_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 7, 99, 234, 116.9, 32, 24, 2, 86 },
+        /*232*/ { BARCODE_EANX_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "023456789012", 0, 50, 7, 99, 220, 116.9, 32, 24, 2, 86 },
         /*233*/ { BARCODE_EANX_CC, -1, -1, 0, "023456789012", 0, 50, 7, 99, 234, 110, 32, 24, 2, 86 }, /* Hide text */
         /*234*/ { BARCODE_EANX_CC, BARCODE_QUIET_ZONES, -1, 0, "023456789012", 0, 50, 7, 99, 234, 110, 32, 24, 2, 86 }, /* Hide text */
         /*235*/ { BARCODE_EANX_CC, BARCODE_NO_QUIET_ZONES, -1, 0, "023456789012", 0, 50, 7, 99, 198, 110, 10, 24, 2, 86 }, /* Hide text */
@@ -1527,15 +1909,15 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*241*/ { BARCODE_DBAR_LTD_CC, BARCODE_QUIET_ZONES, -1, -1, "1234", 0, 19, 6, 79, 162, 56.900002, 4, 18, 2, 20 },
         /*242*/ { BARCODE_DBAR_EXP_CC, -1, -1, -1, "[20]12", 0, 41, 5, 102, 204, 100.9, 2, 14, 2, 68 },
         /*243*/ { BARCODE_DBAR_EXP_CC, BARCODE_QUIET_ZONES, -1, -1, "[20]12", 0, 41, 5, 102, 208, 100.9, 4, 14, 2, 68 },
-        /*244*/ { BARCODE_UPCA_CC, -1, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.4, 24, 20, 2, 90 },
-        /*245*/ { BARCODE_UPCA_CC, BARCODE_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.4, 24, 20, 2, 90 },
-        /*246*/ { BARCODE_UPCA_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.4, 24, 20, 2, 90 },
+        /*244*/ { BARCODE_UPCA_CC, -1, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.9, 24, 20, 2, 90 },
+        /*245*/ { BARCODE_UPCA_CC, BARCODE_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.9, 24, 20, 2, 90 },
+        /*246*/ { BARCODE_UPCA_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "01457137763", 0, 50, 7, 99, 234, 116.9, 24, 20, 2, 90 },
         /*247*/ { BARCODE_UPCA_CC, -1, -1, 0, "01457137763", 0, 50, 7, 99, 234, 110, 24, 20, 2, 90 }, /* Hide text */
         /*248*/ { BARCODE_UPCA_CC, BARCODE_QUIET_ZONES, -1, 0, "01457137763", 0, 50, 7, 99, 234, 110, 24, 20, 2, 90 }, /* Hide text */
         /*249*/ { BARCODE_UPCA_CC, BARCODE_NO_QUIET_ZONES, -1, 0, "01457137763", 0, 50, 7, 99, 198, 110, 6, 20, 2, 90 }, /* Hide text */
-        /*250*/ { BARCODE_UPCE_CC, -1, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.4, 24, 28, 2, 82 },
-        /*251*/ { BARCODE_UPCE_CC, BARCODE_QUIET_ZONES, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.4, 24, 28, 2, 82 },
-        /*252*/ { BARCODE_UPCE_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.4, 24, 28, 2, 82 },
+        /*250*/ { BARCODE_UPCE_CC, -1, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.9, 24, 28, 2, 82 },
+        /*251*/ { BARCODE_UPCE_CC, BARCODE_QUIET_ZONES, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.9, 24, 28, 2, 82 },
+        /*252*/ { BARCODE_UPCE_CC, BARCODE_NO_QUIET_ZONES, -1, -1, "8145713", 0, 50, 9, 55, 142, 116.9, 24, 28, 2, 82 },
         /*253*/ { BARCODE_UPCE_CC, -1, -1, 0, "8145713", 0, 50, 9, 55, 142, 110, 24, 28, 2, 82 }, /* Hide text */
         /*254*/ { BARCODE_UPCE_CC, BARCODE_QUIET_ZONES, -1, 0, "8145713", 0, 50, 9, 55, 142, 110, 24, 28, 2, 82 }, /* Hide text */
         /*255*/ { BARCODE_UPCE_CC, BARCODE_NO_QUIET_ZONES, -1, 0, "8145713", 0, 50, 9, 55, 110, 110, 6, 28, 2, 82 }, /* Hide text */
@@ -1623,6 +2005,149 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
                 circle = find_circle(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width);
                 assert_nonnull(circle, "i:%d (%d) find_circle(%g, %g, %g) NULL\n",
                                         i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width);
+            } else {
+                rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+                assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
+                                        i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_text_gap(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int output_options;
+        int option_2;
+        int show_hrt;
+        float text_gap;
+        float scale;
+        char *data;
+        char *composite;
+        int ret;
+
+        float expected_height;
+        int expected_rows;
+        int expected_width;
+        float expected_vector_width;
+        float expected_vector_height;
+        float expected_set_x;
+        float expected_set_y;
+        float expected_set_width;
+        float expected_set_height;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE11, -1, -1, -1, 0, 0, "1234", "", 0, 50, 1, 62, 124, 118.9, 62.0, 114.0, -1, -1 }, /* Default */
+        /*  1*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 0, "1234", "", 0, 50, 1, 62, 124, 117.7, 62.0, 112.8, -1, -1 },
+        /*  2*/ { BARCODE_CODE11, -1, -1, -1, 0.2, 0, "1234", "", 0, 50, 1, 62, 124, 117.9, 62.0, 113, -1, -1 },
+        /*  3*/ { BARCODE_CODE11, -1, -1, -1, 0.3, 0, "1234", "", 0, 50, 1, 62, 124, 118.1, 62.0, 113.2, -1, -1 },
+        /*  4*/ { BARCODE_CODE11, -1, -1, -1, 0.4, 0, "1234", "", 0, 50, 1, 62, 124, 118.3, 62.0, 113.4, -1, -1 },
+        /*  5*/ { BARCODE_CODE11, -1, -1, -1, 0.5, 0, "1234", "", 0, 50, 1, 62, 124, 118.5, 62.0, 113.6, -1, -1 },
+        /*  6*/ { BARCODE_CODE11, -1, -1, -1, 0.6, 0, "1234", "", 0, 50, 1, 62, 124, 118.7, 62.0, 113.799995, -1, -1 },
+        /*  7*/ { BARCODE_CODE11, -1, -1, -1, 0.7, 0, "1234", "", 0, 50, 1, 62, 124, 118.9, 62.0, 114, -1, -1 },
+        /*  8*/ { BARCODE_CODE11, -1, -1, -1, 0.75, 0, "1234", "", 0, 50, 1, 62, 124, 119, 62.0, 114.1, -1, -1 }, /* Same as default */
+        /*  9*/ { BARCODE_CODE11, -1, -1, -1, 0.8, 0, "1234", "", 0, 50, 1, 62, 124, 119.1, 62.0, 114.2, -1, -1 },
+        /* 10*/ { BARCODE_CODE11, -1, -1, -1, 0.9, 0, "1234", "", 0, 50, 1, 62, 124, 119.3, 62.0, 114.4, -1, -1 },
+        /* 11*/ { BARCODE_CODE11, -1, -1, -1, 1.0, 0, "1234", "", 0, 50, 1, 62, 124, 119.5, 62.0, 114.6, -1, -1 },
+        /* 12*/ { BARCODE_CODE11, -1, -1, -1, 1.1, 0, "1234", "", 0, 50, 1, 62, 124, 119.7, 62.0, 114.799995, -1, -1 },
+        /* 13*/ { BARCODE_CODE11, -1, -1, -1, 1.5, 0, "1234", "", 0, 50, 1, 62, 124, 120.5, 62.0, 115.6, -1, -1 },
+        /* 14*/ { BARCODE_CODE11, -1, -1, -1, 2.0, 0, "1234", "", 0, 50, 1, 62, 124, 121.5, 62.0, 116.6, -1, -1 },
+        /* 15*/ { BARCODE_CODE11, -1, -1, -1, 3.0, 0, "1234", "", 0, 50, 1, 62, 124, 123.5, 62.0, 118.6, -1, -1 },
+        /* 16*/ { BARCODE_CODE11, -1, -1, -1, 4.0, 0, "1234", "", 0, 50, 1, 62, 124, 125.5, 62.0, 120.6, -1, -1 },
+        /* 17*/ { BARCODE_CODE11, -1, -1, -1, 5.0, 0, "1234", "", 0, 50, 1, 62, 124, 127.5, 62.0, 122.6, -1, -1 },
+        /* 18*/ { BARCODE_CODE11, -1, -1, -1, 0, 3.0, "1234", "", 0, 50, 1, 62, 372, 356.7, 186.0, 342.0, -1, -1 }, /* Scale default */
+        /* 19*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 3.0, "1234", "", 0, 50, 1, 62, 372, 353.09998, 186.0, 338.4, -1, -1 }, /* Scale */
+        /* 20*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.9, 74.0, 116.1, -1, -1 }, /* Default */
+        /* 21*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763", "", 0, 50, 1, 95, 226, 115.6, 74.0, 114.799995, -1, -1 },
+        /* 22*/ { BARCODE_UPCA, -1, -1, -1, 0.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.6, 74.0, 115.799995, -1, -1 },
+        /* 23*/ { BARCODE_UPCA, -1, -1, -1, 0.7, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.8, 74.0, 116, -1, -1 },
+        /* 24*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.9, 74.0, 116.1, -1, -1 }, /* Same as default */
+        /* 25*/ { BARCODE_UPCA, -1, -1, -1, 0.8, 0, "01457130763", "", 0, 50, 1, 95, 226, 117, 74.0, 116.2, -1, -1 },
+        /* 26*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 118.6, 74.0, 117.799995, -1, -1 },
+        /* 27*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 2.5, "01457130763", "", 0, 50, 1, 95, 565, 296.5, 185.0, 294.5, -1, -1 }, /* Scale */
+        /* 28*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116.9, 74.0, 116.1, -1, -1 }, /* Default */
+        /* 29*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116.9, 230.0, 16.9, 4.0, 83.1 }, /* Default */
+        /* 30*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 115.6, 230.0, 15.5999994, 4.0, 84.4 },
+        /* 31*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116.9, 230.0, 16.9, 4.0, 83.1 }, /* Same as default */
+        /* 32*/ { BARCODE_UPCA, -1, -1, -1, 0.9, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.2, 230.0, 17.1999989, 4.0, 82.8 },
+        /* 33*/ { BARCODE_UPCA, -1, -1, -1, 4.2, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 123.8, 230.0, 23.8, 4.0, 76.2 },
+        /* 34*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 116.9, 80.0, 116.1, -1, -1 }, /* Default */
+        /* 35*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 115.6, 80.0, 114.799995, -1, -1 },
+        /* 36*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 116.9, 236.0, 40.9, 4.0, 59.1 }, /* Default */
+        /* 37*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 115.6, 236.0, 39.6000023, 4.0, 60.3999977 },
+        /* 38*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.75, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 116.9, 236.0, 40.9, 4.0, 59.1 }, /* Same as default */
+        /* 39*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 118.4, 236.0, 42.4, 4.0, 57.6 },
+        /* 40*/ { BARCODE_UPCA_CC, -1, -1, 0, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 110, 236.0, 40.9, 4.0, 59.1 }, /* Hide text default */
+        /* 41*/ { BARCODE_UPCA_CC, -1, -1, 0, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 128, 284, 110, 236.0, 42.4, 4.0, 57.6 }, /* Hide text */
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    const char *text;
+
+    struct zint_vector_string *string;
+    struct zint_vector_rect *rect;
+
+    testStart("test_text_gap");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        if (data[i].show_hrt != -1) {
+            symbol->show_hrt = data[i].show_hrt;
+        }
+        symbol->text_gap = data[i].text_gap;
+        if (data[i].scale != 0.0f) {
+            symbol->scale = data[i].scale;
+        }
+
+        if (strlen(data[i].composite)) {
+            text = data[i].composite;
+            strcpy(symbol->primary, data[i].data);
+        } else {
+            text = data[i].data;
+        }
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, data[i].output_options, text, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%d) ret %d != 0 %s\n", i, data[i].symbology, ret, symbol->errtxt);
+
+        ret = ZBarcode_Buffer_Vector(symbol, 0);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Buffer_Vector(%d) ret %d != %d\n", i, data[i].symbology, ret, data[i].ret);
+
+        if (ret < ZINT_ERROR) {
+            assert_nonnull(symbol->vector, "i:%d ZBarcode_Buffer_Vector(%d) vector NULL\n", i, data[i].symbology);
+
+            if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) { /* ZINT_DEBUG_TEST_PRINT 16 */
+                sprintf(symbol->outfile, "test_text_gap_%d.svg", i);
+                ZBarcode_Print(symbol, 0);
+            }
+
+            assert_equal(symbol->height, data[i].expected_height, "i:%d (%d) symbol->height %.8g != %.8g\n", i, data[i].symbology, symbol->height, data[i].expected_height);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d (%d) symbol->rows %d != %d\n", i, data[i].symbology, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d (%d) symbol->width %d != %d\n", i, data[i].symbology, symbol->width, data[i].expected_width);
+
+            assert_equal(symbol->vector->width, data[i].expected_vector_width, "i:%d (%s) symbol->vector->width %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->width, data[i].expected_vector_width);
+            assert_equal(symbol->vector->height, data[i].expected_vector_height, "i:%d (%s) symbol->vector->height %.8g != %.8g\n",
+                i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
+
+            if (data[i].expected_set_width == -1.0f) {
+                string = find_string(symbol, data[i].expected_set_x, data[i].expected_set_y);
+                assert_nonnull(string, "i:%d (%d) find_string(%g, %g) NULL\n",
+                    i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y);
             } else {
                 rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
                 assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
@@ -2511,6 +3036,7 @@ int main(int argc, char *argv[]) {
         { "test_scale", test_scale },
         { "test_guard_descent", test_guard_descent },
         { "test_quiet_zones", test_quiet_zones },
+        { "test_text_gap", test_text_gap, },
         { "test_height", test_height },
         { "test_height_per_row", test_height_per_row },
     };

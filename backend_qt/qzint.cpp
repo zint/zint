@@ -35,8 +35,8 @@
 #define QSL QStringLiteral
 
 namespace Zint {
-    static const char fontStyle[] = "Helvetica";
-    static const char fontStyleError[] = "Helvetica";
+    static const QString fontFamily = QSL("Helvetica");
+    static const QString fontFamilyError = QSL("Helvetica");
     static const int fontSizeError = 14; /* Point size */
 
     static const int maxSegs = 256;
@@ -130,6 +130,7 @@ namespace Zint {
                 maxBottom = circle->y + circle->diameter + circle->width;
             }
         }
+
         // TODO: Strings?
     }
 
@@ -145,6 +146,7 @@ namespace Zint {
             m_scale(1.0f),
             m_dotty(false), m_dot_size(4.0f / 5.0f),
             m_guardDescent(5.0f),
+            m_textGap(0.0f),
             m_fgStr(QSL("000000")), m_bgStr(QSL("FFFFFF")), m_cmyk(false),
             m_borderType(0), m_borderWidth(0),
             m_whitespace(0), m_vwhitespace(0),
@@ -229,6 +231,7 @@ namespace Zint {
         m_zintSymbol->dpmm = m_dpmm;
         m_zintSymbol->dot_size = m_dot_size;
         m_zintSymbol->guard_descent = m_guardDescent;
+        m_zintSymbol->text_gap = m_textGap;
         m_zintSymbol->structapp = m_structapp;
         m_zintSymbol->warn_level = m_warn_level;
         m_zintSymbol->debug = m_debug ? ZINT_DEBUG_PRINT : 0;
@@ -564,6 +567,15 @@ namespace Zint {
         } else {
             m_fontSetting = 0;
         }
+    }
+
+    /* Text gap */
+    float QZint::textGap() const {
+        return m_textGap;
+    }
+
+    void QZint::setTextGap(float textGap) {
+        m_textGap = textGap;
     }
 
     /* Show (true) or hide (false) Human Readable Text */
@@ -913,7 +925,7 @@ namespace Zint {
 
         if (m_error >= ZINT_ERROR) {
             painter.setRenderHint(QPainter::Antialiasing);
-            QFont font(fontStyleError, fontSizeError);
+            QFont font(fontFamilyError, fontSizeError);
             painter.setFont(font);
             painter.drawText(paintRect, Qt::AlignCenter | Qt::TextWordWrap, m_lastError);
             painter.restore();
@@ -1043,9 +1055,8 @@ namespace Zint {
             QPen p;
             p.setColor(fgColor);
             painter.setPen(p);
-            bool bold = (m_zintSymbol->output_options & BOLD_TEXT)
-                            && (!isExtendable() || (m_zintSymbol->output_options & SMALL_TEXT));
-            QFont font(fontStyle, -1 /*pointSize*/, bold ? QFont::Bold : -1);
+            bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && !isExtendable();
+            QFont font(fontFamily, -1 /*pointSize*/, bold ? QFont::Bold : -1);
             while (string) {
                 font.setPixelSize(string->fsize);
                 painter.setFont(font);
@@ -1055,7 +1066,7 @@ namespace Zint {
                     painter.drawText(QPointF(string->x, string->y), content);
                 } else {
                     QFontMetrics fm(painter.fontMetrics());
-                    int width = fm.boundingRect(content).width();
+                    int width = fm.horizontalAdvance(content);
                     if (string->halign == 2) { /* Right align */
                         painter.drawText(QPointF(string->x - width, string->y), content);
                     } else { /* Centre align */
@@ -1140,7 +1151,8 @@ namespace Zint {
                     const bool autoHeight, const float heightPerRow, const QString& outfile,
                     const QZintXdimDpVars *xdimdpVars) const {
         QString cmd(win && !noEXE ? QSL("zint.exe") : QSL("zint"));
-        bool nobackground = bgColor().alpha() == 0;
+        const bool nobackground = bgColor().alpha() == 0;
+        const bool notext = hasHRT() && !showText();
 
         char name_buf[32];
         if (barcodeNames && ZBarcode_BarcodeName(m_symbol, name_buf) == 0) {
@@ -1181,7 +1193,7 @@ namespace Zint {
         if (!default_bind_top) {
             arg_bool(cmd, "--bindtop", borderType() & BARCODE_BIND_TOP);
         }
-        arg_bool(cmd, "--bold", fontSetting() & BOLD_TEXT);
+        arg_bool(cmd, "--bold", !notext && (fontSetting() & BOLD_TEXT) && !isExtendable());
         if (!default_border) {
             arg_int(cmd, "--border=", borderWidth());
         }
@@ -1265,7 +1277,7 @@ namespace Zint {
 
         arg_bool(cmd, "--nobackground", nobackground);
         arg_bool(cmd, "--noquietzones", hasDefaultQuietZones() && noQuietZones());
-        arg_bool(cmd, "--notext", hasHRT() && !showText());
+        arg_bool(cmd, "--notext", notext);
         arg_data(cmd, longOptOnly ? "--output=" : "-o ", outfile, win);
 
         if (m_symbol == BARCODE_MAXICODE || isComposite()) {
@@ -1306,7 +1318,7 @@ namespace Zint {
             arg_int(cmd, "--separator=", option3());
         }
 
-        arg_bool(cmd, "--small", fontSetting() & SMALL_TEXT);
+        arg_bool(cmd, "--small", !notext && (fontSetting() & SMALL_TEXT));
 
         if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
             arg_bool(cmd, "--square", option3() == DM_SQUARE);
@@ -1314,6 +1326,10 @@ namespace Zint {
 
         if (supportsStructApp()) {
             arg_structapp(cmd, "--structapp=", structAppCount(), structAppIndex(), structAppID(), win);
+        }
+
+        if (!notext && textGap() != 0.0f) {
+            arg_float(cmd, "--textgap=", textGap(), true /*allowZero*/);
         }
 
         arg_bool(cmd, "--verbose", debug());

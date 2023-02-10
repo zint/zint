@@ -30,8 +30,8 @@
       <rect x="10.00" y="18.90" width="2.00" height="1.00" />
       <rect x="6.00" y="18.90" width="2.00" height="1.00" />
       <rect x="2.00" y="18.90" width="2.00" height="1.00" />
-      <text x="64.00" y="3.50" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(180,64.00,3.50)" >
+      <text x="64.00" y="4.90" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(180,64.00,4.90)" >
          A
       </text>
    </g>

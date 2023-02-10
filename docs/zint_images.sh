@@ -34,6 +34,7 @@ zint -b CODEONE -d "123456789012345678" --dotty --vers=9 --scale=$SCALE_DOTTY -o
 zint -b AZTEC --eci=9 -d "Κείμενο" --seg1=7,"Текст" --seg2=20,"文章" --scale=$SCALE_2D -o images/aztec_segs.svg
 zint -b DATAMATRIX -d "2nd of 3" --structapp="2,3,5006" --scale=$SCALE_2D -o images/datamatrix_structapp.svg
 zint --bold -d "This Text" --small --scale=$SCALE_LINEAR -o images/code128_small_bold.svg
+zint -d "Áccent" --textgap=0.1 --scale=$SCALE_LINEAR -o images/code128_textgap.svg
 zint -b CODE11 -d "9212320967" --scale=$SCALE_LINEAR -o images/code11.svg
 zint -b C25STANDARD -d "9212320967" --scale=$SCALE_LINEAR -o images/c25standard.svg
 zint -b C25IATA -d "9212320967" --scale=$SCALE_LINEAR -o images/c25iata.svg

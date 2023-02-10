@@ -364,7 +364,7 @@ int testContinue(const testCtx *const p_ctx, const int i) {
 
 /* Helper to set common symbol fields */
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci, int option_1, int option_2,
-            int option_3, int output_options, char *data, int length, int debug) {
+            int option_3, int output_options, const char *data, int length, int debug) {
     symbol->symbology = symbology;
     if (input_mode != -1) {
         symbol->input_mode = input_mode;

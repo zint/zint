@@ -106,31 +106,31 @@
       <rect x="112.00" y="44.00" width="2.00" height="56.00" />
       <rect x="116.00" y="44.00" width="2.00" height="66.00" />
       <rect x="120.00" y="44.00" width="2.00" height="66.00" />
-      <rect x="140.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="144.00" y="63.00" width="4.00" height="37.00" />
-      <rect x="150.00" y="63.00" width="4.00" height="37.00" />
-      <rect x="160.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="164.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="168.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="172.00" y="63.00" width="8.00" height="37.00" />
-      <rect x="182.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="188.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="196.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="200.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="204.00" y="63.00" width="4.00" height="37.00" />
-      <rect x="210.00" y="63.00" width="6.00" height="37.00" />
-      <rect x="218.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="224.00" y="63.00" width="2.00" height="37.00" />
-      <rect x="228.00" y="63.00" width="6.00" height="37.00" />
-      <text x="14.00" y="116.00" text-anchor="end"
+      <rect x="140.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="144.00" y="60.90" width="4.00" height="39.10" />
+      <rect x="150.00" y="60.90" width="4.00" height="39.10" />
+      <rect x="160.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="164.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="168.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="172.00" y="60.90" width="8.00" height="39.10" />
+      <rect x="182.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="188.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="196.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="200.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="204.00" y="60.90" width="4.00" height="39.10" />
+      <rect x="210.00" y="60.90" width="6.00" height="39.10" />
+      <rect x="218.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="224.00" y="60.90" width="2.00" height="39.10" />
+      <rect x="228.00" y="60.90" width="6.00" height="39.10" />
+      <text x="14.70" y="116.10" text-anchor="end"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          1
       </text>
-      <text x="72.00" y="116.00" text-anchor="middle"
+      <text x="73.00" y="116.10" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="20.0" >
          876543
       </text>
-      <text x="132.00" y="116.00" text-anchor="start"
+      <text x="131.30" y="116.10" text-anchor="start"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          5
       </text>

@@ -316,6 +316,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     btnClearDataSeg2->setIcon(clearIcon);
     btnClearDataSeg3->setIcon(clearIcon);
     btnClearComposite->setIcon(clearIcon);
+    btnClearTextGap->setIcon(clearIcon);
     btnZap->setIcon(QIcon(QSL(":res/zap.svg")));
 
     change_options();
@@ -329,6 +330,9 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(bwidth,  SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
+    connect(spnTextGap, SIGNAL(valueChanged( double )), SLOT(text_gap_zero()));
+    connect(spnTextGap, SIGNAL(valueChanged( double )), SLOT(update_preview()));
+    connect(btnClearTextGap, SIGNAL(clicked( bool )), SLOT(clear_text_gap()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(update_preview()));
     connect(txtDataSeg1, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
@@ -463,6 +467,7 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/appearance/scale"), spnScale->value());
     settings.setValue(QSL("studio/appearance/border_type"), btype->currentIndex());
     settings.setValue(QSL("studio/appearance/font_setting"), cmbFontSetting->currentIndex());
+    settings.setValue(QSL("studio/appearance/text_gap"), spnTextGap->value());
     settings.setValue(QSL("studio/appearance/chk_hrt_show"), chkHRTShow->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_cmyk"), chkCMYK->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_quiet_zones"), chkQuietZones->isChecked() ? 1 : 0);
@@ -528,6 +533,7 @@ void MainWindow::load_settings(QSettings &settings)
     spnScale->setValue(settings.value(QSL("studio/appearance/scale"), 1.0).toFloat());
     btype->setCurrentIndex(settings.value(QSL("studio/appearance/border_type"), 0).toInt());
     cmbFontSetting->setCurrentIndex(settings.value(QSL("studio/appearance/font_setting"), 0).toInt());
+    spnTextGap->setValue(settings.value(QSL("studio/appearance/text_gap"), 0.0).toFloat());
     chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), 1).toInt() ? true : false);
     chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
     chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
@@ -1141,6 +1147,15 @@ void MainWindow::HRTShow_ui_set()
     bool enabled = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
     lblFontSetting->setEnabled(enabled);
     cmbFontSetting->setEnabled(enabled);
+    lblTextGap->setEnabled(enabled);
+    spnTextGap->setEnabled(enabled);
+    text_gap_ui_set();
+}
+
+void MainWindow::text_gap_ui_set()
+{
+    bool hrtEnabled = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    btnClearTextGap->setEnabled(hrtEnabled && spnTextGap->value() != 0.0);
 }
 
 void MainWindow::dotty_ui_set()
@@ -1242,6 +1257,23 @@ void MainWindow::structapp_ui_set()
             }
         }
     }
+}
+
+void MainWindow::text_gap_zero()
+{
+    // Make sure special text "Default" triggered as QDoubleSpinBox can return values almost but not quite zero
+    double val = spnTextGap->value();
+    if (val != 0.0 && val < 0.0001) {
+        spnTextGap->setValue(0.0);
+    }
+    text_gap_ui_set();
+}
+
+void MainWindow::clear_text_gap()
+{
+    spnTextGap->setValue(0.0);
+    spnTextGap->setFocus();
+    update_preview();
 }
 
 void MainWindow::on_encoded()
@@ -2130,9 +2162,10 @@ void MainWindow::change_options()
         file.close();
         load_sub_settings(settings, symbology);
         tabMain->insertTab(1, m_optionWidget, tr("UPC-&A"));
-        combobox_item_enabled(cmbFontSetting, 1, false);
-        if (cmbFontSetting->currentIndex() == 1) {
-            cmbFontSetting->setCurrentIndex(0);
+        combobox_item_enabled(cmbFontSetting, 1, false); // Disable bold options
+        combobox_item_enabled(cmbFontSetting, 3, false);
+        if (cmbFontSetting->currentIndex() == 1 || cmbFontSetting->currentIndex() == 3) {
+            cmbFontSetting->setCurrentIndex(cmbFontSetting->currentIndex() - 1);
         }
         connect(get_widget(QSL("cmbUPCAAddonGap")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnUPCAGuardDescent")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
@@ -2155,9 +2188,10 @@ void MainWindow::change_options()
         } else {
             tabMain->insertTab(1, m_optionWidget, tr("&EAN"));
         }
-        combobox_item_enabled(cmbFontSetting, 1, false);
-        if (cmbFontSetting->currentIndex() == 1) {
-            cmbFontSetting->setCurrentIndex(0);
+        combobox_item_enabled(cmbFontSetting, 1, false); // Disable bold options
+        combobox_item_enabled(cmbFontSetting, 3, false);
+        if (cmbFontSetting->currentIndex() == 1 || cmbFontSetting->currentIndex() == 3) {
+            cmbFontSetting->setCurrentIndex(cmbFontSetting->currentIndex() - 1);
         }
         connect(get_widget(QSL("cmbUPCEANAddonGap")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("spnUPCEANGuardDescent")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
@@ -3166,6 +3200,7 @@ void MainWindow::update_preview()
     m_bc.bc.setVWhitespace(spnVWhitespace->value());
     m_bc.bc.setQuietZones(chkQuietZones->isEnabled() && chkQuietZones->isChecked());
     m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
+    m_bc.bc.setTextGap(spnTextGap->value());
     m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
     m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
     if (m_symbology == BARCODE_DOTCODE || (chkDotty->isEnabled() && chkDotty->isChecked())) {
@@ -3940,6 +3975,7 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         settings.setValue(QSL("studio/bc/%1/appearance/border_type").arg(name), btype->currentIndex());
         if (chkHRTShow->isEnabled()) {
             settings.setValue(QSL("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
+            settings.setValue(QSL("studio/bc/%1/appearance/text_gap").arg(name), spnTextGap->value());
             settings.setValue(QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
         }
         settings.setValue(QSL("studio/bc/%1/appearance/chk_cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
@@ -4334,6 +4370,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         if (chkHRTShow->isEnabled()) {
             cmbFontSetting->setCurrentIndex(settings.value(
                 QSL("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
+            spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 0.0).toFloat());
             chkHRTShow->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }

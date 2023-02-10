@@ -24,7 +24,7 @@
       <rect x="92.00" y="0.00" width="2.00" height="100.00" />
       <rect x="96.00" y="0.00" width="4.00" height="100.00" />
       <rect x="106.00" y="0.00" width="2.00" height="100.00" />
-      <text x="61.00" y="116.00" text-anchor="middle"
+      <text x="61.00" y="116.10" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="20.0" >
          12345
       </text>

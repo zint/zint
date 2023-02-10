@@ -80,23 +80,23 @@
       <rect x="32.00" y="78.00" width="68.00" height="2.00" />
       <rect x="32.00" y="74.00" width="78.00" height="2.00" />
       <rect x="32.00" y="70.00" width="78.00" height="2.00" />
-      <rect x="51.00" y="50.00" width="49.00" height="2.00" />
-      <rect x="51.00" y="44.00" width="49.00" height="4.00" />
-      <rect x="51.00" y="38.00" width="49.00" height="4.00" />
-      <rect x="51.00" y="30.00" width="49.00" height="6.00" />
-      <rect x="51.00" y="26.00" width="49.00" height="2.00" />
-      <rect x="51.00" y="20.00" width="49.00" height="2.00" />
-      <rect x="51.00" y="12.00" width="49.00" height="6.00" />
-      <text x="116.00" y="178.00" text-anchor="end"
-         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.00,178.00)" >
+      <rect x="48.90" y="50.00" width="51.10" height="2.00" />
+      <rect x="48.90" y="44.00" width="51.10" height="4.00" />
+      <rect x="48.90" y="38.00" width="51.10" height="4.00" />
+      <rect x="48.90" y="30.00" width="51.10" height="6.00" />
+      <rect x="48.90" y="26.00" width="51.10" height="2.00" />
+      <rect x="48.90" y="20.00" width="51.10" height="2.00" />
+      <rect x="48.90" y="12.00" width="51.10" height="6.00" />
+      <text x="116.10" y="177.30" text-anchor="end"
+         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.10,177.30)" >
          0
       </text>
-      <text x="116.00" y="120.00" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="20.0" transform="rotate(270,116.00,120.00)" >
+      <text x="116.10" y="119.00" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="20.0" transform="rotate(270,116.10,119.00)" >
          654321
       </text>
-      <text x="116.00" y="60.00" text-anchor="start"
-         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.00,60.00)" >
+      <text x="116.10" y="60.70" text-anchor="start"
+         font-family="Helvetica, sans-serif" font-size="14.0" transform="rotate(270,116.10,60.70)" >
          7
       </text>
       <text x="47.00" y="32.00" text-anchor="middle"

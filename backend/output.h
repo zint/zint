@@ -62,12 +62,11 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
    If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
    to nearest pixel and symbol height adjusted */
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row_heights_si, int *symbol_height_si);
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
+                int *symbol_height_si);
 
 /* Split UPC/EAN add-on text into various constituents */
-INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
-                unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
-                unsigned char textpart4[2]);
+INTERNAL void out_upcean_split_text(const int upceanflag, const unsigned char text[], unsigned char textparts[4][7]);
 
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
 INTERNAL FILE *out_fopen(const char filename[256], const char *mode);

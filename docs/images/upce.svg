@@ -1,13 +1,13 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="268" height="310" version="1.1"
+<svg width="268" height="311" version="1.1"
    xmlns="http://www.w3.org/2000/svg">
    <desc>Zint Generated Symbol
    </desc>
 
    <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="268" height="310" fill="#FFFFFF" />
+      <rect x="0" y="0" width="268" height="311" fill="#FFFFFF" />
       <rect x="36.00" y="0.00" width="4.00" height="296.97" />
       <rect x="44.00" y="0.00" width="4.00" height="296.97" />
       <rect x="56.00" y="0.00" width="8.00" height="276.97" />
@@ -25,15 +25,15 @@
       <rect x="220.00" y="0.00" width="4.00" height="296.97" />
       <rect x="228.00" y="0.00" width="4.00" height="296.97" />
       <rect x="236.00" y="0.00" width="4.00" height="296.97" />
-      <text x="16.00" y="308.97" text-anchor="end"
+      <text x="17.40" y="309.17" text-anchor="end"
          font-family="Helvetica, sans-serif" font-size="28.0" >
          1
       </text>
-      <text x="132.00" y="308.97" text-anchor="middle"
+      <text x="134.00" y="309.17" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="40.0" >
          123456
       </text>
-      <text x="252.00" y="308.97" text-anchor="start"
+      <text x="250.60" y="309.17" text-anchor="start"
          font-family="Helvetica, sans-serif" font-size="28.0" >
          2
       </text>

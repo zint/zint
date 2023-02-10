@@ -41,7 +41,6 @@
 #endif
 #include "common.h"
 #include "output.h"
-#include "font.h"
 
 #define OUT_SSET_F  (IS_NUM_F | IS_UHX_F | IS_LHX_F) /* SSET "0123456789ABCDEFabcdef" */
 
@@ -53,11 +52,11 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     if ((comma1 = strchr(colour, ',')) == NULL) {
         const int len = (int) strlen(colour);
         if ((len != 6) && (len != 8)) {
-            sprintf(symbol->errtxt, "690: Malformed %s RGB colour (6 or 8 characters only)", name);
+            sprintf(symbol->errtxt, "880: Malformed %s RGB colour (6 or 8 characters only)", name);
             return ZINT_ERROR_INVALID_OPTION;
         }
         if (!is_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
-            sprintf(symbol->errtxt, "691: Malformed %s RGB colour '%s' (hexadecimal only)", name, colour);
+            sprintf(symbol->errtxt, "881: Malformed %s RGB colour '%s' (hexadecimal only)", name, colour);
             return ZINT_ERROR_INVALID_OPTION;
         }
 
@@ -67,28 +66,28 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     /* CMYK comma-separated percentages */
     if ((comma2 = strchr(comma1 + 1, ',')) == NULL || (comma3 = strchr(comma2 + 1, ',')) == NULL
             || strchr(comma3 + 1, ',') != NULL) {
-        sprintf(symbol->errtxt, "692: Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
+        sprintf(symbol->errtxt, "882: Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if (comma1 - colour > 3 || comma2 - (comma1 + 1) > 3 || comma3 - (comma2 + 1) > 3 || strlen(comma3 + 1) > 3) {
-        sprintf(symbol->errtxt, "693: Malformed %s CMYK colour (3 digit maximum per number)", name);
+        sprintf(symbol->errtxt, "883: Malformed %s CMYK colour (3 digit maximum per number)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((val = to_int((const unsigned char *) colour, (int) (comma1 - colour))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "694: Malformed %s CMYK colour C (decimal 0-100 only)", name);
+        sprintf(symbol->errtxt, "884: Malformed %s CMYK colour C (decimal 0-100 only)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if ((val = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "695: Malformed %s CMYK colour M (decimal 0-100 only)", name);
+        sprintf(symbol->errtxt, "885: Malformed %s CMYK colour M (decimal 0-100 only)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if ((val = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "696: Malformed %s CMYK colour Y (decimal 0-100 only)", name);
+        sprintf(symbol->errtxt, "886: Malformed %s CMYK colour Y (decimal 0-100 only)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
     if ((val = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "697: Malformed %s CMYK colour K (decimal 0-100 only)", name);
+        sprintf(symbol->errtxt, "887: Malformed %s CMYK colour K (decimal 0-100 only)", name);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -741,7 +740,8 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
    If scaler `si` non-zero (raster), then large_bar_height if non-zero or else row heights will be rounded
    to nearest pixel and symbol height adjusted */
-INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row_heights_si, int *symbol_height_si) {
+INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, int *row_heights_si,
+                int *symbol_height_si) {
     float fixed_height = 0.0f;
     int zero_count = 0;
     int round_rows = 0;
@@ -812,64 +812,62 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, int si, int *row
 }
 
 /* Split UPC/EAN add-on text into various constituents */
-INTERNAL void out_upcean_split_text(int upceanflag, unsigned char text[],
-                unsigned char textpart1[5], unsigned char textpart2[7], unsigned char textpart3[7],
-                unsigned char textpart4[2]) {
+INTERNAL void out_upcean_split_text(const int upceanflag, const unsigned char text[], unsigned char textparts[4][7]) {
     int i;
 
     if (upceanflag == 6) { /* UPC-E */
-        textpart1[0] = text[0];
-        textpart1[1] = '\0';
+        textparts[0][0] = text[0];
+        textparts[0][1] = '\0';
 
         for (i = 0; i < 6; i++) {
-            textpart2[i] = text[i + 1];
+            textparts[1][i] = text[i + 1];
         }
-        textpart2[6] = '\0';
+        textparts[1][6] = '\0';
 
-        textpart3[0] = text[7];
-        textpart3[1] = '\0';
+        textparts[2][0] = text[7];
+        textparts[2][1] = '\0';
 
     } else if (upceanflag == 8) { /* EAN-8 */
         for (i = 0; i < 4; i++) {
-            textpart1[i] = text[i];
+            textparts[0][i] = text[i];
         }
-        textpart1[4] = '\0';
+        textparts[0][4] = '\0';
 
         for (i = 0; i < 4; i++) {
-            textpart2[i] = text[i + 4];
+            textparts[1][i] = text[i + 4];
         }
-        textpart2[4] = '\0';
+        textparts[1][4] = '\0';
 
     } else if (upceanflag == 12) { /* UPC-A */
-        textpart1[0] = text[0];
-        textpart1[1] = '\0';
+        textparts[0][0] = text[0];
+        textparts[0][1] = '\0';
 
         for (i = 0; i < 5; i++) {
-            textpart2[i] = text[i + 1];
+            textparts[1][i] = text[i + 1];
         }
-        textpart2[5] = '\0';
+        textparts[1][5] = '\0';
 
         for (i = 0; i < 5; i++) {
-            textpart3[i] = text[i + 6];
+            textparts[2][i] = text[i + 6];
         }
-        textpart3[5] = '\0';
+        textparts[2][5] = '\0';
 
-        textpart4[0] = text[11];
-        textpart4[1] = '\0';
+        textparts[3][0] = text[11];
+        textparts[3][1] = '\0';
 
     } else if (upceanflag == 13) { /* EAN-13 */
-        textpart1[0] = text[0];
-        textpart1[1] = '\0';
+        textparts[0][0] = text[0];
+        textparts[0][1] = '\0';
 
         for (i = 0; i < 6; i++) {
-            textpart2[i] = text[i + 1];
+            textparts[1][i] = text[i + 1];
         }
-        textpart2[6] = '\0';
+        textparts[1][6] = '\0';
 
         for (i = 0; i < 6; i++) {
-            textpart3[i] = text[i + 7];
+            textparts[2][i] = text[i + 7];
         }
-        textpart3[6] = '\0';
+        textparts[2][6] = '\0';
     }
 }
 

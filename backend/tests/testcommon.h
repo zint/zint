@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -129,7 +129,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...);
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
 int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode, int eci,
-            int option_1, int option_2, int option_3, int output_options, char *data, int length, int debug);
+            int option_1, int option_2, int option_3, int output_options, const char *data, int length, int debug);
 
 const char *testUtilBarcodeName(int symbology);
 const char *testUtilErrorName(int error_number);

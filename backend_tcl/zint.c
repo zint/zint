@@ -166,6 +166,8 @@
 - Added UPU_S10
 2023-01-15 GL
 - Added -esc and -extraesc options
+2023-02-10 GL
+- Added -textgap option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -502,7 +504,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -bindtop bool: bar above the code, size set by -border\n"
     "   -bold bool: use bold text\n"
     "   -border integer: width of a border around the symbol. Use with -bind/-box/-bindtop 1\n"
-    "   -box bool: box around bar code, size set be -border\n"
+    "   -box bool: box around bar code, size set by -border\n"
     /* cli option --cmyk not supported as no corresponding output */
     "   -cols integer: Codablock F, DotCode, PDF417: number of columns\n"
     "   -compliantheight bool: warn if height not compliant, and use standard default\n"
@@ -551,6 +553,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -smalltext bool: tiny interpretation line font\n"
     "   -square bool: force Data Matrix symbols to be square\n"
     "   -structapp {index count ?id?}: set Structured Append info\n"
+    "   -textgap double: gap between barcode and text\n"
     /* cli option --types not supported */
     "   -vers integer: Symbology option\n"
     /* cli option --version not supported */
@@ -791,7 +794,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
             "-seg1", "-seg2", "-seg3", "-seg4", "-seg5", "-seg6", "-seg7", "-seg8", "-seg9",
             "-separator", "-smalltext", "-square", "-structapp",
-            "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
+            "-textgap", "-to", "-vers", "-vwhitesp", "-werror", "-whitesp",
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
@@ -803,7 +806,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
             iSeg1, iSeg2, iSeg3, iSeg4, iSeg5, iSeg6, iSeg7, iSeg8, iSeg9,
             iSeparator, iSmallText, iSquare, iStructApp,
-            iTo, iVers, iVWhiteSp, iWError, iWhiteSp
+            iTextGap, iTo, iVers, iVWhiteSp, iWError, iWhiteSp
             };
         int optionIndex;
         int intValue;
@@ -865,6 +868,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGuardDescent:
         case iDotSize:
         case iScale:
+        case iTextGap:
             /* >> Float */
             if (TCL_OK != Tcl_GetDoubleFromObj(interp, objv[optionPos+1],
                 &doubleValue))
@@ -1136,6 +1140,15 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             } else {
                 my_symbol->scale = (float)doubleValue;
+            }
+            break;
+        case iTextGap:
+            if (doubleValue < 0.0 || doubleValue > 5.0) {
+                Tcl_SetObjResult(interp,
+                    Tcl_NewStringObj("Text Gap out of range", -1));
+                fError = 1;
+            } else {
+                my_symbol->text_gap = (float)doubleValue;
             }
             break;
         case iScaleXdimDp:

@@ -115,7 +115,7 @@ static void types(void) {
 }
 
 /* Output version information */
-static void version(int no_png) {
+static void version(const int no_png) {
     const char *no_png_lib = no_png ? " (no libpng)" : "";
     const int zint_version = ZBarcode_Version();
     const int version_major = zint_version / 10000;
@@ -136,7 +136,7 @@ static void version(int no_png) {
 }
 
 /* Output usage information */
-static void usage(int no_png) {
+static void usage(const int no_png) {
     const char *no_png_type = no_png ? "" : "/PNG";
     const char *no_png_ext = no_png ? "gif" : "png";
 
@@ -202,11 +202,12 @@ static void usage(int no_png) {
            "  --square              Force Data Matrix symbols to be square\n"
            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
            "  -t, --types           Display table of barcode types\n", stdout);
-    fputs( "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
+    fputs( "  --textgap=NUMBER      Adjust gap between barcode and HRT in multiples of X-dim\n"
+           "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
            "  -v, --version         Display Zint version\n"
            "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
-           "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n"
-           "  --werror              Convert all warnings into errors\n", stdout);
+           "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n", stdout);
+    fputs( "  --werror              Convert all warnings into errors\n", stdout);
 }
 
 /* Display supported ECI codes */
@@ -880,7 +881,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
         }
     }
 
-    if (!strcmp(filename, "-")) {
+    if (strcmp(filename, "-") == 0) {
         file = stdin;
     } else {
         file = fopen(filename, "rb");
@@ -1087,6 +1088,8 @@ static void win_free_args(void) {
 }
 
 /* For Windows replace args with UTF-8 versions */
+/* TODO: using `CommandLineToArgvW()` causes shell32.dll to be loaded - replace with own version, see
+   https://news.ycombinator.com/item?id=18596841 */
 static void win_args(int *p_argc, char ***p_argv) {
     int i;
     LPWSTR *szArgList = CommandLineToArgvW(GetCommandLineW(), &win_argc);
@@ -1148,7 +1151,6 @@ int main(int argc, char **argv) {
     int rows = 0;
     char filetype[4] = {0};
     int output_given = 0;
-    int no_png;
     int png_refused;
     int val;
     int i;
@@ -1162,17 +1164,17 @@ int main(int argc, char **argv) {
     arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
     int no_getopt_error = 1;
 
+    const int no_png = ZBarcode_NoPng();
+
+    if (argc == 1) {
+        usage(no_png);
+        exit(ZINT_ERROR_INVALID_DATA);
+    }
+
     my_symbol = ZBarcode_Create();
     if (!my_symbol) {
         fprintf(stderr, "Error 151: Memory failure\n");
         exit(ZINT_ERROR_MEMORY);
-    }
-    no_png = ZBarcode_NoPng();
-
-    if (argc == 1) {
-        ZBarcode_Delete(my_symbol);
-        usage(no_png);
-        exit(ZINT_ERROR_INVALID_DATA);
     }
     my_symbol->input_mode = UNICODE_MODE;
 
@@ -1191,7 +1193,7 @@ int main(int argc, char **argv) {
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
             OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
-            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP,
+            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP, OPT_TEXTGAP,
             OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
         };
         int option_index = 0;
@@ -1267,6 +1269,7 @@ int main(int argc, char **argv) {
             {"small", 0, NULL, OPT_SMALL},
             {"square", 0, NULL, OPT_SQUARE},
             {"structapp", 1, NULL, OPT_STRUCTAPP},
+            {"textgap", 1, NULL, OPT_TEXTGAP},
             {"types", 0, NULL, 't'},
             {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
             {"vers", 1, NULL, OPT_VERS},
@@ -1682,6 +1685,19 @@ int main(int argc, char **argv) {
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 break;
+            case OPT_TEXTGAP:
+                if (!validate_float(optarg, &float_opt, errbuf)) {
+                    fprintf(stderr, "Error 194: Invalid text gap floating point (%s)\n", errbuf);
+                    return do_exit(ZINT_ERROR_INVALID_OPTION);
+                }
+                if (float_opt >= 0.0f && float_opt <= 5.0f) {
+                    my_symbol->text_gap = float_opt;
+                } else {
+                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (0 to 5), ignoring\n", float_opt);
+                    fflush(stderr);
+                    warn_number = ZINT_WARN_INVALID_OPTION;
+                }
+                break;
             case OPT_VERBOSE:
                 my_symbol->debug = 1;
                 break;
@@ -1842,6 +1858,12 @@ int main(int argc, char **argv) {
             }
         }
 
+        if (output_given && (my_symbol->output_options & BARCODE_STDOUT)) {
+            my_symbol->output_options &= ~BARCODE_STDOUT;
+            fprintf(stderr, "Warning 193: Output file given, ignoring '--direct' option\n");
+            fflush(stderr);
+            warn_number = ZINT_WARN_INVALID_OPTION;
+        }
         if (batch_mode) {
             /* Take each line of text as a separate data set */
             if (data_arg_num > 1) {

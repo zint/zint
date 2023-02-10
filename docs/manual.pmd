@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.12.0.9
-% January 2023
+% February 2023
 
 # 1. Introduction
 
@@ -531,9 +531,11 @@ alternative mode is selected. This command replaces the use of the `-d` switch.
 zint -i somefile.txt
 ```
 
+To read from stdin specify a single hyphen `"-"` as the input file.
+
 Note that except when batch processing (see [4.11 Batch Processing] below), the
-file should not end with a newline (`LF` on Unix, `CR+LF` on Windows) unless you
-want the newline to be encoded in the symbol.
+file (or stdin) should not end with a newline (`LF` on Unix, `CR+LF` on Windows)
+unless you want the newline to be encoded in the symbol.
 
 ## 4.2 Directing Output
 
@@ -651,7 +653,7 @@ Value
  52      `BARCODE_PZN`             PZN
 
  53      `BARCODE_PHARMA_TWO`      Pharmacode Two-Track
- 
+
  54      `BARCODE_CEPNET`          Brazilian CEPNet
 
  55      `BARCODE_PDF417`          PDF417
@@ -1371,7 +1373,7 @@ This command will output the symbol as a PCX file to stdout. The currently
 supported output file formats are shown in the following table.
 
 Abbreviation   File format
-------------   ---------------------------
+------------   ------------------------------------
 BMP            Windows Bitmap
 EMF            Enhanced Metafile Format
 EPS            Encapsulated PostScript
@@ -1380,7 +1382,7 @@ PCX            ZSoft Paintbrush image
 PNG            Portable Network Graphic
 SVG            Scalable Vector Graphic
 TIF            Tagged Image File Format
-TXT            Text file (see [4.18 Other Output Options])
+TXT            Text file (see [4.19 Other Options])
 
 Table: {#tbl:output_file_formats tag=": Output File Formats"}
 
@@ -1469,7 +1471,24 @@ is the same for all symbols belonging to the same sequence. The index is 1-based
 and goes from 1 to count. Count must be 2 or more. See the individual
 symbologies for further details.
 
-## 4.17 Help Options
+## 4.17 Human Readable Text (HRT) Options
+
+For linear barcodes the text present in the output image can be removed by
+using the `--notext` option.
+
+Text can be set to bold using the `--bold` option, or a smaller font can be
+substituted using the `--small` option. The `--bold` and `--small` options can
+be used together if required, but only for vector output.
+
+![`zint --bold -d "This Text" --small`](images/code128_small_bold.svg)
+
+The gap between the barcode and the text can be adjusted using the `--textgap`
+option, where the gap is given as a multiple of the X-dimension (maximum 5X). A
+zero value uses the default gap.
+
+![`zint -d "Áccent" --textgap=0.1`](images/code128_textgap.svg)
+
+## 4.18 Help Options
 
 There are three help options which give information about how to use the
 command line. The `-h` or `--help` option will display a list of all of the
@@ -1481,16 +1500,7 @@ symbol ID numbers and names.
 
 The `-e` or `--ecinos` option gives a list of the ECI codes.
 
-## 4.18 Other Output Options
-
-For linear barcodes the text present in the output image can be removed by
-using the `--notext` option.
-
-The text can be set to bold using the `--bold` option, or a smaller font
-can be substituted using the `--small` option. The `--bold` and `--small`
-options can be used together if required, but only for vector output.
-
-![`zint --bold -d "This Text" --small`](images/code128_small_bold.svg)
+## 4.19 Other Options
 
 Zint can output a representation of the symbol data as a set of hexadecimal
 values if asked to output to a text file (`"*.txt"`) or if given the option
@@ -1615,7 +1625,8 @@ values are 0, 90, 180 and 270.
 
 The `ZBarcode_Encode_File()` and `ZBarcode_Encode_File_and_Print()` functions
 can be used to encode data read directly from a text file where the filename is
-given in the `NUL`-terminated `filename` string.
+given in the `NUL`-terminated `filename` string. The special filename `"-"`
+(single hyphen) can be used to read from stdin.
 
 If printing more than one barcode, the `zint_symbol` structure may be re-used by
 calling the `ZBarcode_Clear()` function after each barcode to free any output
@@ -1749,37 +1760,41 @@ Variable Name         Type        Meaning                      Default Value
 `symbology`           integer     Symbol to use (see [5.8      `BARCODE_CODE128`
                                   Specifying a Symbology]).
 
-`height`              float       Symbol height, excluding      Symbol dependent
+`height`              float       Symbol height in              Symbol dependent
+                                  X-dimensions, excluding
                                   fixed width-to-height
                                   symbols.[^7]
 
 `scale`               float       Scale factor for adjusting    1.0
-                                  size of image.
+                                  size of image (sets
+                                  X-dimension).
 
-`whitespace_width`    integer     Horizontal whitespace width.  0
+`whitespace_width`    integer     Horizontal whitespace width   0
+                                  in X-dimensions.
 
-`whitespace_height`   integer     Vertical whitespace height.   0
+`whitespace_height`   integer     Vertical whitespace height    0
+                                  in X-dimensions.
 
-`border_width`        integer     Border width.                 0
+`border_width`        integer     Border width in               0
+                                  X-dimensions.
 
-`output_options`      integer     Set various output file       0 (none)
+`output_options`      integer     Set various output            0 (none)
                                   parameters (see [5.9
-                                  Adjusting Other Output
-                                  Options]).
+                                  Adjusting Output Options]).
 
 `fgcolour`            character   Foreground (ink)              `"000000"`
                       string      colour as RGB/RGBA
                                   hexadecimal string or
-								  `"C,M,Y,K"` decimal
-								  percentages string, with a
-								  terminating `NUL`.
+                                  `"C,M,Y,K"` decimal
+                                  percentages string, with a
+                                  terminating `NUL`.
 
 `bgcolour`            character   Background (paper)            `"ffffff"`
                       string      colour as RGB/RGBA
                                   hexadecimal string or
-								  `"C,M,Y,K"` decimal
-								  percentages string, with a
-								  terminating `NUL`.
+                                  `"C,M,Y,K"` decimal
+                                  percentages string, with a
+                                  terminating `NUL`.
 
 `fgcolor`             pointer     Points to fgcolour allowing
                                   alternate spelling.
@@ -1806,7 +1821,8 @@ Variable Name         Type        Meaning                      Default Value
 
 `option_3`            integer     Symbol specific options.      0
 
-`show_hrt`            integer     Set to 0 to hide text.        1
+`show_hrt`            integer     Set to 0 to hide Human        1
+                                  Readable Text (HRT).
 
 `input_mode`          integer     Set encoding of input         `DATA_MODE`
                                   data (see [5.10 Setting the
@@ -1820,10 +1836,15 @@ Variable Name         Type        Meaning                      Default Value
                                   only).
 
 `dot_size`            float       Diameter of dots used in      0.8
-                                  dotty mode.
+                                  dotty mode (in
+                                  X-dimensions).
+
+`text_gap`            float       Gap between barcode and       0 (font-specific
+                                  text (HRT) in X-dimensions.   default)
 
 `guard_descent`       float       Height of guard bar           5.0
-                                  descent (EAN/UPC only).
+                                  descent (EAN/UPC only) in
+                                  X-dimensions.
 
 `structapp`           Structured  Mark a symbol as part of a    count 0
                       Append      sequence of symbols.          (disabled)
@@ -1852,7 +1873,7 @@ Variable Name         Type        Meaning                      Default Value
                       arrays
 
 `row_height`          array of    Representation of the         (output only)
-                      floats      height of a row.
+                      floats      height of rows.
 
 `errtxt`              character   Error message in the event    (output only)
                       string      that an error occurred,
@@ -2031,7 +2052,7 @@ means the same as
 symbol->symbology = 50;
 ```
 
-## 5.9 Adjusting Other Output Options
+## 5.9 Adjusting Output Options
 
 The `output_options` variable can be used to adjust various aspects of the
 output file. To select more than one option from the table below simply `OR`

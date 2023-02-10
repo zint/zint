@@ -1881,6 +1881,69 @@ the barcode in X-dimensions</string>
               </widget>
              </item>
              <item row="7" column="0">
+              <widget class="QLabel" name="lblTextGap">
+               <property name="toolTip">
+                <string>Gap between barcode and text
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Text Gap:</string>
+               </property>
+               <property name="alignment">
+                <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
+               </property>
+               <property name="buddy">
+                <cstring>spnTextGap</cstring>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="1">
+              <widget class="QDoubleSpinBox" name="spnTextGap">
+               <property name="toolTip">
+                <string>Gap between barcode and text
+(ignored if disabled)</string>
+               </property>
+               <property name="suffix">
+                <string> X</string>
+                <string/>
+               </property>
+               <property name="decimals">
+                <number>2</number>
+               </property>
+               <property name="minimum">
+                <double>0.000000000000000</double>
+               </property>
+               <property name="maximum">
+                <double>5.000000000000000</double>
+               </property>
+               <property name="singleStep">
+                <double>0.100000000000000</double>
+               </property>
+               <property name="value">
+                <double>0.000000000000000</double>
+               </property>
+               <property name="specialValueText">
+                <string>Default</string>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="2">
+              <widget class="QPushButton" name="btnClearTextGap">
+               <property name="maximumSize">
+                <size>
+                 <width>22</width>
+                 <height>26</height>
+                </size>
+               </property>
+               <property name="toolTip">
+                <string>Set text gap to zero (default)</string>
+               </property>
+               <property name="text">
+                <string/>
+               </property>
+              </widget>
+             </item>
+             <item row="8" column="0">
               <widget class="QLabel" name="lblScale">
                <property name="toolTip">
                 <string>Image scale when output to file
@@ -1897,7 +1960,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="1">
+             <item row="8" column="1">
               <widget class="QDoubleSpinBox" name="spnScale">
                <property name="toolTip">
                 <string>Image scale when output to file
@@ -1923,7 +1986,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="2">
+             <item row="8" column="2">
               <widget class="QPushButton" name="btnScale">
                <property name="maximumSize">
                 <size>
@@ -1939,7 +2002,7 @@ the barcode in X-dimensions</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="0">
+             <item row="9" column="0">
               <widget class="QLabel" name="lblSize">
                <property name="toolTip">
                 <string>Image size (width x height) of barcode
@@ -1953,7 +2016,7 @@ at given dot density</string>
                </property>
               </widget>
              </item>
-             <item row="8" column="1" colspan="5">
+             <item row="9" column="1" colspan="5">
               <widget class="QLabel" name="lblSizeMsg">
                <property name="toolTip">
                 <string>Image size (width x height) of barcode

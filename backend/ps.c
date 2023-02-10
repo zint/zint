@@ -427,8 +427,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     string = symbol->vector->strings;
 
     if (string) {
-        if ((symbol->output_options & BOLD_TEXT)
-                && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT))) {
+        if ((symbol->output_options & BOLD_TEXT) && !is_extendable(symbol->symbology)) {
             font = "Helvetica-Bold";
         } else {
             font = "Helvetica";

@@ -1,13 +1,13 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="236" height="299" version="1.1"
+<svg width="236" height="300" version="1.1"
    xmlns="http://www.w3.org/2000/svg">
    <desc>Zint Generated Symbol
    </desc>
 
    <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="236" height="299" fill="#FFFFFF" />
+      <rect x="0" y="0" width="236" height="300" fill="#FFFFFF" />
       <rect x="28.00" y="0.00" width="4.00" height="265.45" />
       <rect x="36.00" y="0.00" width="8.00" height="265.45" />
       <rect x="48.00" y="0.00" width="12.00" height="265.45" />
@@ -24,7 +24,7 @@
       <rect x="184.00" y="0.00" width="4.00" height="265.45" />
       <rect x="196.00" y="0.00" width="8.00" height="265.45" />
       <rect x="212.00" y="0.00" width="4.00" height="265.45" />
-      <text x="122.00" y="297.45" text-anchor="middle"
+      <text x="122.00" y="297.65" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="40.0" >
          54321
       </text>

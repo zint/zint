@@ -45,8 +45,8 @@
       <rect x="45.36" y="604.80" width="240.00" height="14.40" />
       <rect x="45.36" y="624.00" width="240.00" height="4.80" />
       <rect x="45.36" y="633.60" width="240.00" height="9.60" />
-      <text x="8.40" y="321.60" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="33.6" transform="rotate(90,8.40,321.60)" >
+      <text x="11.76" y="321.60" text-anchor="middle"
+         font-family="Helvetica, sans-serif" font-size="33.6" transform="rotate(90,11.76,321.60)" >
          This Text
       </text>
    </g>

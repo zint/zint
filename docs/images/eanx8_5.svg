@@ -1,13 +1,13 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
    "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="540" height="254" version="1.1"
+<svg width="540" height="255" version="1.1"
    xmlns="http://www.w3.org/2000/svg">
    <desc>Zint Generated Symbol
    </desc>
 
    <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="540" height="254" fill="#FFFFFF" />
+      <rect x="0" y="0" width="540" height="255" fill="#FFFFFF" />
       <rect x="28.00" y="0.00" width="4.00" height="240.97" />
       <rect x="36.00" y="0.00" width="4.00" height="240.97" />
       <rect x="44.00" y="0.00" width="12.00" height="220.97" />
@@ -30,27 +30,27 @@
       <rect x="264.00" y="0.00" width="12.00" height="220.97" />
       <rect x="284.00" y="0.00" width="4.00" height="240.97" />
       <rect x="292.00" y="0.00" width="4.00" height="240.97" />
-      <rect x="324.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="332.00" y="38.00" width="8.00" height="202.97" />
-      <rect x="344.00" y="38.00" width="12.00" height="202.97" />
-      <rect x="364.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="372.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="380.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="396.00" y="38.00" width="8.00" height="202.97" />
-      <rect x="408.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="416.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="436.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="444.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="456.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="468.00" y="38.00" width="8.00" height="202.97" />
-      <rect x="480.00" y="38.00" width="4.00" height="202.97" />
-      <rect x="492.00" y="38.00" width="8.00" height="202.97" />
-      <rect x="508.00" y="38.00" width="4.00" height="202.97" />
-      <text x="96.00" y="252.97" text-anchor="middle"
+      <rect x="324.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="332.00" y="33.80" width="8.00" height="207.17" />
+      <rect x="344.00" y="33.80" width="12.00" height="207.17" />
+      <rect x="364.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="372.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="380.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="396.00" y="33.80" width="8.00" height="207.17" />
+      <rect x="408.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="416.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="436.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="444.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="456.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="468.00" y="33.80" width="8.00" height="207.17" />
+      <rect x="480.00" y="33.80" width="4.00" height="207.17" />
+      <rect x="492.00" y="33.80" width="8.00" height="207.17" />
+      <rect x="508.00" y="33.80" width="4.00" height="207.17" />
+      <text x="98.00" y="253.17" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="40.0" >
          7432
       </text>
-      <text x="228.00" y="252.97" text-anchor="middle"
+      <text x="226.00" y="253.17" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="40.0" >
          3654
       </text>

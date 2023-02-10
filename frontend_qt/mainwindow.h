@@ -69,9 +69,12 @@ public slots:
     void change_cmyk();
     void autoheight_ui_set();
     void HRTShow_ui_set();
+    void text_gap_ui_set();
     void dotty_ui_set();
     void codeone_ui_set();
     void structapp_ui_set();
+    void text_gap_zero();
+    void clear_text_gap();
     void on_encoded();
     void on_errored();
     void on_dataChanged(const QString& text, bool escaped, int seg_no);

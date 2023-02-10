@@ -58,7 +58,7 @@ extern "C" {
     };
 
     struct zint_vector_string {
-        float x, y;         /* Top with x relative to halign (i.e. centre, left, right) */
+        float x, y;         /* x is relative to halign (i.e. centre, left, right), y is relative to baseline */
         float fsize;        /* Font size */
         float width;        /* Suggested string width, may be 0 if none recommended */
         int length;         /* Number of characters (bytes) */
@@ -116,6 +116,7 @@ extern "C" {
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
         float dpmm;         /* Resolution of output in dots per mm (BMP/EMF/PCX/PNG/TIF only). Default 0 (none) */
         float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE. Default 0.8 */
+        float text_gap;     /* Gap between barcode and text (HRT). 0 means use default (font-specific) */
         float guard_descent; /* Height in X-dimensions that EAN/UPC guard bars descend. Default 5 */
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */

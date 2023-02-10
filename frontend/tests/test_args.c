@@ -774,6 +774,7 @@ static void test_checks(const testCtx *const p_ctx) {
         int border;
         int cols;
         double dotsize;
+        double textgap;
         int eci;
         char *filetype;
         double height;
@@ -794,44 +795,46 @@ static void test_checks(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { -2, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 139: Invalid add-on gap value (digits only)" },
-        /*  1*/ {  6, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
-        /*  2*/ { 13, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
-        /*  3*/ { -1, -2,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 107: Invalid border width value (digits only)" },
-        /*  4*/ { -1, 1001, -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 108: Border width out of range (0 to 1000), ignoring" },
-        /*  5*/ { -1, -1,   -1, 12345678, -1,   NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 181: Invalid dot radius floating point (integer part must be 7 digits maximum)" },
-        /*  6*/ { -1, -1,   -1, 0.009, -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 106: Invalid dot radius value (less than 0.01), ignoring" },
-        /*  7*/ { -1, -1,   -2, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 131: Invalid columns value (digits only)" },
-        /*  8*/ { -1, -1,  201, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 111: Number of columns out of range (1 to 200), ignoring" },
-        /*  9*/ { -1, -1,   -1, -1,    -2,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 138: Invalid ECI value (digits only)" },
-        /* 10*/ { -1, -1,   -1, -1,    1000000, NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 118: ECI code out of range (0 to 999999), ignoring" },
-        /* 11*/ { -1, -1,   -1, -1,    -1,      "jpg", -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 142: File type 'jpg' not supported, ignoring" },
-        /* 12*/ { -1, -1,   -1, -1,    -1,      NULL,  -2,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 183: Invalid symbol height floating point (integer part must be digits only)" },
-        /* 13*/ { -1, -1,   -1, -1,    -1,      NULL,   0,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '0' out of range (0.5 to 2000), ignoring" },
-        /* 14*/ { -1, -1,   -1, -1,    -1,      NULL, 2001,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '2001' out of range (0.5 to 2000), ignoring" },
-        /* 15*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 182: Invalid guard bar descent floating point (integer part must be digits only)" },
-        /* 16*/ { -1, -1,   -1, -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
-        /* 17*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 148: Invalid mask value (digits only)" },
-        /* 18*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 147: Mask value out of range (0 to 7), ignoring" },
-        /* 19*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 116: Mode value out of range (0 to 6), ignoring" },
-        /* 20*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 117: Invalid rotation value (digits only)" },
-        /* 21*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring" },
-        /* 22*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   -1,   -1, "Error 132: Invalid rows value (digits only)" },
-        /* 23*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, 91, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 112: Number of rows out of range (1 to 90), ignoring" },
-        /* 24*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   -1,   -1, "Error 184: Invalid scale floating point (integer part must be digits only)" },
-        /* 25*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'gif' output" },
-        /* 26*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   -1,   -1, "Error 149: Invalid Structured Carrier Message version value (digits only)" },
-        /* 27*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,  100, -1, -1, -1,   -1,   -1, "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring" },
-        /* 28*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   -1,   -1, "Error 134: Invalid ECC value (digits only)" },
-        /* 29*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1,  9, -1, -1,   -1,   -1, "Warning 114: ECC level out of range (0 to 8), ignoring" },
-        /* 30*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1,   -1,   -1, "Error 128: Invalid separator value (digits only)" },
-        /* 31*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1,  5, -1,   -1,   -1, "Warning 127: Separator value out of range (0 to 4), ignoring" },
-        /* 32*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2,   -1,   -1, "Error 133: Invalid version value (digits only)" },
-        /* 33*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, 1000, -1,   -1, "Warning 113: Version value out of range (1 to 999), ignoring" },
-        /* 34*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -2,   -1, "Error 153: Invalid vertical whitespace value '-2' (digits only)" },
-        /* 35*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 1001,   -1, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring" },
-        /* 36*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -2, "Error 120: Invalid horizontal whitespace value '-2' (digits only)" },
-        /* 37*/ { -1, -1,   -1, -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1, 1001, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring" },
+        /*  0*/ { -2, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 139: Invalid add-on gap value (digits only)" },
+        /*  1*/ {  6, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
+        /*  2*/ { 13, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 140: Add-on gap out of range (7 to 12), ignoring" },
+        /*  3*/ { -1, -2,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 107: Invalid border width value (digits only)" },
+        /*  4*/ { -1, 1001, -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 108: Border width out of range (0 to 1000), ignoring" },
+        /*  5*/ { -1, -1,   -1, -1, -0.5,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 194: Invalid text gap floating point (integer part must be digits only)" },
+        /*  6*/ { -1, -1,   -1, -1, 5.01,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 195: Text gap '5.01' out of range (0 to 5), ignoring" },
+        /*  7*/ { -1, -1,   -1, 12345678,  -1, -1,    NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 181: Invalid dot radius floating point (integer part must be 7 digits maximum)" },
+        /*  8*/ { -1, -1,   -1, 0.009, -1,   -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 106: Invalid dot radius value (less than 0.01), ignoring" },
+        /*  9*/ { -1, -1,   -2, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 131: Invalid columns value (digits only)" },
+        /* 10*/ { -1, -1,  201, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 111: Number of columns out of range (1 to 200), ignoring" },
+        /* 11*/ { -1, -1,   -1, -1,   -1,    -2,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 138: Invalid ECI value (digits only)" },
+        /* 12*/ { -1, -1,   -1, -1,   -1,    1000000, NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 118: ECI code out of range (0 to 999999), ignoring" },
+        /* 13*/ { -1, -1,   -1, -1,   -1,    -1,      "jpg", -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 142: File type 'jpg' not supported, ignoring" },
+        /* 14*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -2,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 183: Invalid symbol height floating point (integer part must be digits only)" },
+        /* 15*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,   0,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '0' out of range (0.5 to 2000), ignoring" },
+        /* 16*/ { -1, -1,   -1, -1,   -1,    -1,      NULL, 2001,  -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 110: Symbol height '2001' out of range (0.5 to 2000), ignoring" },
+        /* 17*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -2, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 182: Invalid guard bar descent floating point (integer part must be digits only)" },
+        /* 18*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1, 50.1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 135: Guard bar descent '50.1' out of range (0 to 50), ignoring" },
+        /* 19*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -2, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 148: Invalid mask value (digits only)" },
+        /* 20*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1,  8, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 147: Mask value out of range (0 to 7), ignoring" },
+        /* 21*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1,  7, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 116: Mode value out of range (0 to 6), ignoring" },
+        /* 22*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -2, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 117: Invalid rotation value (digits only)" },
+        /* 23*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, 45, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 137: Invalid rotation parameter (0, 90, 180 or 270 only), ignoring" },
+        /* 24*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -2, -1,   -1, -1, -1, -1,   -1,   -1, "Error 132: Invalid rows value (digits only)" },
+        /* 25*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, 91, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 112: Number of rows out of range (1 to 90), ignoring" },
+        /* 26*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -2,   -1, -1, -1, -1,   -1,   -1, "Error 184: Invalid scale floating point (integer part must be digits only)" },
+        /* 27*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, 0.49, -1, -1, -1, -1,   -1,   -1, "Warning 146: Scaling less than 0.5 will be set to 0.5 for 'gif' output" },
+        /* 28*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -2, -1, -1, -1,   -1,   -1, "Error 149: Invalid Structured Carrier Message version value (digits only)" },
+        /* 29*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,  100, -1, -1, -1,   -1,   -1, "Warning 150: Structured Carrier Message version out of range (0 to 99), ignoring" },
+        /* 30*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -2, -1, -1,   -1,   -1, "Error 134: Invalid ECC value (digits only)" },
+        /* 31*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1,  9, -1, -1,   -1,   -1, "Warning 114: ECC level out of range (0 to 8), ignoring" },
+        /* 32*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -2, -1,   -1,   -1, "Error 128: Invalid separator value (digits only)" },
+        /* 33*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1,  5, -1,   -1,   -1, "Warning 127: Separator value out of range (0 to 4), ignoring" },
+        /* 34*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -2,   -1,   -1, "Error 133: Invalid version value (digits only)" },
+        /* 35*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, 1000, -1,   -1, "Warning 113: Version value out of range (1 to 999), ignoring" },
+        /* 36*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -2,   -1, "Error 153: Invalid vertical whitespace value '-2' (digits only)" },
+        /* 37*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1, 1001,   -1, "Warning 154: Vertical whitespace value out of range (0 to 1000), ignoring" },
+        /* 38*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -2, "Error 120: Invalid horizontal whitespace value '-2' (digits only)" },
+        /* 39*/ { -1, -1,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1, 1001, "Warning 121: Horizontal whitespace value out of range (0 to 1000), ignoring" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -855,6 +858,7 @@ static void test_checks(const testCtx *const p_ctx) {
         arg_int(cmd, "--border=", data[i].border);
         arg_int(cmd, "--cols=", data[i].cols);
         arg_double(cmd, "--dotsize=", data[i].dotsize);
+        arg_double(cmd, "--textgap=", data[i].textgap);
         arg_int(cmd, "--eci=", data[i].eci);
         arg_data(cmd, "--filetype=", data[i].filetype);
         arg_double(cmd, "--height=", data[i].height);
@@ -1150,13 +1154,13 @@ static void test_other_opts(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900", "", 0 },
         /*  1*/ { BARCODE_CODE128, "1", -1, " -bg=", "EF9900", "", 0 },
         /*  2*/ { BARCODE_CODE128, "1", -1, " --bg=", "EF9900AA", "", 0 },
-        /*  3*/ { BARCODE_CODE128, "1", -1, " --bg=", "GF9900", "Error 691: Malformed background RGB colour 'GF9900' (hexadecimal only)", 0 },
+        /*  3*/ { BARCODE_CODE128, "1", -1, " --bg=", "GF9900", "Error 881: Malformed background RGB colour 'GF9900' (hexadecimal only)", 0 },
         /*  4*/ { BARCODE_CODE128, "1", -1, " --bgcolor=", "EF9900", "", 0 },
         /*  5*/ { BARCODE_CODE128, "1", -1, " --bgcolour=", "EF9900", "", 0 },
         /*  6*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000", "", 0 },
         /*  7*/ { BARCODE_CODE128, "1", -1, " --fg=", "00000000", "", 0 },
-        /*  8*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000F", "Error 690: Malformed foreground RGB colour (6 or 8 characters only)", 0 },
-        /*  9*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000FG", "Error 691: Malformed foreground RGB colour '000000FG' (hexadecimal only)", 0 },
+        /*  8*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000F", "Error 880: Malformed foreground RGB colour (6 or 8 characters only)", 0 },
+        /*  9*/ { BARCODE_CODE128, "1", -1, " --fg=", "000000FG", "Error 881: Malformed foreground RGB colour '000000FG' (hexadecimal only)", 0 },
         /* 10*/ { BARCODE_CODE128, "1", -1, " --fg=", "0,0,0,100", "", 0 },
         /* 11*/ { BARCODE_CODE128, "1", -1, " --fgcolor=", "111111", "", 0 },
         /* 12*/ { BARCODE_CODE128, "1", -1, " --fgcolour=", "111111", "", 0 },

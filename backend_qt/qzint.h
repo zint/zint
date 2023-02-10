@@ -165,6 +165,10 @@ public:
     void setFontSetting(int fontSettingIndex); // Sets from comboBox index
     void setFontSettingValue(int fontSetting); // Sets literal value
 
+    /* Text gap */
+    float textGap() const; // `symbol->text_gap`
+    void setTextGap(float textGap);
+
     /* Show (true) or hide (false) Human Readable Text */
     bool showText() const; // `symbol->show_hrt`
     void setShowText(bool showText);
@@ -355,6 +359,7 @@ private:
     bool m_dotty;
     float m_dot_size;
     float m_guardDescent;
+    float m_textGap;
     struct zint_structapp m_structapp;
     QString m_fgStr;
     QString m_bgStr;

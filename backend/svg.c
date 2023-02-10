@@ -296,8 +296,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         circle = circle->next;
     }
 
-    bold = (symbol->output_options & BOLD_TEXT)
-            && (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
+    bold = (symbol->output_options & BOLD_TEXT) && !is_extendable(symbol->symbology);
     string = symbol->vector->strings;
     while (string) {
         const char *const halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";

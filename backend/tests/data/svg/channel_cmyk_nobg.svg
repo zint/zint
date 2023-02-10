@@ -16,7 +16,7 @@
       <rect x="26.00" y="0.00" width="6.00" height="40.00" />
       <rect x="38.00" y="0.00" width="2.00" height="40.00" />
       <rect x="42.00" y="0.00" width="4.00" height="40.00" />
-      <text x="23.00" y="55.40" text-anchor="middle"
+      <text x="23.00" y="54.00" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          123
       </text>

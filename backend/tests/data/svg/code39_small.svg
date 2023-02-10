@@ -33,7 +33,7 @@
       <rect x="114.00" y="0.00" width="4.00" height="100.00" />
       <rect x="120.00" y="0.00" width="4.00" height="100.00" />
       <rect x="126.00" y="0.00" width="2.00" height="100.00" />
-      <text x="64.00" y="113.20" text-anchor="middle"
+      <text x="64.00" y="112.00" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="12.0" >
          *123*
       </text>

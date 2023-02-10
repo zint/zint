@@ -553,8 +553,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Create font records, alignment records and text color */
     if (symbol->vector->strings) {
-        bold = (symbol->output_options & BOLD_TEXT) &&
-                (!is_extendable(symbol->symbology) || (symbol->output_options & SMALL_TEXT));
+        bold = (symbol->output_options & BOLD_TEXT) && !is_extendable(symbol->symbology);
         memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
         emr_extcreatefontindirectw.type = 0x00000052; /* EMR_EXTCREATEFONTINDIRECTW */
         emr_extcreatefontindirectw.size = 104;

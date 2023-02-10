@@ -216,9 +216,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 static int error_tag(struct zint_symbol *symbol, int error_number, const char *error_string) {
 
     if (error_number != 0) {
-        static const char error_fmt[] = "Error %.93s"; /* Truncate if too long */
-        static const char warn_fmt[] = "Warning %.91s"; /* Truncate if too long */
-        const char *fmt = error_number >= ZINT_ERROR ? error_fmt : warn_fmt;
+        const char *const error_arg = error_string ? error_string : symbol->errtxt;
         char error_buffer[100];
 
         if (error_number < ZINT_ERROR && symbol->warn_level == WARN_FAIL_ALL) {
@@ -230,9 +228,12 @@ static int error_tag(struct zint_symbol *symbol, int error_number, const char *e
             } else { /* ZINT_WARN_INVALID_OPTION */
                 error_number = ZINT_ERROR_INVALID_OPTION;
             }
-            fmt = error_fmt;
         }
-        sprintf(error_buffer, fmt, error_string ? error_string : symbol->errtxt);
+        if (error_number >= ZINT_ERROR) {
+            sprintf(error_buffer, "Error %.93s", error_arg); /* Truncate if too long */
+        } else {
+            sprintf(error_buffer, "Warning %.91s", error_arg); /* Truncate if too long */
+        }
         strcpy(symbol->errtxt, error_buffer);
     }
 
@@ -1096,6 +1097,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "769: Guard bar descent out of range (0 to 50)");
     }
+    if ((symbol->text_gap < 0.0f) || (symbol->text_gap > 5.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Text gap out of range (0 to 5)");
+    }
     if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0 to 100)");
     }
@@ -1185,7 +1189,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 local_segs[0].length = (int) ustrlen(reduced);
             }
         } else {
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "220: Selected symbology does not support GS1 mode");
+            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "210: Selected symbology does not support GS1 mode");
         }
     }
 
@@ -1445,7 +1449,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "239: Filename NULL");
     }
 
-    if (!strcmp(filename, "-")) {
+    if (strcmp(filename, "-") == 0) {
         file = stdin;
         fileLen = ZINT_MAX_DATA_LEN;
     } else {

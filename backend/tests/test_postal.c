@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -74,8 +74,8 @@ static void test_large(const testCtx *const p_ctx) {
         /* 23*/ { BARCODE_PLANET, "1", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 24*/ { BARCODE_KIX, "1", 18, 0, 3, 143 },
         /* 25*/ { BARCODE_KIX, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 26*/ { BARCODE_DAFT, "D", 100, 0, 3, 199 },
-        /* 27*/ { BARCODE_DAFT, "D", 101, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { BARCODE_DAFT, "D", 250, 0, 3, 499 },
+        /* 27*/ { BARCODE_DAFT, "D", 251, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

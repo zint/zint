@@ -1,7 +1,7 @@
 /* gs1.c - Verifies GS1 data */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -846,7 +846,11 @@ static const unsigned char *coupon_vli(const unsigned char *data, const int data
     if ((vli < vli_min || vli > vli_max) && (vli != 9 || !vli_nine)) {
         *p_err_no = 3;
         *p_err_posn = d - data + 1;
-        sprintf(err_msg, vli < 0 ? "Non-numeric %s VLI '%c'" : "Invalid %s VLI '%c'", name, *d);
+        if (vli < 0) {
+            sprintf(err_msg, "Non-numeric %s VLI '%c'", name, *d);
+        } else {
+            sprintf(err_msg, "Invalid %s VLI '%c'", name, *d);
+        }
         return NULL;
     }
     d++;
@@ -1101,8 +1105,11 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
                 *p_err_no = 3;
                 *p_err_posn = d - 1 - data + 1;
-                sprintf(err_msg, data_field < 0 ? "Non-numeric Data Field '%c'" : "Invalid Data Field '%c'",
-                    *(d - 1));
+                if (data_field < 0) {
+                    sprintf(err_msg, "Non-numeric Data Field '%c'", *(d - 1));
+                } else {
+                    sprintf(err_msg, "Invalid Data Field '%c'", *(d - 1));
+                }
                 return 0;
             }
         }

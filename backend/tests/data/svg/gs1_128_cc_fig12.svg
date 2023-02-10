@@ -244,7 +244,7 @@
       <rect x="332.00" y="32.00" width="6.00" height="68.00" />
       <rect x="340.00" y="32.00" width="2.00" height="68.00" />
       <rect x="344.00" y="32.00" width="4.00" height="68.00" />
-      <text x="174.00" y="115.40" text-anchor="middle"
+      <text x="174.00" y="114.00" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          (00)030123456789012340
       </text>

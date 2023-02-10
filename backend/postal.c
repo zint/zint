@@ -1,7 +1,7 @@
 /* postal.c - Handles POSTNET, PLANET, CEPNet, FIM. RM4SCC and Flattermarken */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
     Including bug fixes by Bryan Hatton
 
     Redistribution and use in source and binary forms, with or without
@@ -559,12 +559,12 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
 
 /* Handles DAFT Code symbols */
 INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int posns[100];
+    int posns[250];
     int loopey;
     int writer;
 
-    if (length > 100) {
-        strcpy(symbol->errtxt, "492: Input too long (100 character maximum)");
+    if (length > 250) {
+        strcpy(symbol->errtxt, "492: Input too long (250 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source, length);

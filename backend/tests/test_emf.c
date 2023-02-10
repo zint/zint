@@ -158,7 +158,8 @@ static void test_print(const testCtx *const p_ctx) {
                 /* Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
                    Doesn't seem to be a way to force Draw invocation through the command line */
                 ret = testUtilVerifyLibreOffice(expected_file, debug);
-                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0 - check that LibreOffice is not running!\n",
+                            i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);

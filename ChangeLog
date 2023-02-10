@@ -7,6 +7,9 @@ Version 2.12.0.9 (dev) not released yet
   for "C,M,Y,K" comma-separated decimal percentage strings
 - CMYK values for EPS (slightly) and TIF (significantly) have changed - now use
   the same RGB -> CMYK formula
+- Text (HRT) placement for vector (EMF/EPS/SVG) output changed - for EAN/UPC
+  slightly further away from barcode, for all others slightly nearer. Some
+  horizontal alignments of EAN/UPC vector text also tweaked
 
 Changes
 -------
@@ -25,6 +28,9 @@ Changes
 - GUI: Rearrange some Appearance tab inputs (Border Type <-> Width, Show Text
   <-> Font, Text/Font <-> Printing Scale/Size) to flow more naturally;
   save button "Save As..." -> "Save..." and add icon
+- Add `text_gap` option to allow adjustment of vertical gap between barcode and
+  text (HRT)
+- DAFT: up max to 250 chars
 
 Bugs
 ----
@@ -35,6 +41,8 @@ Bugs
 - GUI: fg/bgcolor text edit: fix right-click context menu not working properly
   by checking for it on FocusOut
 - GUI: fix fg/gbcolor icon background not being reset on zap
+- EMF/EPS/SVG/GUI: ignore BOLD_TEXT for EAN/UPC
+- EMF/EPS/SVG: fix addon bars placement/length when text hidden
 
 
 Version 2.12.0 (2022-12-12)

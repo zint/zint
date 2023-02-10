@@ -45,7 +45,7 @@
       <rect x="604.80" y="0.00" width="14.40" height="240.00" />
       <rect x="624.00" y="0.00" width="4.80" height="240.00" />
       <rect x="633.60" y="0.00" width="9.60" height="240.00" />
-      <text x="321.60" y="271.68" text-anchor="middle"
+      <text x="321.60" y="268.80" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="28.8" font-weight="bold" >
          This Text
       </text>

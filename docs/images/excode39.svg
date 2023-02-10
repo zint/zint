@@ -68,7 +68,7 @@
       <rect x="710.40" y="0.00" width="9.60" height="240.00" />
       <rect x="724.80" y="0.00" width="9.60" height="240.00" />
       <rect x="739.20" y="0.00" width="4.80" height="240.00" />
-      <text x="372.00" y="276.96" text-anchor="middle"
+      <text x="372.00" y="273.60" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="33.6" >
          123.45fd
       </text>

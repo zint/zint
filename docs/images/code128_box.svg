@@ -49,7 +49,7 @@
       <rect x="0.00" y="288.00" width="835.20" height="48.00" />
       <rect x="0.00" y="48.00" width="48.00" height="240.00" />
       <rect x="787.20" y="48.00" width="48.00" height="240.00" />
-      <text x="417.60" y="372.96" text-anchor="middle"
+      <text x="417.60" y="369.60" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="33.6" >
          This Text
       </text>

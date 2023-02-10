@@ -103,26 +103,26 @@
       <rect x="194.00" y="24.00" width="4.00" height="86.00" />
       <rect x="200.00" y="24.00" width="4.00" height="86.00" />
       <rect x="208.00" y="24.00" width="2.00" height="86.00" />
-      <rect x="232.00" y="43.00" width="2.00" height="57.00" />
-      <rect x="236.00" y="43.00" width="4.00" height="57.00" />
-      <rect x="244.00" y="43.00" width="4.00" height="57.00" />
-      <rect x="252.00" y="43.00" width="2.00" height="57.00" />
-      <rect x="256.00" y="43.00" width="2.00" height="57.00" />
-      <rect x="262.00" y="43.00" width="2.00" height="57.00" />
-      <rect x="268.00" y="43.00" width="4.00" height="57.00" />
-      <text x="14.00" y="116.00" text-anchor="end"
+      <rect x="232.00" y="40.90" width="2.00" height="59.10" />
+      <rect x="236.00" y="40.90" width="4.00" height="59.10" />
+      <rect x="244.00" y="40.90" width="4.00" height="59.10" />
+      <rect x="252.00" y="40.90" width="2.00" height="59.10" />
+      <rect x="256.00" y="40.90" width="2.00" height="59.10" />
+      <rect x="262.00" y="40.90" width="2.00" height="59.10" />
+      <rect x="268.00" y="40.90" width="4.00" height="59.10" />
+      <text x="14.70" y="116.10" text-anchor="end"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          1
       </text>
-      <text x="78.00" y="116.00" text-anchor="middle"
+      <text x="80.00" y="116.10" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="20.0" >
          23456
       </text>
-      <text x="158.00" y="116.00" text-anchor="middle"
+      <text x="158.00" y="116.10" text-anchor="middle"
          font-family="Helvetica, sans-serif" font-size="20.0" >
          78901
       </text>
-      <text x="224.00" y="116.00" text-anchor="start"
+      <text x="223.30" y="116.10" text-anchor="start"
          font-family="Helvetica, sans-serif" font-size="14.0" >
          2
       </text>

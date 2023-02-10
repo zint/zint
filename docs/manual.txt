@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.12.0.9
-January 2023
+February 2023
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -51,8 +51,9 @@ January 2023
     -   4.14 Working with Dots
     -   4.15 Multiple Segments
     -   4.16 Structured Append
-    -   4.17 Help Options
-    -   4.18 Other Output Options
+    -   4.17 Human Readable Text (HRT) Options
+    -   4.18 Help Options
+    -   4.19 Other Options
 -   5. Using the API
     -   5.1 Creating and Deleting Symbols
     -   5.2 Encoding and Saving to File
@@ -62,7 +63,7 @@ January 2023
     -   5.6 Setting Options
     -   5.7 Handling Errors
     -   5.8 Specifying a Symbology
-    -   5.9 Adjusting Other Output Options
+    -   5.9 Adjusting Output Options
     -   5.10 Setting the Input Mode
     -   5.11 Multiple Segments
     -   5.12 Scaling Helpers
@@ -676,9 +677,11 @@ alternative mode is selected. This command replaces the use of the -d switch.
 
     zint -i somefile.txt
 
+To read from stdin specify a single hyphen "-" as the input file.
+
 Note that except when batch processing (see 4.11 Batch Processing below), the
-file should not end with a newline (LF on Unix, CR+LF on Windows) unless you
-want the newline to be encoded in the symbol.
+file (or stdin) should not end with a newline (LF on Unix, CR+LF on Windows)
+unless you want the newline to be encoded in the symbol.
 
 4.2 Directing Output
 
@@ -1430,7 +1433,7 @@ This command will output the symbol as a PCX file to stdout. The currently
 supported output file formats are shown in the following table.
 
   Abbreviation   File format
-  -------------- -------------------------------------------
+  -------------- ------------------------------------
   BMP            Windows Bitmap
   EMF            Enhanced Metafile Format
   EPS            Encapsulated PostScript
@@ -1439,7 +1442,7 @@ supported output file formats are shown in the following table.
   PNG            Portable Network Graphic
   SVG            Scalable Vector Graphic
   TIF            Tagged Image File Format
-  TXT            Text file (see 4.18 Other Output Options)
+  TXT            Text file (see 4.19 Other Options)
 
   : Table : Output File Formats:
 
@@ -1522,7 +1525,24 @@ for all symbols belonging to the same sequence. The index is 1-based and goes
 from 1 to count. Count must be 2 or more. See the individual symbologies for
 further details.
 
-4.17 Help Options
+4.17 Human Readable Text (HRT) Options
+
+For linear barcodes the text present in the output image can be removed by using
+the --notext option.
+
+Text can be set to bold using the --bold option, or a smaller font can be
+substituted using the --small option. The --bold and --small options can be used
+together if required, but only for vector output.
+
+[zint --bold -d "This Text" --small]
+
+The gap between the barcode and the text can be adjusted using the --textgap
+option, where the gap is given as a multiple of the X-dimension (maximum 5X). A
+zero value uses the default gap.
+
+[zint -d "Áccent" --textgap=0.1]
+
+4.18 Help Options
 
 There are three help options which give information about how to use the command
 line. The -h or --help option will display a list of all of the valid options
@@ -1534,16 +1554,7 @@ numbers and names.
 
 The -e or --ecinos option gives a list of the ECI codes.
 
-4.18 Other Output Options
-
-For linear barcodes the text present in the output image can be removed by using
-the --notext option.
-
-The text can be set to bold using the --bold option, or a smaller font can be
-substituted using the --small option. The --bold and --small options can be used
-together if required, but only for vector output.
-
-[zint --bold -d "This Text" --small]
+4.19 Other Options
 
 Zint can output a representation of the symbol data as a set of hexadecimal
 values if asked to output to a text file ("*.txt") or if given the option
@@ -1656,7 +1667,8 @@ values are 0, 90, 180 and 270.
 
 The ZBarcode_Encode_File() and ZBarcode_Encode_File_and_Print() functions can be
 used to encode data read directly from a text file where the filename is given
-in the NUL-terminated filename string.
+in the NUL-terminated filename string. The special filename "-" (single hyphen)
+can be used to read from stdin.
 
 If printing more than one barcode, the zint_symbol structure may be re-used by
 calling the ZBarcode_Clear() function after each barcode to free any output
@@ -1778,23 +1790,27 @@ encoding stages. The zint_symbol structure consists of the following variables:
   symbology             integer      Symbol to use (see 5.8       BARCODE_CODE128
                                      Specifying a Symbology).
 
-  height                float        Symbol height, excluding     Symbol dependent
+  height                float        Symbol height in             Symbol dependent
+                                     X-dimensions, excluding
                                      fixed width-to-height
                                      symbols.[7]
 
   scale                 float        Scale factor for adjusting   1.0
-                                     size of image.
+                                     size of image (sets
+                                     X-dimension).
 
-  whitespace_width      integer      Horizontal whitespace width. 0
+  whitespace_width      integer      Horizontal whitespace width  0
+                                     in X-dimensions.
 
-  whitespace_height     integer      Vertical whitespace height.  0
+  whitespace_height     integer      Vertical whitespace height   0
+                                     in X-dimensions.
 
-  border_width          integer      Border width.                0
+  border_width          integer      Border width in              0
+                                     X-dimensions.
 
-  output_options        integer      Set various output file      0 (none)
+  output_options        integer      Set various output           0 (none)
                                      parameters (see 5.9
-                                     Adjusting Other Output
-                                     Options).
+                                     Adjusting Output Options).
 
   fgcolour              character    Foreground (ink) colour as   "000000"
                         string       RGB/RGBA hexadecimal string
@@ -1832,7 +1848,8 @@ encoding stages. The zint_symbol structure consists of the following variables:
 
   option_3              integer      Symbol specific options.     0
 
-  show_hrt              integer      Set to 0 to hide text.       1
+  show_hrt              integer      Set to 0 to hide Human       1
+                                     Readable Text (HRT).
 
   input_mode            integer      Set encoding of input data   DATA_MODE
                                      (see 5.10 Setting the Input
@@ -1846,10 +1863,15 @@ encoding stages. The zint_symbol structure consists of the following variables:
                                      only).
 
   dot_size              float        Diameter of dots used in     0.8
-                                     dotty mode.
+                                     dotty mode (in
+                                     X-dimensions).
+
+  text_gap              float        Gap between barcode and text 0 (font-specific
+                                     (HRT) in X-dimensions.       default)
 
   guard_descent         float        Height of guard bar descent  5.0
-                                     (EAN/UPC only).
+                                     (EAN/UPC only) in
+                                     X-dimensions.
 
   structapp             Structured   Mark a symbol as part of a   count 0
                         Append       sequence of symbols.         (disabled)
@@ -1878,7 +1900,7 @@ encoding stages. The zint_symbol structure consists of the following variables:
                         arrays
 
   row_height            array of     Representation of the height (output only)
-                        floats       of a row.
+                        floats       of rows.
 
   errtxt                character    Error message in the event   (output only)
                         string       that an error occurred, with
@@ -2042,7 +2064,7 @@ means the same as
 
     symbol->symbology = 50;
 
-5.9 Adjusting Other Output Options
+5.9 Adjusting Output Options
 
 The output_options variable can be used to adjust various aspects of the output
 file. To select more than one option from the table below simply OR them
@@ -4384,7 +4406,7 @@ defined.
 
 Annex B. Man Page ZINT(1)
 
-% ZINT(1) Version 2.12.0.9 % % January 2023
+% ZINT(1) Version 2.12.0.9 % % February 2023
 
 NAME
 
@@ -4615,7 +4637,8 @@ OPTIONS
 
 -i, --input=FILE
 
-    Read the input data from FILE.
+    Read the input data from FILE. Specify a single hyphen (-) for FILE to read
+    from stdin.
 
 --init
 
@@ -4777,6 +4800,12 @@ OPTIONS
 
     Display the table of barcode types (symbologies). The numbers or names can
     be used with -b | --barcode.
+
+--textgap=NUMBER
+
+    Adjust the gap between the barcode and the Human Readable Text (HRT). NUMBER
+    is in multiples of the X-dimension, and may be floating-point. Maximum is 5;
+    zero results in the default being used.
 
 --vers=INTEGER
 
