@@ -67,10 +67,28 @@ ret /pixs known {
         /pixs ret /pixs get def
     } ifelse
 
+    /pixx ret /pixx known { ret /pixx get } { 0 } ifelse def
+
+    b (codablockf) eq b (hibccodablockf) eq or b (code16k) eq or b (code49) eq or {
+        % Strip separators and boundary bars
+        /testi b (code16k) eq { 16 } { b (code49) eq { 11 } { 21 } ifelse } ifelse def
+        /tmppixs pixs length array def
+        /j 0 def
+        0 pixx pixs length 1 sub {
+            /i exch def
+            pixs i testi add get 1 ne {
+                tmppixs j pixs i pixx getinterval putinterval
+                /j j pixx add def
+            } if
+        } for
+        /pixs j array def
+        pixs 0 tmppixs 0 j getinterval putinterval
+    } if
+
     /xs systemdict /xs known { systemdict /xs get cvi } { 0 } ifelse def
     /xe systemdict /xe known { systemdict /xe get cvi } { 0 } ifelse def
 
-    n xs 0 ne or xe 0 ne or ret /pixx known and {  % If newlines or start/end indexes requested and have row width
+    n xs 0 ne or xe 0 ne or pixx 0 ne and {  % If newlines or start/end indexes requested and have row width
         /pixx ret /pixx get def
         xs pixx pixs length 1 sub xe sub {  % For i = xs; i < pixs length - xe; i += pixx
             pixs exch pixx xs sub xe sub getinterval {  % For j = i; j < i + pixx - xs -xe; j++

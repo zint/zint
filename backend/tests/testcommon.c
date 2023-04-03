@@ -2618,7 +2618,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     *bwipp_data = '0';
                 }
             } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
                 if (option_1 > 0) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_1);
@@ -2731,14 +2730,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 strcpy(bwipp_data, "fima");
                 bwipp_data[3] = z_isupper(data[0]) ? data[0] - 'A' + 'a' : data[0];
             } else if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssepheight=0", strlen(bwipp_opts_buf) ? " " : "");
-                bwipp_opts = bwipp_opts_buf;
                 if (option_1 >= 2) {
                     if ((symbology == BARCODE_CODE16K && option_1 <= 16)
                             || (symbology == BARCODE_CODE49 && option_1 <= 8 && option_1 >= symbol->rows)) {
                         sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srows=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_1);
                     }
+                    bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
                 int compact = 0, full = 0;
@@ -3016,16 +3014,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             }
         } else if (symbology == BARCODE_ULTRA) {
+            const int rev = option_2 == 2 ? 2 : 1;
             if (option_1 >= 1 && option_1 <= 6) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=EC%d",
                         strlen(bwipp_opts_buf) ? " " : "", option_1 - 1);
-                bwipp_opts = bwipp_opts_buf;
             }
-            if (option_2 >= 1 && option_2 <= 2) {
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srev=%d",
-                        strlen(bwipp_opts_buf) ? " " : "", option_2);
-                bwipp_opts = bwipp_opts_buf;
-            }
+            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%srev=%d", strlen(bwipp_opts_buf) ? " " : "", rev);
+            bwipp_opts = bwipp_opts_buf;
         }
     }
 

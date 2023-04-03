@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1607,7 +1607,31 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110000011010101010011010011000"
                     "11111111111111111111111111111111"
                 },
-        /* 26*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", -1, 0, 20, 20, 1, "GGS Figure 5.6.2-1", 0,
+        /* 26*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09524000059109[21]12345678p901[10]1234567p[17]271120", -1, 0, 22, 22, 1, "GGS v23 Figure 4.15.1-1 (and 4.15.1-3 and 4.15.1-4)", 0,
+                    "1010101010101010101010"
+                    "1100111101000011000111"
+                    "1000101101111100100100"
+                    "1011101100100110001001"
+                    "1110010100001000011100"
+                    "1000010100110100101101"
+                    "1001000111010000011000"
+                    "1001011010110001101111"
+                    "1110101000001000100100"
+                    "1101110011011000101001"
+                    "1001101000010110100010"
+                    "1011001101011011001001"
+                    "1110110011101011011010"
+                    "1110010101001100110001"
+                    "1010001000011110011100"
+                    "1111101111110110001111"
+                    "1101011110011111010010"
+                    "1010001011101101101101"
+                    "1110010011011110100010"
+                    "1001011100110011100111"
+                    "1001110001100110100100"
+                    "1111111111111111111111"
+                },
+        /* 27*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", -1, 0, 20, 20, 1, "GGS Figure 5.6.2-1", 0,
                     "10101010101010101010"
                     "11001111010111100111"
                     "10001010100101010100"
@@ -1629,7 +1653,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011010101001110010"
                     "11111111111111111111"
                 },
-        /* 27*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", -1, 0, 20, 20, 1, "GGS Figure 5.6.2-1", 0,
+        /* 28*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]09512345678901[15]170810[21]abcde", -1, 0, 20, 20, 1, "GGS Figure 5.6.2-1", 0,
                     "10101010101010101010"
                     "11001111010111100111"
                     "10001010100101010100"
@@ -1651,7 +1675,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011010101001110010"
                     "11111111111111111111"
                 },
-        /* 28*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", -1, 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)", 0,
+        /* 29*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", -1, 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)", 0,
                     "10101010101010101010101010"
                     "11001000010011010100111111"
                     "10001001100010001111001010"
@@ -1665,7 +1689,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10001001100010100010100000"
                     "11111111111111111111111111"
                 },
-        /* 29*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", -1, 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)", 0,
+        /* 30*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]040115", -1, 0, 12, 26, 1, "GGS Figure 5.6.3.1-1 (left)", 0,
                     "10101010101010101010101010"
                     "11001000010011010100111111"
                     "10001001100010001111001010"
@@ -1679,7 +1703,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10001001100010100010100000"
                     "11111111111111111111111111"
                 },
-        /* 30*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", -1, 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)", 0,
+        /* 31*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", -1, 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)", 0,
                     "101010101010101010"
                     "110010000100010101"
                     "100010011010111110"
@@ -1699,7 +1723,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100000101110000100"
                     "111111111111111111"
                 },
-        /* 31*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", -1, 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)", 0,
+        /* 32*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[01]00012345678905[17]040115", -1, 0, 18, 18, 1, "GGS Figure 5.6.3.1-1 (right)", 0,
                     "101010101010101010"
                     "110010000100010101"
                     "100010011010111110"
@@ -1719,7 +1743,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100000101110000100"
                     "111111111111111111"
                 },
-        /* 32*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /* 33*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "10101010101010101010101010101010"
                     "11001000010111111000100110101011"
                     "10001001100001101100110010100010"
@@ -1753,7 +1777,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110110001001001010110111010110"
                     "11111111111111111111111111111111"
                 },
-        /* 33*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 2,
+        /* 34*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]ABCDEFGHI123456789[92]abcdefghi", -1, 0, 32, 32, 0, "GGS Figure 5.6.3.2-3 (left) **NOT SAME** different encodation; BWIPP different encodation", 2,
                     "10101010101010101010101010101010"
                     "11001000010111111001100001001011"
                     "10001001100001101101000101000010"
@@ -1787,7 +1811,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110000001011001010110001000110"
                     "11111111111111111111111111111111"
                 },
-        /* 34*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", -1, 0, 16, 48, 1, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation", 0,
+        /* 35*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", -1, 0, 16, 48, 1, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation", 0,
                     "101010101010101010101010101010101010101010101010"
                     "110010000101111001000011101101100100111011001111"
                     "100010011000011101111100100100011000110010111100"
@@ -1805,7 +1829,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101110001010001011101010101101111111111000000100"
                     "111111111111111111111111111111111111111111111111"
                 },
-        /* 35*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", -1, 0, 16, 48, 0, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation; BWIPP same as FAST_MODE", 2,
+        /* 36*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, 30, -1, "[01]00012345678905[17]180401[21]ABCDEFGHIJKL12345678[91]abcdefghi", -1, 0, 16, 48, 0, "GGS Figure 5.6.3.2-3 (right) **NOT SAME** different encodation; BWIPP same as FAST_MODE", 2,
                     "101010101010101010101010101010101010101010101010"
                     "110010000101111001000011101101100100111011001111"
                     "100010011000011101111100100100011000110010111100"
@@ -1823,7 +1847,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101110001010001011101010101101111111111000000100"
                     "111111111111111111111111111111111111111111111111"
                 },
-        /* 36*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data", 0,
+        /* 37*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data", 0,
                     "101010101010101010101010"
                     "110001110100011010101101"
                     "100010100100101000011000"
@@ -1849,7 +1873,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001011011101100011010"
                     "111111111111111111111111"
                 },
-        /* 37*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data", 0,
+        /* 38*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, DM_SQUARE, "[00]395011010013000129[403]123+1021JK+0320+12[421]5281500KM", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-6 **NOT SAME** figure has unnecessary FNC1 at end of data", 0,
                     "101010101010101010101010"
                     "110001110100011010101101"
                     "100010100100101000011000"
@@ -1875,7 +1899,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111001011011101100011010"
                     "111111111111111111111111"
                 },
-        /* 38*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation", 0,
+        /* 39*/ { BARCODE_DATAMATRIX, GS1_MODE | FAST_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation", 0,
                     "101010101010101010101010"
                     "110011100101100110110101"
                     "100010001001111010000100"
@@ -1901,7 +1925,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101110011001110010101010"
                     "111111111111111111111111"
                 },
-        /* 39*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation", 0,
+        /* 40*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, "[00]093123450000000012[421]0362770[401]931234518430GR[403]MEL", -1, 0, 24, 24, 1, "GGS Figure 6.6.5-7 **NOT SAME** different encodation", 0,
                     "101010101010101010101010"
                     "110011100101100110110101"
                     "100010001001111010000100"
@@ -1927,7 +1951,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101110011001110010101010"
                     "111111111111111111111111"
                 },
-        /* 40*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "A123BJC5D6E71", -1, 0, 16, 16, 0, "HIBC/LIC Figure 3 same; BWIPP different encodation, same no. of codewords", 0,
+        /* 41*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "A123BJC5D6E71", -1, 0, 16, 16, 0, "HIBC/LIC Figure 3 same; BWIPP different encodation, same no. of codewords", 0,
                     "1010101010101010"
                     "1011101001111011"
                     "1000001100010100"
@@ -1945,7 +1969,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111100111000010"
                     "1111111111111111"
                 },
-        /* 41*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71", -1, 0, 16, 16, 0, "HIBC/LIC Figure 3 **NOT SAME** (see FAST_MODE); BWIPP different encodation", 0,
+        /* 42*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71", -1, 0, 16, 16, 0, "HIBC/LIC Figure 3 **NOT SAME** (see FAST_MODE); BWIPP different encodation", 0,
                     "1010101010101010"
                     "1011101100110101"
                     "1000110001101100"
@@ -1963,7 +1987,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000100111000010"
                     "1111111111111111"
                 },
-        /* 42*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", -1, 0, 20, 20, 0, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit; BWIPP different encodation", 0,
+        /* 43*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", -1, 0, 20, 20, 0, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit; BWIPP different encodation", 0,
                     "10101010101010101010"
                     "10111011000101100001"
                     "10000110011010101100"
@@ -1985,7 +2009,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010010000100010"
                     "11111111111111111111"
                 },
-        /* 43*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", -1, 0, 20, 20, 0, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit; BWIPP different encodation", 0,
+        /* 44*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "A123BJC5D6E71/$$52001510X3", -1, 0, 20, 20, 0, "HIBC/LIC Section 4.3.3 **NOT SAME** different encodation; also figure has weird CRLF after check digit; BWIPP different encodation", 0,
                     "10101010101010101010"
                     "10111011011011011001"
                     "10001100010010100100"
@@ -2007,7 +2031,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011111101001100010"
                     "11111111111111111111"
                 },
-        /* 44*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "H123ABC01234567890", -1, 0, 12, 26, 1, "HIBC/LIC Figure C2, same", 0,
+        /* 45*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "H123ABC01234567890", -1, 0, 12, 26, 1, "HIBC/LIC Figure C2, same", 0,
                     "10101010101010101010101010"
                     "10111011011011110101001101"
                     "10010110000001001100110100"
@@ -2021,7 +2045,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010001100110000011010"
                     "11111111111111111111111111"
                 },
-        /* 45*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "H123ABC01234567890", -1, 0, 12, 26, 1, "HIBC/LIC Figure C2, same", 0,
+        /* 46*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "H123ABC01234567890", -1, 0, 12, 26, 1, "HIBC/LIC Figure C2, same", 0,
                     "10101010101010101010101010"
                     "10111011011011110101001101"
                     "10010110000001001100110100"
@@ -2035,7 +2059,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010001100110000011010"
                     "11111111111111111111111111"
                 },
-        /* 46*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", -1, 0, 20, 20, 1, "HIBC/PAS Section 2.2 Patient Id, same", 0,
+        /* 47*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", -1, 0, 20, 20, 1, "HIBC/PAS Section 2.2 Patient Id, same", 0,
                     "10101010101010101010"
                     "10001000010011001001"
                     "11100110001010110100"
@@ -2057,7 +2081,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000100100110010010"
                     "11111111111111111111"
                 },
-        /* 47*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", -1, 0, 20, 20, 0, "HIBC/PAS Section 2.2 Patient Id **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
+        /* 48*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/ACMRN123456/V200912190833", -1, 0, 20, 20, 0, "HIBC/PAS Section 2.2 Patient Id **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
                     "10101010101010101010"
                     "11000000010011001111"
                     "11010001101010110110"
@@ -2079,7 +2103,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11100110100110001010"
                     "11111111111111111111"
                 },
-        /* 48*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 20, 20, 1, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro, same", 0,
+        /* 49*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 20, 20, 1, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro, same", 0,
                     "10101010101010101010"
                     "10000000001110001111"
                     "11010101001010011100"
@@ -2101,7 +2125,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11100110001010111010"
                     "11111111111111111111"
                 },
-        /* 49*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 20, 20, 0, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
+        /* 50*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 20, 20, 0, "HIBC/PAS 1.3-2010 Section 2.2 Patient Id Macro **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
                     "10101010101010101010"
                     "11111011001110001111"
                     "11100100001010011100"
@@ -2123,7 +2147,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11011111001010100010"
                     "11111111111111111111"
                 },
-        /* 50*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/EO523201", -1, 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same", 0,
+        /* 51*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/EO523201", -1, 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same", 0,
                     "10101010101010"
                     "10011001010101"
                     "11101000011010"
@@ -2139,7 +2163,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010000100"
                     "11111111111111"
                 },
-        /* 51*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EO523201", -1, 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same", 0,
+        /* 52*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EO523201", -1, 0, 14, 14, 1, "HIBC/PAS Section 2.2 Purchase Order, same", 0,
                     "10101010101010"
                     "10011001010101"
                     "11101000011010"
@@ -2155,7 +2179,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010000100"
                     "11111111111111"
                 },
-        /* 52*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", -1, 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same", 0,
+        /* 53*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", -1, 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same", 0,
                     "101010101010101010"
                     "100110010100100001"
                     "111011110110010110"
@@ -2175,7 +2199,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111000010011001010"
                     "111111111111111111"
                 },
-        /* 53*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", -1, 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same", 0,
+        /* 54*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, DM_SQUARE, "/EU720060FF0/O523201", -1, 0, 18, 18, 1, "HIBC/PAS Section 2.2 2nd Purchase Order, same", 0,
                     "101010101010101010"
                     "100110010100100001"
                     "111011110110010110"
@@ -2195,7 +2219,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111000010011001010"
                     "111111111111111111"
                 },
-        /* 54*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same", 0,
+        /* 55*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same", 0,
                     "1010101010101010101010"
                     "1001100101001000000011"
                     "1110111101100001111010"
@@ -2219,7 +2243,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010110000010001001000"
                     "1111111111111111111111"
                 },
-        /* 55*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same", 0,
+        /* 56*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/EU720060FF0/O523201/Z34H159/M9842431340", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (left), same", 0,
                     "1010101010101010101010"
                     "1001100101001000000011"
                     "1110111101100001111010"
@@ -2243,7 +2267,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010110000010001001000"
                     "1111111111111111111111"
                 },
-        /* 56*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same", 0,
+        /* 57*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same", 0,
                     "1010101010101010101010"
                     "1000000000111010011101"
                     "1101011100101001011100"
@@ -2267,7 +2291,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110110011101101000"
                     "1111111111111111111111"
                 },
-        /* 57*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same", 0,
+        /* 58*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/EU720060FF0/O523201/Z34H159/M9842431340V\\R\\E", -1, 0, 22, 22, 1, "HIBC/PAS Section 2.2 3rd Purchase Order (right), same", 0,
                     "1010101010101010101010"
                     "1000000000111010011101"
                     "1101011100101001011100"
@@ -2291,7 +2315,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110110011101101000"
                     "1111111111111111111111"
                 },
-        /* 58*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/E+/KN12345", -1, 0, 16, 16, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** check digit 'A' in figure is for '/KN12345', but actual data is as given here, when check digit is 'J'", 0,
+        /* 59*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/E+/KN12345", -1, 0, 16, 16, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** check digit 'A' in figure is for '/KN12345', but actual data is as given here, when check digit is 'J'", 0,
                     "1010101010101010"
                     "1001101010001111"
                     "1110001000101100"
@@ -2309,7 +2333,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001000000000010"
                     "1111111111111111"
                 },
-        /* 59*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/E+/KN12345", -1, 0, 16, 16, 0, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** see above; BWIPP same as FAST_MODE", 0,
+        /* 60*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/E+/KN12345", -1, 0, 16, 16, 0, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** see above; BWIPP same as FAST_MODE", 0,
                     "1010101010101010"
                     "1100011011001011"
                     "1101100111000110"
@@ -2327,7 +2351,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001111001100010"
                     "1111111111111111"
                 },
-        /* 60*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/LAH123/NC903", -1, 0, 16, 16, 1, "HIBC/PAS Section 2.2 Surgical Instrument, same", 0,
+        /* 61*/ { BARCODE_HIBC_DM, FAST_MODE, -1, -1, -1, -1, "/LAH123/NC903", -1, 0, 16, 16, 1, "HIBC/PAS Section 2.2 Surgical Instrument, same", 0,
                     "1010101010101010"
                     "1001010001010001"
                     "1110010100000100"
@@ -2345,7 +2369,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1100000101010010"
                     "1111111111111111"
                 },
-        /* 61*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/LAH123/NC903", -1, 0, 16, 16, 0, "HIBC/PAS Section 2.2 Surgical Instrument **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
+        /* 62*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, "/LAH123/NC903", -1, 0, 16, 16, 0, "HIBC/PAS Section 2.2 Surgical Instrument **NOT SAME** (see FAST_MODE); BWIPP same as FAST_MODE", 0,
                     "1010101010101010"
                     "1111000001001111"
                     "1110010001010110"
@@ -2363,7 +2387,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110011111101010"
                     "1111111111111111"
                 },
-        /* 62*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", -1, 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect", 0,
+        /* 63*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", -1, 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect", 0,
                     "1010101010101010101010"
                     "1101110000111001011011"
                     "1010111010001010001110"
@@ -2387,7 +2411,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001010010010110100"
                     "1111111111111111111111"
                 },
-        /* 63*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", -1, 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect", 0,
+        /* 64*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, 7, -1, "[)>\\R06\\G18VD89536\\G1P8902A\\GS3122A02965\\R\\E", -1, 0, 22, 22, 1, "ANSI MH10.8.17-2017 Figure 4 Macro06 **NOT SAME** 253-state randomising of padding in figure seems incorrect", 0,
                     "1010101010101010101010"
                     "1101110000111001011011"
                     "1010111010001010001110"
@@ -2411,7 +2435,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001010010010110100"
                     "1111111111111111111111"
                 },
-        /* 64*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7", 0,
+        /* 65*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7", 0,
                     "1010101010101010"
                     "1101000010101111"
                     "1011100001011100"
@@ -2429,7 +2453,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010101010001010"
                     "1111111111111111"
                 },
-        /* 65*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7", 0,
+        /* 66*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G25S0614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B7", 0,
                     "1010101010101010"
                     "1101000010101111"
                     "1011100001011100"
@@ -2447,7 +2471,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010101010001010"
                     "1111111111111111"
                 },
-        /* 66*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8", 0,
+        /* 67*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE | FAST_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8", 0,
                     "1010101010101010"
                     "1111100010001111"
                     "1010100001100100"
@@ -2465,7 +2489,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010000010101010"
                     "1111111111111111"
                 },
-        /* 67*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8", 0,
+        /* 68*/ { BARCODE_DATAMATRIX, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R05\\G80040614141MH80312\\R\\E", -1, 0, 16, 16, 1, "ANSI MH10.8.17-2017 Table B.1 B8", 0,
                     "1010101010101010"
                     "1111100010001111"
                     "1010100001100100"
@@ -2483,7 +2507,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010000010101010"
                     "1111111111111111"
                 },
-        /* 68*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 3 Example 1", 0,
+        /* 69*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 3 Example 1", 0,
                     "1010101010101010"
                     "1001001011100001"
                     "1000111110110000"
@@ -2501,7 +2525,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001011001111010"
                     "1111111111111111"
                 },
-        /* 69*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "price:£20.00", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 3 Example 2", 0,
+        /* 70*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "price:£20.00", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 3 Example 2", 0,
                     "10101010101010101010101010"
                     "10000111010111000110110001"
                     "10000101101010010011011000"
@@ -2515,7 +2539,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11100101010110100111011000"
                     "11111111111111111111111111"
                 },
-        /* 70*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 3 Example 3", 0,
+        /* 71*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 3, -1, -1, -1, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 3 Example 3", 0,
                     "101010101010101010"
                     "100000001010011011"
                     "100010111000011100"
@@ -2535,7 +2559,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100110001010000100"
                     "111111111111111111"
                 },
-        /* 71*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 4, -1, -1, -1, "Študentska št. 2198390", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 4 Example 1; BWIPP same as FAST_MODE", 0,
+        /* 72*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 4, -1, -1, -1, "Študentska št. 2198390", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 4 Example 1; BWIPP same as FAST_MODE", 0,
                     "10101010101010101010"
                     "10001110100110101111"
                     "10001101000001010110"
@@ -2557,7 +2581,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000001001011010"
                     "11111111111111111111"
                 },
-        /* 72*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 4, -1, 10, -1, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 32, 32, 0, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /* 73*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 4, -1, 10, -1, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 32, 32, 0, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "10101010101010101010101010101010"
                     "10010010111100111011110110001111"
                     "10001111110010101000001000100000"
@@ -2591,7 +2615,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001100101101101010010101100000"
                     "11111111111111111111111111111111"
                 },
-        /* 73*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 5, -1, -1, DM_SQUARE, "Liĥtenŝtejno", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP different encodation", 0,
+        /* 74*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 5, -1, -1, DM_SQUARE, "Liĥtenŝtejno", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP different encodation", 0,
                     "101010101010101010"
                     "100101101010111011"
                     "100011010100011110"
@@ -2611,7 +2635,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001011101010110"
                     "111111111111111111"
                 },
-        /* 74*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 6, -1, -1, DM_SQUARE, "Lietuvą", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 6 Example 1", 0,
+        /* 75*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 6, -1, -1, DM_SQUARE, "Lietuvą", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 6 Example 1", 0,
                     "1010101010101010"
                     "1001011011110111"
                     "1000010100001110"
@@ -2629,7 +2653,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1100100101110010"
                     "1111111111111111"
                 },
-        /* 75*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 7, -1, -1, DM_SQUARE, "Россия", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 7 Example 1", 0,
+        /* 76*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 7, -1, -1, DM_SQUARE, "Россия", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 7 Example 1", 0,
                     "1010101010101010"
                     "1001110110001111"
                     "1001101010110100"
@@ -2647,7 +2671,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010110001000010"
                     "1111111111111111"
                 },
-        /* 76*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 7, -1, -1, DM_SQUARE, "Монголулс", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 7 Example 2", 0,
+        /* 77*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 7, -1, -1, DM_SQUARE, "Монголулс", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 7 Example 2", 0,
                     "101010101010101010"
                     "100111100010010101"
                     "100110000111111110"
@@ -2667,7 +2691,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110100011110000100"
                     "111111111111111111"
                 },
-        /* 77*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 8, -1, -1, DM_SQUARE, "جواز السفر", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 8 Example 1", 0,
+        /* 78*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 8, -1, -1, DM_SQUARE, "جواز السفر", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 8 Example 1", 0,
                     "101010101010101010"
                     "100111100010000001"
                     "100110001111110010"
@@ -2687,7 +2711,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100011100001010"
                     "111111111111111111"
                 },
-        /* 78*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 8, -1, -1, -1, "المنشأ: المملكة العربية السعودية", -1, 0, 24, 24, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /* 79*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 8, -1, -1, -1, "المنشأ: المملكة العربية السعودية", -1, 0, 24, 24, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "101010101010101010101010"
                     "100111010010111011001011"
                     "100110111100000010010000"
@@ -2713,7 +2737,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100111000101101010110010"
                     "111111111111111111111111"
                 },
-        /* 79*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 9, -1, -1, DM_SQUARE, "Μέρος #. α123", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 9 Example 1", 0,
+        /* 80*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 9, -1, -1, DM_SQUARE, "Μέρος #. α123", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 9 Example 1", 0,
                     "101010101010101010"
                     "100111100100000011"
                     "100110001111001100"
@@ -2733,7 +2757,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111100011110101000"
                     "111111111111111111"
                 },
-        /* 80*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 10, -1, -1, -1, "דרכון", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 10 Example 1", 0,
+        /* 81*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 10, -1, -1, -1, "דרכון", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 10 Example 1", 0,
                     "10101010101010101010101010101010"
                     "10011101110010011001011101110101"
                     "10011110001001001011101011110100"
@@ -2743,7 +2767,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010100010001101010000011101010"
                     "11111111111111111111111111111111"
                 },
-        /* 81*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 10, -1, -1, -1, "מספר חלק: A20200715001", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
+        /* 82*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 10, -1, -1, -1, "מספר חלק: A20200715001", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
                     "10101010101010101010"
                     "10011110011111000111"
                     "10011101101010101110"
@@ -2765,7 +2789,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000111100100101010"
                     "11111111111111111111"
                 },
-        /* 82*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 10, -1, -1, -1, "מספר חלק: A20200715001", -1, 0, 20, 20, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation", 0,
+        /* 83*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 10, -1, -1, -1, "מספר חלק: A20200715001", -1, 0, 20, 20, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation", 0,
                     "10101010101010101010"
                     "10011101100001000111"
                     "10011111111110010110"
@@ -2787,7 +2811,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000111010001111010"
                     "11111111111111111111"
                 },
-        /* 83*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 11, -1, -1, -1, "Amerika Birleşik Devletleri", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
+        /* 84*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 11, -1, -1, -1, "Amerika Birleşik Devletleri", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
                     "1010101010101010101010"
                     "1000101011001011000001"
                     "1001111101111001101100"
@@ -2811,7 +2835,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110010000010000011110"
                     "1111111111111111111111"
                 },
-        /* 84*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 11, -1, -1, -1, "Amerika Birleşik Devletleri", -1, 0, 22, 22, 1, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** different encodation", 0,
+        /* 85*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 11, -1, -1, -1, "Amerika Birleşik Devletleri", -1, 0, 22, 22, 1, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** different encodation", 0,
                     "1010101010101010101010"
                     "1001110011001011001001"
                     "1001111001111001110100"
@@ -2835,7 +2859,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110111101000010011110"
                     "1111111111111111111111"
                 },
-        /* 85*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 11, -1, -1, -1, "Biniş kartı #120921039", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 11 Example 2; BWIPP different encodation", 0,
+        /* 86*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 11, -1, -1, -1, "Biniş kartı #120921039", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 11 Example 2; BWIPP different encodation", 0,
                     "10101010101010101010"
                     "10001110101011111111"
                     "10010101011000110110"
@@ -2857,7 +2881,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000100110101011010"
                     "11111111111111111111"
                 },
-        /* 86*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 12, -1, -1, -1, "Kūrybiškumą", -1, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
+        /* 87*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 12, -1, -1, -1, "Kūrybiškumą", -1, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
                     "10101010101010101010101010"
                     "10010010000111001101100011"
                     "10011111110110110110111000"
@@ -2871,7 +2895,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011101110100000011000100"
                     "11111111111111111111111111"
                 },
-        /* 87*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 12, -1, -1, -1, "Kūrybiškumą", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** different encodation", 0,
+        /* 88*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 12, -1, -1, -1, "Kūrybiškumą", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** different encodation", 0,
                     "10101010101010101010101010"
                     "10011110000111001010011111"
                     "10010001010110110011110000"
@@ -2885,7 +2909,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000101010100110000011010"
                     "11111111111111111111111111"
                 },
-        /* 88*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 13, -1, -1, -1, "บาร๋แค่ด", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /* 89*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 13, -1, -1, -1, "บาร๋แค่ด", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "1010101010101010"
                     "1001110100011001"
                     "1001101111101000"
@@ -2903,7 +2927,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001010001001010"
                     "1111111111111111"
                 },
-        /* 89*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 15, -1, -1, -1, "uzņēmums", -1, 0, 16, 16, 0, "AIM ITS/04-023:2022 ECI 15 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /* 90*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 15, -1, -1, -1, "uzņēmums", -1, 0, 16, 16, 0, "AIM ITS/04-023:2022 ECI 15 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "1010101010101010"
                     "1001101111101001"
                     "1010110111010100"
@@ -2921,7 +2945,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110011001011010"
                     "1111111111111111"
                 },
-        /* 90*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 16, -1, -1, -1, "ṁórṡáċ", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /* 91*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 16, -1, -1, -1, "ṁórṡáċ", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010101010101010101010"
                     "10011101001100111111001100100101"
                     "10101011110110101011000000111100"
@@ -2931,7 +2955,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101100010001001001011110100100"
                     "11111111111111111111111111111111"
                 },
-        /* 91*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 17, -1, -1, -1, "Price: €13.50", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 17 Example 1", 0,
+        /* 92*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 17, -1, -1, -1, "Price: €13.50", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 17 Example 1", 0,
                     "10101010101010101010101010"
                     "10000111000111101110001001"
                     "10100101110010111101000010"
@@ -2945,7 +2969,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10100111000100011110100110"
                     "11111111111111111111111111"
                 },
-        /* 92*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 18, -1, -1, -1, "Te słowa są głębokie", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /* 93*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 18, -1, -1, -1, "Te słowa są głębokie", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "1010101010101010101010"
                     "1001011001001010011011"
                     "1010001101110111011000"
@@ -2969,7 +2993,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011000010010101000110"
                     "1111111111111111111111"
                 },
-        /* 93*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 20, -1, -1, -1, "バーコード", -1, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
+        /* 94*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 20, -1, -1, -1, "バーコード", -1, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
                     "10101010101010101010101010"
                     "10011110011111011010110101"
                     "10100100010101100010110110"
@@ -2983,7 +3007,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000110001100101101001010"
                     "11111111111111111111111111"
                 },
-        /* 94*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 20, -1, -1, DM_SQUARE, "東京都", -1, 0, 16, 16, 0, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
+        /* 95*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 20, -1, -1, DM_SQUARE, "東京都", -1, 0, 16, 16, 0, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
                     "1010101010101010"
                     "1001110111101011"
                     "1010011001101010"
@@ -3001,7 +3025,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010010001000010"
                     "1111111111111111"
                 },
-        /* 95*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 21, -1, -1, -1, "Študentska št. 2198390", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /* 96*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 21, -1, -1, -1, "Študentska št. 2198390", -1, 0, 20, 20, 0, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "10101010101010101010"
                     "10001100100001100111"
                     "10100101100110111110"
@@ -3023,7 +3047,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010010011010100010"
                     "11111111111111111111"
                 },
-        /* 96*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 22, -1, -1, DM_SQUARE, "Россия", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 22 Example 1", 0,
+        /* 97*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 22, -1, -1, DM_SQUARE, "Россия", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 22 Example 1", 0,
                     "1010101010101010"
                     "1001110111011111"
                     "1010101011100000"
@@ -3041,7 +3065,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011010001101010"
                     "1111111111111111"
                 },
-        /* 97*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 22, -1, -1, DM_SQUARE, "Монголулс", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 22 Example 2", 0,
+        /* 98*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 22, -1, -1, DM_SQUARE, "Монголулс", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 22 Example 2", 0,
                     "101010101010101010"
                     "100111100100010101"
                     "101010000001111110"
@@ -3061,7 +3085,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100011000000110"
                     "111111111111111111"
                 },
-        /* 98*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 23, -1, -1, -1, "bœuf", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 23 Example 1", 0,
+        /* 99*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 23, -1, -1, -1, "bœuf", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 23 Example 1", 0,
                     "10101010101010"
                     "10001110110001"
                     "10110001110100"
@@ -3077,7 +3101,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000001001110"
                     "11111111111111"
                 },
-        /* 99*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 24, -1, -1, DM_SQUARE, "جواز السفر", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 24 Example 1", 0,
+        /*100*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 24, -1, -1, DM_SQUARE, "جواز السفر", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 24 Example 1", 0,
                     "101010101010101010"
                     "100111100010000001"
                     "101110001110110010"
@@ -3097,7 +3121,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110100011110001010"
                     "111111111111111111"
                 },
-        /*100*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 24, -1, -1, -1, "المنشأ: المملكة العربية السعودية", -1, 0, 24, 24, 1, "AIM ITS/04-023:2022 ECI 24 Example 2", 0,
+        /*101*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 24, -1, -1, -1, "المنشأ: المملكة العربية السعودية", -1, 0, 24, 24, 1, "AIM ITS/04-023:2022 ECI 24 Example 2", 0,
                     "101010101010101010101010"
                     "100111010010001001001011"
                     "101110111100001110010010"
@@ -3123,7 +3147,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101111000110001010111010"
                     "111111111111111111111111"
                 },
-        /*101*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 25, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 25 Example 1", 0,
+        /*102*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 25, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 25 Example 1", 0,
                     "10101010101010"
                     "10000010011111"
                     "10110101011100"
@@ -3139,7 +3163,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011101010100"
                     "11111111111111"
                 },
-        /*102*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 25, -1, -1, -1, "バーコード", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 25 Example 2", 0,
+        /*103*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 25, -1, -1, -1, "バーコード", -1, 0, 12, 26, 1, "AIM ITS/04-023:2022 ECI 25 Example 2", 0,
                     "10101010101010101010101010"
                     "10011110010000001001101001"
                     "10110000101111001011001010"
@@ -3153,7 +3177,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000100100011011100111100"
                     "11111111111111111111111111"
                 },
-        /*103*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 25, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 25 Example 3 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*104*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 25, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 25 Example 3 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010101010101010101010"
                     "10011101000111111101100100000101"
                     "10111011100010101000011111001100"
@@ -3163,7 +3187,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110100011001101010111111010110"
                     "11111111111111111111111111111111"
                 },
-        /*104*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, DM_SQUARE, "条码", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 26 Example 1", 0,
+        /*105*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, DM_SQUARE, "条码", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 26 Example 1", 0,
                     "1010101010101010"
                     "1001110111110101"
                     "1011111011000100"
@@ -3181,7 +3205,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110001111010"
                     "1111111111111111"
                 },
-        /*105*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "バーコード", -1, 0, 20, 20, 1, "AIM ITS/04-023:2022 ECI 26 Example 2", 0,
+        /*106*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "バーコード", -1, 0, 20, 20, 1, "AIM ITS/04-023:2022 ECI 26 Example 2", 0,
                     "10101010101010101010"
                     "10011110001010000111"
                     "10111111000100111110"
@@ -3203,7 +3227,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000101001001010010"
                     "11111111111111111111"
                 },
-        /*106*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 26 Example 3", 0,
+        /*107*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 26 Example 3", 0,
                     "101010101010101010"
                     "100111100000010101"
                     "101111000110111110"
@@ -3223,7 +3247,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100010110000100"
                     "111111111111111111"
                 },
-        /*107*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 27, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 27 Example 1", 0,
+        /*108*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 27, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 27 Example 1", 0,
                     "1010101010101010"
                     "1001001011000001"
                     "1011111111011000"
@@ -3241,7 +3265,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001011001110010"
                     "1111111111111111"
                 },
-        /*108*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 28, -1, -1, -1, "條碼", -1, 0, 14, 14, 0, "AIM ITS/04-023:2022 ECI 28 Example 1 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example except does not set explicit BASE256 byte count", 0,
+        /*109*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 28, -1, -1, -1, "條碼", -1, 0, 14, 14, 0, "AIM ITS/04-023:2022 ECI 28 Example 1 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example except does not set explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101101111"
                     "10111001001100"
@@ -3257,7 +3281,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101101000110"
                     "11111111111111"
                 },
-        /*109*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 29, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 29 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*110*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 29, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 29 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101000111"
                     "10111011101100"
@@ -3273,7 +3297,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001101000100"
                     "11111111111111"
                 },
-        /*110*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 29, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 29 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*111*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 29, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 29 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101000101"
                     "10111011100110"
@@ -3289,7 +3313,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101101000110"
                     "11111111111111"
                 },
-        /*111*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 30, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*112*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 30, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010101010101010101010"
                     "10011101010000111110011110001101"
                     "10111011100001101011001100110000"
@@ -3299,7 +3323,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11011100010101101110100010101010"
                     "11111111111111111111111111111111"
                 },
-        /*112*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 30, -1, -1, -1, "서울", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 30 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*113*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 30, -1, -1, -1, "서울", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 30 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101010111"
                     "10111011100110"
@@ -3315,7 +3339,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001101000110"
                     "11111111111111"
                 },
-        /*113*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*114*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101010111"
                     "11001011110100"
@@ -3331,7 +3355,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000111000100"
                     "11111111111111"
                 },
-        /*114*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*115*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101010101"
                     "11001011111110"
@@ -3347,7 +3371,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10100111000110"
                     "11111111111111"
                 },
-        /*115*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "條碼", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 3 **NOT SAME** different encodation (example uses binary)", 0,
+        /*116*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 31, -1, -1, -1, "條碼", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 31 Example 3 **NOT SAME** different encodation (example uses binary)", 0,
                     "10101010101010"
                     "10001101110001"
                     "11000100010000"
@@ -3363,7 +3387,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110111010010"
                     "11111111111111"
                 },
-        /*116*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*117*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 1 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101011111"
                     "11001011111000"
@@ -3379,7 +3403,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000001000100"
                     "11111111111111"
                 },
-        /*117*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
+        /*118*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "北京", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 **NOT SAME** example sets explicit BASE256 byte count", 0,
                     "10101010101010"
                     "10011101011101"
                     "11001011110010"
@@ -3395,7 +3419,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10100001000110"
                     "11111111111111"
                 },
-        /*118*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "條碼", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** different encodation (example uses binary)", 0,
+        /*119*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, -1, "條碼", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** different encodation (example uses binary)", 0,
                     "10101010101010"
                     "10001101111001"
                     "11000100011100"
@@ -3411,7 +3435,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110001010010"
                     "11111111111111"
                 },
-        /*119*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "པེ་ཅིང།", -1, 0, 24, 24, 0, "AIM ITS/04-023:2022 ECI 32 Example 4 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
+        /*120*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "པེ་ཅིང།", -1, 0, 24, 24, 0, "AIM ITS/04-023:2022 ECI 32 Example 4 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
                     "101010101010101010101010"
                     "100111110000011010000101"
                     "110001010011101011111000"
@@ -3437,7 +3461,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001000101110010010010"
                     "111111111111111111111111"
                 },
-        /*120*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "バーコード", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 32 Example 5", 0,
+        /*121*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "バーコード", -1, 0, 18, 18, 1, "AIM ITS/04-023:2022 ECI 32 Example 5", 0,
                     "101010101010101010"
                     "100111100000000001"
                     "110010001111110010"
@@ -3457,7 +3481,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100011101111000"
                     "111111111111111111"
                 },
-        /*121*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 32 Example 6 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
+        /*122*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 32, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 32 Example 6 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
                     "101010101010101010"
                     "100111100000001111"
                     "110001010011000100"
@@ -3477,7 +3501,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100010101010110"
                     "111111111111111111"
                 },
-        /*122*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 33 Example 1", 0,
+        /*123*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, -1, "条码", -1, 0, 14, 14, 1, "AIM ITS/04-023:2022 ECI 33 Example 1", 0,
                     "10101010101010"
                     "10001010110111"
                     "11000000010100"
@@ -3493,7 +3517,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010001000100"
                     "11111111111111"
                 },
-        /*123*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, DM_SQUARE, "バーコード", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 33 Example 2 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
+        /*124*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, DM_SQUARE, "バーコード", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 33 Example 2 **NOT SAME** Zint switches to ASCII 1 char before end; BWIPP same as example", 0,
                     "101010101010101010"
                     "100111100010010001"
                     "110010000100110010"
@@ -3513,7 +3537,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111100010111101010"
                     "111111111111111111"
                 },
-        /*124*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, -1, "바코드", -1, 0, 8, 32, 0, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
+        /*125*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 33, -1, -1, -1, "바코드", -1, 0, 8, 32, 0, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
                     "10101010101010101010101010101010"
                     "10010110001111011011011000110101"
                     "11001111111100101000100000101000"
@@ -3523,7 +3547,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110010110110101110001111110110"
                     "11111111111111111111111111111111"
                 },
-        /*125*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 33, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** different encodation", 0,
+        /*126*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 33, -1, -1, -1, "바코드", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** different encodation", 0,
                     "10101010101010101010101010101010"
                     "10011101001111011010111110010101"
                     "11000011111111101000110111000100"
@@ -3533,7 +3557,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110100011100101110011010101000"
                     "11111111111111111111111111111111"
                 },
-        /*126*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, -1, "条码", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 34 Example 1", 0,
+        /*127*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, -1, "条码", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 34 Example 1", 0,
                     "10101010101010101010101010101010"
                     "10000100000001011001100100101101"
                     "11000100100001001101100101100100"
@@ -3543,7 +3567,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000001111101100000001100110"
                     "11111111111111111111111111111111"
                 },
-        /*127*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, -1, "バーコード", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 34 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /*128*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, -1, "バーコード", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 34 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "1010101010101010101010"
                     "1000010001011111000001"
                     "1100000010110010010000"
@@ -3567,7 +3591,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101110000000101011100"
                     "1111111111111111111111"
                 },
-        /*128*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 34 Example 3 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
+        /*129*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 34, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 34 Example 3 **NOT SAME** different encodation; BWIPP same as FAST_MODE", 0,
                     "101010101010101010"
                     "100001000101111111"
                     "110011001011000000"
@@ -3587,7 +3611,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101000000011010110"
                     "111111111111111111"
                 },
-        /*129*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 34, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 34 Example 3 **NOT SAME** different encodation", 0,
+        /*130*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 34, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 34 Example 3 **NOT SAME** different encodation", 0,
                     "101010101010101010"
                     "100111100101111111"
                     "110011011011000000"
@@ -3607,7 +3631,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101100011111010100"
                     "111111111111111111"
                 },
-        /*130*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, -1, "条码", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 35 Example 1", 0,
+        /*131*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, -1, "条码", -1, 0, 8, 32, 1, "AIM ITS/04-023:2022 ECI 35 Example 1", 0,
                     "10101010101010101010101010101010"
                     "10001010101001011001011111111101"
                     "11000000011111001011101110100000"
@@ -3617,7 +3641,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001100011110001000101111100010"
                     "11111111111111111111111111111111"
                 },
-        /*131*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, -1, "バーコード", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 35 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /*132*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, -1, "バーコード", -1, 0, 22, 22, 0, "AIM ITS/04-023:2022 ECI 35 Example 2 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "1010101010101010101010"
                     "1001111010111100010001"
                     "1100100000010110000000"
@@ -3641,7 +3665,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000011100010000111100"
                     "1111111111111111111111"
                 },
-        /*132*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 35 Example 3 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /*133*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 35, -1, -1, DM_SQUARE, "바코드", -1, 0, 18, 18, 0, "AIM ITS/04-023:2022 ECI 35 Example 3 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "101010101010101010"
                     "100101100010110001"
                     "110011111110000010"
@@ -3661,7 +3685,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110010110111000000"
                     "111111111111111111"
                 },
-        /*133*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 170, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 170 Example 1", 0,
+        /*134*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 170, -1, -1, -1, "sn:7QPB4MN", -1, 0, 16, 16, 1, "AIM ITS/04-023:2022 ECI 170 Example 1", 0,
                     "1010101010101010"
                     "1101001101000101"
                     "1000011000100000"
@@ -3679,7 +3703,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101110101101010"
                     "1111111111111111"
                 },
-        /*134*/ { BARCODE_DATAMATRIX, DATA_MODE, 899, -1, -1, -1, "\000\001\002\133\134\135\375\376\377", 9, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 899 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
+        /*135*/ { BARCODE_DATAMATRIX, DATA_MODE, 899, -1, -1, -1, "\000\001\002\133\134\135\375\376\377", 9, 0, 12, 26, 0, "AIM ITS/04-023:2022 ECI 899 Example 1 **NOT SAME** different encodation; BWIPP different encodation", 0,
                     "10101010101010101010101010"
                     "11001100001001010101010111"
                     "10000000111000111010100110"
@@ -3693,7 +3717,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10010010000010011010010100"
                     "11111111111111111111111111"
                 },
-        /*135*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, 3, -1, -1, -1, "\101\300", -1, 0, 12, 12, 1, "AÀ", 0,
+        /*136*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, 3, -1, -1, -1, "\101\300", -1, 0, 12, 12, 1, "AÀ", 0,
                     "101010101010"
                     "100010101111"
                     "100001011110"
@@ -3707,7 +3731,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100011011010"
                     "111111111111"
                 },
-        /*136*/ { BARCODE_DATAMATRIX, DATA_MODE, 3, -1, -1, -1, "\101\300", -1, 0, 12, 12, 1, "AÀ", 0,
+        /*137*/ { BARCODE_DATAMATRIX, DATA_MODE, 3, -1, -1, -1, "\101\300", -1, 0, 12, 12, 1, "AÀ", 0,
                     "101010101010"
                     "100010101111"
                     "100001011110"
@@ -3721,7 +3745,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100011011010"
                     "111111111111"
                 },
-        /*137*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 26, -1, -1, -1, "AÀ", -1, 0, 14, 14, 1, "AÀ", 0,
+        /*138*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, 26, -1, -1, -1, "AÀ", -1, 0, 14, 14, 1, "AÀ", 0,
                     "10101010101010"
                     "10001010100001"
                     "10110101100100"
@@ -3737,7 +3761,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000110001100"
                     "11111111111111"
                 },
-        /*138*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "AÀ", -1, 0, 14, 14, 1, "AÀ", 0,
+        /*139*/ { BARCODE_DATAMATRIX, UNICODE_MODE, 26, -1, -1, -1, "AÀ", -1, 0, 14, 14, 1, "AÀ", 0,
                     "10101010101010"
                     "10001010100001"
                     "10110101100100"
@@ -3753,7 +3777,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000110001100"
                     "11111111111111"
                 },
-        /*139*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", -1, 0, 16, 16, 1, "TEX last_shift 2, symbols_left 1, process_p 1", 0,
+        /*140*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", -1, 0, 16, 16, 1, "TEX last_shift 2, symbols_left 1, process_p 1", 0,
                     "1010101010101010"
                     "1010011011101001"
                     "1011001010010010"
@@ -3771,7 +3795,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101110101001010"
                     "1111111111111111"
                 },
-        /*140*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", -1, 0, 14, 14, 0, "ATTTTTTTT; BWIPP same as FAST_MODE", 1,
+        /*141*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, DM_SQUARE, "abcdefgh+", -1, 0, 14, 14, 0, "ATTTTTTTT; BWIPP same as FAST_MODE", 1,
                     "10101010101010"
                     "11100001010101"
                     "11010101001000"
@@ -3787,7 +3811,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10111011000100"
                     "11111111111111"
                 },
-        /*141*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "7 BASE256s, 1 pad", 0,
+        /*142*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "7 BASE256s, 1 pad", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011000110100100001"
                     "11100111110101001011101110100010"
@@ -3797,7 +3821,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000111100001010011101100100"
                     "11111111111111111111111111111111"
                 },
-        /*142*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "7 BASE256s, 1 pad", 0,
+        /*143*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "7 BASE256s, 1 pad", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011000110100100001"
                     "11100111110101001011101110100010"
@@ -3807,7 +3831,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000111100001010011101100100"
                     "11111111111111111111111111111111"
                 },
-        /*143*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "8 BASE256s, no padding", 0,
+        /*144*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "8 BASE256s, no padding", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011111001101000001"
                     "11010111110101001001011001100010"
@@ -3817,7 +3841,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000110010001001010001111000"
                     "11111111111111111111111111111111"
                 },
-        /*144*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "8 BASE256s, no padding", 0,
+        /*145*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200", -1, 0, 8, 32, 1, "8 BASE256s, no padding", 0,
                     "10101010101010101010101010101010"
                     "10000101000011011111001101000001"
                     "11010111110101001001011001100010"
@@ -3827,7 +3851,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000110010001001010001111000"
                     "11111111111111111111111111111111"
                 },
-        /*145*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "8 BASE256s, square, no padding", 0,
+        /*146*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "8 BASE256s, square, no padding", 0,
                     "1010101010101010"
                     "1000010100001101"
                     "1101011111101110"
@@ -3845,7 +3869,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111000011111010"
                     "1111111111111111"
                 },
-        /*146*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "8 BASE256s, square, no padding", 0,
+        /*147*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_SQUARE, "\200\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "8 BASE256s, square, no padding", 0,
                     "1010101010101010"
                     "1000010100001101"
                     "1101011111101110"
@@ -3863,7 +3887,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111000011111010"
                     "1111111111111111"
                 },
-        /*147*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "9 BASE256s, 1 pad", 0,
+        /*148*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "9 BASE256s, 1 pad", 0,
                     "1010101010101010"
                     "1000010101001101"
                     "1110011111000010"
@@ -3881,7 +3905,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1100000011011010"
                     "1111111111111111"
                 },
-        /*148*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "9 BASE256s, 1 pad", 0,
+        /*149*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200", -1, 0, 16, 16, 1, "9 BASE256s, 1 pad", 0,
                     "1010101010101010"
                     "1000010101001101"
                     "1110011111000010"
@@ -3899,7 +3923,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1100000011011010"
                     "1111111111111111"
                 },
-        /*149*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 22, 22, 1, "22 BASE256s, 6 pads", 0,
+        /*150*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 22, 22, 1, "22 BASE256s, 6 pads", 0,
                     "1010101010101010101010"
                     "1010010100011100010101"
                     "1000011110111110001100"
@@ -3923,7 +3947,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111101000110111010100"
                     "1111111111111111111111"
                 },
-        /*150*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 22, 22, 1, "22 BASE256s, 6 pads", 0,
+        /*151*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 22, 22, 1, "22 BASE256s, 6 pads", 0,
                     "1010101010101010101010"
                     "1010010100011100010101"
                     "1000011110111110001100"
@@ -3947,7 +3971,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111101000110111010100"
                     "1111111111111111111111"
                 },
-        /*151*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 8, 64, 1, "22 BASE256s, no padding", 0,
+        /*152*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 8, 64, 1, "22 BASE256s, no padding", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010101100011101010101011101111110100100110011100010011010111"
                     "1101011110001010110000001110001010001011010111001010101101100000"
@@ -3957,7 +3981,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101000011001010111101101101110010111100111101001010010011001000"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*152*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 8, 64, 1, "22 BASE256s, no padding", 0,
+        /*153*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, DM_DMRE, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 8, 64, 1, "22 BASE256s, no padding", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010101100011101010101011101111110100100110011100010011010111"
                     "1101011110001010110000001110001010001011010111001010101101100000"
@@ -3967,7 +3991,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101000011001010111101101101110010111100111101001010010011001000"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*153*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)", 0,
+        /*154*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
@@ -4033,7 +4057,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001101010100110010010110101010000000001010101100100011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*154*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)", 0,
+        /*155*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "249 BASE256s + 6 ASCII (3 double-digits)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
@@ -4099,7 +4123,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001101010100110010010110101010000000001010101100100011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*155*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "249 BASE256s + 8 ASCII (Sh A80 + 3 double-digits); BWIPP uses 2nd B256 length byte instead of ASCII shift (same no. of codewords)", 0,
+        /*156*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "249 BASE256s + 8 ASCII (Sh A80 + 3 double-digits); BWIPP uses 2nd B256 length byte instead of ASCII shift (same no. of codewords)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
@@ -4165,7 +4189,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001101010100110100010100101010001100001000101100101001101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*156*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "249 BASE256s + 8 ASCII (Sh A80 + 3 double-digits); BWIPP uses 2nd B256 length byte instead of ASCII shift (same no. of codewords)", 0,
+        /*157*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "249 BASE256s + 8 ASCII (Sh A80 + 3 double-digits); BWIPP uses 2nd B256 length byte instead of ASCII shift (same no. of codewords)", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1000010100011101100000010111100110100010110111011011111010000001"
                     "1100011110111110100110111101111010101101000010001101001011001100"
@@ -4231,7 +4255,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000001101010100110100010100101010001100001000101100101001101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*157*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "10 ASCII + 251 BASE256s + 6 ASCII", 0,
+        /*158*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 1, "10 ASCII + 251 BASE256s + 6 ASCII", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011101100000010111100110100010110111011011111010000001"
                     "1011001010111110100110111101111010101101000010001101001011001100"
@@ -4297,7 +4321,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001010101010100111010010100101010000010001011001100101011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*158*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "10 ASCII + 251 BASE256s + 6 ASCII; BWIPP same as FAST_MODE", 0,
+        /*159*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 64, 64, 0, "10 ASCII + 251 BASE256s + 6 ASCII; BWIPP same as FAST_MODE", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011101100000010111100110100010110111011011111010000001"
                     "1011001010111110100110111101111010101101000010001101001011001100"
@@ -4363,7 +4387,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001010101010100111110010100001010001100001000001100100011101010"
                     "1111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*159*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII", 0,
+        /*160*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066", -1, 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -4453,7 +4477,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101010100110101110000110100001000100000101010010010101110100111001111100010001001001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*160*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200" "\061\062\063\064\065\066", -1, 0, 88, 88, 0, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII; BWIPP same as FAST_MODE", 0,
+        /*161*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200" "\061\062\063\064\065\066", -1, 0, 88, 88, 0, "10 ASCII + 252 BASE256s + 10 ASCII + 253 BASE256 + 6 ASCII; BWIPP same as FAST_MODE", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -4543,7 +4567,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101010100110101110000110100101000010000100010110010111110101011001111100010000101001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*161*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding", 0,
+        /*162*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 88, 88, 1, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -4633,7 +4657,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101010100110101100000110110001000001000101011110010001110100101001111000010001111001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*162*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 88, 88, 0, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding; BWIPP same as FAST_MODE", 0,
+        /*163*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "\101\102\103\104\105\106\107\110\111\112\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\061\062\063\064\065\066\067\070\071\060\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200\200", -1, 0, 88, 88, 0, "10 ASCII + 252 BASE256s + 10 ASCII + 304 BASE256, no padding; BWIPP same as FAST_MODE", 0,
                     "1010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "1010011010011100000001110111100010001011011111001111101000000110011111111000100110101111"
                     "1011001010111110011010111101111010110100001010010100101100110010101011111110101001100000"
@@ -4723,7 +4747,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101010100110101100000110110101000111000100011010010011110101001001111000010000011001100"
                     "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*163*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@_", -1, 0, 8, 32, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
+        /*164*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@_", -1, 0, 8, 32, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
                     "10101010101010101010101010101010"
                     "10000000001001111001101100001101"
                     "10000000000001001001110011001100"
@@ -4733,7 +4757,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000000000000001001000001011010"
                     "11111111111111111111111111111111"
                 },
-        /*164*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@_", -1, 0, 8, 32, 0, "EDI **NOT SAME** (see FAST_MODE); BWIPP uses different encodation", 0,
+        /*165*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@_", -1, 0, 8, 32, 0, "EDI **NOT SAME** (see FAST_MODE); BWIPP uses different encodation", 0,
                     "10101010101010101010101010101010"
                     "11100000000000011000100100101001"
                     "11100000000000001010011101001000"
@@ -4743,7 +4767,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000000000001001010010000010000"
                     "11111111111111111111111111111111"
                 },
-        /*165*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 3 chars, not last 4 like Zint", 0,
+        /*166*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 3 chars, not last 4 like Zint", 0,
                     "1010101010101010"
                     "1000000001000001"
                     "1000000000111110"
@@ -4761,7 +4785,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1010100000010010"
                     "1111111111111111"
                 },
-        /*166*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@_", -1, 0, 8, 32, 0, "AAEEEEEEEEA; BWIPP uses different encodation, see above", 1,
+        /*167*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@_", -1, 0, 8, 32, 0, "AAEEEEEEEEA; BWIPP uses different encodation, see above", 1,
                     "10101010101010101010101010101010"
                     "10100000000000111000110101111001"
                     "10000000000001001000100100011000"
@@ -4771,7 +4795,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000110001100001001010000001110"
                     "11111111111111111111111111111111"
                 },
-        /*167*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 4 chars, not last 1 like Zint", 0,
+        /*168*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 4 chars, not last 1 like Zint", 0,
                     "1010101010101010"
                     "1000000001000001"
                     "1000000000001100"
@@ -4789,7 +4813,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000100000100010"
                     "1111111111111111"
         },
-        /*168*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@_", -1, 0, 16, 16, 0, "AAAEEEEEEEEA; BWIPP uses different encodation, see above", 0,
+        /*169*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@_", -1, 0, 16, 16, 0, "AAAEEEEEEEEA; BWIPP uses different encodation, see above", 0,
                     "1010101010101010"
                     "1010011101000001"
                     "1000000000101000"
@@ -4807,7 +4831,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011000011010010"
                     "1111111111111111"
                 },
-        /*169*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 5 chars, not last 2 like Zint", 0,
+        /*170*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 5 chars, not last 2 like Zint", 0,
                     "1010101010101010"
                     "1000000000100001"
                     "1000000000111000"
@@ -4825,7 +4849,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011100000010010"
                     "1111111111111111"
                 },
-        /*170*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EEEEEEEEEEEEA; BWIPP uses different encodation, see above", 1,
+        /*171*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "EEEEEEEEEEEEA; BWIPP uses different encodation, see above", 1,
                     "1010101010101010"
                     "1000000001100001"
                     "1000000000110100"
@@ -4843,7 +4867,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000000000100010"
                     "1111111111111111"
                 },
-        /*171*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@@@_", -1, 0, 12, 26, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
+        /*172*/ { BARCODE_DATAMATRIX, FAST_MODE, -1, -1, -1, -1, "@@@@@@@@@@@@@_", -1, 0, 12, 26, 0, "EDI; BWIPP uses different encodation, switching to ASC for last 2 chars, not last 3 like Zint", 0,
                     "10101010101010101010101010"
                     "10000000001001100100101011"
                     "10000000000010000000111000"
@@ -4857,7 +4881,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10000001000001101011010000"
                     "11111111111111111111111111"
                 },
-        /*172*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "AEEEEEEEEEEEEA; BWIPP uses different encodation, see above", 1,
+        /*173*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, "@@@@@@@@@@@@@_", -1, 0, 16, 16, 0, "AEEEEEEEEEEEEA; BWIPP uses different encodation, see above", 1,
                     "1010101010101010"
                     "1110000001000001"
                     "1110000001000000"
@@ -4875,7 +4899,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001100000111010"
                     "1111111111111111"
                 },
-        /*173*/ { BARCODE_DATAMATRIX, FAST_MODE, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", -1, 0, 24, 24, 0, "Mix of modes TEX ASC C40 ASC EDI BAS; BWIPP uses different encodation", 0,
+        /*174*/ { BARCODE_DATAMATRIX, FAST_MODE, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", -1, 0, 24, 24, 0, "Mix of modes TEX ASC C40 ASC EDI BAS; BWIPP uses different encodation", 0,
                     "101010101010101010101010"
                     "100111011110011101000101"
                     "101111001100101101101000"
@@ -4901,7 +4925,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111101010110111111111010"
                     "111111111111111111111111"
                 },
-        /*174*/ { BARCODE_DATAMATRIX, -1, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", -1, 0, 24, 24, 0, "TTTTTTTTTAAAACCCCCCCCCAAAAAEEEEEEEAA; BWIPP uses different encodation", 0,
+        /*175*/ { BARCODE_DATAMATRIX, -1, 26, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", -1, 0, 24, 24, 0, "TTTTTTTTTAAAACCCCCCCCCAAAAAEEEEEEEAA; BWIPP uses different encodation", 0,
                     "101010101010101010101010"
                     "100111011110011100000101"
                     "101111001100101100111100"
@@ -4927,7 +4951,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111011010111011111010010"
                     "111111111111111111111111"
                 },
-        /*175*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", -1, 0, 132, 132, 0, "Mixed modes (except B256); BWIPP different encodation", 0,
+        /*176*/ { BARCODE_DATAMATRIX, DATA_MODE | FAST_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", -1, 0, 132, 132, 0, "Mixed modes (except B256); BWIPP different encodation", 0,
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "101001101001010011000111100011111001011001011010011010010111111101110111100110110110000111110000111000011100111110111010111110010101"
                     "101100101010110110010011000010100000111010101111010100001111001010100011010100110101000010101011010001111011001010111111011000100110"
@@ -5061,7 +5085,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110101010100010111111010100000000000110011101101010011010100111010111011101111011111110010101110001010101110001010111111010011111110"
                     "111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
                 },
-        /*176*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", -1, 0, 120, 120, 0, "Mixed modes (except B256); BWIPP uses different encodation", 13,
+        /*177*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, -1, -1, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^;<>@[]_`~!||()?{}'\001\002\003\004\005\006...............\015\015\015\015\015\015\015\015abcdefghijklmnopqrstuvwxyz\015\015\015\015\015\015\015\015...............\001\002\003\004\005\006ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^...............", -1, 0, 120, 120, 0, "Mixed modes (except B256); BWIPP uses different encodation", 13,
                     "101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "101001101001010011011001100011111001011110010010011011010111111101001110101111111010000001101101101110110111111011101011"
                     "101100101010110110001101000010100000111010101111010101000000110001110101001100101001111100111000101011100101101011001100"
