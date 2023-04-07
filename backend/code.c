@@ -1,7 +1,7 @@
 /* code.c - Handles Code 11, 39, 39+, 93, PZN, Channel and VIN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -296,6 +296,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 
         localstr[0] = check_digit;
         localstr[1] = '\0';
+        if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", check_digit);
     }
 
     /* Stop character */

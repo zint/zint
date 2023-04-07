@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -139,53 +139,54 @@ static void test_input(const testCtx *const p_ctx) {
         /*  0*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 01 21 21 21 21 21 21 21 21 08 0E 19 2B 20 0C 24 06 32 1C 21 21 21 21 21 21 21 21", 1, 1, "" },
         /*  1*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "" },
         /*  2*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "A123456", ZINT_ERROR_INVALID_DATA, 0, "Error 555: Non-numeric postcode in Primary Message", 1, 1, "" },
-        /*  3*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 0, 1, "1-digit postcode" },
-        /*  4*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1 123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 0, 0, "1-digit postcode; ZXing-C++ test can't handle space" },
-        /*  5*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 0, 1, "9-digit postcode" },
+        /*  3*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 1, 1, "1-digit postcode" },
+        /*  4*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1 123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 1, 0, "1-digit postcode; ZXing-C++ test can't handle space" },
+        /*  5*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 1, 1, "9-digit postcode" },
         /*  6*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "10-digit postcode" },
-        /*  7*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 0, 1, "1-digit postcode" },
-        /*  8*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 0, 1, "9-digit postcode" },
+        /*  7*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 12 00 00 00 00 10 30 1E 20 1C 1A 3D 1C 0D 1B 15 3C 17 3C 08 01 21 21 21 21 21 21 21", 0, 1, "1-digit postcode; BWIPP requires mode" },
+        /*  8*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 0, 1, "9-digit postcode; BWIPP requires mode" },
         /*  9*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1234567890123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "10-digit postcode" },
         /* 10*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "123456", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "0-digit postcode" },
-        /* 11*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678123456", 0, 30, "(144) 22 13 21 31 0B 00 32 1E 20 1C 04 14 07 30 10 07 08 28 1D 09 01 21 21 21 21 21 21 21", 0, 1, "8-digit postcode" },
-        /* 12*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "" },
-        /* 13*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", 1, 1, "1-alphanumeric postcode" },
-        /* 14*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 03 08 08 08 08 18 3C 1E 20 1C 13 37 07 2C 26 2D 18 29 3F 2C 01 21 21 21 21 21 21 21", 0, 0, "1-digit postcode; ZXing-C++ test can't handle padding" },
-        /* 15*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", 1, 1, "1-alphanumeric postcode" },
-        /* 16*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEF123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", 1, 1, "6-alphanumeric postcode" },
-        /* 17*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEFG123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", 1, 0, "7-alphanumeric postcode truncated; ZXing-C++ test can't handle truncation" },
-        /* 18*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDE123456", 0, 30, "(144) 03 18 01 31 20 10 30 1E 20 1C 0F 38 38 1A 39 10 2F 37 22 12 01 21 21 21 21 21 21 21", 1, 1, "5-alphanumeric postcode" },
-        /* 19*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAAA   840001", 0, 30, "(144) 13 10 10 10 10 10 00 12 07 00 17 36 2E 38 04 29 16 0D 27 16 01 21 21 21 21 21 21 21", 1, 0, "6-alphanumeric postcode with padding; ZXing-C++ test can't handle padding" },
-        /* 20*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAA A840001", 0, 30, "(144) 03 18 10 10 10 10 00 12 07 00 19 07 29 31 26 01 23 2C 2E 07 01 21 21 21 21 21 21 21", 1, 0, "7-alphanumeric with embedded padding truncated; ZXing-C++ test can't handle truncation" },
-        /* 21*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid character in postcode in Primary Message", 1, 1, "Alphanumeric postcode with CR" },
-        /* 22*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A#%-/A840001", 0, 30, "(144) 13 30 1B 1B 39 18 00 12 07 00 3F 1E 25 07 2A 1E 14 3C 28 2D 01 21 21 21 21 21 21 21", 1, 1, "Alphanumeric postcode with non-control Code A chars" },
-        /* 23*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1A23456", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", 1, 1, "Non-numeric country code" },
-        /* 24*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678912345A", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", 1, 1, "Non-numeric service class" },
-        /* 25*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 0, 1, "Auto-determine mode 2" },
-        /* 26*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 554: Primary Message empty", 1, 1, "Auto-determine mode 2/3 requires primary message" },
-        /* 27*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "A23456123456", 0, 30, "(144) 23 1D 0D 3D 2C 1C 30 1E 20 1C 24 35 30 31 2A 0D 17 14 16 3D 01 21 21 21 21 21 21 21", 1, 1, "Auto-determine mode 3" },
-        /* 28*/ { UNICODE_MODE, -1, -1, 100, { 0, 0, "" }, "A", -1, "123456123456", 0, 30, "(144) 02 10 22 07 00 20 31 1E 20 1C 0E 29 13 1B 0D 26 36 25 3B 22 3B 2A 29 3B 28 1E 30 31", 0, 1, "SCM prefix version" },
-        /* 29*/ { UNICODE_MODE, -1, -1, 101, { 0, 0, "" }, "A", -1, "123456123456", ZINT_ERROR_INVALID_OPTION, 0, "Error 557: Invalid SCM prefix version", 1, 1, "SCM prefix version" },
-        /* 30*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 03 01 21 21 21 21 21 21 2F 14 23 21 05 24 27 00 24 0C 21 21 21 21 21 21 21 21", 1, 1, "" },
-        /* 31*/ { UNICODE_MODE, 31, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 1F 01 21 21 21 21 21 21 00 2F 0E 09 39 3B 24 1A 21 05 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x1F" },
-        /* 32*/ { UNICODE_MODE, 32, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 20 20 01 21 21 21 21 21 3D 15 0F 30 0D 22 24 35 22 06 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x20" },
-        /* 33*/ { UNICODE_MODE, 1023, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 2F 3F 01 21 21 21 21 21 2E 27 23 1D 35 19 21 04 3A 26 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x3FF" },
-        /* 34*/ { UNICODE_MODE, 1024, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 30 10 00 01 21 21 21 21 11 2F 15 10 1D 29 06 35 14 2B 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x400" },
-        /* 35*/ { UNICODE_MODE, 32767, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 37 3F 3F 01 21 21 21 21 3E 15 12 01 07 30 39 27 04 2B 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x7FFF" },
-        /* 36*/ { UNICODE_MODE, 32768, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 08 00 00 01 21 21 21 10 30 3A 04 26 23 0E 21 3D 0F 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x8000" },
-        /* 37*/ { UNICODE_MODE, 65535, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 0F 3F 3F 01 21 21 21 1C 0E 1D 39 3B 0D 38 25 00 30 21 21 21 21 21 21 21 21", 1, 1, "ECI 0xFFFF" },
-        /* 38*/ { UNICODE_MODE, 65536, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 10 00 00 01 21 21 21 2B 1F 24 06 38 2E 17 1B 10 2F 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x10000" },
-        /* 39*/ { UNICODE_MODE, 131071, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 1F 3F 3F 01 21 21 21 0F 05 09 04 2F 3A 17 09 36 31 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x1FFFF" },
-        /* 40*/ { UNICODE_MODE, 999999, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 3B 34 08 3F 01 21 21 21 26 3B 2B 23 08 17 32 05 26 35 21 21 21 21 21 21 21 21", 1, 1, "Max ECI" },
-        /* 41*/ { UNICODE_MODE, -1, 1, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 550: Invalid MaxiCode Mode", 1, 1, "" },
-        /* 42*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\015", -1, "", 0, 30, "(144) 04 00 21 21 21 21 21 21 21 21 37 32 10 01 24 1B 10 11 38 0C 21 21 21 21 21 21 21 21", 1, 0, "ZXing-C++ test can't handle LF" },
-        /* 43*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\001\034\001\035\001\036\001a:b", -1, "", 0, 30, "(144) 04 3E 3E 01 20 01 21 01 22 01 27 0B 35 01 08 0D 16 02 17 1A 3F 01 33 02 21 21 21 21", 1, 1, "" },
-        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "" }, "A", -1, "", 0, 30, "(144) 04 21 01 01 21 21 21 21 21 21 09 0B 26 03 37 0E 25 27 07 1E 21 21 21 21 21 21 21 21", 1, 1, "" },
-        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 0, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", 1, 1, "" },
-        /* 46*/ { UNICODE_MODE, -1, -1, -1, { 1, 1, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", 1, 1, "" },
-        /* 47*/ { UNICODE_MODE, -1, -1, -1, { 1, 9, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", 1, 1, "" },
-        /* 48*/ { UNICODE_MODE, -1, -1, -1, { 3, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", 1, 1, "" },
-        /* 49*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "A" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 549: Structured Append ID not available for MaxiCode", 1, 1, "" },
+        /* 11*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678123456", 0, 30, "(144) 22 13 21 31 0B 00 32 1E 20 1C 04 14 07 30 10 07 08 28 1D 09 01 21 21 21 21 21 21 21", 0, 1, "8-digit postcode; BWIPP requires mode" },
+        /* 12*/ { UNICODE_MODE, -1, 2, -1, { 0, 0, "" }, "A", -1, "12345678123456", 0, 30, "(144) 22 13 21 31 0B 00 32 1E 20 1C 04 14 07 30 10 07 08 28 1D 09 01 21 21 21 21 21 21 21", 1, 1, "8-digit postcode" },
+        /* 13*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 551: Invalid length for Primary Message", 1, 1, "" },
+        /* 14*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", 1, 1, "1-alphanumeric postcode" },
+        /* 15*/ { UNICODE_MODE, -1, 3, -1, { 0, 0, "" }, "A", -1, "1123456", 0, 30, "(144) 03 08 08 08 08 18 3C 1E 20 1C 13 37 07 2C 26 2D 18 29 3F 2C 01 21 21 21 21 21 21 21", 1, 0, "1-digit postcode; ZXing-C++ test can't handle padding" },
+        /* 16*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A123456", 0, 30, "(144) 03 08 08 08 08 18 30 1E 20 1C 22 35 1C 0F 02 1A 26 04 10 31 01 21 21 21 21 21 21 21", 1, 1, "1-alphanumeric postcode" },
+        /* 17*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEF123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", 1, 1, "6-alphanumeric postcode" },
+        /* 18*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDEFG123456", 0, 30, "(144) 23 11 01 31 20 10 30 1E 20 1C 3C 1D 22 03 19 15 0F 20 0F 2A 01 21 21 21 21 21 21 21", 1, 0, "7-alphanumeric postcode truncated; ZXing-C++ test can't handle truncation" },
+        /* 19*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "ABCDE123456", 0, 30, "(144) 03 18 01 31 20 10 30 1E 20 1C 0F 38 38 1A 39 10 2F 37 22 12 01 21 21 21 21 21 21 21", 1, 1, "5-alphanumeric postcode" },
+        /* 20*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAAA   840001", 0, 30, "(144) 13 10 10 10 10 10 00 12 07 00 17 36 2E 38 04 29 16 0D 27 16 01 21 21 21 21 21 21 21", 1, 0, "6-alphanumeric postcode with padding; ZXing-C++ test can't handle padding" },
+        /* 21*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AAAAA A840001", 0, 30, "(144) 03 18 10 10 10 10 00 12 07 00 19 07 29 31 26 01 23 2C 2E 07 01 21 21 21 21 21 21 21", 1, 0, "7-alphanumeric with embedded padding truncated; ZXing-C++ test can't handle truncation" },
+        /* 22*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "AA\015AAA840001", ZINT_ERROR_INVALID_DATA, 0, "Error 556: Invalid character in postcode in Primary Message", 1, 1, "Alphanumeric postcode with CR" },
+        /* 23*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "A#%-/A840001", 0, 30, "(144) 13 30 1B 1B 39 18 00 12 07 00 3F 1E 25 07 2A 1E 14 3C 28 2D 01 21 21 21 21 21 21 21", 1, 1, "Alphanumeric postcode with non-control Code A chars" },
+        /* 24*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "1A23456", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", 1, 1, "Non-numeric country code" },
+        /* 25*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A", -1, "12345678912345A", ZINT_ERROR_INVALID_DATA, 0, "Error 552: Non-numeric country code or service class in Primary Message", 1, 1, "Non-numeric service class" },
+        /* 26*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "123456789123456", 0, 30, "(144) 12 05 0D 2F 35 11 32 1E 20 1C 0D 1D 3B 12 22 3F 30 14 23 1A 01 21 21 21 21 21 21 21", 0, 1, "Auto-determine mode 2; BWIPP requires mode for mode 2" },
+        /* 27*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_DATA, 0, "Error 554: Primary Message empty", 1, 1, "Auto-determine mode 2/3 requires primary message" },
+        /* 28*/ { UNICODE_MODE, -1, 0, -1, { 0, 0, "" }, "A", -1, "A23456123456", 0, 30, "(144) 23 1D 0D 3D 2C 1C 30 1E 20 1C 24 35 30 31 2A 0D 17 14 16 3D 01 21 21 21 21 21 21 21", 1, 1, "Auto-determine mode 3" },
+        /* 29*/ { UNICODE_MODE, -1, -1, 100, { 0, 0, "" }, "A", -1, "123456123456", 0, 30, "(144) 02 10 22 07 00 20 31 1E 20 1C 0E 29 13 1B 0D 26 36 25 3B 22 3B 2A 29 3B 28 1E 30 31", 0, 1, "SCM prefix version" },
+        /* 30*/ { UNICODE_MODE, -1, -1, 101, { 0, 0, "" }, "A", -1, "123456123456", ZINT_ERROR_INVALID_OPTION, 0, "Error 557: Invalid SCM prefix version", 1, 1, "SCM prefix version" },
+        /* 31*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 03 01 21 21 21 21 21 21 2F 14 23 21 05 24 27 00 24 0C 21 21 21 21 21 21 21 21", 1, 1, "" },
+        /* 32*/ { UNICODE_MODE, 31, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 1F 01 21 21 21 21 21 21 00 2F 0E 09 39 3B 24 1A 21 05 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x1F" },
+        /* 33*/ { UNICODE_MODE, 32, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 20 20 01 21 21 21 21 21 3D 15 0F 30 0D 22 24 35 22 06 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x20" },
+        /* 34*/ { UNICODE_MODE, 1023, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 2F 3F 01 21 21 21 21 21 2E 27 23 1D 35 19 21 04 3A 26 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x3FF" },
+        /* 35*/ { UNICODE_MODE, 1024, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 30 10 00 01 21 21 21 21 11 2F 15 10 1D 29 06 35 14 2B 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x400" },
+        /* 36*/ { UNICODE_MODE, 32767, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 37 3F 3F 01 21 21 21 21 3E 15 12 01 07 30 39 27 04 2B 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x7FFF" },
+        /* 37*/ { UNICODE_MODE, 32768, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 08 00 00 01 21 21 21 10 30 3A 04 26 23 0E 21 3D 0F 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x8000" },
+        /* 38*/ { UNICODE_MODE, 65535, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 0F 3F 3F 01 21 21 21 1C 0E 1D 39 3B 0D 38 25 00 30 21 21 21 21 21 21 21 21", 1, 1, "ECI 0xFFFF" },
+        /* 39*/ { UNICODE_MODE, 65536, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 10 00 00 01 21 21 21 2B 1F 24 06 38 2E 17 1B 10 2F 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x10000" },
+        /* 40*/ { UNICODE_MODE, 131071, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 38 1F 3F 3F 01 21 21 21 0F 05 09 04 2F 3A 17 09 36 31 21 21 21 21 21 21 21 21", 1, 1, "ECI 0x1FFFF" },
+        /* 41*/ { UNICODE_MODE, 999999, -1, -1, { 0, 0, "" }, "A", -1, "", 0, 30, "(144) 04 1B 3B 34 08 3F 01 21 21 21 26 3B 2B 23 08 17 32 05 26 35 21 21 21 21 21 21 21 21", 1, 1, "Max ECI" },
+        /* 42*/ { UNICODE_MODE, -1, 1, -1, { 0, 0, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 550: Invalid MaxiCode Mode", 1, 1, "" },
+        /* 43*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\015", -1, "", 0, 30, "(144) 04 00 21 21 21 21 21 21 21 21 37 32 10 01 24 1B 10 11 38 0C 21 21 21 21 21 21 21 21", 1, 0, "ZXing-C++ test can't handle LF" },
+        /* 44*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "\001\034\001\035\001\036\001a:b", -1, "", 0, 30, "(144) 04 3E 3E 01 20 01 21 01 22 01 27 0B 35 01 08 0D 16 02 17 1A 3F 01 33 02 21 21 21 21", 1, 1, "" },
+        /* 45*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "" }, "A", -1, "", 0, 30, "(144) 04 21 01 01 21 21 21 21 21 21 09 0B 26 03 37 0E 25 27 07 1E 21 21 21 21 21 21 21 21", 1, 1, "" },
+        /* 46*/ { UNICODE_MODE, -1, -1, -1, { 0, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", 1, 1, "" },
+        /* 47*/ { UNICODE_MODE, -1, -1, -1, { 1, 1, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", 1, 1, "" },
+        /* 48*/ { UNICODE_MODE, -1, -1, -1, { 1, 9, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count out of range (2-8)", 1, 1, "" },
+        /* 49*/ { UNICODE_MODE, -1, -1, -1, { 3, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index out of range (1-2)", 1, 1, "" },
+        /* 50*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "A" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 549: Structured Append ID not available for MaxiCode", 1, 1, "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -231,13 +232,13 @@ static void test_input(const testCtx *const p_ctx) {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
 
             if (ret < ZINT_ERROR) {
-                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
                         char modules_dump[33 * 33 + 1];
                         assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, symbol->primary, cmp_buf, sizeof(cmp_buf), NULL);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, symbol->primary, cmp_buf, sizeof(cmp_buf), NULL);
                         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);

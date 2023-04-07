@@ -1,7 +1,7 @@
 /* 2of5.c - Handles Code 2 of 5 barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -89,6 +89,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
         /* Add standard GS1 check digit */
         temp[length] = gs1_check_digit(source, length);
         temp[++length] = '\0';
+        if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", temp[length - 1]);
     }
 
     /* Start character */

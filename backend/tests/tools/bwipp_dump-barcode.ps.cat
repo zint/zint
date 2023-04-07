@@ -1,5 +1,9 @@
 %!PS
 
+% libzint - the open source barcode library
+% Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
+% SPDX-License-Identifier: BSD-3-Clause
+
 % Append to BWIPP barcode.ps: cat <bwipp-dir>/build/monolithic/barcode.ps bwipp_dump-barcode.ps.cat > bwipp_dump.ps
 %
 % To compress: tar cv bwipp_dump.ps | xz -e9 > bwipp_dump.ps.tar.xz
@@ -9,7 +13,7 @@
 % To run e.g. gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=databarexpanded -sd='(01)98898765432106' -so='includetext segments=6' bwipp_dump.ps
 % where
 % `-sb=` is the BWIPP barcode routine name
-% `-sd=` is the data (`sd2=` is also available for overspill data > 2K to get around Ghostscript arg_str_max)
+% `-sd=` is the data (`sd2=`, `sd3=`, `sd4=` are also available for overspill data > ~2K to get around Ghostscript's arg_str_max)
 % `-so=` are options (as space separated key=val pairs (or just key if boolean true))
 
 % For debugging the barcode can be rendered by leaving out `-dBATCH -dNODISPLAY`. Scaling can be specified by `-ss=` (default 2).
@@ -20,6 +24,14 @@
 % Append d2 to d if given
 systemdict /d2 known {
     /d d length d2 length add string dup dup 0 d putinterval d length d2 putinterval def
+    % Append d3 to d if given
+    systemdict /d3 known {
+        /d d length d3 length add string dup dup 0 d putinterval d length d3 putinterval def
+        % Append d4 to d if given
+        systemdict /d4 known {
+            /d d length d4 length add string dup dup 0 d putinterval d length d4 putinterval def
+        } if
+    } if
 } if
 
 % Strip start/end parens from data if any

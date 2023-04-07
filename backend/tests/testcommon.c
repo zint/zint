@@ -2434,11 +2434,21 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                                     " backend/tests/tools/bwipp_dump.ps";
     static const char cmd_opts_fmt[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%s' -so='%s'"
                                         " backend/tests/tools/bwipp_dump.ps";
-    /* If data > 2K */
-    static const char cmd_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s'"
+    /* If data > 2K and < ~4K */
+    static const char cmd_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%s'"
                                         " backend/tests/tools/bwipp_dump.ps";
-    static const char cmd_opts_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2043s' -sd2='%s' -so='%s'"
+    static const char cmd_opts_fmt2[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%s' -so='%s'"
                                         " backend/tests/tools/bwipp_dump.ps";
+    /* If data > ~4K and < ~6K */
+    static const char cmd_fmt3[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%.2040s' -sd3='%s'"
+                                        " backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_opts_fmt3[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%.2040s' -sd3='%s'"
+                                        " -so='%s' backend/tests/tools/bwipp_dump.ps";
+    /* If data > ~6K and < ~8K */
+    static const char cmd_fmt4[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%.2040s' -sd3='%.2040s'"
+                                        " -sd4='%s' backend/tests/tools/bwipp_dump.ps";
+    static const char cmd_opts_fmt4[] = "gs -dNOPAUSE -dBATCH -dNODISPLAY -q -sb=%s -sd='%.2040s' -sd2='%.2040s'"
+                                        " -sd3='%.2040s' -sd4='%s' -so='%s' backend/tests/tools/bwipp_dump.ps";
 
     const int symbology = symbol->symbology;
     int data_len = length == -1 ? (int) strlen(data) : length;
@@ -3032,14 +3042,33 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     }
 
     if (bwipp_opts && strlen(bwipp_opts)) {
-        if (strlen(bwipp_data) >= 2043) { /* Ghostscript's `arg_str_max` 2048 less "-sd=" */
-            sprintf(cmd, cmd_opts_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043, bwipp_opts);
+        if (strlen(bwipp_data) >= 2040) { /* Ghostscript's `arg_str_max` 2048 less "-sd?=" + quotes */
+            if (strlen(bwipp_data) >= 2040 * 2) {
+                if (strlen(bwipp_data) >= 2040 * 3) {
+                    sprintf(cmd, cmd_opts_fmt4, bwipp_barcode, bwipp_data, bwipp_data + 2040, bwipp_data + 2040 * 2,
+                            bwipp_data + 2040 * 3, bwipp_opts);
+                } else {
+                    sprintf(cmd, cmd_opts_fmt3, bwipp_barcode, bwipp_data, bwipp_data + 2040, bwipp_data + 2040 * 2,
+                            bwipp_opts);
+                }
+            } else {
+                sprintf(cmd, cmd_opts_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2040, bwipp_opts);
+            }
         } else {
             sprintf(cmd, cmd_opts_fmt, bwipp_barcode, bwipp_data, bwipp_opts);
         }
     } else {
-        if (strlen(bwipp_data) >= 2043) {
-            sprintf(cmd, cmd_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2043);
+        if (strlen(bwipp_data) >= 2040) {
+            if (strlen(bwipp_data) >= 2040 * 2) {
+                if (strlen(bwipp_data) >= 2040 * 3) {
+                    sprintf(cmd, cmd_fmt4, bwipp_barcode, bwipp_data, bwipp_data + 2040, bwipp_data + 2040 * 2,
+                            bwipp_data + 2040 * 3);
+                } else {
+                    sprintf(cmd, cmd_fmt3, bwipp_barcode, bwipp_data, bwipp_data + 2040, bwipp_data + 2040 * 2);
+                }
+            } else {
+                sprintf(cmd, cmd_fmt2, bwipp_barcode, bwipp_data, bwipp_data + 2040);
+            }
         } else {
             sprintf(cmd, cmd_fmt, bwipp_barcode, bwipp_data);
         }

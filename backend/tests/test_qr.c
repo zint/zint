@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,112 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
+
+static void test_qr_large(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int option_1;
+        int option_2;
+        int option_3;
+        char *pattern;
+        int length;
+        int ret;
+        int expected_rows;
+        int expected_width;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { 1, 32, -1, "A", 2840, 0, 145, 145 },
+        /*  1*/ { 1, 32, -1, "A", 2841, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { 1, 33, -1, "A", 3009, 0, 149, 149 },
+        /*  3*/ { 1, 33, -1, "A", 3010, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { 1, 34, -1, "A", 3183, 0, 153, 153 },
+        /*  5*/ { 1, 34, -1, "A", 3184, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { 1, 35, -1, "A", 3351, 0, 157, 157 },
+        /*  7*/ { 1, 35, -1, "A", 3352, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { 1, 36, -1, "A", 3537, 0, 161, 161 },
+        /*  9*/ { 1, 36, -1, "A", 3538, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { 1, 37, -1, "A", 3729, 0, 165, 165 },
+        /* 11*/ { 1, 37, -1, "A", 3730, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { 1, 38, -1, "A", 3927, 0, 169, 169 },
+        /* 13*/ { 1, 38, -1, "A", 3928, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { 1, 39, -1, "A", 4087, 0, 173, 173 },
+        /* 15*/ { 1, 39, -1, "A", 4088, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { 1, 40, -1, "A", 4296, 0, 177, 177 }, /* ISO/IEC 18004:2015 Section 6.1 (e) (1) */
+        /* 17*/ { 1, 40, -1, "A", 4297, ZINT_ERROR_TOO_LONG, -1, -1 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol;
+
+    char data_buf[ZINT_MAX_DATA_LEN];
+
+    char escaped[ZINT_MAX_DATA_LEN];
+    char cmp_buf[177 * 177 + 1];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+
+    testStart("test_qr_large");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3 | FAST_MODE, -1 /*output_options*/, data_buf, data[i].length, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        symbol->input_mode |= FAST_MODE;
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
+                char modules_dump[177 * 177 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data_buf, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[177 * 177 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
 
 static void test_qr_options(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
@@ -8528,6 +8634,7 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
+        { "test_qr_large", test_qr_large },
         { "test_qr_options", test_qr_options },
         { "test_qr_input", test_qr_input },
         { "test_qr_gs1", test_qr_gs1 },
