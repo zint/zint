@@ -1058,104 +1058,6 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     return error_number;
 }
 
-enum options {
-    OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
-    OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-    OPT_ECI, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
-    OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
-    OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
-    OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
-    OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
-    OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
-    OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP, OPT_TEXTGAP,
-    OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
-};
-
-static const struct option longopts[] = {
-    {"addongap", 1, NULL, OPT_ADDONGAP},
-    {"barcode", 1, NULL, 'b'},
-    {"batch", 0, NULL, OPT_BATCH},
-    {"binary", 0, NULL, OPT_BINARY},
-    {"bg", 1, 0, OPT_BG},
-    {"bgcolor", 1, 0, OPT_BG}, /* Synonym */
-    {"bgcolour", 1, 0, OPT_BG}, /* Synonym */
-    {"bind", 0, NULL, OPT_BIND},
-    {"bindtop", 0, NULL, OPT_BIND_TOP},
-    {"bold", 0, NULL, OPT_BOLD},
-    {"border", 1, NULL, OPT_BORDER},
-    {"box", 0, NULL, OPT_BOX},
-    {"cmyk", 0, NULL, OPT_CMYK},
-    {"cols", 1, NULL, OPT_COLS},
-    {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
-    {"data", 1, NULL, 'd'},
-    {"direct", 0, NULL, OPT_DIRECT},
-    {"dmre", 0, NULL, OPT_DMRE},
-    {"dotsize", 1, NULL, OPT_DOTSIZE},
-    {"dotty", 0, NULL, OPT_DOTTY},
-    {"dump", 0, NULL, OPT_DUMP},
-    {"eci", 1, NULL, OPT_ECI},
-    {"ecinos", 0, NULL, 'e'},
-    {"esc", 0, NULL, OPT_ESC},
-    {"extraesc", 0, NULL, OPT_EXTRAESC},
-    {"fast", 0, NULL, OPT_FAST},
-    {"fg", 1, 0, OPT_FG},
-    {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
-    {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
-    {"filetype", 1, NULL, OPT_FILETYPE},
-    {"fontsize", 1, NULL, OPT_FONTSIZE},
-    {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
-    {"gs1", 0, 0, OPT_GS1},
-    {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
-    {"gs1parens", 0, NULL, OPT_GS1PARENS},
-    {"gssep", 0, NULL, OPT_GSSEP},
-    {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
-    {"height", 1, NULL, OPT_HEIGHT},
-    {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
-    {"help", 0, NULL, 'h'},
-    {"init", 0, NULL, OPT_INIT},
-    {"input", 1, NULL, 'i'},
-    {"mirror", 0, NULL, OPT_MIRROR},
-    {"mask", 1, NULL, OPT_MASK},
-    {"mode", 1, NULL, OPT_MODE},
-    {"nobackground", 0, NULL, OPT_NOBACKGROUND},
-    {"noquietzones", 0, NULL, OPT_NOQUIETZONES},
-    {"notext", 0, NULL, OPT_NOTEXT},
-    {"output", 1, NULL, 'o'},
-    {"primary", 1, NULL, OPT_PRIMARY},
-    {"quietzones", 0, NULL, OPT_QUIETZONES},
-    {"reverse", 0, NULL, 'r'},
-    {"rotate", 1, NULL, OPT_ROTATE},
-    {"rows", 1, NULL, OPT_ROWS},
-    {"scale", 1, NULL, OPT_SCALE},
-    {"scalexdimdp", 1, NULL, OPT_SCALEXDIM},
-    {"scmvv", 1, NULL, OPT_SCMVV},
-    {"secure", 1, NULL, OPT_SECURE},
-    {"seg1", 1, NULL, OPT_SEG1},
-    {"seg2", 1, NULL, OPT_SEG2},
-    {"seg3", 1, NULL, OPT_SEG3},
-    {"seg4", 1, NULL, OPT_SEG4},
-    {"seg5", 1, NULL, OPT_SEG5},
-    {"seg6", 1, NULL, OPT_SEG6},
-    {"seg7", 1, NULL, OPT_SEG7},
-    {"seg8", 1, NULL, OPT_SEG8},
-    {"seg9", 1, NULL, OPT_SEG9},
-    {"separator", 1, NULL, OPT_SEPARATOR},
-    {"small", 0, NULL, OPT_SMALL},
-    {"square", 0, NULL, OPT_SQUARE},
-    {"structapp", 1, NULL, OPT_STRUCTAPP},
-    {"textgap", 1, NULL, OPT_TEXTGAP},
-    {"types", 0, NULL, 't'},
-    {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
-    {"vers", 1, NULL, OPT_VERS},
-    {"version", 0, NULL, 'v'},
-    {"vwhitesp", 1, NULL, OPT_VWHITESP},
-    {"werror", 0, NULL, OPT_WERROR},
-    {"whitesp", 1, NULL, 'w'},
-    {NULL, 0, NULL, 0}
-};
-
-static const char optstring[] = "b:d:ehi:o:rtvw:";
-
 /* Stuff to convert args on Windows command line to UTF-8 */
 #ifdef _WIN32
 #include <windows.h>
@@ -1188,34 +1090,11 @@ static void win_free_args(void) {
 /* For Windows replace args with UTF-8 versions */
 /* TODO: using `CommandLineToArgvW()` causes shell32.dll to be loaded - replace with own version, see
    https://news.ycombinator.com/item?id=18596841 */
-static void win_args(const int argc, char ***p_argv) {
+static void win_args(int *p_argc, char ***p_argv) {
     int i;
-    int no_getopt_error = 1;
-    LPWSTR *szArgList;
-    char *utf8_args = (char *) z_alloca(argc);
-
-    /* Only convert data options to UTF-8 - avoids code page issues with filename args, ticket #288, props Marcel */
-    memset(utf8_args, 0, argc);
-    while (no_getopt_error) {
-        const int c = getopt_long_only(argc, *p_argv, optstring, longopts, NULL /*longindex*/);
-        if (c == -1) break;
-        switch (c) {
-            case 'd':
-            case OPT_SEG1: case OPT_SEG2: case OPT_SEG3: case OPT_SEG4: case OPT_SEG5:
-            case OPT_SEG6: case OPT_SEG7: case OPT_SEG8: case OPT_SEG9:
-                utf8_args[optind - 1] = 1;
-                break;
-            case '?':
-                no_getopt_error = 0;
-                break;
-            default:
-                break;
-        }
-    }
-
-    szArgList = CommandLineToArgvW(GetCommandLineW(), &win_argc);
+    LPWSTR *szArgList = CommandLineToArgvW(GetCommandLineW(), &win_argc);
     if (szArgList) {
-        if (win_argc != argc || !(win_argv = (char **) calloc(win_argc + 1, sizeof(char *)))) {
+        if (!(win_argv = (char **) calloc(win_argc + 1, sizeof(char *)))) {
             LocalFree(szArgList);
         } else {
             for (i = 0; i < win_argc; i++) {
@@ -1234,10 +1113,9 @@ static void win_args(const int argc, char ***p_argv) {
                 }
             }
             for (i = 0; i < win_argc; i++) {
-                if (utf8_args[i]) {
-                    (*p_argv)[i] = win_argv[i];
-                }
+                (*p_argv)[i] = win_argv[i];
             }
+            *p_argc = win_argc;
             LocalFree(szArgList);
         }
     }
@@ -1284,6 +1162,7 @@ int main(int argc, char **argv) {
     float float_opt;
     char errbuf[64]; /* For `validate_float()` */
     arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
+    int no_getopt_error = 1;
 
     const int no_png = ZBarcode_NoPng();
 
@@ -1299,15 +1178,108 @@ int main(int argc, char **argv) {
     }
     my_symbol->input_mode = UNICODE_MODE;
 
-    opterr = 0; /* Disable `getopt_long_only()` printing errors */
-
 #ifdef _WIN32
-    win_args(argc, &argv);
-    optind = 1; /* Reset after scanning in `win_args()` */
+    win_args(&argc, &argv);
 #endif
 
-    while (1) {
-        const int c = getopt_long_only(argc, argv, optstring, longopts, NULL /*longindex*/);
+    opterr = 0; /* Disable `getopt_long_only()` printing errors */
+    while (no_getopt_error) {
+        enum options {
+            OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
+            OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
+            OPT_ECI, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
+            OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
+            OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
+            OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
+            OPT_SEG1, OPT_SEG2, OPT_SEG3, OPT_SEG4, OPT_SEG5, OPT_SEG6, OPT_SEG7, OPT_SEG8, OPT_SEG9,
+            OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP, OPT_TEXTGAP,
+            OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
+        };
+        int option_index = 0;
+        static const struct option long_options[] = {
+            {"addongap", 1, NULL, OPT_ADDONGAP},
+            {"barcode", 1, NULL, 'b'},
+            {"batch", 0, NULL, OPT_BATCH},
+            {"binary", 0, NULL, OPT_BINARY},
+            {"bg", 1, 0, OPT_BG},
+            {"bgcolor", 1, 0, OPT_BG}, /* Synonym */
+            {"bgcolour", 1, 0, OPT_BG}, /* Synonym */
+            {"bind", 0, NULL, OPT_BIND},
+            {"bindtop", 0, NULL, OPT_BIND_TOP},
+            {"bold", 0, NULL, OPT_BOLD},
+            {"border", 1, NULL, OPT_BORDER},
+            {"box", 0, NULL, OPT_BOX},
+            {"cmyk", 0, NULL, OPT_CMYK},
+            {"cols", 1, NULL, OPT_COLS},
+            {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
+            {"data", 1, NULL, 'd'},
+            {"direct", 0, NULL, OPT_DIRECT},
+            {"dmre", 0, NULL, OPT_DMRE},
+            {"dotsize", 1, NULL, OPT_DOTSIZE},
+            {"dotty", 0, NULL, OPT_DOTTY},
+            {"dump", 0, NULL, OPT_DUMP},
+            {"eci", 1, NULL, OPT_ECI},
+            {"ecinos", 0, NULL, 'e'},
+            {"esc", 0, NULL, OPT_ESC},
+            {"extraesc", 0, NULL, OPT_EXTRAESC},
+            {"fast", 0, NULL, OPT_FAST},
+            {"fg", 1, 0, OPT_FG},
+            {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
+            {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
+            {"filetype", 1, NULL, OPT_FILETYPE},
+            {"fontsize", 1, NULL, OPT_FONTSIZE},
+            {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
+            {"gs1", 0, 0, OPT_GS1},
+            {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
+            {"gs1parens", 0, NULL, OPT_GS1PARENS},
+            {"gssep", 0, NULL, OPT_GSSEP},
+            {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
+            {"height", 1, NULL, OPT_HEIGHT},
+            {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
+            {"help", 0, NULL, 'h'},
+            {"init", 0, NULL, OPT_INIT},
+            {"input", 1, NULL, 'i'},
+            {"mirror", 0, NULL, OPT_MIRROR},
+            {"mask", 1, NULL, OPT_MASK},
+            {"mode", 1, NULL, OPT_MODE},
+            {"nobackground", 0, NULL, OPT_NOBACKGROUND},
+            {"noquietzones", 0, NULL, OPT_NOQUIETZONES},
+            {"notext", 0, NULL, OPT_NOTEXT},
+            {"output", 1, NULL, 'o'},
+            {"primary", 1, NULL, OPT_PRIMARY},
+            {"quietzones", 0, NULL, OPT_QUIETZONES},
+            {"reverse", 0, NULL, 'r'},
+            {"rotate", 1, NULL, OPT_ROTATE},
+            {"rows", 1, NULL, OPT_ROWS},
+            {"scale", 1, NULL, OPT_SCALE},
+            {"scalexdimdp", 1, NULL, OPT_SCALEXDIM},
+            {"scmvv", 1, NULL, OPT_SCMVV},
+            {"secure", 1, NULL, OPT_SECURE},
+            {"seg1", 1, NULL, OPT_SEG1},
+            {"seg2", 1, NULL, OPT_SEG2},
+            {"seg3", 1, NULL, OPT_SEG3},
+            {"seg4", 1, NULL, OPT_SEG4},
+            {"seg5", 1, NULL, OPT_SEG5},
+            {"seg6", 1, NULL, OPT_SEG6},
+            {"seg7", 1, NULL, OPT_SEG7},
+            {"seg8", 1, NULL, OPT_SEG8},
+            {"seg9", 1, NULL, OPT_SEG9},
+            {"separator", 1, NULL, OPT_SEPARATOR},
+            {"small", 0, NULL, OPT_SMALL},
+            {"square", 0, NULL, OPT_SQUARE},
+            {"structapp", 1, NULL, OPT_STRUCTAPP},
+            {"textgap", 1, NULL, OPT_TEXTGAP},
+            {"types", 0, NULL, 't'},
+            {"verbose", 0, NULL, OPT_VERBOSE}, /* Currently undocumented, output some debug info */
+            {"vers", 1, NULL, OPT_VERS},
+            {"version", 0, NULL, 'v'},
+            {"vwhitesp", 1, NULL, OPT_VWHITESP},
+            {"werror", 0, NULL, OPT_WERROR},
+            {"whitesp", 1, NULL, 'w'},
+            {NULL, 0, NULL, 0}
+        };
+        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, &option_index);
         if (c == -1) break;
 
         switch (c) {
