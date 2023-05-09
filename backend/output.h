@@ -71,6 +71,11 @@ INTERNAL void out_upcean_split_text(const int upceanflag, const unsigned char te
 /* Create output file, creating sub-directories if necessary. Returns `fopen()` FILE pointer */
 INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
 
+#ifdef _WIN32
+/* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Props Marcel, ticket #288 */
+INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

@@ -259,6 +259,8 @@ static void test_fopen(const testCtx *const p_ctx) {
         /* 11*/ { "out_test//", "", "out.png", 1 },
         /* 12*/ { "out_test/", "/out_test_subdir/", "out.png", 1 },
         /* 13*/ { "out_test\\", "\\out_test_subdir\\", "out.png", 1 },
+        /* 14*/ { "", "", "outé.png", 1 },
+        /* 15*/ { "outé_test", "", "outé.png", 1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, len;
@@ -305,7 +307,7 @@ static void test_fopen(const testCtx *const p_ctx) {
             if (data[i].dir[0]) {
                 assert_nonzero(testUtilDirExists(dirname), "i:%d testUtilDirExists(%s) != 0 (%d: %s)\n", i, dirname, errno, strerror(errno));
             }
-            assert_zero(remove(outfile), "i:%d remove(%s) != 0 (%d: %s)\n", i, outfile, errno, strerror(errno));
+            assert_zero(testUtilRemove(outfile), "i:%d testUtilRemove(%s) != 0 (%d: %s)\n", i, outfile, errno, strerror(errno));
             if (data[i].dir[0]) {
                 if (data[i].subdir[0] && !subdir_exists) {
                     assert_zero(testUtilRmDir(subdirname), "i:%d rmdir(%s) != 0 (%d: %s)\n", i, subdirname, errno, strerror(errno));

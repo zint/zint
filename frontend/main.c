@@ -1162,7 +1162,6 @@ int main(int argc, char **argv) {
     float float_opt;
     char errbuf[64]; /* For `validate_float()` */
     arg_opt *arg_opts = (arg_opt *) z_alloca(sizeof(arg_opt) * argc);
-    int no_getopt_error = 1;
 
     const int no_png = ZBarcode_NoPng();
 
@@ -1183,7 +1182,7 @@ int main(int argc, char **argv) {
 #endif
 
     opterr = 0; /* Disable `getopt_long_only()` printing errors */
-    while (no_getopt_error) {
+    while (1) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
@@ -1196,7 +1195,6 @@ int main(int argc, char **argv) {
             OPT_SEPARATOR, OPT_SMALL, OPT_SQUARE, OPT_STRUCTAPP, OPT_TEXTGAP,
             OPT_VERBOSE, OPT_VERS, OPT_VWHITESP, OPT_WERROR
         };
-        int option_index = 0;
         static const struct option long_options[] = {
             {"addongap", 1, NULL, OPT_ADDONGAP},
             {"barcode", 1, NULL, 'b'},
@@ -1279,7 +1277,7 @@ int main(int argc, char **argv) {
             {"whitesp", 1, NULL, 'w'},
             {NULL, 0, NULL, 0}
         };
-        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, &option_index);
+        const int c = getopt_long_only(argc, argv, "b:d:ehi:o:rtvw:", long_options, NULL);
         if (c == -1) break;
 
         switch (c) {

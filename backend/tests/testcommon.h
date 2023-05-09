@@ -160,6 +160,7 @@ int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, in
 
 int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
 int testUtilExists(const char *filename);
+int testUtilRemove(const char *filename);
 int testUtilDirExists(const char *dirname);
 int testUtilMkDir(const char *dirname);
 int testUtilRmDir(const char *dirname);

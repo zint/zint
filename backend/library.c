@@ -38,6 +38,7 @@
 #include "common.h"
 #include "eci.h"
 #include "gs1.h"
+#include "output.h"
 #include "zfiletypes.h"
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
@@ -257,7 +258,11 @@ static int dump_plot(struct zint_symbol *symbol) {
     if (output_to_stdout) {
         f = stdout;
     } else {
+#ifdef _WIN32
+        f = out_win_fopen(symbol->outfile, "w");
+#else
         f = fopen(symbol->outfile, "w");
+#endif
         if (!f) {
             strcpy(symbol->errtxt, "201: Could not open output file");
             return ZINT_ERROR_FILE_ACCESS;
@@ -1453,7 +1458,11 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         file = stdin;
         fileLen = ZINT_MAX_DATA_LEN;
     } else {
+#ifdef _WIN32
+        file = out_win_fopen(filename, "rb");
+#else
         file = fopen(filename, "rb");
+#endif
         if (!file) {
             sprintf(symbol->errtxt, "229: Unable to read input file (%d: %.30s)", errno, strerror(errno));
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);

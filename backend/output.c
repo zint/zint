@@ -871,15 +871,40 @@ INTERNAL void out_upcean_split_text(const int upceanflag, const unsigned char te
     }
 }
 
+#ifdef _WIN32
+/* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
+#define utf8_to_wide(u, w, r) \
+    { \
+        int lenW; /* Includes NUL terminator */ \
+        if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return r; \
+        w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return r; \
+    }
+
+/* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Ticket #288, props Marcel */
+INTERNAL FILE *out_win_fopen(const char *filename, const char *mode) {
+    wchar_t *filenameW, *modeW;
+
+    utf8_to_wide(filename, filenameW, NULL);
+    utf8_to_wide(mode, modeW, NULL);
+
+    return _wfopen(filenameW, modeW);
+}
+#endif
+
 /* Make a directory; already existing dir okay */
 /* Adapted from https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950 and
    https://nachtimwald.com/2019/07/10/recursive-create-directory-in-c-revisited/ */
-static int out_maybe_mkdir(const char* path) {
+static int out_maybe_mkdir(const char *path) {
 #ifdef _WIN32
     DWORD dwAttrib;
+    wchar_t *pathW;
+
+    /* Assumes `path` is UTF-8 encoded */
+    utf8_to_wide(path, pathW, 0);
 
     /* Try to make the directory */
-    if (CreateDirectoryA(path, NULL) != 0) { /* Non-zero on success */
+    if (CreateDirectoryW(pathW, NULL) != 0) { /* Non-zero on success */
         return 0;
     }
     /* If it fails for any reason but already exists, fail */
@@ -887,7 +912,7 @@ static int out_maybe_mkdir(const char* path) {
         return -1;
     }
     /* Check if the existing path is a directory */
-    if ((dwAttrib = GetFileAttributesA(path)) == (DWORD) -1 || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
+    if ((dwAttrib = GetFileAttributesW(pathW)) == (DWORD) -1 || !(dwAttrib & FILE_ATTRIBUTE_DIRECTORY)) {
         return -1;
     }
 #else
@@ -914,7 +939,11 @@ static int out_maybe_mkdir(const char* path) {
 INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
     FILE *outfile;
 
+#ifdef _WIN32
+    if (!(outfile = out_win_fopen(filename, mode))) {
+#else
     if (!(outfile = fopen(filename, mode))) {
+#endif
         char dirname[256];
         char *d;
 #ifdef _WIN32
@@ -950,7 +979,11 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
                 *d = '/'; /* Restore */
             }
         }
+#ifdef _WIN32
+        outfile = out_win_fopen(filename, mode);
+#else
         outfile = fopen(filename, mode);
+#endif
     }
 
     return outfile;

@@ -49,6 +49,7 @@
 
 #include "testcommon.h"
 #include "../eci.h"
+#include "../output.h"
 
 static int tests = 0;
 static int failed = 0;
@@ -105,6 +106,16 @@ void assert_notequal(int e1, int e2, const char *fmt, ...) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
     }
 }
+#endif
+
+#ifdef _WIN32
+#define utf8_to_wide(u, w) \
+    { \
+        int lenW; /* Includes NUL terminator */ \
+        if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return 0; \
+        w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return 0; \
+    }
 #endif
 
 /* Begin individual test function */
@@ -1325,7 +1336,11 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
 
 /* Does file exist? */
 int testUtilExists(const char *filename) {
+#ifdef _WIN32
+    FILE *fp = out_win_fopen(filename, "r");
+#else
     FILE *fp = fopen(filename, "r");
+#endif
     if (fp == NULL) {
         return 0;
     }
@@ -1333,10 +1348,24 @@ int testUtilExists(const char *filename) {
     return 1;
 }
 
+/* Remove a file (Windows compatibility). Returns 0 if successful, non-zero if not */
+int testUtilRemove(const char *filename) {
+#ifdef _WIN32
+    wchar_t *filenameW;
+    utf8_to_wide(filename, filenameW);
+    return DeleteFileW(filenameW) == 0; /* Non-zero on success */
+#else
+    return remove(filename);
+#endif
+}
+
 /* Does directory exist? (Windows compatibility) */
 int testUtilDirExists(const char *dirname) {
 #ifdef _WIN32
-    DWORD dwAttrib = GetFileAttributes(dirname);
+    DWORD dwAttrib;
+    wchar_t *dirnameW;
+    utf8_to_wide(dirname, dirnameW);
+    dwAttrib = GetFileAttributesW(dirnameW);
     return dwAttrib != (DWORD) -1 && (dwAttrib & FILE_ATTRIBUTE_DIRECTORY);
 #else
     return testUtilExists(dirname);
@@ -1346,7 +1375,9 @@ int testUtilDirExists(const char *dirname) {
 /* Make a directory (Windows compatibility). Returns 0 if successful, non-zero if not */
 int testUtilMkDir(const char *dirname) {
 #ifdef _WIN32
-    return CreateDirectory(dirname, NULL) == 0;
+    wchar_t *dirnameW;
+    utf8_to_wide(dirname, dirnameW);
+    return CreateDirectoryW(dirnameW, NULL) == 0;
 #else
     return mkdir(dirname, S_IRWXU);
 #endif
@@ -1355,7 +1386,9 @@ int testUtilMkDir(const char *dirname) {
 /* Remove a directory (Windows compatibility). Returns 0 if successful, non-zero if not */
 int testUtilRmDir(const char *dirname) {
 #ifdef _WIN32
-    return RemoveDirectory(dirname) == 0;
+    wchar_t *dirnameW;
+    utf8_to_wide(dirname, dirnameW);
+    return RemoveDirectoryW(dirnameW) == 0;
 #else
     return rmdir(dirname);
 #endif
@@ -1364,15 +1397,25 @@ int testUtilRmDir(const char *dirname) {
 /* Rename a file (Windows compatibility) */
 int testUtilRename(const char *oldpath, const char *newpath) {
 #ifdef _MSVC
-    int ret = remove(newpath);
+    wchar_t *oldpathW, *newpathW;
+    int ret = testUtilRemove(newpath);
     if (ret != 0) return ret;
-#endif
+    utf8_to_wide(oldpath, oldpathW);
+    utf8_to_wide(newpath, newpathW);
+    return _wrename(oldpathW, newpathW);
+#else
     return rename(oldpath, newpath);
+#endif
 }
 
 /* Create read-only file */
 int testUtilCreateROFile(const char *filename) {
+#ifdef _WIN32
+    wchar_t *filenameW;
+    FILE *fp = out_win_fopen(filename, "w+");
+#else
     FILE *fp = fopen(filename, "w+");
+#endif
     if (fp == NULL) {
         return 0;
     }
@@ -1380,7 +1423,8 @@ int testUtilCreateROFile(const char *filename) {
         return 0;
     }
 #ifdef _WIN32
-    if (SetFileAttributesA(filename, GetFileAttributesA(filename) | FILE_ATTRIBUTE_READONLY) == 0) {
+    utf8_to_wide(filename, filenameW);
+    if (SetFileAttributesW(filenameW, GetFileAttributesW(filenameW) | FILE_ATTRIBUTE_READONLY) == 0) {
         return 0;
     }
 #else
@@ -1394,11 +1438,13 @@ int testUtilCreateROFile(const char *filename) {
 /* Remove read-only file (Windows compatibility) */
 int testUtilRmROFile(const char *filename) {
 #ifdef _WIN32
-    if (SetFileAttributesA(filename, GetFileAttributesA(filename) & ~FILE_ATTRIBUTE_READONLY) == 0) {
+    wchar_t *filenameW;
+    utf8_to_wide(filename, filenameW);
+    if (SetFileAttributesW(filenameW, GetFileAttributesW(filenameW) & ~FILE_ATTRIBUTE_READONLY) == 0) {
         return -1;
     }
 #endif
-    return remove(filename);
+    return testUtilRemove(filename);
 }
 
 /* Compare 2 PNG files */

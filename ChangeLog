@@ -10,6 +10,8 @@ Version 2.12.0.9 (dev) not released yet
 - Text (HRT) placement for vector (EMF/EPS/SVG) output changed - for EAN/UPC
   slightly further away from barcode, for all others slightly nearer. Some
   horizontal alignments of EAN/UPC vector text also tweaked
+- For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
+  in `zint_symbol` and all API filename arguments
 
 Changes
 -------
