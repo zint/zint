@@ -484,6 +484,10 @@ private slots:
 
         QTest::newRow("BARCODE_DATAMATRIX gif") << BARCODE_DATAMATRIX << "1234" << "test_save_to_file.gif" << true;
         QTest::newRow("BARCODE_DATAMATRIX unknown format") << BARCODE_DATAMATRIX << "1234" << "test_save_to_file.ext" << false;
+        QTest::newRow("BARCODE_DATAMATRIX UTF8 gif") << BARCODE_DATAMATRIX << "1234" << "test_save_to_file_τ.gif" << true;
+        QTest::newRow("BARCODE_DATAMATRIX too long (unknown format)") << BARCODE_DATAMATRIX << "1234"
+            << "test_6789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012.gif" // 256 long so should be truncated to end in ".gi"
+            << false;
     }
 
     void saveToFileTest()
@@ -491,7 +495,6 @@ private slots:
         Zint::QZint bc;
 
         bool bRet;
-        int ret;
 
         QFETCH(int, symbology);
         QFETCH(QString, text);
@@ -505,8 +508,8 @@ private slots:
         QCOMPARE(bRet, expected_bRet);
 
         if (bRet) {
-            ret = remove(fileName.toLatin1());
-            QCOMPARE(ret, 0);
+            bRet = QFile::remove(fileName);
+            QCOMPARE(bRet, true);
         }
     }
 

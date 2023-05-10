@@ -844,7 +844,7 @@ namespace Zint {
 
     bool QZint::save_to_file(const QString& filename) {
         if (resetSymbol()) {
-            strcpy(m_zintSymbol->outfile, filename.toLatin1().left(255));
+            strcpy(m_zintSymbol->outfile, filename.toUtf8().left(255));
             if (m_segs.empty()) {
                 QByteArray bstr = m_text.toUtf8();
                 m_error = ZBarcode_Encode_and_Print(m_zintSymbol, (unsigned char *) bstr.data(), bstr.length(),

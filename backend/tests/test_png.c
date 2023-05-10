@@ -102,11 +102,11 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
                 assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
             }
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
-                assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+                assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
             }
         } else {
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
-                (void) remove(symbol->outfile);
+                (void) testUtilRemove(symbol->outfile);
             }
         }
 
@@ -303,7 +303,7 @@ static void test_print(const testCtx *const p_ctx) {
             assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             ret = testUtilCmpBins(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
-            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
         }
 
         ZBarcode_Delete(symbol);
@@ -374,15 +374,15 @@ static void test_wpng_error_handler(const testCtx *const p_ctx) {
     wpng_error.symbol = &symbol;
 
     /* Create empty file */
-    (void) remove(filename); /* In case junk hanging around */
-    fp = fopen(filename, "w+");
-    assert_nonnull(fp, "fopen(%s) failed\n", filename);
+    (void) testUtilRemove(filename); /* In case junk hanging around */
+    fp = testUtilOpen(filename, "w+");
+    assert_nonnull(fp, "testUtilOpen(%s) failed\n", filename);
     ret = fclose(fp);
     assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
 
     /* Re-open for read, which will cause libpng to error */
-    fp = fopen(filename, "r");
-    assert_nonnull(fp, "fopen(%s) for read failed\n", filename);
+    fp = testUtilOpen(filename, "r");
+    assert_nonnull(fp, "testUtilOpen(%s) for read failed\n", filename);
 
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler_test, NULL);
     assert_nonnull(png_ptr, "png_create_write_struct failed\n");
@@ -395,7 +395,7 @@ static void test_wpng_error_handler(const testCtx *const p_ctx) {
         ret = fclose(fp);
         assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
         assert_nonnull(strstr(symbol.errtxt, "635: libpng error:"), "strstr(%s) NULL\n", symbol.errtxt);
-        assert_zero(remove(filename), "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+        assert_zero(testUtilRemove(filename), "testUtilRemove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
     } else {
         png_init_io(png_ptr, fp);
 
@@ -429,7 +429,7 @@ static void test_large_compliant_height(const testCtx *const p_ctx) {
 
     ret = ZBarcode_Encode_and_Print(symbol, (const unsigned char *) data_buf, codablockf_max, 0);
     assert_zero(ret, "ZBarcode_Encode_and_Print ret %d != 0 (%s)\n", ret, symbol->errtxt);
-    assert_zero(remove(symbol->outfile), "remove(%s) != 0\n", symbol->outfile);
+    assert_zero(testUtilRemove(symbol->outfile), "testUtilRemove(%s) != 0\n", symbol->outfile);
 
     ZBarcode_Delete(symbol);
 

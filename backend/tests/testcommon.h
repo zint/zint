@@ -159,6 +159,7 @@ void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, c
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
 
 int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
+FILE *testUtilOpen(const char *filename, const char *mode);
 int testUtilExists(const char *filename);
 int testUtilRemove(const char *filename);
 int testUtilDirExists(const char *dirname);

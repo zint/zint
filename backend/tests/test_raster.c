@@ -1020,7 +1020,7 @@ static void test_draw_string_wrap(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, data[i].symbology, ret);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         text_bits_set = 0;
         row = data[i].expected_no_text_row;
@@ -1090,7 +1090,7 @@ static void test_code128_utf8(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_zero(ret, "i:%d ZBarcode_Print(%d) ret %d != 0\n", i, BARCODE_CODE128, ret);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         text_bits_set = 0;
         row = data[i].expected_text_row;
@@ -1271,7 +1271,7 @@ static void test_scale(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_equal(ret, data[i].ret_raster, "i:%d ZBarcode_Print(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_raster, symbol->errtxt);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);
@@ -1383,7 +1383,7 @@ static void test_guard_descent(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_equal(ret, data[i].ret_raster, "i:%d ZBarcode_Print(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_raster, symbol->errtxt);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);
@@ -1762,7 +1762,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_equal(ret, data[i].ret_raster, "i:%d ZBarcode_Print(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret_raster, symbol->errtxt);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);
@@ -1917,7 +1917,7 @@ static void test_text_gap(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Print(symbol, 0);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Print(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret, symbol->errtxt);
-        assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+        assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
         assert_nonzero(symbol->bitmap_height >= data[i].expected_set_rows, "i:%d (%d) symbol->bitmap_height %d < expected_set_rows %d\n",
                 i, data[i].symbology, symbol->bitmap_height, data[i].expected_set_rows);
@@ -3098,7 +3098,7 @@ static void test_perf_scale(const testCtx *const p_ctx) {
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
             diff_print += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
             ZBarcode_Delete(symbol);
         }

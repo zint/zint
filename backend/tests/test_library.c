@@ -616,8 +616,8 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
                 FILE *fp;
                 struct zint_symbol *symbol2;
 
-                fp = fopen(input_filename, "wb");
-                assert_nonnull(fp, "i:%d fopen(%s) failed\n", i, input_filename);
+                fp = testUtilOpen(input_filename, "wb");
+                assert_nonnull(fp, "i:%d testUtilOpen(%s) failed\n", i, input_filename);
                 assert_notequal(fputs(data[i].data, fp), EOF, "i%d fputs(%s) failed == EOF (%d)\n", i, data[i].data, ferror(fp));
                 assert_zero(fclose(fp), "i%d fclose() failed\n", i);
 
@@ -635,7 +635,7 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
                 ret = testUtilSymbolCmp(symbol2, symbol);
                 assert_zero(ret, "i:%d testUtilSymbolCmp symbol2 ret %d != 0\n", i, ret);
 
-                assert_zero(remove(input_filename), "i:%d remove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
+                assert_zero(testUtilRemove(input_filename), "i:%d testUtilRemove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
 
                 ZBarcode_Delete(symbol2);
             }
@@ -789,18 +789,18 @@ static void test_encode_file_empty(const testCtx *const p_ctx) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) remove(filename); /* In case junk hanging around */
+    (void) testUtilRemove(filename); /* In case junk hanging around */
 
-    fstream = fopen(filename, "w+");
-    assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
+    fstream = testUtilOpen(filename, "w+");
+    assert_nonnull(fstream, "testUtilOpen(%s) failed (%d)\n", filename, ferror(fstream));
     ret = fclose(fstream);
     assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
 
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File empty ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-    ret = remove(filename);
-    assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+    ret = testUtilRemove(filename);
+    assert_zero(ret, "testUtilRemove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ZBarcode_Delete(symbol);
 
@@ -821,10 +821,10 @@ static void test_encode_file_too_large(const testCtx *const p_ctx) {
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
-    (void) remove(filename); /* In case junk hanging around */
+    (void) testUtilRemove(filename); /* In case junk hanging around */
 
-    fstream = fopen(filename, "w+");
-    assert_nonnull(fstream, "fopen(%s) failed (%d)\n", filename, ferror(fstream));
+    fstream = testUtilOpen(filename, "w+");
+    assert_nonnull(fstream, "testUtilOpen(%s) failed (%d)\n", filename, ferror(fstream));
     ret = (int) fwrite(buf, 1, sizeof(buf), fstream);
     assert_equal(ret, sizeof(buf), "fwrite return value: %d != %d\n", ret, (int)sizeof(buf));
     ret = fclose(fstream);
@@ -833,8 +833,8 @@ static void test_encode_file_too_large(const testCtx *const p_ctx) {
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_File too large ret %d != ZINT_ERROR_TOO_LONG (%s)\n", ret, symbol->errtxt);
 
-    ret = remove(filename);
-    assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+    ret = testUtilRemove(filename);
+    assert_zero(ret, "testUtilRemove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ZBarcode_Delete(symbol);
 
@@ -878,8 +878,8 @@ static void test_encode_file_unreadable(const testCtx *const p_ctx) {
     ret = ZBarcode_Encode_File(symbol, filename);
     assert_equal(ret, ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File unreadable ret %d != ZINT_ERROR_INVALID_DATA (%s)\n", ret, symbol->errtxt);
 
-    ret = remove(filename);
-    assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+    ret = testUtilRemove(filename);
+    assert_zero(ret, "testUtilRemove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     ZBarcode_Delete(symbol);
 
@@ -927,11 +927,11 @@ static void test_encode_file(const testCtx *const p_ctx) {
 
     testStart("test_encode_file");
 
-    (void) remove(filename); /* In case junk hanging around */
-    (void) remove(outfile); /* In case junk hanging around */
+    (void) testUtilRemove(filename); /* In case junk hanging around */
+    (void) testUtilRemove(outfile); /* In case junk hanging around */
 
-    fp = fopen(filename, "w+");
-    assert_nonnull(fp, "fopen(%s) failed (%d)\n", filename, ferror(fp));
+    fp = testUtilOpen(filename, "w+");
+    assert_nonnull(fp, "testUtilOpen(%s) failed (%d)\n", filename, ferror(fp));
     assert_notequal(fputs(data, fp), EOF, "fputs(%s) failed == EOF (%d)\n", data, ferror(fp));
     ret = fclose(fp);
     assert_zero(ret, "fclose(%s) %d != 0\n", filename, ret);
@@ -944,8 +944,8 @@ static void test_encode_file(const testCtx *const p_ctx) {
         ret = ZBarcode_Encode_File_and_Print(symbol, filename, 0);
         assert_zero(ret, "ret %d != 0 (%s)\n", ret, symbol->errtxt);
 
-        ret = remove(outfile);
-        assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", outfile, errno, strerror(errno));
+        ret = testUtilRemove(outfile);
+        assert_zero(ret, "testUtilRemove(%s) != 0 (%d: %s)\n", outfile, errno, strerror(errno));
 
         ZBarcode_Delete(symbol);
     }
@@ -974,8 +974,8 @@ static void test_encode_file(const testCtx *const p_ctx) {
         ZBarcode_Delete(symbol);
     }
 
-    ret = remove(filename);
-    assert_zero(ret, "remove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
+    ret = testUtilRemove(filename);
+    assert_zero(ret, "testUtilRemove(%s) != 0 (%d: %s)\n", filename, errno, strerror(errno));
 
     testFinish();
 }

@@ -5618,7 +5618,7 @@ static void test_perf(const testCtx *const p_ctx) {
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
             diff_print += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
             ZBarcode_Delete(symbol);
         }
@@ -5678,7 +5678,7 @@ static void test_perf(const testCtx *const p_ctx) {
             ret = ZBarcode_Print(symbol, 0 /*rotate_angle*/);
             diff_print += clock() - start;
             assert_zero(ret, "i:%d ZBarcode_Print ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
             ZBarcode_Delete(symbol);
         }

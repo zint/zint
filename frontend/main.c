@@ -834,6 +834,10 @@ static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10
     return 1;
 }
 
+#ifdef _WIN32
+static FILE *win_fopen(const char *filename, const char *mode); /* Forward ref */
+#endif
+
 /* Batch mode - output symbol for each line of text in `filename` */
 static int batch_process(struct zint_symbol *symbol, const char *filename, const int mirror_mode,
             const char *filetype, const int output_given, const int rotate_angle) {
@@ -884,7 +888,11 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     if (strcmp(filename, "-") == 0) {
         file = stdin;
     } else {
+#ifdef _WIN32
+        file = win_fopen(filename, "rb");
+#else
         file = fopen(filename, "rb");
+#endif
         if (!file) {
             fprintf(stderr, "Error 102: Unable to read input file '%s'\n", filename);
             fflush(stderr);
@@ -1119,6 +1127,25 @@ static void win_args(int *p_argc, char ***p_argv) {
             LocalFree(szArgList);
         }
     }
+}
+
+/* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
+#define utf8_to_wide(u, w, r) \
+    { \
+        int lenW; /* Includes NUL terminator */ \
+        if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return r; \
+        w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
+        if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return r; \
+    }
+
+/* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Ticket #288, props Marcel */
+static FILE *win_fopen(const char *filename, const char *mode) {
+    wchar_t *filenameW, *modeW;
+
+    utf8_to_wide(filename, filenameW, NULL);
+    utf8_to_wide(mode, modeW, NULL);
+
+    return _wfopen(filenameW, modeW);
 }
 #endif /* _WIN32 */
 

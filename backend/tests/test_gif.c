@@ -104,11 +104,11 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
                 assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
             }
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
-                assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+                assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
             }
         } else {
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
-                (void) remove(symbol->outfile);
+                (void) testUtilRemove(symbol->outfile);
             }
         }
 
@@ -263,7 +263,7 @@ static void test_print(const testCtx *const p_ctx) {
 
             ret = testUtilCmpBins(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
-            assert_zero(remove(symbol->outfile), "i:%d remove(%s) != 0\n", i, symbol->outfile);
+            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
         }
 
         ZBarcode_Delete(symbol);
@@ -332,7 +332,7 @@ static void test_large_scale(const testCtx *const p_ctx) {
 
     if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) { /* -d 64 */
         /* 129.1 kB file manually inspected and checked (1.1 MB file for scale 70.0f also checked) */
-        assert_zero(remove(symbol.outfile), "remove(%s) != 0\n", symbol.outfile);
+        assert_zero(testUtilRemove(symbol.outfile), "testUtilRemove(%s) != 0\n", symbol.outfile);
     }
 
     ZBarcode_Clear(&symbol);

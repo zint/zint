@@ -37,6 +37,7 @@
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
+#include <wchar.h>
 #endif
 #ifndef ZINT_NO_PNG
 #include <png.h>
@@ -1334,13 +1335,19 @@ int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const ch
     return 1;
 }
 
+/* Open a file (Windows compatibility) */
+FILE *testUtilOpen(const char *filename, const char *mode) {
+#ifdef _WIN32
+    FILE *fp = out_win_fopen(filename, mode);
+#else
+    FILE *fp = fopen(filename, mode);
+#endif
+    return fp;
+}
+
 /* Does file exist? */
 int testUtilExists(const char *filename) {
-#ifdef _WIN32
-    FILE *fp = out_win_fopen(filename, "r");
-#else
-    FILE *fp = fopen(filename, "r");
-#endif
+    FILE *fp = testUtilOpen(filename, "r");
     if (fp == NULL) {
         return 0;
     }
@@ -1396,7 +1403,7 @@ int testUtilRmDir(const char *dirname) {
 
 /* Rename a file (Windows compatibility) */
 int testUtilRename(const char *oldpath, const char *newpath) {
-#ifdef _MSVC
+#ifdef _WIN32
     wchar_t *oldpathW, *newpathW;
     int ret = testUtilRemove(newpath);
     if (ret != 0) return ret;
@@ -1412,10 +1419,8 @@ int testUtilRename(const char *oldpath, const char *newpath) {
 int testUtilCreateROFile(const char *filename) {
 #ifdef _WIN32
     wchar_t *filenameW;
-    FILE *fp = out_win_fopen(filename, "w+");
-#else
-    FILE *fp = fopen(filename, "w+");
 #endif
+    FILE *fp = testUtilOpen(filename, "w+");
     if (fp == NULL) {
         return 0;
     }
@@ -1464,11 +1469,11 @@ int testUtilCmpPngs(const char *png1, const char *png2) {
     size_t rowbytes1, rowbytes2;
     int r;
 
-    fp1 = fopen(png1, "rb");
+    fp1 = testUtilOpen(png1, "rb");
     if (!fp1) {
         return 2;
     }
-    fp2 = fopen(png2, "rb");
+    fp2 = testUtilOpen(png2, "rb");
     if (!fp2) {
         fclose(fp1);
         return 3;
@@ -1654,11 +1659,11 @@ int testUtilCmpTxts(const char *txt1, const char *txt2) {
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
 
-    fp1 = fopen(txt1, "r");
+    fp1 = testUtilOpen(txt1, "r");
     if (!fp1) {
         return 2;
     }
-    fp2 = fopen(txt2, "r");
+    fp2 = testUtilOpen(txt2, "r");
     if (!fp2) {
         fclose(fp1);
         return 3;
@@ -1705,11 +1710,11 @@ int testUtilCmpBins(const char *bin1, const char *bin2) {
     char buf2[1024];
     size_t len1 = 0, len2 = 0;
 
-    fp1 = fopen(bin1, "rb");
+    fp1 = testUtilOpen(bin1, "rb");
     if (!fp1) {
         return 2;
     }
-    fp2 = fopen(bin2, "rb");
+    fp2 = testUtilOpen(bin2, "rb");
     if (!fp2) {
         fclose(fp1);
         return 3;
@@ -1753,11 +1758,11 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
     static char first_line[] = "%!PS-Adobe-3.0 EPSF-3.0\n";
     static char second_line_start[] = "%%Creator: Zint ";
 
-    fp1 = fopen(eps1, "r");
+    fp1 = testUtilOpen(eps1, "r");
     if (!fp1) {
         return 2;
     }
-    fp2 = fopen(eps2, "r");
+    fp2 = testUtilOpen(eps2, "r");
     if (!fp2) {
         fclose(fp1);
         return 3;
@@ -1896,7 +1901,7 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
         return -1;
     }
 
-    fp = fopen(svg, "r");
+    fp = testUtilOpen(svg, "r");
     if (!fp) {
         fprintf(stderr, "testUtilVerifyLibreOffice: failed to open '%s' (%s)\n", svg, cmd);
         return -1;
@@ -1923,7 +1928,7 @@ int testUtilVerifyLibreOffice(const char *filename, int debug) {
     if (strstr(buf, "x=\"-32767\"") != NULL) {
         return -1;
     }
-    remove(svg);
+    testUtilRemove(svg);
 
     return 0;
 }

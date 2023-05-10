@@ -78,8 +78,8 @@ static void test_csv(const testCtx *const p_ctx) {
         "/backend/tests/data/imail/usps/", "uspsIMbEncoderTestCases.csv"), "testUtilDataPath == 0\n");
 
 	for (j = 0; j < perf_iterations; j++) {
-		fd = fopen(csvfile, "r");
-		assert_nonnull(fd, "fopen(%s) == NULL", csvfile);
+		fd = testUtilOpen(csvfile, "r");
+		assert_nonnull(fd, "testUtilOpen(%s) == NULL", csvfile);
 
 		while (fgets(buffer, sizeof(buffer), fd) != NULL) {
 			const char *b;
