@@ -19,6 +19,7 @@
  */
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
+#include <errno.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -894,7 +895,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
         file = fopen(filename, "rb");
 #endif
         if (!file) {
-            fprintf(stderr, "Error 102: Unable to read input file '%s'\n", filename);
+            fprintf(stderr, "Error 102: Unable to read input file '%s' (%d: %s)\n", filename, errno, strerror(errno));
             fflush(stderr);
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -1028,10 +1029,13 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
             }
 
             strcpy(symbol->outfile, output_file);
-            error_number = ZBarcode_Encode_and_Print(symbol, buffer, buf_posn, rotate_angle);
-            if (error_number != 0) {
+            warn_number = ZBarcode_Encode_and_Print(symbol, buffer, buf_posn, rotate_angle);
+            if (warn_number != 0) {
                 fprintf(stderr, "On line %d: %s\n", line_count, symbol->errtxt);
                 fflush(stderr);
+                if (warn_number >= ZINT_ERROR) {
+                    error_number = warn_number;
+                }
             }
             ZBarcode_Clear(symbol);
             memset(buffer, 0, sizeof(buffer));
@@ -1059,7 +1063,13 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
         warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
     }
 
-    fclose(file);
+    if (file != stdin) {
+        if (fclose(file) != 0) {
+            fprintf(stderr, "Warning 196: Failure on closing input file '%s' (%d: %s)\n", filename, errno, strerror(errno));
+            fflush(stderr);
+            warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
+        }
+    }
     if (error_number == 0) {
         error_number = warn_number;
     }
@@ -1069,7 +1079,6 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
 /* Stuff to convert args on Windows command line to UTF-8 */
 #ifdef _WIN32
 #include <windows.h>
-#include <shellapi.h>
 
 #ifndef WC_ERR_INVALID_CHARS
 #define WC_ERR_INVALID_CHARS    0x00000080
@@ -1095,12 +1104,201 @@ static void win_free_args(void) {
     win_argv = NULL;
 }
 
+/* Using Wine version of `CommandLineToArgvW()` (slightly adapted) to avoid loading shell32.dll - see
+   https://source.winehq.org/git/wine.git/blob/5a66eab72:/dlls/shcore/main.c#l264
+   and https://news.ycombinator.com/item?id=18596841 */
+/*
+ * Copyright 2002 Jon Griffiths
+ * Copyright 2016 Sebastian Lackner
+ *
+ * This library is free software; you can redistribute it and/or
+ * modify it under the terms of the GNU Lesser General Public
+ * License as published by the Free Software Foundation; either
+ * version 2.1 of the License, or (at your option) any later version.
+ *
+ * This library is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Lesser General Public License for more details.
+ *
+ * You should have received a copy of the GNU Lesser General Public
+ * License along with this library; if not, write to the Free Software
+ * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA 02110-1301, USA
+ */
+static WCHAR **win_CommandLineToArgvW(const WCHAR *cmdline, int *numargs) {
+    int qcount, bcount;
+    const WCHAR *s;
+    WCHAR **argv;
+    DWORD argc;
+    WCHAR *d;
+
+    /* Adapted to require non-empty command line */
+    if (*cmdline == 0) {
+        return NULL;
+    }
+
+    /* --- First count the arguments */
+    argc = 1;
+    s = cmdline;
+    /* The first argument, the executable path, follows special rules */
+    if (*s == '"') {
+        /* The executable path ends at the next quote, no matter what */
+        s++;
+        while (*s)
+            if (*s++ == '"')
+                break;
+    } else {
+        /* The executable path ends at the next space, no matter what */
+        while (*s && *s != ' ' && *s != '\t')
+            s++;
+    }
+    /* Skip to the first argument, if any */
+    while (*s == ' ' || *s == '\t')
+        s++;
+    if (*s)
+        argc++;
+
+    /* Analyze the remaining arguments */
+    qcount = bcount = 0;
+    while (*s) {
+        if ((*s == ' ' || *s == '\t') && qcount == 0) {
+            /* Skip to the next argument and count it if any */
+            while (*s == ' ' || *s == '\t')
+                s++;
+            if (*s)
+                argc++;
+            bcount = 0;
+        } else if (*s == '\\') {
+            /* '\', count them */
+            bcount++;
+            s++;
+        } else if (*s == '"') {
+            /* '"' */
+            if ((bcount & 1) == 0)
+                qcount++; /* Unescaped '"' */
+            s++;
+            bcount = 0;
+            /* Consecutive quotes, see comment in copying code below */
+            while (*s == '"') {
+                qcount++;
+                s++;
+            }
+            qcount = qcount % 3;
+            if (qcount == 2)
+                qcount = 0;
+        } else {
+            /* A regular character */
+            bcount = 0;
+            s++;
+        }
+    }
+
+    /* Allocate in a single lump, the string array, and the strings that go
+     * with it. This way the caller can make a single LocalFree() call to free
+     * both, as per MSDN.
+     */
+    argv = LocalAlloc(LMEM_FIXED, (argc + 1) * sizeof(WCHAR *) + (lstrlenW(cmdline) + 1) * sizeof(WCHAR));
+    if (!argv)
+        return NULL;
+
+    /* --- Then split and copy the arguments */
+    argv[0] = d = lstrcpyW((WCHAR *)(argv + argc + 1), cmdline);
+    argc = 1;
+    /* The first argument, the executable path, follows special rules */
+    if (*d == '"') {
+        /* The executable path ends at the next quote, no matter what */
+        s = d + 1;
+        while (*s) {
+            if (*s == '"') {
+                s++;
+                break;
+            }
+            *d++ = *s++;
+        }
+    } else {
+        /* The executable path ends at the next space, no matter what */
+        while (*d && *d != ' ' && *d != '\t')
+            d++;
+        s = d;
+        if (*s)
+            s++;
+    }
+    /* Close the executable path */
+    *d++ = 0;
+    /* Skip to the first argument and initialize it if any */
+    while (*s == ' ' || *s == '\t')
+        s++;
+    if (!*s) {
+        /* There are no parameters so we are all done */
+        argv[argc] = NULL;
+        *numargs = argc;
+        return argv;
+    }
+
+    /* Split and copy the remaining arguments */
+    argv[argc++] = d;
+    qcount = bcount = 0;
+    while (*s) {
+        if ((*s == ' ' || *s == '\t') && qcount == 0) {
+            /* Close the argument */
+            *d++ = 0;
+            bcount = 0;
+
+            /* Skip to the next one and initialize it if any */
+            do {
+                s++;
+            } while (*s == ' ' || *s == '\t');
+            if (*s)
+                argv[argc++] = d;
+        } else if (*s == '\\') {
+            *d++ = *s++;
+            bcount++;
+        } else if (*s == '"') {
+            if ((bcount & 1) == 0) {
+                /* Preceded by an even number of '\', this is half that
+                 * number of '\', plus a quote which we erase.
+                 */
+                d -= bcount / 2;
+                qcount++;
+            } else {
+                /* Preceded by an odd number of '\', this is half that
+                 * number of '\' followed by a '"'
+                 */
+                d = d - bcount / 2 - 1;
+                *d++ = '"';
+            }
+            s++;
+            bcount = 0;
+            /* Now count the number of consecutive quotes. Note that qcount
+             * already takes into account the opening quote if any, as well as
+             * the quote that lead us here.
+             */
+            while (*s == '"') {
+                if (++qcount == 3) {
+                    *d++ = '"';
+                    qcount = 0;
+                }
+                s++;
+            }
+            if (qcount == 2)
+                qcount = 0;
+        } else {
+            /* A regular character */
+            *d++ = *s++;
+            bcount = 0;
+        }
+    }
+    *d = '\0';
+    argv[argc] = NULL;
+    *numargs = argc;
+
+    return argv;
+}
+
 /* For Windows replace args with UTF-8 versions */
-/* TODO: using `CommandLineToArgvW()` causes shell32.dll to be loaded - replace with own version, see
-   https://news.ycombinator.com/item?id=18596841 */
 static void win_args(int *p_argc, char ***p_argv) {
     int i;
-    LPWSTR *szArgList = CommandLineToArgvW(GetCommandLineW(), &win_argc);
+    LPWSTR *szArgList = win_CommandLineToArgvW(GetCommandLineW(), &win_argc);
     if (szArgList) {
         if (!(win_argv = (char **) calloc(win_argc + 1, sizeof(char *)))) {
             LocalFree(szArgList);
