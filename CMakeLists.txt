@@ -94,7 +94,7 @@ if(ZINT_SANITIZE)
         endif()
         if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # Recent clangs added deprecation warnings for `sprintf()` that are only triggered on sanitize - suppress
-            add_compile_options(-W-no-deprecated-declarations)
+            add_compile_options(-Wno-deprecated-declarations)
         endif()
     endif()
 endif()
