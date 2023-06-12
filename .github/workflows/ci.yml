@@ -85,11 +85,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
 
-    - name: Install gcc-12
-      run: sudo apt install -y gcc-12 g++-12
-
     - name: Install multilibs
-      run: sudo apt install gcc-multilib g++-multilib
+      run: sudo apt install gcc-12-multilib g++-12-multilib
 
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
