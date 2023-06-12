@@ -92,6 +92,10 @@ if(ZINT_SANITIZE)
             # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
             add_compile_options(-fno-var-tracking-assignments)
         endif()
+        if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+            # Recent clangs added deprecation warnings for `sprintf()` that are only triggered on sanitize - suppress
+            add_compile_options(-W-no-deprecated-declarations)
+        endif()
     endif()
 endif()
 
