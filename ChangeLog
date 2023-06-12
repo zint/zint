@@ -3,15 +3,25 @@ Version 2.12.0.9 (dev) not released yet
 
 **Incompatible changes**
 ------------------------
-- zint_symbol fgcolour and bgcolour buffer lengths extended 10 -> 16 to allow
-  for "C,M,Y,K" comma-separated decimal percentage strings
+- Buffer lengths of fields `fgcolour` and `bgcolour` in `zint_symbol` extended
+  10 -> 16 to allow for "C,M,Y,K" comma-separated decimal percentage strings
 - CMYK values for EPS (slightly) and TIF (significantly) have changed - now use
   the same RGB -> CMYK formula
 - Text (HRT) placement for vector (EMF/EPS/SVG) output changed - for EAN/UPC
   slightly further away from barcode, for all others slightly nearer. Some
   horizontal alignments of EAN/UPC vector text also tweaked
+- Text (HRT) for standalone EAN-2 and EAN-5 now at top of symbol
+  (was at bottom)
 - For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
   in `zint_symbol` and all API filename arguments
+- Never used `fontsize` field removed from `zint_symbol`
+- Buffer length of field `text` (HRT) in `zint_symbol` extended 128 -> 160
+  (client buffers may need checking/extending)
+- Font of text of SVG vector output now "OCR-B, monospace"
+  (was "Helvetica, sans serif")
+- Unintended excess horizontal whitespace of Composite symbols removed, and
+  quiet zone settings respected exactly, and centring of HRT (if any) now
+  relative to linear part of symbol only rather than whole symbol
 
 Changes
 -------
@@ -27,12 +37,39 @@ Changes
   comma-separated decimal percentage strings "C,M,Y,K" where "C", "M" etc. are
   0-100 (ticket #281, 3rd point)
 - PCX: add alpha support
-- GUI: Rearrange some Appearance tab inputs (Border Type <-> Width, Show Text
+- GUI: rearrange some Appearance tab inputs (Border Type <-> Width, Show Text
   <-> Font, Text/Font <-> Printing Scale/Size) to flow more naturally;
   save button "Save As..." -> "Save..." and add icon
 - Add `text_gap` option to allow adjustment of vertical gap between barcode and
   text (HRT)
 - DAFT: up max to 250 chars
+- CLI: use own (Wine) version of `CommandLineToArgvW()` to avoid loading
+  "shell32.dll"
+- EAN/UPC: add quiet zone indicators option (API `output_options`
+  `EANUPC_GUARD_WHITESPACE`, CLI `--guardwhitespace`) (ticket #287)
+- EAN-2/EAN-5: HRT now at top instead of at bottom for standalones, following
+  BWIPP
+- Move "font.h" -> "raster_font.h"
+- EPS/SVG: use new `out_putsf()` func to output floats, avoiding trailing zeroes
+  & locale dependency
+- EPS: simplify "TR" formula
+- SVG: change font from "Helvetica, sans serif" to "OCR-B, monospace";
+  use single "<path>" instead of multiple "<rect>"s to draw boxes (reduces file
+  size)
+- Add `EMBED_VECTOR_FONT` to `output_options` (CLI `--embedfont`) to enable
+  embedding of font in vector output - currently only for SVG output of EAN/UPC
+- GUI: use "OCR-B" font for EAN/UPC and "Arimo" for all others (was "Helvetica"
+  for both); add preview background colour option (default light grey) so as
+  whitespace will show up in contrast (access via preview context menu)
+- EMF: prefix funcs with `emf_`; simplify string `halign` handling
+- large: rename `large_int` -> `large_uint`
+- CODE128/common: move `c128_hrt_cpy_iso8859_1()` to `hrt_cpy_iso8859_1()` and
+  add `ZINT_WARN_HRT_TRUNCATED` warning (for future use)
+- Various symbologies: replace `printf()` with `fputs()` (symbol->debug)
+- QRCODE: better assert(), removing a NOLINT (2 left)
+- CLI: add some more barcode synonyms for DBAR
+- common: various fiddlings
+- CMake: don't include png.c unless ZINT_USE_PNG (avoids clang warning)
 
 Bugs
 ----
@@ -45,6 +82,14 @@ Bugs
 - GUI: fix fg/gbcolor icon background not being reset on zap
 - EMF/EPS/SVG/GUI: ignore BOLD_TEXT for EAN/UPC
 - EMF/EPS/SVG: fix addon bars placement/length when text hidden
+- For Windows, assume `outfile` & API filename args are in UTF-8,
+  & use xxxW() APIs accordingly, ticket #288, props Marcel
+  **Backwards-incompatible change**
+- GUI: fix `save_to_file()` `filename.toLatin1()` -> `toUtf8()`
+- CLI: batch mode: don't close input if stdin
+- EAN/UPC: fix excess 1X to right of add-ons
+- Composites: fix excess whitespace; fix quiet zone calcs to allow for linear
+  shifting
 
 
 Version 2.12.0 (2022-12-12)

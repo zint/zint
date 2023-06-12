@@ -228,7 +228,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (((source[2] == '0') || (source[2] == '1')) || (source[2] == '2')) {
                 /* Note 1 - "X3 shall not be equal to 0, 1 or 2" */
-                strcpy(symbol->errtxt, "271: Invalid UPC-E data"); /* TODO: Better error message */
+                sprintf(symbol->errtxt,
+                        "271: For this UPC-E zero suppression, 3rd character cannot be \"0\", \"1\" or \"2\" (%.*s)",
+                        length, source);
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -238,7 +240,8 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (source[3] == '0') {
                 /* Note 2 - "X4 shall not be equal to 0" */
-                strcpy(symbol->errtxt, "272: Invalid UPC-E data"); /* TODO: Better error message */
+                sprintf(symbol->errtxt, "272: For this UPC-E zero suppression, 4th character cannot be \"0\" (%.*s)",
+                        length, source);
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -253,7 +256,8 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = emode;
             if (source[4] == '0') {
                 /* Note 3 - "X5 shall not be equal to 0" */
-                strcpy(symbol->errtxt, "273: Invalid UPC-E data"); /* TODO: Better error message */
+                sprintf(symbol->errtxt, "273: For this UPC-E zero suppression, 5th character cannot be \"0\" (%.*s)",
+                        length, source);
                 return ZINT_ERROR_INVALID_DATA;
             }
             break;
@@ -808,16 +812,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
             switch (first_part_len) {
-                case 2: ean_add_on(first_part, first_part_len, dest, 0);
-                    ustrcpy(symbol->text, first_part);
-                    if (symbol->output_options & COMPLIANT_HEIGHT) {
-                        /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-5 */
-                        const float height = stripf(21.9f / 0.33f); /* 21.9mm / 0.33mm ~ 66.36 */
-                        error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
-                    } else {
-                        (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
-                    }
-                    break;
+                case 2:
                 case 5: ean_add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
                     if (symbol->output_options & COMPLIANT_HEIGHT) {
@@ -973,7 +968,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 }
             }
             unset_module(symbol, symbol->rows - 1, 0);
-            symbol->width += 2;
+            symbol->width += 1 + (second_part_len == 0); /* Only need right space if no add-on */
             break;
     }
 

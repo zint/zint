@@ -1,282 +1,268 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="368" height="304" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="368" height="304" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="368.00" height="16.00" fill="#000000" />
-      <rect x="0.00" y="16.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="16.00" width="32.00" height="16.00" fill="#ffffff" />
-      <rect x="48.00" y="16.00" width="16.00" height="272.00" fill="#000000" />
-      <rect x="64.00" y="16.00" width="16.00" height="272.00" fill="#ffffff" />
-      <rect x="80.00" y="16.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="96.00" y="16.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="128.00" y="16.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="144.00" y="16.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="160.00" y="16.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="192.00" y="16.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="208.00" y="16.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="240.00" y="16.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="256.00" y="16.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="288.00" y="16.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="304.00" y="16.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="16.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="336.00" y="16.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="352.00" y="16.00" width="16.00" height="80.00" fill="#000000" />
-      <rect x="0.00" y="32.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="32.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="32.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="96.00" y="32.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="112.00" y="32.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="128.00" y="32.00" width="80.00" height="16.00" fill="#00ff00" />
-      <rect x="208.00" y="32.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="240.00" y="32.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="256.00" y="32.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="288.00" y="32.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="304.00" y="32.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="32.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="336.00" y="32.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="0.00" y="48.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="48.00" width="32.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="48.00" width="32.00" height="16.00" fill="#00ff00" />
-      <rect x="112.00" y="48.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="128.00" y="48.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="144.00" y="48.00" width="64.00" height="16.00" fill="#ffff00" />
-      <rect x="208.00" y="48.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="224.00" y="48.00" width="64.00" height="16.00" fill="#ffff00" />
-      <rect x="288.00" y="48.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="304.00" y="48.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="48.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="0.00" y="64.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="64.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="80.00" y="64.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="96.00" y="64.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="112.00" y="64.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="128.00" y="64.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="144.00" y="64.00" width="32.00" height="16.00" fill="#00ff00" />
-      <rect x="176.00" y="64.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="208.00" y="64.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="224.00" y="64.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="240.00" y="64.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="256.00" y="64.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="272.00" y="64.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="288.00" y="64.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="304.00" y="64.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="64.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="336.00" y="64.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="0.00" y="80.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="80.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="32.00" y="80.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="80.00" y="80.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="96.00" y="80.00" width="96.00" height="16.00" fill="#ffff00" />
-      <rect x="192.00" y="80.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="208.00" y="80.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="224.00" y="80.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="240.00" y="80.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="256.00" y="80.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="288.00" y="80.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="304.00" y="80.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="80.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="336.00" y="80.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="0.00" y="96.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="96.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="80.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="96.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="112.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="128.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="144.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="160.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="176.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="192.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="208.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="224.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="240.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="256.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="272.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="288.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="304.00" y="96.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="96.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="336.00" y="96.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="0.00" y="112.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="112.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="32.00" y="112.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="80.00" y="112.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="96.00" y="112.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="112.00" y="112.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="144.00" y="112.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="160.00" y="112.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="192.00" y="112.00" width="48.00" height="16.00" fill="#00ffff" />
-      <rect x="240.00" y="112.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="272.00" y="112.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="288.00" y="112.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="304.00" y="112.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="112.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="336.00" y="112.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="352.00" y="112.00" width="16.00" height="80.00" fill="#000000" />
-      <rect x="0.00" y="128.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="128.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="80.00" y="128.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="96.00" y="128.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="112.00" y="128.00" width="48.00" height="16.00" fill="#ff00ff" />
-      <rect x="160.00" y="128.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="192.00" y="128.00" width="48.00" height="16.00" fill="#00ff00" />
-      <rect x="240.00" y="128.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="272.00" y="128.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="288.00" y="128.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="304.00" y="128.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="128.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="0.00" y="144.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="144.00" width="32.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="144.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="96.00" y="144.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="112.00" y="144.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="144.00" y="144.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="160.00" y="144.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="176.00" y="144.00" width="64.00" height="16.00" fill="#ffff00" />
-      <rect x="240.00" y="144.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="272.00" y="144.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="304.00" y="144.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="144.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="0.00" y="160.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="80.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="96.00" y="160.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="112.00" y="160.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="128.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="144.00" y="160.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="160.00" y="160.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="176.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="192.00" y="160.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="208.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="224.00" y="160.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="240.00" y="160.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="256.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="272.00" y="160.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="288.00" y="160.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="304.00" y="160.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="160.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="0.00" y="176.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="176.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="32.00" y="176.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="80.00" y="176.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="96.00" y="176.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="112.00" y="176.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="128.00" y="176.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="160.00" y="176.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="176.00" y="176.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="192.00" y="176.00" width="48.00" height="16.00" fill="#ffff00" />
-      <rect x="240.00" y="176.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="256.00" y="176.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="288.00" y="176.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="304.00" y="176.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="176.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="336.00" y="176.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="0.00" y="192.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="192.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="80.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="96.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="112.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="128.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="144.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="160.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="176.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="192.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="208.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="224.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="240.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="256.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="272.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="288.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="304.00" y="192.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="192.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="336.00" y="192.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="0.00" y="208.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="208.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="32.00" y="208.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="80.00" y="208.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="96.00" y="208.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="112.00" y="208.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="128.00" y="208.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="144.00" y="208.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="176.00" y="208.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="192.00" y="208.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="208.00" y="208.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="240.00" y="208.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="272.00" y="208.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="288.00" y="208.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="304.00" y="208.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="208.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="352.00" y="208.00" width="16.00" height="80.00" fill="#000000" />
-      <rect x="0.00" y="224.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="224.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="80.00" y="224.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="96.00" y="224.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="112.00" y="224.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="128.00" y="224.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="144.00" y="224.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="176.00" y="224.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="192.00" y="224.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="208.00" y="224.00" width="32.00" height="16.00" fill="#00ffff" />
-      <rect x="240.00" y="224.00" width="32.00" height="16.00" fill="#00ff00" />
-      <rect x="272.00" y="224.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="288.00" y="224.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="304.00" y="224.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="224.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="336.00" y="224.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="0.00" y="240.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="240.00" width="32.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="240.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="96.00" y="240.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="112.00" y="240.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="128.00" y="240.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="144.00" y="240.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="160.00" y="240.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="176.00" y="240.00" width="32.00" height="16.00" fill="#ff00ff" />
-      <rect x="208.00" y="240.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="240.00" y="240.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="256.00" y="240.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="272.00" y="240.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="288.00" y="240.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="304.00" y="240.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="240.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="0.00" y="256.00" width="32.00" height="16.00" fill="#000000" />
-      <rect x="32.00" y="256.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="256.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="96.00" y="256.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="112.00" y="256.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="128.00" y="256.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="160.00" y="256.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="176.00" y="256.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="192.00" y="256.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="208.00" y="256.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="224.00" y="256.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="240.00" y="256.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="256.00" y="256.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="272.00" y="256.00" width="16.00" height="16.00" fill="#ffff00" />
-      <rect x="288.00" y="256.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="304.00" y="256.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="320.00" y="256.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="336.00" y="256.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="0.00" y="272.00" width="16.00" height="16.00" fill="#000000" />
-      <rect x="16.00" y="272.00" width="32.00" height="16.00" fill="#ffffff" />
-      <rect x="80.00" y="272.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="96.00" y="272.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="112.00" y="272.00" width="48.00" height="16.00" fill="#00ffff" />
-      <rect x="160.00" y="272.00" width="32.00" height="16.00" fill="#ffff00" />
-      <rect x="192.00" y="272.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="208.00" y="272.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="224.00" y="272.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="240.00" y="272.00" width="16.00" height="16.00" fill="#00ff00" />
-      <rect x="256.00" y="272.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="272.00" y="272.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="288.00" y="272.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="304.00" y="272.00" width="16.00" height="16.00" fill="#ffffff" />
-      <rect x="320.00" y="272.00" width="16.00" height="16.00" fill="#ff00ff" />
-      <rect x="336.00" y="272.00" width="16.00" height="16.00" fill="#00ffff" />
-      <rect x="0.00" y="288.00" width="368.00" height="16.00" fill="#000000" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="368" height="304" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="368" height="304" fill="#FFFFFF"/>
+  <path d="M0 0h368v16h-368ZM0 16h16v16h-16Z" fill="#000000"/>
+  <path d="M16 16h32v16h-32Z" fill="#ffffff"/>
+  <path d="M48 16h16v272h-16Z" fill="#000000"/>
+  <path d="M64 16h16v272h-16Z" fill="#ffffff"/>
+  <path d="M80 16h16v16h-16Z" fill="#00ff00"/>
+  <path d="M96 16h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M128 16h16v16h-16Z" fill="#00ffff"/>
+  <path d="M144 16h16v16h-16Z" fill="#ffff00"/>
+  <path d="M160 16h32v16h-32Z" fill="#00ffff"/>
+  <path d="M192 16h16v16h-16Z" fill="#ffff00"/>
+  <path d="M208 16h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M240 16h16v16h-16Z" fill="#00ffff"/>
+  <path d="M256 16h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M288 16h16v16h-16Z" fill="#ffff00"/>
+  <path d="M304 16h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 16h16v16h-16Z" fill="#00ffff"/>
+  <path d="M336 16h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M352 16h16v80h-16ZM0 32h32v16h-32Z" fill="#000000"/>
+  <path d="M32 32h16v16h-16Z" fill="#ffffff"/>
+  <path d="M80 32h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M96 32h16v16h-16Z" fill="#00ffff"/>
+  <path d="M112 32h16v16h-16Z" fill="#ffff00"/>
+  <path d="M128 32h80v16h-80Z" fill="#00ff00"/>
+  <path d="M208 32h32v16h-32Z" fill="#00ffff"/>
+  <path d="M240 32h16v16h-16Z" fill="#00ff00"/>
+  <path d="M256 32h32v16h-32Z" fill="#00ffff"/>
+  <path d="M288 32h16v16h-16Z" fill="#00ff00"/>
+  <path d="M304 32h16v16h-16Z" fill="#000000"/>
+  <path d="M320 32h16v16h-16Z" fill="#00ff00"/>
+  <path d="M336 32h16v16h-16Z" fill="#00ffff"/>
+  <path d="M0 48h16v16h-16Z" fill="#000000"/>
+  <path d="M16 48h32v16h-32Z" fill="#ffffff"/>
+  <path d="M80 48h32v16h-32Z" fill="#00ff00"/>
+  <path d="M112 48h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M128 48h16v16h-16Z" fill="#00ffff"/>
+  <path d="M144 48h64v16h-64Z" fill="#ffff00"/>
+  <path d="M208 48h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M224 48h64v16h-64Z" fill="#ffff00"/>
+  <path d="M288 48h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M304 48h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 48h32v16h-32Z" fill="#ffff00"/>
+  <path d="M0 64h32v16h-32Z" fill="#000000"/>
+  <path d="M32 64h16v16h-16ZM80 64h16v16h-16Z" fill="#ffff00"/>
+  <path d="M96 64h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M112 64h16v16h-16Z" fill="#00ffff"/>
+  <path d="M128 64h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M144 64h32v16h-32Z" fill="#00ff00"/>
+  <path d="M176 64h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M208 64h16v16h-16Z" fill="#00ff00"/>
+  <path d="M224 64h16v16h-16Z" fill="#00ffff"/>
+  <path d="M240 64h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M256 64h16v16h-16Z" fill="#00ff00"/>
+  <path d="M272 64h16v16h-16Z" fill="#00ffff"/>
+  <path d="M288 64h16v16h-16Z" fill="#00ff00"/>
+  <path d="M304 64h16v16h-16Z" fill="#000000"/>
+  <path d="M320 64h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M336 64h16v16h-16Z" fill="#00ff00"/>
+  <path d="M0 80h16v16h-16Z" fill="#000000"/>
+  <path d="M16 80h16v16h-16Z" fill="#ffffff"/>
+  <path d="M32 80h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M80 80h16v16h-16Z" fill="#00ffff"/>
+  <path d="M96 80h96v16h-96Z" fill="#ffff00"/>
+  <path d="M192 80h16v16h-16Z" fill="#00ffff"/>
+  <path d="M208 80h16v16h-16Z" fill="#ffff00"/>
+  <path d="M224 80h16v16h-16Z" fill="#00ff00"/>
+  <path d="M240 80h16v16h-16Z" fill="#ffff00"/>
+  <path d="M256 80h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M288 80h16v16h-16Z" fill="#ffff00"/>
+  <path d="M304 80h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 80h16v16h-16Z" fill="#ffff00"/>
+  <path d="M336 80h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M0 96h32v16h-32Z" fill="#000000"/>
+  <path d="M32 96h16v16h-16Z" fill="#00ffff"/>
+  <path d="M80 96h16v16h-16Z" fill="#000000"/>
+  <path d="M96 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M112 96h16v16h-16Z" fill="#000000"/>
+  <path d="M128 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M144 96h16v16h-16Z" fill="#000000"/>
+  <path d="M160 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M176 96h16v16h-16Z" fill="#000000"/>
+  <path d="M192 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M208 96h16v16h-16Z" fill="#000000"/>
+  <path d="M224 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M240 96h16v16h-16Z" fill="#000000"/>
+  <path d="M256 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M272 96h16v16h-16Z" fill="#000000"/>
+  <path d="M288 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M304 96h16v16h-16Z" fill="#000000"/>
+  <path d="M320 96h16v16h-16Z" fill="#ffffff"/>
+  <path d="M336 96h32v16h-32ZM0 112h16v16h-16Z" fill="#000000"/>
+  <path d="M16 112h16v16h-16Z" fill="#ffffff"/>
+  <path d="M32 112h16v16h-16Z" fill="#00ff00"/>
+  <path d="M80 112h16v16h-16Z" fill="#00ffff"/>
+  <path d="M96 112h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M112 112h32v16h-32Z" fill="#ffff00"/>
+  <path d="M144 112h16v16h-16Z" fill="#00ffff"/>
+  <path d="M160 112h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M192 112h48v16h-48Z" fill="#00ffff"/>
+  <path d="M240 112h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M272 112h16v16h-16Z" fill="#00ffff"/>
+  <path d="M288 112h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M304 112h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 112h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M336 112h16v16h-16Z" fill="#ffff00"/>
+  <path d="M352 112h16v80h-16ZM0 128h32v16h-32Z" fill="#000000"/>
+  <path d="M32 128h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M80 128h16v16h-16Z" fill="#ffff00"/>
+  <path d="M96 128h16v16h-16Z" fill="#00ffff"/>
+  <path d="M112 128h48v16h-48Z" fill="#ff00ff"/>
+  <path d="M160 128h32v16h-32Z" fill="#00ffff"/>
+  <path d="M192 128h48v16h-48Z" fill="#00ff00"/>
+  <path d="M240 128h32v16h-32Z" fill="#00ffff"/>
+  <path d="M272 128h16v16h-16Z" fill="#00ff00"/>
+  <path d="M288 128h16v16h-16Z" fill="#00ffff"/>
+  <path d="M304 128h16v16h-16Z" fill="#000000"/>
+  <path d="M320 128h32v16h-32Z" fill="#00ffff"/>
+  <path d="M0 144h16v16h-16Z" fill="#000000"/>
+  <path d="M16 144h32v16h-32Z" fill="#ffffff"/>
+  <path d="M80 144h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M96 144h16v16h-16Z" fill="#ffff00"/>
+  <path d="M112 144h32v16h-32Z" fill="#00ffff"/>
+  <path d="M144 144h16v16h-16Z" fill="#ffff00"/>
+  <path d="M160 144h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M176 144h64v16h-64Z" fill="#ffff00"/>
+  <path d="M240 144h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M272 144h32v16h-32Z" fill="#ffff00"/>
+  <path d="M304 144h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 144h32v16h-32Z" fill="#ffff00"/>
+  <path d="M0 160h32v16h-32Z" fill="#000000"/>
+  <path d="M32 160h16v16h-16ZM80 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M96 160h16v16h-16Z" fill="#00ffff"/>
+  <path d="M112 160h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M128 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M144 160h16v16h-16Z" fill="#00ffff"/>
+  <path d="M160 160h16v16h-16Z" fill="#ffff00"/>
+  <path d="M176 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M192 160h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M208 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M224 160h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M240 160h16v16h-16Z" fill="#ffff00"/>
+  <path d="M256 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M272 160h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M288 160h16v16h-16Z" fill="#00ff00"/>
+  <path d="M304 160h16v16h-16Z" fill="#000000"/>
+  <path d="M320 160h32v16h-32Z" fill="#00ffff"/>
+  <path d="M0 176h16v16h-16Z" fill="#000000"/>
+  <path d="M16 176h16v16h-16Z" fill="#ffffff"/>
+  <path d="M32 176h16v16h-16ZM80 176h16v16h-16Z" fill="#00ffff"/>
+  <path d="M96 176h16v16h-16Z" fill="#ffff00"/>
+  <path d="M112 176h16v16h-16Z" fill="#00ff00"/>
+  <path d="M128 176h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M160 176h16v16h-16Z" fill="#00ff00"/>
+  <path d="M176 176h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M192 176h48v16h-48Z" fill="#ffff00"/>
+  <path d="M240 176h16v16h-16Z" fill="#00ffff"/>
+  <path d="M256 176h32v16h-32Z" fill="#ffff00"/>
+  <path d="M288 176h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M304 176h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 176h16v16h-16Z" fill="#00ff00"/>
+  <path d="M336 176h16v16h-16Z" fill="#ffff00"/>
+  <path d="M0 192h32v16h-32Z" fill="#000000"/>
+  <path d="M32 192h16v16h-16Z" fill="#00ff00"/>
+  <path d="M80 192h16v16h-16Z" fill="#000000"/>
+  <path d="M96 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M112 192h16v16h-16Z" fill="#000000"/>
+  <path d="M128 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M144 192h16v16h-16Z" fill="#000000"/>
+  <path d="M160 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M176 192h16v16h-16Z" fill="#000000"/>
+  <path d="M192 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M208 192h16v16h-16Z" fill="#000000"/>
+  <path d="M224 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M240 192h16v16h-16Z" fill="#000000"/>
+  <path d="M256 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M272 192h16v16h-16Z" fill="#000000"/>
+  <path d="M288 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M304 192h16v16h-16Z" fill="#000000"/>
+  <path d="M320 192h16v16h-16Z" fill="#ffffff"/>
+  <path d="M336 192h32v16h-32ZM0 208h16v16h-16Z" fill="#000000"/>
+  <path d="M16 208h16v16h-16Z" fill="#ffffff"/>
+  <path d="M32 208h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M80 208h16v16h-16Z" fill="#00ff00"/>
+  <path d="M96 208h16v16h-16Z" fill="#00ffff"/>
+  <path d="M112 208h16v16h-16Z" fill="#ffff00"/>
+  <path d="M128 208h16v16h-16Z" fill="#00ffff"/>
+  <path d="M144 208h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M176 208h16v16h-16Z" fill="#ffff00"/>
+  <path d="M192 208h16v16h-16Z" fill="#00ffff"/>
+  <path d="M208 208h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M240 208h32v16h-32Z" fill="#ffff00"/>
+  <path d="M272 208h16v16h-16Z" fill="#00ffff"/>
+  <path d="M288 208h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M304 208h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 208h32v16h-32Z" fill="#00ffff"/>
+  <path d="M352 208h16v80h-16ZM0 224h32v16h-32Z" fill="#000000"/>
+  <path d="M32 224h16v16h-16ZM80 224h16v16h-16Z" fill="#00ffff"/>
+  <path d="M96 224h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M112 224h16v16h-16Z" fill="#00ff00"/>
+  <path d="M128 224h16v16h-16Z" fill="#ffff00"/>
+  <path d="M144 224h32v16h-32Z" fill="#00ffff"/>
+  <path d="M176 224h16v16h-16Z" fill="#00ff00"/>
+  <path d="M192 224h16v16h-16Z" fill="#ffff00"/>
+  <path d="M208 224h32v16h-32Z" fill="#00ffff"/>
+  <path d="M240 224h32v16h-32Z" fill="#00ff00"/>
+  <path d="M272 224h16v16h-16Z" fill="#ffff00"/>
+  <path d="M288 224h16v16h-16Z" fill="#00ffff"/>
+  <path d="M304 224h16v16h-16Z" fill="#000000"/>
+  <path d="M320 224h16v16h-16Z" fill="#00ff00"/>
+  <path d="M336 224h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M0 240h16v16h-16Z" fill="#000000"/>
+  <path d="M16 240h32v16h-32Z" fill="#ffffff"/>
+  <path d="M80 240h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M96 240h16v16h-16Z" fill="#00ff00"/>
+  <path d="M112 240h16v16h-16Z" fill="#ffff00"/>
+  <path d="M128 240h16v16h-16Z" fill="#00ff00"/>
+  <path d="M144 240h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M160 240h16v16h-16Z" fill="#ffff00"/>
+  <path d="M176 240h32v16h-32Z" fill="#ff00ff"/>
+  <path d="M208 240h32v16h-32Z" fill="#ffff00"/>
+  <path d="M240 240h16v16h-16Z" fill="#00ffff"/>
+  <path d="M256 240h16v16h-16Z" fill="#ffff00"/>
+  <path d="M272 240h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M288 240h16v16h-16Z" fill="#ffff00"/>
+  <path d="M304 240h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 240h32v16h-32Z" fill="#ffff00"/>
+  <path d="M0 256h32v16h-32Z" fill="#000000"/>
+  <path d="M32 256h16v16h-16Z" fill="#ffffff"/>
+  <path d="M80 256h16v16h-16Z" fill="#00ff00"/>
+  <path d="M96 256h16v16h-16Z" fill="#00ffff"/>
+  <path d="M112 256h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M128 256h32v16h-32Z" fill="#ffff00"/>
+  <path d="M160 256h16v16h-16Z" fill="#00ffff"/>
+  <path d="M176 256h16v16h-16Z" fill="#00ff00"/>
+  <path d="M192 256h16v16h-16Z" fill="#ffff00"/>
+  <path d="M208 256h16v16h-16Z" fill="#00ffff"/>
+  <path d="M224 256h16v16h-16Z" fill="#00ff00"/>
+  <path d="M240 256h16v16h-16Z" fill="#ffff00"/>
+  <path d="M256 256h16v16h-16Z" fill="#00ff00"/>
+  <path d="M272 256h16v16h-16Z" fill="#ffff00"/>
+  <path d="M288 256h16v16h-16Z" fill="#00ffff"/>
+  <path d="M304 256h16v16h-16Z" fill="#000000"/>
+  <path d="M320 256h16v16h-16Z" fill="#00ff00"/>
+  <path d="M336 256h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M0 272h16v16h-16Z" fill="#000000"/>
+  <path d="M16 272h32v16h-32Z" fill="#ffffff"/>
+  <path d="M80 272h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M96 272h16v16h-16Z" fill="#00ff00"/>
+  <path d="M112 272h48v16h-48Z" fill="#00ffff"/>
+  <path d="M160 272h32v16h-32Z" fill="#ffff00"/>
+  <path d="M192 272h16v16h-16Z" fill="#00ffff"/>
+  <path d="M208 272h16v16h-16Z" fill="#00ff00"/>
+  <path d="M224 272h16v16h-16Z" fill="#00ffff"/>
+  <path d="M240 272h16v16h-16Z" fill="#00ff00"/>
+  <path d="M256 272h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M272 272h16v16h-16Z" fill="#00ffff"/>
+  <path d="M288 272h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M304 272h16v16h-16Z" fill="#ffffff"/>
+  <path d="M320 272h16v16h-16Z" fill="#ff00ff"/>
+  <path d="M336 272h16v16h-16Z" fill="#00ffff"/>
+  <path d="M0 288h368v16h-368Z" fill="#000000"/>
+ </g>
 </svg>

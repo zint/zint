@@ -66,55 +66,80 @@ static void test_print(const testCtx *const p_ctx) {
         /*  6*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, -1, -1, 3, -1, -1, 0, "", "", 0, "AAAAAAAAA", "", 0, "codablockf_3rows.svg", "" },
         /*  7*/ { BARCODE_CODABLOCKF, -1, -1, -1, 2, 2, -1, 3, -1, -1, 0, "", "", 0, "AAAAAAAAA", "", 0, "codablockf_hvwsp2.svg", "" },
         /*  8*/ { BARCODE_CODABLOCKF, -1, 2, BARCODE_BOX, 2, 2, -1, -1, -1, -1, 0, "", "", 0, "AAAAAAAAA", "", 0, "codablockf_hvwsp2_box2.svg", "" },
-        /*  9*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9771384524017+12", "", 0, "ean13_2addon_ggs_5.2.2.5.1-2.svg", "" },
-        /* 10*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9780877799306+54321", "", 0, "ean13_5addon_ggs_5.2.2.5.2-2.svg", "" },
-        /* 11*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "123456789012+12", "[91]123456789012345678901", 0, "ean13_cc_2addon_cca_4x4.svg", "" },
-        /* 12*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "123456789012+54321", "[91]1234567890", 0, "ean13_cc_5addon_ccb_3x4.svg", "" },
-        /* 13*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "123456789012+54321", "[91]1234567890", 0, "ean13_cc_5addon_ccb_3x4_notext.svg", "" },
-        /* 14*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "012345678905+24", "", 0, "upca_2addon_ggs_5.2.6.6-5.svg", "" },
-        /* 15*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon.svg", "" },
-        /* 16*/ { BARCODE_UPCA, -1, 3, BARCODE_BIND, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon_bind3.svg", "" },
-        /* 17*/ { BARCODE_UPCA, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon_small_bold.svg", "Note BOLD_TEXT ignored for UPC/EAN" },
-        /* 18*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "12345678901+12", "[91]123456789", 0, "upca_cc_2addon_cca_3x4.svg", "" },
-        /* 19*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4.svg", "" },
-        /* 20*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4_notext.svg", "" },
-        /* 21*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4_bind3.svg", "" },
-        /* 22*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "upce_2addon.svg", "" },
-        /* 23*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon.svg", "" },
-        /* 24*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon_small.svg", "" },
-        /* 25*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, 0, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon_notext.svg", "" },
-        /* 26*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2.svg", "" },
-        /* 27*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "FF0000EE", "0000FF11", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_fgbgalpha.svg", "" },
-        /* 28*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "FFFFFF00", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_nobg.svg", "" },
-        /* 29*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 270, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_rotate_270.svg", "" },
-        /* 30*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2.svg", "" },
-        /* 31*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2_notext.svg", "" },
-        /* 32*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "ean8_2addon.svg", "" },
-        /* 33*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "ean8_5addon.svg", "" },
-        /* 34*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3.svg", "" },
-        /* 35*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3.svg", "" },
-        /* 36*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5.svg", "" },
-        /* 37*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2.svg", "" },
-        /* 38*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "123", "", 0, "code39_small.svg", "" },
-        /* 39*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "postnet_zip.svg", "" },
-        /* 40*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_box2.svg", "" },
-        /* 41*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.svg", "" },
-        /* 42*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "121212DD", "EEEEEE22", 90, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_fgbg_rotate_90.svg", "" },
-        /* 43*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_vwsp1_bind1_dotty.svg", "" },
-        /* 44*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_hvwsp1_bind1_dotty.svg", "" },
-        /* 45*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345678909", "", 0, "dbar_ltd.svg", "" },
-        /* 46*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, "", "", 0, "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.svg", "" },
-        /* 47*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, "", "", 0, "12345678901234567890", "", 0, "imail_height7.75.svg", "" },
-        /* 48*/ { BARCODE_ULTRA, -1, 3, BARCODE_BOX, 2, 2, -1, -1, -1, -1, 0, "FF0000", "0000FF", 0, "12345678901234567890", "", 0, "ultra_fgbg_hvwsp2_box3.svg", "" },
-        /* 49*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg", "" },
-        /* 50*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg", "" },
-        /* 51*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg", "" },
-        /* 52*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg", "" },
-        /* 53*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg", "" },
+        /*  9*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501101531000", "", 0, "ean13_ggs_5.2.2.1-1.svg", "" },
+        /* 10*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501101531000", "", 0, "ean13_ggs_5.2.2.1-1_gws.svg", "" },
+        /* 11*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE | EMBED_VECTOR_FONT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501101531000", "", 0, "ean13_ggs_5.2.2.1-1_gws_embed.svg", "" },
+        /* 12*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9771384524017+12", "", 0, "ean13_2addon_ggs_5.2.2.5.1-2.svg", "" },
+        /* 13*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9771384524017+12", "", 0, "ean13_2addon_ggs_5.2.2.5.1-2_gws.svg", "" },
+        /* 14*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9780877799306+54321", "", 0, "ean13_5addon_ggs_5.2.2.5.2-2.svg", "" },
+        /* 15*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9780877799306+54321", "", 0, "ean13_5addon_ggs_5.2.2.5.2-2_gws.svg", "" },
+        /* 16*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "123456789012", "[91]12345678901234567890123456789", 0, "ean13_cc_cca_5x4.svg", "" },
+        /* 17*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "123456789012", "[91]12345678901234567890123456789", 0, "ean13_cc_cca_5x4_gws.svg", "" },
+        /* 18*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "123456789012+12", "[91]123456789012345678901", 0, "ean13_cc_2addon_cca_4x4.svg", "" },
+        /* 19*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "123456789012+12", "[91]123456789012345678901", 0, "ean13_cc_2addon_cca_4x4_gws.svg", "" },
+        /* 20*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "123456789012+54321", "[91]1234567890", 0, "ean13_cc_5addon_ccb_3x4.svg", "" },
+        /* 21*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "123456789012+54321", "[91]1234567890", 0, "ean13_cc_5addon_ccb_3x4_gws.svg", "" },
+        /* 22*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "123456789012+54321", "[91]1234567890", 0, "ean13_cc_5addon_ccb_3x4_notext.svg", "" },
+        /* 23*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "012345678905+24", "", 0, "upca_2addon_ggs_5.2.6.6-5.svg", "" },
+        /* 24*/ { BARCODE_UPCA, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "012345678905+24", "", 0, "upca_2addon_ggs_5.2.6.6-5_gws.svg", "" },
+        /* 25*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon.svg", "" },
+        /* 26*/ { BARCODE_UPCA, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon_gws.svg", "" },
+        /* 27*/ { BARCODE_UPCA, -1, 3, BARCODE_BIND, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon_bind3.svg", "" },
+        /* 28*/ { BARCODE_UPCA, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "614141234417+12345", "", 0, "upca_5addon_small_bold.svg", "Note BOLD_TEXT ignored for UPC/EAN" },
+        /* 29*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "12345678901+12", "[91]123456789", 0, "upca_cc_2addon_cca_3x4.svg", "" },
+        /* 30*/ { BARCODE_UPCA_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "12345678901+12", "[91]123456789", 0, "upca_cc_2addon_cca_3x4_gws.svg", "" },
+        /* 31*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4.svg", "" },
+        /* 32*/ { BARCODE_UPCA_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4_gws.svg", "" },
+        /* 33*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4_notext.svg", "" },
+        /* 34*/ { BARCODE_UPCA_CC, -1, 3, BARCODE_BIND, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "12345678901+12121", "[91]1234567890123", 0, "upca_cc_5addon_ccb_4x4_bind3.svg", "" },
+        /* 35*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "upce_2addon.svg", "" },
+        /* 36*/ { BARCODE_UPCE, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "upce_2addon_gws.svg", "" },
+        /* 37*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon.svg", "" },
+        /* 38*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon_small.svg", "" },
+        /* 39*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon_small_gws.svg", "" },
+        /* 40*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, 0, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "upce_5addon_notext.svg", "" },
+        /* 41*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2.svg", "" },
+        /* 42*/ { BARCODE_UPCE_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_gws.svg", "" },
+        /* 43*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "FF0000EE", "0000FF11", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_fgbgalpha.svg", "" },
+        /* 44*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "FFFFFF00", 0, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_nobg.svg", "" },
+        /* 45*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 270, "0654321+89", "[91]1", 0, "upce_cc_2addon_cca_5x2_rotate_270.svg", "" },
+        /* 46*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2.svg", "" },
+        /* 47*/ { BARCODE_UPCE_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2_gws.svg", "" },
+        /* 48*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2_notext.svg", "" },
+        /* 49*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501234", "", 0, "ean8_gss_5.2.2.2-1.svg", "" },
+        /* 50*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501234", "", 0, "ean8_gss_5.2.2.2-1_gws.svg", "" },
+        /* 51*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "ean8_2addon.svg", "" },
+        /* 52*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "ean8_2addon_gws.svg", "" },
+        /* 53*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "ean8_5addon.svg", "" },
+        /* 54*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "ean8_5addon_gws.svg", "" },
+        /* 55*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3.svg", "" },
+        /* 56*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3_gws.svg", "" },
+        /* 57*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3.svg", "" },
+        /* 58*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3_gws.svg", "" },
+        /* 59*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5.svg", "" },
+        /* 60*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5_gws.svg", "" },
+        /* 61*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2.svg", "" },
+        /* 62*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2_gws.svg", "" },
+        /* 63*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "123", "", 0, "code39_small.svg", "" },
+        /* 64*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "postnet_zip.svg", "" },
+        /* 65*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_box2.svg", "" },
+        /* 66*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.svg", "" },
+        /* 67*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "121212DD", "EEEEEE22", 90, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_fgbg_rotate_90.svg", "" },
+        /* 68*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_vwsp1_bind1_dotty.svg", "" },
+        /* 69*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_hvwsp1_bind1_dotty.svg", "" },
+        /* 70*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345678909", "", 0, "dbar_ltd.svg", "" },
+        /* 71*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, "", "", 0, "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.svg", "" },
+        /* 72*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, "", "", 0, "12345678901234567890", "", 0, "imail_height7.75.svg", "" },
+        /* 73*/ { BARCODE_ULTRA, -1, 3, BARCODE_BOX, 2, 2, -1, -1, -1, -1, 0, "FF0000", "0000FF", 0, "12345678901234567890", "", 0, "ultra_fgbg_hvwsp2_box3.svg", "" },
+        /* 74*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg", "" },
+        /* 75*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg", "" },
+        /* 76*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg", "" },
+        /* 77*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg", "" },
+        /* 78*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/svg";
     const char *svg = "out.svg";
@@ -126,7 +151,7 @@ static void test_print(const testCtx *const p_ctx) {
     int have_libreoffice = 0;
     int have_vnu = 0;
 
-    testStart("test_print");
+    testStartSymbol("test_print", &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -250,8 +275,9 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.output_options |= BARCODE_STDOUT;
 
+    printf(">>>Begin ignore (SVG to stdout)\n"); fflush(stdout);
     ret = svg_plot(&symbol, 0);
-    printf(" - ignore (SVG to stdout)\n"); fflush(stdout);
+    printf("<<<End ignore (SVG to stdout)\n"); fflush(stdout);
     assert_zero(ret, "svg_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     symbol.vector = NULL;

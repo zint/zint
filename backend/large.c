@@ -1,7 +1,7 @@
 /* large.c - Handles binary manipulation of large numbers */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -52,7 +52,7 @@
 #define MASK32  0xFFFFFFFF
 
 /* Convert decimal string `s` of (at most) length `length` to 64-bit and place in 128-bit `t` */
-INTERNAL void large_load_str_u64(large_int *t, const unsigned char *s, const int length) {
+INTERNAL void large_load_str_u64(large_uint *t, const unsigned char *s, const int length) {
     uint64_t val = 0;
     const unsigned char *const se = s + length;
     for (; s < se && z_isdigit(*s); s++) {
@@ -64,13 +64,13 @@ INTERNAL void large_load_str_u64(large_int *t, const unsigned char *s, const int
 }
 
 /* Add 128-bit `s` to 128-bit `t` */
-INTERNAL void large_add(large_int *t, const large_int *s) {
+INTERNAL void large_add(large_uint *t, const large_uint *s) {
     t->lo += s->lo;
     t->hi += s->hi + (t->lo < s->lo);
 }
 
 /* Add 64-bit `s` to 128-bit `t` */
-INTERNAL void large_add_u64(large_int *t, const uint64_t s) {
+INTERNAL void large_add_u64(large_uint *t, const uint64_t s) {
     t->lo += s;
     if (t->lo < s) {
         t->hi++;
@@ -78,7 +78,7 @@ INTERNAL void large_add_u64(large_int *t, const uint64_t s) {
 }
 
 /* Subtract 64-bit `s` from 128-bit `t` */
-INTERNAL void large_sub_u64(large_int *t, const uint64_t s) {
+INTERNAL void large_sub_u64(large_uint *t, const uint64_t s) {
     uint64_t r = t->lo - s;
     if (r > t->lo) {
         t->hi--;
@@ -107,7 +107,7 @@ INTERNAL void large_sub_u64(large_int *t, const uint64_t s) {
  *                 p10
  *      p11 + k10
  */
-INTERNAL void large_mul_u64(large_int *t, const uint64_t s) {
+INTERNAL void large_mul_u64(large_uint *t, const uint64_t s) {
     uint64_t thi = t->hi;
     uint64_t tlo0 = t->lo & MASK32;
     uint64_t tlo1 = t->lo >> 32;
@@ -149,7 +149,7 @@ INTERNAL int clz_u64_test(uint64_t x) {
 /* Divide 128-bit dividend `t` by 64-bit divisor `v`, returning 64-bit remainder
  * See Jacob `divmod128by128/64()` and Warren Section 9–2 (divmu64.c.txt)
  * Note digits are 32-bit parts */
-INTERNAL uint64_t large_div_u64(large_int *t, uint64_t v) {
+INTERNAL uint64_t large_div_u64(large_uint *t, uint64_t v) {
     const uint64_t b = 0x100000000; /* Number base (2**32) */
     uint64_t qhi = 0; /* High digit of returned quotient */
 
@@ -241,7 +241,7 @@ INTERNAL uint64_t large_div_u64(large_int *t, uint64_t v) {
 }
 
 /* Unset a bit (zero-based) */
-INTERNAL void large_unset_bit(large_int *t, const int bit) {
+INTERNAL void large_unset_bit(large_uint *t, const int bit) {
     if (bit < 64) {
         t->lo &= ~(((uint64_t) 1) << bit);
     } else if (bit < 128) {
@@ -249,8 +249,8 @@ INTERNAL void large_unset_bit(large_int *t, const int bit) {
     }
 }
 
-/* Output large_int into an unsigned int array of size `size`, each element containing `bits` bits */
-INTERNAL void large_uint_array(const large_int *t, unsigned int *uint_array, const int size, int bits) {
+/* Output large_uint into an unsigned int array of size `size`, each element containing `bits` bits */
+INTERNAL void large_uint_array(const large_uint *t, unsigned int *uint_array, const int size, int bits) {
     int i, j;
     uint64_t mask;
     if (bits <= 0) {
@@ -281,7 +281,7 @@ INTERNAL void large_uint_array(const large_int *t, unsigned int *uint_array, con
 }
 
 /* As `large_uint_array()` above, except output to unsigned char array */
-INTERNAL void large_uchar_array(const large_int *t, unsigned char *uchar_array, const int size, int bits) {
+INTERNAL void large_uchar_array(const large_uint *t, unsigned char *uchar_array, const int size, int bits) {
     int i;
     unsigned int *uint_array = (unsigned int *) z_alloca(sizeof(unsigned int) * (size ? size : 1));
 
@@ -292,8 +292,8 @@ INTERNAL void large_uchar_array(const large_int *t, unsigned char *uchar_array, 
     }
 }
 
-/* Format large_int into buffer, which should be at least 35 chars in size */
-INTERNAL char *large_dump(const large_int *t, char *buf) {
+/* Format large_uint into buffer, which should be at least 35 chars in size */
+INTERNAL char *large_dump(const large_uint *t, char *buf) {
     unsigned int tlo1 = (unsigned int) (large_lo(t) >> 32);
     unsigned int tlo0 = (unsigned int) (large_lo(t) & MASK32);
     unsigned int thi1 = (unsigned int) (large_hi(t) >> 32);
@@ -311,8 +311,8 @@ INTERNAL char *large_dump(const large_int *t, char *buf) {
     return buf;
 }
 
-/* Output formatted large_int to stdout */
-INTERNAL void large_print(const large_int *t) {
+/* Output formatted large_uint to stdout */
+INTERNAL void large_print(const large_uint *t) {
     char buf[35]; /* 2 (0x) + 32 (hex) + 1 */
 
     puts(large_dump(t, buf));

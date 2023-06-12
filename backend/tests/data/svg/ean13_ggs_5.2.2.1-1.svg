@@ -1,0 +1,18 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="226" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="226" height="118" fill="#FFFFFF"/>
+  <path d="M22 0h2v110h-2ZM26 0h2v110h-2ZM30 0h4v100h-4ZM40 0h2v100h-2ZM44 0h2v100h-2ZM50 0h6v100h-6ZM58 0h4v100h-4ZM66 0h4v100h-4ZM74 0h4v100h-4ZM82 0h2v100h-2ZM86 0h2v100h-2ZM92 0h6v100h-6ZM102 0h4v100h-4ZM110 0h2v100h-2ZM114 0h2v110h-2ZM118 0h2v110h-2ZM122 0h2v100h-2ZM128 0h6v100h-6ZM136 0h2v100h-2ZM146 0h2v100h-2ZM150 0h4v100h-4ZM158 0h4v100h-4ZM164 0h6v100h-6ZM174 0h2v100h-2ZM178 0h6v100h-6ZM188 0h2v100h-2ZM192 0h6v100h-6ZM202 0h2v100h-2ZM206 0h2v110h-2ZM210 0h2v110h-2Z"/>
+  <text x="12.2" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="20">
+   9
+  </text>
+  <text x="71" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   501101
+  </text>
+  <text x="163" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   531000
+  </text>
+ </g>
+</svg>

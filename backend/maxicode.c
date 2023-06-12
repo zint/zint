@@ -1,7 +1,7 @@
 /* maxicode.c - Handles MaxiCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -327,33 +327,33 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
                                     character[sp + i] = 63; /* Set B Latch A */
                                     current_set = 1;
                                     i += 3; /* Next 3 Set A so skip over */
-                                    if (debug_print) printf("LCHA ");
+                                    if (debug_print) fputs("LCHA ", stdout);
                                 } else {
                                     /* 3 Shift A */
                                     maxi_bump(set, character, sp + i, &length);
                                     character[sp + i] = 57; /* Set B triple shift A */
                                     i += 2; /* Next 2 Set A so skip over */
-                                    if (debug_print) printf("3SHA ");
+                                    if (debug_print) fputs("3SHA ", stdout);
                                 }
                             } else {
                                 /* 2 Shift A */
                                 maxi_bump(set, character, sp + i, &length);
                                 character[sp + i] = 56; /* Set B double shift A */
                                 i++; /* Next Set A so skip over */
-                                if (debug_print) printf("2SHA ");
+                                if (debug_print) fputs("2SHA ", stdout);
                             }
                         } else {
                             /* Shift A */
                             maxi_bump(set, character, sp + i, &length);
                             character[sp + i] = 59; /* Set A Shift B */
-                            if (debug_print) printf("SHA ");
+                            if (debug_print) fputs("SHA ", stdout);
                         }
                     } else { /* All sets other than B only have latch */
                         /* Latch A */
                         maxi_bump(set, character, sp + i, &length);
                         character[sp + i] = 58; /* Sets C,D,E Latch A */
                         current_set = 1;
-                        if (debug_print) printf("LCHA ");
+                        if (debug_print) fputs("LCHA ", stdout);
                     }
                     break;
                 case 2: /* Set B */
@@ -363,12 +363,12 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
                         maxi_bump(set, character, sp + i, &length);
                         character[sp + i] = 63; /* Sets A,C,D,E Latch B */
                         current_set = 2;
-                        if (debug_print) printf("LCHB ");
+                        if (debug_print) fputs("LCHB ", stdout);
                     } else { /* Only available from Set A */
                         /* Shift B */
                         maxi_bump(set, character, sp + i, &length);
                         character[sp + i] = 59; /* Set B Shift A */
-                        if (debug_print) printf("SHB ");
+                        if (debug_print) fputs("SHB ", stdout);
                     }
                     break;
                 case 3: /* Set C */
@@ -408,7 +408,7 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
         i++;
     } while (sp + i < 144);
 
-    if (debug_print) printf("\n");
+    if (debug_print) fputc('\n', stdout);
 
     /* Number compression has not been forgotten! - It's handled below */
     i = 0;
@@ -685,9 +685,9 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); /* do error correction of odd */
 
     if (debug_print) {
-        printf("Codewords:");
+        fputs("Codewords:", stdout);
         for (i = 0; i < 144; i++) printf(" %d", maxi_codeword[i]);
-        printf("\n");
+        fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {

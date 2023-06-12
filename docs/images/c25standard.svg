@@ -1,52 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="562" height="286" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="562" height="286" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="19.20" height="240.00" />
-      <rect x="24.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="33.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="43.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="62.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="81.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="91.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="110.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="120.00" y="0.00" width="14.40" height="240.00" />
-      <rect x="139.20" y="0.00" width="14.40" height="240.00" />
-      <rect x="158.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="168.00" y="0.00" width="14.40" height="240.00" />
-      <rect x="187.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="206.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="216.00" y="0.00" width="14.40" height="240.00" />
-      <rect x="235.20" y="0.00" width="14.40" height="240.00" />
-      <rect x="264.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="273.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="283.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="302.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="312.00" y="0.00" width="14.40" height="240.00" />
-      <rect x="331.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="340.80" y="0.00" width="14.40" height="240.00" />
-      <rect x="369.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="379.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="398.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="417.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="427.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="446.40" y="0.00" width="14.40" height="240.00" />
-      <rect x="465.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="475.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="484.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="504.00" y="0.00" width="14.40" height="240.00" />
-      <rect x="523.20" y="0.00" width="19.20" height="240.00" />
-      <rect x="547.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="556.80" y="0.00" width="4.80" height="240.00" />
-      <text x="280.80" y="273.60" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="33.6" >
-         9212320967
-      </text>
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="562" height="286" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="562" height="286" fill="#FFFFFF"/>
+  <path d="M0 0h19.2v240h-19.2ZM24 0h4.8v240h-4.8ZM33.6 0h4.8v240h-4.8ZM43.2 0h4.8v240h-4.8ZM62.4 0h4.8v240h-4.8ZM81.6 0h4.8v240h-4.8ZM91.2 0h4.8v240h-4.8ZM110.4 0h4.8v240h-4.8ZM120 0h14.4v240h-14.4ZM139.2 0h14.4v240h-14.4ZM158.4 0h4.8v240h-4.8ZM168 0h14.4v240h-14.4ZM187.2 0h4.8v240h-4.8ZM206.4 0h4.8v240h-4.8ZM216 0h14.4v240h-14.4ZM235.2 0h14.4v240h-14.4ZM264 0h4.8v240h-4.8ZM273.6 0h4.8v240h-4.8ZM283.2 0h4.8v240h-4.8ZM302.4 0h4.8v240h-4.8ZM312 0h14.4v240h-14.4ZM331.2 0h4.8v240h-4.8ZM340.8 0h14.4v240h-14.4ZM369.6 0h4.8v240h-4.8ZM379.2 0h4.8v240h-4.8ZM398.4 0h4.8v240h-4.8ZM417.6 0h4.8v240h-4.8ZM427.2 0h4.8v240h-4.8ZM446.4 0h14.4v240h-14.4ZM465.6 0h4.8v240h-4.8ZM475.2 0h4.8v240h-4.8ZM484.8 0h4.8v240h-4.8ZM504 0h14.4v240h-14.4ZM523.2 0h19.2v240h-19.2ZM547.2 0h4.8v240h-4.8ZM556.8 0h4.8v240h-4.8Z"/>
+  <text x="280.8" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+   9212320967
+  </text>
+ </g>
 </svg>

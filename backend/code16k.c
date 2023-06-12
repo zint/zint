@@ -268,11 +268,11 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         printf("Codewords (%d):", bar_characters);
         for (i = 0; i < bar_characters; i++) {
             if (i % 5 == 0) {
-                printf("\n");
+                fputc('\n', stdout);
             }
             printf(" %3d", values[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {

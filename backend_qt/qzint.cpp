@@ -26,25 +26,41 @@
 #include "qzint.h"
 #include <math.h>
 #include <stdio.h>
+#include <QFontDatabase>
 #include <QFontMetrics>
 /* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
 #include <QPainterPath>
 #include <QRegularExpression>
+#include "../backend/fonts/upcean_ttf.h" /* OCR-B subset (digits, "<", ">") */
 
 // Shorthand
 #define QSL QStringLiteral
 
 namespace Zint {
-    static const QString fontFamily = QSL("Helvetica");
-    static const QString fontFamilyError = QSL("Helvetica");
-    static const int fontSizeError = 14; /* Point size */
-
     static const int maxSegs = 256;
     static const int maxCLISegs = 10; /* CLI restricted to 10 segments (including main data) */
 
+    /* Matches RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string */
     static const QRegularExpression colorRE(
                                 QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
 
+    static const QString fontFamily = QSL("Arimo"); /* Sans-serif metrically compatible with Arial */
+    static const QString upceanFontFamily = QSL("OCRB"); /* Monospace OCR-B */
+    static const QString fontFamilyError = QSL("Arimo");
+    static const int fontSizeError = 14; /* Point size */
+
+    static int upceanFontID = -2; /* Use -2 as `addApplicationFontFromData()` returns -1 on error */
+
+    /* Load OCR-B EAN/UPC subset from static array */
+    static int loadUpceanFont() {
+        static const QByteArray upceanFontArray
+                                            = QByteArray::fromRawData((const char *) upcean_ttf, sizeof(upcean_ttf));
+
+        upceanFontID = QFontDatabase::addApplicationFontFromData(upceanFontArray);
+        return upceanFontID;
+    }
+
+    /* Helper to convert QColor to RGB(A) hex string */
     static QString qcolor_to_str(const QColor &color) {
         if (color.alpha() == 0xFF) {
             return QString::asprintf("%02X%02X%02X", color.red(), color.green(), color.blue());
@@ -52,6 +68,7 @@ namespace Zint {
         return QString::asprintf("%02X%02X%02X%02X", color.red(), color.green(), color.blue(), color.alpha());
     }
 
+    /* Helper to convert RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string) to QColor */
     static QColor str_to_qcolor(const QString &text) {
         QColor color;
         int r, g, b, a;
@@ -96,7 +113,7 @@ namespace Zint {
         return ret;
     }
 
-    /* Helper to calculate max right and bottom of elements for fudging render() */
+    /* Helper to calculate max right and bottom of elements for fudging `render()` */
     static void getMaxRectsRightBottom(struct zint_vector *vector, int &maxRight, int &maxBottom) {
         struct zint_vector_rect *rect;
         struct zint_vector_hexagon *hex;
@@ -159,6 +176,8 @@ namespace Zint {
             m_eci(0),
             m_gs1parens(false), m_gs1nocheck(false),
             m_reader_init(false),
+            m_guard_whitespace(false),
+            m_embed_vector_font(false),
             m_warn_level(WARN_DEFAULT), m_debug(false),
             m_encodedWidth(0), m_encodedRows(0), m_encodedHeight(0.0f),
             m_vectorWidth(0.0f), m_vectorHeight(0.0f),
@@ -212,6 +231,12 @@ namespace Zint {
         }
         if (m_reader_init) {
             m_zintSymbol->output_options |= READER_INIT;
+        }
+        if (m_guard_whitespace) {
+            m_zintSymbol->output_options |= EANUPC_GUARD_WHITESPACE;
+        }
+        if (m_embed_vector_font) {
+            m_zintSymbol->output_options |= EMBED_VECTOR_FONT;
         }
         strcpy(m_zintSymbol->fgcolour, m_fgStr.toLatin1().left(15));
         strcpy(m_zintSymbol->bgcolour, m_bgStr.toLatin1().left(15));
@@ -697,6 +722,24 @@ namespace Zint {
         m_reader_init = readerInit;
     }
 
+    /* Whether to add quiet zone indicators ("<", ">") to HRT (EAN/UPC) */
+    bool QZint::guardWhitespace() const {
+        return m_guard_whitespace;
+    }
+
+    void QZint::setGuardWhitespace(bool guardWhitespace) {
+        m_guard_whitespace = guardWhitespace;
+    }
+
+    /* Whether to embed the font in vector output - currently only for SVG output of EAN/UPC */
+    bool QZint::embedVectorFont() const {
+        return m_embed_vector_font;
+    }
+
+    void QZint::setEmbedVectorFont(bool embedVectorFont) {
+        m_embed_vector_font = embedVectorFont;
+    }
+
     /* Affects error/warning value returned by Zint API (see `getError()` below) */
     int QZint::warnLevel() const {
         return m_warn_level;
@@ -918,7 +961,6 @@ namespace Zint {
         struct zint_vector_string *string;
         QColor fgColor = str_to_qcolor(m_fgStr);
         QColor bgColor = str_to_qcolor(m_bgStr);
-
         encode();
 
         painter.save();
@@ -1051,12 +1093,15 @@ namespace Zint {
         // Plot text
         string = m_zintSymbol->vector->strings;
         if (string) {
+            if (upceanFontID == -2) { /* First time? */
+                loadUpceanFont();
+            }
             painter.setRenderHint(QPainter::Antialiasing);
             QPen p;
             p.setColor(fgColor);
             painter.setPen(p);
             bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && !isExtendable();
-            QFont font(fontFamily, -1 /*pointSize*/, bold ? QFont::Bold : -1);
+            QFont font(isExtendable() ? upceanFontFamily : fontFamily, -1 /*pointSize*/, bold ? QFont::Bold : -1);
             while (string) {
                 font.setPixelSize(string->fsize);
                 painter.setFont(font);
@@ -1235,6 +1280,9 @@ namespace Zint {
             arg_bool(cmd, "--dotty", dotty());
         }
 
+        if (isExtendable() && showText()) {
+            arg_bool(cmd, "--embedfont", embedVectorFont());
+        }
         arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);
         arg_bool(cmd, "--extraesc", inputMode() & EXTRA_ESCAPE_MODE);
         arg_bool(cmd, "--fast", inputMode() & FAST_MODE);
@@ -1254,6 +1302,9 @@ namespace Zint {
 
         if (isExtendable() && guardDescent() != 5.0f) {
             arg_float(cmd, "--guarddescent=", guardDescent(), true /*allowZero*/);
+        }
+        if (isExtendable() && showText()) {
+            arg_bool(cmd, "--guardwhitespace", guardWhitespace());
         }
 
         if (!autoHeight && !isFixedRatio()) {

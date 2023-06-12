@@ -31,93 +31,90 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <errno.h>
-#include <locale.h>
 #include <math.h>
 #include <stdio.h>
 
 #include "common.h"
 #include "output.h"
+#include "fonts/upcean_woff2.h"
 
-static void pick_colour(int colour, char colour_code[]) {
-    switch (colour) {
-        case 1: /* Cyan */
-            strcpy(colour_code, "00ffff");
-            break;
-        case 2: /* Blue */
-            strcpy(colour_code, "0000ff");
-            break;
-        case 3: /* Magenta */
-            strcpy(colour_code, "ff00ff");
-            break;
-        case 4: /* Red */
-            strcpy(colour_code, "ff0000");
-            break;
-        case 5: /* Yellow */
-            strcpy(colour_code, "ffff00");
-            break;
-        case 6: /* Green */
-            strcpy(colour_code, "00ff00");
-            break;
-        case 8: /* White */
-            strcpy(colour_code, "ffffff");
-            break;
-        default: /* Black */
-            strcpy(colour_code, "000000");
-            break;
-    }
+/* Convert Ultracode rectangle colour to RGB */
+static void svg_pick_colour(const int colour, char colour_code[7]) {
+    const int idx = colour >= 1 && colour <= 8 ? colour - 1 : 6 /*black*/;
+    static const char rgbs[8][7] = {
+        "00ffff", /* 0: Cyan (1) */
+        "0000ff", /* 1: Blue (2) */
+        "ff00ff", /* 2: Magenta (3) */
+        "ff0000", /* 3: Red (4) */
+        "ffff00", /* 4: Yellow (5) */
+        "00ff00", /* 5: Green (6) */
+        "000000", /* 6: Black (7) */
+        "ffffff", /* 7: White (8) */
+    };
+    strcpy(colour_code, rgbs[idx]);
 }
 
-static void make_html_friendly(unsigned char *string, char *html_version) {
-    /* Converts text to use HTML entity codes */
+/* Convert text to use HTML entity codes */
+static void svg_make_html_friendly(const unsigned char *string, char *html_version) {
 
-    int i, len, html_pos;
-
-    html_pos = 0;
-    html_version[html_pos] = '\0';
-    len = (int) ustrlen(string);
-
-    for (i = 0; i < len; i++) {
-        switch (string[i]) {
+    for (; *string; string++) {
+        switch (*string) {
             case '>':
-                strcat(html_version, "&gt;");
-                html_pos += 4;
+                strcpy(html_version, "&gt;");
+                html_version += 4;
                 break;
 
             case '<':
-                strcat(html_version, "&lt;");
-                html_pos += 4;
+                strcpy(html_version, "&lt;");
+                html_version += 4;
                 break;
 
             case '&':
-                strcat(html_version, "&amp;");
-                html_pos += 5;
+                strcpy(html_version, "&amp;");
+                html_version += 5;
                 break;
 
             case '"':
-                strcat(html_version, "&quot;");
-                html_pos += 6;
+                strcpy(html_version, "&quot;");
+                html_version += 6;
                 break;
 
             case '\'':
-                strcat(html_version, "&apos;");
-                html_pos += 6;
+                strcpy(html_version, "&apos;");
+                html_version += 6;
                 break;
 
             default:
-                html_version[html_pos] = string[i];
-                html_pos++;
-                html_version[html_pos] = '\0';
+                *html_version++ = *string;
                 break;
          }
     }
+
+    *html_version = '\0';
+}
+
+/* Helper to output floating point attribute */
+static void svg_put_fattrib(const char *prefix, const int dp, const float val, FILE *fsvg) {
+    out_putsf(prefix, dp, val, fsvg);
+    fputc('"', fsvg);
+}
+
+/* Helper to output opacity attribute attribute and close tag (maybe) */
+static void svg_put_opacity_close(const unsigned char alpha, const float val, const int close, FILE *fsvg) {
+    if (alpha != 0xff) {
+        svg_put_fattrib(" opacity=\"", 3, val, fsvg);
+    }
+    if (close) {
+        fputc('/', fsvg);
+    }
+    fputs(">\n", fsvg);
 }
 
 INTERNAL int svg_plot(struct zint_symbol *symbol) {
     static const char font_family[] = "Helvetica, sans-serif";
+    static const char upcean_font_family[] = "OCRB, monospace";
     FILE *fsvg;
     int error_number = 0;
-    const char *locale = NULL;
-    float ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy;
     float previous_diameter;
     float radius, half_radius, half_sqrt3_radius;
     int i;
@@ -136,6 +133,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char colour_code[7];
     int len, html_len;
 
+    const int extendable = is_extendable(symbol->symbology);
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     char *html_string;
 
@@ -164,11 +162,14 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
                 break;
         }
     }
+    if (symbol->output_options & EANUPC_GUARD_WHITESPACE) {
+        html_len += 12; /* Allow for "<" & ">" */
+    }
 
     html_string = (char *) z_alloca(html_len);
 
     /* Check for no created vector set */
-    /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164*/
+    /* E-Mail Christian Schmitz 2019-09-10: reason unknown  Ticket #164 */
     if (symbol->vector == NULL) {
         strcpy(symbol->errtxt, "681: Vector header NULL");
         return ZINT_ERROR_INVALID_DATA;
@@ -182,86 +183,99 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         }
     }
 
-    locale = setlocale(LC_ALL, "C");
-
     /* Start writing the header */
     fputs("<?xml version=\"1.0\" standalone=\"no\"?>\n"
-          "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\"\n"
-          "   \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n", fsvg);
-    fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\"\n",
+          "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
+          fsvg);
+    fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n",
             (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    fputs("   xmlns=\"http://www.w3.org/2000/svg\">\n"
-          "   <desc>Zint Generated Symbol\n"
-          "   </desc>\n", fsvg);
-    fprintf(fsvg, "\n   <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
+    fputs(" <desc>Zint Generated Symbol</desc>\n", fsvg);
+    if ((symbol->output_options & EMBED_VECTOR_FONT) && extendable && symbol->vector->strings) {
+        fprintf(fsvg, " <style>@font-face {font-family:\"OCRB\"; src:url(data:font/woff2;base64,%s);}</style>\n",
+                upcean_woff2);
+    }
+    fprintf(fsvg, " <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
     if (bg_alpha != 0) {
-        fprintf(fsvg, "      <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
+        fprintf(fsvg, "  <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
                 (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height), bgcolour_string);
-        if (bg_alpha != 0xff) {
-            fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
-        }
-        fputs(" />\n", fsvg);
+        svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fsvg);
     }
 
-    rect = symbol->vector->rectangles;
-    while (rect) {
-        fprintf(fsvg, "      <rect x=\"%.2f\" y=\"%.2f\" width=\"%.2f\" height=\"%.2f\"",
-                rect->x, rect->y, rect->width, rect->height);
-        if (rect->colour != -1) {
-            pick_colour(rect->colour, colour_code);
+    if (symbol->vector->rectangles) {
+        int current_colour = 0;
+        rect = symbol->vector->rectangles;
+        fputs("  <path d=\"", fsvg);
+        while (rect) {
+            if (current_colour && rect->colour != current_colour) {
+                fputc('"', fsvg);
+                if (current_colour != -1) {
+                    svg_pick_colour(current_colour, colour_code);
+                    fprintf(fsvg, " fill=\"#%s\"", colour_code);
+                }
+                svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
+                fputs("  <path d=\"", fsvg);
+            }
+            current_colour = rect->colour;
+            out_putsf("M", 2, rect->x, fsvg);
+            out_putsf(" ", 2, rect->y, fsvg);
+            out_putsf("h", 2, rect->width, fsvg);
+            out_putsf("v", 2, rect->height, fsvg);
+            out_putsf("h-", 2, rect->width, fsvg);
+            fputs("Z", fsvg);
+            rect = rect->next;
+        }
+        fputc('"', fsvg);
+        if (current_colour != -1) {
+            svg_pick_colour(current_colour, colour_code);
             fprintf(fsvg, " fill=\"#%s\"", colour_code);
         }
-        if (fg_alpha != 0xff) {
-            fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
-        }
-        fputs(" />\n", fsvg);
-        rect = rect->next;
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
     }
 
-    previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
-    hex = symbol->vector->hexagons;
-    while (hex) {
-        if (previous_diameter != hex->diameter) {
-            previous_diameter = hex->diameter;
-            radius = (float) (0.5 * previous_diameter);
-            half_radius = (float) (0.25 * previous_diameter);
-            half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+    if (symbol->vector->hexagons) {
+        previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
+        hex = symbol->vector->hexagons;
+        fputs("  <path d=\"", fsvg);
+        while (hex) {
+            if (previous_diameter != hex->diameter) {
+                previous_diameter = hex->diameter;
+                radius = (float) (0.5 * previous_diameter);
+                half_radius = (float) (0.25 * previous_diameter);
+                half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+            }
+            if ((hex->rotation == 0) || (hex->rotation == 180)) {
+                out_putsf("M", 2, hex->x, fsvg);
+                out_putsf(" ", 2, hex->y + radius, fsvg);
+                out_putsf("L", 2, hex->x + half_sqrt3_radius, fsvg);
+                out_putsf(" ", 2, hex->y + half_radius, fsvg);
+                out_putsf("L", 2, hex->x + half_sqrt3_radius, fsvg);
+                out_putsf(" ", 2, hex->y - half_radius, fsvg);
+                out_putsf("L", 2, hex->x, fsvg);
+                out_putsf(" ", 2, hex->y - radius, fsvg);
+                out_putsf("L", 2, hex->x - half_sqrt3_radius, fsvg);
+                out_putsf(" ", 2, hex->y - half_radius, fsvg);
+                out_putsf("L", 2, hex->x - half_sqrt3_radius, fsvg);
+                out_putsf(" ", 2, hex->y + half_radius, fsvg);
+            } else {
+                out_putsf("M", 2, hex->x - radius, fsvg);
+                out_putsf(" ", 2, hex->y, fsvg);
+                out_putsf("L", 2, hex->x - half_radius, fsvg);
+                out_putsf(" ", 2, hex->y + half_sqrt3_radius, fsvg);
+                out_putsf("L", 2, hex->x + half_radius, fsvg);
+                out_putsf(" ", 2, hex->y + half_sqrt3_radius, fsvg);
+                out_putsf("L", 2, hex->x + radius, fsvg);
+                out_putsf(" ", 2, hex->y, fsvg);
+                out_putsf("L", 2, hex->x + half_radius, fsvg);
+                out_putsf(" ", 2, hex->y - half_sqrt3_radius, fsvg);
+                out_putsf("L", 2, hex->x - half_radius, fsvg);
+                out_putsf(" ", 2, hex->y - half_sqrt3_radius, fsvg);
+            }
+            fputc('Z', fsvg);
+            hex = hex->next;
         }
-        if ((hex->rotation == 0) || (hex->rotation == 180)) {
-            ay = hex->y + radius;
-            by = hex->y + half_radius;
-            cy = hex->y - half_radius;
-            dy = hex->y - radius;
-            ey = hex->y - half_radius;
-            fy = hex->y + half_radius;
-            ax = hex->x;
-            bx = hex->x + half_sqrt3_radius;
-            cx = hex->x + half_sqrt3_radius;
-            dx = hex->x;
-            ex = hex->x - half_sqrt3_radius;
-            fx = hex->x - half_sqrt3_radius;
-        } else {
-            ay = hex->y;
-            by = hex->y + half_sqrt3_radius;
-            cy = hex->y + half_sqrt3_radius;
-            dy = hex->y;
-            ey = hex->y - half_sqrt3_radius;
-            fy = hex->y - half_sqrt3_radius;
-            ax = hex->x - radius;
-            bx = hex->x - half_radius;
-            cx = hex->x + half_radius;
-            dx = hex->x + radius;
-            ex = hex->x + half_radius;
-            fx = hex->x - half_radius;
-        }
-        fprintf(fsvg, "      <path d=\"M %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f L %.2f %.2f Z\"",
-                ax, ay, bx, by, cx, cy, dx, dy, ex, ey, fx, fy);
-        if (fg_alpha != 0xff) {
-            fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
-        }
-        fputs(" />\n", fsvg);
-        hex = hex->next;
+        fputc('"', fsvg);
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
     }
 
     previous_diameter = radius = 0.0f;
@@ -271,58 +285,60 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             previous_diameter = circle->diameter;
             radius = (float) (0.5 * previous_diameter);
         }
-        fprintf(fsvg, "      <circle cx=\"%.2f\" cy=\"%.2f\" r=\"%.*f\"",
-                circle->x, circle->y, circle->width ? 3 : 2, radius);
+        fputs("  <circle", fsvg);
+        svg_put_fattrib(" cx=\"", 2, circle->x, fsvg);
+        svg_put_fattrib(" cy=\"", 2, circle->y, fsvg);
+        svg_put_fattrib(" r=\"", circle->width ? 3 : 2, radius, fsvg);
 
         if (circle->colour) { /* Legacy - no longer used */
             if (circle->width) {
-                fprintf(fsvg, " stroke=\"#%s\" stroke-width=\"%.3f\" fill=\"none\"", bgcolour_string, circle->width);
+                fprintf(fsvg, " stroke=\"#%s\"", bgcolour_string);
+                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fsvg);
+                fputs(" fill=\"none\"", fsvg);
             } else {
                 fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
             }
-            if (bg_alpha != 0xff) {
-                /* This doesn't work how the user is likely to expect - more work needed! */
-                fprintf(fsvg, " opacity=\"%.3f\"", bg_alpha_opacity);
-            }
+            /* This doesn't work how the user is likely to expect - more work needed! */
+            svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fsvg);
         } else {
             if (circle->width) {
-                fprintf(fsvg, " stroke=\"#%s\" stroke-width=\"%.3f\" fill=\"none\"", fgcolour_string, circle->width);
+                fprintf(fsvg, " stroke=\"#%s\"", fgcolour_string);
+                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fsvg);
+                fputs(" fill=\"none\"", fsvg);
             }
-            if (fg_alpha != 0xff) {
-                fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
-            }
+            svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
         }
-        fputs(" />\n", fsvg);
         circle = circle->next;
     }
 
-    bold = (symbol->output_options & BOLD_TEXT) && !is_extendable(symbol->symbology);
+    bold = (symbol->output_options & BOLD_TEXT) && !extendable;
     string = symbol->vector->strings;
     while (string) {
         const char *const halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
-        fprintf(fsvg, "      <text x=\"%.2f\" y=\"%.2f\" text-anchor=\"%s\"\n", string->x, string->y, halign);
-        fprintf(fsvg, "         font-family=\"%s\" font-size=\"%.1f\"", font_family, string->fsize);
+        fputs("  <text", fsvg);
+        svg_put_fattrib(" x=\"", 2, string->x, fsvg);
+        svg_put_fattrib(" y=\"", 2, string->y, fsvg);
+        fprintf(fsvg, " text-anchor=\"%s\"", halign);
+        fprintf(fsvg, " font-family=\"%s\"", extendable ? upcean_font_family : font_family);
+        svg_put_fattrib(" font-size=\"", 1, string->fsize, fsvg);
         if (bold) {
             fputs(" font-weight=\"bold\"", fsvg);
         }
-        if (fg_alpha != 0xff) {
-            fprintf(fsvg, " opacity=\"%.3f\"", fg_alpha_opacity);
-        }
         if (string->rotation != 0) {
-            fprintf(fsvg, " transform=\"rotate(%d,%.2f,%.2f)\"", string->rotation, string->x, string->y);
+            fprintf(fsvg, " transform=\"rotate(%d", string->rotation);
+            out_putsf(",", 2, string->x, fsvg);
+            out_putsf(",", 2, string->y, fsvg);
+            fputs(")\"", fsvg);
         }
-        fputs(" >\n", fsvg);
-        make_html_friendly(string->text, html_string);
-        fprintf(fsvg, "         %s\n", html_string);
-        fputs("      </text>\n", fsvg);
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 0 /*close*/, fsvg);
+        svg_make_html_friendly(string->text, html_string);
+        fprintf(fsvg, "   %s\n", html_string);
+        fputs("  </text>\n", fsvg);
         string = string->next;
     }
 
-    fputs("   </g>\n"
+    fputs(" </g>\n"
           "</svg>\n", fsvg);
-
-    if (locale)
-        setlocale(LC_ALL, locale);
 
     if (ferror(fsvg)) {
         sprintf(symbol->errtxt, "682: Incomplete write to output (%d: %.30s)", errno, strerror(errno));

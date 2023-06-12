@@ -46,11 +46,11 @@
 #include "emf.h"
 
 /* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
-#define mul3dpf(m, arg) stripf(roundf(m * arg * 1000.0) / 1000.0f)
+#define mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0) / 1000.0f)
 
-static int count_rectangles(struct zint_symbol *symbol) {
+static int emf_count_rectangles(const struct zint_symbol *symbol) {
     int rectangles = 0;
-    struct zint_vector_rect *rect;
+    const struct zint_vector_rect *rect;
 
     rect = symbol->vector->rectangles;
     while (rect) {
@@ -61,9 +61,9 @@ static int count_rectangles(struct zint_symbol *symbol) {
     return rectangles;
 }
 
-static int count_circles(struct zint_symbol *symbol) {
+static int emf_count_circles(const struct zint_symbol *symbol) {
     int circles = 0;
-    struct zint_vector_circle *circ;
+    const struct zint_vector_circle *circ;
 
     circ = symbol->vector->circles;
     while (circ) {
@@ -75,9 +75,9 @@ static int count_circles(struct zint_symbol *symbol) {
     return symbol->symbology == BARCODE_MAXICODE ? circles * 2 : circles;
 }
 
-static int count_hexagons(struct zint_symbol *symbol) {
+static int emf_count_hexagons(const struct zint_symbol *symbol) {
     int hexagons = 0;
-    struct zint_vector_hexagon *hex;
+    const struct zint_vector_hexagon *hex;
 
     hex = symbol->vector->hexagons;
     while (hex) {
@@ -88,13 +88,13 @@ static int count_hexagons(struct zint_symbol *symbol) {
     return hexagons;
 }
 
-static int count_strings(struct zint_symbol *symbol, float *fsize, float *fsize2, int *halign, int *halign1,
-            int *halign2) {
+static int emf_count_strings(const struct zint_symbol *symbol, float *fsize, float *fsize2, int *halign_left,
+            int *halign_right) {
     int strings = 0;
-    struct zint_vector_string *str;
+    const struct zint_vector_string *str;
 
     *fsize = *fsize2 = 0.0f;
-    *halign = *halign1 = *halign2 = 0;
+    *halign_left = *halign_right = 0;
 
     str = symbol->vector->strings;
     while (str) {
@@ -104,12 +104,12 @@ static int count_strings(struct zint_symbol *symbol, float *fsize, float *fsize2
         } else if (str->fsize != *fsize && *fsize2 == 0.0f) {
             *fsize2 = str->fsize;
         }
-        /* Only 3 haligns possible */
-        if (str->halign) {
-            if (str->halign == 1) {
-                *halign1 = str->halign;
-            } else {
-                *halign2 = str->halign;
+        /* Only 3 haligns possible and centre align always assumed used */
+        if (str->halign) { /* Left or right align */
+            if (str->halign == 1) { /* Left align */
+                *halign_left = str->halign;
+            } else { /* Right align */
+                *halign_right = str->halign;
             }
         }
         strings++;
@@ -119,11 +119,11 @@ static int count_strings(struct zint_symbol *symbol, float *fsize, float *fsize2
     return strings;
 }
 
-static void utfle_copy(unsigned char *output, unsigned char *input, int length) {
+/* Convert UTF-8 to UTF-16LE - only needs to handle characters <= U+00FF */
+static void emf_utfle_copy(unsigned char *output, const unsigned char *input, const int length) {
     int i;
     int o;
 
-    /* Convert UTF-8 to UTF-16LE - only needs to handle characters <= U+00FF */
     i = 0;
     o = 0;
     do {
@@ -143,15 +143,12 @@ static void utfle_copy(unsigned char *output, unsigned char *input, int length) 
     } while (i < length);
 }
 
-static int bump_up(int input) {
-    /* Strings length must be a multiple of 4 bytes */
-    if ((input & 1) == 1) {
-        input++;
-    }
-    return input;
+/* Strings length must be a multiple of 4 bytes */
+static int emf_bump_up(const int input) {
+    return (input + (input & 1)) << 1;
 }
 
-static int utfle_length(unsigned char *input, int length) {
+static int emf_utfle_length(const unsigned char *input, const int length) {
     int result = 0;
     int i;
 
@@ -227,12 +224,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     float fsize2;
     emr_extcreatefontindirectw_t emr_extcreatefontindirectw2;
     emr_selectobject_t emr_selectobject_font2;
-    int halign;
-    emr_settextalign_t emr_settextalign;
-    int halign1;
-    emr_settextalign_t emr_settextalign1;
-    int halign2;
-    emr_settextalign_t emr_settextalign2;
+    emr_settextalign_t emr_settextalign_centre; /* Centre align */
+    int halign_left; /* Set if left halign used */
+    emr_settextalign_t emr_settextalign_left;
+    int halign_right; /* Set if right halign used */
+    emr_settextalign_t emr_settextalign_right;
 
     float current_fsize;
     int current_halign;
@@ -254,10 +250,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         draw_background = 0;
     }
 
-    rectangle_count = count_rectangles(symbol);
-    circle_count = count_circles(symbol);
-    hexagon_count = count_hexagons(symbol);
-    string_count = count_strings(symbol, &fsize, &fsize2, &halign, &halign1, &halign2);
+    rectangle_count = emf_count_rectangles(symbol);
+    circle_count = emf_count_circles(symbol);
+    hexagon_count = emf_count_hexagons(symbol);
+    string_count = emf_count_strings(symbol, &fsize, &fsize2, &halign_left, &halign_right);
 
     /* Avoid sanitize runtime error by making always non-zero */
     rectangle = (emr_rectangle_t *) z_alloca(sizeof(emr_rectangle_t) * (rectangle_count ? rectangle_count : 1));
@@ -565,7 +561,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         emr_extcreatefontindirectw.elw.out_precision = 0x00; /* OUT_DEFAULT_PRECIS */
         emr_extcreatefontindirectw.elw.clip_precision = 0x00; /* CLIP_DEFAULT_PRECIS */
         emr_extcreatefontindirectw.elw.pitch_and_family = 0x02 | (0x02 << 6); /* FF_SWISS | VARIABLE_PITCH */
-        utfle_copy(emr_extcreatefontindirectw.elw.facename, (unsigned char *) "sans-serif", 10);
+        emf_utfle_copy(emr_extcreatefontindirectw.elw.facename, (const unsigned char *) "sans-serif", 10);
         bytecount += 104;
         recordcount++;
 
@@ -591,18 +587,18 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         /* Note select aligns counted below in strings loop */
 
-        emr_settextalign.type = 0x00000016; /* EMR_SETTEXTALIGN */
-        emr_settextalign.size = 12;
-        emr_settextalign.text_alignment_mode = 0x0006 | 0x0018; /* TA_CENTER | TA_BASELINE */
-        if (halign1) {
-            emr_settextalign1.type = 0x00000016; /* EMR_SETTEXTALIGN */
-            emr_settextalign1.size = 12;
-            emr_settextalign1.text_alignment_mode = 0x0000 | 0x0018; /* TA_LEFT | TA_BASELINE */
+        emr_settextalign_centre.type = 0x00000016; /* EMR_SETTEXTALIGN */
+        emr_settextalign_centre.size = 12;
+        emr_settextalign_centre.text_alignment_mode = 0x0006 | 0x0018; /* TA_CENTER | TA_BASELINE */
+        if (halign_left) {
+            emr_settextalign_left.type = 0x00000016; /* EMR_SETTEXTALIGN */
+            emr_settextalign_left.size = 12;
+            emr_settextalign_left.text_alignment_mode = 0x0000 | 0x0018; /* TA_LEFT | TA_BASELINE */
         }
-        if (halign2) {
-            emr_settextalign2.type = 0x00000016; /* EMR_SETTEXTALIGN */
-            emr_settextalign2.size = 12;
-            emr_settextalign2.text_alignment_mode = 0x0002 | 0x0018; /* TA_RIGHT | TA_BASELINE */
+        if (halign_right) {
+            emr_settextalign_right.type = 0x00000016; /* EMR_SETTEXTALIGN */
+            emr_settextalign_right.size = 12;
+            emr_settextalign_right.text_alignment_mode = 0x0002 | 0x0018; /* TA_RIGHT | TA_BASELINE */
         }
 
         emr_settextcolor.type = 0x0000018; /* EMR_SETTEXTCOLOR */
@@ -636,8 +632,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 recordcount++;
             }
             assert(str->length > 0);
-            utfle_len = utfle_length(str->text, str->length);
-            bumped_len = bump_up(utfle_len) * 2;
+            utfle_len = emf_utfle_length(str->text, str->length);
+            bumped_len = emf_bump_up(utfle_len);
             if (!(this_string[this_text] = (unsigned char *) malloc(bumped_len))) {
                 for (i = 0; i < this_text; i++) {
                     free(this_string[i]);
@@ -665,7 +661,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             text[this_text].w_emr_text.rectangle.right = 0xffffffff;
             text[this_text].w_emr_text.rectangle.bottom = 0xffffffff;
             text[this_text].w_emr_text.off_dx = 0;
-            utfle_copy(this_string[this_text], str->text, str->length);
+            emf_utfle_copy(this_string[this_text], str->text, str->length);
             bytecount += 76 + bumped_len;
             recordcount++;
 
@@ -810,15 +806,15 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
         if (text_haligns[i] != current_halign) {
             current_halign = text_haligns[i];
             if (current_halign == 0) {
-                fwrite(&emr_settextalign, sizeof(emr_settextalign_t), 1, emf_file);
+                fwrite(&emr_settextalign_centre, sizeof(emr_settextalign_t), 1, emf_file);
             } else if (current_halign == 1) {
-                fwrite(&emr_settextalign1, sizeof(emr_settextalign_t), 1, emf_file);
+                fwrite(&emr_settextalign_left, sizeof(emr_settextalign_t), 1, emf_file);
             } else {
-                fwrite(&emr_settextalign2, sizeof(emr_settextalign_t), 1, emf_file);
+                fwrite(&emr_settextalign_right, sizeof(emr_settextalign_t), 1, emf_file);
             }
         }
         fwrite(&text[i], sizeof(emr_exttextoutw_t), 1, emf_file);
-        fwrite(this_string[i], bump_up(text[i].w_emr_text.chars) * 2, 1, emf_file);
+        fwrite(this_string[i], emf_bump_up(text[i].w_emr_text.chars), 1, emf_file);
         free(this_string[i]);
     }
 

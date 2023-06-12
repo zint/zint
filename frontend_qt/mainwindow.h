@@ -72,6 +72,8 @@ public slots:
     void text_gap_ui_set();
     void dotty_ui_set();
     void codeone_ui_set();
+    void upcean_no_quiet_zones_ui_set();
+    void upcae_no_quiet_zones_ui_set();
     void structapp_ui_set();
     void text_gap_zero();
     void clear_text_gap();
@@ -85,6 +87,7 @@ public slots:
     void factory_reset();
     void about();
     void help();
+    void preview_bg();
     void quit_now();
     void menu();
 
@@ -147,6 +150,7 @@ protected:
             bool enabled = true);
     void guard_default(const QString &spnBoxName);
     double get_height_per_row_default();
+    bool have_addon();
     void set_gs1_mode(bool gs1_mode);
     void set_smaller_font(const QString &labelName);
 
@@ -206,6 +210,7 @@ private:
     QString m_fgstr, m_bgstr;
     QByteArray m_fgcolor_geometry, m_bgcolor_geometry;
     BarcodeItem m_bc;
+    QColor m_previewBgColor;
     QWidget *m_optionWidget;
     QGraphicsScene *scene;
     int m_symbology;
@@ -229,6 +234,7 @@ private:
     QAction *m_copyTIFAct;
     QAction *m_openCLIAct;
     QAction *m_saveAsAct;
+    QAction *m_previewBgColorAct;
     QAction *m_factoryResetAct;
     QAction *m_aboutAct;
     QAction *m_helpAct;

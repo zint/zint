@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -33,11 +33,13 @@ public:
     ~BarcodeItem();
 
     void setSize(int width, int height);
+    void setColor(const QColor& color); /* Set colour of bounding rect */
     QRectF boundingRect() const;
     void paint(QPainter *painter, const QStyleOptionGraphicsItem *option, QWidget *widget = 0);
 
 private:
     int w, h;
+    QColor m_color;
 
 public:
     mutable Zint::QZint bc;

@@ -168,6 +168,8 @@
 - Added -esc and -extraesc options
 2023-02-10 GL
 - Added -textgap option
+2023-08-11 GL
+- Added -guardwhitespace option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -515,6 +517,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --dump not supported */
     /* cli option --ecinos not supported */
     "   -eci choice: ECI to use\n"
+    /* cli option --embedfont not supported (vector output only) */
     "   -esc bool: Process escape sequences in input data\n"
     "   -extraesc bool: Process symbology-specific escape sequences (Code 128 only)\n"
     "   -fast bool: use fast encodation (Data Matrix)\n"
@@ -527,6 +530,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -gs1parens bool: for gs1, AIs enclosed in parentheses instead of square brackets\n"
     "   -gssep bool: for gs1, use gs as separator instead fnc1 (Datamatrix only)\n"
     "   -guarddescent double: Height of guard bar descent in modules (EAN/UPC only)\n"
+    "   -guardwhitespace bool: add quiet zone indicators (EAN/UPC only)\n"
     "   -height double: Symbol height in modules\n"
     "   -heightperrow bool: treat height as per-row\n"
     /* cli option --input not supported */
@@ -553,7 +557,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -smalltext bool: tiny interpretation line font\n"
     "   -square bool: force Data Matrix symbols to be square\n"
     "   -structapp {index count ?id?}: set Structured Append info\n"
-    "   -textgap double: gap between barcode and text\n"
+    "   -textgap double: Gap between barcode and text\n"
     /* cli option --types not supported */
     "   -vers integer: Symbology option\n"
     /* cli option --version not supported */
@@ -788,7 +792,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
             "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
-            "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent",
+            "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent", "-guardwhitespace",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
             "-nobackground", "-noquietzones", "-notext", "-primary", "-quietzones",
             "-reverse", "-rotate", "-rows", "-scale", "-scalexdimdp", "-scmvv", "-secure",
@@ -800,7 +804,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
             iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
-            iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent,
+            iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent, iGuardWhitespace,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
             iNoBackground, iNoQuietZones, iNoText, iPrimary, iQuietZones,
             iReverse, iRotate, iRows, iScale, iScaleXdimDp, iSCMvv, iSecure,
@@ -836,6 +840,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iGS1NoCheck:
         case iGS1Parens:
         case iGSSep:
+        case iGuardWhitespace:
         case iHeightPerRow:
         case iInit:
         case iNoBackground:
@@ -1059,6 +1064,13 @@ static int Encode(Tcl_Interp *interp, int objc,
                 fError = 1;
             } else {
                 my_symbol->eci = s_eci_number[ECIIndex];
+            }
+            break;
+        case iGuardWhitespace:
+            if (intValue) {
+                my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+            } else {
+                my_symbol->output_options &= ~EANUPC_GUARD_WHITESPACE;
             }
             break;
         case iHeightPerRow:

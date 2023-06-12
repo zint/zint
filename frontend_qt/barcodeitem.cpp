@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2009-2021 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -35,6 +35,10 @@ void BarcodeItem::setSize(int width, int height) {
     h = height;
 }
 
+void BarcodeItem::setColor(const QColor& color) {
+    m_color = color;
+}
+
 QRectF BarcodeItem::boundingRect() const
 {
     return QRectF(0, 0, w, h);
@@ -42,5 +46,9 @@ QRectF BarcodeItem::boundingRect() const
 
 void BarcodeItem::paint(QPainter *painter, const QStyleOptionGraphicsItem * /*option*/, QWidget * /*widget*/)
 {
-    bc.render(*painter, boundingRect());
+    QRectF painterRect = boundingRect();
+    if (m_color.isValid()) {
+        painter->fillRect(painterRect, m_color);
+    }
+    bc.render(*painter, painterRect);
 }

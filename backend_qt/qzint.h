@@ -212,6 +212,14 @@ public:
     bool readerInit() const; // `symbol->output_options | READER_INIT`
     void setReaderInit(bool readerInit);
 
+    /* Whether to add quiet zone indicators ("<", ">") to HRT (EAN/UPC) */
+    bool guardWhitespace() const; // `symbol->output_options | EANUPC_GUARD_WHITESPACE`
+    void setGuardWhitespace(bool guardWhitespace);
+
+    /* Whether to embed the font in vector output - currently only for SVG output of EAN/UPC */
+    bool embedVectorFont() const; // `symbol->output_options | EANUPC_GUARD_WHITESPACE`
+    void setEmbedVectorFont(bool embedVectorFont);
+
     /* Affects error/warning value returned by Zint API (see `getError()` below) */
     int warnLevel() const; // `symbol->warn_level`
     void setWarnLevel(int warnLevel);
@@ -379,6 +387,8 @@ private:
     bool m_gs1parens;
     bool m_gs1nocheck;
     bool m_reader_init;
+    bool m_guard_whitespace;
+    bool m_embed_vector_font;
     int m_warn_level;
     bool m_debug;
     int m_encodedWidth;

@@ -1,116 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="1244" height="286" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="1244" height="286" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="14.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="24.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="38.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="52.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="62.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="72.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="86.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="100.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="115.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="124.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="134.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="153.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="163.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="172.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="187.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="196.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="211.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="230.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="240.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="249.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="259.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="268.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="283.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="302.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="312.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="321.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="336.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="350.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="364.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="374.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="388.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="398.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="412.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="422.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="436.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="446.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="465.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="475.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="484.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="499.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="513.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="528.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="537.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="552.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="561.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="571.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="585.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="595.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="609.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="624.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="633.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="648.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="662.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="676.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="686.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="700.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="710.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="724.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="734.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="748.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="763.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="777.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="792.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="801.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="811.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="825.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="835.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="849.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="859.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="873.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="888.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="902.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="912.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="921.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="936.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="950.40" y="0.00" width="4.80" height="240.00" />
-      <rect x="964.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="979.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="988.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="998.40" y="0.00" width="9.60" height="240.00" />
-      <rect x="1012.80" y="0.00" width="4.80" height="240.00" />
-      <rect x="1027.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="1041.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="1051.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="1060.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="1075.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="1089.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="1099.20" y="0.00" width="4.80" height="240.00" />
-      <rect x="1108.80" y="0.00" width="9.60" height="240.00" />
-      <rect x="1123.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="1137.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="1152.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="1161.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="1171.20" y="0.00" width="9.60" height="240.00" />
-      <rect x="1185.60" y="0.00" width="4.80" height="240.00" />
-      <rect x="1200.00" y="0.00" width="4.80" height="240.00" />
-      <rect x="1209.60" y="0.00" width="9.60" height="240.00" />
-      <rect x="1224.00" y="0.00" width="9.60" height="240.00" />
-      <rect x="1238.40" y="0.00" width="4.80" height="240.00" />
-      <text x="621.60" y="273.60" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="33.6" >
-         2FTPX28L0XCA15511
-      </text>
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="1244" height="286" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="1244" height="286" fill="#FFFFFF"/>
+  <path d="M0 0h4.8v240h-4.8ZM14.4 0h4.8v240h-4.8ZM24 0h9.6v240h-9.6ZM38.4 0h9.6v240h-9.6ZM52.8 0h4.8v240h-4.8ZM62.4 0h4.8v240h-4.8ZM72 0h9.6v240h-9.6ZM86.4 0h4.8v240h-4.8ZM100.8 0h9.6v240h-9.6ZM115.2 0h4.8v240h-4.8ZM124.8 0h4.8v240h-4.8ZM134.4 0h9.6v240h-9.6ZM153.6 0h4.8v240h-4.8ZM163.2 0h4.8v240h-4.8ZM172.8 0h9.6v240h-9.6ZM187.2 0h4.8v240h-4.8ZM196.8 0h9.6v240h-9.6ZM211.2 0h9.6v240h-9.6ZM230.4 0h4.8v240h-4.8ZM240 0h4.8v240h-4.8ZM249.6 0h4.8v240h-4.8ZM259.2 0h4.8v240h-4.8ZM268.8 0h9.6v240h-9.6ZM283.2 0h9.6v240h-9.6ZM302.4 0h4.8v240h-4.8ZM312 0h4.8v240h-4.8ZM321.6 0h9.6v240h-9.6ZM336 0h9.6v240h-9.6ZM350.4 0h4.8v240h-4.8ZM364.8 0h4.8v240h-4.8ZM374.4 0h4.8v240h-4.8ZM388.8 0h4.8v240h-4.8ZM398.4 0h9.6v240h-9.6ZM412.8 0h4.8v240h-4.8ZM422.4 0h9.6v240h-9.6ZM436.8 0h4.8v240h-4.8ZM446.4 0h9.6v240h-9.6ZM465.6 0h4.8v240h-4.8ZM475.2 0h4.8v240h-4.8ZM484.8 0h9.6v240h-9.6ZM499.2 0h9.6v240h-9.6ZM513.6 0h4.8v240h-4.8ZM528 0h4.8v240h-4.8ZM537.6 0h9.6v240h-9.6ZM552 0h4.8v240h-4.8ZM561.6 0h4.8v240h-4.8ZM571.2 0h9.6v240h-9.6ZM585.6 0h4.8v240h-4.8ZM595.2 0h4.8v240h-4.8ZM609.6 0h9.6v240h-9.6ZM624 0h4.8v240h-4.8ZM633.6 0h4.8v240h-4.8ZM648 0h9.6v240h-9.6ZM662.4 0h9.6v240h-9.6ZM676.8 0h4.8v240h-4.8ZM686.4 0h4.8v240h-4.8ZM700.8 0h4.8v240h-4.8ZM710.4 0h9.6v240h-9.6ZM724.8 0h4.8v240h-4.8ZM734.4 0h9.6v240h-9.6ZM748.8 0h9.6v240h-9.6ZM763.2 0h9.6v240h-9.6ZM777.6 0h4.8v240h-4.8ZM792 0h4.8v240h-4.8ZM801.6 0h4.8v240h-4.8ZM811.2 0h9.6v240h-9.6ZM825.6 0h4.8v240h-4.8ZM835.2 0h4.8v240h-4.8ZM849.6 0h4.8v240h-4.8ZM859.2 0h9.6v240h-9.6ZM873.6 0h9.6v240h-9.6ZM888 0h4.8v240h-4.8ZM902.4 0h4.8v240h-4.8ZM912 0h4.8v240h-4.8ZM921.6 0h9.6v240h-9.6ZM936 0h9.6v240h-9.6ZM950.4 0h4.8v240h-4.8ZM964.8 0h9.6v240h-9.6ZM979.2 0h4.8v240h-4.8ZM988.8 0h4.8v240h-4.8ZM998.4 0h9.6v240h-9.6ZM1012.8 0h4.8v240h-4.8ZM1027.2 0h9.6v240h-9.6ZM1041.6 0h4.8v240h-4.8ZM1051.2 0h4.8v240h-4.8ZM1060.8 0h9.6v240h-9.6ZM1075.2 0h4.8v240h-4.8ZM1089.6 0h4.8v240h-4.8ZM1099.2 0h4.8v240h-4.8ZM1108.8 0h9.6v240h-9.6ZM1123.2 0h9.6v240h-9.6ZM1137.6 0h4.8v240h-4.8ZM1152 0h4.8v240h-4.8ZM1161.6 0h4.8v240h-4.8ZM1171.2 0h9.6v240h-9.6ZM1185.6 0h4.8v240h-4.8ZM1200 0h4.8v240h-4.8ZM1209.6 0h9.6v240h-9.6ZM1224 0h9.6v240h-9.6ZM1238.4 0h4.8v240h-4.8Z"/>
+  <text x="621.6" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+   2FTPX28L0XCA15511
+  </text>
+ </g>
 </svg>

@@ -47,11 +47,15 @@ zint -b DPLEIT -d "9212320967145" --scale=$SCALE_LINEAR -o images/dpleit.svg
 zint -b DPIDENT -d "91232096712" --scale=$SCALE_LINEAR -o images/dpident.svg
 zint -b UPCA --compliantheight -d "72527270270" --scale=$SCALE_UPCEAN -o images/upca.svg
 zint -b UPCA --compliantheight -d "72527270270+12345" --scale=$SCALE_UPCEAN -o images/upca_5.svg
+zint -b UPCA --compliantheight -d "72527270270+12345" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upca_5_gws.svg
 zint -b UPCE --compliantheight -d "1123456" --scale=$SCALE_UPCEAN -o images/upce.svg
+zint -b UPCE --compliantheight -d "1123456+12" --guardwhitespace --scale=$SCALE_UPCEAN -o images/upce_2_gws.svg
 zint -b EANX --compliantheight -d "4512345678906" --scale=$SCALE_UPCEAN -o images/eanx13.svg
 zint -b EANX --compliantheight -d "54321" --scale=$SCALE_UPCEAN -o images/eanx5.svg
 zint -b EANX --compliantheight -d "7432365+54321" --scale=$SCALE_UPCEAN -o images/eanx8_5.svg
+zint -b EANX_CHK --compliantheight -d "74323654" --guardwhitespace --scale=$SCALE_UPCEAN -o images/eanx8_gws.svg
 zint -b ISBNX --compliantheight -d "9789295055124" --scale=$SCALE_UPCEAN -o images/isbnx.svg
+zint -b ISBNX --compliantheight -d "9789295055124" --guardwhitespace --scale=$SCALE_UPCEAN -o images/isbnx_gws.svg
 zint -b PLESSEY -d "C64" --scale=$SCALE_LINEAR -o images/plessey.svg
 zint -b MSI_PLESSEY -d "6502" --vers=2 --scale=$SCALE_LINEAR -o images/msi_plessey.svg
 zint -b TELEPEN --compliantheight -d "Z80" --scale=$SCALE_LINEAR -o images/telepen.svg

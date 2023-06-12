@@ -1,7 +1,7 @@
 /* common.c - Contains functions needed for a number of barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -58,17 +58,16 @@ INTERNAL char itoc(const int source) {
 /* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
 INTERNAL int to_int(const unsigned char source[], const int length) {
     int val = 0;
+    int non_digit = 0;
     int i;
 
     for (i = 0; i < length; i++) {
-        if (!z_isdigit(source[i])) {
-            return -1;
-        }
         val *= 10;
         val += source[i] - '0';
+        non_digit |= !z_isdigit(source[i]);
     }
 
-    return val;
+    return non_digit ? -1 : val;
 }
 
 /* Converts lower case characters to upper case in string `source` */
@@ -76,9 +75,7 @@ INTERNAL void to_upper(unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
-        if (z_islower(source[i])) {
-            source[i] &= 0x5F;
-        }
+        source[i] &= z_islower(source[i]) ? 0x5F : 0xFF;
     }
 }
 
@@ -87,9 +84,7 @@ INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsig
     int count = 0;
     int i;
     for (i = 0; i < length; i++) {
-        if (source[i] == c) {
-            count++;
-        }
+        count += source[i] == c;
     }
     return count;
 }
@@ -183,16 +178,10 @@ INTERNAL int posn(const char set_string[], const char data) {
   `bin_posn`. Returns `bin_posn` + `length` */
 INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn) {
     int i;
-    int start;
-
-    start = 0x01 << (length - 1);
+    const int end = length - 1;
 
     for (i = 0; i < length; i++) {
-        if (arg & (start >> i)) {
-            binary[bin_posn + i] = '1';
-        } else {
-            binary[bin_posn + i] = '0';
-        }
+        binary[bin_posn + i] = '0' + ((arg >> (end - i)) & 1);
     }
     return bin_posn + length;
 }
@@ -280,7 +269,7 @@ INTERNAL int is_stackable(const int symbology) {
     return 0;
 }
 
-/* Whether `symbology` can have addon (EAN-2 and EAN-5) */
+/* Whether `symbology` can have add-on (EAN-2 and EAN-5) */
 INTERNAL int is_extendable(const int symbology) {
 
     switch (symbology) {
@@ -433,7 +422,7 @@ INTERNAL int is_valid_utf8(const unsigned char source[], const int length) {
 /* Converts UTF-8 to Unicode. If `disallow_4byte` unset, allows all values (UTF-32). If `disallow_4byte` set,
  * only allows codepoints <= U+FFFF (ie four-byte sequences not allowed) (UTF-16, no surrogates) */
 INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
-            int *length, const int disallow_4byte) {
+                int *length, const int disallow_4byte) {
     int bpos;
     int jpos;
     unsigned int codepoint, state = 0;
@@ -464,10 +453,51 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
     return 0;
 }
 
+/* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
+INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+    int i, j;
+    int warn_number = 0;
+
+    for (i = 0, j = 0; i < length && j < (int) sizeof(symbol->text); i++) {
+        if (source[i] < 0x80) {
+            symbol->text[j++] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
+        } else if (source[i] < 0xC0) {
+            if (source[i] >= 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
+                if (j + 2 >= (int) sizeof(symbol->text)) {
+                    warn_number = ZINT_WARN_HRT_TRUNCATED;
+                    break;
+                }
+                symbol->text[j++] = 0xC2;
+                symbol->text[j++] = source[i];
+            } else {
+                symbol->text[j++] = ' ';
+            }
+        } else {
+            if (j + 2 >= (int) sizeof(symbol->text)) {
+                warn_number = ZINT_WARN_HRT_TRUNCATED;
+                break;
+            }
+            symbol->text[j++] = 0xC3;
+            symbol->text[j++] = source[i] - 0x40;
+        }
+    }
+    if (j == sizeof(symbol->text)) {
+        warn_number = ZINT_WARN_HRT_TRUNCATED;
+        j--;
+    }
+    symbol->text[j] = '\0';
+
+    if (warn_number) {
+        strcpy(symbol->errtxt, "249: Human Readable Text truncated");
+    }
+    return warn_number;
+}
+
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.
    `default_height` does not include height of fixed-height rows (i.e. separators/composite data) */
 INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
-            const float max_height, const int no_errtxt) {
+                const float max_height, const int no_errtxt) {
     int error_number = 0;
     float fixed_height = 0.0f;
     int zero_count = 0;
@@ -548,7 +578,7 @@ INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count) {
 
 /* Shallow copies segments, adjusting default ECIs */
 INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
-            struct zint_seg local_segs[]) {
+                struct zint_seg local_segs[]) {
     const int default_eci = symbol->symbology == BARCODE_GRIDMATRIX ? 29 : symbol->symbology == BARCODE_UPNQR ? 4 : 3;
     int i;
 
@@ -612,7 +642,7 @@ INTERNAL int colour_to_blue(const int colour) {
 
 #ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
-void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {
+INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {
     int i, max = length, cnt_len = 0;
     if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
@@ -626,7 +656,7 @@ void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *c
 }
 
 /* Dumps decimal-formatted codewords in symbol->errtxt (for use in testing) */
-void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length) {
+INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */

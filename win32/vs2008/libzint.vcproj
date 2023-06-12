@@ -518,7 +518,7 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\backend\font.h"
+				RelativePath="..\..\backend\raster_font.h"
 				>
 			</File>
 			<File

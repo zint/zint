@@ -1,51 +1,9 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="162" height="46" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#FF1115">
-      <rect x="0" y="0" width="162" height="46" fill="#FFFFFF" />
-      <rect x="20.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="24.00" y="2.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="36.00" y="2.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="44.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="50.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="56.00" y="2.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="64.00" y="2.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="76.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="80.00" y="2.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="88.00" y="2.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="96.00" y="2.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="108.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="112.00" y="2.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="120.00" y="2.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="128.00" y="2.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="132.00" y="2.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="144.00" y="2.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="152.00" y="2.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="20.00" y="24.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="24.00" y="24.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="32.00" y="24.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="44.00" y="24.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="48.00" y="24.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="56.00" y="24.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="62.00" y="24.00" width="12.00" height="20.00" opacity="0.498" />
-      <rect x="76.00" y="24.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="80.00" y="24.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="88.00" y="24.00" width="6.00" height="20.00" opacity="0.498" />
-      <rect x="96.00" y="24.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="102.00" y="24.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="114.00" y="24.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="120.00" y="24.00" width="2.00" height="20.00" opacity="0.498" />
-      <rect x="126.00" y="24.00" width="10.00" height="20.00" opacity="0.498" />
-      <rect x="138.00" y="24.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="146.00" y="24.00" width="4.00" height="20.00" opacity="0.498" />
-      <rect x="152.00" y="24.00" width="8.00" height="20.00" opacity="0.498" />
-      <rect x="20.00" y="22.00" width="140.00" height="2.00" opacity="0.498" />
-      <rect x="0.00" y="0.00" width="162.00" height="2.00" opacity="0.498" />
-      <rect x="0.00" y="44.00" width="162.00" height="2.00" opacity="0.498" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="162" height="46" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#FF1115">
+  <rect x="0" y="0" width="162" height="46" fill="#FFFFFF"/>
+  <path d="M20 2h2v20h-2ZM24 2h6v20h-6ZM36 2h4v20h-4ZM44 2h2v20h-2ZM50 2h2v20h-2ZM56 2h4v20h-4ZM64 2h8v20h-8ZM76 2h2v20h-2ZM80 2h6v20h-6ZM88 2h4v20h-4ZM96 2h8v20h-8ZM108 2h2v20h-2ZM112 2h6v20h-6ZM120 2h6v20h-6ZM128 2h2v20h-2ZM132 2h4v20h-4ZM144 2h6v20h-6ZM152 2h8v20h-8ZM20 24h2v20h-2ZM24 24h4v20h-4ZM32 24h8v20h-8ZM44 24h2v20h-2ZM48 24h6v20h-6ZM56 24h4v20h-4ZM62 24h12v20h-12ZM76 24h2v20h-2ZM80 24h6v20h-6ZM88 24h6v20h-6ZM96 24h2v20h-2ZM102 24h8v20h-8ZM114 24h4v20h-4ZM120 24h2v20h-2ZM126 24h10v20h-10ZM138 24h4v20h-4ZM146 24h4v20h-4ZM152 24h8v20h-8ZM20 22h140v2h-140ZM0 0h162v2h-162ZM0 44h162v2h-162Z" opacity="0.498"/>
+ </g>
 </svg>

@@ -340,45 +340,6 @@ INTERNAL void c128_put_in_set(int list[2][C128_MAX], const int indexliste, char 
     }
 }
 
-/* Treats source as ISO 8859-1 and copies into symbol->text, converting to UTF-8. Returns length of symbol->text */
-static int c128_hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
-    int i, j;
-
-    for (i = 0, j = 0; i < length && j < (int) sizeof(symbol->text); i++) {
-        if (source[i] < 0x80) {
-            symbol->text[j++] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
-        } else if (source[i] < 0xC0) {
-            if (source[i] >= 0xA0) { /* 0x80-0x9F not valid ISO 8859-1 */
-                if (j + 2 >= (int) sizeof(symbol->text)) {
-                    break;
-                }
-                symbol->text[j++] = 0xC2;
-                symbol->text[j++] = source[i];
-            } else {
-                symbol->text[j++] = ' ';
-            }
-        } else {
-            if (j + 2 >= (int) sizeof(symbol->text)) {
-                break;
-            }
-            symbol->text[j++] = 0xC3;
-            symbol->text[j++] = source[i] - 0x40;
-        }
-    }
-    if (j == sizeof(symbol->text)) {
-        j--;
-    }
-    symbol->text[j] = '\0';
-
-    return j;
-}
-
-#ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int c128_hrt_cpy_iso8859_1_test(struct zint_symbol *symbol, const unsigned char source[], const int length) {
-	return c128_hrt_cpy_iso8859_1(symbol, source, length);
-}
-#endif
-
 /* Handle Code 128, 128B and HIBC 128 */
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, j, k, values[C128_MAX] = {0}, bar_characters = 0, read, total_sum;
@@ -433,9 +394,9 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             src = src_buf;
             src[length] = '\0';
             if (symbol->debug & ZINT_DEBUG_PRINT) {
-                printf("MSet: ");
+                fputs("MSet: ", stdout);
                 for (i = 0; i < length; i++) printf("%c", manual_set[i] ? manual_set[i] : '.');
-                printf("\n");
+                fputc('\n', stdout);
             }
         }
     }
@@ -761,7 +722,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     values[bar_characters++] = 106;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Codewords:");
+        fputs("Codewords:", stdout);
         for (i = 0; i < bar_characters; i++) {
             printf(" %d", values[i]);
         }
@@ -779,7 +740,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* ISO/IEC 15417:2007 leaves dimensions/height as application specification */
 
-    c128_hrt_cpy_iso8859_1(symbol, src, length);
+    (void) hrt_cpy_iso8859_1(symbol, src, length); /* Truncation can't happen */
 
     return error_number;
 }
@@ -991,7 +952,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     values[bar_characters++] = 106;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Codewords:");
+        fputs("Codewords:", stdout);
         for (i = 0; i < bar_characters; i++) {
             printf(" %d", values[i]);
         }
@@ -1246,7 +1207,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned char local_source[13 + 1];
     unsigned char have_check_digit = '\0';
     int check_digit;
-    static char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
+    static const char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
     int error_number = 0, warn_number = 0;
 
     if (length != 12 && length != 13) {

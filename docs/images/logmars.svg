@@ -1,86 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="1071" height="264" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="1071" height="264" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="19.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="28.80" y="0.00" width="14.40" height="218.18" />
-      <rect x="48.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="67.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="76.80" y="0.00" width="14.40" height="218.18" />
-      <rect x="96.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="115.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="124.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="134.40" y="0.00" width="14.40" height="218.18" />
-      <rect x="153.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="163.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="192.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="201.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="211.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="230.40" y="0.00" width="14.40" height="218.18" />
-      <rect x="249.60" y="0.00" width="14.40" height="218.18" />
-      <rect x="278.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="288.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="297.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="307.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="316.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="336.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="355.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="364.80" y="0.00" width="14.40" height="218.18" />
-      <rect x="384.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="403.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="422.40" y="0.00" width="14.40" height="218.18" />
-      <rect x="441.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="451.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="460.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="480.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="499.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="508.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="528.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="537.60" y="0.00" width="14.40" height="218.18" />
-      <rect x="556.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="566.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="585.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="595.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="614.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="624.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="643.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="662.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="672.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="691.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="710.40" y="0.00" width="14.40" height="218.18" />
-      <rect x="729.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="748.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="758.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="768.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="777.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="787.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="816.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="825.60" y="0.00" width="14.40" height="218.18" />
-      <rect x="844.80" y="0.00" width="14.40" height="218.18" />
-      <rect x="864.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="873.60" y="0.00" width="14.40" height="218.18" />
-      <rect x="902.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="912.00" y="0.00" width="4.80" height="218.18" />
-      <rect x="921.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="931.20" y="0.00" width="4.80" height="218.18" />
-      <rect x="940.80" y="0.00" width="14.40" height="218.18" />
-      <rect x="960.00" y="0.00" width="14.40" height="218.18" />
-      <rect x="988.80" y="0.00" width="4.80" height="218.18" />
-      <rect x="998.40" y="0.00" width="4.80" height="218.18" />
-      <rect x="1017.60" y="0.00" width="4.80" height="218.18" />
-      <rect x="1027.20" y="0.00" width="14.40" height="218.18" />
-      <rect x="1046.40" y="0.00" width="14.40" height="218.18" />
-      <rect x="1065.60" y="0.00" width="4.80" height="218.18" />
-      <text x="535.20" y="251.78" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="33.6" >
-         12345/ABCDET
-      </text>
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="1071" height="264" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="1071" height="264" fill="#FFFFFF"/>
+  <path d="M0 0h4.8v218.18h-4.8ZM19.2 0h4.8v218.18h-4.8ZM28.8 0h14.4v218.18h-14.4ZM48 0h14.4v218.18h-14.4ZM67.2 0h4.8v218.18h-4.8ZM76.8 0h14.4v218.18h-14.4ZM96 0h4.8v218.18h-4.8ZM115.2 0h4.8v218.18h-4.8ZM124.8 0h4.8v218.18h-4.8ZM134.4 0h14.4v218.18h-14.4ZM153.6 0h4.8v218.18h-4.8ZM163.2 0h14.4v218.18h-14.4ZM192 0h4.8v218.18h-4.8ZM201.6 0h4.8v218.18h-4.8ZM211.2 0h14.4v218.18h-14.4ZM230.4 0h14.4v218.18h-14.4ZM249.6 0h14.4v218.18h-14.4ZM278.4 0h4.8v218.18h-4.8ZM288 0h4.8v218.18h-4.8ZM297.6 0h4.8v218.18h-4.8ZM307.2 0h4.8v218.18h-4.8ZM316.8 0h4.8v218.18h-4.8ZM336 0h14.4v218.18h-14.4ZM355.2 0h4.8v218.18h-4.8ZM364.8 0h14.4v218.18h-14.4ZM384 0h14.4v218.18h-14.4ZM403.2 0h4.8v218.18h-4.8ZM422.4 0h14.4v218.18h-14.4ZM441.6 0h4.8v218.18h-4.8ZM451.2 0h4.8v218.18h-4.8ZM460.8 0h4.8v218.18h-4.8ZM480 0h4.8v218.18h-4.8ZM499.2 0h4.8v218.18h-4.8ZM508.8 0h4.8v218.18h-4.8ZM528 0h4.8v218.18h-4.8ZM537.6 0h14.4v218.18h-14.4ZM556.8 0h4.8v218.18h-4.8ZM566.4 0h4.8v218.18h-4.8ZM585.6 0h4.8v218.18h-4.8ZM595.2 0h14.4v218.18h-14.4ZM614.4 0h4.8v218.18h-4.8ZM624 0h14.4v218.18h-14.4ZM643.2 0h4.8v218.18h-4.8ZM662.4 0h4.8v218.18h-4.8ZM672 0h14.4v218.18h-14.4ZM691.2 0h14.4v218.18h-14.4ZM710.4 0h14.4v218.18h-14.4ZM729.6 0h4.8v218.18h-4.8ZM748.8 0h4.8v218.18h-4.8ZM758.4 0h4.8v218.18h-4.8ZM768 0h4.8v218.18h-4.8ZM777.6 0h4.8v218.18h-4.8ZM787.2 0h14.4v218.18h-14.4ZM816 0h4.8v218.18h-4.8ZM825.6 0h14.4v218.18h-14.4ZM844.8 0h14.4v218.18h-14.4ZM864 0h4.8v218.18h-4.8ZM873.6 0h14.4v218.18h-14.4ZM902.4 0h4.8v218.18h-4.8ZM912 0h4.8v218.18h-4.8ZM921.6 0h4.8v218.18h-4.8ZM931.2 0h4.8v218.18h-4.8ZM940.8 0h14.4v218.18h-14.4ZM960 0h14.4v218.18h-14.4ZM988.8 0h4.8v218.18h-4.8ZM998.4 0h4.8v218.18h-4.8ZM1017.6 0h4.8v218.18h-4.8ZM1027.2 0h14.4v218.18h-14.4ZM1046.4 0h14.4v218.18h-14.4ZM1065.6 0h4.8v218.18h-4.8Z"/>
+  <text x="535.2" y="251.78" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+   12345/ABCDET
+  </text>
+ </g>
 </svg>

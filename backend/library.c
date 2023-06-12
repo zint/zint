@@ -70,7 +70,6 @@ struct zint_symbol *ZBarcode_Create(void) {
 #endif
     symbol->option_1 = -1;
     symbol->show_hrt = 1; /* Show human readable text */
-    symbol->fontsize = 8;
     symbol->input_mode = DATA_MODE;
     symbol->eci = 0; /* Default 0 uses ECI 3 */
     symbol->dot_size = 4.0f / 5.0f;
@@ -297,7 +296,7 @@ static int dump_plot(struct zint_symbol *symbol) {
             byt = byt << (4 - (symbol->width % 4));
             fputc(hex[byt], f);
         }
-        fputs("\n", f);
+        fputc('\n', f);
         space = 0;
     }
 
@@ -858,7 +857,7 @@ INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char 
 }
 #endif
 
-/* Encode a barcode. If `length` is 0, `source` must be NUL-terminated. */
+/* Encode a barcode. If `length` is 0, `source` must be NUL-terminated */
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length) {
     struct zint_seg segs[1];
 

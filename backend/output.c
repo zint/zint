@@ -190,7 +190,7 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
 }
 
 /* Return minimum quiet zones for each symbology */
-static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text,
+static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
                             float *left, float *right, float *top, float *bottom) {
     int done = 0;
 
@@ -235,33 +235,39 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_ISBNX:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             switch (ustrlen(symbol->text)) {
-                case 13: /* EAN-13 */
+                case 13: /* EAN-13/ISBN */
                     if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                        *left = 11.0f;
-                        *right = 7.0f;
+                        *left = comp_xoffset >= 10 ? 1.0f : 11.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
+                        *right = 7.0f - (comp_xoffset != 0);
                     } else if (!hide_text) {
-                        *left = 11.0f; /* Need for outside left digit */
+                        *left = comp_xoffset >= 10 ? 1.0f : 11.0f - comp_xoffset; /* Need for outside left digit */
                     }
                     break;
-                case 16: /* EAN-13/ISBN + 2 digit addon */
-                case 19: /* EAN-13/ISBN + 5 digit addon */
+                case 16: /* EAN-13/ISBN + 2 digit add-on */
+                case 19: /* EAN-13/ISBN + 5 digit add-on */
                     if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                        *left = 11.0f;
+                        *left = comp_xoffset >= 10 ? 1.0f : 11.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
                         *right = 5.0f;
                     } else if (!hide_text) {
-                        *left = 11.0f; /* Need for outside left digit */
+                        *left = comp_xoffset >= 10 ? 1.0f : 11.0f - comp_xoffset; /* Need for outside left digit */
                     }
                     break;
-                case 5: /* EAN-5 addon */
-                case 2: /* EAN-2 addon */
+                case 5: /* EAN-5 add-on */
+                case 2: /* EAN-2 add-on */
                     if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                        *left = 7.0f;
                         *right = 5.0f;
                     }
                     break;
-                default: /* EAN-8 (+/- 2/5 digit addon) */
+                case 8: /* EAN-8 */
                     if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                        *left = *right = 7.0f;
+                        *left = comp_xoffset >= 6 ? 1.0f : 7.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
+                        *right = 7.0f - (comp_xoffset != 0);
+                    }
+                    break;
+                default: /* EAN-8 + 2/5 digit add-on */
+                    if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
+                        *left = comp_xoffset >= 6 ? 1.0f : 7.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
+                        *right = 5.0f;
                     }
                     break;
             }
@@ -272,16 +278,16 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_UPCA_CC:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                *left = 9.0f;
-                if (ustrlen(symbol->text) > 12) { /* UPC-A + addon */
+                *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
+                if (ustrlen(symbol->text) > 12) { /* UPC-A + add-on */
                     *right = 5.0f;
                 } else {
-                    *right = 9.0f;
+                    *right = 9.0f - (comp_xoffset != 0);
                 }
             } else if (!hide_text) {
-                *left = 9.0f; /* Need for outside left digit */
-                if (ustrlen(symbol->text) <= 12) { /* No addon */
-                    *right = 9.0f; /* Need for outside right digit */
+                *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need for outside left digit */
+                if (ustrlen(symbol->text) <= 12) { /* No add-on */
+                    *right = 9.0f - (comp_xoffset != 0); /* Need for outside right digit */
                 }
             }
             done = 1;
@@ -291,16 +297,16 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_UPCE_CC:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
-                *left = 9.0f;
-                if (ustrlen(symbol->text) > 8) { /* UPC-E + addon */
+                *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset;
+                if (ustrlen(symbol->text) > 8) { /* UPC-E + add-on */
                     *right = 5.0f;
                 } else {
-                    *right = 7.0f;
+                    *right = 7.0f - (comp_xoffset != 0);
                 }
             } else if (!hide_text) {
-                *left = 9.0f; /* Need for outside left digit */
-                if (ustrlen(symbol->text) <= 8) { /* No addon */
-                    *right = 7.0f; /* Need for outside right digit */
+                *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need for outside left digit */
+                if (ustrlen(symbol->text) <= 8) { /* No add-on */
+                    *right = 7.0f - (comp_xoffset != 0); /* Need for outside right digit */
                 }
             }
             done = 1;
@@ -349,10 +355,26 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             done = 1;
             break;
         case BARCODE_GS1_128: /* GS1-128 */
-        case BARCODE_GS1_128_CC:
         case BARCODE_EAN14:
             /* GS1 General Specifications 21.0.1 Section 5.4.4.2 */
             *left = *right = 10.0f;
+            done = 1;
+            break;
+        case BARCODE_GS1_128_CC:
+            /* GS1 General Specifications 21.0.1 Sections 5.11.2.1 (CC-A), 5.11.2.2 (CC-B) & 5.11.2.3 (CC-C) */
+            {
+                int comp_roffset = 0; /* Right offset of linear */
+                int min_qz; /* Minimum quiet zone - 1X for CC-A/B, 2X for CC-C */
+                int x;
+                for (x = symbol->width - 1; x >= 0 && !module_is_set(symbol, symbol->rows - 1, x); x--) {
+                    comp_roffset++;
+                }
+                /* Determine if CC-C by counting initial start pattern */
+                for (x = 0; x < 8 && module_is_set(symbol, 0, x); x++);
+                min_qz = x == 8 ? 2 : 1;
+                *left = comp_xoffset >= 10 - min_qz ? min_qz : 10.0f - comp_xoffset;
+                *right = comp_roffset >= 10 - min_qz ? min_qz : 10.0f - comp_roffset;
+            }
             done = 1;
             break;
         case BARCODE_CODABAR:
@@ -394,14 +416,26 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* GS1 General Specifications 21.0.1 Section 5.5.1.1 - Quiet Zones: None required */
             done = 1;
             break;
+
+            /* GS1 General Specifications 21.0.1 Sections 5.11.2.1 (CC-A) & 5.11.2.2 (CC-B) require 1X either side
+               but this may be supplied by the positioning of the linear component */
         case BARCODE_DBAR_OMN_CC:
         case BARCODE_DBAR_LTD_CC:
-        case BARCODE_DBAR_EXP_CC:
+            /* Always have at least 1X to right of CC-A/B */
+            if (comp_xoffset > 1) { /* Exclude DBAR_LTD_CC with CC-A which always has 1X to left */
+                *left = 1.0f;
+            }
+            done = 1;
+            break;
         case BARCODE_DBAR_STK_CC:
         case BARCODE_DBAR_OMNSTK_CC:
+            /* Always have at least 1X to left of CC-A/B */
+            *right = 1.0f;
+            done = 1;
+            break;
+        case BARCODE_DBAR_EXP_CC:
         case BARCODE_DBAR_EXPSTK_CC:
-            /* GS1 General Specifications 21.0.1 Sections 5.11.2.1 (CC-A) & 5.11.2.2 (CC-B) */
-            *left = *right = 1.0f;
+            /* Always have at least 1X to left and right of CC-A/B */
             done = 1;
             break;
 
@@ -614,19 +648,19 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text,
+INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
                             float *left, float *right, float *top, float *bottom) {
-    return out_quiet_zones(symbol, hide_text, left, right, top, bottom);
+    return out_quiet_zones(symbol, hide_text, comp_xoffset, left, right, top, bottom);
 }
 #endif
 
 /* Set left (x), top (y), right and bottom offsets for whitespace */
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
-                float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
-                int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
+                const int comp_xoffset, float *xoffset, float *yoffset, float *roffset, float *boffset,
+                const float scaler, int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
     float qz_left, qz_right, qz_top, qz_bottom;
 
-    out_quiet_zones(symbol, hide_text, &qz_left, &qz_right, &qz_top, &qz_bottom);
+    out_quiet_zones(symbol, hide_text, comp_xoffset, &qz_left, &qz_right, &qz_top, &qz_bottom);
 
     *xoffset = symbol->whitespace_width + qz_left;
     *roffset = symbol->whitespace_width + qz_right;
@@ -658,22 +692,22 @@ INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const
     }
 }
 
-/* Set composite offset and main width excluding addon (for start of addon calc) and addon text, returning
+/* Set composite offset and main width excluding add-on (for start of add-on calc) and add-on text, returning
    UPC/EAN type */
-INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
+INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
                 unsigned char addon[6], int *p_addon_gap) {
-    int main_width; /* Width of main linear symbol, excluding addon */
-    int comp_xoffset; /* Whitespace offset (if any) of main linear symbol due to having composite */
+    int main_width; /* Width of main linear symbol, excluding add-on */
     int upceanflag; /* UPC/EAN type flag */
     int i, j, latch;
-    int text_length = (int) ustrlen(symbol->text);
+    const int text_length = (int) ustrlen(symbol->text);
 
     latch = 0;
     j = 0;
     /* Isolate add-on text */
     for (i = 6; i < text_length && j < 5; i++) {
         if (latch == 1) {
-            addon[j] = symbol->show_hrt ? symbol->text[i] : ' '; /* Use dummy space-filled addon if no hrt */
+            /* Use dummy space-filled add-on if no hrt */
+            addon[j] = symbol->show_hrt ? symbol->text[i] : ' ';
             j++;
         } else if (symbol->text[i] == '+') {
             latch = 1;
@@ -689,14 +723,6 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
         }
     }
 
-    /* Calculate composite offset */
-    comp_xoffset = 0;
-    if (is_composite(symbol->symbology)) {
-        while (!(module_is_set(symbol, symbol->rows - 1, comp_xoffset))) {
-            comp_xoffset++;
-        }
-    }
-
     upceanflag = 0;
     main_width = symbol->width;
     if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
@@ -709,11 +735,11 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
                 upceanflag = 13;
                 break;
             case 2:
-                /* EAN-2 can't have addon or be composite */
+                /* EAN-2 can't have add-on or be composite */
                 upceanflag = 2;
                 break;
             case 5:
-                /* EAN-5 can't have addon or be composite */
+                /* EAN-5 can't have add-on or be composite */
                 upceanflag = 5;
                 break;
             default:
@@ -731,7 +757,6 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_wi
         upceanflag = 6;
     }
 
-    *p_comp_xoffset = comp_xoffset;
     *p_main_width = main_width;
 
     return upceanflag;
@@ -987,6 +1012,36 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
     }
 
     return outfile;
+}
+
+/* Output float without trailing zeroes to `fp` with decimal pts `dp` (precision) */
+INTERNAL void out_putsf(const char *const prefix, const int dp, const float arg, FILE *fp) {
+    int i, end;
+    char buf[256]; /* Assuming `dp` reasonable */
+    const int len = sprintf(buf, "%.*f", dp, arg);
+
+    if (*prefix) {
+        fputs(prefix, fp);
+    }
+
+    /* Adapted from https://stackoverflow.com/a/36202854/664741 */
+    for (i = len - 1, end = len; i >= 0; i--) {
+        if (buf[i] == '0') {
+            if (end == i + 1) {
+                end = i;
+            }
+        } else if (!z_isdigit(buf[i]) && buf[i] != '-') { /* If not digit or minus then decimal point */
+            if (end == i + 1) {
+                end = i;
+            } else {
+                buf[i] = '.'; /* Overwrite any locale-specific setting for decimal point */
+            }
+            buf[end] = '\0';
+            break;
+        }
+    }
+
+    fputs(buf, fp);
 }
 
 /* vim: set ts=4 sw=4 et : */

@@ -38,7 +38,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/eci.h \
             ../backend/eci_sb.h \
             ../backend/emf.h \
-            ../backend/font.h \
+            ../backend/raster_font.h \
             ../backend/gb18030.h \
             ../backend/gb2312.h \
             ../backend/gbk.h \

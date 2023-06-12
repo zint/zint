@@ -1,7 +1,7 @@
 /* dmatrix.c Handles Data Matrix ECC 200 symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -400,19 +400,19 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
             /* Adjusted from <= b256_count */
             if (cnt_1 < b256_count && cnt_1 <= edf_count && cnt_1 <= text_count && cnt_1 <= x12_count
                     && cnt_1 <= c40_count) {
-                if (debug_print) printf("ASC->");
+                if (debug_print) fputs("ASC->", stdout);
                 return DM_ASCII; /* step (r)(1) */
             }
             cnt_1 = b256_count + DM_MULT_1;
             if (cnt_1 <= ascii_count || (cnt_1 < edf_count && cnt_1 < text_count && cnt_1 < x12_count
                     && cnt_1 < c40_count)) {
-                if (debug_print) printf("BAS->");
+                if (debug_print) fputs("BAS->", stdout);
                 return DM_BASE256; /* step (r)(2) */
             }
             cnt_1 = edf_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < text_count && cnt_1 < x12_count
                     && cnt_1 < c40_count) {
-                if (debug_print) printf("EDI->");
+                if (debug_print) fputs("EDI->", stdout);
                 return DM_EDIFACT; /* step (r)(3) */
             }
             cnt_1 = text_count + DM_MULT_1;
@@ -421,32 +421,32 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
                 /* Adjusted to avoid early exit from Base 256 if have less than break-even sequence of TEXT chars */
                 if (current_mode == DM_BASE256 && position + 6 < length) {
                     if (dm_text_sp_cnt(source, position, length, sp) >= 12) {
-                        if (debug_print) printf("TEX->");
+                        if (debug_print) fputs("TEX->", stdout);
                         return DM_TEXT; /* step (r)(4) */
                     }
                 } else {
-                    if (debug_print) printf("TEX->");
+                    if (debug_print) fputs("TEX->", stdout);
                     return DM_TEXT; /* step (r)(4) */
                 }
             }
             cnt_1 = x12_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count
                     && cnt_1 < c40_count) {
-                if (debug_print) printf("X12->");
+                if (debug_print) fputs("X12->", stdout);
                 return DM_X12; /* step (r)(5) */
             }
             cnt_1 = c40_count + DM_MULT_1;
             if (cnt_1 < ascii_count && cnt_1 < b256_count && cnt_1 < edf_count && cnt_1 < text_count) {
                 if (c40_count < x12_count) {
-                    if (debug_print) printf("C40->");
+                    if (debug_print) fputs("C40->", stdout);
                     return DM_C40; /* step (r)(6)(i) */
                 }
                 if (c40_count == x12_count) {
                     if (dm_substep_r_6_2_1(source, length, sp) == 1) {
-                        if (debug_print) printf("X12->");
+                        if (debug_print) fputs("X12->", stdout);
                         return DM_X12; /* step (r)(6)(ii)(I) */
                     }
-                    if (debug_print) printf("C40->");
+                    if (debug_print) fputs("C40->", stdout);
                     return DM_C40; /* step (r)(6)(ii)(II) */
                 }
             }
@@ -470,32 +470,32 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
 
     if (ascii_rnded <= b256_rnded && ascii_rnded <= edf_rnded && ascii_rnded <= text_rnded && ascii_rnded <= x12_rnded
             && ascii_rnded <= c40_rnded) {
-        if (debug_print) printf("ASC->");
+        if (debug_print) fputs("ASC->", stdout);
         return DM_ASCII; /* step (k)(2) */
     }
     if (b256_rnded < ascii_rnded && b256_rnded < edf_rnded && b256_rnded < text_rnded && b256_rnded < x12_rnded
             && b256_rnded < c40_rnded) {
-        if (debug_print) printf("BAS->");
+        if (debug_print) fputs("BAS->", stdout);
         return DM_BASE256; /* step (k)(3) */
     }
     /* Adjusted from < x12_rnded */
     if (edf_rnded < ascii_rnded && edf_rnded < b256_rnded && edf_rnded < text_rnded && edf_rnded <= x12_rnded
             && edf_rnded < c40_rnded) {
-        if (debug_print) printf("EDI->");
+        if (debug_print) fputs("EDI->", stdout);
         return DM_EDIFACT; /* step (k)(4) */
     }
     if (text_rnded < ascii_rnded && text_rnded < b256_rnded && text_rnded < edf_rnded && text_rnded < x12_rnded
             && text_rnded < c40_rnded) {
-        if (debug_print) printf("TEX->");
+        if (debug_print) fputs("TEX->", stdout);
         return DM_TEXT; /* step (k)(5) */
     }
     /* Adjusted from < edf_rnded */
     if (x12_rnded < ascii_rnded && x12_rnded < b256_rnded && x12_rnded <= edf_rnded && x12_rnded < text_rnded
             && x12_rnded < c40_rnded) {
-        if (debug_print) printf("X12->");
+        if (debug_print) fputs("X12->", stdout);
         return DM_X12; /* step (k)(6) */
     }
-    if (debug_print) printf("C40->");
+    if (debug_print) fputs("C40->", stdout);
     return DM_C40; /* step (k)(7) */
 }
 
@@ -653,24 +653,24 @@ static int dm_switch_mode(const int next_mode, unsigned char target[], int tp, i
             const int debug_print) {
     switch (next_mode) {
         case DM_ASCII:
-            if (debug_print) printf("ASC ");
+            if (debug_print) fputs("ASC ", stdout);
             break;
         case DM_C40: target[tp++] = 230;
-            if (debug_print) printf("C40 ");
+            if (debug_print) fputs("C40 ", stdout);
             break;
         case DM_TEXT: target[tp++] = 239;
-            if (debug_print) printf("TEX ");
+            if (debug_print) fputs("TEX ", stdout);
             break;
         case DM_X12: target[tp++] = 238;
-            if (debug_print) printf("X12 ");
+            if (debug_print) fputs("X12 ", stdout);
             break;
         case DM_EDIFACT: target[tp++] = 240;
-            if (debug_print) printf("EDI ");
+            if (debug_print) fputs("EDI ", stdout);
             break;
         case DM_BASE256: target[tp++] = 231;
             *p_b256_start = tp;
             target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
-            if (debug_print) printf("BAS ");
+            if (debug_print) fputs("BAS ", stdout);
             break;
     }
 
@@ -1035,7 +1035,7 @@ static int dm_define_mode(struct zint_symbol *symbol, char modes[], const unsign
     if (debug_print) {
         printf("modes (%d): ", length);
         for (i = 0; i < length; i++) printf("%c", dm_smodes[(int) modes[i]][0]);
-        printf("\n");
+        fputc('\n', stdout);
     }
     assert(mode_end == 0);
 
@@ -1119,10 +1119,10 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
                     if (gs1 && (source[sp] == '[')) {
                         if (gs1 == 2) {
                             target[tp++] = 29 + 1; /* GS */
-                            if (debug_print) printf("GS ");
+                            if (debug_print) fputs("GS ", stdout);
                         } else {
                             target[tp++] = 232; /* FNC1 */
-                            if (debug_print) printf("FN1 ");
+                            if (debug_print) fputs("FN1 ", stdout);
                         }
                     } else {
                         target[tp++] = source[sp] + 1;
@@ -1295,10 +1295,10 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                         if (gs1 && (source[sp] == '[')) {
                             if (gs1 == 2) {
                                 target[tp++] = 29 + 1; /* GS */
-                                if (debug_print) printf("GS ");
+                                if (debug_print) fputs("GS ", stdout);
                             } else {
                                 target[tp++] = 232; /* FNC1 */
-                                if (debug_print) printf("FN1 ");
+                                if (debug_print) fputs("FN1 ", stdout);
                             }
                         } else {
                             target[tp++] = source[sp] + 1;
@@ -1320,7 +1320,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
             if (next_mode != current_mode) {
                 target[tp++] = 254; /* Unlatch */
                 next_mode = DM_ASCII;
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
             } else {
                 int shift_set, value;
                 const char *ct_shift, *ct_value;
@@ -1382,7 +1382,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                 process_p = 0; /* Throw away buffer if any */
                 target[tp++] = 254; /* Unlatch */
                 next_mode = DM_ASCII;
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
             } else {
                 static const char x12_nonalphanum_chars[] = "\015*> ";
                 int value = 0;
@@ -1422,7 +1422,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                 process_buffer[process_p++] = 31;
                 process_p = dm_edi_buffer_xfer(process_buffer, process_p, target, &tp, 1 /*empty*/, debug_print);
                 next_mode = DM_ASCII;
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
             } else {
                 int value = source[sp];
 
@@ -1546,7 +1546,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         if (process_p == 0) {
             if (symbols_left > 0) {
                 target[tp++] = 254; /* Unlatch */
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
             }
         } else {
             if (process_p == 2 && symbols_left == 2) {
@@ -1559,7 +1559,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                 if (symbols_left > 1) {
                     /* 5.2.5.2 (c) */
                     target[tp++] = 254; /* Unlatch and encode remaining data in ascii. */
-                    if (debug_print) printf("ASC ");
+                    if (debug_print) fputs("ASC ", stdout);
                 }
                 target[tp++] = source[length - 1] + 1;
                 if (debug_print) printf("A%02X ", target[tp - 1] - 1);
@@ -1577,7 +1577,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                 tp -= (total_cnt / 3) * 2;
 
                 target[tp++] = 254; /* Unlatch */
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
                 for (; sp < length; sp++) {
                     if (is_twodigits(source, length, sp)) {
                         target[tp++] = (unsigned char) ((10 * ctoi(source[sp])) + ctoi(source[sp + 1]) + 130);
@@ -1590,10 +1590,10 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                     } else if (gs1 && source[sp] == '[') {
                         if (gs1 == 2) {
                             target[tp++] = 29 + 1; /* GS */
-                            if (debug_print) printf("GS ");
+                            if (debug_print) fputs("GS ", stdout);
                         } else {
                             target[tp++] = 232; /* FNC1 */
-                            if (debug_print) printf("FN1 ");
+                            if (debug_print) fputs("FN1 ", stdout);
                         }
                     } else {
                         target[tp++] = source[sp] + 1;
@@ -1604,7 +1604,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         }
 
     } else if (current_mode == DM_X12) {
-        if (debug_print) printf("X12 ");
+        if (debug_print) fputs("X12 ", stdout);
         if ((symbols_left == 1) && (process_p == 1)) {
             /* Unlatch not required! */
             target[tp++] = source[length - 1] + 1;
@@ -1612,7 +1612,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         } else {
             if (symbols_left > 0) {
                 target[tp++] = (254); /* Unlatch. */
-                if (debug_print) printf("ASC ");
+                if (debug_print) fputs("ASC ", stdout);
             }
 
             if (process_p == 1) {
@@ -1626,7 +1626,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         }
 
     } else if (current_mode == DM_EDIFACT) {
-        if (debug_print) printf("EDI ");
+        if (debug_print) fputs("EDI ", stdout);
         if (symbols_left <= 2 && process_p <= symbols_left) { /* Unlatch not required! */
             if (process_p == 1) {
                 target[tp++] = source[length - 1] + 1;
@@ -1656,11 +1656,11 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
     }
 
     if (debug_print) {
-        printf("\nData (%d): ", tp);
+        printf("\nData (%d):", tp);
         for (i = 0; i < tp; i++)
-            printf("%d ", target[i]);
+            printf(" %d", target[i]);
 
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     *p_tp = tp;
@@ -1761,7 +1761,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
 
     if (gs1) {
         target[tp++] = 232;
-        if (debug_print) printf("FN1 ");
+        if (debug_print) fputs("FN1 ", stdout);
     } /* FNC1 */
 
     if (symbol->output_options & READER_INIT) {
@@ -1774,7 +1774,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             return ZINT_ERROR_INVALID_OPTION;
         }
         target[tp++] = 234; /* Reader Programming */
-        if (debug_print) printf("RP ");
+        if (debug_print) fputs("RP ", stdout);
     }
 
     /* Check for Macro05/Macro06 */
@@ -1791,10 +1791,10 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
         /* Output macro Codeword */
         if (segs[0].source[5] == '5') {
             target[tp++] = 236;
-            if (debug_print) printf("Macro05 ");
+            if (debug_print) fputs("Macro05 ", stdout);
         } else {
             target[tp++] = 237;
-            if (debug_print) printf("Macro06 ");
+            if (debug_print) fputs("Macro06 ", stdout);
         }
         /* Remove macro characters from input string */
         in_macro = 1;
@@ -1882,7 +1882,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (debug_print) {
         printf("Pads (%d): ", taillength);
         for (i = binlen; i < binlen + taillength; i++) printf("%d ", binary[i]);
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* ecc code */
@@ -1893,7 +1893,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (debug_print) {
         printf("ECC (%d): ", rsblock * (bytes / datablock));
         for (i = bytes; i < bytes + rsblock * (bytes / datablock); i++) printf("%d ", binary[i]);
-        printf("\n");
+        fputc('\n', stdout);
     }
 
 #ifdef ZINT_TEST

@@ -60,7 +60,7 @@ extern "C" {
     struct zint_vector_string {
         float x, y;         /* x is relative to halign (i.e. centre, left, right), y is relative to baseline */
         float fsize;        /* Font size */
-        float width;        /* Suggested string width, may be 0 if none recommended */
+        float width;        /* Rendered width estimate */
         int length;         /* Number of characters (bytes) */
         int rotation;       /* 0, 90, 180, 270 degrees */
         int halign;         /* Horizontal alignment: 0 for centre, 1 for left, 2 for right (end) */
@@ -111,7 +111,6 @@ extern "C" {
         int option_2;       /* Symbol-specific options */
         int option_3;       /* Symbol-specific options */
         int show_hrt;       /* Show (1) or hide (0) Human Readable Text (HRT). Default 1 */
-        int fontsize;       /* Unused */
         int input_mode;     /* Encoding of input data (see DATA_MODE etc below). Default DATA_MODE */
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
         float dpmm;         /* Resolution of output in dots per mm (BMP/EMF/PCX/PNG/TIF only). Default 0 (none) */
@@ -121,7 +120,7 @@ extern "C" {
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
-        unsigned char text[128]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
+        unsigned char text[160]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
@@ -292,6 +291,8 @@ extern "C" {
                                          */
 #define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
 #define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant and use standard height (if any) as default */
+#define EANUPC_GUARD_WHITESPACE 0x4000  /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
+#define EMBED_VECTOR_FONT       0x8000  /* Embed font in vector output - currently only for SVG output of EAN/UPC */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */
@@ -318,6 +319,7 @@ extern "C" {
 #define ULTRA_COMPRESSION       128     /* Enable Ultracode compression (experimental) */
 
 /* Warning and error conditions (API return values) */
+#define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 159 bytes) */
 #define ZINT_WARN_INVALID_OPTION    2   /* Invalid option given but overridden by Zint */
 #define ZINT_WARN_USES_ECI          3   /* Automatic ECI inserted by Zint */
 #define ZINT_WARN_NONCOMPLIANT      4   /* Symbol created not compliant with standards */
@@ -332,6 +334,7 @@ extern "C" {
 #define ZINT_ERROR_FILE_WRITE       12  /* Error writing to output file */
 #define ZINT_ERROR_USES_ECI         13  /* Error counterpart of warning if WARN_FAIL_ALL set (see below) */
 #define ZINT_ERROR_NONCOMPLIANT     14  /* Error counterpart of warning if WARN_FAIL_ALL set */
+#define ZINT_ERROR_HRT_TRUNCATED    15  /* Error counterpart of warning if WARN_FAIL_ALL set */
 
 /* Warning level (`symbol->warn_level`) */
 #define WARN_DEFAULT            0  /* Default behaviour */

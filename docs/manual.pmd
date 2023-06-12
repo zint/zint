@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.12.0.9
-% May 2023
+% June 2023
 
 # 1. Introduction
 
@@ -1243,6 +1243,8 @@ Nevertheless, for ECI Code 3, this is not usually required, as this is the
 default encoding for most barcodes, which is also active without any ECI
 information.
 
+\clearpage
+
 #### 4.10.2.1 Input Modes and ECI Example 1
 
 The Euro sign U+20AC can be encoded in ISO/IEC 8859-15. The Euro sign has the
@@ -1439,7 +1441,8 @@ zint -b AZTEC_CODE --eci=9 -d "Κείμενο" --seg1=7,"Текст" --seg2=20,"
 specifies 3 segments: segment 0 with ECI 9 (Greek), segment 1 with ECI 7
 (Cyrillic), and segment 2 with ECI 20 (Shift JIS). Segments must be consecutive.
 
-The symbology must be ECI-aware (see Table {@tbl:eci_aware_symbologies}).
+Naturally the symbology must be ECI-aware (see Table
+{@tbl:eci_aware_symbologies}).
 
 ![`zint -b AZTEC --eci=9 -d "Κείμενο" --seg1=7,"Текст"
 --seg2=20,"文章"`](images/aztec_segs.svg)
@@ -1618,9 +1621,9 @@ int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol,
 
 In these definitions `length` can be used to set the length of the input
 string. This allows the encoding of `NUL` (ASCII 0) characters in those
-symbologies which allow this. A value of 0 will disable this usage and Zint
-will encode data up to the first `NUL` character in the input string, which must
-be present.
+symbologies which allow this. A value of 0 (or less than 0) will disable this
+usage and Zint will encode data up to the first `NUL` character in the input
+string, which must be present.
 
 The `rotate_angle` value can be used to rotate the image when outputting. Valid
 values are 0, 90, 180 and 270.
@@ -1743,8 +1746,7 @@ for (string = my_symbol->vector->strings; string; string = string->next) {
                 string->text, string->length);
 }
 for (circle = my_symbol->vector->circles; circle; circle = circle->next) {
-    draw_circle(circle->x, circle->y, circle->diameter,
-                circle->width, circle->colour);
+    draw_circle(circle->x, circle->y, circle->diameter, circle->width);
 }
 ```
 
@@ -2105,6 +2107,12 @@ Value                      Effect
 
 `COMPLIANT_HEIGHT`         Warn if height not compliant and use standard height
                            (if any) as default.
+
+`EANUPC_GUARD_WHITESPACE`  Add quiet zone indicators ("<" and/or ">") to HRT
+                           whitespace (EAN/UPC).
+
+`EMBED_VECTOR_FONT`        Embed font in vector output - currently available for
+                           SVG output of EAN/UPC only.
 --------------------------------------------------------------------------------
 
 Table: API `output_options` Values {#tbl:api_output_options tag="$ $"}
@@ -2117,8 +2125,6 @@ Code].
 
 [^11]: Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.
-
-\clearpage
 
 ## 5.10 Setting the Input Mode
 
@@ -2572,11 +2578,33 @@ If your input data already includes the check digit symbology `BARCODE_UPCA_CHK`
 (35) can be used which takes a 12-digit input and validates the check digit
 before encoding.
 
+A quiet zone indicator can be added to the HRT by setting `--guardwhitespace`
+(API `output_options |= EANUPC_GUARD_WHITESPACE`). For UPC, this is only
+relevant when there is add-on:
+
+```bash
+zint -b UPCA -d "72527270270+12345" --guardwhitespace
+```
+
+or using the API:
+
+```c
+my_symbol->symbology = BARCODE_UPCA;
+my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
+```
+
+![`zint -b UPCA --compliantheight -d "72527270270+12345"
+--guardwhitespace`](images/upca_5_gws.svg)
+
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting `--addongap` (API `option_2`) to a value between 9
 (default) and 12. The height in X-dimensions that the guard bars descend below
 the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
 to a value between 0 and 20 (default 5).
+
+For SVG output, the `--embedfont` option (API `output_options |=
+EMBED_VECTOR_FONT`) will embed the OCR-B font in the file for portability.
 
 #### 6.1.3.2 UPC Version E
 
@@ -2604,11 +2632,24 @@ If your input data already includes the check digit symbology `BARCODE_UPCE_CHK`
 (38) can be used which takes a 7 or 8-digit input and validates the check digit
 before encoding.
 
+As with UPC-A, a quiet zone indicator can be added when there is an add-on by
+setting `--guardwhitespace` (API `output_options |= EANUPC_GUARD_WHITESPACE`):
+
+```bash
+zint -b UPCE -d "1123456+12" --guardwhitespace
+```
+
+![`zint -b UPCE --compliantheight -d "1123456+12"
+--guardwhitespace`](images/upce_2_gws.svg)
+
 You can adjust the gap between the main symbol and an add-on in multiples of
 the X-dimension by setting `--addongap` (API `option_2`) to a value between 7
 (default) and 12. The height in X-dimensions that the guard bars descend below
 the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
 to a value between 0 and 20 (default 5).
+
+For SVG output, the `--embedfont` option (API `output_options |=
+EMBED_VECTOR_FONT`) will embed the OCR-B font in the file for portability.
 
 ### 6.1.4 EAN (European Article Number) (ISO 15420)
 
@@ -2653,8 +2694,16 @@ If you are encoding an EAN-8 or EAN-13 symbol and your data already includes
 the check digit then you can use symbology `BARCODE_EANX_CHK` (14) which takes
 an 8 or 13-digit input and validates the check digit before encoding.
 
-Options to adjust the add-on gap and the guard bar descent height are the same
-as for [6.1.3.2 UPC Version E].
+Options to add quiet zone indicators, to adjust the add-on gap and the guard bar
+descent height, and to embed the font are the same as for [6.1.3.2 UPC Version
+E]. For instance:
+
+```bash
+zint -b EANX_CHK -d "74323654" --guardwhitespace
+```
+
+![`zint -b EANX_CHK --compliantheight -d "74323654"`
+--guardwhitespace](images/eanx8_gws.svg)
 
 #### 6.1.4.2 SBN, ISBN and ISBN-13
 
@@ -2663,9 +2712,16 @@ as for [6.1.3.2 UPC Version E].
 EAN-13 symbols (also known as Bookland EAN-13) can also be produced from
 9-digit SBN, 10-digit ISBN or 13-digit ISBN-13 data. The relevant check digit
 needs to be present in the input data and will be verified before the symbol is
-generated. In addition EAN-2 and EAN-5 add-on symbols can be added using the +
-character as with UPC symbols, and there are options to adjust the add-on gap
-and the guard bar descent height - see [6.1.3.2 UPC Version E].
+generated.
+
+As with EAN-13, a quiet zone indicator can be added using `--guardwhitespace`:
+
+![`zint -b ISBNX --compliantheight -d "9789295055124"
+--guardwhitespace`](images/isbnx_gws.svg)
+
+EAN-2 and EAN-5 add-on symbols can be added using the + character, and there are
+options to adjust the add-on gap and the guard bar descent height and to embed
+the font - see [6.1.3.2 UPC Version E].
 
 ### 6.1.5 Plessey
 
@@ -2895,9 +2951,9 @@ may be used to signal that AIs are encased in round brackets instead of square
 ones.
 
 Fixed length data should be entered at the appropriate length for correct
-encoding. GS1-128 does not support extended ASCII characters. Check digits for
-GTIN data AI (01) are not generated and need to be included in the input data.
-The following is an example of a valid GS1-128 input:
+encoding. GS1-128 does not support extended ASCII (ISO/IEC 8859-1) characters.
+Check digits for GTIN data AI (01) are not generated and need to be included in
+the input data.  The following is an example of a valid GS1-128 input:
 
 ```bash
 zint -b 16 -d "[01]98898765432106[3202]012345[15]991231"
@@ -3138,11 +3194,11 @@ demonstrated by the symbologies below.
 ![`zint -b CODABLOCKF -d "CODABLOCK F Symbology"
 --rows=3`](images/codablockf.svg)
 
-This is a stacked symbology based on Code 128 which can encode extended ASCII
-code set data up to a maximum length of 2725 characters. The width of the
-Codablock-F symbol can be set using the `--cols` option (API `option_2`). The
-height (number of rows) can be set using the `--rows` option (API `option_1`).
-Zint does not currently support encoding of GS1 data in Codablock-F symbols.
+This is a stacked symbology based on Code 128 which can encode Latin-1 data up
+to a maximum length of 2725 characters. The width of the Codablock-F symbol can
+be set using the `--cols` option (API `option_2`). The height (number of rows)
+can be set using the `--rows` option (API `option_1`). Zint does not currently
+support encoding of GS1 data in Codablock-F symbols.
 
 A separate symbology ID (`BARCODE_HIBC_BLOCKF`) can be used to encode Health
 Industry Barcode (HIBC) data which adds a leading `'+'` character and a
@@ -3154,7 +3210,7 @@ modulo-49 check digit to the encoded data.
 
 Code 16K uses a Code 128 based system which can stack up to 16 rows in a block.
 This gives a maximum data capacity of 77 characters or 154 numerical digits and
-includes two modulo-107 check digits. Code 16K also supports extended ASCII
+includes two modulo-107 check digits. Code 16K also supports ISO/IEC 8859-1
 character encoding in the same manner as Code 128. GS1 data encoding is also
 supported. The minimum number of rows to use can be set using the `--rows`
 option (API `option_1`), with values from 2 to 16.

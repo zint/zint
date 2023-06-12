@@ -1,75 +1,9 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="241" height="332" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="241" height="332" fill="#FFFFFF" />
-      <rect x="4.80" y="0.00" width="4.80" height="158.40" />
-      <rect x="14.40" y="0.00" width="14.40" height="158.40" />
-      <rect x="48.00" y="0.00" width="14.40" height="158.40" />
-      <rect x="72.00" y="0.00" width="4.80" height="158.40" />
-      <rect x="81.60" y="0.00" width="4.80" height="158.40" />
-      <rect x="100.80" y="0.00" width="38.40" height="158.40" />
-      <rect x="148.80" y="0.00" width="4.80" height="158.40" />
-      <rect x="158.40" y="0.00" width="4.80" height="158.40" />
-      <rect x="168.00" y="0.00" width="4.80" height="158.40" />
-      <rect x="192.00" y="0.00" width="4.80" height="158.40" />
-      <rect x="211.20" y="0.00" width="14.40" height="158.40" />
-      <rect x="230.40" y="0.00" width="4.80" height="158.40" />
-      <rect x="28.80" y="158.40" width="19.20" height="4.80" />
-      <rect x="62.40" y="158.40" width="9.60" height="4.80" />
-      <rect x="76.80" y="158.40" width="4.80" height="4.80" />
-      <rect x="86.40" y="158.40" width="4.80" height="4.80" />
-      <rect x="96.00" y="158.40" width="4.80" height="4.80" />
-      <rect x="139.20" y="158.40" width="4.80" height="9.60" />
-      <rect x="153.60" y="158.40" width="4.80" height="4.80" />
-      <rect x="163.20" y="158.40" width="4.80" height="4.80" />
-      <rect x="172.80" y="158.40" width="19.20" height="4.80" />
-      <rect x="196.80" y="158.40" width="14.40" height="4.80" />
-      <rect x="24.00" y="163.20" width="4.80" height="4.80" />
-      <rect x="33.60" y="163.20" width="4.80" height="4.80" />
-      <rect x="43.20" y="163.20" width="4.80" height="4.80" />
-      <rect x="52.80" y="163.20" width="4.80" height="4.80" />
-      <rect x="62.40" y="163.20" width="4.80" height="4.80" />
-      <rect x="72.00" y="163.20" width="4.80" height="4.80" />
-      <rect x="81.60" y="163.20" width="4.80" height="4.80" />
-      <rect x="91.20" y="163.20" width="4.80" height="4.80" />
-      <rect x="100.80" y="163.20" width="4.80" height="9.60" />
-      <rect x="110.40" y="163.20" width="4.80" height="9.60" />
-      <rect x="120.00" y="163.20" width="4.80" height="9.60" />
-      <rect x="129.60" y="163.20" width="4.80" height="9.60" />
-      <rect x="148.80" y="163.20" width="4.80" height="4.80" />
-      <rect x="158.40" y="163.20" width="4.80" height="4.80" />
-      <rect x="168.00" y="163.20" width="4.80" height="4.80" />
-      <rect x="177.60" y="163.20" width="4.80" height="9.60" />
-      <rect x="187.20" y="163.20" width="4.80" height="4.80" />
-      <rect x="196.80" y="163.20" width="4.80" height="4.80" />
-      <rect x="206.40" y="163.20" width="4.80" height="4.80" />
-      <rect x="216.00" y="163.20" width="4.80" height="4.80" />
-      <rect x="19.20" y="168.00" width="4.80" height="4.80" />
-      <rect x="28.80" y="168.00" width="9.60" height="4.80" />
-      <rect x="43.20" y="168.00" width="9.60" height="4.80" />
-      <rect x="62.40" y="168.00" width="19.20" height="4.80" />
-      <rect x="86.40" y="168.00" width="4.80" height="4.80" />
-      <rect x="153.60" y="168.00" width="4.80" height="4.80" />
-      <rect x="163.20" y="168.00" width="4.80" height="4.80" />
-      <rect x="192.00" y="168.00" width="14.40" height="4.80" />
-      <rect x="0.00" y="172.80" width="4.80" height="158.40" />
-      <rect x="9.60" y="172.80" width="4.80" height="158.40" />
-      <rect x="24.00" y="172.80" width="4.80" height="158.40" />
-      <rect x="38.40" y="172.80" width="4.80" height="158.40" />
-      <rect x="52.80" y="172.80" width="9.60" height="158.40" />
-      <rect x="81.60" y="172.80" width="4.80" height="158.40" />
-      <rect x="91.20" y="172.80" width="9.60" height="158.40" />
-      <rect x="139.20" y="172.80" width="14.40" height="158.40" />
-      <rect x="158.40" y="172.80" width="4.80" height="158.40" />
-      <rect x="168.00" y="172.80" width="9.60" height="158.40" />
-      <rect x="182.40" y="172.80" width="9.60" height="158.40" />
-      <rect x="206.40" y="172.80" width="24.00" height="158.40" />
-      <rect x="235.20" y="172.80" width="4.80" height="158.40" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="241" height="332" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="241" height="332" fill="#FFFFFF"/>
+  <path d="M4.8 0h4.8v158.4h-4.8ZM14.4 0h14.4v158.4h-14.4ZM48 0h14.4v158.4h-14.4ZM72 0h4.8v158.4h-4.8ZM81.6 0h4.8v158.4h-4.8ZM100.8 0h38.4v158.4h-38.4ZM148.8 0h4.8v158.4h-4.8ZM158.4 0h4.8v158.4h-4.8ZM168 0h4.8v158.4h-4.8ZM192 0h4.8v158.4h-4.8ZM211.2 0h14.4v158.4h-14.4ZM230.4 0h4.8v158.4h-4.8ZM28.8 158.4h19.2v4.8h-19.2ZM62.4 158.4h9.6v4.8h-9.6ZM76.8 158.4h4.8v4.8h-4.8ZM86.4 158.4h4.8v4.8h-4.8ZM96 158.4h4.8v4.8h-4.8ZM139.2 158.4h4.8v9.6h-4.8ZM153.6 158.4h4.8v4.8h-4.8ZM163.2 158.4h4.8v4.8h-4.8ZM172.8 158.4h19.2v4.8h-19.2ZM196.8 158.4h14.4v4.8h-14.4ZM24 163.2h4.8v4.8h-4.8ZM33.6 163.2h4.8v4.8h-4.8ZM43.2 163.2h4.8v4.8h-4.8ZM52.8 163.2h4.8v4.8h-4.8ZM62.4 163.2h4.8v4.8h-4.8ZM72 163.2h4.8v4.8h-4.8ZM81.6 163.2h4.8v4.8h-4.8ZM91.2 163.2h4.8v4.8h-4.8ZM100.8 163.2h4.8v9.6h-4.8ZM110.4 163.2h4.8v9.6h-4.8ZM120 163.2h4.8v9.6h-4.8ZM129.6 163.2h4.8v9.6h-4.8ZM148.8 163.2h4.8v4.8h-4.8ZM158.4 163.2h4.8v4.8h-4.8ZM168 163.2h4.8v4.8h-4.8ZM177.6 163.2h4.8v9.6h-4.8ZM187.2 163.2h4.8v4.8h-4.8ZM196.8 163.2h4.8v4.8h-4.8ZM206.4 163.2h4.8v4.8h-4.8ZM216 163.2h4.8v4.8h-4.8ZM19.2 168h4.8v4.8h-4.8ZM28.8 168h9.6v4.8h-9.6ZM43.2 168h9.6v4.8h-9.6ZM62.4 168h19.2v4.8h-19.2ZM86.4 168h4.8v4.8h-4.8ZM153.6 168h4.8v4.8h-4.8ZM163.2 168h4.8v4.8h-4.8ZM192 168h14.4v4.8h-14.4ZM0 172.8h4.8v158.4h-4.8ZM9.6 172.8h4.8v158.4h-4.8ZM24 172.8h4.8v158.4h-4.8ZM38.4 172.8h4.8v158.4h-4.8ZM52.8 172.8h9.6v158.4h-9.6ZM81.6 172.8h4.8v158.4h-4.8ZM91.2 172.8h9.6v158.4h-9.6ZM139.2 172.8h14.4v158.4h-14.4ZM158.4 172.8h4.8v158.4h-4.8ZM168 172.8h9.6v158.4h-9.6ZM182.4 172.8h9.6v158.4h-9.6ZM206.4 172.8h24v158.4h-24ZM235.2 172.8h4.8v158.4h-4.8Z"/>
+ </g>
 </svg>

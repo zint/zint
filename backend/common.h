@@ -1,7 +1,7 @@
 /* common.h - Header for all common functions in common.c */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -218,7 +218,7 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
 /* Whether `symbology` can have row binding */
 INTERNAL int is_stackable(const int symbology);
 
-/* Whether `symbology` can have addon (EAN-2 and EAN-5) */
+/* Whether `symbology` can have add-on (EAN-2 and EAN-5) */
 INTERNAL int is_extendable(const int symbology);
 
 /* Whether `symbology` can have composite 2D component data */
@@ -249,11 +249,15 @@ INTERNAL int is_valid_utf8(const unsigned char source[], const int length);
 INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char source[], unsigned int vals[],
                 int *length, const int disallow_4byte);
 
+/* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
+INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
 
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.
    `default_height` does not include height of fixed-height rows (i.e. separators/composite data) */
 INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, const float default_height,
-                const float max_height, const int set_errtxt);
+                const float max_height, const int no_errtxt);
 
 
 /* Removes excess precision from floats - see https://stackoverflow.com/q/503436 */
@@ -265,7 +269,7 @@ INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count);
 
 /* Shallow copies segments, adjusting default ECIs */
 INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
-            struct zint_seg local_segs[]);
+                struct zint_seg local_segs[]);
 
 
 /* Returns red component if any of ultra colour indexing "0CBMRYGKW" */

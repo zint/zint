@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -47,19 +47,20 @@ static void test_large(const testCtx *const p_ctx) {
         /*  1*/ { "A", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { "0", 154, 0, 16, 70 }, /* BS EN 12323:2005 4.1 (l) */
         /*  3*/ { "0", 155, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { "0", 161, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  5*/ { "\001", 77, 0, 16, 70 },
-        /*  6*/ { "\001", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { "\377", 38, 0, 16, 70 }, /* FNC4 + char for each so half 77 as not using double latch */
-        /*  8*/ { "\377", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { "0", 153, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Fails due to odd length */
+        /*  5*/ { "0", 161, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { "\001", 77, 0, 16, 70 },
+        /*  7*/ { "\001", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { "\377", 38, 0, 16, 70 }, /* FNC4 + char for each so half 77 as not using double latch */
+        /*  9*/ { "\377", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -108,11 +109,11 @@ static void test_reader_init(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
 
-    testStart("test_reader_init");
+    testStartSymbol("test_reader_init", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -219,7 +220,7 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[8192];
@@ -228,7 +229,7 @@ static void test_input(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -348,7 +349,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[8192];
@@ -357,7 +358,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

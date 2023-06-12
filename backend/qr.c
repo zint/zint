@@ -1,7 +1,7 @@
 /* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -442,7 +442,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 }
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
 
                 break;
@@ -473,7 +473,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 }
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
 
                 break;
@@ -572,7 +572,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 }
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
 
                 break;
@@ -618,7 +618,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 };
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
 
                 break;
@@ -722,11 +722,11 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     }
 
     if (debug_print) {
-        printf("Resulting codewords:\n\t");
+        fputs("Resulting codewords:\n\t", stdout);
         for (i = 0; i < target_codewords; i++) {
             printf("0x%02X ", datastream[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     return 0; /* Not used */
@@ -755,6 +755,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
 
     /* Suppress some clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.Assign warnings */
     assert(blocks > 0);
+
     short_data_block_length = data_cw / blocks;
     qty_long_blocks = data_cw % blocks;
     qty_short_blocks = blocks - qty_long_blocks;
@@ -762,7 +763,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
 
     /* Suppress some clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult/uninitialized.Assign warnings */
     assert(short_data_block_length > 0);
-    assert(ecc_block_length * blocks == ecc_cw);
+    assert(qty_long_blocks || qty_short_blocks);
 
     data_block = (unsigned char *) z_alloca(short_data_block_length + 1);
     ecc_block = (unsigned char *) z_alloca(ecc_block_length);
@@ -781,10 +782,6 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
             length_this_block = short_data_block_length + 1;
         }
 
-        for (j = 0; j < ecc_block_length; j++) {
-            ecc_block[j] = 0;
-        }
-
         for (j = 0; j < length_this_block; j++) {
             data_block[j] = datastream[in_posn + j]; /* NOLINT false-positive popped up with clang-tidy 14.0.1 */
         }
@@ -797,13 +794,13 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
                 printf("%2X ", data_block[j]);
             }
             if (i < qty_short_blocks) {
-                printf("   ");
+                fputs("   ", stdout);
             }
-            printf(" // ");
+            fputs(" // ", stdout);
             for (j = 0; j < ecc_block_length; j++) {
                 printf("%2X ", ecc_block[ecc_block_length - j - 1]);
             }
-            printf("\n");
+            fputc('\n', stdout);
         }
 
         for (j = 0; j < short_data_block_length; j++) {
@@ -826,15 +823,15 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
         fullstream[j] = interleaved_data[j];
     }
     for (j = 0; j < ecc_cw; j++) {
-        fullstream[j + data_cw] = interleaved_ecc[j]; /* NOLINT ditto clang-tidy 14.0.6 */
+        fullstream[j + data_cw] = interleaved_ecc[j];
     }
 
     if (debug_print) {
-        printf("\nData Stream: \n");
+        fputs("\nData Stream: \n", stdout);
         for (j = 0; j < (data_cw + ecc_cw); j++) {
             printf("%2X ", fullstream[j]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 }
 
@@ -1371,7 +1368,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
                 for (pattern = 0; pattern < 8; pattern++) printf(" %d:%d", pattern, penalty[pattern]);
             }
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
 #ifdef ZINTLOG
@@ -1400,7 +1397,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
 static void qr_add_version_info(unsigned char *grid, const int size, const int version) {
     int i;
 
-    long int version_data = qr_annex_d[version - 7];
+    unsigned int version_data = qr_annex_d[version - 7];
     for (i = 0; i < 6; i++) {
         grid[((size - 11) * size) + i] += (version_data >> (i * 3)) & 0x41;
         grid[((size - 10) * size) + i] += (version_data >> ((i * 3) + 1)) & 0x41;
@@ -2432,7 +2429,7 @@ static int micro_apply_bitmask(unsigned char *grid, const int size, const int us
         if (!user_mask) {
             for (pattern = 0; pattern < 4; pattern++) printf(" %d:%d", pattern, value[pattern]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* Apply mask */

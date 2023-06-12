@@ -1,7 +1,7 @@
 /* codablock.c - Handles Codablock-F */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2022 Harald Oehlmann
+    Copyright (C) 2016-2023 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -645,10 +645,10 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (symbol->debug & ZINT_DEBUG_PRINT) { /* start a new level of local variables */
         int DPos;
-        printf("\nData:");
+        fputs("\nData:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
             fputc(data[DPos], stdout);
-        printf("\n Set:");
+        fputs("\n Set:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++) {
             switch (pSet[DPos] & (CodeA + CodeB + CodeC)) {
             case CodeA: fputc('A', stdout); break;
@@ -657,16 +657,16 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
             default: fputc('.', stdout); break;
             }
         }
-        printf("\nFNC1:");
+        fputs("\nFNC1:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
             fputc((pSet[DPos] & CodeFNC1) == 0 ? '.' : 'X', stdout);
-        printf("\n END:");
+        fputs("\n END:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
             fputc((pSet[DPos] & CEnd) == 0 ? '.' : 'X', stdout);
-        printf("\nShif:");
+        fputs("\nShif:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
             fputc((pSet[DPos] & CShift) == 0 ? '.' : 'X', stdout);
-        printf("\nFILL:");
+        fputs("\nFILL:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
             fputc((pSet[DPos] & CFill) == 0 ? '.' : 'X', stdout);
         fputc('\n', stdout);
@@ -831,14 +831,14 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         /* Dump the output to the screen
          */
-        printf("\nCode 128 Code Numbers:\n");
+        fputs("\nCode 128 Code Numbers:\n", stdout);
         { /* start a new level of local variables */
             int DPos, DPos2;
             for (DPos = 0; DPos < rows; DPos++) {
                 for (DPos2 = 0; DPos2 < columns; DPos2++) {
                     printf("%3d ", (int) (pOutput[DPos * columns + DPos2]));
                 }
-                printf("\n");
+                fputc('\n', stdout);
             }
         }
         printf("rows=%d columns=%d (%d data) fillings=%d\n", rows, columns, columns - 5, fillings);

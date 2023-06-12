@@ -179,6 +179,34 @@ to default 5X</string>
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkUPCEANGuardWhitespace">
+     <property name="text">
+      <string>Guard Whitespace</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Add quiet zone indicators ("&lt;", "&gt;") to Human Readable Text (HRT)
+(ignored if disabled)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
+    <widget class="QCheckBox" name="chkUPCEANEmbedVectorFont">
+     <property name="text">
+      <string>Embed Font (SVG only)</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+     <property name="toolTip">
+      <string>Embed OCR-B font in SVG output
+(ignored if disabled)</string>
+     </property>
+    </widget>
+   </item>
+   <item>
     <spacer name="verticalSpacerUPCEAN">
      <property name="orientation">
       <enum>Qt::Vertical</enum>

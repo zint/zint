@@ -8,5 +8,5 @@ Exec=zint-qt
 Icon=zint-qt
 Terminal=false
 Type=Application
-Categories=Utility;
+Categories=Graphics;2DGraphics;
 Keywords=barcode;studio;

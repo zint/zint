@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="238" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="238" height="118" fill="#FFFFFF"/>
+  <path d="M12 0h4v4h-4ZM20 0h2v8h-2ZM28 0h2v32h-2ZM32 0h6v4h-6ZM40 0h10v4h-10ZM52 0h6v4h-6ZM60 0h2v4h-2ZM66 0h2v4h-2ZM78 0h2v4h-2ZM88 0h2v4h-2ZM96 0h2v4h-2ZM100 0h4v4h-4ZM108 0h2v8h-2ZM116 0h2v32h-2ZM120 0h2v32h-2ZM12 4h6v8h-6ZM32 4h4v4h-4ZM38 4h2v4h-2ZM48 4h8v4h-8ZM58 4h4v4h-4ZM66 4h4v4h-4ZM74 4h2v4h-2ZM78 4h6v4h-6ZM92 4h2v4h-2ZM100 4h6v8h-6ZM20 8h4v8h-4ZM32 8h6v4h-6ZM40 8h4v4h-4ZM48 8h2v4h-2ZM54 8h10v4h-10ZM66 8h2v24h-2ZM74 8h8v4h-8ZM86 8h2v4h-2ZM96 8h2v4h-2ZM108 8h4v8h-4ZM12 12h4v16h-4ZM32 12h4v4h-4ZM40 12h6v4h-6ZM48 12h4v4h-4ZM58 12h2v4h-2ZM70 12h2v4h-2ZM74 12h10v4h-10ZM86 12h10v4h-10ZM100 12h4v16h-4ZM18 16h6v4h-6ZM32 16h10v4h-10ZM46 16h2v4h-2ZM52 16h4v4h-4ZM58 16h6v8h-6ZM72 16h12v4h-12ZM86 16h2v4h-2ZM92 16h4v4h-4ZM106 16h6v4h-6ZM18 20h8v4h-8ZM32 20h4v4h-4ZM40 20h6v4h-6ZM54 20h2v4h-2ZM72 20h4v4h-4ZM78 20h2v4h-2ZM88 20h6v4h-6ZM106 20h8v4h-8ZM20 24h6v8h-6ZM32 24h2v8h-2ZM36 24h2v4h-2ZM44 24h2v4h-2ZM56 24h2v4h-2ZM70 24h8v8h-8ZM80 24h10v4h-10ZM92 24h4v4h-4ZM108 24h6v8h-6ZM12 28h6v4h-6ZM36 28h8v4h-8ZM48 28h2v4h-2ZM52 28h8v4h-8ZM84 28h2v4h-2ZM90 28h8v4h-8ZM100 28h6v4h-6ZM18 32h2v4h-2ZM118 32h2v4h-2ZM16 36h2v4h-2ZM120 36h2v4h-2ZM18 40h2v70h-2ZM118 40h2v70h-2ZM22 44h2v66h-2ZM26 44h4v56h-4ZM32 44h6v56h-6ZM42 44h2v56h-2ZM50 44h2v56h-2ZM60 44h2v56h-2ZM64 44h2v56h-2ZM68 44h4v56h-4ZM78 44h2v56h-2ZM82 44h2v56h-2ZM90 44h4v56h-4ZM96 44h2v56h-2ZM106 44h2v56h-2ZM110 44h2v66h-2ZM114 44h2v66h-2ZM134 62h2v38h-2ZM138 62h4v38h-4ZM144 62h4v38h-4ZM154 62h2v38h-2ZM158 62h2v38h-2ZM162 62h2v38h-2ZM166 62h8v38h-8ZM176 62h2v38h-2ZM182 62h2v38h-2ZM190 62h2v38h-2ZM194 62h2v38h-2ZM198 62h4v38h-4ZM204 62h6v38h-6ZM212 62h2v38h-2ZM218 62h2v38h-2ZM222 62h6v38h-6Z"/>
+  <text x="8.7" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="14">
+   1
+  </text>
+  <text x="67" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   876543
+  </text>
+  <text x="125.3" y="117.2" text-anchor="start" font-family="OCRB, monospace" font-size="14">
+   5
+  </text>
+  <text x="182" y="59.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   56789
+  </text>
+  <text x="225.6" y="59.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+   &gt;
+  </text>
+ </g>
+</svg>

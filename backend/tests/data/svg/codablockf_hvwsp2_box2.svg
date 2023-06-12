@@ -1,88 +1,9 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="258" height="76" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="258" height="76" fill="#FFFFFF" />
-      <rect x="28.00" y="8.00" width="4.00" height="60.00" />
-      <rect x="34.00" y="8.00" width="2.00" height="60.00" />
-      <rect x="44.00" y="8.00" width="2.00" height="60.00" />
-      <rect x="50.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="54.00" y="8.00" width="8.00" height="19.00" />
-      <rect x="64.00" y="8.00" width="6.00" height="19.00" />
-      <rect x="72.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="78.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="82.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="94.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="98.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="106.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="116.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="120.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="128.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="138.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="142.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="150.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="160.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="164.00" y="8.00" width="2.00" height="19.00" />
-      <rect x="172.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="182.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="188.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="196.00" y="8.00" width="4.00" height="19.00" />
-      <rect x="204.00" y="8.00" width="4.00" height="60.00" />
-      <rect x="214.00" y="8.00" width="6.00" height="60.00" />
-      <rect x="222.00" y="8.00" width="2.00" height="60.00" />
-      <rect x="226.00" y="8.00" width="4.00" height="60.00" />
-      <rect x="50.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="54.00" y="29.00" width="8.00" height="18.00" />
-      <rect x="64.00" y="29.00" width="6.00" height="18.00" />
-      <rect x="72.00" y="29.00" width="4.00" height="18.00" />
-      <rect x="82.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="88.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="94.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="98.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="106.00" y="29.00" width="4.00" height="18.00" />
-      <rect x="116.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="120.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="128.00" y="29.00" width="4.00" height="18.00" />
-      <rect x="138.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="142.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="150.00" y="29.00" width="4.00" height="18.00" />
-      <rect x="160.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="164.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="172.00" y="29.00" width="4.00" height="18.00" />
-      <rect x="182.00" y="29.00" width="8.00" height="18.00" />
-      <rect x="192.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="200.00" y="29.00" width="2.00" height="18.00" />
-      <rect x="50.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="54.00" y="49.00" width="8.00" height="19.00" />
-      <rect x="64.00" y="49.00" width="6.00" height="19.00" />
-      <rect x="72.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="76.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="84.00" y="49.00" width="6.00" height="19.00" />
-      <rect x="94.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="98.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="106.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="116.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="120.00" y="49.00" width="6.00" height="19.00" />
-      <rect x="128.00" y="49.00" width="8.00" height="19.00" />
-      <rect x="138.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="146.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="152.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="160.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="168.00" y="49.00" width="6.00" height="19.00" />
-      <rect x="178.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="182.00" y="49.00" width="4.00" height="19.00" />
-      <rect x="192.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="198.00" y="49.00" width="2.00" height="19.00" />
-      <rect x="50.00" y="27.00" width="154.00" height="2.00" />
-      <rect x="50.00" y="47.00" width="154.00" height="2.00" />
-      <rect x="0.00" y="4.00" width="258.00" height="4.00" />
-      <rect x="0.00" y="68.00" width="258.00" height="4.00" />
-      <rect x="0.00" y="8.00" width="4.00" height="60.00" />
-      <rect x="254.00" y="8.00" width="4.00" height="60.00" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="258" height="76" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="258" height="76" fill="#FFFFFF"/>
+  <path d="M28 8h4v60h-4ZM34 8h2v60h-2ZM44 8h2v60h-2ZM50 8h2v19h-2ZM54 8h8v19h-8ZM64 8h6v19h-6ZM72 8h2v19h-2ZM78 8h2v19h-2ZM82 8h4v19h-4ZM94 8h2v19h-2ZM98 8h2v19h-2ZM106 8h4v19h-4ZM116 8h2v19h-2ZM120 8h2v19h-2ZM128 8h4v19h-4ZM138 8h2v19h-2ZM142 8h2v19h-2ZM150 8h4v19h-4ZM160 8h2v19h-2ZM164 8h2v19h-2ZM172 8h4v19h-4ZM182 8h4v19h-4ZM188 8h4v19h-4ZM196 8h4v19h-4ZM204 8h4v60h-4ZM214 8h6v60h-6ZM222 8h2v60h-2ZM226 8h4v60h-4ZM50 29h2v18h-2ZM54 29h8v18h-8ZM64 29h6v18h-6ZM72 29h4v18h-4ZM82 29h2v18h-2ZM88 29h2v18h-2ZM94 29h2v18h-2ZM98 29h2v18h-2ZM106 29h4v18h-4ZM116 29h2v18h-2ZM120 29h2v18h-2ZM128 29h4v18h-4ZM138 29h2v18h-2ZM142 29h2v18h-2ZM150 29h4v18h-4ZM160 29h2v18h-2ZM164 29h2v18h-2ZM172 29h4v18h-4ZM182 29h8v18h-8ZM192 29h2v18h-2ZM200 29h2v18h-2ZM50 49h2v19h-2ZM54 49h8v19h-8ZM64 49h6v19h-6ZM72 49h2v19h-2ZM76 49h4v19h-4ZM84 49h6v19h-6ZM94 49h2v19h-2ZM98 49h2v19h-2ZM106 49h4v19h-4ZM116 49h2v19h-2ZM120 49h6v19h-6ZM128 49h8v19h-8ZM138 49h4v19h-4ZM146 49h4v19h-4ZM152 49h4v19h-4ZM160 49h4v19h-4ZM168 49h6v19h-6ZM178 49h2v19h-2ZM182 49h4v19h-4ZM192 49h2v19h-2ZM198 49h2v19h-2ZM50 27h154v2h-154ZM50 47h154v2h-154ZM0 4h258v4h-258ZM0 68h258v4h-258ZM0 8h4v60h-4ZM254 8h4v60h-4Z"/>
+ </g>
 </svg>

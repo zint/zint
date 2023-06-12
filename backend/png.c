@@ -68,7 +68,7 @@ static void wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
 INTERNAL void wpng_error_handler_test(png_structp png_ptr, png_const_charp msg) {
-	wpng_error_handler(png_ptr, msg);
+    wpng_error_handler(png_ptr, msg);
 }
 #endif
 
@@ -349,8 +349,5 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     return 0;
 }
-#else
-/* https://stackoverflow.com/a/26541331 Suppresses gcc warning ISO C forbids an empty translation unit */
-typedef int make_iso_compilers_happy;
 /* vim: set ts=4 sw=4 et : */
 #endif /* ZINT_NO_PNG */

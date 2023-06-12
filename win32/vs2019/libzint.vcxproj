@@ -183,7 +183,7 @@
     <ClInclude Include="..\..\backend\eci.h" />
     <ClInclude Include="..\..\backend\eci_sb.h" />
     <ClInclude Include="..\..\backend\emf.h" />
-    <ClInclude Include="..\..\backend\font.h" />
+    <ClInclude Include="..\..\backend\raster_font.h" />
     <ClInclude Include="..\..\backend\gb18030.h" />
     <ClInclude Include="..\..\backend\gb2312.h" />
     <ClInclude Include="..\..\backend\gbk.h" />

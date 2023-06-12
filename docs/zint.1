@@ -14,7 +14,7 @@
 . ftr VB CB
 . ftr VBI CBI
 .\}
-.TH "ZINT" "1" "May 2023" "Version 2.12.0.9" ""
+.TH "ZINT" "1" "June 2023" "Version 2.12.0.9" ""
 .hy
 .SH NAME
 .PP
@@ -166,6 +166,10 @@ ECIs are supported by Aztec Code, Code One, Data Matrix, DotCode, Grid
 Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417, QR Code, rMQR and
 Ultracode.
 .TP
+\f[V]--embedfont\f[R]
+For vector output, embed the font in the file for portability.
+Currently only available for SVG output of EAN/UPC barcodes.
+.TP
 \f[V]--esc\f[R]
 Process escape characters in the input data.
 The escape sequences are:
@@ -247,6 +251,10 @@ separator instead of \f[V]FNC1\f[R].
 For EAN/UPC symbols, set the height the guard bars descend below the
 main bars, where \f[I]NUMBER\f[R] is in multiples of the X-dimension.
 \f[I]NUMBER\f[R] may be floating-point.
+.TP
+\f[V]--guardwhitespace\f[R]
+For EAN/UPC symbols, add quiet zone indicators \f[V]\[dq]<\[dq]\f[R]
+and/or \f[V]\[dq]>\[dq]\f[R] to HRT where applicable.
 .TP
 \f[V]--height=NUMBER\f[R]
 Set the height of the symbol in multiples of the X-dimension.

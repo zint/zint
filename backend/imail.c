@@ -1,7 +1,7 @@
 /* imail.c - Handles Intelligent Mail (aka OneCode) for USPS */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -248,8 +248,8 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     int error_number = 0;
     int i, j, read;
     char zip[35], tracker[35], temp[2];
-    large_int accum;
-    large_int byte_array_reg;
+    large_uint accum;
+    large_uint byte_array_reg;
     unsigned char byte_array[13];
     unsigned short usps_crc;
     unsigned int codeword[10];

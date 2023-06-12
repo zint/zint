@@ -1,181 +1,172 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="68" height="46" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#FF0000">
-      <rect x="0" y="0" width="68" height="46" fill="#0000FF" />
-      <rect x="10.00" y="10.00" width="48.00" height="2.00" fill="#000000" />
-      <rect x="10.00" y="12.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="12.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="16.00" y="12.00" width="2.00" height="22.00" fill="#000000" />
-      <rect x="18.00" y="12.00" width="2.00" height="22.00" fill="#ffffff" />
-      <rect x="20.00" y="12.00" width="4.00" height="2.00" fill="#00ff00" />
-      <rect x="24.00" y="12.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="26.00" y="12.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="28.00" y="12.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="30.00" y="12.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="32.00" y="12.00" width="16.00" height="2.00" fill="#00ffff" />
-      <rect x="48.00" y="12.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="12.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="54.00" y="12.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="56.00" y="12.00" width="2.00" height="22.00" fill="#000000" />
-      <rect x="10.00" y="14.00" width="4.00" height="2.00" fill="#000000" />
-      <rect x="14.00" y="14.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="20.00" y="14.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="22.00" y="14.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="24.00" y="14.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="26.00" y="14.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="28.00" y="14.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="30.00" y="14.00" width="18.00" height="2.00" fill="#00ff00" />
-      <rect x="48.00" y="14.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="50.00" y="14.00" width="4.00" height="2.00" fill="#00ff00" />
-      <rect x="54.00" y="14.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="10.00" y="16.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="16.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="16.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="20.00" y="16.00" width="4.00" height="2.00" fill="#00ff00" />
-      <rect x="24.00" y="16.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="26.00" y="16.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="28.00" y="16.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="30.00" y="16.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="32.00" y="16.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="36.00" y="16.00" width="6.00" height="2.00" fill="#ff00ff" />
-      <rect x="42.00" y="16.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="46.00" y="16.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="48.00" y="16.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="16.00" width="4.00" height="2.00" fill="#ff00ff" />
-      <rect x="54.00" y="16.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="10.00" y="18.00" width="4.00" height="2.00" fill="#000000" />
-      <rect x="14.00" y="18.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="20.00" y="18.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="22.00" y="18.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="24.00" y="18.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="26.00" y="18.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="30.00" y="18.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="32.00" y="18.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="34.00" y="18.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="36.00" y="18.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="38.00" y="18.00" width="6.00" height="2.00" fill="#ffff00" />
-      <rect x="44.00" y="18.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="46.00" y="18.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="48.00" y="18.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="50.00" y="18.00" width="4.00" height="2.00" fill="#ffff00" />
-      <rect x="54.00" y="18.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="10.00" y="20.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="20.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="20.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="20.00" y="20.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="22.00" y="20.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="24.00" y="20.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="26.00" y="20.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="28.00" y="20.00" width="4.00" height="2.00" fill="#ffff00" />
-      <rect x="32.00" y="20.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="34.00" y="20.00" width="4.00" height="2.00" fill="#ffff00" />
-      <rect x="38.00" y="20.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="40.00" y="20.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="42.00" y="20.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="44.00" y="20.00" width="4.00" height="2.00" fill="#ffff00" />
-      <rect x="48.00" y="20.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="20.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="52.00" y="20.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="54.00" y="20.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="10.00" y="22.00" width="4.00" height="2.00" fill="#000000" />
-      <rect x="14.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="20.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="22.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="24.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="26.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="28.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="30.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="32.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="34.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="36.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="38.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="40.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="42.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="44.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="46.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="48.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="50.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="52.00" y="22.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="54.00" y="22.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="10.00" y="24.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="24.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="24.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="20.00" y="24.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="22.00" y="24.00" width="6.00" height="2.00" fill="#00ff00" />
-      <rect x="28.00" y="24.00" width="20.00" height="2.00" fill="#00ffff" />
-      <rect x="48.00" y="24.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="24.00" width="6.00" height="2.00" fill="#00ffff" />
-      <rect x="10.00" y="26.00" width="4.00" height="2.00" fill="#000000" />
-      <rect x="14.00" y="26.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="20.00" y="26.00" width="8.00" height="2.00" fill="#ff00ff" />
-      <rect x="28.00" y="26.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="30.00" y="26.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="32.00" y="26.00" width="16.00" height="2.00" fill="#00ff00" />
-      <rect x="48.00" y="26.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="50.00" y="26.00" width="4.00" height="2.00" fill="#00ff00" />
-      <rect x="54.00" y="26.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="10.00" y="28.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="28.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="28.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="20.00" y="28.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="22.00" y="28.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="24.00" y="28.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="26.00" y="28.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="28.00" y="28.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="30.00" y="28.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="34.00" y="28.00" width="6.00" height="2.00" fill="#ff00ff" />
-      <rect x="40.00" y="28.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="44.00" y="28.00" width="4.00" height="2.00" fill="#ff00ff" />
-      <rect x="48.00" y="28.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="28.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="52.00" y="28.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="54.00" y="28.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="10.00" y="30.00" width="4.00" height="2.00" fill="#000000" />
-      <rect x="14.00" y="30.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="20.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="22.00" y="30.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="24.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="26.00" y="30.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="30.00" y="30.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="32.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="34.00" y="30.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="38.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="40.00" y="30.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="42.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="44.00" y="30.00" width="4.00" height="2.00" fill="#00ffff" />
-      <rect x="48.00" y="30.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="50.00" y="30.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="52.00" y="30.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="54.00" y="30.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="10.00" y="32.00" width="2.00" height="2.00" fill="#000000" />
-      <rect x="12.00" y="32.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="14.00" y="32.00" width="2.00" height="2.00" fill="#00ffff" />
-      <rect x="20.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="22.00" y="32.00" width="4.00" height="2.00" fill="#ff00ff" />
-      <rect x="26.00" y="32.00" width="4.00" height="2.00" fill="#ffff00" />
-      <rect x="30.00" y="32.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="32.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="34.00" y="32.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="36.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="38.00" y="32.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="40.00" y="32.00" width="4.00" height="2.00" fill="#00ff00" />
-      <rect x="44.00" y="32.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="46.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="48.00" y="32.00" width="2.00" height="2.00" fill="#ffffff" />
-      <rect x="50.00" y="32.00" width="2.00" height="2.00" fill="#ff00ff" />
-      <rect x="52.00" y="32.00" width="2.00" height="2.00" fill="#00ff00" />
-      <rect x="54.00" y="32.00" width="2.00" height="2.00" fill="#ffff00" />
-      <rect x="10.00" y="34.00" width="48.00" height="2.00" fill="#000000" />
-      <rect x="0.00" y="0.00" width="68.00" height="6.00" />
-      <rect x="0.00" y="40.00" width="68.00" height="6.00" />
-      <rect x="0.00" y="6.00" width="6.00" height="34.00" />
-      <rect x="62.00" y="6.00" width="6.00" height="34.00" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="68" height="46" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#FF0000">
+  <rect x="0" y="0" width="68" height="46" fill="#0000FF"/>
+  <path d="M10 10h48v2h-48ZM10 12h2v2h-2Z" fill="#000000"/>
+  <path d="M12 12h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 12h2v2h-2Z" fill="#ffff00"/>
+  <path d="M16 12h2v22h-2Z" fill="#000000"/>
+  <path d="M18 12h2v22h-2Z" fill="#ffffff"/>
+  <path d="M20 12h4v2h-4Z" fill="#00ff00"/>
+  <path d="M24 12h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M26 12h2v2h-2Z" fill="#00ffff"/>
+  <path d="M28 12h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M30 12h2v2h-2Z" fill="#ffff00"/>
+  <path d="M32 12h16v2h-16Z" fill="#00ffff"/>
+  <path d="M48 12h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 12h4v2h-4Z" fill="#00ffff"/>
+  <path d="M54 12h2v2h-2Z" fill="#ffff00"/>
+  <path d="M56 12h2v22h-2ZM10 14h4v2h-4Z" fill="#000000"/>
+  <path d="M14 14h2v2h-2Z" fill="#00ff00"/>
+  <path d="M20 14h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M22 14h2v2h-2Z" fill="#ffff00"/>
+  <path d="M24 14h2v2h-2Z" fill="#00ff00"/>
+  <path d="M26 14h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M28 14h2v2h-2Z" fill="#ffff00"/>
+  <path d="M30 14h18v2h-18Z" fill="#00ff00"/>
+  <path d="M48 14h2v2h-2Z" fill="#000000"/>
+  <path d="M50 14h4v2h-4Z" fill="#00ff00"/>
+  <path d="M54 14h2v2h-2Z" fill="#00ffff"/>
+  <path d="M10 16h2v2h-2Z" fill="#000000"/>
+  <path d="M12 16h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 16h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M20 16h4v2h-4Z" fill="#00ff00"/>
+  <path d="M24 16h2v2h-2Z" fill="#00ffff"/>
+  <path d="M26 16h2v2h-2Z" fill="#ffff00"/>
+  <path d="M28 16h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M30 16h2v2h-2Z" fill="#ffff00"/>
+  <path d="M32 16h4v2h-4Z" fill="#00ffff"/>
+  <path d="M36 16h6v2h-6Z" fill="#ff00ff"/>
+  <path d="M42 16h4v2h-4Z" fill="#00ffff"/>
+  <path d="M46 16h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M48 16h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 16h4v2h-4Z" fill="#ff00ff"/>
+  <path d="M54 16h2v2h-2Z" fill="#ffff00"/>
+  <path d="M10 18h4v2h-4Z" fill="#000000"/>
+  <path d="M14 18h2v2h-2Z" fill="#00ff00"/>
+  <path d="M20 18h2v2h-2Z" fill="#ffff00"/>
+  <path d="M22 18h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M24 18h2v2h-2Z" fill="#ffff00"/>
+  <path d="M26 18h4v2h-4Z" fill="#00ffff"/>
+  <path d="M30 18h2v2h-2Z" fill="#00ff00"/>
+  <path d="M32 18h2v2h-2Z" fill="#ffff00"/>
+  <path d="M34 18h2v2h-2Z" fill="#00ff00"/>
+  <path d="M36 18h2v2h-2Z" fill="#00ffff"/>
+  <path d="M38 18h6v2h-6Z" fill="#ffff00"/>
+  <path d="M44 18h2v2h-2Z" fill="#00ff00"/>
+  <path d="M46 18h2v2h-2Z" fill="#00ffff"/>
+  <path d="M48 18h2v2h-2Z" fill="#000000"/>
+  <path d="M50 18h4v2h-4Z" fill="#ffff00"/>
+  <path d="M54 18h2v2h-2Z" fill="#00ffff"/>
+  <path d="M10 20h2v2h-2Z" fill="#000000"/>
+  <path d="M12 20h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 20h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M20 20h2v2h-2Z" fill="#00ffff"/>
+  <path d="M22 20h2v2h-2Z" fill="#ffff00"/>
+  <path d="M24 20h2v2h-2Z" fill="#00ffff"/>
+  <path d="M26 20h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M28 20h4v2h-4Z" fill="#ffff00"/>
+  <path d="M32 20h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M34 20h4v2h-4Z" fill="#ffff00"/>
+  <path d="M38 20h2v2h-2Z" fill="#00ffff"/>
+  <path d="M40 20h2v2h-2Z" fill="#00ff00"/>
+  <path d="M42 20h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M44 20h4v2h-4Z" fill="#ffff00"/>
+  <path d="M48 20h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 20h2v2h-2Z" fill="#00ffff"/>
+  <path d="M52 20h2v2h-2Z" fill="#00ff00"/>
+  <path d="M54 20h2v2h-2Z" fill="#ffff00"/>
+  <path d="M10 22h4v2h-4Z" fill="#000000"/>
+  <path d="M14 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M20 22h2v2h-2Z" fill="#000000"/>
+  <path d="M22 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M24 22h2v2h-2Z" fill="#000000"/>
+  <path d="M26 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M28 22h2v2h-2Z" fill="#000000"/>
+  <path d="M30 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M32 22h2v2h-2Z" fill="#000000"/>
+  <path d="M34 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M36 22h2v2h-2Z" fill="#000000"/>
+  <path d="M38 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M40 22h2v2h-2Z" fill="#000000"/>
+  <path d="M42 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M44 22h2v2h-2Z" fill="#000000"/>
+  <path d="M46 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M48 22h2v2h-2Z" fill="#000000"/>
+  <path d="M50 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M52 22h2v2h-2Z" fill="#000000"/>
+  <path d="M54 22h2v2h-2Z" fill="#ffffff"/>
+  <path d="M10 24h2v2h-2Z" fill="#000000"/>
+  <path d="M12 24h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 24h2v2h-2Z" fill="#00ff00"/>
+  <path d="M20 24h2v2h-2Z" fill="#00ffff"/>
+  <path d="M22 24h6v2h-6Z" fill="#00ff00"/>
+  <path d="M28 24h20v2h-20Z" fill="#00ffff"/>
+  <path d="M48 24h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 24h6v2h-6Z" fill="#00ffff"/>
+  <path d="M10 26h4v2h-4Z" fill="#000000"/>
+  <path d="M14 26h2v2h-2Z" fill="#ffff00"/>
+  <path d="M20 26h8v2h-8Z" fill="#ff00ff"/>
+  <path d="M28 26h2v2h-2Z" fill="#ffff00"/>
+  <path d="M30 26h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M32 26h16v2h-16Z" fill="#00ff00"/>
+  <path d="M48 26h2v2h-2Z" fill="#000000"/>
+  <path d="M50 26h4v2h-4Z" fill="#00ff00"/>
+  <path d="M54 26h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M10 28h2v2h-2Z" fill="#000000"/>
+  <path d="M12 28h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 28h2v2h-2Z" fill="#00ffff"/>
+  <path d="M20 28h2v2h-2Z" fill="#00ff00"/>
+  <path d="M22 28h2v2h-2Z" fill="#ffff00"/>
+  <path d="M24 28h2v2h-2Z" fill="#00ffff"/>
+  <path d="M26 28h2v2h-2Z" fill="#00ff00"/>
+  <path d="M28 28h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M30 28h4v2h-4Z" fill="#00ffff"/>
+  <path d="M34 28h6v2h-6Z" fill="#ff00ff"/>
+  <path d="M40 28h4v2h-4Z" fill="#00ffff"/>
+  <path d="M44 28h4v2h-4Z" fill="#ff00ff"/>
+  <path d="M48 28h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 28h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M52 28h2v2h-2Z" fill="#00ffff"/>
+  <path d="M54 28h2v2h-2Z" fill="#ffff00"/>
+  <path d="M10 30h4v2h-4Z" fill="#000000"/>
+  <path d="M14 30h2v2h-2Z" fill="#00ff00"/>
+  <path d="M20 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M22 30h2v2h-2Z" fill="#00ff00"/>
+  <path d="M24 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M26 30h4v2h-4Z" fill="#00ffff"/>
+  <path d="M30 30h2v2h-2Z" fill="#00ff00"/>
+  <path d="M32 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M34 30h4v2h-4Z" fill="#00ffff"/>
+  <path d="M38 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M40 30h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M42 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M44 30h4v2h-4Z" fill="#00ffff"/>
+  <path d="M48 30h2v2h-2Z" fill="#000000"/>
+  <path d="M50 30h2v2h-2Z" fill="#ffff00"/>
+  <path d="M52 30h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M54 30h2v2h-2Z" fill="#00ffff"/>
+  <path d="M10 32h2v2h-2Z" fill="#000000"/>
+  <path d="M12 32h2v2h-2Z" fill="#ffffff"/>
+  <path d="M14 32h2v2h-2Z" fill="#00ffff"/>
+  <path d="M20 32h2v2h-2Z" fill="#00ff00"/>
+  <path d="M22 32h4v2h-4Z" fill="#ff00ff"/>
+  <path d="M26 32h4v2h-4Z" fill="#ffff00"/>
+  <path d="M30 32h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M32 32h2v2h-2Z" fill="#00ff00"/>
+  <path d="M34 32h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M36 32h2v2h-2Z" fill="#00ff00"/>
+  <path d="M38 32h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M40 32h4v2h-4Z" fill="#00ff00"/>
+  <path d="M44 32h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M46 32h2v2h-2Z" fill="#00ff00"/>
+  <path d="M48 32h2v2h-2Z" fill="#ffffff"/>
+  <path d="M50 32h2v2h-2Z" fill="#ff00ff"/>
+  <path d="M52 32h2v2h-2Z" fill="#00ff00"/>
+  <path d="M54 32h2v2h-2Z" fill="#ffff00"/>
+  <path d="M10 34h48v2h-48Z" fill="#000000"/>
+  <path d="M0 0h68v6h-68ZM0 40h68v6h-68ZM0 6h6v34h-6ZM62 6h6v34h-6Z"/>
+ </g>
 </svg>

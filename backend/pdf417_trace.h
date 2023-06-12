@@ -1,7 +1,7 @@
 /* pdf417_trace.h - Trace routines for optimal PDF417 optimization algorithm */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -51,11 +51,11 @@ static void PDF_TRACE_EdgeToString(char *buf, const unsigned char *source, const
     if (buf) {
         sprintf(buf, "%d_%c %c(%d,%d) %d(%d,%d,%d) -> %d_%c",
             edge->from, pdf_smodes[previousMode], pdf_smodes[edge->mode], source[edge->from], edge->len, edge->size
-			+ edge->unit_size, edge->units, edge->unit_size, edge->size, edge->from + 1, pdf_smodes[edge->mode]);
+            + edge->unit_size, edge->units, edge->unit_size, edge->size, edge->from + 1, pdf_smodes[edge->mode]);
     } else {
         printf("%d_%c %c(%d,%d) %d(%d,%d,%d) -> %d_%c",
             edge->from, pdf_smodes[previousMode], pdf_smodes[edge->mode], source[edge->from], edge->len, edge->size
-			+ edge->unit_size, edge->units, edge->unit_size, edge->size, edge->from + 1, pdf_smodes[edge->mode]);
+            + edge->unit_size, edge->units, edge->unit_size, edge->size, edge->from + 1, pdf_smodes[edge->mode]);
     }
 }
 

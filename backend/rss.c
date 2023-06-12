@@ -1,7 +1,7 @@
 /* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -123,14 +123,14 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
         for (elmWidth = 1, narrowMask |= (1 << bar);
                 ;
                 elmWidth++, narrowMask &= ~(1 << bar)) {
-            /* get all combinations */
+            /* Get all combinations */
             subVal = rss_combins(n - elmWidth - 1, elements - bar - 2);
-            /* less combinations with no single-module element */
+            /* Less combinations with no single-module element */
             if ((!noNarrow) && (!narrowMask)
                     && (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
                 subVal -= rss_combins(n - elmWidth - (elements - bar), elements - bar - 2);
             }
-            /* less combinations with elements > maxVal */
+            /* Less combinations with elements > maxVal */
             if (elements - bar - 1 > 1) {
                 lessVal = 0;
                 for (mxwElement = n - elmWidth - (elements - bar - 2);
@@ -285,7 +285,7 @@ INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_
 /* GS1 DataBar Omnidirectional/Truncated/Stacked, allowing for composite if `cc_rows` set */
 INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     int error_number = 0, i;
-    large_int accum;
+    large_uint accum;
     uint64_t left_pair, right_pair;
     int data_character[4] = {0}, data_group[4] = {0}, v_odd[4], v_even[4];
     int data_widths[8][4], checksum, c_left, c_right, total_widths[46], writer;
@@ -313,7 +313,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         length--; /* Ignore */
     }
 
-    /* make some room for a separator row for composite symbols */
+    /* Make some room for a separator row for composite symbols */
     switch (symbol->symbology) {
         case BARCODE_DBAR_OMN_CC:
         case BARCODE_DBAR_STK_CC:
@@ -477,7 +477,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             symbol->width = writer;
         }
         if (symbol->symbology == BARCODE_DBAR_OMN_CC) {
-            /* separator pattern for composite symbol */
+            /* Separator pattern for composite symbol */
             dbar_omn_separator(symbol, 96, separator_row, 1 /*above*/, 18, 63, 0 /*bottom_finder_value_3*/);
         }
         symbol->rows = symbol->rows + 1;
@@ -502,7 +502,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
 
     } else if ((symbol->symbology == BARCODE_DBAR_STK) || (symbol->symbology == BARCODE_DBAR_STK_CC)) {
-        /* top row */
+        /* Top row */
         writer = 0;
         latch = 0;
         for (i = 0; i < 23; i++) {
@@ -512,7 +512,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         unset_module(symbol, symbol->rows, writer + 1);
         symbol->row_height[symbol->rows] = 5.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 5X */
 
-        /* bottom row */
+        /* Bottom row */
         symbol->rows = symbol->rows + 2;
         set_module(symbol, symbol->rows, 0);
         unset_module(symbol, symbol->rows, 1);
@@ -523,7 +523,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->row_height[symbol->rows] = 7.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 7X */
 
-        /* separator pattern */
+        /* Separator pattern */
         /* See #183 for this interpretation of ISO/IEC 24724:2011 5.3.2.1 */
         for (i = 1; i < 46; i++) {
             if (module_is_set(symbol, symbol->rows - 2, i) == module_is_set(symbol, symbol->rows, i)) {
@@ -542,7 +542,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->row_height[symbol->rows - 1] = 1;
 
         if (symbol->symbology == BARCODE_DBAR_STK_CC) {
-            /* separator pattern for composite symbol */
+            /* Separator pattern for composite symbol */
             dbar_omn_separator(symbol, 50, separator_row, 1 /*above*/, 18, 0, 0 /*bottom_finder_value_3*/);
         }
         symbol->rows = symbol->rows + 1;
@@ -555,7 +555,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
 
     } else if ((symbol->symbology == BARCODE_DBAR_OMNSTK) || (symbol->symbology == BARCODE_DBAR_OMNSTK_CC)) {
-        /* top row */
+        /* Top row */
         writer = 0;
         latch = 0;
         for (i = 0; i < 23; i++) {
@@ -564,7 +564,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         set_module(symbol, symbol->rows, writer);
         unset_module(symbol, symbol->rows, writer + 1);
 
-        /* bottom row */
+        /* Bottom row */
         symbol->rows = symbol->rows + 4;
         set_module(symbol, symbol->rows, 0);
         unset_module(symbol, symbol->rows, 1);
@@ -574,17 +574,17 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
         }
 
-        /* middle separator */
+        /* Middle separator */
         for (i = 5; i < 46; i += 2) {
             set_module(symbol, symbol->rows - 2, i);
         }
         symbol->row_height[symbol->rows - 2] = 1;
 
-        /* top separator */
+        /* Top separator */
         dbar_omn_separator(symbol, 50, symbol->rows - 3, -1 /*below*/, 18, 0, 0 /*bottom_finder_value_3*/);
         symbol->row_height[symbol->rows - 3] = 1;
 
-        /* bottom separator */
+        /* Bottom separator */
         /* 17 == 2 (guard) + 15 (inner char); +2 to skip over finder elements 4 & 5 (right to left) */
         dbar_omn_separator(symbol, 50, symbol->rows - 1, 1 /*above*/, 17 + 2, 0, c_right == 3);
         symbol->row_height[symbol->rows - 1] = 1;
@@ -593,7 +593,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
 
         if (symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
-            /* separator pattern for composite symbol */
+            /* Separator pattern for composite symbol */
             dbar_omn_separator(symbol, 50, separator_row, 1 /*above*/, 18, 0, 0 /*bottom_finder_value_3*/);
         }
         symbol->rows = symbol->rows + 1;
@@ -621,7 +621,7 @@ INTERNAL int dbar_omn(struct zint_symbol *symbol, unsigned char source[], int le
 /* GS1 DataBar Limited, allowing for composite if `cc_rows` set  */
 INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     int error_number = 0, i;
-    large_int accum;
+    large_uint accum;
     uint64_t left_character, right_character;
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
     int left_widths[14], right_widths[14];
@@ -657,7 +657,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    /* make some room for a separator row for composite symbols */
+    /* Make some room for a separator row for composite symbols */
     if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
         separator_row = symbol->rows;
         symbol->row_height[separator_row] = 1;
@@ -778,7 +778,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     }
     symbol->rows = symbol->rows + 1;
 
-    /* add separator pattern if composite symbol */
+    /* Add separator pattern if composite symbol */
     if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
         for (i = 4; i < 70; i++) {
             if (!(module_is_set(symbol, separator_row + 1, i))) {
@@ -838,22 +838,22 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     int cdf_bp_start; /* Compressed data field start - debug only */
 
     /* Decide whether a compressed data field is required and if so what
-    method to use - method 2 = no compressed data field */
+       method to use - method 2 = no compressed data field */
 
     if ((length >= 16) && ((source[0] == '0') && (source[1] == '1'))) {
         /* (01) and other AIs */
         encoding_method = 1;
-        if (debug_print) printf("Choosing Method 1\n");
+        if (debug_print) fputs("Choosing Method 1\n", stdout);
     } else {
-        /* any AIs */
+        /* Any AIs */
         encoding_method = 2;
-        if (debug_print) printf("Choosing Method 2\n");
+        if (debug_print) fputs("Choosing Method 2\n", stdout);
     }
 
     if (((length >= 20) && (encoding_method == 1)) && ((source[2] == '9') && (source[16] == '3'))) {
         /* Possibly encoding method > 2 */
 
-        if (debug_print) printf("Checking for other methods\n");
+        if (debug_print) fputs("Checking for other methods\n", stdout);
 
         if ((length >= 26) && (source[17] == '1') && (source[18] == '0')) {
             /* Methods 3, 7, 9, 11 and 13 */
@@ -948,18 +948,17 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         case 6: bp = bin_append_posn(0x34, 7, binary_string, bp); /* "01101XX" */
             read_posn = 23;
             break;
-        default: /* modes 7 to 14 */
+        default: /* Modes 7 to 14 */
             bp = bin_append_posn(56 + (encoding_method - 7), 7, binary_string, bp);
             read_posn = length; /* 34 or 26 */
             break;
     }
     if (debug_print) printf("Setting binary = %.*s\n", bp, binary_string);
 
-    /* Variable length symbol bit field is just given a place holder (XX)
-    for the time being */
+    /* Variable length symbol bit field is just given a place holder (XX) for the time being */
 
-    /* Verify that the data to be placed in the compressed data field is all
-    numeric data before carrying out compression */
+    /* Verify that the data to be placed in the compressed data field is all numeric data
+       before carrying out compression */
     for (i = 0; i < read_posn; i++) {
         if (!z_isdigit(source[i])) {
             if (source[i] != '[') {
@@ -972,7 +971,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
     /* Now encode the compressed data field */
 
-    if (debug_print) printf("Proceeding to encode data\n");
+    if (debug_print) fputs("Proceeding to encode data\n", stdout);
     cdf_bp_start = bp; /* Debug use only */
 
     if (encoding_method == 1) {
@@ -985,10 +984,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
 
     } else if ((encoding_method == 3) || (encoding_method == 4)) {
-        /* Encoding method field "0100" - variable weight item
-        (0,001 kilogram icrements) */
-        /* Encoding method field "0101" - variable weight item (0,01 or
-        0,001 pound increment) */
+        /* Encoding method field "0100" - variable weight item (0,001 kilogram increments) */
+        /* Encoding method field "0101" - variable weight item (0,01 or 0,001 pound increment) */
 
         for (i = 3; i < 15; i += 3) { /* Leading "019" stripped, and final check digit excluded */
             bp = bin_append_posn(to_int(source + i, 3), 10, binary_string, bp);
@@ -1002,8 +999,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
     } else if ((encoding_method == 5) || (encoding_method == 6)) {
         /* Encoding method "01100" - variable measure item and price */
-        /* Encoding method "01101" - variable measure item and price with ISO 4217
-        Currency Code */
+        /* Encoding method "01101" - variable measure item and price with ISO 4217 Currency Code */
 
         for (i = 3; i < 15; i += 3) { /* Leading "019" stripped, and final check digit excluded */
             bp = bin_append_posn(to_int(source + i, 3), 10, binary_string, bp);
@@ -1016,8 +1012,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
 
     } else if ((encoding_method >= 7) && (encoding_method <= 14)) {
-        /* Encoding method fields "0111000" through "0111111" - variable
-        weight item plus date */
+        /* Encoding method fields "0111000" through "0111111" - variable weight item plus date */
         int group_val;
         char weight_str[8];
 
@@ -1050,7 +1045,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     }
 
     /* The compressed data field has been processed if appropriate - the
-    rest of the data (if any) goes into a general-purpose data compaction field */
+       rest of the data (if any) goes into a general-purpose data compaction field */
 
     j = 0;
     for (i = read_posn; i < length; i++) {
@@ -1096,7 +1091,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
     if (last_digit) {
         /* There is still one more numeric digit to encode */
-        if (debug_print) printf("Adding extra (odd) numeric digit\n");
+        if (debug_print) fputs("Adding extra (odd) numeric digit\n", stdout);
 
         if ((remainder >= 4) && (remainder <= 6)) {
             bp = bin_append_posn(ctoi(last_digit) + 1, 4, binary_string, bp);
@@ -1198,7 +1193,7 @@ static void dbar_exp_separator(struct zint_symbol *symbol, int width, const int 
         }
     }
 
-    /* finder adjustment */
+    /* Finder adjustment */
     for (j = 0; j < cols; j++) {
         /* 49 == data (17) + finder (15) + data(17) triplet, 19 == 2 (guard) + 17 (initial check/data character) */
         k = (49 * j) + 19 + special_case_row;
@@ -1295,7 +1290,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if ((symbol->symbology == BARCODE_DBAR_EXP_CC) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
-        /* make space for a composite separator pattern */
+        /* Make space for a composite separator pattern */
         separator_row = symbol->rows;
         symbol->row_height[separator_row] = 1;
         symbol->rows += 1;
@@ -1329,7 +1324,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     data_chars = bp / 12;
 
-    if (debug_print) printf("Data:");
+    if (debug_print) fputs("Data:", stdout);
     for (i = 0; i < data_chars; i++) {
         k = i * 12;
         vs = 0;
@@ -1365,7 +1360,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         char_widths[i][5] = widths[2];
         char_widths[i][7] = widths[3];
     }
-    if (debug_print) printf("\n");
+    if (debug_print) fputc('\n', stdout);
 
     /* 7.2.6 Check character */
     /* The checksum value is equal to the mod 211 residue of the weighted sum of the widths of the
@@ -1449,10 +1444,10 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     if ((symbol->symbology == BARCODE_DBAR_EXP) || (symbol->symbology == BARCODE_DBAR_EXP_CC)) {
         /* Copy elements into symbol */
 
-        elements[0] = 1; /* left guard */
+        elements[0] = 1; /* Left guard */
         elements[1] = 1;
 
-        elements[pattern_width - 2] = 1; /* right guard */
+        elements[pattern_width - 2] = 1; /* Right guard */
         elements[pattern_width - 1] = 1;
 
         writer = 0;
@@ -1497,12 +1492,12 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             }
 
             /* Row Start */
-            sub_elements[0] = 1; /* left guard */
+            sub_elements[0] = 1; /* Left guard */
             sub_elements[1] = 1;
             elements_in_sub = 2;
 
             /* If last row and is partial and even-numbered, and have even columns (segment pairs),
-             * and odd number of finders (== odd number of columns) */
+               and odd number of finders (== odd number of columns) */
             if ((current_row == stack_rows) && (num_columns != cols_per_row) && !(current_row & 1)
                     && !(cols_per_row & 1) && (num_columns & 1)) {
                 /* Special case bottom row */
@@ -1511,7 +1506,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             }
 
             /* If odd number of columns or current row odd-numbered or special case last row then left-to-right,
-             * else right-to-left */
+               else right-to-left */
             if ((cols_per_row & 1) || (current_row & 1) || special_case_row) {
                 left_to_right = 1;
             } else {
@@ -1544,7 +1539,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             } while ((reader < cols_per_row) && (current_block < codeblocks));
 
             /* Row Stop */
-            sub_elements[elements_in_sub] = 1; /* right guard */
+            sub_elements[elements_in_sub] = 1; /* Right guard */
             sub_elements[elements_in_sub + 1] = 1;
             elements_in_sub += 2;
 
@@ -1561,20 +1556,20 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             if (current_row != 1) {
                 int odd_last_row = (current_row == stack_rows) && (data_chars % 2 == 0);
 
-                /* middle separator pattern (above current row) */
+                /* Middle separator pattern (above current row) */
                 for (j = 5; j < (49 * cols_per_row); j += 2) {
                     set_module(symbol, symbol->rows - 2, j);
                 }
                 symbol->row_height[symbol->rows - 2] = 1;
 
-                /* bottom separator pattern (above current row) */
+                /* Bottom separator pattern (above current row) */
                 dbar_exp_separator(symbol, writer, reader, symbol->rows - 1, 1 /*above*/, special_case_row,
                     left_to_right, odd_last_row, &v2_latch);
                 symbol->row_height[symbol->rows - 1] = 1;
             }
 
             if (current_row != stack_rows) {
-                /* top separator pattern (below current row) */
+                /* Top separator pattern (below current row) */
                 dbar_exp_separator(symbol, writer, reader, symbol->rows + 1, -1 /*below*/, 0 /*special_case_row*/,
                     left_to_right, 0 /*odd_last_row*/, &v2_latch);
                 symbol->row_height[symbol->rows + 1] = 1;

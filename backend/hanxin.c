@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -548,7 +548,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(1, 4, binary, bp);
 
                 if (debug_print) {
-                    printf("Numeric\n");
+                    fputs("Numeric\n", stdout);
                 }
 
                 count = 0; /* Suppress gcc -Wmaybe-uninitialized */
@@ -604,7 +604,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(2, 4, binary, bp);
 
                 if (debug_print) {
-                    printf("Text\n");
+                    fputs("Text\n", stdout);
                 }
 
                 submode = 1;
@@ -618,7 +618,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                         bp = bin_append_posn(62, 6, binary, bp);
                         submode = hx_getsubmode(ddata[i + position]);
                         if (debug_print) {
-                            printf("SWITCH ");
+                            fputs("SWITCH ", stdout);
                         }
                     }
 
@@ -640,7 +640,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(63, 6, binary, bp);
 
                 if (debug_print) {
-                    printf("\n");
+                    fputs("\n", stdout);
                 }
                 break;
             case 'b':
@@ -670,7 +670,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 }
 
                 if (debug_print) {
-                    printf("\n");
+                    fputs("\n", stdout);
                 }
                 break;
             case '1':
@@ -766,7 +766,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(6, 4, binary, bp);
 
                 if (debug_print) {
-                    printf("Double byte\n");
+                    fputs("Double byte\n", stdout);
                 }
 
                 i = 0;
@@ -795,13 +795,13 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                    - confirmed by Wang Yi */
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
                 break;
             case 'f':
                 /* Four-byte encoding */
                 if (debug_print) {
-                    printf("Four byte\n");
+                    fputs("Four byte\n", stdout);
                 }
 
                 i = 0;
@@ -830,7 +830,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 /* No terminator */
 
                 if (debug_print) {
-                    printf("\n");
+                    fputc('\n', stdout);
                 }
                 break;
         }
@@ -1454,7 +1454,7 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
         if (!user_mask) {
             for (pattern = 0; pattern < 4; pattern++) printf(" %d:%d", pattern, penalty[pattern]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* Apply mask */
@@ -1645,11 +1645,11 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     }
 
     if (debug_print) {
-        printf("Datastream (%d): ", data_codewords);
+        printf("Datastream (%d):", data_codewords);
         for (i = 0; i < data_codewords; i++) {
-            printf("%.2x ", datastream[i]);
+            printf(" %.2x", datastream[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, datastream, data_codewords);
@@ -1660,11 +1660,11 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     hx_add_ecc(fullstream, datastream, data_codewords, version, ecc_level);
 
     if (debug_print) {
-        printf("Fullstream (%d): ", hx_total_codewords[version - 1]);
+        printf("Fullstream (%d):", hx_total_codewords[version - 1]);
         for (i = 0; i < hx_total_codewords[version - 1]; i++) {
-            printf("%.2x ", fullstream[i]);
+            printf(" %.2x", fullstream[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     hx_make_picket_fence(fullstream, picket_fence, hx_total_codewords[version - 1]);

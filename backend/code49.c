@@ -1,7 +1,7 @@
 /* code49.c - Handles Code 49 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -317,12 +317,12 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     c_grid[rows - 1][7] = j % 49;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Codewords:\n");
+        fputs("Codewords:\n", stdout);
         for (i = 0; i < rows; i++) {
             for (j = 0; j < 8; j++) {
                 printf(" %2d", c_grid[i][j]);
             }
-            printf("\n");
+            fputc('\n', stdout);
         }
     }
 #ifdef ZINT_TEST

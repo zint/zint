@@ -61,11 +61,11 @@ static void test_large(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -186,11 +186,11 @@ static void test_options(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     struct zint_symbol previous_symbol;
 
-    testStart("test_options");
+    testStartSymbol("test_options", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -257,7 +257,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[32768];
@@ -265,7 +265,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_reader_init");
+    testStartSymbol("test_reader_init", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -423,7 +423,7 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
     int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
@@ -433,7 +433,7 @@ static void test_input(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3924,7 +3924,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
     int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
@@ -3934,7 +3934,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -4662,7 +4662,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
     int last_fast_num_cwds = 0; /* Keep clang-tidy happy */
 
     char escaped[1024];
@@ -4672,7 +4672,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode_segs");
+    testStartSymbol("test_encode_segs", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5299,9 +5299,9 @@ static void test_fuzz(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_fuzz");
+    testStartSymbol("test_fuzz", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5340,7 +5340,7 @@ INTERNAL void pdf_numbprocess_test(int *chainemc, int *p_mclength, const unsigne
 
 /* Max codewords 12 */
 static int annex_d_decode_dump(int chainemc[], int mclength, unsigned char *chaine, int length, char *buf1, char *buf2) {
-    static large_int pow900s[] = {
+    static const large_uint pow900s[] = {
         { 0x1, 0 }, /*1*/
         { 0x384, 0 }, /*900*/
         { 0xC5C10, 0 }, /*810000*/
@@ -5354,7 +5354,7 @@ static int annex_d_decode_dump(int chainemc[], int mclength, unsigned char *chai
         { 0xC38B1A67CC100000, 0x466A40BB0 }, /*348678440100000000000000000000*/
         { 0x7508D4E968400000, 0xF78D8B9196F }, /*313810596090000000000000000000000*/
     };
-    static large_int pow10s[] = {
+    static const large_uint pow10s[] = {
         { 1, 0 }, /*1*/
         { 0xA, 0 }, /*10*/
         { 0x64, 0 }, /*100*/
@@ -5379,7 +5379,7 @@ static int annex_d_decode_dump(int chainemc[], int mclength, unsigned char *chai
         { 0x35C9ADC5DEA00000, 0x36 }, /*1000000000000000000000*/
     };
     int i;
-    large_int t, s, e;
+    large_uint t, s, e;
 
     if (mclength > 12 + 1) {
         return -1;

@@ -145,17 +145,17 @@ static void usage(const int no_png) {
 
     printf("Encode input data in a barcode and save as BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n\n", no_png_type);
     fputs( "  -b, --barcode=TYPE    Number or name of barcode type. Default is 20 (CODE128)\n"
-           "  --addongap=NUMBER     Set add-on gap in multiples of X-dimension for EAN/UPC\n"
+           "  --addongap=INTEGER    Set add-on gap in multiples of X-dimension for EAN/UPC\n"
            "  --batch               Treat each line of input file as a separate data set\n"
            "  --bg=COLOUR           Specify a background colour (as RGB(A) or \"C,M,Y,K\")\n"
            "  --binary              Treat input as raw binary data\n", stdout);
     fputs( "  --bind                Add boundary bars\n"
            "  --bindtop             Add top boundary bar only\n"
-           "  --bold                Use bold text\n"
-           "  --border=NUMBER       Set width of border in multiples of X-dimension\n"
+           "  --bold                Use bold text (HRT)\n"
+           "  --border=INTEGER      Set width of border in multiples of X-dimension\n"
            "  --box                 Add a box around the symbol\n", stdout);
     fputs( "  --cmyk                Use CMYK colour space in EPS/TIF symbols\n"
-           "  --cols=NUMBER         Set the number of data columns in symbol\n"
+           "  --cols=INTEGER        Set the number of data columns in symbol\n"
            "  --compliantheight     Warn if height not compliant, and use standard default\n"
            "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
            "  --direct              Send output to stdout\n", stdout);
@@ -164,11 +164,12 @@ static void usage(const int no_png) {
            "  --dotty               Use dots instead of squares for matrix symbols\n"
            "  --dump                Dump hexadecimal representation to stdout\n"
            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
-    fputs( "  --eci=NUMBER          Set the ECI code for the data (segment 0)\n"
+    fputs( "  --eci=INTEGER         Set the ECI code for the data (segment 0)\n"
+           "  --embedfont           Embed font in vector output (SVG EAN/UPC only)\n"
            "  --esc                 Process escape sequences in input data\n"
            "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
-           "  --fast                Use faster encodation or other shortcuts if available\n"
-           "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
+           "  --fast                Use faster encodation or other shortcuts if available\n", stdout);
+    fputs( "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
@@ -176,38 +177,39 @@ static void usage(const int no_png) {
            "  --gs1parens           Process parentheses \"()\" as GS1 AI delimiters, not \"[]\"\n"
            "  --gssep               Use separator GS for GS1 (Data Matrix)\n", stdout);
     fputs( "  --guarddescent=NUMBER Set height of guard bar descent in X-dims (EAN/UPC)\n"
+           "  --guardwhitespace     Add quiet zone indicators (\"<\"/\">\") to HRT (EAN/UPC)\n"
            "  -h, --help            Display help message\n"
            "  --height=NUMBER       Set height of symbol in multiples of X-dimension\n"
-           "  --heightperrow        Treat height as per-row\n"
-           "  -i, --input=FILE      Read input data from FILE\n", stdout);
-    fputs( "  --init                Create Reader Initialisation (Programming) symbol\n"
-           "  --mask=NUMBER         Set masking pattern to use (QR/Han Xin/DotCode)\n"
+           "  --heightperrow        Treat height as per-row\n", stdout);
+    fputs( "  -i, --input=FILE      Read input data from FILE\n"
+           "  --init                Create Reader Initialisation (Programming) symbol\n"
+           "  --mask=INTEGER        Set masking pattern to use (QR/Han Xin/DotCode)\n"
            "  --mirror              Use batch data to determine filename\n"
-           "  --mode=NUMBER         Set encoding mode (MaxiCode/Composite)\n", stdout);
+           "  --mode=INTEGER        Set encoding mode (MaxiCode/Composite)\n", stdout);
     printf("  --nobackground        Remove background (EMF/EPS/GIF%s/SVG/TIF only)\n", no_png_type);
     fputs( "  --noquietzones        Disable default quiet zones\n"
-           "  --notext              Remove human readable text\n", stdout);
+           "  --notext              Remove human readable text (HRT)\n", stdout);
     printf("  -o, --output=FILE     Send output to FILE. Default is out.%s\n", no_png_ext);
     fputs( "  --primary=STRING      Set primary message (MaxiCode/Composite)\n"
            "  --quietzones          Add compliant quiet zones\n"
            "  -r, --reverse         Reverse colours (white on black)\n"
-           "  --rotate=NUMBER       Rotate symbol by NUMBER degrees\n"
-           "  --rows=NUMBER         Set number of rows (Codablock-F/PDF417)\n", stdout);
+           "  --rotate=INTEGER      Rotate symbol by INTEGER (0, 90, 180, 270) degrees\n"
+           "  --rows=INTEGER        Set number of rows (Codablock-F/PDF417)\n", stdout);
     fputs( "  --scale=NUMBER        Adjust size of X-dimension\n"
            "  --scalexdimdp=X[,R]   Adjust size to X-dimension X at resolution R\n"
-           "  --scmvv=NUMBER        Prefix SCM with \"[)>\\R01\\Gvv\" (vv is NUMBER) (MaxiCode)\n"
-           "  --secure=NUMBER       Set error correction level (ECC)\n"
+           "  --scmvv=INTEGER       Prefix SCM with \"[)>\\R01\\Gvv\" (vv is INTEGER) (MaxiCode)\n"
+           "  --secure=INTEGER      Set error correction level (ECC)\n"
            "  --segN=ECI,DATA       Set the ECI & data content for segment N, where N 1 to 9\n", stdout);
-    fputs( "  --separator=NUMBER    Set height of row separator bars (stacked symbologies)\n"
-           "  --small               Use small text\n"
+    fputs( "  --separator=INTEGER   Set height of row separator bars (stacked symbologies)\n"
+           "  --small               Use small text (HRT)\n"
            "  --square              Force Data Matrix symbols to be square\n"
            "  --structapp=I,C[,ID]  Set Structured Append info (I index, C count)\n"
            "  -t, --types           Display table of barcode types\n", stdout);
     fputs( "  --textgap=NUMBER      Adjust gap between barcode and HRT in multiples of X-dim\n"
-           "  --vers=NUMBER         Set symbol version (size, check digits, other options)\n"
+           "  --vers=INTEGER        Set symbol version (size, check digits, other options)\n"
            "  -v, --version         Display Zint version\n"
-           "  --vwhitesp=NUMBER     Set height of vertical whitespace in multiples of X-dim\n"
-           "  -w, --whitesp=NUMBER  Set width of horizontal whitespace in multiples of X-dim\n", stdout);
+           "  --vwhitesp=INTEGER    Set height of vertical whitespace in multiples of X-dim\n"
+           "  -w, --whitesp=INTEGER Set width of horizontal whitespace in multiples of X-dim\n", stdout);
     fputs( "  --werror              Convert all warnings into errors\n", stdout);
 }
 
@@ -431,15 +433,31 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DBAR_STK_CC, "databarstkcc" }, /* Synonym */
         { BARCODE_DATAMATRIX, "datamatrix" },
         { BARCODE_DBAR_EXP, "dbarexp" },
+        { BARCODE_DBAR_EXP, "dbarexpanded" }, /* Synonym */
+        { BARCODE_DBAR_EXP_CC, "dbarexpandedcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "dbarexpandedstacked" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "dbarexpandedstackedcc" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK, "dbarexpandedstk" }, /* Synonym */
+        { BARCODE_DBAR_EXPSTK_CC, "dbarexpandedstkcc" }, /* Synonym */
         { BARCODE_DBAR_EXP_CC, "dbarexpcc" },
         { BARCODE_DBAR_EXPSTK, "dbarexpstk" },
         { BARCODE_DBAR_EXPSTK_CC, "dbarexpstkcc" },
+        { BARCODE_DBAR_LTD, "dbarlimited" }, /* Synonym */
+        { BARCODE_DBAR_LTD_CC, "dbarlimitedcc" }, /* Synonym */
         { BARCODE_DBAR_LTD, "dbarltd" },
         { BARCODE_DBAR_LTD_CC, "dbarltdcc" },
         { BARCODE_DBAR_OMN, "dbaromn" },
         { BARCODE_DBAR_OMN_CC, "dbaromncc" },
+        { BARCODE_DBAR_OMN, "dbaromni" }, /* Synonym */
+        { BARCODE_DBAR_OMN_CC, "dbaromnicc" }, /* Synonym */
         { BARCODE_DBAR_OMNSTK, "dbaromnstk" },
         { BARCODE_DBAR_OMNSTK_CC, "dbaromnstkcc" },
+        { BARCODE_DBAR_STK, "dbarstacked" }, /* Synonym */
+        { BARCODE_DBAR_STK_CC, "dbarstackedcc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "dbarstackedomn" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "dbarstackedomncc" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK, "dbarstackedomni" }, /* Synonym */
+        { BARCODE_DBAR_OMNSTK_CC, "dbarstackedomnicc" }, /* Synonym */
         { BARCODE_DBAR_STK, "dbarstk" },
         { BARCODE_DBAR_STK_CC, "dbarstkcc" },
         { BARCODE_DOTCODE, "dotcode" },
@@ -1411,8 +1429,8 @@ int main(int argc, char **argv) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
             OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
-            OPT_ECI, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FONTSIZE, OPT_FULLMULTIBYTE,
-            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT,
+            OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
+            OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
             OPT_NOBACKGROUND, OPT_NOQUIETZONES, OPT_NOTEXT, OPT_PRIMARY, OPT_QUIETZONES,
             OPT_ROTATE, OPT_ROWS, OPT_SCALE, OPT_SCALEXDIM, OPT_SCMVV, OPT_SECURE,
@@ -1444,6 +1462,7 @@ int main(int argc, char **argv) {
             {"dump", 0, NULL, OPT_DUMP},
             {"eci", 1, NULL, OPT_ECI},
             {"ecinos", 0, NULL, 'e'},
+            {"embedfont", 0, NULL, OPT_EMBEDFONT},
             {"esc", 0, NULL, OPT_ESC},
             {"extraesc", 0, NULL, OPT_EXTRAESC},
             {"fast", 0, NULL, OPT_FAST},
@@ -1451,13 +1470,13 @@ int main(int argc, char **argv) {
             {"fgcolor", 1, 0, OPT_FG}, /* Synonym */
             {"fgcolour", 1, 0, OPT_FG}, /* Synonym */
             {"filetype", 1, NULL, OPT_FILETYPE},
-            {"fontsize", 1, NULL, OPT_FONTSIZE},
             {"fullmultibyte", 0, NULL, OPT_FULLMULTIBYTE},
             {"gs1", 0, 0, OPT_GS1},
             {"gs1nocheck", 0, NULL, OPT_GS1NOCHECK},
             {"gs1parens", 0, NULL, OPT_GS1PARENS},
             {"gssep", 0, NULL, OPT_GSSEP},
             {"guarddescent", 1, NULL, OPT_GUARDDESCENT},
+            {"guardwhitespace", 0, NULL, OPT_GUARDWHITESPACE},
             {"height", 1, NULL, OPT_HEIGHT},
             {"heightperrow", 0, NULL, OPT_HEIGHTPERROW},
             {"help", 0, NULL, 'h'},
@@ -1621,6 +1640,9 @@ int main(int argc, char **argv) {
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
                 break;
+            case OPT_EMBEDFONT:
+                my_symbol->output_options |= EMBED_VECTOR_FONT;
+                break;
             case OPT_ESC:
                 my_symbol->input_mode |= ESCAPE_MODE;
                 break;
@@ -1643,19 +1665,6 @@ int main(int argc, char **argv) {
                     } else {
                         fprintf(stderr, "Warning 142: File type '%s' not supported, ignoring\n", optarg);
                     }
-                    fflush(stderr);
-                    warn_number = ZINT_WARN_INVALID_OPTION;
-                }
-                break;
-            case OPT_FONTSIZE:
-                if (!validate_int(optarg, -1 /*len*/, &val)) {
-                    fprintf(stderr, "Error 130: Invalid font size value (digits only)\n");
-                    return do_exit(ZINT_ERROR_INVALID_OPTION);
-                }
-                if (val <= 100) { /* `val` >= 0 always */
-                    my_symbol->fontsize = val;
-                } else {
-                    fprintf(stderr, "Warning 126: Font size out of range (0 to 100), ignoring\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1688,6 +1697,9 @@ int main(int argc, char **argv) {
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
+                break;
+            case OPT_GUARDWHITESPACE:
+                my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
                 break;
             case OPT_HEIGHT:
                 if (!validate_float(optarg, &float_opt, errbuf)) {

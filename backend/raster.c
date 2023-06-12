@@ -42,7 +42,7 @@
 #include "output.h"
 #include "zfiletypes.h"
 
-#include "font.h" /* Font for human readable text */
+#include "raster_font.h" /* Font for human readable text */
 
 #define DEFAULT_INK     '1' /* Black */
 #define DEFAULT_PAPER   '0' /* White */
@@ -300,7 +300,7 @@ static void draw_letter(unsigned char *pixelbuf, const unsigned char letter, int
     int glyph_no;
     int x, y;
     int max_x, max_y;
-    font_item *font_table;
+    const raster_font_item *font_table;
     int bold = 0;
     unsigned glyph_mask;
     int font_y;
@@ -315,11 +315,6 @@ static void draw_letter(unsigned char *pixelbuf, const unsigned char letter, int
 
     if ((letter >= 127) && (letter < 161)) {
         return;
-    }
-
-    /* Following should never happen (ISBN check digit "X" not printed) */
-    if ((textflags & UPCEAN_TEXT) && !z_isdigit(letter)) {
-        return; /* Not reached */
     }
 
     if (yposn < 0) { /* Allow xposn < 0, dealt with below */
@@ -718,8 +713,8 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, const int rotate_ang
     }
     scaler *= 10.0f;
 
-    out_set_whitespace_offsets(symbol, 0 /*hide_text*/, &xoffset, &yoffset, &roffset, &boffset, scaler,
-        &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
+    out_set_whitespace_offsets(symbol, 0 /*hide_text*/, 0 /*comp_xoffset*/, &xoffset, &yoffset, &roffset, &boffset,
+        scaler, &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     hex_width = (int) roundf(scaler); /* Short diameter, X in ISO/IEC 16023:2000 Figure 8 (same as W) */
     hex_height = (int) roundf(scaler * two_div_sqrt3); /* Long diameter, V in Figure 8 */
@@ -816,8 +811,8 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
     dot_radius_s = (symbol->dot_size * scaler) / 2.0f;
     dot_radius_si = (int) dot_radius_s;
 
-    out_set_whitespace_offsets(symbol, 0 /*hide_text*/, &xoffset, &yoffset, &roffset, &boffset, scaler,
-        &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
+    out_set_whitespace_offsets(symbol, 0 /*hide_text*/, 0 /*comp_xoffset*/, &xoffset, &yoffset, &roffset, &boffset,
+        scaler, &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     /* TODO: Revisit this overspill stuff, it's hacky */
     if (symbol->dot_size < 1.0f) {
@@ -923,6 +918,8 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     int text_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
+    const int upcean_guard_whitespace = !(symbol->output_options & BARCODE_NO_QUIET_ZONES)
+                                        && (symbol->output_options & EANUPC_GUARD_WHITESPACE);
     const int is_codablockf = symbol->symbology == BARCODE_CODABLOCKF || symbol->symbology == BARCODE_HIBC_BLOCKF;
 
     int textflags = 0;
@@ -953,13 +950,18 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
 
     main_width = symbol->width;
 
+    if (is_composite(symbol->symbology)) {
+        while (!module_is_set(symbol, symbol->rows - 1, comp_xoffset)) {
+            comp_xoffset++;
+        }
+    }
     if (is_extendable(symbol->symbology)) {
-        upceanflag = out_process_upcean(symbol, &main_width, &comp_xoffset, addon, &addon_gap);
+        upceanflag = out_process_upcean(symbol, comp_xoffset, &main_width, addon, &addon_gap);
     }
 
     hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0) || scaler < 1.0f);
 
-    out_set_whitespace_offsets(symbol, hide_text, &xoffset, &yoffset, &roffset, &boffset, si,
+    out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, si,
         &xoffset_si, &yoffset_si, &roffset_si, &boffset_si);
 
     comp_xoffset_si = xoffset_si + comp_xoffset * si;
@@ -970,7 +972,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         text_height = (UPCEAN_FONT_HEIGHT + 1) / 2;
         text_gap = symbol->text_gap ? symbol->text_gap : 1.0f;
         /* Height of guard bar descent (none for EAN-2 and EAN-5) */
-        guard_descent = upceanflag != 2 && upceanflag != 5 ? symbol->guard_descent : 0.0f;
+        guard_descent = upceanflag >= 6 ? symbol->guard_descent : 0.0f;
     } else {
         textflags = symbol->output_options & (SMALL_TEXT | BOLD_TEXT);
         text_height = textflags & SMALL_TEXT ? (SMALL_FONT_HEIGHT + 1) / 2 : (NORMAL_FONT_HEIGHT + 1) / 2;
@@ -1063,6 +1065,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         }
 
     } else {
+        if (upceanflag && !hide_text) { /* EAN-2, EAN-5 (standalone add-ons) */
+            yposn_si += (int) (text_height + text_gap) * si;
+        }
         for (r = 0; r < symbol->rows; r++) {
             const int row_height_si = row_heights_si[r];
 
@@ -1142,6 +1147,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
 
     if (!hide_text) {
         int text_yposn = yoffset_si + symbol_height_si + (int) (text_gap * si); /* Calculated to top of text */
+        if (upceanflag == 2 || upceanflag == 5) { /* EAN-2/5 */
+            text_yposn = yoffset_si;
+        }
         if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
             text_yposn += symbol->border_width * si; /* Note not needed for BARCODE_BIND_TOP */
         }
@@ -1172,16 +1180,38 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                     text_xposn = ((addon_len == 2 ? 61 : 75) + addon_gap) * si + comp_xoffset_si;
                     draw_string(pixelbuf, addon, text_xposn, addon_text_yposn, textflags,
                                 image_width, image_height, si);
+                    if (upcean_guard_whitespace) {
+                        text_xposn = (int) (((addon_len == 2 ? 70 : 97) + 1.5f + upcea_width_adj + addon_gap) * si)
+                                        + comp_xoffset_si;
+                        draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, addon_text_yposn, textflags,
+                                    image_width, image_height, si);
+                    }
                 }
 
             } else if (upceanflag == 8) { /* EAN-8 */
-                int text_xposn = 17 * si + comp_xoffset_si;
+                int text_xposn;
+                if (upcean_guard_whitespace) {
+                    text_xposn = -(ean_width_adj + 2) * si + comp_xoffset_si;
+                    draw_string(pixelbuf, (const unsigned char *) "<", text_xposn, text_yposn, textflags,
+                                image_width, image_height, si);
+                }
+                text_xposn = 17 * si + comp_xoffset_si;
                 draw_string(pixelbuf, textparts[0], text_xposn, text_yposn, textflags, image_width, image_height, si);
                 text_xposn = 50 * si + comp_xoffset_si;
                 draw_string(pixelbuf, textparts[1], text_xposn, text_yposn, textflags, image_width, image_height, si);
                 if (addon_len) {
                     text_xposn = ((addon_len == 2 ? 77 : 91) + addon_gap) * si + comp_xoffset_si;
                     draw_string(pixelbuf, addon, text_xposn, addon_text_yposn, textflags,
+                                image_width, image_height, si);
+                    if (upcean_guard_whitespace) {
+                        text_xposn = (int) (((addon_len == 2 ? 86 : 113) + 0.5f + ean_width_adj + addon_gap) * si)
+                                            + comp_xoffset_si;
+                        draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, addon_text_yposn, textflags,
+                                    image_width, image_height, si);
+                    }
+                } else if (upcean_guard_whitespace) {
+                    text_xposn = (int) ((68 + 0.5f + ean_width_adj) * si) + comp_xoffset_si;
+                    draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, text_yposn, textflags,
                                 image_width, image_height, si);
                 }
 
@@ -1200,6 +1230,12 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                     text_xposn = ((addon_len == 2 ? 105 : 119) + addon_gap) * si + comp_xoffset_si;
                     draw_string(pixelbuf, addon, text_xposn, addon_text_yposn, textflags,
                                 image_width, image_height, si);
+                    if (upcean_guard_whitespace) {
+                        text_xposn = (int) (((addon_len == 2 ? 114 : 141) + 0.5f + ean_width_adj + addon_gap) * si)
+                                            + comp_xoffset_si;
+                        draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, addon_text_yposn, textflags,
+                                    image_width, image_height, si);
+                    }
                 }
 
             } else { /* EAN-13 */
@@ -1213,15 +1249,33 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                     text_xposn = ((addon_len == 2 ? 105 : 119) + addon_gap) * si + comp_xoffset_si;
                     draw_string(pixelbuf, addon, text_xposn, addon_text_yposn, textflags,
                                 image_width, image_height, si);
+                    if (upcean_guard_whitespace) {
+                        text_xposn = (int) (((addon_len == 2 ? 114 : 141) + 0.5f + ean_width_adj + addon_gap) * si)
+                                            + comp_xoffset_si;
+                        draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, addon_text_yposn, textflags,
+                                    image_width, image_height, si);
+                    }
+                } else if (upcean_guard_whitespace) {
+                    text_xposn = (int) ((96 + 0.5f + ean_width_adj) * si) + comp_xoffset_si;
+                    draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, text_yposn, textflags,
+                                image_width, image_height, si);
                 }
             }
         } else {
-            int text_xposn = (main_width / 2) * si + comp_xoffset_si;
+            int text_xposn = (main_width / 2) * si + xoffset_si;
             /* Suppress clang-analyzer-core.CallAndMessage warning */
             unsigned char local_text[sizeof(symbol->text)] = {0};
             to_iso8859_1(symbol->text, local_text);
-            /* Put the human readable text at the bottom */
+            /* Put the human readable text at the bottom (or top if EAN-2/5) */
             draw_string(pixelbuf, local_text, text_xposn, text_yposn, textflags, image_width, image_height, si);
+            /* EAN-2/5 */
+            if (upceanflag && upcean_guard_whitespace) {
+                const int ean_width_adj = (UPCEAN_FONT_WIDTH + 3) / 4;
+                const int addon_len = (int) ustrlen(symbol->text);
+                text_xposn = (int) (((addon_len == 2 ? 19 : 46) + 0.5f + ean_width_adj) * si) + xoffset_si;
+                draw_string(pixelbuf, (const unsigned char *) ">", text_xposn, text_yposn, textflags,
+                            image_width, image_height, si);
+            }
         }
     }
 

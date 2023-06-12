@@ -1,41 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="128" height="117" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="128" height="117" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="6.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="10.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="16.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="22.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="26.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="32.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="38.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="42.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="46.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="52.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="56.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="64.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="68.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="72.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="78.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="84.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="92.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="96.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="100.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="104.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="110.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="114.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="120.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="126.00" y="0.00" width="2.00" height="100.00" />
-      <text x="64.00" y="112.00" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="12.0" >
-         *123*
-      </text>
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="128" height="117" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="128" height="117" fill="#FFFFFF"/>
+  <path d="M0 0h2v100h-2ZM6 0h2v100h-2ZM10 0h4v100h-4ZM16 0h4v100h-4ZM22 0h2v100h-2ZM26 0h4v100h-4ZM32 0h2v100h-2ZM38 0h2v100h-2ZM42 0h2v100h-2ZM46 0h4v100h-4ZM52 0h2v100h-2ZM56 0h4v100h-4ZM64 0h2v100h-2ZM68 0h2v100h-2ZM72 0h4v100h-4ZM78 0h4v100h-4ZM84 0h4v100h-4ZM92 0h2v100h-2ZM96 0h2v100h-2ZM100 0h2v100h-2ZM104 0h2v100h-2ZM110 0h2v100h-2ZM114 0h4v100h-4ZM120 0h4v100h-4ZM126 0h2v100h-2Z"/>
+  <text x="64" y="112" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="12">
+   *123*
+  </text>
+ </g>
 </svg>

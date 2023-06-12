@@ -1,7 +1,7 @@
 /* code1.c - USS Code One */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -497,14 +497,14 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
         if (length >= 15 && num_digits[0] >= 15) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
-            if (debug_print) printf("FNC1Dec ");
+            if (debug_print) fputs("FNC1Dec ", stdout);
         } else if (length >= 7 && num_digits[0] == length) {
             target[tp++] = 236; /* FNC1 and change to Decimal */
             next_mode = C1_DECIMAL;
-            if (debug_print) printf("FNC1Dec ");
+            if (debug_print) fputs("FNC1Dec ", stdout);
         } else {
             target[tp++] = 232; /* FNC1 */
-            if (debug_print) printf("FNC1 ");
+            if (debug_print) fputs("FNC1 ", stdout);
         }
         /* Note ignoring Structured Append and ECI if GS1 mode (up to caller to warn/error) */
     } else {
@@ -516,11 +516,11 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     target[tp++] = 233; /* FNC2 */
                     target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
                     target[tp++] = '\\' + 1; /* Escape char */
-                    if (debug_print) printf("SAGrp ");
+                    if (debug_print) fputs("SAGrp ", stdout);
                 } else {
                     target[tp++] = (symbol->structapp.index - 1) * 15 + (symbol->structapp.count - 1);
                     target[tp++] = 233; /* FNC2 */
-                    if (debug_print) printf("FNC2 ");
+                    if (debug_print) fputs("FNC2 ", stdout);
                 }
             } else { /* Extended Group mode */
                 if ((eci || seg_count > 1) && symbol->structapp.index == 1) {
@@ -530,12 +530,12 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     target[tp++] = 233; /* FNC2 */
                     target[tp++] = symbol->structapp.index;
                     target[tp++] = symbol->structapp.count;
-                    if (debug_print) printf("SAExGrp ");
+                    if (debug_print) fputs("SAExGrp ", stdout);
                 } else {
                     target[tp++] = symbol->structapp.index;
                     target[tp++] = symbol->structapp.count;
                     target[tp++] = 233; /* FNC2 */
-                    if (debug_print) printf("FNC2 ");
+                    if (debug_print) fputs("FNC2 ", stdout);
                 }
             }
             if (eci) {
@@ -547,7 +547,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             if (tp == 0) {
                 target[tp++] = 129; /* Pad */
                 target[tp++] = '\\' + 1; /* Escape char */
-                if (debug_print) printf("PADEsc ");
+                if (debug_print) fputs("PADEsc ", stdout);
             }
             if (eci) {
                 c1_eci_escape(eci, source, length, eci_buf, eci_length);
@@ -563,16 +563,16 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             /* Change mode */
             switch (next_mode) {
                 case C1_C40: target[tp++] = 230;
-                    if (debug_print) printf("->C40 ");
+                    if (debug_print) fputs("->C40 ", stdout);
                     break;
                 case C1_TEXT: target[tp++] = 239;
-                    if (debug_print) printf("->Text ");
+                    if (debug_print) fputs("->Text ", stdout);
                     break;
                 case C1_EDI: target[tp++] = 238;
-                    if (debug_print) printf("->EDI ");
+                    if (debug_print) fputs("->EDI ", stdout);
                     break;
                 case C1_BYTE: target[tp++] = 231;
-                    if (debug_print) printf("->Byte ");
+                    if (debug_print) fputs("->Byte ", stdout);
                     byte_start = tp;
                     target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
                     break;
@@ -605,13 +605,13 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                         if (length - (sp + 1) >= 15 && num_digits[sp + 1] >= 15) {
                             /* Step B4 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
-                            if (debug_print) printf("FNC1 ");
+                            if (debug_print) fputs("FNC1 ", stdout);
                             sp++;
                             next_mode = C1_DECIMAL;
                         } else if (length - (sp + 1) >= 7 && num_digits[sp + 1] == length - (sp + 1)) {
                             /* Step B5 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
-                            if (debug_print) printf("FNC1 ");
+                            if (debug_print) fputs("FNC1 ", stdout);
                             sp++;
                             next_mode = C1_DECIMAL;
                         }
@@ -633,7 +633,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                             } else if ((gs1) && (source[sp] == '[')) {
                                 /* Step B8 */
                                 target[tp++] = 232; /* FNC1 */
-                                if (debug_print) printf("FNC1 ");
+                                if (debug_print) fputs("FNC1 ", stdout);
                             } else {
                                 /* Step B8 */
                                 target[tp++] = source[sp] + 1;
@@ -665,7 +665,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             if (next_mode != current_mode) {
                 /* Step C/D1c */
                 target[tp++] = 255; /* Unlatch */
-                if (debug_print) printf("Unlatch ");
+                if (debug_print) fputs("Unlatch ", stdout);
             } else {
                 /* Step C/D2 */
                 const char *ct_shift, *ct_value;
@@ -677,7 +677,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     ct_shift = text_shift;
                     ct_value = text_value;
                 }
-                if (debug_print) printf(current_mode == C1_C40 ? "C40 " : "TEXT ");
+                if (debug_print) fputs(current_mode == C1_C40 ? "C40 " : "TEXT ", stdout);
 
                 if (source[sp] & 0x80) {
                     cte_buffer[cte_p++] = 1; /* Shift 2 */
@@ -727,13 +727,13 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     /* No unlatch needed if data fits as ASCII in last data codeword */
                 } else {
                     target[tp++] = 255; /* Unlatch */
-                    if (debug_print) printf("Unlatch ");
+                    if (debug_print) fputs("Unlatch ", stdout);
                 }
             } else {
                 /* Step E2 */
                 static const char edi_nonalphanum_chars[] = "\015*> ";
 
-                if (debug_print) printf("EDI ");
+                if (debug_print) fputs("EDI ", stdout);
 
                 if (z_isdigit(source[sp])) {
                     cte_buffer[cte_p++] = source[sp] - '0' + 4;
@@ -752,7 +752,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
         } else if (current_mode == C1_DECIMAL) {
             /* Step F - Decimal encodation */
 
-            if (debug_print) printf("DEC ");
+            if (debug_print) fputs("DEC ", stdout);
 
             next_mode = C1_DECIMAL;
 
@@ -837,7 +837,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
         }
 
         if (tp > 1480) {
-            if (debug_print) printf("\n");
+            if (debug_print) fputc('\n', stdout);
             /* Data is too large for symbol */
             return 0;
         }
@@ -1040,7 +1040,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (symbol->option_2 == 9) {
         /* Version S */
         int codewords;
-        large_int elreg;
+        large_uint elreg;
         unsigned int target[30], ecc[15];
         int block_width;
 
@@ -1095,7 +1095,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         if (debug_print) {
             printf("Codewords (%d): ", codewords);
             for (i = 0; i < codewords * 2; i++) printf(" %d", (int) target[i]);
-            printf("\n");
+            fputc('\n', stdout);
         }
 
         i = 0;
@@ -1183,7 +1183,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_cw);
             for (i = 0; i < data_cw + ecc_cw; i++) printf(" %d", (int) target[i]);
-            printf("\n");
+            fputc('\n', stdout);
         }
 
         i = 0;
@@ -1249,7 +1249,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
                 target[i] = 129; /* Pad */
             }
         } else if (debug_print) {
-            printf("No padding\n");
+            fputs("No padding\n", stdout);
         }
 
         /* Calculate error correction data */
@@ -1273,7 +1273,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         if (debug_print) {
             printf("Codewords (%d):", data_cw + ecc_length);
             for (i = 0; i < data_cw + ecc_length; i++) printf(" %d", (int) target[i]);
-            printf("\n");
+            fputc('\n', stdout);
         }
 
         i = 0;

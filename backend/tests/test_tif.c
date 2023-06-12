@@ -89,7 +89,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char *tif = "out.tif";
 
@@ -98,7 +98,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int have_tiffinfo = testUtilHaveTiffInfo();
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart("test_pixel_plot");
+    testStartSymbol("test_pixel_plot", &symbol);
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
@@ -202,10 +202,12 @@ static void test_print(const testCtx *const p_ctx) {
         /* 19*/ { BARCODE_AZTEC, -1, -1, -1, -1, -1, -1, -1, 32, 0, 0, "4BE055", "", "1", "", "aztec_v32_fg.tif", "" },
         /* 20*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 8, 0.5f, "", "", "F", "", "daft_height8_scale0.5.tif", "" },
         /* 21*/ { BARCODE_DAFT, -1, -1, -1, -1, -1, -1, -1, -1, 1, 0.5f, "", "", "DAFT", "", "daft_height1_scale0.5.tif", "" },
+        /* 22*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9501234", "", "ean8_gss_5.2.2.2-1.tif", "" },
+        /* 23*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, "", "", "9501234", "", "ean8_gss_5.2.2.2-1_gws.tif", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/tif";
     const char *tif = "out.tif";
@@ -217,7 +219,7 @@ static void test_print(const testCtx *const p_ctx) {
     int have_tiffinfo = testUtilHaveTiffInfo();
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart("test_print");
+    testStartSymbol("test_print", &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -337,8 +339,9 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.output_options |= BARCODE_STDOUT;
 
+    printf("<<<Begin ignore (TIF to stdout)\n"); fflush(stdout);
     ret = tif_pixel_plot(&symbol, data);
-    printf(" - ignore (TIF to stdout)\n"); fflush(stdout);
+    printf("\n<<<End ignore (TIF to stdout)\n"); fflush(stdout);
     assert_zero(ret, "tif_pixel_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     testFinish();

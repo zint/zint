@@ -1,7 +1,7 @@
 /* aztec.c - Handles Aztec 2D Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -180,7 +180,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     }
 
     if (debug_print) {
-        printf("First Pass:\n");
+        fputs("First Pass:\n", stdout);
         printf("%.*s\n", src_len, encode_mode);
     }
 
@@ -1066,14 +1066,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             }
 
             if (debug_print) {
-                printf("Codewords:\n");
+                fputs("Codewords:\n", stdout);
                 for (i = 0; i < (adjusted_length / codeword_size); i++) {
                     for (j = 0; j < codeword_size; j++) {
                         printf("%c", adjusted_string[(i * codeword_size) + j]);
                     }
-                    printf(" ");
+                    fputc(' ', stdout);
                 }
-                printf("\n");
+                fputc('\n', stdout);
             }
 
         } while (adjusted_length > data_maxsize);
@@ -1168,11 +1168,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
 
         if (debug_print) {
-            printf("Codewords:\n");
+            fputs("Codewords:\n", stdout);
             for (i = 0; i < (adjusted_length / codeword_size); i++) {
                 printf("%.*s ", codeword_size, adjusted_string + i * codeword_size);
             }
-            printf("\n");
+            fputc('\n', stdout);
         }
 
     }

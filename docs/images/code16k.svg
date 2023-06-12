@@ -1,55 +1,9 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="389" height="111" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="389" height="111" fill="#FFFFFF" />
-      <rect x="48.00" y="4.80" width="14.40" height="48.00" />
-      <rect x="72.00" y="4.80" width="4.80" height="48.00" />
-      <rect x="81.60" y="4.80" width="4.80" height="48.00" />
-      <rect x="91.20" y="4.80" width="9.60" height="48.00" />
-      <rect x="110.40" y="4.80" width="9.60" height="48.00" />
-      <rect x="124.80" y="4.80" width="14.40" height="48.00" />
-      <rect x="144.00" y="4.80" width="9.60" height="48.00" />
-      <rect x="158.40" y="4.80" width="4.80" height="48.00" />
-      <rect x="172.80" y="4.80" width="19.20" height="48.00" />
-      <rect x="196.80" y="4.80" width="9.60" height="48.00" />
-      <rect x="211.20" y="4.80" width="19.20" height="48.00" />
-      <rect x="240.00" y="4.80" width="4.80" height="48.00" />
-      <rect x="254.40" y="4.80" width="9.60" height="48.00" />
-      <rect x="273.60" y="4.80" width="4.80" height="48.00" />
-      <rect x="288.00" y="4.80" width="9.60" height="48.00" />
-      <rect x="312.00" y="4.80" width="4.80" height="48.00" />
-      <rect x="326.40" y="4.80" width="4.80" height="48.00" />
-      <rect x="345.60" y="4.80" width="4.80" height="48.00" />
-      <rect x="364.80" y="4.80" width="9.60" height="48.00" />
-      <rect x="379.20" y="4.80" width="4.80" height="48.00" />
-      <rect x="48.00" y="57.60" width="9.60" height="48.00" />
-      <rect x="67.20" y="57.60" width="9.60" height="48.00" />
-      <rect x="81.60" y="57.60" width="4.80" height="48.00" />
-      <rect x="91.20" y="57.60" width="4.80" height="48.00" />
-      <rect x="110.40" y="57.60" width="4.80" height="48.00" />
-      <rect x="124.80" y="57.60" width="14.40" height="48.00" />
-      <rect x="144.00" y="57.60" width="19.20" height="48.00" />
-      <rect x="168.00" y="57.60" width="4.80" height="48.00" />
-      <rect x="182.40" y="57.60" width="9.60" height="48.00" />
-      <rect x="201.60" y="57.60" width="4.80" height="48.00" />
-      <rect x="216.00" y="57.60" width="4.80" height="48.00" />
-      <rect x="240.00" y="57.60" width="4.80" height="48.00" />
-      <rect x="254.40" y="57.60" width="9.60" height="48.00" />
-      <rect x="268.80" y="57.60" width="4.80" height="48.00" />
-      <rect x="288.00" y="57.60" width="9.60" height="48.00" />
-      <rect x="302.40" y="57.60" width="4.80" height="48.00" />
-      <rect x="316.80" y="57.60" width="4.80" height="48.00" />
-      <rect x="336.00" y="57.60" width="14.40" height="48.00" />
-      <rect x="360.00" y="57.60" width="9.60" height="48.00" />
-      <rect x="379.20" y="57.60" width="4.80" height="48.00" />
-      <rect x="48.00" y="52.80" width="336.00" height="4.80" />
-      <rect x="0.00" y="0.00" width="388.80" height="4.80" />
-      <rect x="0.00" y="105.60" width="388.80" height="4.80" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="389" height="111" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="389" height="111" fill="#FFFFFF"/>
+  <path d="M48 4.8h14.4v48h-14.4ZM72 4.8h4.8v48h-4.8ZM81.6 4.8h4.8v48h-4.8ZM91.2 4.8h9.6v48h-9.6ZM110.4 4.8h9.6v48h-9.6ZM124.8 4.8h14.4v48h-14.4ZM144 4.8h9.6v48h-9.6ZM158.4 4.8h4.8v48h-4.8ZM172.8 4.8h19.2v48h-19.2ZM196.8 4.8h9.6v48h-9.6ZM211.2 4.8h19.2v48h-19.2ZM240 4.8h4.8v48h-4.8ZM254.4 4.8h9.6v48h-9.6ZM273.6 4.8h4.8v48h-4.8ZM288 4.8h9.6v48h-9.6ZM312 4.8h4.8v48h-4.8ZM326.4 4.8h4.8v48h-4.8ZM345.6 4.8h4.8v48h-4.8ZM364.8 4.8h9.6v48h-9.6ZM379.2 4.8h4.8v48h-4.8ZM48 57.6h9.6v48h-9.6ZM67.2 57.6h9.6v48h-9.6ZM81.6 57.6h4.8v48h-4.8ZM91.2 57.6h4.8v48h-4.8ZM110.4 57.6h4.8v48h-4.8ZM124.8 57.6h14.4v48h-14.4ZM144 57.6h19.2v48h-19.2ZM168 57.6h4.8v48h-4.8ZM182.4 57.6h9.6v48h-9.6ZM201.6 57.6h4.8v48h-4.8ZM216 57.6h4.8v48h-4.8ZM240 57.6h4.8v48h-4.8ZM254.4 57.6h9.6v48h-9.6ZM268.8 57.6h4.8v48h-4.8ZM288 57.6h9.6v48h-9.6ZM302.4 57.6h4.8v48h-4.8ZM316.8 57.6h4.8v48h-4.8ZM336 57.6h14.4v48h-14.4ZM360 57.6h9.6v48h-9.6ZM379.2 57.6h4.8v48h-4.8ZM48 52.8h336v4.8h-336ZM0 0h388.8v4.8h-388.8ZM0 105.6h388.8v4.8h-388.8Z"/>
+ </g>
 </svg>

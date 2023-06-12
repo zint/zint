@@ -61,41 +61,51 @@ static void test_print(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_ULTRA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "147AD0", "FC9630", 0, "123", "ultra_fg_bg.eps" },
         /*  6*/ { BARCODE_ULTRA, -1, 1, BARCODE_BOX, 2, -1, -1, -1, 0, 0, "0000FF", "FF0000", 0, "123", "ultra_fg_bg_box.eps" },
         /*  7*/ { BARCODE_ULTRA, -1, 2, BARCODE_BOX | CMYK_COLOUR, 1, 1, -1, -1, 0, 0, "0000FF", "FF0000", 0, "123", "ultra_fg_bg_box_cmyk.eps" },
-        /*  8*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2.eps" },
-        /*  9*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.eps" },
-        /* 10*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon.eps" },
-        /* 11*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon_small_bold.eps" },
-        /* 12*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "A\\B)ç(D", "code128_escape_latin1.eps" },
-        /* 13*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 0, "1501234567890", "dbar_ltd_24724_fig7_bold.eps" },
-        /* 14*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0.1, 0, "", "", 0, "12", "dotcode_0.1.eps" },
-        /* 15*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0.08, 0, "", "", 0, "12", "dotcode_0.1.eps" },
-        /* 16*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "12", "dotcode_1.0.eps" },
-        /* 17*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0.1, "", "", 0, "12", "dotcode_1.0_ds0.1.eps" },
-        /* 18*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 1.1, "", "", 0, "12", "dotcode_1.0_ds1.1.eps" },
-        /* 19*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 0, "", "", 0, "12", "dotcode_1.5.eps" },
-        /* 20*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 0.4, "", "", 0, "12", "dotcode_1.5_ds0.4.eps" },
-        /* 21*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 1.1, "", "", 0, "12", "dotcode_1.5_ds1.1.eps" },
-        /* 22*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 2.1, "", "", 0, "12", "dotcode_1.5_ds2.1.eps" },
-        /* 23*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 0, "", "", 0, "12", "dotcode_2.0.eps" },
-        /* 24*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 0.9, "", "", 0, "12", "dotcode_2.0_ds0.9.eps" },
-        /* 25*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 1.1, "", "", 0, "12", "dotcode_2.0_ds1.1.eps" },
-        /* 26*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 0, "", "", 0, "12", "dotcode_3.0.eps" },
-        /* 27*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 0.4, "", "", 0, "12", "dotcode_3.0_ds0.4.eps" },
-        /* 28*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 1.1, "", "", 0, "12", "dotcode_3.0_ds1.1.eps" },
-        /* 29*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 0, "", "", 0, "12", "dotcode_3.5.eps" },
-        /* 30*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 0.4, "", "", 0, "12", "dotcode_3.5_ds0.4.eps" },
-        /* 31*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 1.1, "", "", 0, "12", "dotcode_3.5_ds1.1.eps" },
-        /* 32*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 0, "", "", 0, "12", "dotcode_5.0.eps" },
-        /* 33*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 0.2, "", "", 0, "12", "dotcode_5.0_ds0.2.eps" },
-        /* 34*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 1.1, "", "", 0, "12", "dotcode_5.0_ds1.1.eps" },
-        /* 35*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 1.7, "", "", 0, "12", "dotcode_5.0_ds1.7.eps" },
-        /* 36*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "FF0000", "0000FF00", 0, "12", "dotcode_no_bg.eps" },
-        /* 37*/ { BARCODE_MAXICODE, -1, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, 0, "", "", 270, "12", "maxicode_rotate_270_cmyk.eps" },
-        /* 38*/ { BARCODE_MAXICODE, -1, -1, -1, 3, -1, -1, -1, 0, 0, "", "0000FF00", 180, "12", "maxicode_no_bg_hwsp3_rotate_180.eps" },
+        /*  8*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "9501101531000", "ean13_ggs_5.2.2.1-1.eps" },
+        /*  9*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "9501101531000", "ean13_ggs_5.2.2.1-1_gws.eps" },
+        /* 10*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2.eps" },
+        /* 11*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "9771384524017+12", "ean13_2addon_ggs_5.2.2.5.1-2_gws.eps" },
+        /* 12*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "9501234", "ean8_gss_5.2.2.2-1.eps" },
+        /* 13*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "9501234", "ean8_gss_5.2.2.2-1_gws.eps" },
+        /* 14*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "98765", "ean5.eps" },
+        /* 15*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "98765", "ean5_gws.eps" },
+        /* 16*/ { BARCODE_UPCA, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5.eps" },
+        /* 17*/ { BARCODE_UPCA, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "012345678905+24", "upca_2addon_ggs_5.2.6.6-5_gws.eps" },
+        /* 18*/ { BARCODE_UPCE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon.eps" },
+        /* 19*/ { BARCODE_UPCE, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon_gws.eps" },
+        /* 20*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon_small_bold.eps" },
+        /* 21*/ { BARCODE_UPCE, -1, -1, SMALL_TEXT | BOLD_TEXT | EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, 0, 0, "", "", 0, "0123456+12345", "upce_5addon_small_bold_gws.eps" },
+        /* 22*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "A\\B)ç(D", "code128_escape_latin1.eps" },
+        /* 23*/ { BARCODE_DBAR_LTD, -1, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 0, "1501234567890", "dbar_ltd_24724_fig7_bold.eps" },
+        /* 24*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0.1, 0, "", "", 0, "12", "dotcode_0.1.eps" },
+        /* 25*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0.08, 0, "", "", 0, "12", "dotcode_0.1.eps" },
+        /* 26*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", 0, "12", "dotcode_1.0.eps" },
+        /* 27*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0.1, "", "", 0, "12", "dotcode_1.0_ds0.1.eps" },
+        /* 28*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 1.1, "", "", 0, "12", "dotcode_1.0_ds1.1.eps" },
+        /* 29*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 0, "", "", 0, "12", "dotcode_1.5.eps" },
+        /* 30*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 0.4, "", "", 0, "12", "dotcode_1.5_ds0.4.eps" },
+        /* 31*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 1.1, "", "", 0, "12", "dotcode_1.5_ds1.1.eps" },
+        /* 32*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 1.5, 2.1, "", "", 0, "12", "dotcode_1.5_ds2.1.eps" },
+        /* 33*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 0, "", "", 0, "12", "dotcode_2.0.eps" },
+        /* 34*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 0.9, "", "", 0, "12", "dotcode_2.0_ds0.9.eps" },
+        /* 35*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 2, 1.1, "", "", 0, "12", "dotcode_2.0_ds1.1.eps" },
+        /* 36*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 0, "", "", 0, "12", "dotcode_3.0.eps" },
+        /* 37*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 0.4, "", "", 0, "12", "dotcode_3.0_ds0.4.eps" },
+        /* 38*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3, 1.1, "", "", 0, "12", "dotcode_3.0_ds1.1.eps" },
+        /* 39*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 0, "", "", 0, "12", "dotcode_3.5.eps" },
+        /* 40*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 0.4, "", "", 0, "12", "dotcode_3.5_ds0.4.eps" },
+        /* 41*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 3.5, 1.1, "", "", 0, "12", "dotcode_3.5_ds1.1.eps" },
+        /* 42*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 0, "", "", 0, "12", "dotcode_5.0.eps" },
+        /* 43*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 0.2, "", "", 0, "12", "dotcode_5.0_ds0.2.eps" },
+        /* 44*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 1.1, "", "", 0, "12", "dotcode_5.0_ds1.1.eps" },
+        /* 45*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 5, 1.7, "", "", 0, "12", "dotcode_5.0_ds1.7.eps" },
+        /* 46*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, -1, 0, 0, "FF0000", "0000FF00", 0, "12", "dotcode_no_bg.eps" },
+        /* 47*/ { BARCODE_MAXICODE, -1, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, 0, "", "", 270, "12", "maxicode_rotate_270_cmyk.eps" },
+        /* 48*/ { BARCODE_MAXICODE, -1, -1, -1, 3, -1, -1, -1, 0, 0, "", "0000FF00", 180, "12", "maxicode_no_bg_hwsp3_rotate_180.eps" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/eps";
     const char *eps = "out.eps";
@@ -105,7 +115,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     int have_ghostscript = testUtilHaveGhostscript();
 
-    testStart("test_print");
+    testStartSymbol("test_print", &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -241,8 +251,9 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.output_options |= BARCODE_STDOUT;
 
+    printf(">>>Begin ignore (EPS to stdout)\n"); fflush(stdout);
     ret = ps_plot(&symbol, 0);
-    printf(" - ignore (EPS to stdout)\n"); fflush(stdout);
+    printf("<<<End ignore (EPS to stdout)\n"); fflush(stdout);
     assert_zero(ret, "ps_plot ret %d != 0 (%s)\n", ret, symbol.errtxt);
 
     symbol.vector = NULL;

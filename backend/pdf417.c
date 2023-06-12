@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -561,13 +561,13 @@ INTERNAL void pdf_byteprocess(int *chainemc, int *p_mclength, const unsigned cha
         /* select the switch for multiple of 6 bytes */
         if (length % 6 == 0) {
             chainemc[(*p_mclength)++] = 924;
-            if (debug_print) printf("924 ");
+            if (debug_print) fputs("924 ", stdout);
         } else {
             /* Default mode for MICROPDF417 is Byte Compaction (ISO/IEC 24728:2006 5.4.3), but not emitting it
              * depends on whether an ECI has been emitted previously (or not) it appears, so simpler and safer
              * to always emit it. */
             chainemc[(*p_mclength)++] = 901;
-            if (debug_print) printf("901 ");
+            if (debug_print) fputs("901 ", stdout);
         }
 
         len = 0;
@@ -977,7 +977,7 @@ static int pdf_define_mode(int liste[3][PDF_MAX_LEN], int *p_indexliste, const u
     if (debug_print) {
         printf("modes (%d):", *p_indexliste);
         for (i = 0; i < *p_indexliste; i++) printf(" %c(%d,%d)", pdf_smodes[liste[1][i]], liste[2][i], liste[0][i]);
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     free(edges);
@@ -1013,7 +1013,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
         } while (indexchaine < length);
 
         if (debug_print) {
-            printf("\nInitial block pattern:\n");
+            fputs("\nInitial block pattern:\n", stdout);
             for (i = 0; i < indexliste; i++) {
                 printf("Start: %d  Len: %d  Type: %s\n", liste[2][i], liste[0][i], pdf_mode_str(liste[1][i]));
             }
@@ -1028,7 +1028,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
     }
 
     if (debug_print) {
-        printf("\nCompacted block pattern:\n");
+        fputs("\nCompacted block pattern:\n", stdout);
         for (i = 0; i < indexliste; i++) {
             printf("Start: %d  Len: %d  Type: %s\n", liste[2][i], liste[0][i],
                     pdf_mode_str(PDF_REAL_MODE(liste[1][i])));
@@ -1216,7 +1216,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
         for (i = 1; i < mclength; i++) { /* Skip unset length descriptor */
             printf("%d ", chainemc[i]);
         }
-        printf("\n\n");
+        fputs("\n\n", stdout);
     }
 
     /* 752 - Now take care of the number of CWs per row */
@@ -1365,7 +1365,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
         for (i = 0; i < mclength; i++) {
             printf("%d ", chainemc[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
@@ -1531,7 +1531,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
@@ -1671,10 +1671,10 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     offset = pdf_MicroVariants[variant + 102]; /* coefficient offset */
 
     if (debug_print) {
-        printf("\nChoose symbol size:\n");
+        fputs("\nChoose symbol size:\n", stdout);
         printf("%d columns x %d rows, variant %d\n", symbol->option_2, symbol->rows, variant + 1);
         printf("%d data codewords (including %d pads), %d ecc codewords\n", longueur, i, k);
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* We add the padding */
@@ -1718,7 +1718,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         for (i = 0; i < mclength; i++) {
             printf("%3d ", chainemc[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
@@ -1736,7 +1736,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* Cluster can be 0, 1 or 2 for Cluster(0), Cluster(3) and Cluster(6) */
 
-    if (debug_print) printf("\nInternal row representation:\n");
+    if (debug_print) fputs("\nInternal row representation:\n", stdout);
     for (i = 0; i < symbol->rows; i++) {
         if (debug_print) printf("row %d: ", i);
         bp = 0;

@@ -74,14 +74,17 @@ extern "C" {
 
 extern int assertionFailed;
 extern int assertionNum;
+extern struct zint_symbol **assertionPPSymbol;
 extern const char *assertionFilename;
 
 #if defined(_MSC_VER) && _MSC_VER < 1900 /* MSVC 2015 */
-#define testStart(__arg__) (testStartReal("", __arg__))
+#define testStart(name) (testStartReal("", name, NULL))
+#define testStartSymbol(name, pp_symbol) (testStartReal("", name, pp_symbol))
 #else
-#define testStart(__arg__) (testStartReal(__func__, __arg__))
+#define testStart(name) (testStartReal(__func__, name, NULL))
+#define testStartSymbol(name, pp_symbol) (testStartReal(__func__, name, pp_symbol))
 #endif
-void testStartReal(const char *func, const char *name);
+void testStartReal(const char *func, const char *name, struct zint_symbol **pp_symbol);
 void testFinish(void);
 void testSkip(const char *msg);
 void testReport(void);
@@ -111,17 +114,18 @@ void assert_equal(int e1, int e2, const char *fmt, ...);
 void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
 void assert_notequal(int e1, int e2, const char *fmt, ...);
 #else
-#define assert_exp(__exp__, ...) \
-    { assertionNum++; if (!(__exp__)) { assertionFailed++; printf("%s:%d ", assertionFilename, __LINE__); \
-      printf(__VA_ARGS__); testFinish(); return; } }
+#define assert_exp(exp, ...) \
+    { assertionNum++; if (!(exp)) { assertionFailed++; printf("%s:%d ", assertionFilename, __LINE__); \
+      printf(__VA_ARGS__); testFinish(); \
+      if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; } return; } }
 
-#define assert_zero(__exp__, ...) assert_exp((__exp__) == 0, __VA_ARGS__)
-#define assert_nonzero(__exp__, ...) assert_exp((__exp__) != 0, __VA_ARGS__)
-#define assert_null(__ptr__, ...) assert_exp((__ptr__) == NULL, __VA_ARGS__)
-#define assert_nonnull(__ptr__, ...) assert_exp((__ptr__) != NULL, __VA_ARGS__)
-#define assert_equal(__e1__, __e2__, ...) assert_exp((__e1__) == (__e2__), __VA_ARGS__)
+#define assert_zero(exp, ...) assert_exp((exp) == 0, __VA_ARGS__)
+#define assert_nonzero(exp, ...) assert_exp((exp) != 0, __VA_ARGS__)
+#define assert_null(ptr, ...) assert_exp((ptr) == NULL, __VA_ARGS__)
+#define assert_nonnull(ptr, ...) assert_exp((ptr) != NULL, __VA_ARGS__)
+#define assert_equal(e1, e2, ...) assert_exp((e1) == (e2), __VA_ARGS__)
 #define assert_equalu64 assert_equal
-#define assert_notequal(__e1__, __e2__, ...) assert_exp((__e1__) != (__e2__), __VA_ARGS__)
+#define assert_notequal(e1, e2, ...) assert_exp((e1) != (e2), __VA_ARGS__)
 #endif
 
 #define TU(p) ((unsigned char *) (p))
@@ -157,6 +161,8 @@ char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dum
 
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);
+
+void testUtilVectorPrint(const struct zint_symbol *symbol);
 
 int testUtilDataPath(char *buffer, int buffer_size, const char *subdir, const char *filename);
 FILE *testUtilOpen(const char *filename, const char *mode);

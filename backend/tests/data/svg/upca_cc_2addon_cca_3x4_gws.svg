@@ -1,0 +1,27 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="276" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="276" height="118" fill="#FFFFFF"/>
+  <path d="M12 0h4v12h-4ZM18 0h4v12h-4ZM24 0h6v4h-6ZM32 0h8v4h-8ZM44 0h4v4h-4ZM50 0h2v4h-2ZM56 0h6v4h-6ZM66 0h2v4h-2ZM70 0h6v4h-6ZM78 0h6v4h-6ZM90 0h2v4h-2ZM100 0h2v12h-2ZM106 0h6v4h-6ZM114 0h2v8h-2ZM120 0h2v4h-2ZM124 0h6v4h-6ZM132 0h6v4h-6ZM142 0h2v4h-2ZM154 0h4v4h-4ZM168 0h2v4h-2ZM174 0h4v4h-4ZM180 0h6v12h-6ZM188 0h4v8h-4ZM194 0h4v4h-4ZM204 0h2v12h-2ZM208 0h2v12h-2ZM24 4h4v4h-4ZM32 4h6v4h-6ZM42 4h6v4h-6ZM52 4h8v4h-8ZM62 4h2v8h-2ZM66 4h4v4h-4ZM78 4h2v4h-2ZM86 4h6v4h-6ZM96 4h2v4h-2ZM106 4h4v8h-4ZM120 4h6v4h-6ZM128 4h2v4h-2ZM132 4h4v4h-4ZM140 4h2v4h-2ZM154 4h2v4h-2ZM160 4h2v4h-2ZM164 4h12v4h-12ZM196 4h2v8h-2ZM24 8h2v4h-2ZM32 8h2v4h-2ZM42 8h8v4h-8ZM54 8h2v4h-2ZM66 8h2v4h-2ZM70 8h8v4h-8ZM80 8h2v4h-2ZM94 8h2v4h-2ZM114 8h4v4h-4ZM120 8h2v4h-2ZM128 8h6v4h-6ZM142 8h2v4h-2ZM146 8h4v4h-4ZM154 8h4v4h-4ZM160 8h6v4h-6ZM172 8h2v4h-2ZM188 8h6v4h-6ZM18 12h2v4h-2ZM206 12h2v4h-2ZM16 16h2v4h-2ZM208 16h2v4h-2ZM18 20h2v90h-2ZM206 20h2v90h-2ZM22 24h2v86h-2ZM28 24h4v86h-4ZM36 24h2v86h-2ZM42 24h2v76h-2ZM48 24h4v76h-4ZM54 24h8v76h-8ZM64 24h2v76h-2ZM68 24h2v76h-2ZM76 24h4v76h-4ZM82 24h4v76h-4ZM92 24h2v76h-2ZM96 24h2v76h-2ZM100 24h8v76h-8ZM110 24h2v86h-2ZM114 24h2v86h-2ZM118 24h2v76h-2ZM126 24h2v76h-2ZM132 24h2v76h-2ZM138 24h2v76h-2ZM146 24h6v76h-6ZM154 24h2v76h-2ZM160 24h6v76h-6ZM170 24h2v76h-2ZM174 24h4v76h-4ZM182 24h4v76h-4ZM188 24h4v86h-4ZM194 24h4v86h-4ZM202 24h2v86h-2ZM226 42h2v58h-2ZM230 42h4v58h-4ZM238 42h4v58h-4ZM246 42h2v58h-2ZM250 42h2v58h-2ZM256 42h2v58h-2ZM262 42h4v58h-4Z"/>
+  <text x="8.7" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="14">
+   1
+  </text>
+  <text x="74" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   23456
+  </text>
+  <text x="152" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   78901
+  </text>
+  <text x="217.3" y="117.2" text-anchor="start" font-family="OCRB, monospace" font-size="14">
+   2
+  </text>
+  <text x="246" y="39.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   12
+  </text>
+  <text x="263.6" y="39.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+   &gt;
+  </text>
+ </g>
+</svg>

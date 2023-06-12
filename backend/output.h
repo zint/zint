@@ -51,12 +51,12 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
 
 /* Set left (x), top (y), right and bottom offsets for whitespace */
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
-                float *xoffset, float *yoffset, float *roffset, float *boffset, const float scaler,
-                int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
+                const int comp_xoffset, float *xoffset, float *yoffset, float *roffset, float *boffset,
+                const float scaler, int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si);
 
-/* Set composite offset and main width excluding addon (for start of addon calc) and addon text, returning
+/* Set composite offset and main width excluding add-on (for start of add-on calc) and add-on text, returning
    UPC/EAN type */
-INTERNAL int out_process_upcean(const struct zint_symbol *symbol, int *p_main_width, int *p_comp_xoffset,
+INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
                 unsigned char addon[6], int *p_addon_gap);
 
 /* Calculate large bar height i.e. linear bars with zero row height that respond to the symbol height.
@@ -75,6 +75,9 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Props Marcel, ticket #288 */
 INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
 #endif
+
+/* Output float without trailing zeroes to `fp` with decimal pts `dp` (precision) */
+INTERNAL void out_putsf(const char *const prefix, const int dp, const float arg, FILE *fp);
 
 #ifdef __cplusplus
 }

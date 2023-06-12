@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -697,9 +697,9 @@ INTERNAL int get_eci_length_segs(const struct zint_seg segs[], const int seg_cou
 }
 
 /* Convert UTF-8 to other character encodings */
+typedef int (*eci_func_t)(const unsigned int u, unsigned char *dest);
 INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
 
-    typedef int (*eci_func_t)(const unsigned int u, unsigned char *dest);
     static const eci_func_t eci_funcs[36] = {
                 NULL,         NULL,         NULL,         NULL,  u_iso8859_2, /*0-4*/
          u_iso8859_3,  u_iso8859_4,  u_iso8859_5,  u_iso8859_6,  u_iso8859_7, /*5-9*/

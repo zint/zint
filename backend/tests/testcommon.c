@@ -57,6 +57,7 @@ static int failed = 0;
 static int skipped = 0;
 int assertionFailed = 0;
 int assertionNum = 0;
+struct zint_symbol **assertionPPSymbol = NULL;
 const char *assertionFilename = "";
 static const char *testName = NULL;
 static const char *testFunc = NULL;
@@ -69,42 +70,49 @@ void assert_zero(int exp, const char *fmt, ...) {
     assertionNum++;
     if (exp != 0) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_nonzero(int exp, const char *fmt, ...) {
     assertionNum++;
     if (exp == 0) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_null(const void *exp, const char *fmt, ...) {
     assertionNum++;
     if (exp != NULL) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_nonnull(const void *exp, const char *fmt, ...) {
     assertionNum++;
     if (exp == NULL) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_equal(int e1, int e2, const char *fmt, ...) {
     assertionNum++;
     if (e1 != e2) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...) {
     assertionNum++;
     if (e1 != e2) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 void assert_notequal(int e1, int e2, const char *fmt, ...) {
     assertionNum++;
     if (e1 == e2) {
         va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
     }
 }
 #endif
@@ -120,7 +128,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...) {
 #endif
 
 /* Begin individual test function */
-void testStartReal(const char *func, const char *name) {
+void testStartReal(const char *func, const char *name, struct zint_symbol **pp_symbol) {
     tests++;
     if (func && *func && name && *name && strcmp(func, name) == 0) {
         testName = "";
@@ -130,15 +138,17 @@ void testStartReal(const char *func, const char *name) {
     testFunc = func ? func : "";
     assertionFailed = 0;
     assertionNum = 0;
+    assertionPPSymbol = pp_symbol;
     printf("_____%d: %s: %s...\n", tests, testFunc, testName ? testName : "");
 }
 
 /* End individual test function */
 void testFinish(void) {
+    fputs(assertionFailed ? "*****" : ".....", stdout);
     if (testName && *testName) {
-        printf(".....%d: %s: %s ", tests, testFunc, testName);
+        printf("%d: %s: %s ", tests, testFunc, testName);
     } else {
-        printf(".....%d: %s: ", tests, testFunc);
+        printf("%d: %s: ", tests, testFunc);
     }
     if (assertionFailed) {
         printf("FAILED. (%d assertions failed.)\n", assertionFailed);
@@ -151,10 +161,11 @@ void testFinish(void) {
 /* Skip (and end) individual test function */
 void testSkip(const char *msg) {
     skipped++;
+    fputs(assertionFailed ? "*****" : ".....", stdout);
     if (testName && *testName) {
-        printf(".....%d: %s: %s ", tests, testFunc, testName);
+        printf("%d: %s: %s ", tests, testFunc, testName);
     } else {
-        printf(".....%d: %s: ", tests, testFunc);
+        printf("%d: %s: ", tests, testFunc);
     }
     if (assertionFailed) {
         printf("FAILED. (%d assertions failed.)\n", assertionFailed);
@@ -167,11 +178,11 @@ void testSkip(const char *msg) {
 /* End test program */
 void testReport(void) {
     if (failed && skipped) {
-        printf("Total %d tests, %d skipped, %d fails.\n", tests, skipped, failed);
+        printf("Total %d tests, %d skipped, %d **fails**.\n", tests, skipped, failed);
         exit(-1);
     }
     if (failed) {
-        printf("Total %d tests, %d fails.\n", tests, failed);
+        printf("Total %d tests, %d **fails**.\n", tests, failed);
         exit(-1);
     }
     if (skipped) {
@@ -179,7 +190,7 @@ void testReport(void) {
     } else if (tests) {
         printf("Total %d tests, all passed.\n", tests);
     } else {
-        printf("Total %d tests.\n", tests);
+        fputs("***No tests run.***\n", stdout);
     }
 }
 
@@ -204,7 +215,7 @@ static int validate_int(const char src[], int *p_val) {
     return 1;
 }
 
-/* Verifies that a string `src` only uses digits or a comma-separated range of digits.
+/* Verifies that a string `src` only uses digits or a hyphen-separated range of digits.
    On success returns value in `p_val` and if present a range end value in `p_val_end` */
 static int validate_int_range(const char src[], int *p_val, int *p_val_end) {
     int val = 0;
@@ -424,7 +435,7 @@ const char *testUtilErrorName(int error_number) {
     };
     static const struct item data[] = {
         { "0", 0, 0 },
-        { "", -1, 1 },
+        { "ZINT_WARN_HRT_TRUNCATED", ZINT_WARN_HRT_TRUNCATED, 1 },
         { "ZINT_WARN_INVALID_OPTION", ZINT_WARN_INVALID_OPTION, 2 },
         { "ZINT_WARN_USES_ECI", ZINT_WARN_USES_ECI, 3 },
         { "ZINT_WARN_NONCOMPLIANT", ZINT_WARN_NONCOMPLIANT, 4 },
@@ -435,6 +446,10 @@ const char *testUtilErrorName(int error_number) {
         { "ZINT_ERROR_ENCODING_PROBLEM", ZINT_ERROR_ENCODING_PROBLEM, 9 },
         { "ZINT_ERROR_FILE_ACCESS", ZINT_ERROR_FILE_ACCESS, 10 },
         { "ZINT_ERROR_MEMORY", ZINT_ERROR_MEMORY, 11 },
+        { "ZINT_ERROR_FILE_WRITE", ZINT_ERROR_FILE_WRITE, 12 },
+        { "ZINT_ERROR_USES_ECI", ZINT_ERROR_USES_ECI, 13 },
+        { "ZINT_ERROR_NONCOMPLIANT", ZINT_ERROR_NONCOMPLIANT, 14 },
+        { "ZINT_ERROR_HRT_TRUNCATED", ZINT_ERROR_HRT_TRUNCATED, 15 },
     };
     static const int data_size = ARRAY_SIZE(data);
 
@@ -571,6 +586,8 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "BARCODE_QUIET_ZONES", BARCODE_QUIET_ZONES, 2048 },
         { "BARCODE_NO_QUIET_ZONES", BARCODE_NO_QUIET_ZONES, 4096 },
         { "COMPLIANT_HEIGHT", COMPLIANT_HEIGHT, 0x2000 },
+        { "EANUPC_GUARD_WHITESPACE", EANUPC_GUARD_WHITESPACE, 0x4000 },
+        { "EMBED_VECTOR_FONT", EMBED_VECTOR_FONT, 0x8000 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;
@@ -597,8 +614,8 @@ const char *testUtilOutputOptionsName(int output_options) {
         }
     }
     if (set != output_options) {
-        fprintf(stderr, "testUtilOutputOptionsName: unknown output option(s) %d (%d)\n",
-                output_options & set, output_options);
+        fprintf(stderr, "testUtilOutputOptionsName: unknown output option(s) %d (%d, 0x%X)\n",
+                output_options & set, output_options, output_options);
         abort();
     }
     return buf;
@@ -1175,6 +1192,7 @@ void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, c
         for (column = 0; column < symbol->bitmap_width; column += 10) printf("%-3d       ", column);
         putchar('\n');
     }
+    fflush(stdout);
 }
 
 /* Compare a bitmap to a dump */
@@ -1222,6 +1240,35 @@ int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, in
     *row = r;
     *column = c;
     return e != ep || r != symbol->bitmap_height || c != symbol->bitmap_width ? 1 /*fail*/ : 0 /*success*/;
+}
+
+/* Dump vectors to stdout, for debugging */
+void testUtilVectorPrint(const struct zint_symbol *symbol) {
+    struct zint_vector_rect *rect;
+    struct zint_vector_hexagon *hex;
+    struct zint_vector_circle *circ;
+    struct zint_vector_string *str;
+
+    if (symbol->vector == NULL) {
+        fputs("symbol->vector NULL\n", stdout);
+    } else {
+        for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
+            printf("rect(x %.9g, y %.9g, width %.9g, height %.9g, colour %d)\n", rect->x, rect->y, rect->width,
+                    rect->height, rect->colour);
+        }
+        for (hex = symbol->vector->hexagons; hex; hex = hex->next) {
+            printf("hex(x %.9g, y %.9g, diameter %.9g, rotation %d)\n", hex->x, hex->y, hex->diameter, hex->rotation);
+        }
+        for (circ = symbol->vector->circles; circ; circ = circ->next) {
+            printf("circ(x %.9g, y %.9g, diameter %.9g, width %.9g, colour %d)\n", circ->x, circ->y, circ->diameter,
+                    circ->width, circ->colour);
+        }
+        for (str = symbol->vector->strings; str; str = str->next) {
+            printf("str(x %.9g, y %.9g, fsize %.9g, width %.9g, length %d, rotation %d, halign %d, \"%s\")\n", str->x,
+                    str->y, str->fsize, str->width, str->length, str->rotation, str->halign, str->text);
+        }
+    }
+    fflush(stdout);
 }
 
 /* Determine the location of test data relative to where the test is being run */
@@ -3496,7 +3543,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_JAPANPOST, 76, },
         { "", BARCODE_KOREAPOST, 77, },
         { "", -1, 78, },
-        { "", BARCODE_DBAR_STK, 79, },
+        { "DataBar", BARCODE_DBAR_STK, 79, },
         { "DataBar", BARCODE_DBAR_OMNSTK, 80, },
         { "DataBarExpanded", BARCODE_DBAR_EXPSTK, 81, },
         { "", BARCODE_PLANET, 82, },
@@ -3945,7 +3992,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             c25inter[++expected_len] = '\0';
             expected = c25inter;
         }
-    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_OMNSTK) {
+    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_OMNSTK || symbology == BARCODE_DBAR_STK) {
         if (expected_len == 13) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
         }

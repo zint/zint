@@ -1,7 +1,7 @@
 /* mailmark.c - Royal Mail 4-state and 2D Mailmark barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -105,7 +105,7 @@ static int mailmark_verify_character(char input, char type) {
     }
 }
 
-static int mailmark_verify_postcode(const char postcode[10], int* p_postcode_type) {
+static int mailmark_verify_postcode(const char postcode[10], int *p_postcode_type) {
     int postcode_type;
 
     /* Detect postcode type */
@@ -179,9 +179,9 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     unsigned int item_id;
     char postcode[10];
     int postcode_type;
-    large_int destination_postcode;
-    large_int b;
-    large_int cdv;
+    large_uint destination_postcode;
+    large_uint b;
+    large_uint cdv;
     unsigned char data[26];
     int data_top, data_step;
     unsigned char check[7];
@@ -382,7 +382,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         printf("DPC type %d\n", postcode_type);
-        printf("CDV: ");
+        fputs("CDV: ", stdout);
         large_print(&cdv);
     }
 
@@ -417,11 +417,11 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Codewords:  ");
+        fputs("Codewords:", stdout);
         for (i = 0; i <= data_top + check_count; i++) {
-            printf("%d  ", (int) data[i]);
+            printf("  %d", (int) data[i]);
         }
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     /* Conversion from Data Numbers and Check Numbers to Data Symbols and Check Symbols */

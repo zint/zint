@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="276" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="276" height="118" fill="#FFFFFF"/>
+  <path d="M16 0h4v16h-4ZM22 0h2v20h-2ZM28 0h2v4h-2ZM36 0h8v4h-8ZM48 0h4v8h-4ZM54 0h2v4h-2ZM60 0h6v4h-6ZM70 0h2v4h-2ZM74 0h6v4h-6ZM82 0h6v4h-6ZM94 0h2v4h-2ZM104 0h2v16h-2ZM110 0h2v8h-2ZM118 0h4v4h-4ZM124 0h2v4h-2ZM128 0h6v4h-6ZM136 0h6v4h-6ZM146 0h2v4h-2ZM158 0h4v8h-4ZM172 0h2v4h-2ZM178 0h4v4h-4ZM184 0h6v4h-6ZM192 0h6v4h-6ZM200 0h4v8h-4ZM208 0h2v16h-2ZM212 0h2v16h-2ZM26 4h4v4h-4ZM36 4h6v8h-6ZM44 4h2v8h-2ZM56 4h2v4h-2ZM70 4h4v4h-4ZM78 4h8v4h-8ZM88 4h2v4h-2ZM92 4h10v4h-10ZM120 4h2v12h-2ZM124 4h4v4h-4ZM132 4h2v4h-2ZM136 4h8v4h-8ZM146 4h4v4h-4ZM166 4h2v4h-2ZM172 4h6v4h-6ZM188 4h2v4h-2ZM192 4h4v12h-4ZM26 8h6v4h-6ZM48 8h10v4h-10ZM60 8h2v4h-2ZM70 8h12v4h-12ZM86 8h4v4h-4ZM92 8h6v4h-6ZM100 8h2v4h-2ZM108 8h4v4h-4ZM124 8h10v4h-10ZM136 8h2v4h-2ZM140 8h8v4h-8ZM152 8h4v4h-4ZM158 8h2v4h-2ZM164 8h4v4h-4ZM170 8h2v4h-2ZM176 8h6v4h-6ZM198 8h6v4h-6ZM26 12h8v4h-8ZM36 12h2v4h-2ZM44 12h4v4h-4ZM52 12h4v4h-4ZM64 12h2v4h-2ZM70 12h2v4h-2ZM80 12h2v4h-2ZM84 12h6v4h-6ZM96 12h6v4h-6ZM108 12h6v4h-6ZM124 12h2v4h-2ZM132 12h6v4h-6ZM142 12h6v4h-6ZM154 12h2v4h-2ZM158 12h4v4h-4ZM164 12h2v4h-2ZM172 12h2v4h-2ZM180 12h4v4h-4ZM198 12h8v4h-8ZM210 16h2v4h-2ZM20 20h2v4h-2ZM212 20h2v4h-2ZM22 24h2v86h-2ZM210 24h2v86h-2ZM26 28h2v82h-2ZM32 28h2v72h-2ZM38 28h4v72h-4ZM44 28h8v72h-8ZM54 28h2v72h-2ZM60 28h6v72h-6ZM68 28h2v72h-2ZM72 28h4v72h-4ZM82 28h2v72h-2ZM92 28h2v72h-2ZM96 28h2v72h-2ZM102 28h2v72h-2ZM110 28h2v72h-2ZM114 28h2v82h-2ZM118 28h2v82h-2ZM122 28h2v72h-2ZM128 28h2v72h-2ZM136 28h6v72h-6ZM144 28h2v72h-2ZM150 28h6v72h-6ZM160 28h2v72h-2ZM164 28h4v72h-4ZM172 28h4v72h-4ZM178 28h4v72h-4ZM184 28h4v72h-4ZM192 28h2v72h-2ZM198 28h2v72h-2ZM206 28h2v82h-2ZM226 46h2v64h-2ZM230 46h4v64h-4ZM238 46h4v64h-4ZM246 46h2v64h-2ZM250 46h2v64h-2ZM256 46h2v64h-2ZM262 46h4v64h-4Z"/>
+  <text x="12.2" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="20">
+   1
+  </text>
+  <text x="71" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   234567
+  </text>
+  <text x="163" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   890128
+  </text>
+  <text x="246" y="43.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   12
+  </text>
+  <text x="264" y="43.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+   &gt;
+  </text>
+ </g>
+</svg>

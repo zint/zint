@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="184" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="184" height="118" fill="#FFFFFF"/>
+  <path d="M12 0h4v20h-4ZM18 0h4v16h-4ZM26 0h4v4h-4ZM32 0h8v4h-8ZM42 0h6v4h-6ZM50 0h2v4h-2ZM54 0h10v4h-10ZM66 0h2v4h-2ZM70 0h2v4h-2ZM78 0h2v4h-2ZM86 0h8v4h-8ZM100 0h8v4h-8ZM110 0h2v8h-2ZM114 0h2v16h-2ZM120 0h2v20h-2ZM24 4h6v4h-6ZM32 4h6v4h-6ZM40 4h4v4h-4ZM52 4h2v4h-2ZM60 4h4v4h-4ZM66 4h6v4h-6ZM76 4h2v8h-2ZM80 4h2v4h-2ZM84 4h6v4h-6ZM100 4h6v16h-6ZM24 8h4v4h-4ZM32 8h4v4h-4ZM42 8h2v4h-2ZM46 8h10v4h-10ZM58 8h6v4h-6ZM66 8h8v4h-8ZM86 8h2v8h-2ZM92 8h2v4h-2ZM108 8h4v4h-4ZM24 12h2v8h-2ZM32 12h2v4h-2ZM38 12h6v4h-6ZM46 12h6v4h-6ZM56 12h8v4h-8ZM66 12h6v8h-6ZM76 12h8v4h-8ZM90 12h6v4h-6ZM108 12h2v8h-2ZM18 16h2v8h-2ZM32 16h4v4h-4ZM40 16h4v4h-4ZM48 16h2v4h-2ZM62 16h2v4h-2ZM74 16h2v4h-2ZM82 16h4v4h-4ZM88 16h8v4h-8ZM114 16h4v4h-4ZM118 20h2v4h-2ZM16 24h2v4h-2ZM120 24h2v4h-2ZM18 28h2v82h-2ZM118 28h2v82h-2ZM22 32h2v78h-2ZM32 32h2v68h-2ZM36 32h2v68h-2ZM40 32h4v68h-4ZM50 32h2v68h-2ZM56 32h6v68h-6ZM64 32h2v68h-2ZM68 32h8v68h-8ZM78 32h2v68h-2ZM84 32h4v68h-4ZM90 32h4v68h-4ZM98 32h4v68h-4ZM106 32h2v68h-2ZM110 32h2v78h-2ZM114 32h2v78h-2ZM134 50h2v50h-2ZM138 50h4v50h-4ZM144 50h4v50h-4ZM150 50h6v50h-6ZM158 50h2v50h-2ZM164 50h2v50h-2ZM168 50h6v50h-6Z"/>
+  <text x="8.7" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="14">
+   0
+  </text>
+  <text x="67" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   654321
+  </text>
+  <text x="125.3" y="117.2" text-anchor="start" font-family="OCRB, monospace" font-size="14">
+   7
+  </text>
+  <text x="154" y="47.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   89
+  </text>
+  <text x="171.6" y="47.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+   &gt;
+  </text>
+ </g>
+</svg>

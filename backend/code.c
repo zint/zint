@@ -601,11 +601,11 @@ static void channel_generate_precalc(int channels, long value, int mod, int last
             int smax[7]) {
     int i;
     if (value == mod) printf("static channel_precalc channel_precalcs%d[] = {\n", channels);
-    printf("    { %7ld, {", value); for (i = 0; i < 8; i++) printf(" %d,", B[i]); printf(" },");
-    printf(" {"); for (i = 0; i < 8; i++) printf(" %d,", S[i]); printf(" },");
-    printf(" {"); for (i = 0; i < 7; i++) printf(" %d,", bmax[i]); printf(" },");
-    printf(" {"); for (i = 0; i < 7; i++) printf(" %d,", smax[i]); printf(" }, },\n");
-    if (value == last) printf("};\n");
+    printf("    { %7ld, {", value); for (i = 0; i < 8; i++) printf(" %d,", B[i]); fputs(" },", stdout);
+    fputs(" {", stdout); for (i = 0; i < 8; i++) printf(" %d,", S[i]); fputs(" },", stdout);
+    fputs(" {", stdout); for (i = 0; i < 7; i++) printf(" %d,", bmax[i]); fputs(" },", stdout);
+    fputs(" {", stdout); for (i = 0; i < 7; i++) printf(" %d,", smax[i]); fputs(" }, },\n", stdout);
+    if (value == last) fputs("};\n", stdout);
 }
 #else
 #include "channel_precalcs.h"

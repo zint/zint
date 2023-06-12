@@ -1,7 +1,7 @@
 /* composite.c - Handles GS1 Composite Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -545,7 +545,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     if (debug_print) {
         printf("CC-C Codewords (%d):", mclength);
         for (i = 0; i < mclength; i++) printf(" %d", chainemc[i]);
-        printf("\n");
+        fputc('\n', stdout);
     }
 
     k = 1;
@@ -1408,6 +1408,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     linear->symbology = symbol->symbology;
     linear->input_mode = symbol->input_mode;
     linear->output_options = symbol->output_options;
+    linear->show_hrt = symbol->show_hrt;
     linear->option_2 = symbol->option_2;
     linear->option_3 = symbol->option_3;
     /* If symbol->height given minimum row height will be returned, else default height */
@@ -1489,7 +1490,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                     break;
             }
             break;
-        case BARCODE_GS1_128_CC: if (cc_mode == 3) {
+        case BARCODE_GS1_128_CC:
+            if (cc_mode == 3) {
                 bottom_shift = 7; /* ISO/IEC 24723:2010 12.3 f) */
             } else {
                 /* ISO/IEC 24723:2010 12.3 g) "GS1-128 components linked to the right quiet zone of the CC-A or CC-B:
@@ -1521,10 +1523,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 bottom_shift = 9;
             }
             break;
-        case BARCODE_DBAR_EXP_CC: k = 1;
-            while ((!(module_is_set(linear, 1, k - 1))) && module_is_set(linear, 1, k)) {
-                k++;
-            }
+        case BARCODE_DBAR_EXP_CC:
+            for (k = 1; !module_is_set(linear, 1, k - 1) && module_is_set(linear, 1, k); k++);
             top_shift = k;
             break;
         case BARCODE_UPCA_CC: bottom_shift = 2;
@@ -1535,10 +1535,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             break;
         case BARCODE_DBAR_OMNSTK_CC: top_shift = 1;
             break;
-        case BARCODE_DBAR_EXPSTK_CC: k = 1;
-            while ((!(module_is_set(linear, 1, k - 1))) && module_is_set(linear, 1, k)) {
-                k++;
-            }
+        case BARCODE_DBAR_EXPSTK_CC:
+            for (k = 1; !module_is_set(linear, 1, k - 1) && module_is_set(linear, 1, k); k++);
             top_shift = k;
             break;
     }

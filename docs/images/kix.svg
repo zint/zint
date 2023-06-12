@@ -1,56 +1,9 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="696" height="68" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="696" height="68" fill="#FFFFFF" />
-      <rect x="32.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="48.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="96.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="112.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="160.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="176.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="224.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="240.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="272.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="288.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="336.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="352.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="416.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="432.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="480.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="496.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="544.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="560.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="608.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="624.00" y="0.00" width="8.00" height="42.63" />
-      <rect x="672.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="688.00" y="0.00" width="8.00" height="67.95" />
-      <rect x="0.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="16.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="64.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="80.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="128.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="144.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="192.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="208.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="256.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="304.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="320.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="368.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="384.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="400.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="448.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="464.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="512.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="528.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="576.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="592.00" y="25.31" width="8.00" height="42.63" />
-      <rect x="640.00" y="25.31" width="8.00" height="17.32" />
-      <rect x="656.00" y="25.31" width="8.00" height="17.32" />
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="696" height="68" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="696" height="68" fill="#FFFFFF"/>
+  <path d="M32 0h8v67.95h-8ZM48 0h8v42.63h-8ZM96 0h8v42.63h-8ZM112 0h8v42.63h-8ZM160 0h8v67.95h-8ZM176 0h8v67.95h-8ZM224 0h8v67.95h-8ZM240 0h8v67.95h-8ZM272 0h8v42.63h-8ZM288 0h8v67.95h-8ZM336 0h8v42.63h-8ZM352 0h8v67.95h-8ZM416 0h8v42.63h-8ZM432 0h8v67.95h-8ZM480 0h8v67.95h-8ZM496 0h8v67.95h-8ZM544 0h8v67.95h-8ZM560 0h8v42.63h-8ZM608 0h8v42.63h-8ZM624 0h8v42.63h-8ZM672 0h8v67.95h-8ZM688 0h8v67.95h-8ZM0 25.31h8v17.32h-8ZM16 25.31h8v42.63h-8ZM64 25.31h8v42.63h-8ZM80 25.31h8v42.63h-8ZM128 25.31h8v17.32h-8ZM144 25.31h8v17.32h-8ZM192 25.31h8v17.32h-8ZM208 25.31h8v17.32h-8ZM256 25.31h8v42.63h-8ZM304 25.31h8v17.32h-8ZM320 25.31h8v42.63h-8ZM368 25.31h8v17.32h-8ZM384 25.31h8v42.63h-8ZM400 25.31h8v17.32h-8ZM448 25.31h8v17.32h-8ZM464 25.31h8v17.32h-8ZM512 25.31h8v17.32h-8ZM528 25.31h8v42.63h-8ZM576 25.31h8v42.63h-8ZM592 25.31h8v42.63h-8ZM640 25.31h8v17.32h-8ZM656 25.31h8v17.32h-8Z"/>
+ </g>
 </svg>

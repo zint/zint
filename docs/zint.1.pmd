@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.12.0.9
 %
-% May 2023
+% June 2023
 
 # NAME
 
@@ -121,6 +121,11 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     supported by Aztec Code, Code One, Data Matrix, DotCode, Grid Matrix, Han Xin Code, MaxiCode, MicroPDF417, PDF417,
     QR Code, rMQR and Ultracode.
 
+`--embedfont`
+
+:   For vector output, embed the font in the file for portability. Currently only available for SVG output of EAN/UPC
+    barcodes.
+
 `--esc`
 
 :   Process escape characters in the input data. The escape sequences are:
@@ -194,6 +199,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 :   For EAN/UPC symbols, set the height the guard bars descend below the main bars, where *NUMBER* is in multiples of
     the X-dimension. *NUMBER* may be floating-point.
+
+`--guardwhitespace`
+
+:   For EAN/UPC symbols, add quiet zone indicators `"<"` and/or `">"` to HRT where applicable.
 
 `--height=NUMBER`
 

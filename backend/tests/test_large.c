@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -207,9 +207,9 @@ static void test_clz_u64(const testCtx *const p_ctx) {
 static void test_load(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
-        large_int s;
-        large_int expected;
+        large_uint t;
+        large_uint s;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -244,10 +244,10 @@ static void test_load(const testCtx *const p_ctx) {
 static void test_load_str_u64(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         const char *s;
         int length;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -285,9 +285,9 @@ static void test_load_str_u64(const testCtx *const p_ctx) {
 static void test_add_u64(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         uint64_t s;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -329,9 +329,9 @@ static void test_add_u64(const testCtx *const p_ctx) {
 static void test_sub_u64(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         uint64_t s;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -373,9 +373,9 @@ static void test_sub_u64(const testCtx *const p_ctx) {
 static void test_mul_u64(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         uint64_t s;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -431,10 +431,10 @@ static void test_div_u64(const testCtx *const p_ctx) {
 
     uint64_t r;
     struct item {
-        large_int t;
+        large_uint t;
         uint64_t s;
         uint64_t expected_r;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -557,9 +557,9 @@ static void test_div_u64(const testCtx *const p_ctx) {
 static void test_unset_bit(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         int s;
-        large_int expected;
+        large_uint expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -721,7 +721,7 @@ static void test_unset_bit(const testCtx *const p_ctx) {
 static void test_uint_array(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         int size;
         int bits;
         unsigned int expected[130];
@@ -810,7 +810,7 @@ static void test_uint_array(const testCtx *const p_ctx) {
 static void test_dump(const testCtx *const p_ctx) {
 
     struct item {
-        large_int t;
+        large_uint t;
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */

@@ -1,35 +1,12 @@
 <?xml version="1.0" standalone="no"?>
-<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
-   "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="136" height="119" version="1.1"
-   xmlns="http://www.w3.org/2000/svg">
-   <desc>Zint Generated Symbol
-   </desc>
-
-   <g id="barcode" fill="#000000">
-      <rect x="0" y="0" width="136" height="119" fill="#FFFFFF" />
-      <rect x="0.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="6.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="12.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="22.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="26.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="34.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="44.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="54.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="62.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="66.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="70.00" y="0.00" width="6.00" height="100.00" />
-      <rect x="78.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="88.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="92.00" y="0.00" width="6.00" height="100.00" />
-      <rect x="100.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="110.00" y="0.00" width="4.00" height="100.00" />
-      <rect x="120.00" y="0.00" width="6.00" height="100.00" />
-      <rect x="128.00" y="0.00" width="2.00" height="100.00" />
-      <rect x="132.00" y="0.00" width="4.00" height="100.00" />
-      <text x="68.00" y="114.00" text-anchor="middle"
-         font-family="Helvetica, sans-serif" font-size="14.0" >
-         AIM
-      </text>
-   </g>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="136" height="119" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="136" height="119" fill="#FFFFFF"/>
+  <path d="M0 0h4v100h-4ZM6 0h2v100h-2ZM12 0h2v100h-2ZM22 0h2v100h-2ZM26 0h2v100h-2ZM34 0h4v100h-4ZM44 0h4v100h-4ZM54 0h2v100h-2ZM62 0h2v100h-2ZM66 0h2v100h-2ZM70 0h6v100h-6ZM78 0h4v100h-4ZM88 0h2v100h-2ZM92 0h6v100h-6ZM100 0h4v100h-4ZM110 0h4v100h-4ZM120 0h6v100h-6ZM128 0h2v100h-2ZM132 0h4v100h-4Z"/>
+  <text x="68" y="114" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="14">
+   AIM
+  </text>
+ </g>
 </svg>

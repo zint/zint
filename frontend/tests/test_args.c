@@ -150,33 +150,33 @@ static char *exec(const char *cmd, char *buf, int buf_size, int debug, int index
 
 static void arg_int(char *cmd, const char *opt, int val) {
     if (val != -1) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s%d", strlen(cmd) ? " " : "", opt, val);
+        sprintf(cmd + strlen(cmd), "%s%s%d", strlen(cmd) ? " " : "", opt, val);
     }
 }
 
 static void arg_bool(char *cmd, const char *opt, int val) {
     if (val == 1) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s", strlen(cmd) ? " " : "", opt);
+        sprintf(cmd + strlen(cmd), "%s%s", strlen(cmd) ? " " : "", opt);
     }
 }
 
 static void arg_double(char *cmd, const char *opt, double val) {
     if (val != -1) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s%.8f", strlen(cmd) ? " " : "", opt, val);
+        sprintf(cmd + strlen(cmd), "%s%s%.8f", strlen(cmd) ? " " : "", opt, val);
     }
 }
 
 static void arg_data(char *cmd, const char *opt, const char *data) {
     if (data != NULL) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s\"%s\"", strlen(cmd) ? " " : "", opt, data);
+        sprintf(cmd + strlen(cmd), "%s%s\"%s\"", strlen(cmd) ? " " : "", opt, data);
     }
 }
 
 static void arg_seg(char *cmd, const char *opt, const char *data, const int eci) {
     if (data != NULL) {
-        sprintf(cmd + (int) strlen(cmd), "%s%s%d,\"%s\"", strlen(cmd) ? " " : "", opt, eci, data);
+        sprintf(cmd + strlen(cmd), "%s%s%d,\"%s\"", strlen(cmd) ? " " : "", opt, eci, data);
     } else {
-        sprintf(cmd + (int) strlen(cmd), "%s%s%d", strlen(cmd) ? " " : "", opt, eci);
+        sprintf(cmd + strlen(cmd), "%s%s%d", strlen(cmd) ? " " : "", opt, eci);
     }
 }
 
@@ -198,7 +198,7 @@ static int arg_input(char *cmd, const char *filename, const char *input) {
             }
             fclose(fp);
         }
-        sprintf(cmd + (int) strlen(cmd), "%s-i \"%s\"", strlen(cmd) ? " " : "", filename);
+        sprintf(cmd + strlen(cmd), "%s-i \"%s\"", strlen(cmd) ? " " : "", filename);
         return 1;
     }
     return 0;
@@ -207,27 +207,27 @@ static int arg_input(char *cmd, const char *filename, const char *input) {
 static void arg_input_mode(char *cmd, int input_mode) {
     if (input_mode != -1) {
         if ((input_mode & 0x07) == DATA_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--binary", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--binary", strlen(cmd) ? " " : "");
         } else if ((input_mode & 0x07) == GS1_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--gs1", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--gs1", strlen(cmd) ? " " : "");
         }
         if (input_mode & ESCAPE_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--esc", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--esc", strlen(cmd) ? " " : "");
         }
         if (input_mode & EXTRA_ESCAPE_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--extraesc", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--extraesc", strlen(cmd) ? " " : "");
         }
         if (input_mode & FAST_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--fast", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--fast", strlen(cmd) ? " " : "");
         }
         if (input_mode & GS1PARENS_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--gs1parens", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--gs1parens", strlen(cmd) ? " " : "");
         }
         if (input_mode & GS1NOCHECK_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--gs1nocheck", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--gs1nocheck", strlen(cmd) ? " " : "");
         }
         if (input_mode & HEIGHTPERROW_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--heightperrow", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--heightperrow", strlen(cmd) ? " " : "");
         }
     }
 }
@@ -235,43 +235,43 @@ static void arg_input_mode(char *cmd, int input_mode) {
 static void arg_output_options(char *cmd, int output_options) {
     if (output_options != -1) {
         if (output_options & BARCODE_BIND) {
-            sprintf(cmd + (int) strlen(cmd), "%s--bind", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--bind", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_BIND_TOP) {
-            sprintf(cmd + (int) strlen(cmd), "%s--bindtop", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--bindtop", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_BOX) {
-            sprintf(cmd + (int) strlen(cmd), "%s--box", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--box", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_STDOUT) {
-            sprintf(cmd + (int) strlen(cmd), "%s--direct", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--direct", strlen(cmd) ? " " : "");
         }
         if (output_options & READER_INIT) {
-            sprintf(cmd + (int) strlen(cmd), "%s--init", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--init", strlen(cmd) ? " " : "");
         }
         if (output_options & SMALL_TEXT) {
-            sprintf(cmd + (int) strlen(cmd), "%s--small", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--small", strlen(cmd) ? " " : "");
         }
         if (output_options & BOLD_TEXT) {
-            sprintf(cmd + (int) strlen(cmd), "%s--bold", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--bold", strlen(cmd) ? " " : "");
         }
         if (output_options & CMYK_COLOUR) {
-            sprintf(cmd + (int) strlen(cmd), "%s--cmyk", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--cmyk", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_DOTTY_MODE) {
-            sprintf(cmd + (int) strlen(cmd), "%s--dotty", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--dotty", strlen(cmd) ? " " : "");
         }
         if (output_options & GS1_GS_SEPARATOR) {
-            sprintf(cmd + (int) strlen(cmd), "%s--gssep", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--gssep", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_QUIET_ZONES) {
-            sprintf(cmd + (int) strlen(cmd), "%s--quietzones", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--quietzones", strlen(cmd) ? " " : "");
         }
         if (output_options & BARCODE_NO_QUIET_ZONES) {
-            sprintf(cmd + (int) strlen(cmd), "%s--noquietzones", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--noquietzones", strlen(cmd) ? " " : "");
         }
         if (output_options & COMPLIANT_HEIGHT) {
-            sprintf(cmd + (int) strlen(cmd), "%s--compliantheight", strlen(cmd) ? " " : "");
+            sprintf(cmd + strlen(cmd), "%s--compliantheight", strlen(cmd) ? " " : "");
         }
     }
 }
@@ -575,10 +575,11 @@ static void test_input(const testCtx *const p_ctx) {
         arg_input(cmd, input_filename, data[i].input);
         arg_data(cmd, "-o ", data[i].outfile);
 
-        if (!data[i].expected) {
-            printf("++++ Following Error 778 expected, ignore\n");
-        } else if (data[i].batch && data[i].mirror && data[i].outfile && data[i].outfile[0] && strcmp(data[i].outfile, TEST_MIRRORED_DIR_LONG) == 0) {
-            printf("++++ Following Warning 188 expected, ignore\n");
+        if (!data[i].expected
+                || (data[i].batch && data[i].mirror && data[i].outfile && data[i].outfile[0]
+                    && strcmp(data[i].outfile, TEST_MIRRORED_DIR_LONG) == 0)) {
+            printf("++++ Following %s expected, ignore: ", data[i].expected ? "warning" : "error");
+            fflush(stdout);
         }
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
 
@@ -754,7 +755,10 @@ static void test_batch_large(const testCtx *const p_ctx) {
         strcat(data_buf, "\n");
         have_input = arg_input(cmd, input_filename, data_buf);
 
-        if (!data[i].expected) printf("++++ Following Error 541 expected, ignore\n");
+        if (!data[i].expected) {
+            printf("++++ Following error expected, ignore: ");
+            fflush(stdout);
+        }
         assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
         if (data[i].expected) {
             assert_zero(testUtilRemove(data[i].expected), "i:%d testUtilRemove(%s) != 0 (%d: %s)\n", i, data[i].expected, errno, strerror(errno));
@@ -962,151 +966,159 @@ static void test_barcode_symbology(const testCtx *const p_ctx) {
         /* 55*/ { "CODE93", "1", NULL, 0, "BARCODE_CODE93 (25)," },
         /* 56*/ { "flat", "1", NULL, 0, "BARCODE_FLAT (28)," },
         /* 57*/ { "dbar omn", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
-        /* 58*/ { "rss14", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
-        /* 59*/ { "databar omn", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
-        /* 60*/ { "databar omni", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
-        /* 61*/ { "dbar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
-        /* 62*/ { "rss ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
-        /* 63*/ { "databar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
-        /* 64*/ { "databar limited", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
-        /* 65*/ { "dbarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
-        /* 66*/ { "rss exp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
-        /* 67*/ { "databarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
-        /* 68*/ { "databarexpanded", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
-        /* 69*/ { "telepen", "1", NULL, 0, "BARCODE_TELEPEN (32)," },
-        /* 70*/ { "upc", "1", NULL, 1, "Error 119: Invalid barcode type 'upc'" },
-        /* 71*/ { "upca", "1", NULL, 0, "BARCODE_UPCA (34)," },
-        /* 72*/ { "upca_chk", "123456789012", NULL, 0, "BARCODE_UPCA_CHK (35)," },
-        /* 73*/ { "upce", "1", NULL, 0, "BARCODE_UPCE (37)," },
-        /* 74*/ { "upce chk", "12345670", NULL, 0, "BARCODE_UPCE_CHK (38)," },
-        /* 75*/ { "POSTNET ", "12345678901", NULL, 0, "BARCODE_POSTNET (40)," },
-        /* 76*/ { "msi", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
-        /* 77*/ { "MSI Plessey ", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
-        /* 78*/ { "fim ", "A", NULL, 0, "BARCODE_FIM (49)," },
-        /* 79*/ { "LOGMARS", "123456", NULL, 0, "BARCODE_LOGMARS (50)," },
-        /* 80*/ { " pharma", "123456", NULL, 0, "BARCODE_PHARMA (51)," },
-        /* 81*/ { " pzn ", "1", NULL, 0, "BARCODE_PZN (52)," },
-        /* 82*/ { "pharma two", "4", NULL, 0, "BARCODE_PHARMA_TWO (53)," },
-        /* 83*/ { "cepnet", "12345678", NULL, 0, "BARCODE_CEPNET (54)," },
-        /* 84*/ { "BARCODE_PDF417", "1", NULL, 0, "BARCODE_PDF417 (55)," },
-        /* 85*/ { "pdf", "1", NULL, 1, "Error 119: Invalid barcode type 'pdf'" },
-        /* 86*/ { "barcodepdf417comp", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
-        /* 87*/ { "pdf417trunc", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
-        /* 88*/ { "MaxiCode", "1", NULL, 0, "BARCODE_MAXICODE (57)," },
-        /* 89*/ { "QR CODE", "1", NULL, 0, "BARCODE_QRCODE (58)," },
-        /* 90*/ { "qr", "1", NULL, 0, "BARCODE_QRCODE (58)," }, /* Synonym */
-        /* 91*/ { "Code 128 B", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
-        /* 92*/ { "Code 128 aB", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
-        /* 93*/ { "AUS POST", "12345678901234567890123", NULL, 0, "BARCODE_AUSPOST (63)," },
-        /* 94*/ { "AusReply", "12345678", NULL, 0, "BARCODE_AUSREPLY (66)," },
-        /* 95*/ { "AUSROUTE", "12345678", NULL, 0, "BARCODE_AUSROUTE (67)," },
-        /* 96*/ { "AUS REDIRECT", "12345678", NULL, 0, "BARCODE_AUSREDIRECT (68)," },
-        /* 97*/ { "isbnx", "123456789", NULL, 0, "BARCODE_ISBNX (69)," },
-        /* 98*/ { "rm4scc", "1", NULL, 0, "BARCODE_RM4SCC (70)," },
-        /* 99*/ { "DataMatrix", "1", NULL, 0, "BARCODE_DATAMATRIX (71)," },
-        /*100*/ { "EAN14", "1", NULL, 0, "BARCODE_EAN14 (72)," },
-        /*101*/ { "vin", "12345678701234567", NULL, 0, "BARCODE_VIN (73)" },
-        /*102*/ { "CodaBlock-F", "1", NULL, 0, "BARCODE_CODABLOCKF (74)," },
-        /*103*/ { "NVE18", "1", NULL, 0, "BARCODE_NVE18 (75)," },
-        /*104*/ { "Japan Post", "1", NULL, 0, "BARCODE_JAPANPOST (76)," },
-        /*105*/ { "Korea Post", "1", NULL, 0, "BARCODE_KOREAPOST (77)," },
-        /*106*/ { "DBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*107*/ { "rss14stack", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*108*/ { "DataBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*109*/ { "DataBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
-        /*110*/ { "DBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*111*/ { "RSS14STACK OMNI", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*112*/ { "DataBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*113*/ { "DataBar Stacked Omn", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*114*/ { "DataBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
-        /*115*/ { "DBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*116*/ { "rss_expstack", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*117*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*118*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*119*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
-        /*120*/ { "planet", "12345678901", NULL, 0, "BARCODE_PLANET (82)," },
-        /*121*/ { "MicroPDF417", "1", NULL, 0, "BARCODE_MICROPDF417 (84)," },
-        /*122*/ { "USPS IMail", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
-        /*123*/ { "OneCode", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
-        /*124*/ { "plessey", "1", NULL, 0, "BARCODE_PLESSEY (86)," },
-        /*125*/ { "telepen num", "1", NULL, 0, "BARCODE_TELEPEN_NUM (87)," },
-        /*126*/ { "ITF14", "1", NULL, 0, "BARCODE_ITF14 (89)," },
-        /*127*/ { "KIX", "1", NULL, 0, "BARCODE_KIX (90)," },
-        /*128*/ { "Aztec", "1", NULL, 0, "BARCODE_AZTEC (92)," },
-        /*129*/ { "Aztec Code", "1", NULL, 0, "BARCODE_AZTEC (92)," }, /* Synonym */
-        /*130*/ { "daft", "D", NULL, 0, "BARCODE_DAFT (93)," },
-        /*131*/ { "DPD", "0123456789012345678901234567", NULL, 0, "BARCODE_DPD (96)," },
-        /*132*/ { "Micro QR", "1", NULL, 0, "BARCODE_MICROQR (97)," },
-        /*133*/ { "Micro QR Code", "1", NULL, 0, "BARCODE_MICROQR (97)," },
-        /*134*/ { "hibc128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," },
-        /*135*/ { "hibccode128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," }, /* Synonym */
-        /*136*/ { "hibc39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," },
-        /*137*/ { "hibccode39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," }, /* Synonym */
-        /*138*/ { "hibcdatamatrix", "1", NULL, 0, "BARCODE_HIBC_DM (102)," }, /* Synonym */
-        /*139*/ { "hibcdm", "1", NULL, 0, "BARCODE_HIBC_DM (102)," },
-        /*140*/ { "HIBC qr", "1", NULL, 0, "BARCODE_HIBC_QR (104)," },
-        /*141*/ { "HIBC QR Code", "1", NULL, 0, "BARCODE_HIBC_QR (104)," }, /* Synonym */
-        /*142*/ { "HIBCPDF", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," },
-        /*143*/ { "HIBCPDF417", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," }, /* Synonym */
-        /*144*/ { "HIBCMICPDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," },
-        /*145*/ { "HIBC Micro PDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
-        /*146*/ { "HIBC Micro PDF417", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
-        /*147*/ { "HIBC BlockF", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," },
-        /*148*/ { "HIBC CodaBlock-F", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," }, /* Synonym */
-        /*149*/ { "HIBC Aztec", "1", NULL, 0, "BARCODE_HIBC_AZTEC (112)," },
-        /*150*/ { "DotCode", "1", NULL, 0, "BARCODE_DOTCODE (115)," },
-        /*151*/ { "Han Xin", "1", NULL, 0, "BARCODE_HANXIN (116)," },
-        /*152*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK_4S (121)," },
-        /*153*/ { "Mailmark 4-state", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK_4S (121)," },
-        /*154*/ { "Mailmark 2D", "012100123412345678AB19XY1A 0", NULL, 0, "BARCODE_MAILMARK_2D (119)," },
-        /*155*/ { "azrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," },
-        /*156*/ { "aztecrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
-        /*157*/ { "aztecrunes", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
-        /*158*/ { "code32", "1", NULL, 0, "BARCODE_CODE32 (129)," },
-        /*159*/ { "eanx cc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
-        /*160*/ { "eancc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
-        /*161*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
-        /*162*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
-        /*163*/ { "dbaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*164*/ { "rss14 cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*165*/ { "databaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*166*/ { "databaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
-        /*167*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*168*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*169*/ { "databarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*170*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
-        /*171*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*172*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*173*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*174*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
-        /*175*/ { "upcacc", "[20]01", "12345678901", 0, "BARCODE_UPCA_CC (135)," },
-        /*176*/ { "upcecc", "[20]01", "1234567", 0, "BARCODE_UPCE_CC (136)," },
-        /*177*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*178*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*179*/ { "databar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*180*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
-        /*181*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*182*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*183*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*184*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*185*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
-        /*186*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*187*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*188*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*189*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*190*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
-        /*191*/ { "Channel", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
-        /*192*/ { "Channel Code", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
-        /*193*/ { "CodeOne", "1", NULL, 0, "BARCODE_CODEONE (141)," },
-        /*194*/ { "Grid Matrix", "1", NULL, 0, "BARCODE_GRIDMATRIX (142)," },
-        /*195*/ { "UPN QR", "1", NULL, 0, "BARCODE_UPNQR (143)," },
-        /*196*/ { "UPN QR Code", "1", NULL, 0, "BARCODE_UPNQR (143)," }, /* Synonym */
-        /*197*/ { "ultra", "1", NULL, 0, "BARCODE_ULTRA (144)," },
-        /*198*/ { "ultracode", "1", NULL, 0, "BARCODE_ULTRA (144)," }, /* Synonym */
-        /*199*/ { "rMQR", "1", NULL, 0, "BARCODE_RMQR (145)," },
-        /*200*/ { "bc412", "1234567", NULL, 0, "BARCODE_BC412 (146)," },
-        /*201*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
-        /*202*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
+        /* 58*/ { "dbar omni", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 59*/ { "rss14", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 60*/ { "databar omn", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 61*/ { "databar omni", "1", NULL, 0, "BARCODE_DBAR_OMN (29)," },
+        /* 62*/ { "dbar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 63*/ { "dbar limited", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 64*/ { "rss ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 65*/ { "databar ltd", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 66*/ { "databar limited", "1", NULL, 0, "BARCODE_DBAR_LTD (30)," },
+        /* 67*/ { "dbarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 68*/ { "dbarexpanded", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 69*/ { "rss exp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 70*/ { "databarexp", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 71*/ { "databarexpanded", "[10]12", NULL, 0, "BARCODE_DBAR_EXP (31)," },
+        /* 72*/ { "telepen", "1", NULL, 0, "BARCODE_TELEPEN (32)," },
+        /* 73*/ { "upc", "1", NULL, 1, "Error 119: Invalid barcode type 'upc'" },
+        /* 74*/ { "upca", "1", NULL, 0, "BARCODE_UPCA (34)," },
+        /* 75*/ { "upca_chk", "123456789012", NULL, 0, "BARCODE_UPCA_CHK (35)," },
+        /* 76*/ { "upce", "1", NULL, 0, "BARCODE_UPCE (37)," },
+        /* 77*/ { "upce chk", "12345670", NULL, 0, "BARCODE_UPCE_CHK (38)," },
+        /* 78*/ { "POSTNET ", "12345678901", NULL, 0, "BARCODE_POSTNET (40)," },
+        /* 79*/ { "msi", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
+        /* 80*/ { "MSI Plessey ", "1", NULL, 0, "BARCODE_MSI_PLESSEY (47)," },
+        /* 81*/ { "fim ", "A", NULL, 0, "BARCODE_FIM (49)," },
+        /* 82*/ { "LOGMARS", "123456", NULL, 0, "BARCODE_LOGMARS (50)," },
+        /* 83*/ { " pharma", "123456", NULL, 0, "BARCODE_PHARMA (51)," },
+        /* 84*/ { " pzn ", "1", NULL, 0, "BARCODE_PZN (52)," },
+        /* 85*/ { "pharma two", "4", NULL, 0, "BARCODE_PHARMA_TWO (53)," },
+        /* 86*/ { "cepnet", "12345678", NULL, 0, "BARCODE_CEPNET (54)," },
+        /* 87*/ { "BARCODE_PDF417", "1", NULL, 0, "BARCODE_PDF417 (55)," },
+        /* 88*/ { "pdf", "1", NULL, 1, "Error 119: Invalid barcode type 'pdf'" },
+        /* 89*/ { "barcodepdf417comp", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
+        /* 90*/ { "pdf417trunc", "1", NULL, 0, "BARCODE_PDF417COMP (56)," },
+        /* 91*/ { "MaxiCode", "1", NULL, 0, "BARCODE_MAXICODE (57)," },
+        /* 92*/ { "QR CODE", "1", NULL, 0, "BARCODE_QRCODE (58)," },
+        /* 93*/ { "qr", "1", NULL, 0, "BARCODE_QRCODE (58)," }, /* Synonym */
+        /* 94*/ { "Code 128 B", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
+        /* 95*/ { "Code 128 aB", "1", NULL, 0, "BARCODE_CODE128AB (60)," },
+        /* 96*/ { "AUS POST", "12345678901234567890123", NULL, 0, "BARCODE_AUSPOST (63)," },
+        /* 97*/ { "AusReply", "12345678", NULL, 0, "BARCODE_AUSREPLY (66)," },
+        /* 98*/ { "AUSROUTE", "12345678", NULL, 0, "BARCODE_AUSROUTE (67)," },
+        /* 99*/ { "AUS REDIRECT", "12345678", NULL, 0, "BARCODE_AUSREDIRECT (68)," },
+        /*100*/ { "isbnx", "123456789", NULL, 0, "BARCODE_ISBNX (69)," },
+        /*101*/ { "rm4scc", "1", NULL, 0, "BARCODE_RM4SCC (70)," },
+        /*102*/ { "DataMatrix", "1", NULL, 0, "BARCODE_DATAMATRIX (71)," },
+        /*103*/ { "EAN14", "1", NULL, 0, "BARCODE_EAN14 (72)," },
+        /*104*/ { "vin", "12345678701234567", NULL, 0, "BARCODE_VIN (73)" },
+        /*105*/ { "CodaBlock-F", "1", NULL, 0, "BARCODE_CODABLOCKF (74)," },
+        /*106*/ { "NVE18", "1", NULL, 0, "BARCODE_NVE18 (75)," },
+        /*107*/ { "Japan Post", "1", NULL, 0, "BARCODE_JAPANPOST (76)," },
+        /*108*/ { "Korea Post", "1", NULL, 0, "BARCODE_KOREAPOST (77)," },
+        /*109*/ { "DBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*110*/ { "DBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*111*/ { "rss14stack", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*112*/ { "DataBar Stk", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*113*/ { "DataBar Stacked", "1", NULL, 0, "BARCODE_DBAR_STK (79)," },
+        /*114*/ { "DBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*115*/ { "DBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*116*/ { "RSS14STACK OMNI", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*117*/ { "DataBar Omn Stk", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*118*/ { "DataBar Stacked Omn", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*119*/ { "DataBar Stacked Omni", "1", NULL, 0, "BARCODE_DBAR_OMNSTK (80)," },
+        /*120*/ { "DBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*121*/ { "DBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*122*/ { "rss_expstack", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*123*/ { "DataBar Exp Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*124*/ { "DataBar Expanded Stk", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*125*/ { "DataBar Expanded Stacked", "[20]01", NULL, 0, "BARCODE_DBAR_EXPSTK (81)," },
+        /*126*/ { "planet", "12345678901", NULL, 0, "BARCODE_PLANET (82)," },
+        /*127*/ { "MicroPDF417", "1", NULL, 0, "BARCODE_MICROPDF417 (84)," },
+        /*128*/ { "USPS IMail", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*129*/ { "OneCode", "12345678901234567890", NULL, 0, "BARCODE_USPS_IMAIL (85)," },
+        /*130*/ { "plessey", "1", NULL, 0, "BARCODE_PLESSEY (86)," },
+        /*131*/ { "telepen num", "1", NULL, 0, "BARCODE_TELEPEN_NUM (87)," },
+        /*132*/ { "ITF14", "1", NULL, 0, "BARCODE_ITF14 (89)," },
+        /*133*/ { "KIX", "1", NULL, 0, "BARCODE_KIX (90)," },
+        /*134*/ { "Aztec", "1", NULL, 0, "BARCODE_AZTEC (92)," },
+        /*135*/ { "Aztec Code", "1", NULL, 0, "BARCODE_AZTEC (92)," }, /* Synonym */
+        /*136*/ { "daft", "D", NULL, 0, "BARCODE_DAFT (93)," },
+        /*137*/ { "DPD", "0123456789012345678901234567", NULL, 0, "BARCODE_DPD (96)," },
+        /*138*/ { "Micro QR", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*139*/ { "Micro QR Code", "1", NULL, 0, "BARCODE_MICROQR (97)," },
+        /*140*/ { "hibc128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," },
+        /*141*/ { "hibccode128", "1", NULL, 0, "BARCODE_HIBC_128 (98)," }, /* Synonym */
+        /*142*/ { "hibc39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," },
+        /*143*/ { "hibccode39", "1", NULL, 0, "BARCODE_HIBC_39 (99)," }, /* Synonym */
+        /*144*/ { "hibcdatamatrix", "1", NULL, 0, "BARCODE_HIBC_DM (102)," }, /* Synonym */
+        /*145*/ { "hibcdm", "1", NULL, 0, "BARCODE_HIBC_DM (102)," },
+        /*146*/ { "HIBC qr", "1", NULL, 0, "BARCODE_HIBC_QR (104)," },
+        /*147*/ { "HIBC QR Code", "1", NULL, 0, "BARCODE_HIBC_QR (104)," }, /* Synonym */
+        /*148*/ { "HIBCPDF", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," },
+        /*149*/ { "HIBCPDF417", "1", NULL, 0, "BARCODE_HIBC_PDF (106)," }, /* Synonym */
+        /*150*/ { "HIBCMICPDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," },
+        /*151*/ { "HIBC Micro PDF", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*152*/ { "HIBC Micro PDF417", "1", NULL, 0, "BARCODE_HIBC_MICPDF (108)," }, /* Synonym */
+        /*153*/ { "HIBC BlockF", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," },
+        /*154*/ { "HIBC CodaBlock-F", "1", NULL, 0, "BARCODE_HIBC_BLOCKF (110)," }, /* Synonym */
+        /*155*/ { "HIBC Aztec", "1", NULL, 0, "BARCODE_HIBC_AZTEC (112)," },
+        /*156*/ { "DotCode", "1", NULL, 0, "BARCODE_DOTCODE (115)," },
+        /*157*/ { "Han Xin", "1", NULL, 0, "BARCODE_HANXIN (116)," },
+        /*158*/ { "Mailmark", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK_4S (121)," },
+        /*159*/ { "Mailmark 4-state", "01000000000000000AA00AA0A", NULL, 0, "BARCODE_MAILMARK_4S (121)," },
+        /*160*/ { "Mailmark 2D", "012100123412345678AB19XY1A 0", NULL, 0, "BARCODE_MAILMARK_2D (119)," },
+        /*161*/ { "azrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," },
+        /*162*/ { "aztecrune", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*163*/ { "aztecrunes", "1", NULL, 0, "BARCODE_AZRUNE (128)," }, /* Synonym */
+        /*164*/ { "code32", "1", NULL, 0, "BARCODE_CODE32 (129)," },
+        /*165*/ { "eanx cc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*166*/ { "eancc", "[20]01", "1234567890128", 0, "BARCODE_EANX_CC (130)," },
+        /*167*/ { "GS1 128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*168*/ { "EAN128 CC", "[01]12345678901231", "[20]01", 0, "BARCODE_GS1_128_CC (131)," },
+        /*169*/ { "dbaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*170*/ { "dbaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*171*/ { "rss14 cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*172*/ { "databaromncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*173*/ { "databaromnicc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMN_CC (132)," },
+        /*174*/ { "dbarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*175*/ { "dbarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*176*/ { "rss ltd cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*177*/ { "databarltdcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*178*/ { "databarlimitedcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_LTD_CC (133)," },
+        /*179*/ { "dbarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*180*/ { "rss exp cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*181*/ { "databarexpcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*182*/ { "databar expanded cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXP_CC (134)," },
+        /*183*/ { "upcacc", "[20]01", "12345678901", 0, "BARCODE_UPCA_CC (135)," },
+        /*184*/ { "upcecc", "[20]01", "1234567", 0, "BARCODE_UPCE_CC (136)," },
+        /*185*/ { "dbar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*186*/ { "rss14stackcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*187*/ { "databar stk cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*188*/ { "databar stacked cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_STK_CC (137)," },
+        /*189*/ { "dbaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*190*/ { "BARCODE_RSS14_OMNI_CC", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*191*/ { "databaromnstkcc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*192*/ { "databar stacked omncc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*193*/ { "databar stacked omni cc", "[20]01", "1234567890123", 0, "BARCODE_DBAR_OMNSTK_CC (138)," },
+        /*194*/ { "dbarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*195*/ { "RSS EXPSTACK CC", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*196*/ { "databarexpstkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*197*/ { "databar expanded stkcc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*198*/ { "databar expanded stacked cc", "[20]01", "[01]12345678901231", 0, "BARCODE_DBAR_EXPSTK_CC (139)," },
+        /*199*/ { "Channel", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*200*/ { "Channel Code", "1", NULL, 0, "BARCODE_CHANNEL (140)," },
+        /*201*/ { "CodeOne", "1", NULL, 0, "BARCODE_CODEONE (141)," },
+        /*202*/ { "Grid Matrix", "1", NULL, 0, "BARCODE_GRIDMATRIX (142)," },
+        /*203*/ { "UPN QR", "1", NULL, 0, "BARCODE_UPNQR (143)," },
+        /*204*/ { "UPN QR Code", "1", NULL, 0, "BARCODE_UPNQR (143)," }, /* Synonym */
+        /*205*/ { "ultra", "1", NULL, 0, "BARCODE_ULTRA (144)," },
+        /*206*/ { "ultracode", "1", NULL, 0, "BARCODE_ULTRA (144)," }, /* Synonym */
+        /*207*/ { "rMQR", "1", NULL, 0, "BARCODE_RMQR (145)," },
+        /*208*/ { "bc412", "1234567", NULL, 0, "BARCODE_BC412 (146)," },
+        /*209*/ { "x", "1", NULL, 1, "Error 119: Invalid barcode type 'x'" },
+        /*210*/ { "\177", "1", NULL, 1, "Error 119: Invalid barcode type '\177'" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;
@@ -1169,8 +1181,8 @@ static void test_other_opts(const testCtx *const p_ctx) {
         /* 11*/ { BARCODE_CODE128, "1", -1, " --fgcolor=", "111111", "", 0 },
         /* 12*/ { BARCODE_CODE128, "1", -1, " --fgcolour=", "111111", "", 0 },
         /* 13*/ { BARCODE_CODE128, "1", -1, " --compliantheight", "", "", 0 },
-        /* 14*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "10", "", 0 },
-        /* 15*/ { BARCODE_CODE128, "1", -1, " --fontsize=", "101", "Warning 126: Font size out of range (0 to 100), ignoring", 0 },
+        /* 14*/ { BARCODE_EANX, "123456", -1, " --guardwhitespace", "", "", 0 },
+        /* 15*/ { BARCODE_EANX, "123456", -1, " --embedfont", "", "", 0 },
         /* 16*/ { BARCODE_CODE128, "1", -1, " --nobackground", "", "", 0 },
         /* 17*/ { BARCODE_CODE128, "1", -1, " --noquietzones", "", "", 0 },
         /* 18*/ { BARCODE_CODE128, "1", -1, " --notext", "", "", 0 },
@@ -1260,6 +1272,56 @@ static void test_other_opts(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_combos(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int b;
+        char *data;
+        char *opts;
+
+        char *expected;
+        char *outfilename;
+        int strstr_cmp;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { -1, "1", " --direct -o direct.gif", "Warning 193: Output file given, ignoring '--direct' option", "direct.gif", 0 },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+
+    char cmd[4096];
+    char buf[8192];
+
+    testStart("test_combos");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        strcpy(cmd, "zint");
+
+        arg_int(cmd, "-b ", data[i].b);
+        arg_data(cmd, "-d ", data[i].data);
+        strcat(cmd, data[i].opts);
+
+        strcat(cmd, " 2>&1");
+
+        assert_nonnull(exec(cmd, buf, sizeof(buf) - 1, debug, i, NULL), "i:%d exec(%s) NULL\n", i, cmd);
+        if (data[i].strstr_cmp) {
+            assert_nonnull(strstr(buf, data[i].expected), "i:%d strstr buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
+        } else {
+            assert_zero(strcmp(buf, data[i].expected), "i:%d strcmp buf (%s) != expected (%s) (%s)\n", i, buf, data[i].expected, cmd);
+        }
+        if (data[i].outfilename != NULL) {
+            assert_zero(remove(data[i].outfilename), "i:%d remove(%s) != 0 (%d: %s)\n", i, data[i].outfilename, errno, strerror(errno));
+        }
+    }
+
+    testFinish();
+}
+
 static void test_exit_status(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -1333,6 +1395,7 @@ int main(int argc, char *argv[]) {
         { "test_checks", test_checks },
         { "test_barcode_symbology", test_barcode_symbology },
         { "test_other_opts", test_other_opts },
+        { "test_combos", test_combos },
         { "test_exit_status", test_exit_status },
     };
 

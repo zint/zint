@@ -1,0 +1,24 @@
+<?xml version="1.0" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="212" height="118" version="1.1" xmlns="http://www.w3.org/2000/svg">
+ <desc>Zint Generated Symbol</desc>
+ <g id="barcode" fill="#000000">
+  <rect x="0" y="0" width="212" height="118" fill="#FFFFFF"/>
+  <path d="M6 0h2v4h-2ZM12 0h2v4h-2ZM20 0h10v4h-10ZM34 0h4v4h-4ZM40 0h2v16h-2ZM44 0h2v16h-2ZM50 0h4v4h-4ZM60 0h6v4h-6ZM72 0h2v4h-2ZM76 0h6v4h-6ZM86 0h4v4h-4ZM94 0h4v4h-4ZM104 0h2v4h-2ZM108 0h6v4h-6ZM116 0h2v4h-2ZM128 0h6v16h-6ZM136 0h2v16h-2ZM142 0h4v4h-4ZM148 0h2v16h-2ZM6 4h4v4h-4ZM12 4h12v4h-12ZM28 4h4v4h-4ZM34 4h2v4h-2ZM48 4h6v4h-6ZM60 4h4v4h-4ZM66 4h8v4h-8ZM78 4h2v4h-2ZM82 4h4v4h-4ZM94 4h8v4h-8ZM108 4h2v8h-2ZM114 4h8v4h-8ZM124 4h2v4h-2ZM140 4h6v4h-6ZM6 8h2v4h-2ZM16 8h2v4h-2ZM20 8h4v4h-4ZM34 8h4v8h-4ZM48 8h4v4h-4ZM60 8h2v4h-2ZM64 8h2v4h-2ZM68 8h10v4h-10ZM80 8h10v4h-10ZM94 8h6v4h-6ZM102 8h2v4h-2ZM118 8h6v4h-6ZM140 8h4v4h-4ZM6 12h8v4h-8ZM18 12h2v4h-2ZM26 12h4v4h-4ZM50 12h2v4h-2ZM60 12h4v4h-4ZM68 12h2v4h-2ZM74 12h10v4h-10ZM86 12h6v4h-6ZM94 12h2v4h-2ZM98 12h2v4h-2ZM104 12h10v4h-10ZM120 12h4v4h-4ZM140 12h2v4h-2ZM14 16h2v4h-2ZM146 16h2v4h-2ZM12 20h2v4h-2ZM148 20h2v4h-2ZM14 24h2v86h-2ZM146 24h2v86h-2ZM18 28h2v82h-2ZM26 28h2v72h-2ZM30 28h4v72h-4ZM36 28h4v72h-4ZM42 28h6v72h-6ZM50 28h6v72h-6ZM58 28h4v72h-4ZM64 28h2v72h-2ZM68 28h8v72h-8ZM78 28h2v82h-2ZM82 28h2v82h-2ZM86 28h2v72h-2ZM92 28h6v72h-6ZM100 28h2v72h-2ZM104 28h6v72h-6ZM114 28h2v72h-2ZM124 28h2v72h-2ZM128 28h6v72h-6ZM138 28h2v72h-2ZM142 28h2v82h-2ZM162 46h2v64h-2ZM166 46h4v64h-4ZM172 46h2v64h-2ZM176 46h8v64h-8ZM186 46h2v64h-2ZM190 46h6v64h-6ZM200 46h2v64h-2Z"/>
+  <text x="12.5" y="117.2" text-anchor="end" font-family="OCRB, monospace" font-size="20">
+   &lt;
+  </text>
+  <text x="49" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   9876
+  </text>
+  <text x="113" y="117.2" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   5430
+  </text>
+  <text x="182" y="43.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
+   65
+  </text>
+  <text x="199.6" y="43.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+   &gt;
+  </text>
+ </g>
+</svg>
