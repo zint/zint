@@ -1539,10 +1539,17 @@ together if required, but only for vector output.
 [zint --bold -d "This Text" --small]
 
 The gap between the barcode and the text can be adjusted using the --textgap
-option, where the gap is given as a multiple of the X-dimension (maximum 5X). A
+option, where the gap is given as a multiple of the X-dimension (maximum 10X). A
 zero value uses the default gap.
 
 [zint -d "Áccent" --textgap=0.1]
+
+For SVG output, the font preferred by Zint (monospaced “OCR-B” for EAN/UPC,
+“Arimo” - a proportional sans-serif font metrically compatible with “Arial” -
+for all others) can be embedded in the file for portability using the
+--embedfont option:
+
+[zint -d "Áccent" --embedfont]
 
 4.18 Help Options
 
@@ -2118,7 +2125,7 @@ together when adjusting this value:
                              whitespace (EAN/UPC).
 
   EMBED_VECTOR_FONT          Embed font in vector output - currently available
-                             for SVG output of EAN/UPC only.
+                             for SVG output only.
   -------------------------------------------------------------------------------
 
   : Table  : API output_options Values
@@ -2554,9 +2561,6 @@ and 12. The height in X-dimensions that the guard bars descend below the main
 bars can be adjusted by setting --guarddescent (API guard_descent) to a value
 between 0 and 20 (default 5).
 
-For SVG output, the --embedfont option (API output_options |= EMBED_VECTOR_FONT)
-will embed the OCR-B font in the file for portability.
-
 6.1.3.2 UPC Version E
 
 [zint -b UPCE --compliantheight -d "1123456"]
@@ -2590,9 +2594,6 @@ X-dimension by setting --addongap (API option_2) to a value between 7 (default)
 and 12. The height in X-dimensions that the guard bars descend below the main
 bars can be adjusted by setting --guarddescent (API guard_descent) to a value
 between 0 and 20 (default 5).
-
-For SVG output, the --embedfont option (API output_options |= EMBED_VECTOR_FONT)
-will embed the OCR-B font in the file for portability.
 
 6.1.4 EAN (European Article Number) (ISO 15420)
 
@@ -2631,9 +2632,8 @@ If you are encoding an EAN-8 or EAN-13 symbol and your data already includes the
 check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an 8 or
 13-digit input and validates the check digit before encoding.
 
-Options to add quiet zone indicators, to adjust the add-on gap and the guard bar
-descent height, and to embed the font are the same as for 6.1.3.2 UPC Version E.
-For instance:
+Options to add quiet zone indicators and to adjust the add-on gap and the guard
+bar descent height are the same as for 6.1.3.2 UPC Version E. For instance:
 
     zint -b EANX_CHK -d "74323654" --guardwhitespace
 
@@ -2653,8 +2653,8 @@ As with EAN-13, a quiet zone indicator can be added using --guardwhitespace:
 [zint -b ISBNX --compliantheight -d "9789295055124" --guardwhitespace]
 
 EAN-2 and EAN-5 add-on symbols can be added using the + character, and there are
-options to adjust the add-on gap and the guard bar descent height and to embed
-the font - see 6.1.3.2 UPC Version E.
+options to adjust the add-on gap and the guard bar descent height - see 6.1.3.2
+UPC Version E.
 
 6.1.5 Plessey
 
@@ -3603,7 +3603,7 @@ section, an expanded version of the 4-state one, as summarized below.
   Service Type       1             Numeric
   RTS Post Code      7             Alphanumeric (1 of 6 patterns)
   Reserved           6             Spaces
-  Customer Data      6, 45 or 29   Anything (Latin-1 plus ASCII)
+  Customer Data      6, 45 or 29   Anything (Latin-1)
 
   : Table : Royal Mail 2D Mailmark Input Fields:
 
@@ -4595,7 +4595,7 @@ OPTIONS
 --embedfont
 
     For vector output, embed the font in the file for portability. Currently
-    only available for SVG output of EAN/UPC barcodes.
+    only available for SVG output.
 
 --esc
 

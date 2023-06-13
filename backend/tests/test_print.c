@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -54,7 +54,7 @@ static void test_print(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
     int j;
 
     char *exts[] = { "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt" };
@@ -81,7 +81,7 @@ static void test_print(const testCtx *const p_ctx) {
         have_tiffinfo = testUtilHaveTiffInfo();
     }
 
-    testStart("test_print");
+    testStartSymbol("test_print", &symbol);
 
     assert_nonzero(testUtilDataPath(data_dir, sizeof(data_dir), "/backend/tests/data", NULL), "testUtilDataPath == 0\n");
 

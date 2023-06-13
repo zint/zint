@@ -138,8 +138,8 @@ Studio 2015, see "frontend_qt\howto_build_qzint_using_msvs2015.txt"
 CMake and Visual Studio
 -----------------------
 
-Zint can also be built using CMake with Visual Studio 2019, 2017 or 2015. The
-following example uses Visual Studio 2019 to build for x86/Win32:
+Zint can also be built using CMake with Visual Studio 2022, 2019, 2017 or 2015.
+The following example uses Visual Studio 2019 to build for x86/Win32:
 
 As above, cd <project-directory> and clone lpng, zlib and zint into it. Then
 
@@ -192,10 +192,12 @@ You should be able to run zint CLI and Zint Studio:
 Note that the program name for Zint Studio when built using CMake is not
 "qtZint.exe" but "zint-qt.exe".
 
-For MSVC 2015 32 bit and MSVC 2017 32 bit, the zint cmake equivalents are:
+For MSVC 2015 32-bit, MSVC 2017 32-bit and MSVC 2022 32-bit, the zint cmake
+equivalents are:
 
   cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release -B build
   cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release -B build
+  cmake -G "Visual Studio 17 2022" -A Win32 -DCMAKE_BUILD_TYPE=Release -B build
 
 
 Visual C++ 6

@@ -1101,8 +1101,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "769: Guard bar descent out of range (0 to 50)");
     }
-    if ((symbol->text_gap < 0.0f) || (symbol->text_gap > 5.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Text gap out of range (0 to 5)");
+    if ((symbol->text_gap < 0.0f) || (symbol->text_gap > 10.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Text gap out of range (0 to 10)");
     }
     if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0 to 100)");

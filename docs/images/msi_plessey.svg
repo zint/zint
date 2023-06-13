@@ -5,7 +5,7 @@
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="380" height="286" fill="#FFFFFF"/>
   <path d="M0 0h9.6v240h-9.6ZM14.4 0h4.8v240h-4.8ZM28.8 0h9.6v240h-9.6ZM43.2 0h9.6v240h-9.6ZM57.6 0h4.8v240h-4.8ZM72 0h4.8v240h-4.8ZM86.4 0h9.6v240h-9.6ZM100.8 0h4.8v240h-4.8ZM115.2 0h9.6v240h-9.6ZM129.6 0h4.8v240h-4.8ZM144 0h4.8v240h-4.8ZM158.4 0h4.8v240h-4.8ZM172.8 0h4.8v240h-4.8ZM187.2 0h4.8v240h-4.8ZM201.6 0h4.8v240h-4.8ZM216 0h9.6v240h-9.6ZM230.4 0h4.8v240h-4.8ZM244.8 0h9.6v240h-9.6ZM259.2 0h4.8v240h-4.8ZM273.6 0h4.8v240h-4.8ZM288 0h9.6v240h-9.6ZM302.4 0h4.8v240h-4.8ZM316.8 0h4.8v240h-4.8ZM331.2 0h4.8v240h-4.8ZM345.6 0h9.6v240h-9.6ZM360 0h4.8v240h-4.8ZM374.4 0h4.8v240h-4.8Z"/>
-  <text x="189.6" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+  <text x="189.6" y="273.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    650291
   </text>
  </g>

@@ -5,7 +5,7 @@
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="552" height="286" fill="#FFFFFF"/>
   <path d="M0 0h14.4v240h-14.4ZM19.2 0h14.4v240h-14.4ZM38.4 0h4.8v240h-4.8ZM57.6 0h14.4v240h-14.4ZM76.8 0h4.8v240h-4.8ZM96 0h4.8v240h-4.8ZM115.2 0h14.4v240h-14.4ZM134.4 0h14.4v240h-14.4ZM153.6 0h4.8v240h-4.8ZM172.8 0h14.4v240h-14.4ZM192 0h14.4v240h-14.4ZM211.2 0h4.8v240h-4.8ZM230.4 0h4.8v240h-4.8ZM249.6 0h4.8v240h-4.8ZM268.8 0h14.4v240h-14.4ZM288 0h4.8v240h-4.8ZM307.2 0h4.8v240h-4.8ZM326.4 0h4.8v240h-4.8ZM345.6 0h14.4v240h-14.4ZM364.8 0h14.4v240h-14.4ZM384 0h4.8v240h-4.8ZM403.2 0h4.8v240h-4.8ZM422.4 0h14.4v240h-14.4ZM441.6 0h4.8v240h-4.8ZM460.8 0h14.4v240h-14.4ZM489.6 0h4.8v240h-4.8ZM508.8 0h4.8v240h-4.8ZM518.4 0h14.4v240h-14.4ZM537.6 0h14.4v240h-14.4Z"/>
-  <text x="276" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+  <text x="276" y="273.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    C64
   </text>
  </g>

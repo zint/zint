@@ -1887,7 +1887,7 @@ the barcode in X-dimensions</string>
 (ignored if disabled)</string>
                </property>
                <property name="text">
-                <string>Text Gap:</string>
+                <string>Text &amp;Gap:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
@@ -1914,7 +1914,7 @@ the barcode in X-dimensions</string>
                 <double>0.000000000000000</double>
                </property>
                <property name="maximum">
-                <double>5.000000000000000</double>
+                <double>10.000000000000000</double>
                </property>
                <property name="singleStep">
                 <double>0.100000000000000</double>
@@ -2089,7 +2089,7 @@ or decimal &quot;C,M,Y,K&quot; percentages (0-100)</string>
                 <string>Change colour of paper</string>
                </property>
                <property name="text">
-                <string>Back&amp;ground:</string>
+                <string>Bac&amp;kground:</string>
                </property>
                <property name="alignment">
                 <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
@@ -2193,7 +2193,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                 <string>Use CMYK colour space in EPS/TIF output</string>
                </property>
                <property name="text">
-                <string>CMY&amp;K (EPS/TIF)</string>
+                <string>CMYK (EPS&amp;/TIF)</string>
                </property>
                <property name="checked">
                 <bool>false</bool>
@@ -2258,6 +2258,20 @@ e.g. &quot;FFFFFF00&quot;</string>
               </widget>
              </item>
              <item row="6" column="4" colspan="2">
+              <widget class="QCheckBox" name="chkEmbedVectorFont">
+               <property name="toolTip">
+                <string>Embed font in SVG output
+(ignored if disabled)</string>
+               </property>
+               <property name="text">
+                <string>Embed Font &amp;(SVG)</string>
+               </property>
+               <property name="checked">
+                <bool>false</bool>
+               </property>
+              </widget>
+             </item>
+             <item row="7" column="4" colspan="2">
               <widget class="QCheckBox" name="chkDotty">
                <property name="toolTip">
                 <string>Use dots instead of squares for matrix symbols
@@ -2271,7 +2285,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="3">
+             <item row="8" column="3">
               <widget class="QLabel" name="lblDotSize">
                <property name="enabled">
                 <bool>false</bool>
@@ -2291,7 +2305,7 @@ e.g. &quot;FFFFFF00&quot;</string>
                </property>
               </widget>
              </item>
-             <item row="7" column="4" colspan="2">
+             <item row="8" column="4" colspan="2">
               <widget class="QDoubleSpinBox" name="spnDotSize">
                <property name="enabled">
                 <bool>false</bool>

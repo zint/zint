@@ -165,7 +165,7 @@ static void usage(const int no_png) {
            "  --dump                Dump hexadecimal representation to stdout\n"
            "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
     fputs( "  --eci=INTEGER         Set the ECI code for the data (segment 0)\n"
-           "  --embedfont           Embed font in vector output (SVG EAN/UPC only)\n"
+           "  --embedfont           Embed font in vector output (SVG only)\n"
            "  --esc                 Process escape sequences in input data\n"
            "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
            "  --fast                Use faster encodation or other shortcuts if available\n", stdout);
@@ -1925,10 +1925,10 @@ int main(int argc, char **argv) {
                     fprintf(stderr, "Error 194: Invalid text gap floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
-                if (float_opt >= 0.0f && float_opt <= 5.0f) {
+                if (float_opt >= 0.0f && float_opt <= 10.0f) {
                     my_symbol->text_gap = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (0 to 5), ignoring\n", float_opt);
+                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (0 to 10), ignoring\n", float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }

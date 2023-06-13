@@ -17,8 +17,9 @@ Version 2.12.0.9 (dev) not released yet
 - Never used `fontsize` field removed from `zint_symbol`
 - Buffer length of field `text` (HRT) in `zint_symbol` extended 128 -> 160
   (client buffers may need checking/extending)
-- Font of text of SVG vector output now "OCR-B, monospace"
-  (was "Helvetica, sans serif")
+- Font of text of SVG vector output now "OCRB, monospace" (EAN/UPC) or
+  "Arimo, Arial, sans-serif" (all others)
+  (was "Helvetica, sans-serif" for both)
 - Unintended excess horizontal whitespace of Composite symbols removed, and
   quiet zone settings respected exactly, and centring of HRT (if any) now
   relative to linear part of symbol only rather than whole symbol
@@ -53,12 +54,13 @@ Changes
 - EPS/SVG: use new `out_putsf()` func to output floats, avoiding trailing zeroes
   & locale dependency
 - EPS: simplify "TR" formula
-- SVG: change font from "Helvetica, sans serif" to "OCR-B, monospace";
+- SVG: change font from "Helvetica, sans-serif" to "OCRB, monospace" for EAN/UPC
+  and "Arimo, Arial, sans-serif" for all others;
   use single "<path>" instead of multiple "<rect>"s to draw boxes (reduces file
   size)
 - Add `EMBED_VECTOR_FONT` to `output_options` (CLI `--embedfont`) to enable
-  embedding of font in vector output - currently only for SVG output of EAN/UPC
-- GUI: use "OCR-B" font for EAN/UPC and "Arimo" for all others (was "Helvetica"
+  embedding of font in vector output - currently only for SVG output
+- GUI: use "OCRB" font for EAN/UPC and "Arimo" for all others (was "Helvetica"
   for both); add preview background colour option (default light grey) so as
   whitespace will show up in contrast (access via preview context menu)
 - EMF: prefix funcs with `emf_`; simplify string `halign` handling

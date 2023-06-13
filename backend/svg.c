@@ -36,6 +36,7 @@
 
 #include "common.h"
 #include "output.h"
+#include "fonts/normal_woff2.h"
 #include "fonts/upcean_woff2.h"
 
 /* Convert Ultracode rectangle colour to RGB */
@@ -111,7 +112,7 @@ static void svg_put_opacity_close(const unsigned char alpha, const float val, co
 }
 
 INTERNAL int svg_plot(struct zint_symbol *symbol) {
-    static const char font_family[] = "Helvetica, sans-serif";
+    static const char normal_font_family[] = "Arimo, Arial, sans-serif";
     static const char upcean_font_family[] = "OCRB, monospace";
     FILE *fsvg;
     int error_number = 0;
@@ -190,9 +191,9 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n",
             (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
     fputs(" <desc>Zint Generated Symbol</desc>\n", fsvg);
-    if ((symbol->output_options & EMBED_VECTOR_FONT) && extendable && symbol->vector->strings) {
-        fprintf(fsvg, " <style>@font-face {font-family:\"OCRB\"; src:url(data:font/woff2;base64,%s);}</style>\n",
-                upcean_woff2);
+    if ((symbol->output_options & EMBED_VECTOR_FONT) && symbol->vector->strings) {
+        fprintf(fsvg, " <style>@font-face {font-family:\"%s\"; src:url(data:font/woff2;base64,%s);}</style>\n",
+                extendable ? "OCRB" : "Arimo", extendable ? upcean_woff2 : normal_woff2);
     }
     fprintf(fsvg, " <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
@@ -319,7 +320,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         svg_put_fattrib(" x=\"", 2, string->x, fsvg);
         svg_put_fattrib(" y=\"", 2, string->y, fsvg);
         fprintf(fsvg, " text-anchor=\"%s\"", halign);
-        fprintf(fsvg, " font-family=\"%s\"", extendable ? upcean_font_family : font_family);
+        fprintf(fsvg, " font-family=\"%s\"", extendable ? upcean_font_family : normal_font_family);
         svg_put_fattrib(" font-size=\"", 1, string->fsize, fsvg);
         if (bold) {
             fputs(" font-weight=\"bold\"", fsvg);

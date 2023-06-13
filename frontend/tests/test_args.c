@@ -809,7 +809,7 @@ static void test_checks(const testCtx *const p_ctx) {
         /*  3*/ { -1, -2,   -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 107: Invalid border width value (digits only)" },
         /*  4*/ { -1, 1001, -1, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 108: Border width out of range (0 to 1000), ignoring" },
         /*  5*/ { -1, -1,   -1, -1, -0.5,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 194: Invalid text gap floating point (integer part must be digits only)" },
-        /*  6*/ { -1, -1,   -1, -1, 5.01,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 195: Text gap '5.01' out of range (0 to 5), ignoring" },
+        /*  6*/ { -1, -1,   -1, -1, 10.01,   -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 195: Text gap '10.01' out of range (0 to 10), ignoring" },
         /*  7*/ { -1, -1,   -1, 12345678,  -1, -1,    NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 181: Invalid dot radius floating point (integer part must be 7 digits maximum)" },
         /*  8*/ { -1, -1,   -1, 0.009, -1,   -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Warning 106: Invalid dot radius value (less than 0.01), ignoring" },
         /*  9*/ { -1, -1,   -2, -1,   -1,    -1,      NULL,  -1,   -1, -1, -1, -1, -1, -1,   -1, -1, -1, -1,   -1,   -1, "Error 131: Invalid columns value (digits only)" },

@@ -35,6 +35,7 @@ zint -b AZTEC --eci=9 -d "Κείμενο" --seg1=7,"Текст" --seg2=20,"文�
 zint -b DATAMATRIX -d "2nd of 3" --structapp="2,3,5006" --scale=$SCALE_2D -o images/datamatrix_structapp.svg
 zint --bold -d "This Text" --small --scale=$SCALE_LINEAR -o images/code128_small_bold.svg
 zint -d "Áccent" --textgap=0.1 --scale=$SCALE_LINEAR -o images/code128_textgap.svg
+zint -d "Áccent" --embedfont --scale=$SCALE_LINEAR -o images/code128_embedfont.svg
 zint -b CODE11 -d "9212320967" --scale=$SCALE_LINEAR -o images/code11.svg
 zint -b C25STANDARD -d "9212320967" --scale=$SCALE_LINEAR -o images/c25standard.svg
 zint -b C25IATA -d "9212320967" --scale=$SCALE_LINEAR -o images/c25iata.svg

@@ -123,8 +123,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--embedfont`
 
-:   For vector output, embed the font in the file for portability. Currently only available for SVG output of EAN/UPC
-    barcodes.
+:   For vector output, embed the font in the file for portability. Currently only available for SVG output.
 
 `--esc`
 

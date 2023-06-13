@@ -5,7 +5,7 @@
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="380" height="286" fill="#FFFFFF"/>
   <path d="M0 0h9.6v240h-9.6ZM14.4 0h4.8v240h-4.8ZM28.8 0h4.8v240h-4.8ZM52.8 0h9.6v240h-9.6ZM67.2 0h14.4v240h-14.4ZM96 0h4.8v240h-4.8ZM105.6 0h4.8v240h-4.8ZM120 0h9.6v240h-9.6ZM148.8 0h4.8v240h-4.8ZM158.4 0h4.8v240h-4.8ZM182.4 0h9.6v240h-9.6ZM196.8 0h4.8v120h-4.8ZM211.2 0h4.8v240h-4.8ZM220.8 0h19.2v120h-19.2ZM249.6 0h4.8v240h-4.8ZM264 0h14.4v120h-14.4ZM283.2 0h9.6v120h-9.6ZM302.4 0h4.8v240h-4.8ZM316.8 0h9.6v240h-9.6ZM340.8 0h14.4v240h-14.4ZM360 0h4.8v240h-4.8ZM369.6 0h9.6v240h-9.6ZM172.8 120h4.8v120h-4.8ZM225.6 120h19.2v120h-19.2ZM264 120h4.8v120h-4.8ZM278.4 120h9.6v120h-9.6Z"/>
-  <text x="189.6" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+  <text x="189.6" y="273.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    That
   </text>
  </g>

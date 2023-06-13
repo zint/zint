@@ -479,6 +479,7 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/appearance/chk_cmyk"), chkCMYK->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_quiet_zones"), chkQuietZones->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/rotate"), cmbRotate->currentIndex());
+    settings.setValue(QSL("studio/appearance/chk_embed_vector_font"), chkEmbedVectorFont->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/chk_dotty"), chkDotty->isChecked() ? 1 : 0);
     settings.setValue(QSL("studio/appearance/dot_size"), spnDotSize->value());
     // These are "system-wide"
@@ -550,6 +551,8 @@ void MainWindow::load_settings(QSettings &settings)
     chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
     chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
     cmbRotate->setCurrentIndex(settings.value(QSL("studio/appearance/rotate"), 0).toInt());
+    chkEmbedVectorFont->setChecked(settings.value(QSL("studio/appearance/chk_embed_vector_font"), 0).toInt()
+                                                    ? true : false);
     chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
     spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
     // These are "system-wide"
@@ -1174,6 +1177,7 @@ void MainWindow::HRTShow_ui_set()
     cmbFontSetting->setEnabled(enabled);
     lblTextGap->setEnabled(enabled);
     spnTextGap->setEnabled(enabled);
+    chkEmbedVectorFont->setEnabled(enabled);
     text_gap_ui_set();
     upcean_no_quiet_zones_ui_set();
     upcae_no_quiet_zones_ui_set();
@@ -1221,16 +1225,12 @@ void MainWindow::upcean_no_quiet_zones_ui_set()
         return;
 
     bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
-    QCheckBox *noQZs, *guardWS, *embedFont;
+    QCheckBox *noQZs, *guardWS;
     noQZs = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANNoQuietZones")) : nullptr;
     guardWS = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANGuardWhitespace")) : nullptr;
-    embedFont = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANEmbedVectorFont")) : nullptr;
 
     if (noQZs && guardWS) {
         guardWS->setEnabled(!noQZs->isChecked() && showHRT);
-    }
-    if (embedFont) {
-        embedFont->setEnabled(showHRT);
     }
 }
 
@@ -1243,15 +1243,13 @@ void MainWindow::upcae_no_quiet_zones_ui_set()
         return;
 
     bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
-    QCheckBox *noQZs, *guardWS, *embedFont;
+    QCheckBox *noQZs, *guardWS;
     if (is_upca) {
         noQZs = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCANoQuietZones")) : nullptr;
         guardWS = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCAGuardWhitespace")) : nullptr;
-        embedFont = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCAEmbedVectorFont")) : nullptr;
     } else {
         noQZs = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANNoQuietZones")) : nullptr;
         guardWS = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANGuardWhitespace")) : nullptr;
-        embedFont = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkUPCEANEmbedVectorFont")) : nullptr;
     }
 
     if (noQZs && guardWS) {
@@ -1259,12 +1257,9 @@ void MainWindow::upcae_no_quiet_zones_ui_set()
             noQZs->setEnabled(true);
             guardWS->setEnabled(!noQZs->isChecked() && showHRT);
         } else {
-            noQZs->setEnabled(false);
+            noQZs->setEnabled(!showHRT);
             guardWS->setEnabled(false);
         }
-    }
-    if (embedFont) {
-        embedFont->setEnabled(showHRT);
     }
 }
 
@@ -2264,7 +2259,6 @@ void MainWindow::change_options()
         connect(get_widget(QSL("chkUPCANoQuietZones")), SIGNAL(toggled( bool )), SLOT(upcae_no_quiet_zones_ui_set()));
         connect(get_widget(QSL("chkUPCANoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkUPCAGuardWhitespace")), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(get_widget(QSL("chkUPCAEmbedVectorFont")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
@@ -2304,7 +2298,6 @@ void MainWindow::change_options()
         }
         connect(get_widget(QSL("chkUPCEANNoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("chkUPCEANGuardWhitespace")), SIGNAL(toggled( bool )), SLOT(update_preview()));
-        connect(get_widget(QSL("chkUPCEANEmbedVectorFont")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_VIN) {
         QFile file(QSL(":/grpVIN.ui"));
@@ -2699,7 +2692,6 @@ void MainWindow::update_preview()
     m_bc.bc.setGSSep(false);
     m_bc.bc.setNoQuietZones(false);
     m_bc.bc.setGuardWhitespace(false);
-    m_bc.bc.setEmbedVectorFont(false);
     m_bc.bc.setDotSize(0.4f / 0.5f);
     m_bc.bc.setGuardDescent(5.0f);
     m_bc.bc.clearStructApp();
@@ -2734,9 +2726,6 @@ void MainWindow::update_preview()
             } else if (get_chk_val(QSL("chkUPCEANGuardWhitespace"))) {
                 m_bc.bc.setGuardWhitespace(true);
             }
-            if (get_chk_val(QSL("chkUPCEANEmbedVectorFont"))) {
-                m_bc.bc.setEmbedVectorFont(true);
-            }
             break;
 
         case BARCODE_ISBNX:
@@ -2749,9 +2738,6 @@ void MainWindow::update_preview()
             } else if (get_chk_val(QSL("chkUPCEANGuardWhitespace"))) {
                 m_bc.bc.setGuardWhitespace(true);
             }
-            if (get_chk_val(QSL("chkUPCEANEmbedVectorFont"))) {
-                m_bc.bc.setEmbedVectorFont(true);
-            }
             break;
 
         case BARCODE_UPCA:
@@ -2762,9 +2748,6 @@ void MainWindow::update_preview()
                 m_bc.bc.setNoQuietZones(true);
             } else if (get_chk_val(QSL("chkUPCAGuardWhitespace"))) {
                 m_bc.bc.setGuardWhitespace(true);
-            }
-            if (get_chk_val(QSL("chkUPCAEmbedVectorFont"))) {
-                m_bc.bc.setEmbedVectorFont(true);
             }
             break;
 
@@ -2777,9 +2760,6 @@ void MainWindow::update_preview()
                 m_bc.bc.setNoQuietZones(true);
             } else if (get_chk_val(QSL("chkUPCEANGuardWhitespace"))) {
                 m_bc.bc.setGuardWhitespace(true);
-            }
-            if (get_chk_val(QSL("chkUPCEANEmbedVectorFont"))) {
-                m_bc.bc.setEmbedVectorFont(true);
             }
             break;
 
@@ -3331,6 +3311,7 @@ void MainWindow::update_preview()
     m_bc.bc.setFontSetting(cmbFontSetting->currentIndex());
     m_bc.bc.setTextGap(spnTextGap->value());
     m_bc.bc.setRotateAngle(cmbRotate->currentIndex());
+    m_bc.bc.setEmbedVectorFont(chkEmbedVectorFont->isEnabled() && chkEmbedVectorFont->isChecked());
     m_bc.bc.setDotty(chkDotty->isEnabled() && chkDotty->isChecked());
     if (m_symbology == BARCODE_DOTCODE || (chkDotty->isEnabled() && chkDotty->isChecked())) {
         m_bc.bc.setDotSize(spnDotSize->value());
@@ -4110,6 +4091,8 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         if (chkHRTShow->isEnabled()) {
             settings.setValue(QSL("studio/bc/%1/appearance/font_setting").arg(name), cmbFontSetting->currentIndex());
             settings.setValue(QSL("studio/bc/%1/appearance/text_gap").arg(name), spnTextGap->value());
+            settings.setValue(QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name),
+                chkEmbedVectorFont->isChecked() ? 1 : 0);
             settings.setValue(QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), chkHRTShow->isChecked() ? 1 : 0);
         }
         settings.setValue(QSL("studio/bc/%1/appearance/chk_cmyk").arg(name), chkCMYK->isChecked() ? 1 : 0);
@@ -4417,8 +4400,6 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
                 QString::number(get_dspn_val(QSL("spnUPCAGuardDescent")), 'f', 3 /*precision*/));
             settings.setValue(QSL("studio/bc/upca/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCANoQuietZones")));
             settings.setValue(QSL("studio/bc/upca/chk_guard_whitespace"), get_chk_val(QSL("chkUPCAGuardWhitespace")));
-            settings.setValue(QSL("studio/bc/upca/chk_embed_vector_font"),
-                get_chk_val(QSL("chkUPCAEmbedVectorFont")));
             break;
 
         case BARCODE_EANX:
@@ -4430,8 +4411,6 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/eanx/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
             settings.setValue(QSL("studio/bc/eanx/chk_guard_whitespace"),
                 get_chk_val(QSL("chkUPCEANGuardWhitespace")));
-            settings.setValue(QSL("studio/bc/eanx/chk_embed_vector_font"),
-                get_chk_val(QSL("chkUPCEANEmbedVectorFont")));
             break;
 
         case BARCODE_UPCE:
@@ -4443,8 +4422,6 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/upce/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
             settings.setValue(QSL("studio/bc/upce/chk_guard_whitespace"),
                 get_chk_val(QSL("chkUPCEANGuardWhitespace")));
-            settings.setValue(QSL("studio/bc/upce/chk_embed_vector_font"),
-                get_chk_val(QSL("chkUPCEANEmbedVectorFont")));
             break;
 
         case BARCODE_ISBNX:
@@ -4454,8 +4431,6 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/isnbx/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
             settings.setValue(QSL("studio/bc/isnbx/chk_guard_whitespace"),
                 get_chk_val(QSL("chkUPCEANGuardWhitespace")));
-            settings.setValue(QSL("studio/bc/isnbx/chk_embed_vector_font"),
-                get_chk_val(QSL("chkUPCEANEmbedVectorFont")));
             break;
 
         case BARCODE_VIN:
@@ -4520,6 +4495,8 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             cmbFontSetting->setCurrentIndex(settings.value(
                 QSL("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
             spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 0.0).toFloat());
+            chkEmbedVectorFont->setChecked(settings.value(
+                QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name), 1).toInt() ? true : false);
             chkHRTShow->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }
@@ -4859,8 +4836,6 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_dspn_from_setting(settings, QSL("studio/bc/upca/guard_descent"), QSL("spnUPCAGuardDescent"), 5.0f);
             set_chk_from_setting(settings, QSL("studio/bc/upca/chk_no_quiet_zones"), QSL("chkUPCANoQuietZones"));
             set_chk_from_setting(settings, QSL("studio/bc/upca/chk_guard_whitespace"), QSL("chkUPCAGuardWhitespace"));
-            set_chk_from_setting(settings, QSL("studio/bc/upca/chk_embed_vector_font"),
-                QSL("chkUPCAEmbedVectorFont"));
             break;
 
         case BARCODE_EANX:
@@ -4871,8 +4846,6 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/eanx/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
             set_chk_from_setting(settings, QSL("studio/bc/eanx/chk_guard_whitespace"),
                 QSL("chkUPCEANGuardWhitespace"));
-            set_chk_from_setting(settings, QSL("studio/bc/eanx/chk_embed_vector_font"),
-                QSL("chkUPCEANEmbedVectorFont"));
             break;
 
         case BARCODE_UPCE:
@@ -4883,8 +4856,6 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/upce/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
             set_chk_from_setting(settings, QSL("studio/bc/upce/chk_guard_whitespace"),
                 QSL("chkUPCEANGuardWhitespace"));
-            set_chk_from_setting(settings, QSL("studio/bc/upce/chk_embed_vector_font"),
-                QSL("chkUPCEANEmbedVectorFont"));
             break;
 
         case BARCODE_ISBNX:
@@ -4893,8 +4864,6 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/isbnx/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
             set_chk_from_setting(settings, QSL("studio/bc/isbnx/chk_guard_whitespace"),
                 QSL("chkUPCEANGuardWhitespace"));
-            set_chk_from_setting(settings, QSL("studio/bc/isbnx/chk_embed_vector_font"),
-                QSL("chkUPCEANEmbedVectorFont"));
             break;
 
         case BARCODE_VIN:

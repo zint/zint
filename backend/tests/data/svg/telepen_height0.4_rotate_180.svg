@@ -5,7 +5,7 @@
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="128" height="20" fill="#FFFFFF"/>
   <path d="M126 18.9h2v1h-2ZM122 18.9h2v1h-2ZM118 18.9h2v1h-2ZM114 18.9h2v1h-2ZM110 18.9h2v1h-2ZM102 18.9h6v1h-6ZM94 18.9h2v1h-2ZM86 18.9h6v1h-6ZM78 18.9h6v1h-6ZM70 18.9h6v1h-6ZM62 18.9h2v1h-2ZM54 18.9h2v1h-2ZM50 18.9h2v1h-2ZM46 18.9h2v1h-2ZM42 18.9h2v1h-2ZM34 18.9h2v1h-2ZM26 18.9h6v1h-6ZM18 18.9h2v1h-2ZM14 18.9h2v1h-2ZM10 18.9h2v1h-2ZM6 18.9h2v1h-2ZM2 18.9h2v1h-2Z"/>
-  <text x="64" y="4.9" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="14" transform="rotate(180,64,4.9)">
+  <text x="64" y="4.9" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14" transform="rotate(180,64,4.9)">
    A
   </text>
  </g>

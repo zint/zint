@@ -31,6 +31,7 @@
 /* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
 #include <QPainterPath>
 #include <QRegularExpression>
+#include "../backend/fonts/normal_ttf.h" /* Arimo */
 #include "../backend/fonts/upcean_ttf.h" /* OCR-B subset (digits, "<", ">") */
 
 // Shorthand
@@ -44,10 +45,21 @@ namespace Zint {
     static const QRegularExpression colorRE(
                                 QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
 
-    static const QString fontFamily = QSL("Arimo"); /* Sans-serif metrically compatible with Arial */
+    static const QString normalFontFamily = QSL("Arimo"); /* Sans-serif metrically compatible with Arial */
     static const QString upceanFontFamily = QSL("OCRB"); /* Monospace OCR-B */
     static const QString fontFamilyError = QSL("Arimo");
     static const int fontSizeError = 14; /* Point size */
+
+    static int normalFontID = -2; /* Use -2 as `addApplicationFontFromData()` returns -1 on error */
+
+    /* Load Arimo from static array */
+    static int loadNormalFont() {
+        static const QByteArray normalFontArray
+                                            = QByteArray::fromRawData((const char *) normal_ttf, sizeof(normal_ttf));
+
+        normalFontID = QFontDatabase::addApplicationFontFromData(normalFontArray);
+        return normalFontID;
+    }
 
     static int upceanFontID = -2; /* Use -2 as `addApplicationFontFromData()` returns -1 on error */
 
@@ -1093,6 +1105,9 @@ namespace Zint {
         // Plot text
         string = m_zintSymbol->vector->strings;
         if (string) {
+            if (normalFontID == -2) { /* First time? */
+                loadNormalFont();
+            }
             if (upceanFontID == -2) { /* First time? */
                 loadUpceanFont();
             }
@@ -1101,7 +1116,8 @@ namespace Zint {
             p.setColor(fgColor);
             painter.setPen(p);
             bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && !isExtendable();
-            QFont font(isExtendable() ? upceanFontFamily : fontFamily, -1 /*pointSize*/, bold ? QFont::Bold : -1);
+            QFont font(isExtendable() ? upceanFontFamily : normalFontFamily, -1 /*pointSize*/,
+                        bold ? QFont::Bold : -1);
             while (string) {
                 font.setPixelSize(string->fsize);
                 painter.setFont(font);
@@ -1280,7 +1296,7 @@ namespace Zint {
             arg_bool(cmd, "--dotty", dotty());
         }
 
-        if (isExtendable() && showText()) {
+        if (showText()) {
             arg_bool(cmd, "--embedfont", embedVectorFont());
         }
         arg_bool(cmd, "--esc", inputMode() & ESCAPE_MODE);

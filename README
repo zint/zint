@@ -6,22 +6,44 @@ this capability into your own programs.
 
 Zint is able to encode data in the following formats:
 
-Code 11, Standard Code 2 of 5, IATA Code 2 of 5, Industrial Code 2 of 5,
-Interleaved Code 2 of 5, Code 2 of 5 Data Logic, ITF-14, Deutsche Post Leitcode,
-Deutsche Post Identcode, UPC-A, UPC-E, EAN-2, EAN-5, EAN-8, EAN-13, ISBN, UK
-Plessey, MSI Plessey, Telepen Alpha, Telepen Numeric, Code 39, Extended Code 39,
-Code 93, PZN, LOGMARS, Code 32, VIN, Codabar, Pharmacode, Code 128, GS1-128,
-EAN-14, NVE-18 (SSCC-18), DPD Code, UPU S10, GS1 DataBar Omnidirectional, GS1
-DataBar Limited, GS1 DataBar Expanded, GS1 DataBar Stacked, GS1 Composite
-Symbologies, Korea Post, Channel Code, BC412, Codablock-F, Code 16K, PDF417,
-Compact PDF417, MicroPDF417, Code 49, Two-Track Pharmacode, POSTNET, PLANET,
-CEPNet, Australia Post 4-State Symbols, Dutch Post KIX, Royal Mail RM4SCC, Royal
-Mail 2D and 4-State Mailmark, USPS Intelligent Mail, Japanese Postal Code, DAFT,
-Data Matrix, QR Code, Micro QR Code, Rectangular Micro QR Code (rMQR), UPNQR,
-MaxiCode, Aztec Code, Aztec Runes, Code One, Grid Matrix, DotCode, Han Xin Code,
-Ultracode, HIBC Code 128, HIBC Code 39, HIBC Data Matrix, HIBC PDF417, HIBC
-MicroPDF417, HIBC QR Code, HIBC Codablock-F, HIBC Aztec Code, FIM and
-Flattermarken.
+Australia Post Redirect Code            GS1 DataBar Expanded
+Australia Post Reply-Paid               GS1 DataBar Expanded Stacked
+Australia Post Routing Code             GS1 DataBar Limited
+Australia Post Standard Customer        GS1 DataBar Omnidirectional
+Aztec Code (and HIBC)                   GS1 DataBar Stacked
+Aztec Runes                             GS1 DataBar Stacked Omnidirectional
+BC412 (SEMI T1-95)                      Han Xin (Chinese Sensible) Code
+Brazilian Postal Code (CEPNet)          ISBN
+Channel Code                            ITF-14
+Codabar                                 Japanese Postal Barcode
+Codablock-F (and HIBC)                  Korean Postal Barcode
+Code 11                                 LOGMARS
+Code 128 (and GS1-128 and HIBC)         MaxiCode
+Code 16K                                MicroPDF417 (and HIBC)
+Code 2 of 5 Data Logic                  Micro QR Code
+Code 2 of 5 IATA                        MSI Plessey
+Code 2 of 5 Industrial                  NVE-18 (SSCC-18)
+Code 2 of 5 Interleaved                 PDF417 (and Compact and HIBC)
+Code 2 of 5 Standard (Matrix)           Pharmacode
+Code 32 (Italian Pharmacode)            Pharmacode 2-track
+Code 39 (and HIBC)                      Pharma Zentralnummer (PZN)
+Code 39 Extended                        PLANET
+Code 49                                 POSTNET
+Code 93                                 QR Code (and HIBC)
+Code One                                Rectangular Micro QR (rMQR)
+DAFT Code                               Royal Mail 2D Mailmark (CMDM)
+Data Matrix (and HIBC)                  Royal Mail 4-state Customer Code
+Deutsche Post Identcode                 Royal Mail 4-state Mailmark
+Deutsche Post Leitcode                  Telepen
+DotCode                                 Telepen Numeric
+DPD Code                                UK Plessey
+Dutch Post KIX                          Ultracode
+EAN (EAN-2, EAN-5, EAN-8 and EAN-13)    UPC-A
+EAN-14                                  UPC-E
+FIM (Facing Identification Mark)        UPNQR
+Flattermarken                           UPU S10
+Grid Matrix                             USPS Intelligent Mail (OneCode)
+GS1 Composite (EAN/UPC/DataBar/GS-128)  VIN (Vehicle Identification Number)
 
 Output can be saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG or TIF.
 

@@ -292,7 +292,7 @@ extern "C" {
 #define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
 #define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant and use standard height (if any) as default */
 #define EANUPC_GUARD_WHITESPACE 0x4000  /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
-#define EMBED_VECTOR_FONT       0x8000  /* Embed font in vector output - currently only for SVG output of EAN/UPC */
+#define EMBED_VECTOR_FONT       0x8000  /* Embed font in vector output - currently only for SVG output */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */

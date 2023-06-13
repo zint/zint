@@ -5,7 +5,7 @@
  <g id="barcode" fill="#000000">
   <rect x="0" y="0" width="524" height="286" fill="#FFFFFF"/>
   <path d="M0 0h4.8v240h-4.8ZM9.6 0h4.8v240h-4.8ZM19.2 0h4.8v240h-4.8ZM38.4 0h4.8v240h-4.8ZM57.6 0h4.8v240h-4.8ZM67.2 0h4.8v240h-4.8ZM86.4 0h4.8v240h-4.8ZM96 0h14.4v240h-14.4ZM115.2 0h14.4v240h-14.4ZM134.4 0h4.8v240h-4.8ZM144 0h14.4v240h-14.4ZM163.2 0h4.8v240h-4.8ZM182.4 0h4.8v240h-4.8ZM192 0h14.4v240h-14.4ZM211.2 0h14.4v240h-14.4ZM240 0h4.8v240h-4.8ZM249.6 0h4.8v240h-4.8ZM259.2 0h4.8v240h-4.8ZM278.4 0h4.8v240h-4.8ZM288 0h14.4v240h-14.4ZM307.2 0h4.8v240h-4.8ZM316.8 0h14.4v240h-14.4ZM345.6 0h4.8v240h-4.8ZM355.2 0h4.8v240h-4.8ZM374.4 0h4.8v240h-4.8ZM393.6 0h4.8v240h-4.8ZM403.2 0h4.8v240h-4.8ZM422.4 0h14.4v240h-14.4ZM441.6 0h4.8v240h-4.8ZM451.2 0h4.8v240h-4.8ZM460.8 0h4.8v240h-4.8ZM480 0h14.4v240h-14.4ZM499.2 0h14.4v240h-14.4ZM518.4 0h4.8v240h-4.8Z"/>
-  <text x="261.6" y="273.6" text-anchor="middle" font-family="Helvetica, sans-serif" font-size="33.6">
+  <text x="261.6" y="273.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    9212320967
   </text>
  </g>
