@@ -2,25 +2,31 @@ For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" usin
 
 On Ubuntu/Debian (tested on Ubuntu 22.04)
 
-    wget https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-1-amd64.deb
-    sudo dpkg -i pandoc-2.19.2-1-amd64.deb
+    wget https://github.com/jgm/pandoc/releases/download/3.1.3/pandoc-3.1.3-1-amd64.deb
+    sudo dpkg -i pandoc-3.1.3-1-amd64.deb
     sudo apt install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"
+	# Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
+	python -m pip install --force-reinstall \
+	    git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
     sudo apt install librsvg2-bin
     sudo apt install texlive-xetex
     sudo apt install texlive-lang-cjk
     sudo apt install fonts-wqy-microhei
     make
 
-On Fedora (tested on Fedora Linux 36 (Workstation Edition))
+On Fedora (tested on Fedora Linux 38 (Workstation Edition))
 
-    wget https://github.com/jgm/pandoc/releases/download/2.19.2/pandoc-2.19.2-linux-amd64.tar.gz
-    tar xf pandoc-2.19.2-linux-amd64.tar.gz
-    sudo mv -i pandoc-2.19.2/bin/pandoc /usr/local/bin
+    wget https://github.com/jgm/pandoc/releases/download/3.1.3/pandoc-3.1.3-linux-amd64.tar.gz
+    tar xf pandoc-3.1.3-linux-amd64.tar.gz
+    sudo mv -i pandoc-3.1.3/bin/pandoc /usr/local/bin
     sudo dnf install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"
+	# Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
+	python -m pip install --force-reinstall \
+	    git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
     sudo dnf install librsvg2-tools.x86_64
     sudo dnf install texlive-xetex
     sudo dnf install texlive-ctex.noarch
@@ -35,22 +41,4 @@ On Fedora (tested on Fedora Linux 36 (Workstation Edition))
 
 On Windows
 
-Install https://github.com/jgm/pandoc/releases/download/2.18/pandoc-2.18-windows-x86_64.msi
-
-From command prompt run as administrator
-
-    choco install make
-    choco install rsvg-convert
-    choco install python
-    choco install miktex
-
-    pip install pandoc-tablenos --user
-
-From normal command prompt run from zint "docs" directory
-
-    set "PATH=<location-of-pandoc-tablenos>:%PATH%"
-    # e.g. set "PATH=%userprofile%\AppData\Local\Packages\PythonSoftwareFoundation.Python.3.10_qbz5n2kfra8p0\LocalCache\local-packages\Python310\Scripts:%PATH%"
-
-TODO
-??? Various font errors Helvetica, TeX Gyre Pagella which miktex can't handle (ok may be non-activated Windows issue) ???
-??? pandoc-tablenos filter craps out ???
+    Not compatible.
