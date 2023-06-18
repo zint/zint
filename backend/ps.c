@@ -30,14 +30,15 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
 #include "common.h"
 #include "output.h"
 
-/* Convert Ultracode rectangle colour to PostScript setrgbcolor/setcmykcolor format */
-static void ps_colour(const int is_rgb, const int colour, char ps_color[21]) {
+/* Output Ultracode rectangle colour as PostScript setrgbcolor/setcmykcolor */
+static void ps_put_colour(const int is_rgb, const int colour, FILE *feps) {
     const int idx = colour >= 1 && colour <= 8 ? colour - 1 : 6 /*black*/;
     if (is_rgb) {
         /* Use RGB colour space */
@@ -51,8 +52,8 @@ static void ps_colour(const int is_rgb, const int colour, char ps_color[21]) {
             "0 0 0", /* 6: Black (7) */
             "1 1 1", /* 7: White (8) */
         };
-        strcpy(ps_color, ps_rgbs[idx]);
-        strcpy(ps_color + 5, " setrgbcolor");
+        fputs(ps_rgbs[idx], feps);
+        fputs(" setrgbcolor\n", feps);
     } else {
         static const char ps_cmyks[8][8] = {
             "1 0 0 0", /* 0: Cyan (1) */
@@ -64,8 +65,8 @@ static void ps_colour(const int is_rgb, const int colour, char ps_color[21]) {
             "0 0 0 1", /* 6: Black (7) */
             "0 0 0 0", /* 7: White (8) */
         };
-        strcpy(ps_color, ps_cmyks[idx]);
-        strcpy(ps_color + 7, " setcmykcolor");
+        fputs(ps_cmyks[idx], feps);
+        fputs(" setcmykcolor\n", feps);
     }
 }
 
@@ -124,26 +125,46 @@ static void ps_put_cmykcolor(const float cyan, const float magenta, const float 
 }
 
 /* Helper to output rectangle */
-static void ps_put_rect(const struct zint_symbol *symbol, const struct zint_vector_rect *rect, FILE *feps) {
-    out_putsf("", 2, rect->height, feps);
+static void ps_put_rect(const struct zint_symbol *symbol, const struct zint_vector_rect *rect, const int type,
+                FILE *feps) {
+    if (type == 0 || type == 1) {
+        out_putsf("", 2, rect->height, feps);
+        out_putsf(" ", 2, (symbol->vector->height - rect->y) - rect->height, feps);
+    }
+    out_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, rect->x, feps);
     out_putsf(" ", 2, rect->width, feps);
-    out_putsf(" ", 2, rect->x, feps);
-    out_putsf(" ", 2, (symbol->vector->height - rect->y) - rect->height, feps);
-    fputs(" TR\n", feps);
+    fputs(" R\n", feps);
 }
 
 /* Helper to output circle/disc */
 static void ps_put_circle(const struct zint_symbol *symbol, const struct zint_vector_circle *circle,
-                const float radius, FILE *feps) {
-    out_putsf("", 2, circle->x, feps);
-    out_putsf(" ", 2, symbol->vector->height - circle->y, feps);
-    out_putsf(" ", 3, radius, feps);
+                const float radius, const int type, FILE *feps) {
     if (circle->width) {
-        out_putsf(" ", 3, circle->width, feps);
-        fputs(" TC\n", feps);
+        out_putsf("", 2, circle->x, feps);
+        out_putsf(" ", 2, symbol->vector->height - circle->y, feps);
+        out_putsf(" ", 4, radius, feps);
+        out_putsf(" ", 4, circle->width, feps);
+        fputs(" C\n", feps);
     } else {
-        fputs(" TD\n", feps);
+        if (type == 0 || type == 1) {
+            out_putsf("", 2, symbol->vector->height - circle->y, feps);
+            out_putsf(" ", 4, radius, feps);
+        }
+        out_putsf(type == 0 ? " " : type == 1 ? " I " : type == 2 ? "I " : "", 2, circle->x, feps);
+        fputs(" D\n", feps);
     }
+}
+
+/* Helper to count rectangles */
+static int ps_count_rectangles(const struct zint_symbol *symbol) {
+    int rectangles = 0;
+    const struct zint_vector_rect *rect;
+
+    for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
+        rectangles++;
+    }
+
+    return rectangles;
 }
 
 INTERNAL int ps_plot(struct zint_symbol *symbol) {
@@ -157,8 +178,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int error_number = 0;
     float previous_diameter;
     float radius, half_radius, half_sqrt3_radius;
-    int colour_index, colour_rect_flag;
-    char ps_color[21]; /* max "1 0 0 0 setcmykcolor" = 20 + 1 */
+    int colour_rect_flag;
+    int type_latch;
     int draw_background = 1;
     struct zint_vector_rect *rect;
     struct zint_vector_hexagon *hex;
@@ -260,24 +281,38 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     /* Definitions */
     if (have_circles_without_width) {
-        /* Disc: x y radius TD */
-        fputs("/TD { newpath 0 360 arc fill } bind def\n", feps);
+        /* Disc: y radius x D */
+        fputs("/D { newpath 3 1 roll 0 360 arc fill } bind def\n", feps);
     }
     if (have_circles_with_width) {
-        /* Circle (ring): x y radius width TC (adapted from BWIPP renmaxicode.ps) */
-        fputs("/TC { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
+        /* Circle (ring): x y radius width C (adapted from BWIPP renmaxicode.ps) */
+        fputs("/C { newpath 4 1 roll 3 copy 0 360 arc closepath 4 -1 roll add 360 0 arcn closepath fill }"
                 " bind def\n", feps);
     }
     if (symbol->vector->hexagons) {
-        fputs("/TH { 0 setlinewidth moveto lineto lineto lineto lineto lineto closepath fill } bind def\n", feps);
+        /* Hexagon: radius half_radius half_sqrt3_radius x y */
+        if (symbol->vector->hexagons->rotation == 0 || symbol->vector->hexagons->rotation == 180) {
+            fputs("/H { newpath moveto 2 copy exch neg exch rmoveto 2 index neg 0 exch rlineto 2 copy neg rlineto"
+                    " 2 copy rlineto 3 -1 roll 0 exch rlineto exch neg exch rlineto closepath fill }"
+                    " bind def\n", feps);
+        } else {
+            fputs("/H { newpath moveto 2 copy neg exch neg rmoveto 2 index 0 rlineto 2 copy exch rlineto"
+                    " 2 copy neg exch rlineto 3 -1 roll neg 0 rlineto neg exch neg rlineto closepath fill }"
+                    " bind def\n", feps);
+        }
+        /* Copy r hr hsr for repeat use without having to specify them subsequently */
+        fputs("/J { 3 copy } bind def\n", feps);
+        /* TODO: Save repeating x also */
     }
     if (symbol->vector->rectangles || draw_background) {
-        /* Rectangle: h w x y */
-        fputs("/TR { newpath moveto dup 3 1 roll 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill } bind def\n",
-            feps);
+        /* Rectangle: h y x w */
+        fputs("/R { newpath 4 1 roll exch moveto 1 index 0 rlineto 0 exch rlineto neg 0 rlineto closepath fill }"
+                " bind def\n", feps);
     }
-
-    fputs("newpath\n", feps);
+    if (symbol->vector->rectangles || have_circles_without_width) {
+        /* Copy h y (rect) or y r (disc) for repeat use without having to specify them subsequently */
+        fputs("/I { 2 copy } bind def\n", feps);
+    }
 
     /* Now the actual representation */
 
@@ -290,8 +325,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         }
 
         out_putsf("", 2, symbol->vector->height, feps);
-        out_putsf(" ", 2, symbol->vector->width, feps);
-        fputs(" 0 0 TR\n", feps);
+        out_putsf(" 0 0 ", 2, symbol->vector->width, feps); /* y x w */
+        fputs(" R\n", feps);
     }
 
     if (symbol->symbology != BARCODE_ULTRA) {
@@ -304,93 +339,87 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
 
     /* Rectangles */
     if (symbol->symbology == BARCODE_ULTRA) {
-        colour_rect_flag = 0;
-        rect = symbol->vector->rectangles;
-        while (rect) {
-            if (rect->colour == -1) { /* Foreground */
-                if (colour_rect_flag == 0) {
-                    /* Set foreground colour */
-                    if (is_rgb) {
-                        ps_put_rgbcolor(red_ink, green_ink, blue_ink, feps);
-                    } else {
-                        ps_put_cmykcolor(cyan_ink, magenta_ink, yellow_ink, black_ink, feps);
-                    }
-                    colour_rect_flag = 1;
+        /* Group rectangles by colour */
+        struct zint_vector_rect **ultra_rects
+            = (struct zint_vector_rect **) z_alloca(sizeof(struct zint_vector_rect *) * ps_count_rectangles(symbol));
+        int u_i = 0;
+        for (i = 0; i <= 8; i++) {
+            for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
+                if ((i == 0 && rect->colour == -1) || rect->colour == i) {
+                    ultra_rects[u_i++] = rect;
                 }
-                ps_put_rect(symbol, rect, feps);
             }
-            rect = rect->next;
         }
-        for (colour_index = 1; colour_index <= 8; colour_index++) {
-            colour_rect_flag = 0;
-            rect = symbol->vector->rectangles;
-            while (rect) {
-                if (rect->colour == colour_index) {
+        assert(u_i == ps_count_rectangles(symbol));
+
+        colour_rect_flag = 0;
+        type_latch = 0;
+        for (i = 0; i < u_i; i++) {
+            rect = ultra_rects[i];
+            if (i == 0 || rect->colour != ultra_rects[i - 1]->colour) {
+                if (rect->colour == -1) {
                     if (colour_rect_flag == 0) {
-                        /* Set new colour */
-                        ps_colour(is_rgb, colour_index, ps_color);
-                        fprintf(feps, "%s\n", ps_color);
+                        /* Set foreground colour */
+                        if (is_rgb) {
+                            ps_put_rgbcolor(red_ink, green_ink, blue_ink, feps);
+                        } else {
+                            ps_put_cmykcolor(cyan_ink, magenta_ink, yellow_ink, black_ink, feps);
+                        }
                         colour_rect_flag = 1;
                     }
-                    ps_put_rect(symbol, rect, feps);
+                } else {
+                    /* Set new colour */
+                    ps_put_colour(is_rgb, rect->colour, feps);
                 }
-                rect = rect->next;
+            }
+            if (i + 1 < u_i && rect->height == ultra_rects[i + 1]->height && rect->y == ultra_rects[i + 1]->y) {
+                ps_put_rect(symbol, rect, type_latch ? 2 : 1, feps);
+                type_latch = 1;
+            } else {
+                ps_put_rect(symbol, rect, type_latch ? 3 : 0, feps);
+                type_latch = 0;
             }
         }
     } else {
-        rect = symbol->vector->rectangles;
-        while (rect) {
-            ps_put_rect(symbol, rect, feps);
-            rect = rect->next;
+        type_latch = 0;
+        for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
+            if (rect->next && rect->height == rect->next->height && rect->y == rect->next->y) {
+                ps_put_rect(symbol, rect, type_latch ? 2 : 1, feps);
+                type_latch = 1;
+            } else {
+                ps_put_rect(symbol, rect, type_latch ? 3 : 0, feps);
+                type_latch = 0;
+            }
         }
     }
 
     /* Hexagons */
     previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
-    hex = symbol->vector->hexagons;
-    while (hex) {
+    for (hex = symbol->vector->hexagons; hex; hex = hex->next) {
         float hy = symbol->vector->height - hex->y;
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
             radius = (float) (0.5 * previous_diameter);
             half_radius = (float) (0.25 * previous_diameter);
             half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+            out_putsf("", 4, radius, feps);
+            out_putsf(" ", 4, half_sqrt3_radius, feps);
+            out_putsf(" ", 4, half_radius, feps);
+            fputc('\n', feps);
         }
-        if ((hex->rotation == 0) || (hex->rotation == 180)) {
-            out_putsf("", 2, hex->x, feps);
-            out_putsf(" ", 2, hy + radius, feps);
-            out_putsf(" ", 2, hex->x + half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hy + half_radius, feps);
-            out_putsf(" ", 2, hex->x + half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hy - half_radius, feps);
-            out_putsf(" ", 2, hex->x, feps);
-            out_putsf(" ", 2, hy - radius, feps);
-            out_putsf(" ", 2, hex->x - half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hy - half_radius, feps);
-            out_putsf(" ", 2, hex->x - half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hy + half_radius, feps);
+        if (hex->next) {
+            out_putsf("J ", 2, hex->x, feps);
         } else {
-            out_putsf("", 2, hex->x - radius, feps);
-            out_putsf(" ", 2, hy, feps);
-            out_putsf(" ", 2, hex->x - half_radius, feps);
-            out_putsf(" ", 2, hy + half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hex->x + half_radius, feps);
-            out_putsf(" ", 2, hy + half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hex->x + radius, feps);
-            out_putsf(" ", 2, hy, feps);
-            out_putsf(" ", 2, hex->x + half_radius, feps);
-            out_putsf(" ", 2, hy - half_sqrt3_radius, feps);
-            out_putsf(" ", 2, hex->x - half_radius, feps);
-            out_putsf(" ", 2, hy - half_sqrt3_radius, feps);
+            out_putsf("", 2, hex->x, feps);
         }
-        fputs(" TH\n", feps);
-        hex = hex->next;
+        out_putsf(" ", 2, hy, feps);
+        fputs(" H\n", feps);
     }
 
     /* Circles */
     previous_diameter = radius = 0.0f;
-    circle = symbol->vector->circles;
-    while (circle) {
+    type_latch = 0;
+    for (circle = symbol->vector->circles; circle; circle = circle->next) {
         if (previous_diameter != circle->diameter - circle->width) {
             previous_diameter = circle->diameter - circle->width;
             radius = (float) (0.5 * previous_diameter);
@@ -402,7 +431,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             } else {
                 ps_put_cmykcolor(cyan_paper, magenta_paper, yellow_paper, black_paper, feps);
             }
-            ps_put_circle(symbol, circle, radius, feps);
+            ps_put_circle(symbol, circle, radius, 0 /*type*/, feps);
             if (circle->next) {
                 if (is_rgb) {
                     ps_put_rgbcolor(red_ink, green_ink, blue_ink, feps);
@@ -412,9 +441,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             }
         } else {
             /* A 'black' circle */
-            ps_put_circle(symbol, circle, radius, feps);
+            if (circle->next && circle->y == circle->next->y && circle->diameter == circle->next->diameter) {
+                ps_put_circle(symbol, circle, radius, type_latch ? 2 : 1, feps);
+                type_latch = 1;
+            } else {
+                ps_put_circle(symbol, circle, radius, type_latch ? 3 : 0, feps);
+                type_latch = 0;
+            }
         }
-        circle = circle->next;
     }
 
     /* Text */
@@ -454,13 +488,13 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             out_putsf(" ", 2, string->x, feps);
             out_putsf(" ", 2, symbol->vector->height - string->y, feps);
             fputs(" moveto\n", feps);
-            if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
-                fprintf(feps, " (%s) stringwidth pop" /* Returns "width height" - discard "height" */
-                                " %s 0 rmoveto\n", ps_string, string->halign == 2 ? "neg" : "-2 div");
-            }
             if (string->rotation != 0) {
                 fputs(" gsave\n", feps);
                 fprintf(feps, " %d rotate\n", 360 - string->rotation);
+            }
+            if (string->halign == 0 || string->halign == 2) { /* Need width for middle or right align */
+                fprintf(feps, " (%s) stringwidth pop" /* Returns "width height" - discard "height" */
+                                " %s 0 rmoveto\n", ps_string, string->halign == 2 ? "neg" : "-2 div");
             }
             fprintf(feps, " (%s) show\n", ps_string);
             if (string->rotation != 0) {

@@ -3585,10 +3585,18 @@ Table: {#tbl:mailmark_4s_input_fields
 tag=": Royal Mail 4-State Mailmark Input Fields"}
 
 The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
-patterns are `'FNFNLLNLS'`, `'FFNNLLNLS'`, `'FFNNNLLNL'`, `'FFNFNLLNL'`,
-`'FNNLLNLSS'` and `'FNNNLLNLS'`, where `'F'` stands for full alphabetic (A-Z),
-`'L'` for limited alphabetic (A-Z less `'CIKMOV'`), `'N'` for numeric (0-9), and
-`'S'` for space.
+patterns are:
+
+-----------  -----------  -----------
+`FNFNLLNLS`  `FFNNLLNLS`  `FFNNNLLNL`
+`FFNFNLLNL`  `FNNLLNLSS`  `FNNNLLNLS`
+-----------  -----------  -----------
+
+Table: {#tbl:mailmark_destination_dps
+tag=": Royal Mail Mailmark Destination+DPS Patterns"}
+
+where `'F'` stands for full alphabetic (A-Z), `'L'` for limited alphabetic (A-Z
+less `'CIKMOV'`), `'N'` for numeric (0-9), and `'S'` for space.
 
 Four of the permitted patterns include a number of trailing space characters -
 these will be appended by Zint if not included in the input data.
@@ -3728,8 +3736,8 @@ to `"001001"`.
 
 This variant of Data Matrix, also known as "Complex Mail Data Mark" (CMDM), was
 introduced by Royal Mail along with [6.5.4 Royal Mail 4-State Mailmark], and
-offers space for customer data following the initial pre-formatted 45 character
-section, an expanded version of the 4-state one, as summarized below.
+offers space for customer data following an initial pre-formatted 45 character
+section, as summarized below.
 
 Field Name        Length       Values
 ----------------  -----------  ------------------------------
@@ -3749,9 +3757,20 @@ Table: {#tbl:mailmark_2d_input_fields
 tag=": Royal Mail 2D Mailmark Input Fields"}
 
 The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
-patterns are the same as for the 4-state. The 6 RTS (Return to Sender) Post Code
+patterns are the same as for the 4-state - see Table
+{@tbl:mailmark_destination_dps}. The 6 RTS (Return to Sender) Post Code
 patterns are the same also except without the additional DPS `'NL'`, i.e.
-`'FNFNLLS'`, `'FFNNLLS'`, `'FFNNNLL'`, `'FFNFNLL'`, `'FNNLLSS'` and `'FNNNLLS'`.
+
+---------  ---------  ---------
+`FNFNLLS`  `FFNNLLS`  `FFNNNLL`
+`FFNFNLL`  `FNNLLSS`  `FNNNLLS`
+---------  ---------  ---------
+
+Table: {#tbl:mailmark_2d_rts
+tag=": Royal Mail 2D Mailmark RTS Patterns"}
+
+where `'F'` is full alphabetic (A-Z), `'L'` limited alphabetic (A-Z less
+`'CIKMOV'`), `'N'` numeric (0-9), and `'S'` space.
 
 Three sizes are defined, one rectangular, with varying maximum amounts of
 optional customer data:
@@ -3767,8 +3786,8 @@ Table: {#tbl:mailmark_2d_sizes tag=": Royal Mail 2D Mailmark Sizes"}
 Zint will automatically select a size based on the amount of customer data, or
 it can be specified using the `--vers` option (API `option_2`), which takes the
 Zint version number (one more than the Royal Mail Type number). Zint will prefix
-the input data with `"JGB "` if it's missing, and also space-pad the input to 45
-characters when there is no customer data. As with Data Matrix, the rectangular
+the input data with `"JGB "` if it's missing, and also space-pad the input if
+the customer data is absent or falls short. As with Data Matrix, the rectangular
 symbol Type 29 can be excluded from automatic size selection by using the option
 `--square` (API `option_3 = DM_SQUARE`).
 
