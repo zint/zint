@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="749" height="286" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="749" height="280" version="1.1" xmlns="http://www.w3.org/2000/svg">
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
-  <rect x="0" y="0" width="749" height="286" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="749" height="280" fill="#FFFFFF"/>
   <path d="M0 0h9.6v240h-9.6ZM14.4 0h4.8v240h-4.8ZM28.8 0h4.8v240h-4.8ZM52.8 0h4.8v240h-4.8ZM72 0h9.6v240h-9.6ZM86.4 0h4.8v240h-4.8ZM105.6 0h4.8v240h-4.8ZM124.8 0h9.6v240h-9.6ZM139.2 0h4.8v240h-4.8ZM158.4 0h14.4v240h-14.4ZM177.6 0h4.8v240h-4.8ZM192 0h9.6v240h-9.6ZM211.2 0h4.8v240h-4.8ZM220.8 0h14.4v240h-14.4ZM240 0h19.2v240h-19.2ZM264 0h9.6v240h-9.6ZM283.2 0h4.8v240h-4.8ZM292.8 0h4.8v240h-4.8ZM316.8 0h14.4v240h-14.4ZM336 0h4.8v240h-4.8ZM345.6 0h9.6v240h-9.6ZM369.6 0h9.6v240h-9.6ZM393.6 0h9.6v240h-9.6ZM408 0h9.6v240h-9.6ZM422.4 0h4.8v240h-4.8ZM436.8 0h14.4v240h-14.4ZM456 0h9.6v240h-9.6ZM475.2 0h4.8v240h-4.8ZM484.8 0h19.2v240h-19.2ZM508.8 0h14.4v240h-14.4ZM528 0h4.8v240h-4.8ZM547.2 0h4.8v240h-4.8ZM566.4 0h9.6v240h-9.6ZM580.8 0h4.8v240h-4.8ZM590.4 0h4.8v240h-4.8ZM609.6 0h9.6v240h-9.6ZM633.6 0h14.4v240h-14.4ZM662.4 0h4.8v240h-4.8ZM672 0h9.6v240h-9.6ZM686.4 0h9.6v240h-9.6ZM710.4 0h14.4v240h-14.4ZM729.6 0h4.8v240h-4.8ZM739.2 0h9.6v240h-9.6Z"/>
-  <text x="374.4" y="273.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
+  <text x="374.4" y="272.03" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    EE 876 543 216 CA
   </text>
  </g>

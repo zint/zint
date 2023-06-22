@@ -458,7 +458,7 @@ The numbers or names can be used with \f[V]-b\f[R] |
 Adjust the gap between the barcode and the Human Readable Text (HRT).
 \f[I]NUMBER\f[R] is in multiples of the X-dimension, and may be
 floating-point.
-Maximum is 5; zero results in the default being used.
+Maximum is 10; zero results in the default 1X being used.
 .TP
 \f[V]--vers=INTEGER\f[R]
 Set the symbol version (size, check digits, other options) to
@@ -543,6 +543,10 @@ Success (including when given informational options \f[V]-h\f[R] |
 \f[V]--help\f[R], \f[V]-e\f[R] | \f[V]--ecinos\f[R], \f[V]-t\f[R] |
 \f[V]--types\f[R], \f[V]-v\f[R] | \f[V]--version\f[R]).
 .TP
+\f[V]1\f[R]
+Human Readable Text was truncated (maximum 159 bytes)
+(\f[V]ZINT_WARN_HRT_TRUNCATED\f[R])
+.TP
 \f[V]2\f[R]
 Invalid option given but overridden by Zint
 (\f[V]ZINT_WARN_INVALID_OPTION\f[R])
@@ -586,6 +590,10 @@ Error counterpart of warning if \f[V]--werror\f[R] given
 \f[V]14\f[R]
 Error counterpart of warning if \f[V]--werror\f[R] given
 (\f[V]ZINT_ERROR_NONCOMPLIANT\f[R])
+.TP
+\f[V]15\f[R]
+Error counterpart of warning if \f[V]--werror\f[R] given
+(\f[V]ZINT_ERROR_HRT_TRUNCATED\f[R])
 .SH EXAMPLES
 .PP
 Create \[lq]out.png\[rq] (or \[lq]out.gif\[rq] if zint built without PNG
@@ -605,7 +613,7 @@ zint -b QRCode -d \[aq]This Text\[aq] -o \[aq]qr.svg\[aq]
 \f[R]
 .fi
 .PP
-Use batch mode to read from an input file \[lq]ean_nos.txt\[rq]
+Use batch mode to read from an input file \[lq]ean13nos.txt\[rq]
 containing 13-digit GTINs, to create a series of EAN-13 barcodes,
 formatting the output filenames to \[lq]ean001.gif\[rq],
 \[lq]ean002.gif\[rq] etc.
@@ -613,7 +621,7 @@ using the special character \[lq]\[ti]\[rq].
 .IP
 .nf
 \f[C]
-zint -b EANX --batch -i \[aq]ean_nos.txt\[aq] -o \[aq]ean\[ti]\[ti]\[ti].gif\[aq]
+zint -b EANX --batch -i \[aq]ean13nos.txt\[aq] -o \[aq]ean\[ti]\[ti]\[ti].gif\[aq]
 \f[R]
 .fi
 .SH BUGS

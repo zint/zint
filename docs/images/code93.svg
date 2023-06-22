@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="308" height="238" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="308" height="232" version="1.1" xmlns="http://www.w3.org/2000/svg">
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
-  <rect x="0" y="0" width="308" height="238" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="308" height="232" fill="#FFFFFF"/>
   <path d="M0 0h4.8v192h-4.8ZM9.6 0h4.8v192h-4.8ZM19.2 0h19.2v192h-19.2ZM43.2 0h9.6v192h-9.6ZM57.6 0h4.8v192h-4.8ZM76.8 0h4.8v192h-4.8ZM86.4 0h4.8v192h-4.8ZM110.4 0h4.8v192h-4.8ZM120 0h4.8v192h-4.8ZM129.6 0h4.8v192h-4.8ZM139.2 0h4.8v192h-4.8ZM163.2 0h4.8v192h-4.8ZM172.8 0h9.6v192h-9.6ZM187.2 0h4.8v192h-4.8ZM196.8 0h4.8v192h-4.8ZM216 0h14.4v192h-14.4ZM235.2 0h9.6v192h-9.6ZM249.6 0h4.8v192h-4.8ZM259.2 0h4.8v192h-4.8ZM268.8 0h4.8v192h-4.8ZM278.4 0h19.2v192h-19.2ZM302.4 0h4.8v192h-4.8Z"/>
-  <text x="153.6" y="225.6" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
+  <text x="153.6" y="224.03" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="33.6">
    C93
   </text>
  </g>

@@ -1683,7 +1683,8 @@ void MainWindow::change_options()
     chkComposite->setText(tr("Add &2D Component"));
     combobox_item_enabled(cmbCompType, 3, false); // CC-C
     btype->setItemText(0, tr("No border"));
-    combobox_item_enabled(cmbFontSetting, 1, true);
+    combobox_item_enabled(cmbFontSetting, 1, true); // Reset bold options
+    combobox_item_enabled(cmbFontSetting, 3, true);
     m_lblHeightPerRow = nullptr;
     m_spnHeightPerRow = nullptr;
     m_btnHeightPerRowDisable = nullptr;

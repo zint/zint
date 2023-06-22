@@ -915,7 +915,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     int hide_text;
     int i, r;
     int block_width = 0;
-    int text_height; /* Font pixel size (so whole integers) */
+    int font_height; /* Font pixel size (so whole integers) */
     float text_gap; /* Gap between barcode and text */
     float guard_descent;
     const int upcean_guard_whitespace = !(symbol->output_options & BARCODE_NO_QUIET_ZONES)
@@ -969,13 +969,13 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     /* Note font sizes halved as in pixels */
     if (upceanflag) {
         textflags = UPCEAN_TEXT | (symbol->output_options & SMALL_TEXT); /* Bold not available for UPC/EAN */
-        text_height = (UPCEAN_FONT_HEIGHT + 1) / 2;
+        font_height = (UPCEAN_FONT_HEIGHT + 1) / 2;
         text_gap = symbol->text_gap ? symbol->text_gap : 1.0f;
         /* Height of guard bar descent (none for EAN-2 and EAN-5) */
         guard_descent = upceanflag >= 6 ? symbol->guard_descent : 0.0f;
     } else {
         textflags = symbol->output_options & (SMALL_TEXT | BOLD_TEXT);
-        text_height = textflags & SMALL_TEXT ? (SMALL_FONT_HEIGHT + 1) / 2 : (NORMAL_FONT_HEIGHT + 1) / 2;
+        font_height = textflags & SMALL_TEXT ? (SMALL_FONT_HEIGHT + 1) / 2 : (NORMAL_FONT_HEIGHT + 1) / 2;
         text_gap = symbol->text_gap ? symbol->text_gap : 1.0f;
         guard_descent = 0.0f;
     }
@@ -983,10 +983,13 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     if (hide_text) {
         textoffset = guard_descent;
     } else {
-        if (text_height + text_gap > guard_descent) {
-            textoffset = text_height + text_gap;
+        if (upceanflag) {
+            textoffset = font_height + text_gap;
+            if (textoffset < guard_descent) {
+                textoffset = guard_descent;
+            }
         } else {
-            textoffset = guard_descent;
+            textoffset = font_height + text_gap;
         }
     }
 
@@ -1032,7 +1035,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                                         && module_is_set(symbol, r, i + block_width) == fill; block_width++);
                 if ((r == (symbol->rows - 1)) && (i > main_width) && (addon_latch == 0)) {
                     int addon_row_height_si;
-                    const int text_offset_si = (text_height + text_gap) * si;
+                    const int text_offset_si = (font_height + text_gap) * si;
                     copy_bar_line(pixelbuf, xoffset_si, main_width * si, yposn_si, row_height_si, image_width,
                                 image_height);
                     addon_text_yposn = yposn_si;
@@ -1066,7 +1069,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
 
     } else {
         if (upceanflag && !hide_text) { /* EAN-2, EAN-5 (standalone add-ons) */
-            yposn_si += (int) (text_height + text_gap) * si;
+            yposn_si += (int) (font_height + text_gap) * si;
         }
         for (r = 0; r < symbol->rows; r++) {
             const int row_height_si = row_heights_si[r];

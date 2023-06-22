@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="240" height="135" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="240" height="133" version="1.1" xmlns="http://www.w3.org/2000/svg">
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
-  <rect x="0" y="0" width="240" height="135" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="240" height="133" fill="#FFFFFF"/>
   <path d="M8 8h4v100h-4ZM14 8h2v100h-2ZM20 8h2v100h-2ZM30 8h2v100h-2ZM34 8h8v100h-8ZM44 8h6v100h-6ZM52 8h4v100h-4ZM62 8h2v100h-2ZM70 8h2v100h-2ZM74 8h2v100h-2ZM80 8h4v100h-4ZM86 8h2v100h-2ZM96 8h2v100h-2ZM106 8h4v100h-4ZM114 8h2v100h-2ZM118 8h2v100h-2ZM122 8h2v100h-2ZM128 8h8v100h-8ZM140 8h2v100h-2ZM146 8h2v100h-2ZM150 8h8v100h-8ZM162 8h4v100h-4ZM168 8h4v100h-4ZM174 8h8v100h-8ZM184 8h2v100h-2ZM192 8h4v100h-4ZM202 8h2v100h-2ZM206 8h4v100h-4ZM216 8h6v100h-6ZM224 8h2v100h-2ZM228 8h4v100h-4ZM0 4h240v4h-240ZM0 108h240v4h-240ZM0 8h4v100h-4ZM236 8h4v100h-4Z"/>
-  <text x="120" y="126" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14" font-weight="bold">
+  <text x="120" y="125.34" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14" font-weight="bold">
    Égjpqy
   </text>
  </g>

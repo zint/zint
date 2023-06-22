@@ -364,7 +364,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--textgap=NUMBER`
 
 :   Adjust the gap between the barcode and the Human Readable Text (HRT). *NUMBER* is in multiples of the X-dimension,
-    and may be floating-point. Maximum is 5; zero results in the default being used.
+    and may be floating-point. Maximum is 10; zero results in the default 1X being used.
 
 `--vers=INTEGER`
 
@@ -437,6 +437,9 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 :   Success (including when given informational options `-h` | `--help`, `-e` | `--ecinos`, `-t` | `--types`, `-v` |
     `--version`).
 
+`1`
+:    Human Readable Text was truncated (maximum 159 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
+
 `2`
 :    Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)
 
@@ -476,6 +479,9 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `14`
 :    Error counterpart of warning if `--werror` given (`ZINT_ERROR_NONCOMPLIANT`)
 
+`15`
+:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_TRUNCATED`)
+
 # EXAMPLES
 
 Create "out.png" (or "out.gif" if zint built without PNG support) in the current directory, as a Code 128 symbol.
@@ -490,11 +496,11 @@ Create "qr.svg" in the current directory, as a QR Code symbol.
 zint -b QRCode -d 'This Text' -o 'qr.svg'
 ```
 
-Use batch mode to read from an input file "ean_nos.txt" containing 13-digit GTINs, to create a series of EAN-13
+Use batch mode to read from an input file "ean13nos.txt" containing 13-digit GTINs, to create a series of EAN-13
 barcodes, formatting the output filenames to "ean001.gif", "ean002.gif" etc. using the special character "~".
 
 ```bash
-zint -b EANX --batch -i 'ean_nos.txt' -o 'ean~~~.gif'
+zint -b EANX --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
 ```
 
 # BUGS

@@ -12,6 +12,7 @@ Version 2.12.0.9 (dev) not released yet
   horizontal alignments of EAN/UPC vector text also tweaked
 - Text (HRT) for standalone EAN-2 and EAN-5 now at top of symbol
   (was at bottom)
+- Text height (font size) for SMALL_TEXT vector output reduced
 - For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
   in `zint_symbol` and all API filename arguments
 - Never used `fontsize` field removed from `zint_symbol`
@@ -72,6 +73,10 @@ Changes
 - CLI: add some more barcode synonyms for DBAR
 - common: various fiddlings
 - CMake: don't include png.c unless ZINT_USE_PNG (avoids clang warning)
+- vector: reduce SMALL_TEXT font height 6 -> 5 to be more like raster;
+  reduce antialiasing allowance for `textoffset`;
+  adjust text to baseline using values for Arimo rather than percentage
+- raster/vector: rename `text_height` -> `font_height`
 
 Bugs
 ----
@@ -92,6 +97,7 @@ Bugs
 - EAN/UPC: fix excess 1X to right of add-ons
 - Composites: fix excess whitespace; fix quiet zone calcs to allow for linear
   shifting
+- GUI: fix not enabling font combo "Small Bold (vector only)" by default
 
 
 Version 2.12.0 (2022-12-12)

@@ -1936,7 +1936,7 @@ the barcode in X-dimensions</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Set text gap to zero (default)</string>
+                <string>Set text gap to zero (default 1X)</string>
                </property>
                <property name="text">
                 <string/>
