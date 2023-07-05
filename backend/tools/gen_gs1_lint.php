@@ -2,7 +2,7 @@
 /* Generate GS1 verify include "backend/gs1_lint.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 <rstuart114@gmail.com>
+    Copyright (C) 2021-2023 <rstuart114@gmail.com>
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -15,7 +15,7 @@
  *   php backend/tools/gen_gs1_lint.php -f <local-path>/gs1-syntax-dictionary.txt backend/gs1_lint.h
  *
  *************************************************************************************************
- * NOTE: up-to-update version requires syntax dictionary available from
+ * NOTE: up-to-date version requires syntax dictionary available from
  * https://ref.gs1.org/tools/gs1-barcode-syntax-resource/syntax-dictionary/
  *************************************************************************************************
  */
@@ -27,7 +27,7 @@ $dirdirname = basename(dirname($dirname)) . '/' . basename($dirname);
 $opts = getopt('c:f:h:l:t:');
 
 $print_copyright = isset($opts['c']) ? (bool) $opts['c'] : true;
-$file = isset($opts['f']) ? $opts['f'] : 'https://ref.gs1.org/tools/gs1-barcode-syntax-resource/syntax-dictionary/';
+$file = isset($opts['f']) ? $opts['f'] : 'https://raw.githubusercontent.com/gs1/gs1-syntax-dictionary/main/gs1-syntax-dictionary.txt';
 $print_h_guard = isset($opts['h']) ? (bool) $opts['h'] : true;
 $use_length_only = isset($opts['l']) ? (bool) $opts['l'] : true;
 $tab = isset($opts['t']) ? $opts['t'] : '    ';
@@ -55,7 +55,8 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXYC][0-9.][ NXYC0-9.,a-z=|\[\]]*)(?:# (.+))?$/', $line, $matches)) {
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXYZ][0-9.][ NXYZ0-9.,a-z=|\[\]]*)(?:# (.+))?$/', $line, $matches)) {
+        print $line . PHP_EOL;
         exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
@@ -121,7 +122,7 @@ foreach ($lines as $line) {
     foreach ($parts as $part) {
         $checkers = explode(',', $part);
         $validator = array_shift($checkers);
-        if (preg_match('/^([NXYC])([0-9]+)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
+        if (preg_match('/^([NXYZ])([0-9]+)?(\.\.[0-9|]+)?$/', $validator, $matches)) {
             if (count($matches) === 3) {
                 $min = $max = (int) $matches[2];
             } else {
@@ -132,10 +133,12 @@ foreach ($lines as $line) {
                 $validator = "numeric";
             } elseif ($matches[1] === 'X') {
                 $validator = "cset82";
-            } else {
+            } elseif ($matches[1] === 'Y') {
                 $validator = "cset39";
+            } else { // 'Z'
+                $validator = "cset64";
             }
-        } else if (preg_match('/^\[([NXYC])([1-9]+)?(\.\.[0-9|]+)?\]$/', $validator, $matches)) {
+        } else if (preg_match('/^\[([NXYZ])([1-9]+)?(\.\.[0-9|]+)?\]$/', $validator, $matches)) {
             if (count($matches) === 3) {
                 $min = 0;
                 $max = (int) $matches[2];
@@ -147,8 +150,10 @@ foreach ($lines as $line) {
                 $validator = "numeric";
             } elseif ($matches[1] === 'X') {
                 $validator = "cset82";
-            } else {
+            } elseif ($matches[1] === 'Y') {
                 $validator = "cset39";
+            } else { // 'Z'
+                $validator = "cset64";
             }
         } else {
             exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
@@ -234,7 +239,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions

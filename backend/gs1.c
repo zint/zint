@@ -129,6 +129,39 @@ static int cset39(const unsigned char *data, int data_len, int offset, int min, 
     return 1;
 }
 
+/* Validate of character set 64 (GSCN 21-307 Figure 7.11-3) */
+static int cset64(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50]) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            /* 0-9, A-Z, a-z and "-", "_" */
+            if ((*d < '0' && *d != '-') || (*d > '9' && *d < 'A') || (*d > 'Z' && *d < 'a' && *d != '_')
+                    || *d > 'z') {
+                /* One or two "="s can be used as padding to mod 3 length */
+                if (*d == '=' && (d + 1 == de || (d + 2 == de && *(d + 1) == '=')) && data_len % 3 == 0) {
+                    break;
+                }
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                sprintf(err_msg, "Invalid CSET 64 character '%c'", *d);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
 /* Check a check digit (GS1 General Specifications 7.9.1) */
 static int csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
@@ -167,7 +200,6 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
 /* Check alphanumeric check characters (GS1 General Specifications 7.9.5) */
 static int csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
-    (void)max;
 
     data_len -= offset;
 
@@ -1179,35 +1211,89 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
     return 1;
 }
 
-/* Check WSG 84 latitude, longitude */
-static int latlong(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+/* Check WSG 84 latitude */
+static int latitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
-    (void)max;
 
     data_len -= offset;
 
-    if (data_len < min || (data_len && data_len < 20)) {
+    if (data_len < min || (data_len && data_len < 10)) {
         return 0;
     }
 
     if (!length_only && data_len) {
         const unsigned char *d = data + offset;
         const unsigned char *const de = d + (data_len > max ? max : data_len);
-        uint64_t lat = 0, lng = 0;
+        uint64_t lat = 0;
 
         for (; d < de; d++) {
-            if (de - d > 10) {
-                lat *= 10;
-                lat += *d - '0';
-            } else {
-                lng *= 10;
-                lng += *d - '0';
-            }
+            lat *= 10;
+            lat += *d - '0';
         }
-        if (lat > 1800000000 || lng > 3600000000) {
+        if (lat > 1800000000) {
             *p_err_no = 3;
-            *p_err_posn = d - 1 - data + 1 - 10 * (lat > 1800000000);
-            sprintf(err_msg, "Invalid %s", lat > 1800000000 ? "latitude" : "longitude");
+            *p_err_posn = d - 1 - data + 1;
+            strcpy(err_msg, "Invalid latitude");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check WSG 84 longitude */
+static int longitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 10)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+        uint64_t lng = 0;
+
+        for (; d < de; d++) {
+            lng *= 10;
+            lng += *d - '0';
+        }
+        if (lng > 3600000000) {
+            *p_err_no = 3;
+            *p_err_posn = d - 1 - data + 1;
+            strcpy(err_msg, "Invalid longitude");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check AIDC media type (GSCN-22-345 Figure 3.8.22-2) */
+static int mediatype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 2)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+        unsigned int val = 0;
+
+        for (; d < de; d++) {
+            val *= 10;
+            val += *d - '0';
+        }
+        if (val == 0 || (val > 10 && val < 80)) {
+            *p_err_no = 3;
+            *p_err_posn = d - data + 1;
+            strcpy(err_msg, "Invalid AIDC media type");
             return 0;
         }
     }
