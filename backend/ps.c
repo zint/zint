@@ -177,7 +177,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     float cyan_paper = 0.0f, magenta_paper = 0.0f, yellow_paper = 0.0f, black_paper = 0.0f;
     int error_number = 0;
     float previous_diameter;
-    float radius, half_radius, half_sqrt3_radius;
+    float radius;
     int colour_rect_flag;
     int type_latch;
     int draw_background = 1;
@@ -340,8 +340,9 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     /* Rectangles */
     if (symbol->symbology == BARCODE_ULTRA) {
         /* Group rectangles by colour */
+        const int rect_cnt = ps_count_rectangles(symbol);
         struct zint_vector_rect **ultra_rects
-            = (struct zint_vector_rect **) z_alloca(sizeof(struct zint_vector_rect *) * ps_count_rectangles(symbol));
+            = (struct zint_vector_rect **) z_alloca(sizeof(struct zint_vector_rect *) * (rect_cnt ? rect_cnt : 1));
         int u_i = 0;
         for (i = 0; i <= 8; i++) {
             for (rect = symbol->vector->rectangles; rect; rect = rect->next) {
@@ -394,17 +395,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     /* Hexagons */
-    previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
+    previous_diameter = 0.0f;
     for (hex = symbol->vector->hexagons; hex; hex = hex->next) {
         float hy = symbol->vector->height - hex->y;
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            radius = (float) (0.5 * previous_diameter);
-            half_radius = (float) (0.25 * previous_diameter);
-            half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
-            out_putsf("", 4, radius, feps);
-            out_putsf(" ", 4, half_sqrt3_radius, feps);
-            out_putsf(" ", 4, half_radius, feps);
+            out_putsf("", 4, (float) (0.5 * previous_diameter) /*radius*/, feps);
+            out_putsf(" ", 4, (float) (0.43301270189221932338 * previous_diameter) /*half_sqrt3_radius*/, feps);
+            out_putsf(" ", 4, (float) (0.25 * previous_diameter) /*half_radius*/, feps);
             fputc('\n', feps);
         }
         if (hex->next) {
