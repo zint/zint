@@ -466,8 +466,9 @@ For a number of symbologies extra options are available to fine-tune the format,
 appearance and content of the symbol generated. These are given in a second tab.
 
 Here the method is shown for adjusting the size or error correction level of an
-Aztec Code symbol, selecting how its data is to be treated, and setting it as
-part of a Structured Append sequence of symbols.
+Aztec Code symbol (see 6.6.8 Aztec Code (ISO 24778)), selecting how its data is
+to be treated (see 4.10 Input Modes), and setting it as part of a Structured
+Append sequence of symbols (see 4.16 Structured Append).
 
 3.5 Appearance Tab
 
@@ -548,14 +549,17 @@ meanings as given below:
 
   : Table : Sequence Format Characters:
 
+Once you’re happy with the Sequence Data, click the "Export..." button to bring
+up the Export Dialog, discussed next.
+
 3.8 Export Dialog
 
 [Setting filenames for an exported sequence of barcode symbols]
 
-The Export Dialog invoked by pressing the "Export" button in the Sequence Dialog
-sets the parameters for exporting a sequence of barcode images. Here you can set
-the filename and the output image format. Note that the symbology, colour and
-other formatting information are taken from the main window.
+The Export Dialog invoked by pressing the "Export..." button in the Sequence
+Dialog sets the parameters for exporting the sequence of barcode images. Here
+you can set the filename and the output image format. Note that the symbology,
+colour and other formatting information are taken from the main window.
 
 3.9 CLI Equivalent Dialog
 
@@ -886,32 +890,35 @@ underscores are optional.
 
   129       BARCODE_CODE32            Code 32
 
-  130       BARCODE_EANX_CC           Composite Symbol with EAN linear component
-
-  131*      BARCODE_GS1_128_CC        Composite Symbol with GS1-128 linear
+  130       BARCODE_EANX_CC           GS1 Composite Symbol with EAN linear
                                       component
 
-  132*      BARCODE_DBAR_OMN_CC       Composite Symbol with GS1 DataBar
+  131*      BARCODE_GS1_128_CC        GS1 Composite Symbol with GS1-128 linear
+                                      component
+
+  132*      BARCODE_DBAR_OMN_CC       GS1 Composite Symbol with GS1 DataBar
                                       Omnidirectional linear component
 
-  133*      BARCODE_DBAR_LTD_CC       Composite Symbol with GS1 DataBar Limited
-                                      linear component
+  133*      BARCODE_DBAR_LTD_CC       GS1 Composite Symbol with GS1 DataBar
+                                      Limited linear component
 
-  134*      BARCODE_DBAR_EXP_CC       Composite Symbol with GS1 DataBar Expanded
-                                      linear component
+  134*      BARCODE_DBAR_EXP_CC       GS1 Composite Symbol with GS1 DataBar
+                                      Expanded linear component
 
-  135       BARCODE_UPCA_CC           Composite Symbol with UPC-A linear component
-
-  136       BARCODE_UPCE_CC           Composite Symbol with UPC-E linear component
-
-  137*      BARCODE_DBAR_STK_CC       Composite Symbol with GS1 DataBar Stacked
+  135       BARCODE_UPCA_CC           GS1 Composite Symbol with UPC-A linear
                                       component
 
-  138*      BARCODE_DBAR_OMNSTK_CC    Composite Symbol with GS1 DataBar Stacked
-                                      Omnidirectional component
+  136       BARCODE_UPCE_CC           GS1 Composite Symbol with UPC-E linear
+                                      component
 
-  139*      BARCODE_DBAR_EXPSTK_CC    Composite Symbol with GS1 DataBar Expanded
+  137*      BARCODE_DBAR_STK_CC       GS1 Composite Symbol with GS1 DataBar
                                       Stacked component
+
+  138*      BARCODE_DBAR_OMNSTK_CC    GS1 Composite Symbol with GS1 DataBar
+                                      Stacked Omnidirectional component
+
+  139*      BARCODE_DBAR_EXPSTK_CC    GS1 Composite Symbol with GS1 DataBar
+                                      Expanded Stacked component
 
   140       BARCODE_CHANNEL           Channel Code
 
@@ -1213,7 +1220,7 @@ Interpretations) mechanism to encode the data if the symbology supports it - see
 GS1 data can be encoded in a number of symbologies. Application Identifiers
 (AIs) should be enclosed in [square brackets] followed by the data to be encoded
 (see 6.1.10.3 GS1-128). To encode GS1 data use the --gs1 option. GS1 mode is
-assumed (and doesn’t need to be set) for GS1-128, EAN-14, GS1 DataBar and
+assumed (and doesn’t need to be set) for GS1-128, EAN-14, GS1 DataBar and GS1
 Composite symbologies but is also available for Aztec Code, Code 16K, Code 49,
 Code One, Data Matrix, DotCode, QR Code and Ultracode.
 
@@ -3245,7 +3252,7 @@ with values from 2 to 8.
 
 6.3 GS1 Composite Symbols (ISO 24723)
 
-Composite symbols employ a mixture of components to give more comprehensive
+GS1 Composite symbols employ a mixture of components to give more comprehensive
 information about a product. The permissible contents of a composite symbol is
 determined by the terms of the GS1 General Specifications. Composite symbols
 consist of a linear component which can be an EAN, UPC, GS1-128 or GS1 DataBar
@@ -3258,35 +3265,38 @@ encoding methods. Valid values are shown below.
   Numeric   Name                      Barcode Name
   Value
   --------- ------------------------- --------------------------------------------
-  130       BARCODE_EANX_CC           Composite Symbol with EAN linear component
-
-  131       BARCODE_GS1_128_CC        Composite Symbol with GS1-128 linear
+  130       BARCODE_EANX_CC           GS1 Composite Symbol with EAN linear
                                       component
 
-  132       BARCODE_DBAR_OMN_CC       Composite Symbol with GS1 DataBar
+  131       BARCODE_GS1_128_CC        GS1 Composite Symbol with GS1-128 linear
+                                      component
+
+  132       BARCODE_DBAR_OMN_CC       GS1 Composite Symbol with GS1 DataBar
                                       Omnidirectional linear component
 
-  133       BARCODE_DBAR_LTD_CC       Composite Symbol with GS1 DataBar Limited
-                                      linear component
+  133       BARCODE_DBAR_LTD_CC       GS1 Composite Symbol with GS1 DataBar
+                                      Limited linear component
 
-  134       BARCODE_DBAR_EXP_CC       Composite Symbol with GS1 DataBar Expanded
-                                      linear component
+  134       BARCODE_DBAR_EXP_CC       GS1 Composite Symbol with GS1 DataBar
+                                      Expanded linear component
 
-  135       BARCODE_UPCA_CC           Composite Symbol with UPC-A linear component
-
-  136       BARCODE_UPCE_CC           Composite Symbol with UPC-E linear component
-
-  137       BARCODE_DBAR_STK_CC       Composite Symbol with GS1 DataBar Stacked
+  135       BARCODE_UPCA_CC           GS1 Composite Symbol with UPC-A linear
                                       component
 
-  138       BARCODE_DBAR_OMNSTK_CC    Composite Symbol with GS1 DataBar Stacked
-                                      Omnidirectional component
+  136       BARCODE_UPCE_CC           GS1 Composite Symbol with UPC-E linear
+                                      component
 
-  139       BARCODE_DBAR_EXPSTK_CC    Composite Symbol with GS1 DataBar Expanded
+  137       BARCODE_DBAR_STK_CC       GS1 Composite Symbol with GS1 DataBar
                                       Stacked component
+
+  138       BARCODE_DBAR_OMNSTK_CC    GS1 Composite Symbol with GS1 DataBar
+                                      Stacked Omnidirectional component
+
+  139       BARCODE_DBAR_EXPSTK_CC    GS1 Composite Symbol with GS1 DataBar
+                                      Expanded Stacked component
   --------------------------------------------------------------------------------
 
-  : Table : Composite Symbology Values:
+  : Table : GS1 Composite Symbology Values:
 
 The data to be encoded in the linear component of a composite symbol should be
 entered into a primary string with the data for the 2D component being entered
@@ -4426,7 +4436,7 @@ company references in particular.
     May 2004)
 -   AIM ITS/04-023 International Technical Standard - Extended Channel
     Interpretations Part 3: Register (Version 2, February 2022)
--   GS1 General Specifications Release 22.0 (Jan 2022)
+-   GS1 General Specifications Release 23.0 (Jan 2023)
 -   ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
     Standard
 

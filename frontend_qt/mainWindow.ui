@@ -1883,7 +1883,7 @@ the barcode in X-dimensions</string>
              <item row="7" column="0">
               <widget class="QLabel" name="lblTextGap">
                <property name="toolTip">
-                <string>Gap between barcode and text
+                <string>Gap between barcode and text in X-dimensions
 (ignored if disabled)</string>
                </property>
                <property name="text">
@@ -1900,12 +1900,14 @@ the barcode in X-dimensions</string>
              <item row="7" column="1">
               <widget class="QDoubleSpinBox" name="spnTextGap">
                <property name="toolTip">
-                <string>Gap between barcode and text
+                <string>Gap between barcode and text in X-dimensions
 (ignored if disabled)</string>
+               </property>
+               <property name="prefix">
+                <string/>
                </property>
                <property name="suffix">
                 <string> X</string>
-                <string/>
                </property>
                <property name="decimals">
                 <number>2</number>

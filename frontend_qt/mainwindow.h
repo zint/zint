@@ -88,6 +88,7 @@ public slots:
     void about();
     void help();
     void preview_bg();
+    void previewbgcolor_changed(const QColor& color);
     void quit_now();
     void menu();
 
@@ -208,7 +209,7 @@ protected:
 
 private:
     QString m_fgstr, m_bgstr;
-    QByteArray m_fgcolor_geometry, m_bgcolor_geometry;
+    QByteArray m_fgcolor_geometry, m_bgcolor_geometry, m_previewbgcolor_geometry;
     BarcodeItem m_bc;
     QColor m_previewBgColor;
     QWidget *m_optionWidget;

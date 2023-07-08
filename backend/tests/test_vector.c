@@ -1996,7 +1996,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*283*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 16, 16, 18, 36, 32, 0, 0, 2, 2 },
         /*284*/ { BARCODE_CODEONE, BARCODE_NO_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 16, 16, 18, 36, 32, 0, 0, 2, 2 },
         /*285*/ { BARCODE_CODEONE, -1, -1, 9, -1, "1234", "", 0, 8, 8, 11, 22, 16, 10, 0, 2, 2 }, /* Version S (& T) have quiet zones */
-        /*286*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, 9, -1, "1234", "", 0, 8, 8, 11, 26, 16, 12, 0, 2, 2 },
+        /*286*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, 9, -1, "1234", "", 0, 8, 8, 11, 26, 18, 12, 0, 2, 2 },
         /*287*/ { BARCODE_GRIDMATRIX, -1, -1, -1, -1, "123", "", 0, 18, 18, 18, 36, 36, 0, 0, 12, 2 },
         /*288*/ { BARCODE_GRIDMATRIX, BARCODE_QUIET_ZONES, -1, -1, -1, "123", "", 0, 18, 18, 18, 60, 60, 12, 12, 12, 2 },
         /*289*/ { BARCODE_UPNQR, -1, -1, -1, -1, "1234", "", 0, 77, 77, 77, 154, 154, 0, 0, 14, 2 },

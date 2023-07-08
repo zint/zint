@@ -281,6 +281,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
 
     m_fgcolor_geometry = settings.value(QSL("studio/fgcolor_geometry")).toByteArray();
     m_bgcolor_geometry = settings.value(QSL("studio/bgcolor_geometry")).toByteArray();
+    m_previewbgcolor_geometry = settings.value(QSL("studio/previewbgcolor_geometry")).toByteArray();
 
     btnScale->setIcon(QIcon(QSL(":res/scaling.svg")));
     fgcolor->setIcon(QIcon(QSL(":res/black-eye.svg")));
@@ -446,6 +447,7 @@ MainWindow::~MainWindow()
     settings.setValue(QSL("studio/window_geometry"), saveGeometry());
     settings.setValue(QSL("studio/fgcolor_geometry"), m_fgcolor_geometry);
     settings.setValue(QSL("studio/bgcolor_geometry"), m_bgcolor_geometry);
+    settings.setValue(QSL("studio/previewbgcolor_geometry"), m_previewbgcolor_geometry);
     settings.setValue(QSL("studio/tab_index"), tabMain->currentIndex());
     settings.setValue(QSL("studio/symbology"), bstyle->currentIndex());
     settings.setValue(QSL("studio/ink/text"), m_fgstr);
@@ -841,9 +843,24 @@ void MainWindow::preview_bg()
     color_dialog.setWindowTitle(tr("Set preview background colour"));
     color_dialog.setOptions(QColorDialog::DontUseNativeDialog);
     color_dialog.setCurrentColor(m_previewBgColor);
+    color_dialog.restoreGeometry(m_previewbgcolor_geometry);
+    connect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this,
+            SLOT(previewbgcolor_changed(const QColor&)));
     if (color_dialog.exec() && color_dialog.selectedColor().isValid()) {
         m_previewBgColor = color_dialog.selectedColor();
-        m_bc.setColor(m_previewBgColor);
+    }
+    m_previewbgcolor_geometry = color_dialog.saveGeometry();
+    disconnect(&color_dialog, SIGNAL(currentColorChanged(const QColor &)), this,
+            SLOT(previewbgcolor_changed(const QColor&)));
+
+    m_bc.setColor(m_previewBgColor);
+    update_preview();
+}
+
+void MainWindow::previewbgcolor_changed(const QColor& color)
+{
+    if (color.isValid()) {
+        m_bc.setColor(color);
         update_preview();
     }
 }

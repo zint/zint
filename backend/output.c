@@ -621,7 +621,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_CODEONE:
             /* USS Code One AIM 1994 Section 2.2.4 No quiet zone required for Versions A to H */
             if (symbol->option_2 == 9 || symbol->option_2 == 10) { /* Section 2.3.2 Versions S & T */
-                *left = *right = 1.0f;
+                *left = *right = *bottom = 1.0f;
             }
             done = 1;
             break;

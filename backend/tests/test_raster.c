@@ -1769,17 +1769,18 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*291*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 16, 16, 18, 36, 32, 1 /*set*/, 0, 6, 0, 2 },
         /*292*/ { BARCODE_CODEONE, BARCODE_NO_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 16, 16, 18, 36, 32, 1 /*set*/, 0, 6, 0, 2 },
         /*293*/ { BARCODE_CODEONE, -1, -1, 9, -1, "1234", "", 0, 8, 8, 11, 22, 16, 1 /*set*/, 10, 16, 0, 2 }, /* Version S (& T) have quiet zones */
-        /*294*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, 9, -1, "1234", "", 0, 8, 8, 11, 26, 16, 0 /*set*/, 0, 16, 0, 2 },
-        /*295*/ { BARCODE_GRIDMATRIX, -1, -1, -1, -1, "1234", "", 0, 18, 18, 18, 36, 36, 1 /*set*/, 0, 2, 0, 12 },
-        /*296*/ { BARCODE_GRIDMATRIX, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 18, 18, 18, 60, 60, 0 /*set*/, 0, 60, 0, 12 },
-        /*297*/ { BARCODE_UPNQR, -1, -1, -1, -1, "1234", "", 0, 77, 77, 77, 154, 154, 1 /*set*/, 0, 14, 0, 2 },
-        /*298*/ { BARCODE_UPNQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 77, 77, 77, 170, 170, 0 /*set*/, 0, 170, 0, 8 },
-        /*299*/ { BARCODE_ULTRA, -1, -1, -1, -1, "1234", "", 0, 13, 13, 15, 30, 26, 1 /*set*/, 0, 2, 0, 30 },
-        /*300*/ { BARCODE_ULTRA, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 13, 13, 15, 34, 30, 0 /*set*/, 0, 2, 0, 34 },
-        /*301*/ { BARCODE_RMQR, -1, -1, -1, -1, "1234", "", 0, 11, 11, 27, 54, 22, 1 /*set*/, 0, 14, 0, 2 },
-        /*302*/ { BARCODE_RMQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 11, 11, 27, 62, 30, 0 /*set*/, 0, 30, 0, 4 },
-        /*303*/ { BARCODE_BC412, -1, -1, -1, -1, "1234567", "", 0, 16.5, 1, 102, 204, 49, 1 /*set*/, 0, 32, 0, 2 },
-        /*304*/ { BARCODE_BC412, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567", "", 0, 16.5, 1, 102, 244, 49, 0 /*set*/, 0, 32, 0, 2 },
+        /*294*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, 9, -1, "1234", "", 0, 8, 8, 11, 26, 18, 0 /*set*/, 0, 16, 0, 2 },
+        /*295*/ { BARCODE_CODEONE, BARCODE_QUIET_ZONES, -1, 9, -1, "1234", "", 0, 8, 8, 11, 26, 18, 0 /*set*/, 16, 18, 0, 26 }, /* Bottom 1X */
+        /*296*/ { BARCODE_GRIDMATRIX, -1, -1, -1, -1, "1234", "", 0, 18, 18, 18, 36, 36, 1 /*set*/, 0, 2, 0, 12 },
+        /*297*/ { BARCODE_GRIDMATRIX, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 18, 18, 18, 60, 60, 0 /*set*/, 0, 60, 0, 12 },
+        /*298*/ { BARCODE_UPNQR, -1, -1, -1, -1, "1234", "", 0, 77, 77, 77, 154, 154, 1 /*set*/, 0, 14, 0, 2 },
+        /*299*/ { BARCODE_UPNQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 77, 77, 77, 170, 170, 0 /*set*/, 0, 170, 0, 8 },
+        /*300*/ { BARCODE_ULTRA, -1, -1, -1, -1, "1234", "", 0, 13, 13, 15, 30, 26, 1 /*set*/, 0, 2, 0, 30 },
+        /*301*/ { BARCODE_ULTRA, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 13, 13, 15, 34, 30, 0 /*set*/, 0, 2, 0, 34 },
+        /*302*/ { BARCODE_RMQR, -1, -1, -1, -1, "1234", "", 0, 11, 11, 27, 54, 22, 1 /*set*/, 0, 14, 0, 2 },
+        /*303*/ { BARCODE_RMQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 11, 11, 27, 62, 30, 0 /*set*/, 0, 30, 0, 4 },
+        /*304*/ { BARCODE_BC412, -1, -1, -1, -1, "1234567", "", 0, 16.5, 1, 102, 204, 49, 1 /*set*/, 0, 32, 0, 2 },
+        /*305*/ { BARCODE_BC412, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567", "", 0, 16.5, 1, 102, 244, 49, 0 /*set*/, 0, 32, 0, 2 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

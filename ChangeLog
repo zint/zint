@@ -98,6 +98,7 @@ Bugs
 - Composites: fix excess whitespace; fix quiet zone calcs to allow for linear
   shifting
 - GUI: fix not enabling font combo "Small Bold (vector only)" by default
+- CODEONE: fix S/T quiet zone 1X bottom (props BWIPP issue #245 doc)
 
 
 Version 2.12.0 (2022-12-12)
