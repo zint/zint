@@ -1,0 +1,71 @@
+% Tested on FreeBSD 13.2-RELEASE (with X11 + GNOME installed) and OpenBSD 7.3 (with X11)
+
+1. Prerequisites for building zint
+==================================
+
+Prerequisites are git, cmake, make, gcc (or clang) and, for PNG support, libpng, e.g. FreeBSD
+
+    su
+    pkg install git cmake gmake gcc graphics/png
+    exit
+
+or OpenBSD (make and clang should already be installed):
+
+    su
+    pkg_add git cmake png
+    exit
+
+Then clone the latest source
+
+    git clone https://git.code.sf.net/p/zint/code zint
+    cd zint
+
+
+2. Prerequisites for building zint-qt
+=====================================
+
+On FreeBSD:
+
+    su
+    pkg install qt5-core qt5-uitools qt5-buildtools qt5-qmake qt5-svg
+    exit
+
+On OpenBSD:
+
+    su
+    pkg_add qtbase qttools qtsvg
+    exit
+
+
+3. Build
+========
+
+The rest is standard CMake (allowing for absence of sudo)
+
+    mkdir build
+    cd build
+    cmake ..
+    make
+    su
+    make install
+    exit
+
+except that on OpenBSD you need to use
+
+    cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/qt5/cmake ..
+
+instead.
+
+
+3. CMake options
+================
+
+See "README.linux". Note for running the test suite on FreeBSD, if using the default csh, to set LD_LIBRARY_PATH use:
+
+   setenv LD_LIBRARY_PATH ${PWD}/backend
+
+Also, for Qt5 test on FreeBSD, need:
+
+   su
+   pkg install qt5-testlib
+   exit

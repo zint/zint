@@ -4514,7 +4514,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
                 QSL("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
             spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 0.0).toFloat());
             chkEmbedVectorFont->setChecked(settings.value(
-                QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name), 1).toInt() ? true : false);
+                QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name), 0).toInt() ? true : false);
             chkHRTShow->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_hrt_show").arg(name), 1).toInt() ? true : false);
         }

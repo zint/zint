@@ -777,7 +777,7 @@ static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_
 }
 
 /* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
-int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
+static int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
     char index[10] = {0}, count[10] = {0};
     const char *comma = strchr(optarg, ',');
     const char *comma2;
@@ -1083,7 +1083,8 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
 
     if (file != stdin) {
         if (fclose(file) != 0) {
-            fprintf(stderr, "Warning 196: Failure on closing input file '%s' (%d: %s)\n", filename, errno, strerror(errno));
+            fprintf(stderr, "Warning 196: Failure on closing input file '%s' (%d: %s)\n", filename, errno,
+                    strerror(errno));
             fflush(stderr);
             warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
         }

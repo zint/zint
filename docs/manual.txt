@@ -13,9 +13,10 @@ July 2023
     -   1.1 Glossary
 -   2. Installing Zint
     -   2.1 Linux
-    -   2.2 Microsoft Windows
-    -   2.3 Apple macOS
-    -   2.4 Zint Tcl Backend
+    -   2.2 BSD
+    -   2.3 Microsoft Windows
+    -   2.4 Apple macOS
+    -   2.5 Zint Tcl Backend
 -   3. Using Zint Barcode Studio
     -   3.1 Main Window and Data Tab
     -   3.2 GS1 Composite Groupbox
@@ -348,7 +349,24 @@ the "frontend" sub-directory. To run the test type
 This should create numerous files in the sub-directory "frontend/test_sh_out"
 showing the many modes of operation which are available from Zint.
 
-2.2 Microsoft Windows
+2.2 BSD
+
+The latest Zint CLI, libzint and GUI can be installed from the zint package on
+FreeBSD:
+
+    su
+    pkg install zint
+    exit
+
+and on OpenBSD (where the GUI is in a separate zint-gui package):
+
+    su
+    pkg_add zint zint-gui
+    exit
+
+To build from source see "README.bsd" in the project root directory.
+
+2.3 Microsoft Windows
 
 For Microsoft Windows, Zint is distributed as a binary executable. Simply
 download the ZIP file, then right-click on the ZIP file and "Extract All". A new
@@ -365,7 +383,7 @@ digitally signed by Microsoft.
 
 To build Zint on Windows from source, see "win32/README".
 
-2.3 Apple macOS
+2.4 Apple macOS
 
 The latest Zint CLI and libzint can be installed using Homebrew.[1] To install
 Homebrew input the following line into the macOS terminal
@@ -381,7 +399,7 @@ library
 To build from source (and install the GUI) see "README.macos" in the project
 root directory.
 
-2.4 Zint Tcl Backend
+2.5 Zint Tcl Backend
 
 The Tcl backend in the "backend_tcl" sub-directory may be built using the
 provided TEA (Tcl Extension Architecture) build on Linux, Windows, macOS and
@@ -398,7 +416,7 @@ or on Windows
 
     qtZint.exe
 
-See the note in section 2.2 Microsoft Windows about Microsoft Defender
+See the note in section 2.3 Microsoft Windows about Microsoft Defender
 SmartScreen.
 
 Below is a brief guide to Zint Barcode Studio.
@@ -1667,7 +1685,7 @@ function as shown in the next example:
     }
 
 Note that when using the API, the input data is assumed to be 8-bit binary
-unless the input_mode variable in the zint_symbol structure is set - see 5.10
+unless the input_mode member of the zint_symbol structure is set - see 5.10
 Setting the Input Mode for details.
 
 5.3 Encoding and Printing Functions in Depth
@@ -1705,7 +1723,7 @@ be UTF-8 encoded.
 
 If printing more than one barcode, the zint_symbol structure may be re-used by
 calling the ZBarcode_Clear() function after each barcode to free any output
-buffers allocated. The zint_symbol input variables must be reset.
+buffers allocated. The zint_symbol input members must be reset.
 
 5.4 Buffering Symbols in Memory (raster)
 
@@ -1721,25 +1739,42 @@ allow you to do this:
     int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol,
           const char *filename, int rotate_angle);
 
-The arguments here are the same as above. The difference is that instead of
-saving the image to a file it is placed in an unsigned character array. The
-bitmap pointer is set to the first memory location in the array and the values
-barcode_width and barcode_height indicate the size of the resulting image in
-pixels. Rotation and colour options can be used with the buffer functions in the
-same way as when saving to a file. The pixel data can be extracted from the
-array by the method shown in the example below where render_pixel() is assumed
-to be a function for drawing a pixel on the screen implemented by the external
-application:
+The arguments here are the same as above, and rotation and colour options can be
+used with the buffer functions in the same way as when saving to a file. The
+difference is that instead of saving the image to a file it is placed in a byte
+(unsigned char) array pointed to by the bitmap member, with bitmap_width set to
+the number of columns and bitmap_height set to the number of rows. (Note that
+the bitmap_byte_length member is not relevant here, being set only on outputting
+to a Windows BMP file.)
 
-    int row, col, i = 0;
-    int red, blue, green;
+The RGB channels are split into 3 consecutive red, green, blue bytes per pixel,
+and there are bitmap_width pixels per row and bitmap_height rows, so the total
+size of the bitmap array is 3 * bitmap_width * bitmap_height.
+
+If the background or foreground are RGBA then the byte array alphamap will also
+be set, with a single alpha value for each pixel. Its total size will be
+bitmap_width * bitmap_height.
+
+The pixel data can be extracted from the array (or arrays) by the method shown
+in the example below, where render_rgb() and render_rgba() are assumed to be
+functions for drawing an RGB and RGBA pixel on the screen implemented by the
+client application:
+
+    int row, col, i = 0, j = 0;
+    int red, blue, green, alpha;
 
     for (row = 0; row < my_symbol->bitmap_height; row++) {
          for (col = 0; col < my_symbol->bitmap_width; col++) {
               red = (int) my_symbol->bitmap[i];
               green = (int) my_symbol->bitmap[i + 1];
               blue = (int) my_symbol->bitmap[i + 2];
-              render_pixel(row, col, red, green, blue);
+              if (my_symbol->alphamap) {
+                  alpha = (int) my_symbol->alphamap[j];
+                  render_rgba(row, col, red, green, blue, alpha);
+                  j++;
+              } else {
+                  render_rgb(row, col, red, green, blue);
+              }
               i += 3;
          }
     }
@@ -1749,7 +1784,8 @@ intermediate form using the output option OUT_BUFFER_INTERMEDIATE. Here each
 byte is an ASCII value: '1' for foreground colour and '0' for background colour,
 except for Ultracode, which also uses colour codes: 'W' for white, 'C' for cyan,
 'B' for blue, 'M' for magenta, 'R' for red, 'Y' for yellow, 'G' for green, and
-'K' for black. The loop for accessing the data is then:
+'K' for black. Alpha values are not reported (alphamap will always be NULL). The
+loop for accessing the data is then:
 
     int row, col, i = 0;
 
@@ -1814,10 +1850,10 @@ So far our application is not very useful unless we plan to only make Code 128
 symbols and we don’t mind that they only save to "out.png". As with the CLI
 program, of course, these options can be altered. The way this is done is by
 altering the contents of the zint_symbol structure between the creation and
-encoding stages. The zint_symbol structure consists of the following variables:
+encoding stages. The zint_symbol structure consists of the following members:
 
   ---------------------------------------------------------------------------------
-  Variable Name         Type         Meaning                      Default Value
+  Member Name           Type         Meaning                      Default Value
   --------------------- ------------ ---------------------------- -----------------
   symbology             integer      Symbol to use (see 5.8       BARCODE_CODE128
                                      Specifying a Symbology).
@@ -1988,8 +2024,8 @@ background alpha to "00" where the values for R, G and B will be ignored:
 5.7 Handling Errors
 
 If errors occur during encoding a non-zero integer value is passed back to the
-calling application. In addition the errtxt variable is set to a message
-detailing the nature of the error. The errors generated by Zint are:
+calling application. In addition the errtxt member is set to a message detailing
+the nature of the error. The errors generated by Zint are:
 
   -------------------------------------------------------------------------------
   Return Value                   Meaning
@@ -2103,7 +2139,7 @@ means the same as
 
 5.9 Adjusting Output Options
 
-The output_options variable can be used to adjust various aspects of the output
+The output_options member can be used to adjust various aspects of the output
 file. To select more than one option from the table below simply OR them
 together when adjusting this value:
 
@@ -2185,7 +2221,7 @@ property. Valid values are shown in the table below.
                       (e.g. control characters, extended ASCII characters) are
                       still checked for.
 
-  HEIGHTPERROW_MODE   Interpret the height variable as per-row rather than as
+  HEIGHTPERROW_MODE   Interpret the height member as per-row rather than as
                       overall height.
 
   FAST_MODE           Use faster if less optimal encodation or other shortcuts if
@@ -2228,7 +2264,7 @@ as is the validity of GS1 data specified without AIs (e.g. linear data for GS1
 DataBar Omnidirectional/Limited/etc.).
 
 For HEIGHTPERROW_MODE, see --heightperrow in section 4.4 Adjusting Height. The
-height variable should be set to the desired per-row value on input (it will be
+height member should be set to the desired per-row value on input (it will be
 set to the overall height on output).
 
 FAST_MODE causes a less optimal encodation scheme to be used for Data Matrix,

@@ -15,7 +15,7 @@ Version 2.12.0.9 (dev) not released yet
 - Text height (font size) for SMALL_TEXT vector output reduced
 - For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
   in `zint_symbol` and all API filename arguments
-- Never used `fontsize` field removed from `zint_symbol`
+- Never-used `fontsize` field removed from `zint_symbol`
 - Buffer length of field `text` (HRT) in `zint_symbol` extended 128 -> 160
   (client buffers may need checking/extending)
 - Font of text of SVG vector output now "OCRB, monospace" (EAN/UPC) or
@@ -51,7 +51,6 @@ Changes
   `EANUPC_GUARD_WHITESPACE`, CLI `--guardwhitespace`) (ticket #287)
 - EAN-2/EAN-5: HRT now at top instead of at bottom for standalones, following
   BWIPP
-- Move "font.h" -> "raster_font.h"
 - EPS/SVG: use new `out_putsf()` func to output floats, avoiding trailing zeroes
   & locale dependency
 - EPS: simplify "TR" formula
@@ -64,19 +63,16 @@ Changes
 - GUI: use "OCRB" font for EAN/UPC and "Arimo" for all others (was "Helvetica"
   for both); add preview background colour option (default light grey) so as
   whitespace will show up in contrast (access via preview context menu)
-- EMF: prefix funcs with `emf_`; simplify string `halign` handling
-- large: rename `large_int` -> `large_uint`
 - CODE128/common: move `c128_hrt_cpy_iso8859_1()` to `hrt_cpy_iso8859_1()` and
   add `ZINT_WARN_HRT_TRUNCATED` warning (for future use)
-- Various symbologies: replace `printf()` with `fputs()` (symbol->debug)
 - QRCODE: better assert(), removing a NOLINT (2 left)
 - CLI: add some more barcode synonyms for DBAR
-- common: various fiddlings
 - CMake: don't include png.c unless ZINT_USE_PNG (avoids clang warning)
 - vector: reduce SMALL_TEXT font height 6 -> 5 to be more like raster;
   reduce antialiasing allowance for `textoffset`;
   adjust text to baseline using values for Arimo rather than percentage
-- raster/vector: rename `text_height` -> `font_height`
+- manual: expand size/alpha details in Section "5.4 Buffering Symbols in Memory
+  (raster)" (cf ticket #291); add BSD info
 
 Bugs
 ----
@@ -86,7 +82,7 @@ Bugs
   LD_LIBRARY_PATH and PATH (ticket #279, props Alexey Dokuchaev)
 - GUI: fg/bgcolor text edit: fix right-click context menu not working properly
   by checking for it on FocusOut
-- GUI: fix fg/gbcolor icon background not being reset on zap
+- GUI: fix fg/bgcolor icon background not being reset on zap
 - EMF/EPS/SVG/GUI: ignore BOLD_TEXT for EAN/UPC
 - EMF/EPS/SVG: fix addon bars placement/length when text hidden
 - For Windows, assume `outfile` & API filename args are in UTF-8,

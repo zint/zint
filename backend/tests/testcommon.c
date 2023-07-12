@@ -2778,7 +2778,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 }
             } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF
                         || symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF) {
-                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = 1; /* Change from 3 */
+                const int row_height = symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF ? 2 : 3;
+                for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = row_height;
                 if (option_1 >= 0) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%d",
                             strlen(bwipp_opts_buf) ? " " : "", option_1);
