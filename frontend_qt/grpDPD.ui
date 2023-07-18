@@ -32,7 +32,7 @@
    <item>
     <widget class="QCheckBox" name="chkDPDRelabel">
      <property name="text">
-      <string>Mark as &amp;Relabel</string>
+      <string>&amp;Mark as Relabel</string>
      </property>
      <property name="toolTip">
       <string>Omit the identification tag and

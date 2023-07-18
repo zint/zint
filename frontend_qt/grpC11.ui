@@ -60,7 +60,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC11OneCheckDigit">
         <property name="text">
-         <string>&amp;One (Mod-11)</string>
+         <string>One (&amp;Mod-11)</string>
         </property>
         <property name="toolTip">
          <string>Add 1 mod-11 check digit</string>
@@ -70,7 +70,7 @@
       <item row="1" column="0">
        <widget class="QRadioButton" name="radC11NoCheckDigits">
         <property name="text">
-         <string>&amp;No Check Digit</string>
+         <string>No Ch&amp;eck Digit</string>
         </property>
         <property name="toolTip">
          <string>Do not add any check digits</string>

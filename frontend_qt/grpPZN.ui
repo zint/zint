@@ -38,7 +38,7 @@
    <item>
     <widget class="QCheckBox" name="chkPZN7">
      <property name="text">
-      <string>PZN7</string>
+      <string>P&amp;ZN7</string>
      </property>
      <property name="checked">
       <bool>false</bool>

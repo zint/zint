@@ -97,7 +97,7 @@ automatic sizes
        <item>
         <widget class="QCheckBox" name="chkMailmark2DRectangle">
          <property name="text">
-          <string>Only Squa&amp;re</string>
+          <string>Only Squar&amp;e</string>
          </property>
          <property name="toolTip">
           <string>Only consider square versions 8 and 10 on automatic symbol

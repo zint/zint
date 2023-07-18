@@ -39,7 +39,7 @@
      <item>
       <widget class="QLabel" name="lblMSICheck">
        <property name="text">
-        <string>&amp;Check Digit:</string>
+        <string>Chec&amp;k Digit:</string>
        </property>
        <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>

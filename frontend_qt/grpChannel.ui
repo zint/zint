@@ -39,7 +39,7 @@
      <item>
       <widget class="QLabel" name="lblChannel">
        <property name="text">
-        <string>&amp;Number of Channels:</string>
+        <string>Nu&amp;mber of Channels:</string>
        </property>
        <property name="toolTip">
         <string>The number of channels determines the&lt;br /&gt;range of numbers that can be encoded&lt;table cellspacing=&quot;3&quot;&gt;

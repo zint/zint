@@ -41,7 +41,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radCodabarStand">
         <property name="text">
-         <string>&amp;No Check Digit</string>
+         <string>No Ch&amp;eck Digit</string>
         </property>
         <property name="checked">
          <bool>true</bool>
@@ -54,7 +54,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radCodabarCheck">
         <property name="text">
-         <string>&amp;Check Digit</string>
+         <string>Chec&amp;k Digit</string>
         </property>
         <property name="toolTip">
          <string>Add mod-16 check character</string>

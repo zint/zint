@@ -32,7 +32,7 @@
    <item>
     <widget class="QCheckBox" name="chkC93ShowChecks">
      <property name="text">
-      <string>Show &amp;Check Characters in Text</string>
+      <string>Show Chec&amp;k Characters in Text</string>
      </property>
      <property name="toolTip">
       <string>Display the 2 check characters in

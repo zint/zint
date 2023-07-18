@@ -40,7 +40,7 @@
      <item row="0" column="0">
       <widget class="QCheckBox" name="chkVINImportChar">
        <property name="text">
-        <string>&amp;Import Character Prefix</string>
+        <string>I&amp;mport Character Prefix</string>
        </property>
        <property name="toolTip">
         <string>Preface data with import character &apos;I&apos;

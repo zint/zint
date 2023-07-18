@@ -47,7 +47,7 @@
       <item row="0" column="0">
        <widget class="QRadioButton" name="radC39Stand">
         <property name="text">
-         <string>&amp;No Check Digit</string>
+         <string>No Ch&amp;eck Digit</string>
         </property>
         <property name="toolTip">
          <string>Do not add check character</string>
@@ -60,7 +60,7 @@
       <item row="0" column="1">
        <widget class="QRadioButton" name="radC39Check">
         <property name="text">
-         <string>&amp;Mod-43 Check Digit</string>
+         <string>Mod-43 Chec&amp;k Digit</string>
         </property>
         <property name="toolTip">
          <string>Add mod-43 check character</string>
@@ -81,7 +81,7 @@ do not display in Human Readable Text</string>
       <item row="1" column="1">
        <widget class="QRadioButton" name="radC39HIBC">
         <property name="text">
-         <string>H&amp;IBC (Mod-43 Check Digit added)</string>
+         <string>HIBC (&amp;Mod-43 Check Digit added)</string>
         </property>
         <property name="toolTip">
          <string>Process data as a Health Industry Barcode (HIBC)
