@@ -3,7 +3,7 @@ Version 2.12.0.9 (dev) not released yet
 
 **Incompatible changes**
 ------------------------
-- Buffer lengths of fields `fgcolour` and `bgcolour` in `zint_symbol` extended
+- Buffer lengths of members `fgcolour` and `bgcolour` in `zint_symbol` extended
   10 -> 16 to allow for "C,M,Y,K" comma-separated decimal percentage strings
 - CMYK values for EPS (slightly) and TIF (significantly) have changed - now use
   the same RGB -> CMYK formula
@@ -15,8 +15,8 @@ Version 2.12.0.9 (dev) not released yet
 - Text height (font size) for SMALL_TEXT vector output reduced
 - For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
   in `zint_symbol` and all API filename arguments
-- Never-used `fontsize` field removed from `zint_symbol`
-- Buffer length of field `text` (HRT) in `zint_symbol` extended 128 -> 160
+- Never-used `fontsize` member removed from `zint_symbol`
+- Buffer length of member `text` (HRT) in `zint_symbol` extended 128 -> 160
   (client buffers may need checking/extending)
 - Font of text of SVG vector output now "OCRB, monospace" (EAN/UPC) or
   "Arimo, Arial, sans-serif" (all others)
@@ -24,6 +24,9 @@ Version 2.12.0.9 (dev) not released yet
 - Unintended excess horizontal whitespace of Composite symbols removed, and
   quiet zone settings respected exactly, and centring of HRT (if any) now
   relative to linear part of symbol only rather than whole symbol
+- Unlikely-to-be-used `bitmap_byte_length` member removed from `zint_symbol`
+  (was only set on BMP output to length of BMP pixel array)
+- EXCODE39 now defaults to displaying check digit in Human Readable Text (HRT)
 
 Changes
 -------
@@ -73,6 +76,11 @@ Changes
   adjust text to baseline using values for Arimo rather than percentage
 - manual: expand size/alpha details in Section "5.4 Buffering Symbols in Memory
   (raster)" (cf ticket #291); add BSD info
+- EXCODE39: change to display check digit in HRT by default
+- CODE39/EXCODE39/LOGMARS: new hidden check digit option
+- GUI: move some symbology-specific options into Data Tab so separate tab
+  unnecessary
+- manual: add annexes on Qt and Tcl backends
 
 Bugs
 ----

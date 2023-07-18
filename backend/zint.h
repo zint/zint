@@ -130,7 +130,6 @@ extern "C" {
         int bitmap_width;   /* Width of bitmap image (raster output only) */
         int bitmap_height;  /* Height of bitmap image (raster output only) */
         unsigned char *alphamap; /* Array of alpha values used (raster output only) */
-        unsigned int bitmap_byte_length; /* Size of BMP bitmap data (raster output only) */
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
     };
 
@@ -290,7 +289,7 @@ extern "C" {
                                         /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, EAN/UPC have default quiet zones
                                          */
 #define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
-#define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant and use standard height (if any) as default */
+#define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant, or use standard height (if any) as default */
 #define EANUPC_GUARD_WHITESPACE 0x4000  /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
 #define EMBED_VECTOR_FONT       0x8000  /* Embed font in vector output - currently only for SVG output */
 

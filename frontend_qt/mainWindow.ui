@@ -174,11 +174,11 @@
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="btnMoreData">
-                  <property name="minimumSize">
+                 <widget class="QPushButton" name="btnMoreData">
+                  <property name="maximumSize">
                    <size>
-                    <width>0</width>
-                    <height>26</height>
+                    <width>34</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -191,7 +191,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnClearData">
+                 <widget class="QToolButton" name="btnClearData">
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
@@ -464,7 +464,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnZap">
+                 <widget class="QToolButton" name="btnZap">
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
@@ -619,7 +619,7 @@ Remember to place [square brackets] around AI identifiers</string>
                    </widget>
                   </item>
                   <item>
-                   <widget class="QPushButton" name="btnClearComposite">
+                   <widget class="QToolButton" name="btnClearComposite">
                     <property name="enabled">
                      <bool>false</bool>
                     </property>
@@ -925,11 +925,11 @@ Extended Channel Interpretation (ECI)</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="btnMoreDataSeg1">
-                  <property name="minimumSize">
+                 <widget class="QPushButton" name="btnMoreDataSeg1">
+                  <property name="maximumSize">
                    <size>
-                    <width>0</width>
-                    <height>26</height>
+                    <width>34</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -942,7 +942,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnClearDataSeg1">
+                 <widget class="QToolButton" name="btnClearDataSeg1">
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
@@ -1186,11 +1186,11 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="btnMoreDataSeg2">
-                  <property name="minimumSize">
+                 <widget class="QPushButton" name="btnMoreDataSeg2">
+                  <property name="maximumSize">
                    <size>
-                    <width>0</width>
-                    <height>26</height>
+                    <width>34</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1203,7 +1203,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnClearDataSeg2">
+                 <widget class="QToolButton" name="btnClearDataSeg2">
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
@@ -1447,11 +1447,11 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QToolButton" name="btnMoreDataSeg3">
-                  <property name="minimumSize">
+                 <widget class="QPushButton" name="btnMoreDataSeg3">
+                  <property name="maximumSize">
                    <size>
-                    <width>0</width>
-                    <height>26</height>
+                    <width>34</width>
+                    <height>16777215</height>
                    </size>
                   </property>
                   <property name="toolTip">
@@ -1464,7 +1464,7 @@ or import from file</string>
                  </widget>
                 </item>
                 <item>
-                 <widget class="QPushButton" name="btnClearDataSeg3">
+                 <widget class="QToolButton" name="btnClearDataSeg3">
                   <property name="maximumSize">
                    <size>
                     <width>22</width>
@@ -1481,6 +1481,39 @@ or import from file</string>
                 </item>
                </layout>
               </item>
+             </layout>
+            </widget>
+           </item>
+           <item>
+            <widget class="QGroupBox" name="grpSpecific">
+             <property name="enabled">
+              <bool>true</bool>
+             </property>
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="minimumSize">
+              <size>
+               <width>0</width>
+               <height>0</height>
+              </size>
+             </property>
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>400</height>
+              </size>
+             </property>
+             <property name="toolTip">
+              <string>Additional Settings</string>
+             </property>
+             <property name="title">
+              <string>Options</string>
+             </property>
+             <layout class="QVBoxLayout" name="vLayoutSpecific">
              </layout>
             </widget>
            </item>
@@ -1623,8 +1656,8 @@ as delimiters for GS1 Application Identifiers
                <item>
                 <widget class="QCheckBox" name="chkCompliantHeight">
                  <property name="toolTip">
-                  <string>Warn if height not compliant with specification
-and use standard height (if any) for default
+                  <string>Warn if height specified not compliant with specification,
+or use standard height (if any) for default
 (ignored if disabled)</string>
                  </property>
                  <property name="text">
@@ -1903,6 +1936,9 @@ the barcode in X-dimensions</string>
                 <string>Gap between barcode and text in X-dimensions
 (ignored if disabled)</string>
                </property>
+               <property name="specialValueText">
+                <string>Default</string>
+               </property>
                <property name="prefix">
                 <string/>
                </property>
@@ -1924,13 +1960,10 @@ the barcode in X-dimensions</string>
                <property name="value">
                 <double>0.000000000000000</double>
                </property>
-               <property name="specialValueText">
-                <string>Default</string>
-               </property>
               </widget>
              </item>
              <item row="7" column="2">
-              <widget class="QPushButton" name="btnClearTextGap">
+              <widget class="QToolButton" name="btnClearTextGap">
                <property name="maximumSize">
                 <size>
                  <width>22</width>
@@ -1989,7 +2022,7 @@ the barcode in X-dimensions</string>
               </widget>
              </item>
              <item row="8" column="2">
-              <widget class="QPushButton" name="btnScale">
+              <widget class="QToolButton" name="btnScale">
                <property name="maximumSize">
                 <size>
                  <width>22</width>
@@ -2067,7 +2100,7 @@ or decimal &quot;C,M,Y,K&quot; percentages (0-100)</string>
               </widget>
              </item>
              <item row="0" column="5">
-              <widget class="QPushButton" name="fgcolor">
+              <widget class="QToolButton" name="fgcolor">
                <property name="maximumSize">
                 <size>
                  <width>22</width>
@@ -2122,7 +2155,7 @@ e.g. &quot;FFFFFF00&quot;</string>
               </widget>
              </item>
              <item row="1" column="5">
-              <widget class="QPushButton" name="bgcolor">
+              <widget class="QToolButton" name="bgcolor">
                <property name="maximumSize">
                 <size>
                  <width>22</width>
@@ -2173,7 +2206,7 @@ e.g. &quot;FFFFFF00&quot;</string>
               </widget>
              </item>
              <item row="2" column="5">
-              <widget class="QPushButton" name="btnReverse">
+              <widget class="QToolButton" name="btnReverse">
                <property name="maximumSize">
                 <size>
                  <width>22</width>

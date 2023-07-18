@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -124,35 +124,43 @@ static void test_hrt(const testCtx *const p_ctx) {
         /*  2*/ { BARCODE_CODE11, 2, "123-45", -1, "123-45" }, /* No checksums */
         /*  3*/ { BARCODE_CODE11, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
         /*  4*/ { BARCODE_CODE39, -1, "ABC1234", -1, "*ABC1234*" },
-        /*  5*/ { BARCODE_CODE39, -1, "abc1234", -1, "*ABC1234*" }, /* Converts to upper */
-        /*  6*/ { BARCODE_CODE39, -1, "123456789", -1, "*123456789*" },
-        /*  7*/ { BARCODE_CODE39, 1, "123456789", -1, "*1234567892*" }, /* With check digit */
-        /*  8*/ { BARCODE_EXCODE39, -1, "ABC1234", -1, "ABC1234" },
-        /*  9*/ { BARCODE_EXCODE39, -1, "abc1234", -1, "abc1234" },
-        /* 10*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234" }, /* With check digit (not displayed) */
-        /* 11*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* NUL, ctrls and DEL replaced with spaces */
-        /* 12*/ { BARCODE_LOGMARS, -1, "ABC1234", -1, "ABC1234" },
-        /* 13*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, /* Converts to upper */
-        /* 14*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, /* With check digit */
-        /* 15*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, /* With check digit */
-        /* 16*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, /* No longer shows 2 check chars added (same as BWIPP and TEC-IT) */
-        /* 17*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, /* Unless requested */
-        /* 18*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
-        /* 19*/ { BARCODE_CODE93, 1, "abc1234", -1, "abc1234ZG" },
-        /* 20*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, /* NUL, ctrls and DEL replaced with spaces */
-        /* 21*/ { BARCODE_PZN, -1, "12345", -1, "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
-        /* 22*/ { BARCODE_PZN, -1, "123456", -1, "PZN - 01234562" },
-        /* 23*/ { BARCODE_PZN, -1, "1234567", -1, "PZN - 12345678" },
-        /* 24*/ { BARCODE_PZN, -1, "12345678", -1, "PZN - 12345678" },
-        /* 25*/ { BARCODE_PZN, 1, "1234", -1, "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
-        /* 26*/ { BARCODE_PZN, 1, "12345", -1, "PZN - 0123458" },
-        /* 27*/ { BARCODE_PZN, 1, "123456", -1, "PZN - 1234562" },
-        /* 28*/ { BARCODE_PZN, 1, "1234562", -1, "PZN - 1234562" },
-        /* 29*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
-        /* 30*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, /* Include Import char - no change */
-        /* 31*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
-        /* 32*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, /* Converts to upper */
-        /* 33*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
+        /*  5*/ { BARCODE_CODE39, 1, "ABC1234", -1, "*ABC12340*" }, /* With visible check digit */
+        /*  6*/ { BARCODE_CODE39, -1, "abc1234", -1, "*ABC1234*" }, /* Converts to upper */
+        /*  7*/ { BARCODE_CODE39, 1, "abc1234", -1, "*ABC12340*" }, /* Converts to upper */
+        /*  8*/ { BARCODE_CODE39, -1, "123456789", -1, "*123456789*" },
+        /*  9*/ { BARCODE_CODE39, 1, "123456789", -1, "*1234567892*" }, /* With visible check digit */
+        /* 10*/ { BARCODE_CODE39, 2, "123456789", -1, "*123456789*" }, /* With hidden check digit */
+        /* 11*/ { BARCODE_EXCODE39, -1, "ABC1234", -1, "ABC1234" },
+        /* 12*/ { BARCODE_EXCODE39, 1, "ABC1234", -1, "ABC12340" }, /* With visible check digit */
+        /* 13*/ { BARCODE_EXCODE39, -1, "abc1234", -1, "abc1234" },
+        /* 14*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234." }, /* With visible check digit (previously was hidden) */
+        /* 15*/ { BARCODE_EXCODE39, 2, "abc1234", -1, "abc1234" }, /* With hidden check digit */
+        /* 16*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* NUL, ctrls and DEL replaced with spaces */
+        /* 17*/ { BARCODE_EXCODE39, 1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~L" }, /* With visible check digit */
+        /* 18*/ { BARCODE_EXCODE39, 2, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* With hidden check digit */
+        /* 19*/ { BARCODE_LOGMARS, -1, "ABC1234", -1, "ABC1234" },
+        /* 20*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, /* Converts to upper */
+        /* 21*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, /* With check digit */
+        /* 22*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, /* With visible check digit */
+        /* 23*/ { BARCODE_LOGMARS, 2, "12345/ABCDE", -1, "12345/ABCDE" }, /* With hidden check digit */
+        /* 24*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, /* No longer shows 2 check chars added (same as BWIPP and TEC-IT) */
+        /* 25*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, /* Unless requested */
+        /* 26*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
+        /* 27*/ { BARCODE_CODE93, 1, "abc1234", -1, "abc1234ZG" },
+        /* 28*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, /* NUL, ctrls and DEL replaced with spaces */
+        /* 29*/ { BARCODE_PZN, -1, "12345", -1, "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
+        /* 30*/ { BARCODE_PZN, -1, "123456", -1, "PZN - 01234562" },
+        /* 31*/ { BARCODE_PZN, -1, "1234567", -1, "PZN - 12345678" },
+        /* 32*/ { BARCODE_PZN, -1, "12345678", -1, "PZN - 12345678" },
+        /* 33*/ { BARCODE_PZN, 1, "1234", -1, "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
+        /* 34*/ { BARCODE_PZN, 1, "12345", -1, "PZN - 0123458" },
+        /* 35*/ { BARCODE_PZN, 1, "123456", -1, "PZN - 1234562" },
+        /* 36*/ { BARCODE_PZN, 1, "1234562", -1, "PZN - 1234562" },
+        /* 37*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
+        /* 38*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, /* Include Import char - no change */
+        /* 39*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
+        /* 40*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, /* Converts to upper */
+        /* 41*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -222,40 +230,45 @@ static void test_input(const testCtx *const p_ctx) {
         /* 25*/ { BARCODE_CODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
         /* 26*/ { BARCODE_CODE39, 0, "1", -1, 0, 1, 38 },
         /* 27*/ { BARCODE_CODE39, 1, "1", -1, 0, 1, 51 }, /* Check digit */
-        /* 28*/ { BARCODE_CODE39, 2, "1", -1, 0, 1, 38 }, /* option_2 > 1 gnored */
-        /* 29*/ { BARCODE_EXCODE39, -1, "A", -1, 0, 1, 38 },
-        /* 30*/ { BARCODE_EXCODE39, -1, "a", -1, 0, 1, 51 },
-        /* 31*/ { BARCODE_EXCODE39, -1, ",", -1, 0, 1, 51 },
-        /* 32*/ { BARCODE_EXCODE39, -1, "\000", 1, 0, 1, 51 },
-        /* 33*/ { BARCODE_EXCODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 34*/ { BARCODE_EXCODE39, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 35*/ { BARCODE_LOGMARS, -1, "A", -1, 0, 1, 47 },
-        /* 36*/ { BARCODE_LOGMARS, -1, "a", -1, 0, 1, 47 },
-        /* 37*/ { BARCODE_LOGMARS, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 38*/ { BARCODE_LOGMARS, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 39*/ { BARCODE_LOGMARS, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 40*/ { BARCODE_CODE93, -1, "A", -1, 0, 1, 46 },
-        /* 41*/ { BARCODE_CODE93, -1, "a", -1, 0, 1, 55 },
-        /* 42*/ { BARCODE_CODE93, -1, ",", -1, 0, 1, 55 },
-        /* 43*/ { BARCODE_CODE93, -1, "\000", 1, 0, 1, 55 },
-        /* 44*/ { BARCODE_CODE93, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 45*/ { BARCODE_CODE93, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 46*/ { BARCODE_PZN, -1, "1", -1, 0, 1, 142 },
-        /* 47*/ { BARCODE_PZN, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 48*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
-        /* 49*/ { BARCODE_PZN, -1, "00000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 50*/ { BARCODE_PZN, 1, "100009", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
-        /* 51*/ { BARCODE_PZN, 1, "0000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 52*/ { BARCODE_VIN, -1, "5GZCZ43D13S812715", -1, 0, 1, 246 },
-        /* 53*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, /* North American with invalid check character */
-        /* 54*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, /* Not North American so no check */
-        /* 55*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* I not allowed */
-        /* 56*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* O not allowed */
-        /* 57*/ { BARCODE_VIN, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Q not allowed */
-        /* 58*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, /* Converts to upper */
-        /* 59*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 60*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 61*/ { BARCODE_HIBC_39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 28*/ { BARCODE_CODE39, 2, "1", -1, 0, 1, 51 }, /* Hidden check digit */
+        /* 29*/ { BARCODE_CODE39, 3, "1", -1, 0, 1, 38 }, /* option_2 > 2 ignored */
+        /* 30*/ { BARCODE_EXCODE39, -1, "A", -1, 0, 1, 38 },
+        /* 31*/ { BARCODE_EXCODE39, 3, "A", -1, 0, 1, 38 }, /* option_2 > 2 ignored */
+        /* 32*/ { BARCODE_EXCODE39, -1, "a", -1, 0, 1, 51 },
+        /* 33*/ { BARCODE_EXCODE39, -1, ",", -1, 0, 1, 51 },
+        /* 34*/ { BARCODE_EXCODE39, -1, "\000", 1, 0, 1, 51 },
+        /* 35*/ { BARCODE_EXCODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 36*/ { BARCODE_EXCODE39, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
+        /* 37*/ { BARCODE_LOGMARS, -1, "A", -1, 0, 1, 47 },
+        /* 38*/ { BARCODE_LOGMARS, -1, "a", -1, 0, 1, 47 },
+        /* 39*/ { BARCODE_LOGMARS, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
+        /* 40*/ { BARCODE_LOGMARS, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, },
+        /* 41*/ { BARCODE_LOGMARS, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
+        /* 42*/ { BARCODE_LOGMARS, 3, "A", -1, 0, 1, 47 }, /* option_2 > 2 ignored */
+        /* 43*/ { BARCODE_CODE93, -1, "A", -1, 0, 1, 46 },
+        /* 44*/ { BARCODE_CODE93, -1, "a", -1, 0, 1, 55 },
+        /* 45*/ { BARCODE_CODE93, -1, ",", -1, 0, 1, 55 },
+        /* 46*/ { BARCODE_CODE93, -1, "\000", 1, 0, 1, 55 },
+        /* 47*/ { BARCODE_CODE93, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 48*/ { BARCODE_CODE93, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 49*/ { BARCODE_PZN, -1, "1", -1, 0, 1, 142 },
+        /* 50*/ { BARCODE_PZN, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 51*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
+        /* 52*/ { BARCODE_PZN, -1, "00000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /* 53*/ { BARCODE_PZN, 1, "100009", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
+        /* 54*/ { BARCODE_PZN, 1, "0000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
+        /* 55*/ { BARCODE_VIN, -1, "5GZCZ43D13S812715", -1, 0, 1, 246 },
+        /* 56*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, /* North American with invalid check character */
+        /* 57*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, /* Not North American so no check */
+        /* 58*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* I not allowed */
+        /* 59*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* O not allowed */
+        /* 60*/ { BARCODE_VIN, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Q not allowed */
+        /* 61*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, /* Converts to upper */
+        /* 62*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 63*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 64*/ { BARCODE_HIBC_39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 65*/ { BARCODE_HIBC_39, 1, "a", -1, 0, 1, 79 }, /* option_2 ignored */
+        /* 66*/ { BARCODE_HIBC_39, 2, "a", -1, 0, 1, 79 }, /* option_2 ignored */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

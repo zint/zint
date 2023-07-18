@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -57,6 +57,8 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
     btnCancel->setIcon(closeIcon);
+    QIcon folderIcon(QIcon::fromTheme(QSL("folder"), QIcon(QSL(":res/folder.svg"))));
+    btnDestPath->setIcon(folderIcon);
 
     connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
     connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));

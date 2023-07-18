@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutUltra">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gLayoutUltra">
      <item row="0" column="0">
       <widget class="QRadioButton" name="radUltraAuto">
        <property name="text">
@@ -147,7 +147,7 @@ error correction codewords</string>
      <property name="toolTip">
       <string>How to process data</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutUltraEncodingMode">
+     <layout class="QGridLayout" name="gLayoutUltraEncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -187,7 +187,7 @@ formatted with Application Identifiers (AIs)</string>
       <string>Ultracode supports Structured Append of up to
 8 symbols</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutUltraStructApp">
+     <layout class="QGridLayout" name="gLayoutUltraStructApp">
       <item row="0" column="0">
        <widget class="QLabel" name="lblUltraStructAppCount">
         <property name="text">
@@ -417,7 +417,7 @@ Value ranges from 1 to 80088
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerUltra">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

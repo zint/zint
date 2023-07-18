@@ -122,8 +122,6 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         }
     }
 
-    symbol->bitmap_byte_length = data_size;
-
     file_header.header_field = 0x4d42; /* "BM" */
     file_header.file_size = file_size;
     file_header.reserved = 0;

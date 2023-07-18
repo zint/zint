@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutC1">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gLayoutC1">
      <item row="0" column="0">
       <widget class="QLabel" name="lblC1Size">
        <property name="text">
@@ -121,7 +121,7 @@ variable widths</string>
      <property name="toolTip">
       <string>How to process data</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutC1EncodingMode">
+     <layout class="QGridLayout" name="gLayoutC1EncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -163,7 +163,7 @@ formatted with Application Identifiers (AIs)
 128 symbols (not available for Version S)
 (ignored if disabled)</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutC1StructApp">
+     <layout class="QGridLayout" name="gLayoutC1StructApp">
       <item row="0" column="0">
        <widget class="QLabel" name="lblC1StructAppCount">
         <property name="text">
@@ -313,7 +313,7 @@ Value ranges from 1 to count
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerC1">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

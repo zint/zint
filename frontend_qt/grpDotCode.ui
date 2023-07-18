@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutDot">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gLayoutDot">
      <item row="0" column="0">
       <widget class="QLabel" name="lblDotCols">
        <property name="text">
@@ -1112,7 +1112,7 @@ as 0 to 3 with the corners lit</string>
      <property name="toolTip">
       <string>How to process data</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutDotEncodingMode">
+     <layout class="QGridLayout" name="gLayoutDotEncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -1152,7 +1152,7 @@ formatted with Application Identifiers (AIs)</string>
       <string>DotCode supports Structured Append of up to
 35 symbols</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutDotStructApp">
+     <layout class="QGridLayout" name="gLayoutDotStructApp">
       <item row="0" column="0">
        <widget class="QLabel" name="lblDotStructAppCount">
         <property name="text">
@@ -1643,7 +1643,7 @@ Value ranges from 1 to count
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerDot">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

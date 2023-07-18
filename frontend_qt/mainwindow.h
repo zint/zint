@@ -28,6 +28,7 @@ class QLabel;
 class QShortcut;
 class QDoubleSpinBox;
 class QPushButton;
+class QToolButton;
 
 #include "ui_mainWindow.h"
 #include "barcodeitem.h"
@@ -45,7 +46,6 @@ public:
     static QString get_zint_version(void);
 
 #ifdef Q_OS_MACOS
-    static void mac_hack(QWidget *win);
     static void mac_hack_vLayouts(QWidget *win);
     static void mac_hack_statusBars(QWidget *win, const char *name = nullptr);
 #endif
@@ -136,10 +136,10 @@ protected:
 
     bool clear_data_eci_seg(int seg_no);
 
-    void color_clicked(QString &colorStr, QLineEdit *txt, QPushButton *btn, const QString& title,
+    void color_clicked(QString &colorStr, QLineEdit *txt, QToolButton *btn, const QString& title,
             QByteArray& geometry, const char *color_changed);
-    void color_edited(QString &colorStr, QLineEdit *txt, QPushButton *btn);
-    void setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QPushButton* btn);
+    void color_edited(QString &colorStr, QLineEdit *txt, QToolButton *btn);
+    void setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QToolButton* btn);
 
     virtual void resizeEvent(QResizeEvent *event) override;
     virtual bool event(QEvent *event) override;

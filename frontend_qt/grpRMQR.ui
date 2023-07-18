@@ -19,7 +19,7 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutRMQR">
    <item>
     <layout class="QGridLayout" name="grpRMQROptions">
      <item row="0" column="0">
@@ -287,7 +287,7 @@ error correction codewords</string>
      <property name="toolTip">
       <string>How to process data</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutRMQREncodingMode">
+     <layout class="QGridLayout" name="gLayoutRMQREncodingMode">
       <property name="sizeConstraint">
        <enum>QLayout::SetMinimumSize</enum>
       </property>
@@ -333,7 +333,7 @@ and Latin data</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerRMQR">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

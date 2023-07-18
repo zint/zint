@@ -27,54 +27,67 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 # OPTIONS
 
 `-h`, `--help`
+
 :   Print usage information summarizing command line options.
 
 `-b TYPE`, `--barcode=TYPE`
+
 :   Set the barcode symbology that will be used to encode the data. *TYPE* is the number or name of the barcode
     symbology. If not given, the symbology defaults to 20 (Code 128). To see what types are available, use the `-t` |
     `--types` option. Type names are case-insensitive, and non-alphanumerics are ignored.
 
 `--addongap=INTEGER`
+
 :   For EAN/UPC symbologies, set the gap between the main data and the add-on. *INTEGER* is in integral multiples of
     the X-dimension. The maximum gap that can be set is 12. The minimum is 7, except for UPC-A, when the minimum is 9.
 
 `--batch`
+
 :   Treat each line of an input file specified with `-i` | `--input` as a separate data set and produce a barcode
     image for each one. The barcode images are outputted by default to numbered filenames starting with "00001.png",
     "00002.png" etc., which can be changed by using the `-o` | `--output` option.
 
 `--bg=COLOUR`
+
 :   Specify a background (paper) colour where *COLOUR* is in hexadecimal `RRGGBB` or `RRGGBBAA` format or in decimal
     `C,M,Y,K` percentages format.
 
 `--binary`
+
 :   Treat input data as raw 8-bit binary data instead of the default UTF-8. Automatic code page translation to an ECI
     page is disabled, and no validation of the data's character encoding takes place.
 
 `--bind`
+
 :   Add horizontal boundary bars (also known as bearer bars) to the symbol. The width of the boundary bars is
     specified by the `--border` option.  `--bind` can also be used to add row separator bars to symbols stacked with
     multiple `-d` | `--data` inputs, in which case the width of the separator bars is specified with the `--separator`
     option.
 
 `--bindtop`
+
 :   Add a horizontal boundary bar to the top of the symbol. The width of the boundary bar is specified by the
     `--border` option.
 
 `--bold`
+
 :   Use bold text for the Human Readable Text (HRT).
 
 `--border=INTEGER`
+
 :   Set the width of boundary bars (`--bind` or `--bindtop`) or box borders (`--box`), where *INTEGER* is in integral
     multiples of the X-dimension. The default is zero.
 
 `--box`
+
 :   Add a box around the symbol. The width of the borders is specified by the `--border` option.
 
 `--cmyk`
+
 :   Use the CMYK colour space when outputting to Encapsulated PostScript (EPS) or TIF files.
 
 `--cols=INTEGER`
+
 :   Set the number of data columns in the symbol to *INTEGER*. Affects Codablock-F, DotCode, GS1 DataBar Expanded
     Stacked (DBAR_EXPSTK), MicroPDF417 and PDF417 symbols.
 
@@ -394,10 +407,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                         0      (default 2 visible check digits)
                         1      (1 visible check digit)
                         2      (no check digits)
-        Code 39         1      (add visible check digit)
+        Code 39         1 or 2 (add visible or hidden check digit)
         Code 93         1      (hide the default check characters)
-        EXCODE39        1      (add visible check digit)
-        LOGMARS         1      (add visible check digit)
+        EXCODE39        1 or 2 (add visible or hidden check digit)
+        LOGMARS         1 or 2 (add visible or hidden check digit)
         MSI Plessey     0 to 6 (none to various visible options)
                         1, 2   (mod-10, mod-10 + mod-10)
                         3, 4   (mod-11 IBM, mod-11 IBM + mod-10)

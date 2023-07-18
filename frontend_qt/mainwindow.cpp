@@ -184,22 +184,6 @@ static const struct bstyle_item bstyle_items[] = {
 };
 
 #ifdef Q_OS_MACOS
-/* Helper to make widgets look ok on macOS */
-void MainWindow::mac_hack(QWidget *win)
-{
-    if (!win) {
-        return;
-    }
-    QList<QWidget *> widgets = win->findChildren<QWidget *>();
-    for (int i = 0, cnt = widgets.size(); i < cnt; i++) {
-        widgets[i]->setAttribute(Qt::WA_MacNormalSize);
-    }
-    QList<QGroupBox *> grps = win->findChildren<QGroupBox *>();
-    for (int i = 0, cnt = grps.size(); i < cnt; i++) {
-        // TODO: top of groupbox too near to previous element - how to fix??
-        grps[i]->setAlignment(Qt::AlignHCenter); // Poor man's workaround for above
-    }
-}
 
 /* Helper to make data tab vertical layouts look ok on macOS */
 void MainWindow::mac_hack_vLayouts(QWidget *win)
@@ -208,7 +192,7 @@ void MainWindow::mac_hack_vLayouts(QWidget *win)
     for (int i = 0, cnt = vlayouts.size(); i < cnt; i++) {
         if (vlayouts[i]->objectName() == "vLayoutData" || vlayouts[i]->objectName() == "vLayoutComposite"
                 || vlayouts[i]->objectName() == "vLayoutSegs") {
-            vlayouts[i]->setSpacing(0);
+            vlayouts[i]->setSpacing(2);
             // If set spacing on QVBoxLayout then it seems its QHBoxLayout children inherit this so undo
             QList<QHBoxLayout *> hlayouts = vlayouts[i]->findChildren<QHBoxLayout *>();
             for (int j = 0, cnt = hlayouts.size(); j < cnt; j++) {
@@ -257,7 +241,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     QVariant saved_geometry = settings.value(QSL("studio/window_geometry"));
 
 #ifdef Q_OS_MACOS
-    QApplication::setDesktopSettingsAware(false); // Makes group boxes use standard font (may do other stuff)
     // Standard width 360 too narrow
     if (saved_geometry.isNull()) {
         // Seems this is necessary on macOS to get a reasonable initial height
@@ -265,7 +248,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     } else {
         setMinimumSize(QSize(460, 0));
     }
-    mac_hack(this);
     mac_hack_vLayouts(this);
     mac_hack_statusBars(this, "statusBar");
     vLayoutTabData->setContentsMargins(QMargins(20, 0, 20, 0));
@@ -654,13 +636,13 @@ void MainWindow::reverse_colours()
     update_preview();
 }
 
-void MainWindow::setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QPushButton* btn) {
+void MainWindow::setColorTxtBtn(const QString &colorStr, QLineEdit *txt, QToolButton* btn) {
     if (colorStr != txt->text()) {
         int cursorPos = txt->cursorPosition();
         txt->setText(colorStr);
         txt->setCursorPosition(cursorPos);
     }
-    btn->setStyleSheet(QSL("QPushButton {background-color:") + str_to_qcolor(colorStr).name() + QSL(";}"));
+    btn->setStyleSheet(QSL("QToolButton {background-color:") + str_to_qcolor(colorStr).name() + QSL(";}"));
 }
 
 bool MainWindow::save()
@@ -1096,7 +1078,7 @@ void MainWindow::on_bgcolor_clicked()
                     SLOT(bgcolor_changed(const QColor&)));
 }
 
-void MainWindow::color_clicked(QString &colorStr, QLineEdit *txt, QPushButton *btn, const QString& title,
+void MainWindow::color_clicked(QString &colorStr, QLineEdit *txt, QToolButton *btn, const QString& title,
                                 QByteArray& geometry, const char *color_changed)
 {
     QString original = colorStr;
@@ -1148,7 +1130,7 @@ void MainWindow::bgcolor_edited()
     color_edited(m_bgstr, txt_bgcolor, bgcolor);
 }
 
-void MainWindow::color_edited(QString &colorStr, QLineEdit *txt, QPushButton *btn)
+void MainWindow::color_edited(QString &colorStr, QLineEdit *txt, QToolButton *btn)
 {
     QString new_str = txt->text().trimmed();
     if (new_str.indexOf(colorRE) != 0) {
@@ -1694,9 +1676,16 @@ void MainWindow::change_options()
     }
     statusBar->clearMessage();
 
-    if (tabMain->count() == 3)
-        tabMain->removeTab(1);
-
+    grpSpecific->hide();
+    if (m_optionWidget) {
+        if (tabMain->count() == 3) {
+            tabMain->removeTab(1);
+        } else {
+            vLayoutSpecific->removeWidget(m_optionWidget);
+        }
+        delete m_optionWidget;
+        m_optionWidget = nullptr;
+    }
     chkComposite->setText(tr("Add &2D Component"));
     combobox_item_enabled(cmbCompType, 3, false); // CC-C
     btype->setItemText(0, tr("No border"));
@@ -1837,7 +1826,8 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("MSI Pless&ey"));
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("cmbMSICheck")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
         connect(get_widget(QSL("cmbMSICheck")), SIGNAL(currentIndexChanged( int )), SLOT(msi_plessey_ui_set()));
         connect(get_widget(QSL("chkMSICheckText")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1849,7 +1839,8 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("Cod&e 11"));
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("radC11TwoCheckDigits")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC11OneCheckDigit")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC11NoCheckDigits")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1861,11 +1852,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            static const QString names[] = {
-                QSL("Standard"), QSL("Interleaved"), QSL("IATA"), QSL(""), QSL("Data Logic"), QSL("Industrial")
-            };
-            /*: %1 is name of variant (Standard, Interleaved, IATA, Data Logic, Industrial) */
-            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 2 of 5 %1").arg(names[symbology - BARCODE_C25STANDARD]));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("radC25Stand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
             connect(get_widget(QSL("radC25Check")), SIGNAL(toggled( bool )), SLOT(update_preview()));
             connect(get_widget(QSL("radC25CheckHide")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1878,15 +1866,13 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("radC39Stand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radC39Check")), SIGNAL(toggled( bool )), SLOT(update_preview()));
+        connect(get_widget(QSL("radC39CheckHide")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         QRadioButton *radC39HIBC = m_optionWidget->findChild<QRadioButton*>(QSL("radC39HIBC"));
         if (symbology == BARCODE_EXCODE39 || symbology == BARCODE_LOGMARS) {
-            if (symbology == BARCODE_EXCODE39) {
-                tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39 Extended"));
-            } else {
-                tabMain->insertTab(1, m_optionWidget, tr("LOGM&ARS"));
-            }
             if (radC39HIBC->isChecked()) {
                 radC39HIBC->setChecked(false);
                 m_optionWidget->findChild<QRadioButton*>(QSL("radC39Stand"))->setChecked(true);
@@ -1895,7 +1881,6 @@ void MainWindow::change_options()
             radC39HIBC->hide();
         } else {
             connect(get_widget(QSL("radC39HIBC")), SIGNAL(toggled( bool )), SLOT(update_preview()));
-            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 39"));
             radC39HIBC->setEnabled(true);
             radC39HIBC->show();
         }
@@ -1929,7 +1914,8 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("Cod&abar"));
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("radCodabarStand")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radCodabarCheckHide")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         connect(get_widget(QSL("radCodabarCheck")), SIGNAL(toggled( bool )), SLOT(update_preview()));
@@ -1964,8 +1950,9 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("D&AFT"));
-            set_smaller_font(QSL("noteTrackerRatios"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
+            set_smaller_font(QSL("noteDAFTTrackerRatios"));
             connect(get_widget(QSL("spnDAFTTrackerRatio")), SIGNAL(valueChanged( double )), SLOT(daft_ui_set()));
             connect(get_widget(QSL("spnDAFTTrackerRatio")), SIGNAL(valueChanged( double )), SLOT(update_preview()));
             connect(get_widget(QSL("btnDAFTTrackerDefault")), SIGNAL(clicked( bool )), SLOT(daft_tracker_default()));
@@ -1979,7 +1966,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("DPD Cod&e"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("chkDPDRelabel")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
@@ -2012,8 +2000,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            structapp_ui_set();
-            tabMain->insertTab(1, m_optionWidget, tr("2D M&ailmark"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("cmbMailmark2DSize")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
             connect(get_widget(QSL("chkMailmark2DRectangle")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
@@ -2025,7 +2013,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("ITF-1&4"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("chkITF14NoQuietZones")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
@@ -2035,7 +2024,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("PZN"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("chkPZN7")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
@@ -2067,7 +2057,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("UP&NQR"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("cmbUPNQRMask")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
             connect(get_widget(QSL("chkUPNQRFast")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
@@ -2161,7 +2152,8 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("Channel Cod&e"));
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("cmbChannel")), SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
 
     } else if (symbology == BARCODE_CODEONE) {
@@ -2209,7 +2201,8 @@ void MainWindow::change_options()
             m_optionWidget = uiload.load(&file);
             file.close();
             load_sub_settings(settings, symbology);
-            tabMain->insertTab(1, m_optionWidget, tr("Cod&e 93"));
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
             connect(get_widget(QSL("chkC93ShowChecks")), SIGNAL(toggled( bool )), SLOT(update_preview()));
         }
 
@@ -2324,17 +2317,14 @@ void MainWindow::change_options()
         m_optionWidget = uiload.load(&file);
         file.close();
         load_sub_settings(settings, symbology);
-        tabMain->insertTab(1, m_optionWidget, tr("&VIN"));
+        vLayoutSpecific->addWidget(m_optionWidget);
+        grpSpecific->show();
         connect(get_widget(QSL("chkVINImportChar")), SIGNAL(toggled( bool )), SLOT(update_preview()));
 
     } else {
         m_optionWidget = nullptr;
         load_sub_settings(settings, symbology);
     }
-
-#ifdef Q_OS_MACOS
-    mac_hack(m_optionWidget);
-#endif
 
     switch (symbology) {
         case BARCODE_CODE128:
@@ -2916,24 +2906,31 @@ void MainWindow::update_preview()
             break;
 
         case BARCODE_CODE39:
-            if (get_rad_val(QSL("radC39HIBC")))
+            if (get_rad_val(QSL("radC39HIBC"))) {
                 m_bc.bc.setSymbol(BARCODE_HIBC_39);
-            else {
+            } else {
                 m_bc.bc.setSymbol(BARCODE_CODE39);
-                if (get_rad_val(QSL("radC39Check")))
+                if (get_rad_val(QSL("radC39Check"))) {
                     m_bc.bc.setOption2(1);
+                } else if (get_rad_val(QSL("radC39CheckHide"))) {
+                    m_bc.bc.setOption2(2);
+                }
             }
             break;
         case BARCODE_EXCODE39:
             m_bc.bc.setSymbol(BARCODE_EXCODE39);
-            if (get_rad_val(QSL("radC39Check")))
+            if (get_rad_val(QSL("radC39Check"))) {
                 m_bc.bc.setOption2(1);
-
+            } else if (get_rad_val(QSL("radC39CheckHide"))) {
+                m_bc.bc.setOption2(2);
+            }
             break;
         case BARCODE_LOGMARS:
             m_bc.bc.setSymbol(BARCODE_LOGMARS);
             if (get_rad_val(QSL("radC39Check"))) {
                 m_bc.bc.setOption2(1);
+            } else if (get_rad_val(QSL("radC39CheckHide"))) {
+                m_bc.bc.setOption2(2);
             }
             break;
 
@@ -4225,16 +4222,17 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
         case BARCODE_CODE39:
         case BARCODE_HIBC_39:
             settings.setValue(QSL("studio/bc/code39/check_digit"), get_rad_grp_index(
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39HIBC")));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39HIBC")
+                                << QSL("radC39CheckHide")));
             break;
 
         case BARCODE_EXCODE39:
             settings.setValue(QSL("studio/bc/excode39/check_digit"), get_rad_grp_index(
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check")));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide")));
             break;
         case BARCODE_LOGMARS:
             settings.setValue(QSL("studio/bc/logmars/check_digit"), get_rad_grp_index(
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check")));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide")));
             break;
 
         case BARCODE_CODE16K:
@@ -4660,16 +4658,17 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         case BARCODE_CODE39:
         case BARCODE_HIBC_39:
             set_rad_from_setting(settings, QSL("studio/bc/code39/check_digit"),
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39HIBC"));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39HIBC")
+                                << QSL("radC39CheckHide"));
             break;
 
         case BARCODE_EXCODE39:
             set_rad_from_setting(settings, QSL("studio/bc/excode39/check_digit"),
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check"));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide"));
             break;
         case BARCODE_LOGMARS:
             set_rad_from_setting(settings, QSL("studio/bc/logmars/check_digit"),
-                QStringList() << QSL("radC39Stand") << QSL("radC39Check"));
+                QStringList() << QSL("radC39Stand") << QSL("radC39Check") << QSL("radC39CheckHide"));
             break;
 
         case BARCODE_CODE16K:

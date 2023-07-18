@@ -1,4 +1,4 @@
-% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS and Fedora Linux 36 (Workstation Edition)
+% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS and Fedora Linux 38 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -60,7 +60,7 @@ or Ubuntu 20.04
 
     sudo apt install qt5-default qt5-uitools
 
-or Fedora 36 (not recommended)
+or Fedora 38 (not recommended)
 
      sudo dnf install qt5-qtbase-devel qt5-qttools-devel qt5-qttools-static qt5-qtsvg-devel
 

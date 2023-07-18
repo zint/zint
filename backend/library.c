@@ -108,7 +108,6 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
-    symbol->bitmap_byte_length = 0;
 
     /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);

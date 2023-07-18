@@ -1335,7 +1335,6 @@ static void test_clear(const testCtx *const p_ctx) {
 
     assert_nonzero(symbol->rows, "ZBarcode_Buffer() rows 0\n");
     assert_nonzero(symbol->width, "ZBarcode_Buffer() width 0\n");
-    assert_zero(symbol->bitmap_byte_length, "ZBarcode_Buffer() bitmap_byte_length %d != 0\n", (int) symbol->bitmap_byte_length);
     assert_null(symbol->vector, "ZBarcode_Buffer() vector != NULL\n");
 
     ZBarcode_Clear(symbol);
@@ -1347,7 +1346,6 @@ static void test_clear(const testCtx *const p_ctx) {
 
     assert_zero(symbol->rows, "ZBarcode_Buffer() rows %d != 0\n", symbol->rows);
     assert_zero(symbol->width, "ZBarcode_Buffer() width %d != 0\n", symbol->width);
-    assert_zero(symbol->bitmap_byte_length, "ZBarcode_Buffer() bitmap_byte_length %d != 0\n", (int) symbol->bitmap_byte_length);
     assert_null(symbol->vector, "ZBarcode_Buffer() vector != NULL\n");
 
     /* Vector */
@@ -1371,7 +1369,6 @@ static void test_clear(const testCtx *const p_ctx) {
     assert_nonzero(symbol->width, "ZBarcode_Buffer_Vector() width 0\n");
     assert_null(symbol->bitmap, "ZBarcode_Buffer_Vector() bitmap != NULL\n");
     assert_null(symbol->alphamap, "ZBarcode_Buffer_Vector() alphamap != NULL\n");
-    assert_zero(symbol->bitmap_byte_length, "ZBarcode_Buffer_Vector() bitmap_byte_length %d != 0\n", (int) symbol->bitmap_byte_length);
 
     ZBarcode_Clear(symbol);
 
@@ -1379,7 +1376,6 @@ static void test_clear(const testCtx *const p_ctx) {
 
     assert_zero(symbol->rows, "ZBarcode_Buffer_Vector() rows %d != 0\n", symbol->rows);
     assert_zero(symbol->width, "ZBarcode_Buffer_Vector() width %d != 0\n", symbol->width);
-    assert_zero(symbol->bitmap_byte_length, "ZBarcode_Buffer_Vector() bitmap_byte_length %d != 0\n", (int) symbol->bitmap_byte_length);
     assert_null(symbol->bitmap, "ZBarcode_Buffer_Vector() bitmap != NULL\n");
     assert_null(symbol->alphamap, "ZBarcode_Buffer_Vector() alphamap != NULL\n");
     assert_zero(symbol->bitmap_width, "ZBarcode_Buffer_Vector() bitmap_width %d != 0\n", symbol->bitmap_width);

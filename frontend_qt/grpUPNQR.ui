@@ -19,7 +19,22 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayoutUPNQR">
+  <layout class="QVBoxLayout" name="vLayoutUPNQR">
+   <property name="contentMargins">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
     <layout class="QGridLayout" name="gridLayoutUPNQR">
      <item row="0" column="0">
@@ -102,22 +117,6 @@ when automatically selecting a mask</string>
       <bool>false</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacerQR">
-     <property name="orientation">
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeType">
-      <enum>QSizePolicy::MinimumExpanding</enum>
-     </property>
-     <property name="sizeHint" stdset="0">
-      <size>
-       <width>20</width>
-       <height>0</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

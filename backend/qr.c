@@ -871,6 +871,12 @@ static void qr_place_align(unsigned char grid[], const int size, int x, int y) {
 static void qr_setup_grid(unsigned char *grid, const int size, const int version) {
     int i, toggle = 1;
 
+/* Suppress false positive gcc-13 warning (when optimizing only) "writing 1 byte into a region of size 0" */
+#if defined(__GNUC__) && __GNUC__ == 13
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-overflow"
+#endif
+
     /* Add timing patterns */
     for (i = 0; i < size; i++) {
         if (toggle == 1) {
@@ -901,6 +907,10 @@ static void qr_setup_grid(unsigned char *grid, const int size, const int version
     grid[(7 * size) + 7] = 0x10;
     grid[(7 * size) + (size - 8)] = 0x10;
     grid[((size - 8) * size) + 7] = 0x10;
+
+#if defined(__GNUC__) && __GNUC__ == 13
+#pragma GCC diagnostic pop
+#endif
 
     /* Add alignment patterns */
     if (version != 1) {

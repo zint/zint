@@ -1,0 +1,291 @@
+$if(document-css)$
+html {
+$if(mainfont)$
+  font-family: $mainfont$;
+$endif$
+$if(fontsize)$
+  font-size: $fontsize$;
+$endif$
+$if(linestretch)$
+  line-height: $linestretch$;
+$endif$
+  color: $if(fontcolor)$$fontcolor$$else$#1a1a1a$endif$;
+  background-color: $if(backgroundcolor)$$backgroundcolor$$else$#fdfdfd$endif$;
+}
+body {
+  margin: 0 auto;
+  max-width: $if(maxwidth)$$maxwidth$$else$50em$endif$;
+  padding-left: $if(margin-left)$$margin-left$$else$50px$endif$;
+  padding-right: $if(margin-right)$$margin-right$$else$50px$endif$;
+  padding-top: $if(margin-top)$$margin-top$$else$50px$endif$;
+  padding-bottom: $if(margin-bottom)$$margin-bottom$$else$50px$endif$;
+  hyphens: auto;
+  overflow-wrap: break-word;
+  text-rendering: optimizeLegibility;
+  font-kerning: normal;
+}
+@media (max-width: 600px) {
+  body {
+    font-size: 0.9em;
+    padding: 12px;
+  }
+  h1 {
+    font-size: 1.8em;
+  }
+}
+@media print {
+  html {
+    background-color: $if(backgroundcolor)$$backgroundcolor$$else$white$endif$;
+  }
+  body {
+    background-color: transparent;
+    color: black;
+    font-size: 12pt;
+  }
+  p, h2, h3 {
+    orphans: 3;
+    widows: 3;
+  }
+  h2, h3, h4 {
+    page-break-after: avoid;
+  }
+}
+p {
+  margin: 1em 0;
+}
+a {
+  color: $if(linkcolor)$$linkcolor$$else$#800000$endif$;
+}
+a:visited {
+  color: $if(linkcolor)$$linkcolor$$else$#800000$endif$;
+}
+a:not(:hover) {
+  text-decoration: none;
+}
+figure {
+  margin-left: 0;
+  margin-right: 0;
+  text-align: center;
+}
+img {
+  max-width: 100%;
+}
+img.btn {
+  height: 0.9em;
+}
+img.win {
+  max-width: 80%;
+}
+img.pop {
+  max-width: 60%;
+}
+img[src*="gui_set_printing_scale.png"] {
+  max-width: 50%;
+}
+img.lin {
+  max-height: 10em;
+}
+img[src*="code128_rotate90.svg"] {
+  max-height: 20em;
+}
+img.i2d {
+  max-height: 10em;
+}
+img[src*="upnqr.svg"] {
+  max-height: 20em;
+}
+img.i2dbig {
+}
+img.trk {
+  max-height: 3em;
+}
+img[src*="fim.svg"] {
+  max-height: 10em;
+}
+img.dotty {
+  max-height: 7em;
+}
+img.ultra {
+  max-height: 12em;
+}
+img.upcean {
+  max-height: 12em;
+}
+h1, h2, h3, h4, h5, h6 {
+  margin-top: 1.4em;
+}
+h5, h6 {
+  font-size: 1em;
+  font-style: italic;
+}
+h6 {
+  font-weight: normal;
+}
+ol, ul {
+  padding-left: 1.7em;
+  margin-top: 1em;
+}
+li > ol, li > ul {
+  margin-top: 0;
+}
+dt {
+  font-weight:bold;
+}
+blockquote {
+  margin: 1em 0 1em 1.7em;
+  padding-left: 1em;
+  border-left: 2px solid #e6e6e6;
+  color: #606060;
+}
+$if(abstract)$
+div.abstract {
+  margin: 2em 2em 2em 2em;
+  text-align: left;
+  font-size: 85%;
+}
+div.abstract-title {
+  font-weight: bold;
+  text-align: center;
+  padding: 0;
+  margin-bottom: 0.5em;
+}
+$endif$
+code {
+  font-family: $if(monofont)$$monofont$$else$Menlo, Monaco, Consolas, 'Lucida Console', monospace$endif$;
+$if(monobackgroundcolor)$
+  background-color: $monobackgroundcolor$;
+  padding: .2em .4em;
+$endif$
+  font-size: 90%;
+  margin: 0;
+  hyphens: manual;
+  color: #000000;
+}
+pre {
+  margin: 1em 0;
+$if(monobackgroundcolor)$
+  background-color: $monobackgroundcolor$;
+  padding: 1em;
+$endif$
+  overflow: auto;
+}
+pre code {
+  padding: 0;
+  overflow: visible;
+  overflow-wrap: normal;
+}
+.sourceCode {
+ background-color: transparent;
+ overflow: visible;
+}
+div.sourceCode {
+  background-color: #f5f5f5;
+  padding: 0.3em 0;
+}
+aside.footnotes {
+  font-size:90%;
+}
+hr {
+  background-color: #1a1a1a;
+  border: none;
+  height: 1px;
+  margin: 1em 0;
+}
+table {
+  margin: 0 auto 0.4em auto;
+  border-collapse: collapse;
+  overflow-x: auto;
+  font-variant-numeric: lining-nums tabular-nums;
+}
+#tbl\:gridmatrix_eccs {
+  margin-top: 1em;
+}
+table caption {
+  margin-bottom: 0.75em;
+}
+tbody {
+  margin-top: 0.5em;
+  border-top: 1px solid $if(fontcolor)$$fontcolor$$else$#1a1a1a$endif$;
+  border-bottom: 1px solid $if(fontcolor)$$fontcolor$$else$#1a1a1a$endif$;
+}
+th {
+  border-top: 1px solid $if(fontcolor)$$fontcolor$$else$#1a1a1a$endif$;
+  padding: 0.25em 0.5em 0.25em 0.5em;
+}
+td {
+  padding: 0.125em 0.5em 0.25em 0.5em;
+  vertical-align: top;
+}
+header {
+  margin-bottom: 4em;
+  text-align: center;
+}
+#banner {
+  text-align: center;
+}
+#banner img.img_hdr {
+  height: 7em;
+}
+#TOC {
+  font-size: 115%;
+}
+#TOC li {
+  list-style: none;
+  margin-bottom: 0.1em;
+  margin-top: 0.2em;
+}
+#TOC ul {
+  padding-left: 1.3em;
+}
+#TOC > ul {
+  padding-left: 0;
+}
+#TOC > ul > li {
+  margin-top: 0.5em;
+}
+#TOC > ul > li > a {
+  font-weight: bold;
+}
+#TOC a:not(:hover) {
+  color: #1a1a1a;
+  text-decoration: none;
+}
+dd > p {
+  margin-bottom:1.5em;
+  margin-top:0.5em;
+}
+#exit-status + dl > dt {
+  float: left;
+}
+#exit-status + dl > dd {
+  margin-bottom: 1em;
+}
+
+$endif$
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+/* The extra [class] is a hack that increases specificity enough to
+   override a similar rule in reveal.js */
+ul.task-list[class]{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  font-size: inherit;
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1.6em;
+  vertical-align: middle;
+}
+$if(quotes)$
+q { quotes: "“" "”" "‘" "’"; }
+$endif$
+$if(displaymath-css)$
+.display.math{display: block; text-align: center; margin: 0.5rem auto;}
+$endif$
+$if(highlighting-css)$
+/* CSS for syntax highlighting */
+$highlighting-css$
+$endif$
+$if(csl-css)$
+$styles.citations.html()$
+$endif$

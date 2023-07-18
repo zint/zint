@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>grpMicroPDF</class>
- <widget class="QWidget" name="grpMicroPDF">
+ <class>grpMaxicode</class>
+ <widget class="QWidget" name="grpMaxicode">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutMaxi">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gLayoutMaxi">
      <item row="0" column="0">
       <widget class="QLabel" name="lblMaxiMode">
        <property name="text">
@@ -94,7 +94,7 @@ Mode 6 sets the scanner (Reader Initialisation/Programming)</string>
      <property name="toolTip">
       <string>For Modes 2 and 3 only</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutMaxiSCM">
+     <layout class="QGridLayout" name="gLayoutMaxiSCM">
       <item row="0" column="0">
        <widget class="QLabel" name="lblMaxiSCMPostcode">
         <property name="enabled">
@@ -337,7 +337,7 @@ specified as follows
       <string>MaxiCode supports Structured Append of up to
 8 symbols</string>
      </property>
-     <layout class="QGridLayout" name="gridLayoutMaxiStructApp">
+     <layout class="QGridLayout" name="gLayoutMaxiStructApp">
       <item row="0" column="0">
        <widget class="QLabel" name="lblMaxiStructAppCount">
         <property name="toolTip">
@@ -558,7 +558,7 @@ Value ranges from 1 to count
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerMaxi">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

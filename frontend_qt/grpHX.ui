@@ -19,9 +19,9 @@
   <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout">
+  <layout class="QVBoxLayout" name="vLayoutHX">
    <item>
-    <layout class="QGridLayout" name="gridLayout">
+    <layout class="QGridLayout" name="gLayoutHX">
      <item row="0" column="0">
       <widget class="QLabel" name="labelHXSize">
        <property name="text">
@@ -579,7 +579,7 @@ and Latin data</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer">
+    <spacer name="vSpacerHX">
      <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>

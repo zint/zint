@@ -1,7 +1,7 @@
-<ui version="4.0" >
+<ui version="4.0">
  <class>grpMQR</class>
- <widget class="QWidget" name="grpMQR" >
-  <property name="geometry" >
+ <widget class="QWidget" name="grpMQR">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -15,15 +15,15 @@
     <height>16777215</height>
    </size>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" >
+  <layout class="QVBoxLayout" name="vLayoutMQR">
    <item>
-    <layout class="QGridLayout" name="gridLayout" >
-     <item row="0" column="0" >
-      <widget class="QLabel" name="lavelMQRSize" >
-       <property name="text" >
+    <layout class="QGridLayout" name="gLayoutMQR">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lblMQRSize">
+       <property name="text">
         <string>Si&amp;ze:</string>
        </property>
        <property name="toolTip">
@@ -34,8 +34,8 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1" >
-      <widget class="QComboBox" name="cmbMQRSize" >
+     <item row="0" column="1">
+      <widget class="QComboBox" name="cmbMQRSize">
        <property name="toolTip">
         <string>Set size (version) of symbol</string>
        </property>
@@ -45,30 +45,30 @@
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>11 x 11 (Version M1)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>13 x 13 (Version M2)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>15 x 15 (Version M3)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>17 x 17 (Version M4)</string>
         </property>
        </item>
       </widget>
      </item>
-     <item row="1" column="0" >
-      <widget class="QLabel" name="labelMQRECC" >
-       <property name="text" >
+     <item row="1" column="0">
+      <widget class="QLabel" name="lblMQRECC">
+       <property name="text">
         <string>E&amp;rror Correction:</string>
        </property>
        <property name="toolTip">
@@ -80,8 +80,8 @@ error correction codewords</string>
        </property>
       </widget>
      </item>
-     <item row="1" column="1" >
-      <widget class="QComboBox" name="cmbMQRECC" >
+     <item row="1" column="1">
+      <widget class="QComboBox" name="cmbMQRECC">
        <property name="toolTip">
         <string>Set percentage of capacity to use for
 error correction codewords</string>
@@ -92,24 +92,24 @@ error correction codewords</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>~20% (Level L)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>~37% (Level M)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>~55% (Level Q)</string>
         </property>
        </item>
       </widget>
      </item>
      <item row="2" column="0">
-      <widget class="QLabel" name="labelMQRMask">
+      <widget class="QLabel" name="lblMQRMask">
        <property name="text">
         <string>&amp;Mask:</string>
        </property>
@@ -170,14 +170,14 @@ and Latin data</string>
     </widget>
    </item>
    <item>
-    <spacer name="verticalSpacer" >
-     <property name="orientation" >
+    <spacer name="vSpacerMQR">
+     <property name="orientation">
       <enum>Qt::Vertical</enum>
      </property>
      <property name="sizeType">
       <enum>QSizePolicy::MinimumExpanding</enum>
      </property>
-     <property name="sizeHint" stdset="0" >
+     <property name="sizeHint" stdset="0">
       <size>
        <width>20</width>
        <height>50</height>

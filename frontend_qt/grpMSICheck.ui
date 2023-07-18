@@ -1,7 +1,7 @@
-<ui version="4.0" >
+<ui version="4.0">
  <class>grpMSICheck</class>
- <widget class="QWidget" name="grpMSICheck" >
-  <property name="geometry" >
+ <widget class="QWidget" name="grpMSICheck">
+  <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
@@ -15,21 +15,36 @@
     <height>16777215</height>
    </size>
   </property>
-  <property name="windowTitle" >
+  <property name="windowTitle">
    <string>Form</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" >
+  <layout class="QVBoxLayout" name="vLayoutMSI">
+   <property name="contentMargins">
+    <number>0</number>
+   </property>
+   <property name="leftMargin">
+    <number>0</number>
+   </property>
+   <property name="topMargin">
+    <number>0</number>
+   </property>
+   <property name="rightMargin">
+    <number>0</number>
+   </property>
+   <property name="bottomMargin">
+    <number>0</number>
+   </property>
    <item>
-    <layout class="QHBoxLayout" name="horizontalLayout" >
+    <layout class="QHBoxLayout" name="hLayoutMSI">
      <item>
-      <widget class="QLabel" name="lblMSICheck" >
-       <property name="text" >
+      <widget class="QLabel" name="lblMSICheck">
+       <property name="text">
         <string>&amp;Check Digit:</string>
        </property>
-       <property name="alignment" >
+       <property name="alignment">
         <set>Qt::AlignLeading|Qt::AlignLeft|Qt::AlignVCenter</set>
        </property>
-       <property name="buddy" >
+       <property name="buddy">
         <cstring>cmbMSICheck</cstring>
        </property>
        <property name="toolTip">
@@ -40,44 +55,44 @@ Mod-11 (NCR) uses NCR weightings</string>
       </widget>
      </item>
      <item>
-      <widget class="QComboBox" name="cmbMSICheck" >
+      <widget class="QComboBox" name="cmbMSICheck">
        <property name="toolTip">
         <string>Mod-10 uses Luhn algorithm
 Mod-11 (IBM) uses IBM weightings
 Mod-11 (NCR) uses NCR weightings</string>
        </property>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>None</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-10</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-10 &amp; Mod-10</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-11 (IBM)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-11 (IBM) &amp; Mod-10</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-11 (NCR)</string>
         </property>
        </item>
        <item>
-        <property name="text" >
+        <property name="text">
          <string>Mod-11 (NCR) &amp; Mod-10</string>
         </property>
        </item>
@@ -98,19 +113,6 @@ in Human Readable Text</string>
       <bool>false</bool>
      </property>
     </widget>
-   </item>
-   <item>
-    <spacer name="verticalSpacer" >
-     <property name="orientation" >
-      <enum>Qt::Vertical</enum>
-     </property>
-     <property name="sizeHint" stdset="0" >
-      <size>
-       <width>20</width>
-       <height>31</height>
-      </size>
-     </property>
-    </spacer>
    </item>
   </layout>
  </widget>

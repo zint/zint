@@ -248,7 +248,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 
     counter = 0;
 
-    if ((symbol->option_2 < 0) || (symbol->option_2 > 1)) {
+    if ((symbol->option_2 < 0) || (symbol->option_2 > 2)) {
         symbol->option_2 = 0;
     }
 
@@ -281,7 +281,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         counter += posns[i];
     }
 
-    if (symbol->option_2 == 1) {
+    if (symbol->option_2 == 1 || symbol->option_2 == 2) { /* Visible or hidden check digit */
 
         char check_digit;
         counter %= 43;
@@ -294,8 +294,10 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
             check_digit = '_';
         }
 
-        localstr[0] = check_digit;
-        localstr[1] = '\0';
+        if (symbol->option_2 == 1) { /* Visible check digit */
+            localstr[0] = check_digit;
+            localstr[1] = '\0';
+        }
         if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", check_digit);
     }
 
@@ -442,6 +444,7 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
 
     unsigned char buffer[85 * 2 + 1] = {0};
     unsigned char *b = buffer;
+    unsigned char check_digit = '\0';
     int i;
     int error_number;
 
@@ -469,9 +472,22 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     /* Then sends the buffer to the C39 function */
     error_number = code39(symbol, buffer, b - buffer);
 
+    /* Save visible check digit */
+    if (symbol->option_2 == 1) {
+        const int len = (int) ustrlen(symbol->text);
+        if (len > 0) {
+            check_digit = symbol->text[len - 1];
+        }
+    }
+
+    /* Copy over source to HRT, subbing space for unprintables */
     for (i = 0; i < length; i++)
         symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
-    symbol->text[length] = '\0'; /* Chops off check digit */
+
+    if (check_digit) {
+        symbol->text[i++] = check_digit;
+    }
+    symbol->text[i] = '\0';
 
     return error_number;
 }
