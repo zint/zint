@@ -505,7 +505,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 textoffset = guard_descent;
             }
         } else {
-            textoffset = font_height + text_gap + antialias_fudge;
+            textoffset = font_height + stripf(text_gap + antialias_fudge);
         }
     }
 

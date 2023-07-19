@@ -120,7 +120,8 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
     testStart("test_colour_get_rgb");
 
     for (i = 0; i < data_size; i++) {
-        unsigned char red, green, blue, alpha, rgb_alpha;
+        /* Suppress clang-16 run-time exception MemorySanitizer: use-of-uninitialized-value (fixed in clang-17) */
+        unsigned char red = 0, green = 0, blue = 0, alpha = 0, rgb_alpha = 0;
         int cyan, magenta, yellow, black;
         int have_alpha;
         char rgb[9];
@@ -356,7 +357,7 @@ static void test_out_putsf(const testCtx *const p_ctx) {
     int i;
 
     FILE *fp;
-    char buf[512];
+    char buf[512] = {0}; /* Suppress clang-16/17 run-time exception MemorySanitizer: use-of-uninitialized-value */
 
     testStart("test_out_putsf");
 
