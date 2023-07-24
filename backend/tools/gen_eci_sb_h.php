@@ -2,24 +2,19 @@
 /* Generate ECI single-byte tables & routines from unicode.org mapping files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
  * To create "backend/eci_sb.h" (from project root directory):
  *
  *   php backend/tools/gen_eci_sb_h.php
- *
- * Requires "8859-*.TXT" from https://unicode.org/Public/MAPPINGS/ISO8859/
- * and "CP1250/1/2/6.TXT" from https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/
- * to be in "backend/tools/data" directory.
  */
 
 $basename = basename(__FILE__);
 $dirname = dirname(__FILE__);
 
 $opts = getopt('d:o:');
-$data_dirname = isset($opts['d']) ? $opts['d'] : ($dirname . '/data'); // Where to load file from.
 $out_dirname = isset($opts['o']) ? $opts['o'] : ($dirname . '/..'); // Where to put output.
 
 $out = array();
@@ -100,7 +95,7 @@ $tot_8859 = 0;
 for ($k = 2; $k <= 16; $k++) {
     if ($k == 12) continue;
 
-    $file = $data_dirname . '/' . '8859-' . $k . '.TXT';
+    $file = 'https://unicode.org/Public/MAPPINGS/ISO8859/' . '8859-' . $k . '.TXT';
 
     if (($get = file_get_contents($file)) === false) {
         error_log($error = "$basename: ERROR: Could not read mapping file \"$file\"");
@@ -225,7 +220,7 @@ $tot_cp125x = 0;
 for ($k = 0; $k <= 6; $k++) {
     if ($k >= 3 && $k <= 5) continue;
 
-    $file = $data_dirname . '/' . 'CP125' . $k . '.TXT';
+    $file = 'https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/' . 'CP125' . $k . '.TXT';
 
     if (($get = file_get_contents($file)) === false) {
         error_log($error = "$basename: ERROR: Could not read mapping file \"$file\"");

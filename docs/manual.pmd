@@ -77,10 +77,10 @@ X-dimension
 :   The X-dimension of a symbol is the size (usually the width) of the smallest
     element. For a linear symbology this is the width of the smallest bar. For
     matrix symbologies it is the width of the smallest module (usually a
-    square). Barcode widths and heights are expressed in multiples of the
-    X-dimension. Most linear symbologies can have their height varied whereas
-    most matrix symbologies have a fixed width-to-height ratio where the height
-    is determined by the width.
+    square). Barcode widths and heights are expressed in X-dimensions. Most
+    linear symbologies can have their height varied whereas most matrix
+    symbologies have a fixed width-to-height ratio where the height is
+    determined by the width.
 
 GS1 data
 
@@ -320,7 +320,7 @@ here. For details, see [6.3 GS1 Composite Symbols (ISO 24723)].
 For symbologies that support ECIs (Extended Channel Interpretations) the middle
 of the Data tab is an area for entering additional data segments with their own
 ECIs. Up to 4 segments (including the main `"Data to Encode"` as segment 0) may
-be specified. See [4.15 Multiple Segments] for details.
+be specified. See [4.16 Multiple Segments] for details.
 
 ## 3.4 Symbology-specific Groupbox
 
@@ -347,8 +347,8 @@ A second tab appears for those symbologies with more than a few extra options.
 Here is shown the options available for an Aztec Code symbol.
 
 You can adjust its size or error correction level (see [6.6.8 Aztec Code (ISO
-24778)]), select how its data is to be treated (see [4.10 Input Modes]), and set
-it as part of a Structured Append sequence of symbols (see [4.16 Structured
+24778)]), select how its data is to be treated (see [4.11 Input Modes]), and set
+it as part of a Structured Append sequence of symbols (see [4.17 Structured
 Append]).
 
 ## 3.6 Appearance Tab
@@ -372,7 +372,8 @@ adjusted with `"Border Width"`, and whitespace can be adjusted both horizontally
 
 The size of the saved image can be specified with `"Printing Scale"`, and also
 by clicking the ![scaling](images/gui_scaling.png){.btn} icon to invoke the Set
-Printing Scale Dialog - see [4.9 Adjusting Image Size] for further details.
+Printing Scale Dialog - see [4.9 Adjusting Image Size (X-dimension)] for further
+details.
 
 ![Adjusting the Print Size](images/gui_set_printing_scale.png){.pop}
 
@@ -512,7 +513,7 @@ output file will be `"out.gif"`.
 The data input to the Zint CLI is assumed to be encoded in UTF-8 (Unicode)
 format (Zint will correctly handle UTF-8 data on Windows). If you are encoding
 characters beyond the 7-bit ASCII set using a scheme other than UTF-8 then you
-will need to set the appropriate input options as shown in [4.10 Input Modes]
+will need to set the appropriate input options as shown in [4.11 Input Modes]
 below.
 
 Non-printing characters can be entered on the command line using backslash (`\`)
@@ -584,7 +585,7 @@ zint -i somefile.txt
 
 To read from stdin specify a single hyphen `"-"` as the input file.
 
-Note that except when batch processing (see [4.11 Batch Processing] below), the
+Note that except when batch processing (see [4.12 Batch Processing] below), the
 file (or stdin) should not end with a newline (`LF` on Unix, `CR+LF` on Windows)
 unless you want the newline to be encoded in the symbol.
 
@@ -918,7 +919,8 @@ will produce a barcode of height 32X, with each of the 8 rows 4X high.
 ## 4.5 Adjusting Whitespace
 
 The amount of horizontal whitespace to the left and right of the generated
-barcode can be altered using the `-w` or `--whitesp` switch. For example:
+barcode can be altered using the `-w` or `--whitesp` switch, in integral
+multiples of the X-dimension. For example:
 
 ```bash
 zint -w 10 -d "This Text"
@@ -928,7 +930,8 @@ This specifies a whitespace width of 10 times the X-dimension of the symbol both
 to the left and to the right of the barcode.
 
 The amount of vertical whitespace above and below the barcode can be altered
-using the `--vwhitesp` switch. For example for 3 times the X-dimension:
+using the `--vwhitesp` switch, in integral multiples of the X-dimension. For
+example for 3 times the X-dimension:
 
 ```bash
 zint --vwhitesp=3 -d "This Text"
@@ -958,8 +961,8 @@ symbol by corrupting a scan if the scanning beam strays off the top or bottom of
 the symbol. Zint can also put a border right around the symbol and its
 horizontal whitespace with the `--box` option.
 
-The width of the boundary bars or box borders must be specified using the
-`--border` switch. For example:
+The width of the boundary bars or box borders, in integral multiples of the
+X-dimension, must be specified using the `--border` switch. For example:
 
 ```bash
 zint --box --border=10 -w 10 -d "This Text"
@@ -1063,35 +1066,42 @@ followed by the angle of rotation as shown below.
 
 ![`zint -d "This Text" --rotate=90`](images/code128_rotate90.svg){.lin}
 
-## 4.9 Adjusting Image Size
+## 4.9 Adjusting Image Size (X-dimension)
 
-The scale of the image can be altered using the `--scale` option followed by a
-multiple of the default X-dimension. The scale is multiplied by 2 (with the
-exception of MaxiCode) before being applied. The default scale is 1.
+The size of the image can be altered using the `--scale` option, which sets the
+X-dimension. The scale is multiplied by 2 (with the exception of MaxiCode)
+before being applied to the X-dimension. The default scale is 1.
 
 For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for EMF
 vector output, and by 2 otherwise (non-EMF vector output).
 
-For raster output, the default X-dimension is 2 pixels (except for MaxiCode, see
-[4.9.3 MaxiCode Raster Scaling] below). For example for PNG images a scale of 5
-will increase the X-dimension to 10 pixels. Scales for raster output should be
-given in increments of 0.5, i.e. 0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the
-X-dimension varying across the symbol due to interpolation. 0.5 increments are
-also faster to render.
+For non-Maxicode raster output, the default scale of 1 results in an X-dimension
+of 2 pixels. For example for non-Maxicode PNG images a scale of 5 will increase
+the X-dimension to 10 pixels. For Maxicode, see [4.9.3 MaxiCode Raster Scaling]
+below.
 
-The minimum scale for non-dotty raster output is 0.5, giving a minimum
-X-dimension of 1 pixel, and text will not be printed for scales less than 1. The
-minimum scale for raster output in dotty mode is 1 (see [4.14 Working with
-Dots]).
+Scales for non-Maxicode raster output should be given in increments of 0.5, i.e.
+0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the X-dimension varying across the
+symbol due to interpolation. 0.5 increments are also faster to render.
 
-The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2.
+The minimum scale for non-Maxicode raster output in non-dotty mode is 0.5,
+giving a minimum X-dimension of 1 pixel. The minimum scale for raster output in
+dotty mode is 1 (see [4.15 Working with Dots]). For raster output, text will not
+be printed for scales less than 1.
+
+The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2
+(or for Maxicode EMF output, 4).
 
 The maximum scale for both raster and vector is 200.
 
+Using measurable units to specify the X-dimension is often more useful, as
+discussed in the next section.
+
 ### 4.9.1 Scaling by X-dimension and Resolution
 
-An alternative way to specify the scale which takes these details into account
-is to use the `--scalexdimdp` option, which has the format
+An alternative way to specify the scale which takes the above details into
+account and uses measurable units is to use the `--scalexdimdp` option, which
+has the format
 
 ```
 --scalexdimdp=X[,R]
@@ -1154,9 +1164,35 @@ MaxiCode symbols have fixed size ranges of 24.82mm to 27.93mm in width, and
 zint -b MAXICODE -d "MaxiCode (19 chars)" --scalexdimdp=0,600dpi
 ```
 
-## 4.10 Input Modes
+## 4.10 Human Readable Text (HRT) Options
 
-### 4.10.1 Unicode, Data, and GS1 Modes
+For linear barcodes the text present in the output image can be removed by using
+the `--notext` option. Note also that for raster output text will not be printed
+for scales less than 1 (see [4.9 Adjusting Image Size (X-dimension)]).
+
+Text can be set to bold using the `--bold` option, or a smaller font can be
+substituted using the `--small` option. The `--bold` and `--small` options can
+be used together if required, but only for vector output.
+
+![`zint --bold -d "This Text" --small`](images/code128_small_bold.svg){.lin}
+
+The gap between the barcode and the text can be adjusted using the `--textgap`
+option, where the gap is given in X-dimensions (maximum 10X). A zero value uses
+the default gap (1X). Note that a very small gap may cause accented texts to
+overlap with the barcode:
+
+![`zint -d "Áccent" --textgap=0.1`](images/code128_textgap.svg){.lin}
+
+For SVG output, the font preferred by Zint (monospaced "OCR-B" for EAN/UPC,
+"Arimo" - a proportional sans-serif font metrically compatible with "Arial" -
+for all others) can be embedded in the file for portability using the
+`--embedfont` option:
+
+![`zint -d "Áccent" --embedfont`](images/code128_embedfont.svg){.lin}
+
+## 4.11 Input Modes
+
+### 4.11.1 Unicode, Data, and GS1 Modes
 
 By default all CLI input data is assumed to be encoded in UTF-8 format. Many
 barcode symbologies encode data using the Latin-1 (ISO/IEC 8859-1 plus ASCII)
@@ -1198,7 +1234,7 @@ to the yen sign (¥), and tilde (`~`) to overline (U+203E).
 If Zint encounters characters which can not be encoded using the default
 character encoding then it will take advantage of the ECI (Extended Channel
 Interpretations) mechanism to encode the data if the symbology supports it - see
-[4.10.2 Input Modes and ECI] below.
+[4.11.2 Input Modes and ECI] below.
 
 GS1 data can be encoded in a number of symbologies. Application Identifiers
 (AIs) should be enclosed in `[square brackets]` followed by the data to be
@@ -1229,7 +1265,7 @@ Symbols encoded with this option should be checked against decoders before they
 are used. The popular open-source ZXing decoder is known to exhibit this
 behaviour.
 
-### 4.10.2 Input Modes and ECI
+### 4.11.2 Input Modes and ECI
 
 If your data contains characters that are not in the default character set, you
 may encode it using an ECI-aware symbology and an ECI value from Table
@@ -1305,7 +1341,7 @@ insert the appropriate single-byte ECI if possible (ECIs 3 to 24, excluding ECI
 20), or failing that ECI 26 (UTF-8). A warning will be generated. This mechanism
 is not applied if the `--binary` option is given.
 
-Multiple ECIs can be specified using the `--segN` options - see [4.15 Multiple
+Multiple ECIs can be specified using the `--segN` options - see [4.16 Multiple
 Segments].
 
 Note: the `--eci=3` specification should only be used for special purposes.
@@ -1314,7 +1350,9 @@ Nevertheless, for ECI Code 3, this is not usually required, as this is the
 default encoding for most barcodes, which is also active without any ECI
 information.
 
-#### 4.10.2.1 Input Modes and ECI Example 1
+\clearpage
+
+#### 4.11.2.1 Input Modes and ECI Example 1
 
 The Euro sign U+20AC can be encoded in ISO/IEC 8859-15. The Euro sign has the
 ISO/IEC 8859-15 codepoint hex `"A4"`. It is encoded in UTF-8 as the hex
@@ -1341,7 +1379,7 @@ zint -b 71 --scale=10 --eci=17 -d "€"
 
 ![`zint -b DATAMATRIX --eci=17 -d "€"`](images/datamatrix_euro.svg){.i2d}
 
-#### 4.10.2.2 Input Modes and ECI Example 2
+#### 4.11.2.2 Input Modes and ECI Example 2
 
 The Chinese character with the Unicode codepoint U+5E38 can be encoded in Big5
 encoding. The Big5 representation of this character is the two hex bytes:
@@ -1371,7 +1409,7 @@ zint -b 71 --scale=10 --eci=28 -d "常"
 ![`zint -b DATAMATRIX --eci=28 -d "\u5E38"
 --esc`](images/datamatrix_big5.svg){.i2d}
 
-#### 4.10.2.3 Input Modes and ECI Example 3
+#### 4.11.2.3 Input Modes and ECI Example 3
 
 Some decoders (in particular mobile app ones) for QR Code assume UTF-8 encoding
 by default and do not support ECI. In this case supply UTF-8 data and use the
@@ -1384,7 +1422,7 @@ zint -b 58 --binary -d "UTF-8 data"
 ![`zint -b QRCODE --binary -d "\xE2\x82\xAC\xE5\xB8\xB8"
 --esc`](images/qrcode_binary_utf8.svg){.i2d}
 
-## 4.11 Batch Processing
+## 4.12 Batch Processing
 
 Data can be batch processed by reading from a text file and producing a
 separate barcode image for each line of text in that file. To do this use the
@@ -1446,9 +1484,9 @@ Input                    Filenames Generated
 Table: {#tbl:batch_dir_examples tag=": Batch Directory Examples"}
 
 For an alternative method of naming output files see the `--mirror` option in
-[4.13 Automatic Filenames] below.
+[4.14 Automatic Filenames] below.
 
-## 4.12 Direct Output to stdout
+## 4.13 Direct Output to stdout
 
 The finished image files can be output directly to stdout for use as part of a
 pipe by using the `--direct` option. By default `--direct` will output data as a
@@ -1469,7 +1507,7 @@ in a pipe can have unpredictable results. Use with care!
 
 * * *
 
-## 4.13 Automatic Filenames
+## 4.14 Automatic Filenames
 
 The `--mirror` option instructs Zint to use the data to be encoded as an
 indicator of the filename to be used. This is particularly useful if you are
@@ -1481,26 +1519,26 @@ so the filename may vary from the data if the data includes non-printable
 characters, for example, and may be shortened if the data input is long.
 
 To set the output file format use the `--filetype` option as detailed above in
-[4.12 Direct Output to stdout]. To output to a specific directory use the `-o`
+[4.13 Direct Output to stdout]. To output to a specific directory use the `-o`
 option giving the name of the directory (any filename will be ignored, unless
 `--filetype` is not specified, in which case the filename's extension will be
 used).
 
-## 4.14 Working with Dots
+## 4.15 Working with Dots
 
 Matrix codes can be rendered as a series of dots or circles rather than the
 normal squares by using the `--dotty` option. This option is only available for
 matrix symbologies, and is automatically selected for DotCode. The size of the
 dots can be adjusted using the `--dotsize` option followed by the diameter of
-the dot, where that diameter is given as a multiple of the X-dimension. The
-minimum dot size is 0.01, the maximum is 20. The default size is 0.8.
+the dot, where that diameter is in X-dimensions. The minimum dot size is 0.01,
+the maximum is 20. The default size is 0.8.
 
 The default and minimum scale for raster output in dotty mode is 1.
 
 ![`zint -b CODEONE -d "123456789012345678" --dotty
 --vers=9`](images/codeone_s_dotty.svg){.dotty}
 
-## 4.15 Multiple Segments
+## 4.16 Multiple Segments
 
 If you need to specify different ECIs for different sections of the input data,
 the `--seg1` to `--seg9` options can be used. Each option is of the form
@@ -1523,11 +1561,11 @@ Naturally the symbology must be ECI-aware (see Table
 --seg2=20,"文章"`](images/aztec_segs.svg){.i2d}
 
 ECIs of zero may be given, in which case Zint will automatically determine an
-ECI if necessary, as described in section [4.10.2 Input Modes and ECI].
+ECI if necessary, as described in section [4.11.2 Input Modes and ECI].
 
 Multiple segments are not currently supported for use with GS1 data.
 
-## 4.16 Structured Append
+## 4.17 Structured Append
 
 Structured Append is a method of splitting data among several symbols so that
 they form a sequence that can be scanned and re-assembled in the correct order
@@ -1550,31 +1588,6 @@ is an optional identifier (not available for Code One, DotCode or MaxiCode) that
 is the same for all symbols belonging to the same sequence. The index is 1-based
 and goes from 1 to count. Count must be 2 or more. See the individual
 symbologies for further details.
-
-## 4.17 Human Readable Text (HRT) Options
-
-For linear barcodes the text present in the output image can be removed by using
-the `--notext` option.
-
-Text can be set to bold using the `--bold` option, or a smaller font can be
-substituted using the `--small` option. The `--bold` and `--small` options can
-be used together if required, but only for vector output.
-
-![`zint --bold -d "This Text" --small`](images/code128_small_bold.svg){.lin}
-
-The gap between the barcode and the text can be adjusted using the `--textgap`
-option, where the gap is given as a multiple of the X-dimension (maximum 10X). A
-zero value uses the default gap (1X). Note that a very small gap may cause
-accented texts to overlap with the barcode:
-
-![`zint -d "Áccent" --textgap=0.1`](images/code128_textgap.svg){.lin}
-
-For SVG output, the font preferred by Zint (monospaced "OCR-B" for EAN/UPC,
-"Arimo" - a proportional sans-serif font metrically compatible with "Arial" -
-for all others) can be embedded in the file for portability using the
-`--embedfont` option:
-
-![`zint -d "Áccent" --embedfont`](images/code128_embedfont.svg){.lin}
 
 ## 4.18 Help Options
 
@@ -2727,11 +2740,11 @@ error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
 ![`zint -b UPCA --compliantheight -d "72527270270+12345"
 --guardwhitespace`](images/upca_5_gws.svg){.upcean}
 
-You can adjust the gap between the main symbol and an add-on in multiples of the
-X-dimension by setting `--addongap` (API `option_2`) to a value between 9
-(default) and 12. The height in X-dimensions that the guard bars descend below
-the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
-to a value between 0 and 20 (default 5).
+You can adjust the gap between the main symbol and an add-on in integral
+multiples of the X-dimension by setting `--addongap` (API `option_2`) to a value
+between 9 (default) and 12. The height in X-dimensions that the guard bars
+descend below the main bars can be adjusted by setting `--guarddescent` (API
+`guard_descent`) to a value between 0 and 20 (default 5).
 
 #### 6.1.3.2 UPC Version E
 
@@ -2768,11 +2781,11 @@ zint -b UPCE -d "1123456+12" --guardwhitespace
 ![`zint -b UPCE --compliantheight -d "1123456+12"
 --guardwhitespace`](images/upce_2_gws.svg){.upcean}
 
-You can adjust the gap between the main symbol and an add-on in multiples of the
-X-dimension by setting `--addongap` (API `option_2`) to a value between 7
-(default) and 12. The height in X-dimensions that the guard bars descend below
-the main bars can be adjusted by setting `--guarddescent` (API `guard_descent`)
-to a value between 0 and 20 (default 5).
+You can adjust the gap between the main symbol and an add-on in integral
+multiples of the X-dimension by setting `--addongap` (API `option_2`) to a value
+between 7 (default) and 12. The height in X-dimensions that the guard bars
+descend below the main bars can be adjusted by setting `--guarddescent` (API
+`guard_descent`) to a value between 0 and 20 (default 5).
 
 ### 6.1.4 EAN (European Article Number) (ISO 15420)
 
@@ -3312,8 +3325,8 @@ use the option `--notext` (API `show_hrt = 0`).
 
 The stacked barcode rows can be separated by row separator bars by specifying
 `--bind` (API `output_options |= BARCODE_BIND`). The height of the row separator
-bars in multiples of the X-dimension (minimum and default 1, maximum 4) can be
-set by `--separator` (API `option_3`):
+bars in integral multiples of the X-dimension (minimum and default 1, maximum 4)
+can be set by `--separator` (API `option_3`):
 
 ```bash
 zint --bind --notext --separator=2 -d "This" -d "That"
@@ -3380,7 +3393,7 @@ FAST_MODE`) may be used.
 
 PDF417 supports Structured Append of up to 99,999 symbols and an optional
 numeric ID of up to 30 digits, which can be set by using the `--structapp`
-option (see [4.16 Structured Append]) (API `structapp`). The ID consists of up
+option (see [4.17 Structured Append]) (API `structapp`). The ID consists of up
 to 10 triplets, each ranging from `"000"` to `"899"`. For instance `"123456789"`
 would be a valid ID of 3 triplets. However `"123456900"` would not, as the last
 triplet `"900"` exceeds `"899"`. The triplets are 0-filled, for instance
@@ -3864,7 +3877,7 @@ FAST_MODE`) may be used.
 
 Data Matrix supports Structured Append of up to 16 symbols and a numeric ID
 (file identifications), which can be set by using the `--structapp` option (see
-[4.16 Structured Append]) (API `structapp`). The ID consists of 2 numbers `ID1`
+[4.17 Structured Append]) (API `structapp`). The ID consists of 2 numbers `ID1`
 and `ID2`, each of which can range from 1 to 254, and is specified as the single
 number `ID1 * 1000 + ID2`, so for instance `ID1` `"123"` and `ID2` `"234"` would
 be given as `"123234"`. Note that both `ID1` and `ID2` must be non-zero, so e.g.
@@ -4002,7 +4015,7 @@ Zint to automatically select a mask to reduce the number of masks to try to four
 (0, 2, 4, 7).
 
 QR Code supports Structured Append of up to 16 symbols and a numeric ID
-(parity), which can be set by using the `--structapp` option (see [4.16
+(parity), which can be set by using the `--structapp` option (see [4.17
 Structured Append]) (API `structapp`). The parity ID ranges from 0 (default) to
 255, and for full compliance should be set to the value obtained by `XOR`-ing
 together each byte of the complete data forming the sequence. Currently this
@@ -4248,7 +4261,7 @@ Table: {#tbl:maxicode_data_length_maxima tag=": MaxiCode Data Length Maxima"}
 `*` - secondary only
 
 MaxiCode supports Structured Append of up to 8 symbols, which can be set by
-using the `--structapp` option (see [4.16 Structured Append]) (API `structapp`).
+using the `--structapp` option (see [4.17 Structured Append]) (API `structapp`).
 It does not support specifying an ID.
 
 MaxiCode uses a different scaling than other symbols for raster output, see
@@ -4316,7 +4329,7 @@ Industry Barcode (HIBC) data.
 
 Aztec Code supports Structured Append of up to 26 symbols and an optional
 alphanumeric ID of up to 32 characters, which can be set by using the
-`--structapp` option (see [4.16 Structured Append]) (API `structapp`). The ID
+`--structapp` option (see [4.17 Structured Append]) (API `structapp`). The ID
 cannot contain spaces. If an ID is not given, no ID is encoded.
 
 ### 6.6.9 Aztec Runes (ISO 24778)
@@ -4369,7 +4382,7 @@ Version S symbols can only encode numeric data. The width of version S and
 version T symbols is determined by the length of the input data.
 
 Code One supports Structured Append of up to 128 symbols, which can be set by
-using the `--structapp` option (see [4.16 Structured Append]) (API `structapp`).
+using the `--structapp` option (see [4.17 Structured Append]) (API `structapp`).
 It does not support specifying an ID. Structured Append is not supported with
 GS1 data nor for Version S symbols.
 
@@ -4417,7 +4430,7 @@ Non-ASCII data density may be maximized by using the `--fullmultibyte` switch
 supports this before using.
 
 Grid Matrix supports Structured Append of up to 16 symbols and a numeric ID
-(file signature), which can be set by using the `--structapp` option (see [4.16
+(file signature), which can be set by using the `--structapp` option (see [4.17
 Structured Append]) (API `structapp`). The ID ranges from 0 (default) to 255.
 
 ### 6.6.12 DotCode
@@ -4442,7 +4455,7 @@ selected automatically by Zint but may be manually specified by using the
 setting `option_3 = (N + 1) << 8` where N is 0-7.
 
 DotCode supports Structured Append of up to 35 symbols, which can be set by
-using the `--structapp` option (see [4.16 Structured Append]) (API `structapp`).
+using the `--structapp` option (see [4.17 Structured Append]) (API `structapp`).
 It does not support specifying an ID.
 
 ### 6.6.13 Han Xin Code (ISO 20830)
@@ -4550,7 +4563,7 @@ Revision 2 of Ultracode (2021) which swops and inverts the DCCU and DCCL tiles
 may be specified using `--vers=2` (API `option_2 = 2`).
 
 Ultracode supports Structured Append of up to 8 symbols and an optional numeric
-ID (File Number), which can be set by using the `--structapp` option (see [4.16
+ID (File Number), which can be set by using the `--structapp` option (see [4.17
 Structured Append]) (API `structapp`). The ID ranges from 1 to 80088. If an ID
 is not given, no ID is encoded.
 

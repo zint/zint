@@ -1,0 +1,4 @@
+# GB2312.TXT not included as 176K in size. It can be extracted from
+# https://haible.de/bruno/charsets/conversion-tables/GB2312.tar.bz2
+# (see https://haible.de/bruno/charsets/conversion-tables/GB2312.html)
+# The version used is unicode.org-mappings/EASTASIA/GB/GB2312.TXT

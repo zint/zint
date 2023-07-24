@@ -2,7 +2,7 @@
 /* Generate ECI multibyte tables from unicode.org mapping files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 /*
@@ -13,6 +13,10 @@
  * NOTE: backend/tools/data/GB18030.TXT will have to be downloaded first from the tarball
  *       https://haible.de/bruno/charsets/conversion-tables/GB18030.tar.bz2
  *       using the version jdk-1.4.2/GB18030.TXT
+ *
+ * NOTE: tools/data/GB2312.TXT will have to be downloaded first from the tarball
+ *       https://haible.de/bruno/charsets/conversion-tables/GB2312.tar.bz2
+ *       using the version unicode.org-mappings/EASTASIA/GB/GB2312.TXT
  */
 // 'zend.assertions' should set to 1 in php.ini
 
@@ -167,7 +171,7 @@ $out = array();
 
 out_header($out, 'big5', 'Big5', 'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT', 2021);
 
-$file = $data_dirname . '/' . 'BIG5.TXT';
+$file = 'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/OTHER/BIG5.TXT';
 
 // Read the file.
 
@@ -242,7 +246,7 @@ $out = array();
 out_header($out, 'ksx1001', 'EUC-KR (KS X 1001)',
             'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/KSC/KSX1001.TXT', 2021);
 
-$file = $data_dirname . '/' . 'KSX1001.TXT';
+$file = 'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/KSC/KSX1001.TXT';
 
 // Read the file.
 
@@ -326,7 +330,7 @@ $out = array();
 
 out_header($out, 'sjis', 'Shift JIS', 'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT', 2009);
 
-$file = $data_dirname . '/' . 'SHIFTJIS.TXT';
+$file = 'https://unicode.org/Public/MAPPINGS/OBSOLETE/EASTASIA/JIS/SHIFTJIS.TXT';
 
 // Read the file.
 
@@ -489,7 +493,8 @@ $out = array();
 out_header($out, 'gbk', 'GBK, excluding mappings in GB 2312',
             'https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP936.TXT');
 
-$file = $data_dirname . '/' . 'CP936.TXT';
+// Note this has weird 0x80 mapping to U+20AC (EURO SIGN) which needs to be ignored
+$file = 'https://unicode.org/Public/MAPPINGS/VENDORS/MICSFT/WINDOWS/CP936.TXT';
 
 // Read the file.
 
@@ -513,7 +518,7 @@ foreach ($lines as $line) {
     $matches = array();
     if (preg_match('/^0x([0-9A-F]{2,4})[ \t]+0x([0-9A-F]{4})[ \t].*$/', $line, $matches)) {
         $d = hexdec($matches[1]);
-        if ($d < 0x80) {
+        if ($d <= 0x80) { // Ignore weird 0x80 mapping to U+20AC (EURO SIGN) if any (present in Unicode Public mapping file)
             continue;
         }
         $u = hexdec($matches[2]);

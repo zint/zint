@@ -112,8 +112,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--dotsize=NUMBER`
 
-:   Set the radius of the dots in dotty mode (`--dotty`). *NUMBER* is in multiples of the X-dimension, and may be
-    floating-point. The default is 0.8.
+:   Set the radius of the dots in dotty mode (`--dotty`). *NUMBER* is in X-dimensions, and may be floating-point. The
+    default is 0.8.
 
 `--dotty`
 
@@ -209,8 +209,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--guarddescent=NUMBER`
 
-:   For EAN/UPC symbols, set the height the guard bars descend below the main bars, where *NUMBER* is in multiples of
-    the X-dimension. *NUMBER* may be floating-point.
+:   For EAN/UPC symbols, set the height the guard bars descend below the main bars, where *NUMBER* is in X-dimensions.
+    *NUMBER* may be floating-point.
 
 `--guardwhitespace`
 
@@ -218,7 +218,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--height=NUMBER`
 
-:   Set the height of the symbol in multiples of the X-dimension. *NUMBER* may be floating-point.
+:   Set the height of the symbol in X-dimensions. *NUMBER* may be floating-point.
 
 `--heightperrow`
 
@@ -376,8 +376,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--textgap=NUMBER`
 
-:   Adjust the gap between the barcode and the Human Readable Text (HRT). *NUMBER* is in multiples of the X-dimension,
-    and may be floating-point. Maximum is 10; zero results in the default 1X being used.
+:   Adjust the gap between the barcode and the Human Readable Text (HRT). *NUMBER* is in X-dimensions, and may be
+    floating-point. Maximum is 10; zero results in the default 1X being used.
 
 `--vers=INTEGER`
 
