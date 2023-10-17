@@ -46,7 +46,7 @@ if(WIN32)
     target_sources(${PROJECT_NAME} PRIVATE res/qtZint.rc)
 endif()
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend" "${CMAKE_SOURCE_DIR}/backend_qt")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../backend" "${CMAKE_CURRENT_SOURCE_DIR}/../backend_qt")
 
 if(ZINT_SHARED)
     target_link_libraries(${PROJECT_NAME} zint)

@@ -18,3 +18,6 @@ win32/Debug
 win32/Release
 win32/x64
 extern/*
+
+.vscode/
+out/

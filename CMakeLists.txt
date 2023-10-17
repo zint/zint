@@ -15,18 +15,20 @@ set(ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_REL
 
 add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/modules")
+set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
 
-option(ZINT_DEBUG    "Set debug compile flags"         OFF)
-option(ZINT_NOOPT    "Set no optimize compile flags"   OFF)
-option(ZINT_SANITIZE "Set sanitize compile/link flags" OFF)
-option(ZINT_TEST     "Set test compile flag"           OFF)
-option(ZINT_COVERAGE "Set code coverage flags"         OFF)
-option(ZINT_SHARED   "Build shared library"            ON)
-option(ZINT_STATIC   "Build static library"            OFF)
-option(ZINT_USE_PNG  "Build with PNG support"          ON)
-option(ZINT_USE_QT   "Build with Qt support"           ON)
-option(ZINT_QT6      "If ZINT_USE_QT, use Qt6"         OFF)
+option(ZINT_DEBUG     "Set debug compile flags"         OFF)
+option(ZINT_NOOPT     "Set no optimize compile flags"   OFF)
+option(ZINT_SANITIZE  "Set sanitize compile/link flags" OFF)
+option(ZINT_TEST      "Set test compile flag"           OFF)
+option(ZINT_COVERAGE  "Set code coverage flags"         OFF)
+option(ZINT_SHARED    "Build shared library"            ON)
+option(ZINT_STATIC    "Build static library"            OFF)
+option(ZINT_USE_PNG   "Build with PNG support"          ON)
+option(ZINT_USE_QT    "Build with Qt support"           ON)
+option(ZINT_QT6       "If ZINT_USE_QT, use Qt6"         OFF)
+option(ZINT_UNINSTALL "Add uninstall target"            ON)
+option(ZINT_FRONTEND  "Build frontend"                  ON)
 
 if(NOT ZINT_SHARED AND NOT ZINT_STATIC)
     message(SEND_ERROR "Either ZINT_SHARED or ZINT_STATIC or both must be set")
@@ -143,7 +145,9 @@ if(NOT HAVE_GETOPT)
 endif()
 
 add_subdirectory(backend)
-add_subdirectory(frontend)
+if(ZINT_FRONTEND)
+    add_subdirectory(frontend)
+endif()
 
 if(NOT ZINT_USE_QT)
     message(STATUS "Qt support was disabled for this build")
@@ -184,13 +188,15 @@ else()
     endif()
 endif()
 
-configure_file(
-  "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
-  "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
-  IMMEDIATE @ONLY)
-
-add_custom_target(uninstall
-  "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+if(ZINT_UNINSTALL)
+    configure_file(
+      "${CMAKE_CURRENT_SOURCE_DIR}/cmake_uninstall.cmake.in"
+      "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake"
+      IMMEDIATE @ONLY)
+    
+    add_custom_target(uninstall
+      "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
+endif()
 
 # staniek: don't install
 if(DATA_INSTALL_DIR)

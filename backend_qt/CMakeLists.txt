@@ -17,7 +17,7 @@ add_library(${PROJECT_NAME} STATIC ${QZint_SRCS})
 set_target_properties(${PROJECT_NAME} PROPERTIES  SOVERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}"
                                         VERSION ${ZINT_VERSION})
 
-target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_SOURCE_DIR}/backend")
+target_include_directories(${PROJECT_NAME} PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/../backend")
 
 if(ZINT_SHARED)
     target_link_libraries(${PROJECT_NAME} zint)
