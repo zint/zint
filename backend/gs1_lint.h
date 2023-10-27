@@ -299,6 +299,16 @@ static int n6_yymmdd(const unsigned char *data, const int data_len,
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0);
 }
 
+/* N6 [X1],hyphen (Used by MAX TEMP F., MAX TEMP C., MIN TEMP F., MIN TEMP C.) */
+static int n6__x1__hyphen(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 6 && data_len <= 7
+            && hyphen(data, data_len, 6, 0, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
+            && cset82(data, data_len, 6, 0, 1, p_err_no, p_err_posn, err_msg)
+            && hyphen(data, data_len, 6, 0, 1, p_err_no, p_err_posn, err_msg, 0);
+}
+
 /* N13 (Used by NSN) */
 static int n13(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -747,6 +757,9 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 4326) {
             return n6_yymmdd(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai >= 4330 && ai <= 4333) {
+            return n6__x1__hyphen(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 7100) {

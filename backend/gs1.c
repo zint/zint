@@ -1271,7 +1271,7 @@ static int longitude(const unsigned char *data, int data_len, int offset, int mi
     return 1;
 }
 
-/* Check AIDC media type (GSCN-22-345 Figure 3.8.22-2) */
+/* Check AIDC media type (GSCN 22-345 Figure 3.8.22-2) */
 static int mediatype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
@@ -1295,6 +1295,33 @@ static int mediatype(const unsigned char *data, int data_len, int offset, int mi
             *p_err_posn = d - data + 1;
             strcpy(err_msg, "Invalid AIDC media type");
             return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check negative temperature indicator (GSCN 22-353) */
+static int hyphen(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+
+        for (; d < de; d++) {
+            if (*d != '-') {
+                *p_err_no = 3;
+                *p_err_posn = d - data + 1;
+                strcpy(err_msg, "Invalid temperature indicator (hyphen only)");
+                return 0;
+            }
         }
     }
 
