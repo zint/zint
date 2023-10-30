@@ -106,9 +106,15 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 :   Send output to stdout, which in most cases should be re-directed to a pipe or a file. Use `--filetype` to specify
     output format.
 
+`--dmiso144`
+
+:   For Data Matrix symbols, use the standard ISO/IEC codeword placement for 144 x 144 (`--vers=24`) sized symbols,
+    instead of the default "de facto" placement (which rotates the placement of ECC codewords).
+
 `--dmre`
 
-:   For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE) sizes when considering automatic sizes.
+:   For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE) sizes when considering automatic sizes. See
+    also `--square`.
 
 `--dotsize=NUMBER`
 
@@ -361,7 +367,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--square`
 
-:   For Data Matrix symbols, exclude rectangular sizes when considering automatic sizes.
+:   For Data Matrix symbols, exclude rectangular sizes when considering automatic sizes. See also `--dmre`.
 
 `--structapp=I,C[,ID]`
 

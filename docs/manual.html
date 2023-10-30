@@ -13,6 +13,7 @@
       background-color: #ffffff;
     }
     body {
+      line-height: 1.2;
       margin: 0 auto;
       max-width: 50em;
       padding-left: 50px;
@@ -4940,7 +4941,7 @@ aria-hidden="true"><code>zint -b CHANNEL -d "453678" --compliantheight</code></f
 in the symbol can be between 3 and 8 and this can be specified by
 setting the value of the <code>--vers</code> option (API
 <code>option_2</code>). It can also be determined by the length of the
-input data e.g. a three character input string generates a 4 channel
+input data: e.g. a three character input string generates a 4 channel
 code by default.</p>
 <p>The maximum values permitted depend on the number of channels used as
 shown in the table below:</p>
@@ -5920,6 +5921,10 @@ option <code>--dmre</code> (API <code>option_3 = DM_DMRE</code>).</p>
 <p>GS1 data may be encoded using FNC1 (default) or GS (Group Separator,
 ASCII 29) as separator. Use the option <code>--gssep</code> to change to
 GS (API <code>output_options |= GS1_GS_SEPARATOR</code>).</p>
+<p>By default Zint uses a “de facto” codeword placement for symbols of
+size 144 x 144 (version 24). To override this and use the now clarified
+ISO/IEC standard placement, use option <code>--dmiso144</code> (API
+<code>option_3 |= DM_ISO_144</code>).</p>
 <p>For a faster but less optimal encoding, the <code>--fast</code>
 option (API <code>input_mode |= FAST_MODE</code>) may be used.</p>
 <p>Data Matrix supports Structured Append of up to 16 symbols and a
@@ -8661,10 +8666,18 @@ anything.</p>
 pipe or a file. Use <code>--filetype</code> to specify output
 format.</p>
 </dd>
+<dt><code>--dmiso144</code></dt>
+<dd>
+<p>For Data Matrix symbols, use the standard ISO/IEC codeword placement
+for 144 x 144 (<code>--vers=24</code>) sized symbols, instead of the
+default “de facto” placement (which rotates the placement of ECC
+codewords).</p>
+</dd>
 <dt><code>--dmre</code></dt>
 <dd>
 <p>For Data Matrix symbols, allow Data Matrix Rectangular Extended
-(DMRE) sizes when considering automatic sizes.</p>
+(DMRE) sizes when considering automatic sizes. See also
+<code>--square</code>.</p>
 </dd>
 <dt><code>--dotsize=NUMBER</code></dt>
 <dd>
@@ -8954,7 +8967,7 @@ default is zero.</p>
 <dt><code>--square</code></dt>
 <dd>
 <p>For Data Matrix symbols, exclude rectangular sizes when considering
-automatic sizes.</p>
+automatic sizes. See also <code>--dmre</code>.</p>
 </dd>
 <dt><code>--structapp=I,C[,ID]</code></dt>
 <dd>

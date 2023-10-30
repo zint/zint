@@ -170,6 +170,8 @@
 - Added -textgap option
 2023-08-11 GL
 - Added -guardwhitespace option
+2023-10-30 GL
+- Added -dmiso144 option
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -511,6 +513,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "   -cols integer: Codablock F, DotCode, PDF417: number of columns\n"
     "   -compliantheight bool: warn if height not compliant, and use standard default\n"
     /* cli option --data is standard parameter */
+    "   -dmiso144 bool: Use ISO format for 144x144 Data Matrix symbols\n"
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
     "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
     "   -dotty bool: use dots instead of boxes for matrix codes\n"
@@ -790,7 +793,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         /* Option list and indexes */
         static const char *optionList[] = {
             "-addongap", "-barcode", "-bg", "-bind", "-bindtop", "-bold", "-border", "-box",
-            "-cols", "-compliantheight", "-dmre", "-dotsize", "-dotty",
+            "-cols", "-compliantheight", "-dmiso144", "-dmre", "-dotsize", "-dotty",
             "-eci", "-esc", "-extraesc", "-fast", "-fg", "-format", "-fullmultibyte",
             "-gs1nocheck", "-gs1parens", "-gssep", "-guarddescent", "-guardwhitespace",
             "-height", "-heightperrow", "-init", "-mask", "-mode",
@@ -802,7 +805,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             NULL};
         enum iOption {
             iAddonGap, iBarcode, iBG, iBind, iBindTop, iBold, iBorder, iBox,
-            iCols, iCompliantHeight, iDMRE, iDotSize, iDotty,
+            iCols, iCompliantHeight, iDMISO144, iDMRE, iDotSize, iDotty,
             iECI, iEsc, iExtraEsc, iFast, iFG, iFormat, iFullMultiByte,
             iGS1NoCheck, iGS1Parens, iGSSep, iGuardDescent, iGuardWhitespace,
             iHeight, iHeightPerRow, iInit, iMask, iMode,
@@ -832,6 +835,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iBold:
         case iBox:
         case iCompliantHeight:
+        case iDMISO144:
         case iDMRE:
         case iDotty:
         case iEsc:
@@ -1138,12 +1142,16 @@ static int Encode(Tcl_Interp *interp, int objc,
         case iSquare:
             /* DM_SQUARE overwrites DM_DMRE */
             if (intValue)
-                my_symbol->option_3 = DM_SQUARE;
+                my_symbol->option_3 = DM_SQUARE | (my_symbol->option_3 & ~0x7F);
             break;
         case iDMRE:
             /* DM_DMRE overwrites DM_SQUARE */
             if (intValue)
-                my_symbol->option_3 = DM_DMRE;
+                my_symbol->option_3 = DM_DMRE | (my_symbol->option_3 & ~0x7F);
+            break;
+        case iDMISO144:
+            if (intValue)
+                my_symbol->option_3 |= DM_ISO_144;
             break;
         case iScale:
             if (doubleValue < 0.01) {

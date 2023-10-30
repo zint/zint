@@ -1037,7 +1037,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     }
     if (debug_print) {
-        printf("EC%d codewords: %d\n", ecc_level + 1, qcc);
+        printf("EC%d codewords: %d\n", ecc_level, qcc);
     }
 
     acc = qcc - 3;
@@ -1128,7 +1128,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     codeword[locn++] = qcc; /* QCC */
 
     if (debug_print) {
-        fputs("Rearranged codewords with ECC:\n", stdout);
+        printf("Rearranged codewords with ECC (%d):\n", locn);
         for (i = 0; i < locn; i++) {
             printf(" %d", codeword[i]);
         }

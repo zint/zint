@@ -135,9 +135,16 @@ Send output to stdout, which in most cases should be re-directed to a
 pipe or a file.
 Use \f[V]--filetype\f[R] to specify output format.
 .TP
+\f[V]--dmiso144\f[R]
+For Data Matrix symbols, use the standard ISO/IEC codeword placement for
+144 x 144 (\f[V]--vers=24\f[R]) sized symbols, instead of the default
+\[lq]de facto\[rq] placement (which rotates the placement of ECC
+codewords).
+.TP
 \f[V]--dmre\f[R]
 For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE)
 sizes when considering automatic sizes.
+See also \f[V]--square\f[R].
 .TP
 \f[V]--dotsize=NUMBER\f[R]
 Set the radius of the dots in dotty mode (\f[V]--dotty\f[R]).
@@ -438,6 +445,7 @@ Use small text for Human Readable Text (HRT).
 \f[V]--square\f[R]
 For Data Matrix symbols, exclude rectangular sizes when considering
 automatic sizes.
+See also \f[V]--dmre\f[R].
 .TP
 \f[V]--structapp=I,C[,ID]\f[R]
 Set Structured Append info, where \f[I]I\f[R] is the 1-based index,

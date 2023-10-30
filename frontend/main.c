@@ -159,17 +159,18 @@ static void usage(const int no_png) {
            "  --compliantheight     Warn if height not compliant, and use standard default\n"
            "  -d, --data=DATA       Set the symbol data content (segment 0)\n"
            "  --direct              Send output to stdout\n", stdout);
-    fputs( "  --dmre                Allow Data Matrix Rectangular Extended\n"
+    fputs( "  --dmiso144            Use ISO format for 144x144 Data Matrix symbols\n"
+           "  --dmre                Allow Data Matrix Rectangular Extended\n"
            "  --dotsize=NUMBER      Set radius of dots in dotty mode\n"
            "  --dotty               Use dots instead of squares for matrix symbols\n"
-           "  --dump                Dump hexadecimal representation to stdout\n"
-           "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n", stdout);
-    fputs( "  --eci=INTEGER         Set the ECI code for the data (segment 0)\n"
+           "  --dump                Dump hexadecimal representation to stdout\n", stdout);
+    fputs( "  -e, --ecinos          Display ECI (Extended Channel Interpretation) table\n"
+           "  --eci=INTEGER         Set the ECI code for the data (segment 0)\n"
            "  --embedfont           Embed font in vector output (SVG only)\n"
            "  --esc                 Process escape sequences in input data\n"
-           "  --extraesc            Process symbology-specific escape sequences (Code 128)\n"
-           "  --fast                Use faster encodation or other shortcuts if available\n", stdout);
-    fputs( "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
+           "  --extraesc            Process symbology-specific escape sequences (Code 128)\n", stdout);
+    fputs( "  --fast                Use faster encodation or other shortcuts if available\n"
+           "  --fg=COLOUR           Specify a foreground colour (as RGB(A) or \"C,M,Y,K\")\n", stdout);
     printf("  --filetype=TYPE       Set output file type BMP/EMF/EPS/GIF/PCX%s/SVG/TIF/TXT\n", no_png_type);
     fputs( "  --fullmultibyte       Use multibyte for binary/Latin (QR/Han Xin/Grid Matrix)\n"
            "  --gs1                 Treat input as GS1 compatible data\n"
@@ -1429,7 +1430,8 @@ int main(int argc, char **argv) {
     while (1) {
         enum options {
             OPT_ADDONGAP = 128, OPT_BATCH, OPT_BINARY, OPT_BG, OPT_BIND, OPT_BIND_TOP, OPT_BOLD, OPT_BORDER, OPT_BOX,
-            OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT, OPT_DIRECT, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
+            OPT_CMYK, OPT_COLS, OPT_COMPLIANTHEIGHT,
+            OPT_DIRECT, OPT_DMISO144, OPT_DMRE, OPT_DOTSIZE, OPT_DOTTY, OPT_DUMP,
             OPT_ECI, OPT_EMBEDFONT, OPT_ESC, OPT_EXTRAESC, OPT_FAST, OPT_FG, OPT_FILETYPE, OPT_FULLMULTIBYTE,
             OPT_GS1, OPT_GS1NOCHECK, OPT_GS1PARENS, OPT_GSSEP, OPT_GUARDDESCENT, OPT_GUARDWHITESPACE,
             OPT_HEIGHT, OPT_HEIGHTPERROW, OPT_INIT, OPT_MIRROR, OPT_MASK, OPT_MODE,
@@ -1457,6 +1459,7 @@ int main(int argc, char **argv) {
             {"compliantheight", 0, NULL, OPT_COMPLIANTHEIGHT},
             {"data", 1, NULL, 'd'},
             {"direct", 0, NULL, OPT_DIRECT},
+            {"dmiso144", 0, NULL, OPT_DMISO144},
             {"dmre", 0, NULL, OPT_DMRE},
             {"dotsize", 1, NULL, OPT_DOTSIZE},
             {"dotty", 0, NULL, OPT_DOTTY},
@@ -1602,10 +1605,13 @@ int main(int argc, char **argv) {
             case OPT_DIRECT:
                 my_symbol->output_options |= BARCODE_STDOUT;
                 break;
+            case OPT_DMISO144:
+                my_symbol->option_3 |= DM_ISO_144;
+                break;
             case OPT_DMRE:
                 /* Square overwrites DMRE */
-                if (my_symbol->option_3 != DM_SQUARE) {
-                    my_symbol->option_3 = DM_DMRE;
+                if ((my_symbol->option_3 & 0x7F) != DM_SQUARE) {
+                    my_symbol->option_3 = DM_DMRE | (my_symbol->option_3 & ~0x7F);
                 }
                 break;
             case OPT_DOTSIZE:
@@ -1913,7 +1919,7 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= SMALL_TEXT;
                 break;
             case OPT_SQUARE:
-                my_symbol->option_3 = DM_SQUARE;
+                my_symbol->option_3 = DM_SQUARE | (my_symbol->option_3 & ~0x7F);
                 break;
             case OPT_STRUCTAPP:
                 memset(&my_symbol->structapp, 0, sizeof(my_symbol->structapp));
@@ -2045,7 +2051,19 @@ int main(int argc, char **argv) {
 
             case '?':
                 if (optopt) {
-                    fprintf(stderr, "Error 109: option '%s' requires an argument\n", argv[optind - 1]);
+                    for (i = 0; i < ARRAY_SIZE(long_options) && long_options[i].val != optopt; i++);
+                    if (i == ARRAY_SIZE(long_options)) { /* Shouldn't happen */
+                        fprintf(stderr, "Error 125: ?? unknown optopt '%d'\n", optopt); /* Not reached */
+                        return do_exit(ZINT_ERROR_ENCODING_PROBLEM);
+                    }
+                    if (long_options[i].has_arg) {
+                        fprintf(stderr, "Error 109: option '%s' requires an argument\n", argv[optind - 1]);
+                    } else {
+                        const char *eqs = strchr(argv[optind - 1], '=');
+                        const int optlen = eqs ? (int) (eqs - argv[optind - 1]) : (int) strlen(argv[optind - 1]);
+                        fprintf(stderr, "Error 126: option '%.*s' does not take an argument\n", optlen,
+                                argv[optind - 1]);
+                    }
                 } else {
                     fprintf(stderr, "Error 101: unknown option '%s'\n", argv[optind - 1]);
                 }

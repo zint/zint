@@ -408,6 +408,20 @@ instead of the preferred FNC1
     </widget>
    </item>
    <item>
+    <widget class="QCheckBox" name="chkDMISO144">
+     <property name="text">
+      <string>Use ISO format for size 1&amp;44 x 144</string>
+     </property>
+     <property name="toolTip">
+      <string>Do not rotate ECC placement for 144 x 144
+(Zint 24) sized symbols</string>
+     </property>
+     <property name="checked">
+      <bool>false</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QCheckBox" name="chkDMFast">
      <property name="text">
       <string>&amp;Fast encoding</string>

@@ -528,26 +528,30 @@ const char *testUtilOption3Name(int option_3) {
     const char *name = NULL;
     const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
 
-    switch (option_3 & 0xFF) {
-        case DM_SQUARE:
+    if ((option_3 & 0x7F) == DM_SQUARE) {
+        if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+            name = "DM_SQUARE | DM_ISO_144";
+        } else {
             name = "DM_SQUARE";
-            break;
-        case DM_DMRE:
+        }
+    } else if ((option_3 & 0x7F) == DM_DMRE) {
+        if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+            name = "DM_DMRE | DM_ISO_144";
+        } else {
             name = "DM_DMRE";
-            break;
-        case ZINT_FULL_MULTIBYTE:
-            name = "ZINT_FULL_MULTIBYTE";
-            break;
-        case ULTRA_COMPRESSION:
-            name = "ULTRA_COMPRESSION";
-            break;
-        default:
-            if (option_3 != -1 && (option_3 & 0xFF) != 0) {
-                fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);
-                abort();
-            }
-            name = (option_3 & 0xFF) ? "-1" : "0";
-            break;
+        }
+    } else if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+        name = "DM_ISO_144";
+    } else if ((option_3 & 0xFF) == ZINT_FULL_MULTIBYTE) {
+        name = "ZINT_FULL_MULTIBYTE";
+    } else if ((option_3 & 0xFF) == ULTRA_COMPRESSION) {
+        name = "ULTRA_COMPRESSION";
+    } else {
+        if (option_3 != -1 && (option_3 & 0xFF) != 0) {
+            fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);
+            abort();
+        }
+        name = (option_3 & 0xFF) ? "-1" : "0";
     }
 
     if (high_byte) {

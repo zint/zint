@@ -310,6 +310,7 @@ extern "C" {
 /* Data Matrix specific options (`symbol->option_3`) */
 #define DM_SQUARE               100     /* Only consider square versions on automatic symbol size selection */
 #define DM_DMRE                 101     /* Consider DMRE versions on automatic symbol size selection */
+#define DM_ISO_144              128     /* Use ISO instead of "de facto" format for 144x144 (i.e. don't skew ECC) */
 
 /* QR, Han Xin, Grid Matrix specific options (`symbol->option_3`) */
 #define ZINT_FULL_MULTIBYTE     200     /* Enable Kanji/Hanzi compression for Latin-1 & binary data */

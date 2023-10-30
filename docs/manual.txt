@@ -3150,7 +3150,7 @@ check digit.
 A highly compressed symbol for numeric data. The number of channels in the
 symbol can be between 3 and 8 and this can be specified by setting the value of
 the --vers option (API option_2). It can also be determined by the length of the
-input data e.g. a three character input string generates a 4 channel code by
+input data: e.g. a three character input string generates a 4 channel code by
 default.
 
 The maximum values permitted depend on the number of channels used as shown in
@@ -3720,6 +3720,10 @@ DMRE symbol sizes may be activated in automatic size mode using the option
 GS1 data may be encoded using FNC1 (default) or GS (Group Separator, ASCII 29)
 as separator. Use the option --gssep to change to GS (API
 output_options |= GS1_GS_SEPARATOR).
+
+By default Zint uses a “de facto” codeword placement for symbols of size 144 x
+144 (version 24). To override this and use the now clarified ISO/IEC standard
+placement, use option --dmiso144 (API option_3 |= DM_ISO_144).
 
 For a faster but less optimal encoding, the --fast option (API
 input_mode |= FAST_MODE) may be used.
@@ -4842,10 +4846,16 @@ OPTIONS
     Send output to stdout, which in most cases should be re-directed to a pipe
     or a file. Use --filetype to specify output format.
 
+--dmiso144
+
+    For Data Matrix symbols, use the standard ISO/IEC codeword placement for 144
+    x 144 (--vers=24) sized symbols, instead of the default “de facto” placement
+    (which rotates the placement of ECC codewords).
+
 --dmre
 
     For Data Matrix symbols, allow Data Matrix Rectangular Extended (DMRE) sizes
-    when considering automatic sizes.
+    when considering automatic sizes. See also --square.
 
 --dotsize=NUMBER
 
@@ -5122,7 +5132,7 @@ OPTIONS
 --square
 
     For Data Matrix symbols, exclude rectangular sizes when considering
-    automatic sizes.
+    automatic sizes. See also --dmre.
 
 --structapp=I,C[,ID]
 

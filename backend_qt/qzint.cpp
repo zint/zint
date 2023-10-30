@@ -1286,7 +1286,8 @@ namespace Zint {
         }
 
         if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
-            arg_bool(cmd, "--dmre", option3() == DM_DMRE);
+            arg_bool(cmd, "--dmiso144", (option3() & DM_ISO_144) == DM_ISO_144);
+            arg_bool(cmd, "--dmre", (option3() & 0x7F) == DM_DMRE);
         }
 
         if ((m_symbol == BARCODE_DOTCODE || (isDotty() && dotty())) && dotSize() != 0.8f) {
@@ -1388,7 +1389,7 @@ namespace Zint {
         arg_bool(cmd, "--small", !notext && (fontSetting() & SMALL_TEXT));
 
         if (m_symbol == BARCODE_DATAMATRIX || m_symbol == BARCODE_HIBC_DM) {
-            arg_bool(cmd, "--square", option3() == DM_SQUARE);
+            arg_bool(cmd, "--square", (option3() & 0x7F) == DM_SQUARE);
         }
 
         if (supportsStructApp()) {

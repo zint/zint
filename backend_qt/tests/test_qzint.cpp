@@ -808,15 +808,15 @@ private slots:
         QTest::newRow("BARCODE_DATAMATRIX") << false << 0.0f << ""
             << BARCODE_DATAMATRIX << (DATA_MODE | ESCAPE_MODE | FAST_MODE) // symbology-inputMode
             << "ABCDEFGH\\x01I" << "" // text-primary
-            << 0.0f << -1 << 0 << 0 << 1.0f << 0.0f << false << 0.7f << 0.0f // height-textGap
+            << 0.0f << -1 << 0 << DM_ISO_144 << 1.0f << 0.0f << false << 0.7f << 0.0f // height-textGap
             << 5.0f << 0 << 0 << "" // guardDescent-structAppID
             << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
             << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
             << true << false << false << false << true << 0 // showText-rotateAngle
             << 0 << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
-            << "zint -b 71 --binary -d 'ABCDEFGH\\x01I' --esc --fast"
-            << "zint.exe -b 71 --binary -d \"ABCDEFGH\\x01I\" --esc --fast"
+            << "zint -b 71 --binary -d 'ABCDEFGH\\x01I' --dmiso144 --esc --fast"
+            << "zint.exe -b 71 --binary -d \"ABCDEFGH\\x01I\" --dmiso144 --esc --fast"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_DBAR_EXPSTK_CC") << false << 40.8f << ""

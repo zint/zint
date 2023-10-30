@@ -1886,7 +1886,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     }
 
     /* ecc code */
-    if (symbolsize == INTSYMBOL144) {
+    if (symbolsize == INTSYMBOL144 && !(symbol->option_3 & DM_ISO_144)) {
         skew = 1;
     }
     dm_ecc(binary, bytes, datablock, rsblock, skew);
