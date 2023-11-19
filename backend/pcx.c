@@ -111,69 +111,24 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
                 const unsigned char ch = pb[column];
                 switch (colour) {
                     case 0:
-                        switch (ch) {
-                            case 'W': /* White */
-                            case 'M': /* Magenta */
-                            case 'R': /* Red */
-                            case 'Y': /* Yellow */
-                                rle_row[column] = 255;
-                                break;
-                            case 'C': /* Cyan */
-                            case 'B': /* Blue */
-                            case 'G': /* Green */
-                            case 'K': /* Black */
-                                rle_row[column] = 0;
-                                break;
-                            case '1':
-                                rle_row[column] = fgred;
-                                break;
-                            default:
-                                rle_row[column] = bgred;
-                                break;
+                        if (ch == '0' || ch == '1') {
+                            rle_row[column] = ch != '0' ? fgred : bgred;
+                        } else {
+                            out_colour_char_to_rgb(ch, &rle_row[column], NULL, NULL);
                         }
                         break;
                     case 1:
-                        switch (ch) {
-                            case 'W': /* White */
-                            case 'C': /* Cyan */
-                            case 'Y': /* Yellow */
-                            case 'G': /* Green */
-                                rle_row[column] = 255;
-                                break;
-                            case 'B': /* Blue */
-                            case 'M': /* Magenta */
-                            case 'R': /* Red */
-                            case 'K': /* Black */
-                                rle_row[column] = 0;
-                                break;
-                            case '1':
-                                rle_row[column] = fggrn;
-                                break;
-                            default:
-                                rle_row[column] = bggrn;
-                                break;
+                        if (ch == '0' || ch == '1') {
+                            rle_row[column] = ch != '0' ? fggrn : bggrn;
+                        } else {
+                            out_colour_char_to_rgb(ch, NULL, &rle_row[column], NULL);
                         }
                         break;
                     case 2:
-                        switch (ch) {
-                            case 'W': /* White */
-                            case 'C': /* Cyan */
-                            case 'B': /* Blue */
-                            case 'M': /* Magenta */
-                                rle_row[column] = 255;
-                                break;
-                            case 'R': /* Red */
-                            case 'Y': /* Yellow */
-                            case 'G': /* Green */
-                            case 'K': /* Black */
-                                rle_row[column] = 0;
-                                break;
-                            case '1':
-                                rle_row[column] = fgblu;
-                                break;
-                            default:
-                                rle_row[column] = bgblu;
-                                break;
+                        if (ch == '0' || ch == '1') {
+                            rle_row[column] = ch != '0' ? fgblu : bgblu;
+                        } else {
+                            out_colour_char_to_rgb(ch, NULL, NULL, &rle_row[column]);
                         }
                         break;
                     case 3:

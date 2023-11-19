@@ -593,7 +593,7 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
             symbol->height = 8.0f;
         }
         symbol->row_height[1] = stripf(symbol->height * t_ratio);
-        symbol->row_height[0] = stripf((symbol->height - symbol->row_height[1]) / 2.0);
+        symbol->row_height[0] = stripf((symbol->height - symbol->row_height[1]) / 2.0f);
     } else {
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;

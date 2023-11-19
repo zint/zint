@@ -274,11 +274,25 @@ static int validate_int(const char source[], int len, int *p_val) {
 
 /* Verifies that a string is a simplified form of floating point, max 7 significant decimal digits with
    optional decimal point. On success returns val in arg. On failure sets `errbuf` */
-static int validate_float(const char source[], float *p_val, char errbuf[64]) {
+static int validate_float(const char source[], const int allow_neg, float *p_val, char errbuf[64]) {
     static const float fract_muls[7] = { 0.1f, 0.01f, 0.001f, 0.0001f, 0.00001f, 0.000001f, 0.0000001f };
     int val = 0;
+    int neg = 0;
     const char *dot = strchr(source, '.');
-    int int_len = dot ? (int) (dot - source) : (int) strlen(source);
+    int int_len;
+
+    if (*source == '+' || *source == '-') {
+        if (*source == '-') {
+            if (!allow_neg) {
+                strcpy(errbuf, "negative value not permitted");
+                return 0;
+            }
+            neg = 1;
+        }
+        source++;
+    }
+
+    int_len = dot ? (int) (dot - source) : (int) strlen(source);
     if (int_len > 9) {
         strcpy(errbuf, "integer part must be 7 digits maximum"); /* Say 7 not 9 to "manage expections" */
         return 0;
@@ -323,6 +337,9 @@ static int validate_float(const char source[], float *p_val, char errbuf[64]) {
         }
     } else {
         *p_val = (float) val;
+    }
+    if (neg) {
+        *p_val = -*p_val;
     }
     return 1;
 }
@@ -749,7 +766,7 @@ static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_
         fprintf(stderr, "Error 177: scalexdimdp X-dim units must occur at end\n");
         return 0;
     }
-    if (!validate_float(x_buf, p_x_dim_mm, errbuf)) {
+    if (!validate_float(x_buf, 0 /*allow_neg*/, p_x_dim_mm, errbuf)) {
         fprintf(stderr, "Error 178: scalexdimdp X-dim invalid floating point (%s)\n", errbuf);
         return 0;
     }
@@ -762,7 +779,7 @@ static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_
             fprintf(stderr, "Error 179: scalexdimdp resolution units must occur at end\n");
             return 0;
         }
-        if (!validate_float(r_buf, p_dpmm, errbuf)) {
+        if (!validate_float(r_buf, 0 /*allow_neg*/, p_dpmm, errbuf)) {
             fprintf(stderr, "Error 180: scalexdimdp resolution invalid floating point (%s)\n", errbuf);
             return 0;
         }
@@ -1615,7 +1632,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_DOTSIZE:
-                if (!validate_float(optarg, &float_opt, errbuf)) {
+                if (!validate_float(optarg, 0 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 181: Invalid dot radius floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1692,7 +1709,7 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= GS1_GS_SEPARATOR;
                 break;
             case OPT_GUARDDESCENT:
-                if (!validate_float(optarg, &float_opt, errbuf)) {
+                if (!validate_float(optarg, 0 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 182: Invalid guard bar descent floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1709,7 +1726,7 @@ int main(int argc, char **argv) {
                 my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
                 break;
             case OPT_HEIGHT:
-                if (!validate_float(optarg, &float_opt, errbuf)) {
+                if (!validate_float(optarg, 0 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 183: Invalid symbol height floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1772,7 +1789,9 @@ int main(int argc, char **argv) {
                 if (strlen(optarg) <= 127) {
                     strcpy(my_symbol->primary, optarg);
                 } else {
-                    fprintf(stderr, "Warning 115: Primary data string too long (127 character maximum), ignoring\n");
+                    strncpy(my_symbol->primary, optarg, 127);
+                    fprintf(stderr,
+                            "Warning 115: Primary data string too long (127 character maximum), truncating\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1817,7 +1836,7 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_SCALE:
-                if (!validate_float(optarg, &float_opt, errbuf)) {
+                if (!validate_float(optarg, 0 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 184: Invalid scale floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
@@ -1835,11 +1854,11 @@ int main(int argc, char **argv) {
                 }
                 if (x_dim_mm > 10.0f || dpmm > 1000.0f) {
                     if (x_dim_mm > 10.0f) {
-                        fprintf(stderr,
-                            "Warning 185: scalexdimdp X-dim (%g) out of range (> 10), ignoring\n", x_dim_mm);
+                        fprintf(stderr, "Warning 185: scalexdimdp X-dim (%g) out of range (> 10), ignoring\n",
+                                x_dim_mm);
                     } else {
-                        fprintf(stderr,
-                            "Warning 186: scalexdimdp resolution (%g) out of range (> 1000), ignoring\n", dpmm);
+                        fprintf(stderr, "Warning 186: scalexdimdp resolution (%g) out of range (> 1000), ignoring\n",
+                                dpmm);
                     }
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1928,14 +1947,15 @@ int main(int argc, char **argv) {
                 }
                 break;
             case OPT_TEXTGAP:
-                if (!validate_float(optarg, &float_opt, errbuf)) {
+                if (!validate_float(optarg, 1 /*allow_neg*/, &float_opt, errbuf)) {
                     fprintf(stderr, "Error 194: Invalid text gap floating point (%s)\n", errbuf);
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
-                if (float_opt >= 0.0f && float_opt <= 10.0f) {
+                if (float_opt >= -5.0f && float_opt <= 10.0f) {
                     my_symbol->text_gap = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (0 to 10), ignoring\n", float_opt);
+                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (-5 to 10), ignoring\n",
+                            float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }

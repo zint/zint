@@ -555,7 +555,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     /* option1: rows <= 0: automatic, 1..44 */
     rows = symbol->option_1;
     if (rows == 1) {
-        error_number = code128(symbol, source, length); /* Only returns errors, not warnings */
+        error_number = code128(symbol, source, length);
         if (error_number < ZINT_ERROR) {
             symbol->output_options |= BARCODE_BIND;
             if (symbol->border_width == 0) { /* Allow override if non-zero */
@@ -565,7 +565,11 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
             if (symbol->output_options & COMPLIANT_HEIGHT) {
                 /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
                    for CODE128) */
-                error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+                if (error_number == 0) {
+                    error_number = set_height(symbol, 8.0f, 10.0f, 0.0f, 0 /*no_errtxt*/);
+                } else {
+                    (void) set_height(symbol, 8.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
+                }
             } else {
                 (void) set_height(symbol, 0.0f, 5.0f, 0.0f, 1 /*no_errtxt*/);
             }

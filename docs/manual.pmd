@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.12.0.9
-% July 2023
+% November 2023
 
 # 1. Introduction
 
@@ -1066,14 +1066,16 @@ followed by the angle of rotation as shown below.
 
 ![`zint -d "This Text" --rotate=90`](images/code128_rotate90.svg){.lin}
 
+\clearpage
+
 ## 4.9 Adjusting Image Size (X-dimension)
 
 The size of the image can be altered using the `--scale` option, which sets the
-X-dimension. The scale is multiplied by 2 (with the exception of MaxiCode)
-before being applied to the X-dimension. The default scale is 1.
+X-dimension. The default scale is 1.
 
-For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for EMF
-vector output, and by 2 otherwise (non-EMF vector output).
+The scale is multiplied by 2 (with the exception of MaxiCode) before being
+applied to the X-dimension. For MaxiCode, it is multiplied by 10 for raster
+output, by 40 for EMF vector output, and by 2 otherwise (non-EMF vector output).
 
 For non-Maxicode raster output, the default scale of 1 results in an X-dimension
 of 2 pixels. For example for non-Maxicode PNG images a scale of 5 will increase
@@ -1085,22 +1087,37 @@ Scales for non-Maxicode raster output should be given in increments of 0.5, i.e.
 symbol due to interpolation. 0.5 increments are also faster to render.
 
 The minimum scale for non-Maxicode raster output in non-dotty mode is 0.5,
-giving a minimum X-dimension of 1 pixel. The minimum scale for raster output in
-dotty mode is 1 (see [4.15 Working with Dots]). For raster output, text will not
-be printed for scales less than 1.
+giving a minimum X-dimension of 1 pixel. For MaxiCode, it is 0.2. The minimum
+scale for raster output in dotty mode is 1 (see [4.15 Working with Dots]). For
+raster output, text will not be printed for scales less than 1.
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2
-(or for Maxicode EMF output, 4).
+(or for Maxicode EMF output, 4). The maximum scale for both raster and vector is
+200.
 
-The maximum scale for both raster and vector is 200.
+To summarize the more intricate details:
 
-Using measurable units to specify the X-dimension is often more useful, as
-discussed in the next section.
+-----------------------------------------------------------------
+MaxiCode?  Output            Multiplier  Min. Scale    Min. Scale
+                                         (non-dotty)   (dotty)
+---------  ----------------  ----------  ------------  ----------
+No         Raster            2           0.5           1
+
+No         Vector            2           0.1           0.1
+
+Yes        Raster            10          0.2           N/A
+
+Yes        Vector (non-EMF)  2           0.1           N/A
+
+Yes        EMF               40          0.1           N/A
+-----------------------------------------------------------------
+
+Table: {#tbl:scaling_multiplers tag=": Scaling Multipliers and Minima"}
 
 ### 4.9.1 Scaling by X-dimension and Resolution
 
-An alternative way to specify the scale which takes the above details into
-account and uses measurable units is to use the `--scalexdimdp` option, which
+An alternative way to specify the scale, which takes the above details into
+account, is to specify measurable units using the `--scalexdimdp` option, which
 has the format
 
 ```
@@ -1177,9 +1194,9 @@ be used together if required, but only for vector output.
 ![`zint --bold -d "This Text" --small`](images/code128_small_bold.svg){.lin}
 
 The gap between the barcode and the text can be adjusted using the `--textgap`
-option, where the gap is given in X-dimensions (maximum 10X). A zero value uses
-the default gap (1X). Note that a very small gap may cause accented texts to
-overlap with the barcode:
+option, where the gap is given in X-dimensions, and may be negative (minimum
+-5X, maximum 10X). The default gap is 1X. Note that a very small gap may cause
+accented texts to overlap with the barcode:
 
 ![`zint -d "Áccent" --textgap=0.1`](images/code128_textgap.svg){.lin}
 
@@ -1349,8 +1366,6 @@ Using this parameter, the ECI information is explicitly added to the symbol.
 Nevertheless, for ECI Code 3, this is not usually required, as this is the
 default encoding for most barcodes, which is also active without any ECI
 information.
-
-\clearpage
 
 #### 4.11.2.1 Input Modes and ECI Example 1
 
@@ -1957,7 +1972,7 @@ Member Name          Type        Meaning                    Default Value
                                  dotty mode (in
                                  X-dimensions).
 
-`text_gap`           float       Gap between barcode and     0 (default 1X)
+`text_gap`           float       Gap between barcode and     1.0
                                  text (HRT) in
                                  X-dimensions.
 
@@ -1968,6 +1983,8 @@ Member Name          Type        Meaning                    Default Value
 `structapp`          Structured  Mark a symbol as part of    count 0
                      Append      a sequence of symbols.      (disabled)
                      structure
+
+`debug`              integer     Debugging flags.            0
 
 `warn_level`         integer     Affects error/warning       `WARN_DEFAULT`
                                  value returned by Zint
@@ -1987,13 +2004,13 @@ Member Name          Type        Meaning                    Default Value
 `width`              integer     Width of the generated      (output only)
                                  symbol.
 
-`encoding_data`      array of    Representation of the       (output only)
+`encoded_data`       array of    Representation of the       (output only)
                      unsigned    encoded data.
                      character
                      arrays
 
-`row_height`         array of    Representation of the       (output only)
-                     floats      height of rows.
+`row_height`         array of    Heights of each row.        (output only)
+                     floats
 
 `errtxt`             character   Error message in the        (output only)
                      string      event that an error
@@ -2077,7 +2094,7 @@ detailing the nature of the error. The errors generated by Zint are:
 Return Value                   Meaning
 -----------------------------  -----------------------------------------------
 `ZINT_WARN_HRT_TRUNCATED`      The Human Readable Text returned in `text` was
-                               truncated (maximum 159 bytes).
+                               truncated (maximum 199 bytes).
 
 `ZINT_WARN_INVALID_OPTION`     One of the values in `zint_struct` was set
                                incorrectly but Zint has made a guess at what
@@ -2512,8 +2529,7 @@ Value                       Meaning
 
 `ZINT_CAP_STACKABLE`        Is the symbology stackable?
 
-`ZINT_CAP_EXTENDABLE`       Is the symbology extendable with add-on data?
-                            (i.e. is it EAN/UPC?)
+`ZINT_CAP_EANUPC`[^12]      Is the symbology EAN/UPC?
 
 `ZINT_CAP_COMPOSITE`        Does the symbology support composite data? (see
                             [6.3 GS1 Composite Symbols (ISO 24723)] below)
@@ -2543,6 +2559,9 @@ Value                       Meaning
 ------------------------------------------------------------------------------
 
 Table: {#tbl:api_cap tag=": API Capability Flags"}
+
+[^12]: `ZINT_CAP_EANUPC` was previously named `ZINT_CAP_EXTENDABLE`, which is
+still recognised.
 
 For example:
 
@@ -3034,8 +3053,8 @@ pharmaceuticals. The symbology is able to encode whole numbers between 3 and
 One of the most ubiquitous one-dimensional barcode symbologies, Code 128 was
 developed in 1981 by Computer Identics. This symbology supports full ASCII text
 and uses a three-Code Set system to compress the data into a smaller symbol.
-Zint automatically switches between Code Sets A, B and C (but see the special
-escapes below) and adds a hidden modulo-103 check digit.
+Zint automatically switches between Code Sets A, B and C (but see following) and
+adds a hidden modulo-103 check digit.
 
 Manual switching of Code Sets is possible using the `--extraesc` option (API
 `input_mode |= EXTRA_ESCAPE_MODE`) and the Code 128-specific escapes `\^A`,
@@ -3062,18 +3081,21 @@ supports the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128
 symbols. The ISO/IEC 8859-1 character set is shown in Annex [A.2 Latin Alphabet
 No. 1 (ISO/IEC 8859-1)].
 
+Zint can encode a maximum of 99 symbol characters, which allows for e.g. 198
+all-numeric characters.
+
 #### 6.1.10.2 Code 128 Suppress Code Set C (Code Sets A and B only)
 
 ![`zint -b CODE128AB -d "130170X178"`](images/code128ab.svg){.lin}
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The `BARCODE_CODE128AB`[^12] variant (symbology 60)
+compresses numerical data. The `BARCODE_CODE128AB`[^13] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special escapes to manually switch Code Sets mentioned above are
 not available for this variant (nor for any other).
 
-[^12]: `BARCODE_CODE128AB` previously used the name `BARCODE_CODE128B`, which is
+[^13]: `BARCODE_CODE128AB` previously used the name `BARCODE_CODE128B`, which is
 still recognised.
 
 #### 6.1.10.3 GS1-128

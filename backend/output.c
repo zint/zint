@@ -189,6 +189,38 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
     return 1 + have_alpha;
 }
 
+/* Convert internal colour chars "WCBMRYGK" to RGB */
+INTERNAL int out_colour_char_to_rgb(const char ch, unsigned char *red, unsigned char *green, unsigned char *blue) {
+    static const char chars[] = "WCBMRYGK";
+    static const unsigned char colours[8][3] = {
+        { 0xff, 0xff, 0xff, }, /* White */
+        {    0, 0xff, 0xff, }, /* Cyan */
+        {    0,    0, 0xff, }, /* Blue */
+        { 0xff,    0, 0xff, }, /* Magenta */
+        { 0xff,    0,    0, }, /* Red */
+        { 0xff, 0xff,    0, }, /* Yellow */
+        {    0, 0xff,    0, }, /* Green */
+        {    0,    0,    0, }, /* Black */
+    };
+    int i = posn(chars, ch);
+    int ret = i != -1;
+
+    if (i == -1) {
+        i = 7; /* Black (zeroize) */
+    }
+    if (red) {
+        *red = colours[i][0];
+    }
+    if (green) {
+        *green = colours[i][1];
+    }
+    if (blue) {
+        *blue = colours[i][2];
+    }
+
+    return ret;
+}
+
 /* Return minimum quiet zones for each symbology */
 static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text, const int comp_xoffset,
                             float *left, float *right, float *top, float *bottom) {
@@ -654,50 +686,60 @@ INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hi
 }
 #endif
 
-/* Set left (x), top (y), right and bottom offsets for whitespace */
+/* Set left (x), top (y), right and bottom offsets for whitespace, also right quiet zone */
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,
-                const int comp_xoffset, float *xoffset, float *yoffset, float *roffset, float *boffset,
-                const float scaler, int *xoffset_si, int *yoffset_si, int *roffset_si, int *boffset_si) {
+                const int comp_xoffset, float *p_xoffset, float *p_yoffset, float *p_roffset, float *p_boffset,
+                float *p_qz_right, const float scaler, int *p_xoffset_si, int *p_yoffset_si, int *p_roffset_si,
+                int *p_boffset_si, int *p_qz_right_si) {
     float qz_left, qz_right, qz_top, qz_bottom;
 
     out_quiet_zones(symbol, hide_text, comp_xoffset, &qz_left, &qz_right, &qz_top, &qz_bottom);
 
-    *xoffset = symbol->whitespace_width + qz_left;
-    *roffset = symbol->whitespace_width + qz_right;
+    *p_xoffset = symbol->whitespace_width + qz_left;
+    *p_roffset = symbol->whitespace_width + qz_right;
     if (symbol->output_options & BARCODE_BOX) {
-        *xoffset += symbol->border_width;
-        *roffset += symbol->border_width;
+        *p_xoffset += symbol->border_width;
+        *p_roffset += symbol->border_width;
     }
 
-    *yoffset = symbol->whitespace_height + qz_top;
-    *boffset = symbol->whitespace_height + qz_bottom;
+    *p_yoffset = symbol->whitespace_height + qz_top;
+    *p_boffset = symbol->whitespace_height + qz_bottom;
     if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP)) {
-        *yoffset += symbol->border_width;
-        *boffset += symbol->border_width;
+        *p_yoffset += symbol->border_width;
+        if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND)) {
+            *p_boffset += symbol->border_width;
+        }
+    }
+
+    if (p_qz_right) {
+        *p_qz_right = qz_right;
     }
 
     if (scaler) {
-        if (xoffset_si) {
-            *xoffset_si = (int) (*xoffset * scaler);
+        if (p_xoffset_si) {
+            *p_xoffset_si = (int) (*p_xoffset * scaler);
         }
-        if (yoffset_si) {
-            *yoffset_si = (int) (*yoffset * scaler);
+        if (p_yoffset_si) {
+            *p_yoffset_si = (int) (*p_yoffset * scaler);
         }
-        if (roffset_si) {
-            *roffset_si = (int) (*roffset * scaler);
+        if (p_roffset_si) {
+            *p_roffset_si = (int) (*p_roffset * scaler);
         }
-        if (boffset_si) {
-            *boffset_si = (int) (*boffset * scaler);
+        if (p_boffset_si) {
+            *p_boffset_si = (int) (*p_boffset * scaler);
+        }
+        if (p_qz_right_si) {
+            *p_qz_right_si = (int) (qz_right * scaler);
         }
     }
 }
 
 /* Set composite offset and main width excluding add-on (for start of add-on calc) and add-on text, returning
-   UPC/EAN type */
+   EAN/UPC type */
 INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp_xoffset, int *p_main_width,
-                unsigned char addon[6], int *p_addon_gap) {
+                unsigned char addon[6], int *p_addon_len, int *p_addon_gap) {
     int main_width; /* Width of main linear symbol, excluding add-on */
-    int upceanflag; /* UPC/EAN type flag */
+    int upceanflag; /* EAN/UPC type flag */
     int i, j, latch;
     const int text_length = (int) ustrlen(symbol->text);
 
@@ -715,6 +757,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
     }
     addon[j] = '\0';
     if (latch) {
+        *p_addon_len = (int) ustrlen(addon);
         if (symbol->symbology == BARCODE_UPCA || symbol->symbology == BARCODE_UPCA_CHK
                 || symbol->symbology == BARCODE_UPCA_CC) {
             *p_addon_gap = symbol->option_2 >= 9 && symbol->option_2 <= 12 ? symbol->option_2 : 9;
@@ -834,66 +877,6 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
     }
 
     return large_bar_height;
-}
-
-/* Split UPC/EAN add-on text into various constituents */
-INTERNAL void out_upcean_split_text(const int upceanflag, const unsigned char text[], unsigned char textparts[4][7]) {
-    int i;
-
-    if (upceanflag == 6) { /* UPC-E */
-        textparts[0][0] = text[0];
-        textparts[0][1] = '\0';
-
-        for (i = 0; i < 6; i++) {
-            textparts[1][i] = text[i + 1];
-        }
-        textparts[1][6] = '\0';
-
-        textparts[2][0] = text[7];
-        textparts[2][1] = '\0';
-
-    } else if (upceanflag == 8) { /* EAN-8 */
-        for (i = 0; i < 4; i++) {
-            textparts[0][i] = text[i];
-        }
-        textparts[0][4] = '\0';
-
-        for (i = 0; i < 4; i++) {
-            textparts[1][i] = text[i + 4];
-        }
-        textparts[1][4] = '\0';
-
-    } else if (upceanflag == 12) { /* UPC-A */
-        textparts[0][0] = text[0];
-        textparts[0][1] = '\0';
-
-        for (i = 0; i < 5; i++) {
-            textparts[1][i] = text[i + 1];
-        }
-        textparts[1][5] = '\0';
-
-        for (i = 0; i < 5; i++) {
-            textparts[2][i] = text[i + 6];
-        }
-        textparts[2][5] = '\0';
-
-        textparts[3][0] = text[11];
-        textparts[3][1] = '\0';
-
-    } else if (upceanflag == 13) { /* EAN-13 */
-        textparts[0][0] = text[0];
-        textparts[0][1] = '\0';
-
-        for (i = 0; i < 6; i++) {
-            textparts[1][i] = text[i + 1];
-        }
-        textparts[1][6] = '\0';
-
-        for (i = 0; i < 6; i++) {
-            textparts[2][i] = text[i + 7];
-        }
-        textparts[2][6] = '\0';
-    }
 }
 
 #ifdef _WIN32

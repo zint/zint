@@ -175,7 +175,7 @@ namespace Zint {
             m_scale(1.0f),
             m_dotty(false), m_dot_size(4.0f / 5.0f),
             m_guardDescent(5.0f),
-            m_textGap(0.0f),
+            m_textGap(1.0f),
             m_fgStr(QSL("000000")), m_bgStr(QSL("FFFFFF")), m_cmyk(false),
             m_borderType(0), m_borderWidth(0),
             m_whitespace(0), m_vwhitespace(0),
@@ -615,7 +615,7 @@ namespace Zint {
         m_textGap = textGap;
     }
 
-    /* Show (true) or hide (false) Human Readable Text */
+    /* Show (true) or hide (false) Human Readable Text (HRT) */
     bool QZint::showText() const {
         return m_show_hrt;
     }
@@ -817,8 +817,12 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_STACKABLE);
     }
 
-    bool QZint::isExtendable(int symbology) const {
-        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_EXTENDABLE);
+    bool QZint::isEANUPC(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_EANUPC);
+    }
+
+    bool QZint::isExtendable(int symbology) const { /* Legacy - same as `isEANUPC()` */
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_EANUPC);
     }
 
     bool QZint::isComposite(int symbology) const {
@@ -1115,8 +1119,8 @@ namespace Zint {
             QPen p;
             p.setColor(fgColor);
             painter.setPen(p);
-            bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && !isExtendable();
-            QFont font(isExtendable() ? upceanFontFamily : normalFontFamily, -1 /*pointSize*/,
+            bool bold = (m_zintSymbol->output_options & BOLD_TEXT) && !isEANUPC();
+            QFont font(isEANUPC() ? upceanFontFamily : normalFontFamily, -1 /*pointSize*/,
                         bold ? QFont::Bold : -1);
             while (string) {
                 font.setPixelSize(string->fsize);
@@ -1223,7 +1227,7 @@ namespace Zint {
             arg_int(cmd, longOptOnly ? "--barcode=" : "-b ", m_symbol);
         }
 
-        if (isExtendable()) {
+        if (isEANUPC()) {
             arg_int(cmd, "--addongap=", option2());
         }
 
@@ -1254,7 +1258,7 @@ namespace Zint {
         if (!default_bind_top) {
             arg_bool(cmd, "--bindtop", borderType() & BARCODE_BIND_TOP);
         }
-        arg_bool(cmd, "--bold", !notext && (fontSetting() & BOLD_TEXT) && !isExtendable());
+        arg_bool(cmd, "--bold", !notext && (fontSetting() & BOLD_TEXT) && !isEANUPC());
         if (!default_border) {
             arg_int(cmd, "--border=", borderWidth());
         }
@@ -1317,10 +1321,10 @@ namespace Zint {
             arg_bool(cmd, "--gssep", gsSep());
         }
 
-        if (isExtendable() && guardDescent() != 5.0f) {
+        if (isEANUPC() && guardDescent() != 5.0f) {
             arg_float(cmd, "--guarddescent=", guardDescent(), true /*allowZero*/);
         }
-        if (isExtendable() && showText()) {
+        if (isEANUPC() && showText()) {
             arg_bool(cmd, "--guardwhitespace", guardWhitespace());
         }
 
@@ -1396,7 +1400,7 @@ namespace Zint {
             arg_structapp(cmd, "--structapp=", structAppCount(), structAppIndex(), structAppID(), win);
         }
 
-        if (!notext && textGap() != 0.0f) {
+        if (!notext && textGap() != 1.0f) {
             arg_float(cmd, "--textgap=", textGap(), true /*allowZero*/);
         }
 

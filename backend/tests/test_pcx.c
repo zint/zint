@@ -117,10 +117,10 @@ static void test_print(const testCtx *const p_ctx) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", \"%s\", \"%s\"},\n",
+            printf("        /*%3d*/ { %s, %d, %s, %d, %d, %d, %d, \"%s\", \"%s\", %.5g, \"%s\", \"%s\"},\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
                     data[i].whitespace_width, data[i].whitespace_height,
-                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour,
+                    data[i].option_1, data[i].option_2, data[i].fgcolour, data[i].bgcolour, data[i].scale,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0 (%d: %s)\n", i, symbol->outfile, expected_file, ret, errno, strerror(errno));

@@ -1249,7 +1249,7 @@ static int linear_dummy_run(int input_mode, unsigned char *source, const int len
 static const char in_linear_comp[] = " in linear component";
 
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number, warn_number = 0, cc_mode, cc_width = 0, ecc_level = 0;
+    int error_number, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
     const unsigned int bs = 13 * length + 1000 + 1;
@@ -1581,10 +1581,19 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->symbology == BARCODE_DBAR_STK_CC) {
             /* Databar Stacked needs special treatment due to asymmetric rows */
-            warn_number = dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+            error_number = dbar_omnstk_set_height(symbol, symbol->rows - linear->rows + 1 /*first_row*/);
+        } else if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
+            /* If symbol->height given then min row height was returned, else default height */
+            if (error_number == 0) { /* Avoid overwriting any `gs1_verify()` warning */
+                error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                        symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
+            } else {
+                (void) set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                        symbol->height ? 0.0f : linear->height, 0.0f, 1 /*no_errtxt*/);
+            }
         } else {
             /* If symbol->height given then min row height was returned, else default height */
-            warn_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+            error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
                                     symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
         }
     } else {
@@ -1600,7 +1609,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     ZBarcode_Delete(linear);
 
-    return error_number ? error_number : warn_number;
+    return error_number;
 }
 
 /* vim: set ts=4 sw=4 et : */

@@ -119,24 +119,26 @@ static void test_print(const testCtx *const p_ctx) {
         /* 59*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3_gws.svg", "" },
         /* 60*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5.svg", "" },
         /* 61*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5_gws.svg", "" },
-        /* 62*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2.svg", "" },
-        /* 63*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2_gws.svg", "" },
-        /* 64*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "123", "", 0, "code39_small.svg", "" },
-        /* 65*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "postnet_zip.svg", "" },
-        /* 66*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_box2.svg", "" },
-        /* 67*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.svg", "" },
-        /* 68*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "121212DD", "EEEEEE22", 90, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_fgbg_rotate_90.svg", "" },
-        /* 69*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_vwsp1_bind1_dotty.svg", "" },
-        /* 70*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_hvwsp1_bind1_dotty.svg", "" },
-        /* 71*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345678909", "", 0, "dbar_ltd.svg", "" },
-        /* 72*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, "", "", 0, "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.svg", "" },
-        /* 73*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, "", "", 0, "12345678901234567890", "", 0, "imail_height7.75.svg", "" },
-        /* 74*/ { BARCODE_ULTRA, -1, 3, BARCODE_BOX, 2, 2, -1, -1, -1, -1, 0, "FF0000", "0000FF", 0, "12345678901234567890", "", 0, "ultra_fgbg_hvwsp2_box3.svg", "" },
-        /* 75*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg", "" },
-        /* 76*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg", "" },
-        /* 77*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg", "" },
-        /* 78*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg", "" },
-        /* 79*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg", "" },
+        /* 62*/ { BARCODE_EANX, -1, 2, BARCODE_BIND, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5_bind2.svg", "" },
+        /* 63*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2.svg", "" },
+        /* 64*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2_gws.svg", "" },
+        /* 65*/ { BARCODE_EANX, -1, 1, BARCODE_BOX, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12", "", 0, "ean2_box1.svg", "" },
+        /* 66*/ { BARCODE_CODE39, -1, -1, SMALL_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "123", "", 0, "code39_small.svg", "" },
+        /* 67*/ { BARCODE_POSTNET, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "postnet_zip.svg", "" },
+        /* 68*/ { BARCODE_MAXICODE, -1, 2, BARCODE_BOX, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_box2.svg", "" },
+        /* 69*/ { BARCODE_MAXICODE, -1, 1, BARCODE_BIND, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_vwsp1_bind1.svg", "" },
+        /* 70*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "121212DD", "EEEEEE22", 90, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "maxicode_fgbg_rotate_90.svg", "" },
+        /* 71*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, -1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_vwsp1_bind1_dotty.svg", "" },
+        /* 72*/ { BARCODE_DATAMATRIX, -1, 1, BARCODE_BIND | BARCODE_DOTTY_MODE, 1, 1, -1, -1, -1, -1, 0, "", "", 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "", 0, "datamatrix_hvwsp1_bind1_dotty.svg", "" },
+        /* 73*/ { BARCODE_DBAR_LTD, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345678909", "", 0, "dbar_ltd.svg", "" },
+        /* 74*/ { BARCODE_PDF417, -1, -1, -1, -1, -1, -1, -1, -1, -1, 5, "", "", 0, "Your Data Here!", "", ZINT_WARN_NONCOMPLIANT, "pdf417_height5.svg", "" },
+        /* 75*/ { BARCODE_USPS_IMAIL, -1, -1, -1, -1, -1, -1, -1, -1, -1, 7.75, "", "", 0, "12345678901234567890", "", 0, "imail_height7.75.svg", "" },
+        /* 76*/ { BARCODE_ULTRA, -1, 3, BARCODE_BOX, 2, 2, -1, -1, -1, -1, 0, "FF0000", "0000FF", 0, "12345678901234567890", "", 0, "ultra_fgbg_hvwsp2_box3.svg", "" },
+        /* 77*/ { BARCODE_TELEPEN, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0.4, "", "", 180, "A", "", 0, "telepen_height0.4_rotate_180.svg", "" },
+        /* 78*/ { BARCODE_CODE49, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "FF11157F", "", 0, "A", "", 0, "code49_comph_fgalpha.svg", "" },
+        /* 79*/ { BARCODE_CODABLOCKF, -1, -1, COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 2, 0, "00000033", "FFFFFF66", 0, "1234567890123456789012345678901234", "", 0, "codablockf_comph_sep2_fgbgalpha.svg", "" },
+        /* 80*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg", "" },
+        /* 81*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -216,11 +218,12 @@ static void test_print(const testCtx *const p_ctx) {
         assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.8g, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.8g, \"%s\", \"%s\", %d, \"%s\", \"%s\", %s, \"%s\", \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
                     testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
                     data[i].option_1, data[i].option_2, data[i].option_3, data[i].height, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite,
+                    testUtilErrorName(data[i].ret), data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {

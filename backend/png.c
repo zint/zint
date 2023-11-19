@@ -105,7 +105,7 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     png_color palette[32];
     int num_palette;
     unsigned char trans_alpha[32];
-    int num_trans;
+    int num_trans = 0;
     int bit_depth;
     int compression_strategy;
     const unsigned char *pb;
@@ -117,22 +117,11 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, &fg_alpha);
     (void) out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, &bg_alpha);
 
-    num_trans = 0;
     if (symbol->symbology == BARCODE_ULTRA) {
-        static const int ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
-        static const png_color ultra_colours[8] = {
-            { 0xff, 0xff, 0xff, }, /* White */
-            {    0, 0xff, 0xff, }, /* Cyan */
-            {    0,    0, 0xff, }, /* Blue */
-            { 0xff,    0, 0xff, }, /* Magenta */
-            { 0xff,    0,    0, }, /* Red */
-            { 0xff, 0xff,    0, }, /* Yellow */
-            {    0, 0xff,    0, }, /* Green */
-            {    0,    0,    0, }, /* Black */
-        };
+        static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
         for (i = 0; i < 8; i++) {
             map[ultra_chars[i]] = i;
-            palette[i] = ultra_colours[i];
+            out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
             if (fg_alpha != 0xff) {
                 trans_alpha[i] = fg_alpha;
             }
@@ -170,10 +159,11 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
                     palette[num_palette++] = bg;
                 } else {
                     /* Alpha and no foreground alpha - add to front & move white to end */
+                    png_color white = palette[0]; /* Take copy */
                     map['0'] = 0;
                     palette[0] = bg;
                     map['W'] = num_palette;
-                    palette[num_palette++] = ultra_colours[0];
+                    palette[num_palette++] = white;
                 }
                 if (bg_alpha != 0xff) {
                     trans_alpha[num_trans++] = bg_alpha;

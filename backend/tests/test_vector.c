@@ -167,7 +167,7 @@ static int check_vector_strings(const struct zint_symbol *symbol, char errmsg[12
                 return 0;
             }
         }
-        if (is_extendable(symbol->symbology)) {
+        if ((ZBarcode_Cap(symbol->symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC) {
             const unsigned char *addon = (const unsigned char *) strchr((const char *) symbol->text, '+');
             const int has_addon = addon != NULL;
             const int text_len = has_addon ? (int) (addon - symbol->text) : (int) ustrlen(symbol->text);
@@ -640,7 +640,7 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /* 86*/ { BARCODE_KIX, "123456ABCDE", "", 8, 3, 87, 174, 16 },
         /* 87*/ { BARCODE_AZTEC, "1234567890AB", "", 15, 15, 15, 30, 30 },
         /* 88*/ { BARCODE_DAFT, "DAFTDAFTDAFTDAFT", "", 8, 3, 31, 62, 16 },
-        /* 89*/ { BARCODE_DPD, "0123456789012345678901234567", "", 50, 1, 189, 378, 128.28 },
+        /* 89*/ { BARCODE_DPD, "0123456789012345678901234567", "", 50, 1, 189, 378, 122.28 },
         /* 90*/ { BARCODE_MICROQR, "12345", "", 11, 11, 11, 22, 22 },
         /* 91*/ { BARCODE_HIBC_128, "1234567890", "", 50, 1, 123, 246, 116.28 },
         /* 92*/ { BARCODE_HIBC_39, "1234567890", "", 50, 1, 223, 446, 116.28 },
@@ -1029,14 +1029,14 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
             assert_nonnull(symbol->vector->strings, "i:%d (%s) vector->strings NULL\n",
                 i, testUtilBarcodeName(data[i].symbology));
             string = find_string(symbol, data[i].expected_string_x, data[i].expected_string_y);
-            assert_nonnull(string, "i:%d (%s) find_string(%g, %g) NULL\n",
+            assert_nonnull(string, "i:%d (%s) find_string(%.9g, %.9g) NULL\n",
                 i, testUtilBarcodeName(data[i].symbology), data[i].expected_string_x, data[i].expected_string_y);
 
             if (data[i].expected_string2_x != -1) {
                 assert_nonnull(symbol->vector->strings->next, "i:%d (%s) vector->strings->next NULL\n",
                     i, testUtilBarcodeName(data[i].symbology));
                 string = find_string(symbol, data[i].expected_string2_x, data[i].expected_string2_y);
-                assert_nonnull(string, "i:%d (%s) find_string(%g, %g) NULL\n",
+                assert_nonnull(string, "i:%d (%s) find_string(%.9g, %.9g) NULL\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].expected_string2_x, data[i].expected_string2_y);
             }
         } else {
@@ -1675,8 +1675,9 @@ static void test_guard_descent(const testCtx *const p_ctx) {
                 i, testUtilBarcodeName(data[i].symbology), symbol->vector->height, data[i].expected_vector_height);
 
             rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
-            assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
-                                    i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+            assert_nonnull(rect, "i:%d (%s) find_rect(%.9g, %.9g, %.9g, %.9g) NULL\n",
+                                    i, testUtilBarcodeName(data[i].symbology), data[i].expected_set_x,
+                                    data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
         }
 
         ZBarcode_Delete(symbol);
@@ -1903,8 +1904,8 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*190*/ { BARCODE_DAFT, -1, -1, -1, -1, "FADT", "", 0, 8, 3, 7, 14, 16, 0, 0, 2, 16 },
         /*191*/ { BARCODE_DAFT, BARCODE_QUIET_ZONES, -1, -1, -1, "FADT", "", 0, 8, 3, 7, 14, 16, 0, 0, 2, 16 },
         /*192*/ { BARCODE_DAFT, BARCODE_NO_QUIET_ZONES, -1, -1, -1, "FADT", "", 0, 8, 3, 7, 14, 16, 0, 0, 2, 16 },
-        /*193*/ { BARCODE_DPD, -1, -1, -1, -1, "1234567890123456789012345678", "", 0, 50, 1, 189, 378, 128.28, 0, 6, 4, 100 },
-        /*194*/ { BARCODE_DPD, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567890123456789012345678", "", 0, 50, 1, 189, 428, 128.28, 25, 6, 4, 100 },
+        /*193*/ { BARCODE_DPD, -1, -1, -1, -1, "1234567890123456789012345678", "", 0, 50, 1, 189, 378, 122.28, 0, 6, 4, 100 },
+        /*194*/ { BARCODE_DPD, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567890123456789012345678", "", 0, 50, 1, 189, 428, 122.28, 25, 6, 4, 100 },
         /*195*/ { BARCODE_MICROQR, -1, -1, -1, -1, "1234", "", 0, 11, 11, 11, 22, 22, 0, 0, 14, 2 },
         /*196*/ { BARCODE_MICROQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 11, 11, 11, 30, 30, 4, 4, 14, 2 },
         /*197*/ { BARCODE_HIBC_128, -1, -1, -1, -1, "1234", "", 0, 50, 1, 90, 180, 116.28, 0, 0, 4, 100 },
@@ -2065,12 +2066,14 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
 
             if (symbol->symbology == BARCODE_MAXICODE || symbol->symbology == BARCODE_DOTCODE) {
                 circle = find_circle(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width);
-                assert_nonnull(circle, "i:%d (%d) find_circle(%g, %g, %g) NULL\n",
-                                        i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width);
+                assert_nonnull(circle, "i:%d (%s) find_circle(%.9g, %.9g, %.9g) NULL\n",
+                                        i, testUtilBarcodeName(data[i].symbology), data[i].expected_set_x,
+                                        data[i].expected_set_y, data[i].expected_set_width);
             } else {
                 rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
-                assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
-                                        i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+                assert_nonnull(rect, "i:%d (%s) find_rect(%.9g, %.9g, %.9g, %.9g) NULL\n",
+                                        i, testUtilBarcodeName(data[i].symbology), data[i].expected_set_x,
+                                        data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
             }
         }
 
@@ -2106,18 +2109,18 @@ static void test_text_gap(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, -1, -1, 0, 0, "1234", "", 0, 50, 1, 62, 124, 116.28, 62.0, 113.3444, -1, -1 }, /* Default */
-        /*  1*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 0, "1234", "", 0, 50, 1, 62, 124, 114.479996, 62.0, 111.5444, -1, -1 },
-        /*  2*/ { BARCODE_CODE11, -1, -1, -1, 0.2, 0, "1234", "", 0, 50, 1, 62, 124, 114.68, 62.0, 111.7444, -1, -1 },
-        /*  3*/ { BARCODE_CODE11, -1, -1, -1, 0.3, 0, "1234", "", 0, 50, 1, 62, 124, 114.88, 62.0, 111.9444, -1, -1 },
-        /*  4*/ { BARCODE_CODE11, -1, -1, -1, 0.4, 0, "1234", "", 0, 50, 1, 62, 124, 115.08, 62.0, 112.1444, -1, -1 },
-        /*  5*/ { BARCODE_CODE11, -1, -1, -1, 0.5, 0, "1234", "", 0, 50, 1, 62, 124, 115.28, 62.0, 112.3444, -1, -1 },
-        /*  6*/ { BARCODE_CODE11, -1, -1, -1, 0.6, 0, "1234", "", 0, 50, 1, 62, 124, 115.479996, 62.0, 112.5444, -1, -1 },
-        /*  7*/ { BARCODE_CODE11, -1, -1, -1, 0.7, 0, "1234", "", 0, 50, 1, 62, 124, 115.68, 62.0, 112.7444, -1, -1 },
-        /*  8*/ { BARCODE_CODE11, -1, -1, -1, 0.75, 0, "1234", "", 0, 50, 1, 62, 124, 115.78, 62.0, 112.8444, -1, -1 },
-        /*  9*/ { BARCODE_CODE11, -1, -1, -1, 0.8, 0, "1234", "", 0, 50, 1, 62, 124, 115.88, 62.0, 112.9444, -1, -1 },
-        /* 10*/ { BARCODE_CODE11, -1, -1, -1, 0.9, 0, "1234", "", 0, 50, 1, 62, 124, 116.08, 62.0, 113.1444, -1, -1 },
-        /* 11*/ { BARCODE_CODE11, -1, -1, -1, 1.0, 0, "1234", "", 0, 50, 1, 62, 124, 116.28, 62.0, 113.3444, -1, -1 }, /* Same as default */
+        /*  0*/ { BARCODE_CODE11, -1, -1, -1, 1, 0, "1234", "", 0, 50, 1, 62, 124, 116.28, 62.0, 113.3444, -1, -1 }, /* Default */
+        /*  1*/ { BARCODE_CODE11, -1, -1, -1, 0, 0, "1234", "", 0, 50, 1, 62, 124, 114.28, 62.0, 111.3444, -1, -1 },
+        /*  2*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 0, "1234", "", 0, 50, 1, 62, 124, 114.479996, 62.0, 111.5444, -1, -1 },
+        /*  3*/ { BARCODE_CODE11, -1, -1, -1, 0.2, 0, "1234", "", 0, 50, 1, 62, 124, 114.68, 62.0, 111.7444, -1, -1 },
+        /*  4*/ { BARCODE_CODE11, -1, -1, -1, 0.3, 0, "1234", "", 0, 50, 1, 62, 124, 114.88, 62.0, 111.9444, -1, -1 },
+        /*  5*/ { BARCODE_CODE11, -1, -1, -1, 0.4, 0, "1234", "", 0, 50, 1, 62, 124, 115.08, 62.0, 112.1444, -1, -1 },
+        /*  6*/ { BARCODE_CODE11, -1, -1, -1, 0.5, 0, "1234", "", 0, 50, 1, 62, 124, 115.28, 62.0, 112.3444, -1, -1 },
+        /*  7*/ { BARCODE_CODE11, -1, -1, -1, 0.6, 0, "1234", "", 0, 50, 1, 62, 124, 115.479996, 62.0, 112.5444, -1, -1 },
+        /*  8*/ { BARCODE_CODE11, -1, -1, -1, 0.7, 0, "1234", "", 0, 50, 1, 62, 124, 115.68, 62.0, 112.7444, -1, -1 },
+        /*  9*/ { BARCODE_CODE11, -1, -1, -1, 0.75, 0, "1234", "", 0, 50, 1, 62, 124, 115.78, 62.0, 112.8444, -1, -1 },
+        /* 10*/ { BARCODE_CODE11, -1, -1, -1, 0.8, 0, "1234", "", 0, 50, 1, 62, 124, 115.88, 62.0, 112.9444, -1, -1 },
+        /* 11*/ { BARCODE_CODE11, -1, -1, -1, 0.9, 0, "1234", "", 0, 50, 1, 62, 124, 116.08, 62.0, 113.1444, -1, -1 },
         /* 12*/ { BARCODE_CODE11, -1, -1, -1, 1.1, 0, "1234", "", 0, 50, 1, 62, 124, 116.479996, 62.0, 113.5444, -1, -1 },
         /* 13*/ { BARCODE_CODE11, -1, -1, -1, 1.2, 0, "1234", "", 0, 50, 1, 62, 124, 116.68, 62.0, 113.7444, -1, -1 },
         /* 14*/ { BARCODE_CODE11, -1, -1, -1, 1.3, 0, "1234", "", 0, 50, 1, 62, 124, 116.88, 62.0, 113.9444, -1, -1 },
@@ -2130,38 +2133,43 @@ static void test_text_gap(const testCtx *const p_ctx) {
         /* 21*/ { BARCODE_CODE11, -1, -1, -1, 4.0, 0, "1234", "", 0, 50, 1, 62, 124, 122.28, 62.0, 119.3444, -1, -1 },
         /* 22*/ { BARCODE_CODE11, -1, -1, -1, 5.0, 0, "1234", "", 0, 50, 1, 62, 124, 124.28, 62.0, 121.3444, -1, -1 },
         /* 23*/ { BARCODE_CODE11, -1, -1, -1, 10.0, 0, "1234", "", 0, 50, 1, 62, 124, 134.28, 62.0, 131.3444, -1, -1 },
-        /* 24*/ { BARCODE_CODE11, -1, -1, -1, 0, 3.0, "1234", "", 0, 50, 1, 62, 372, 348.84, 186.0, 340.0332, -1, -1 }, /* Scale default */
-        /* 25*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 3.0, "1234", "", 0, 50, 1, 62, 372, 343.44, 186.0, 334.6332, -1, -1 }, /* Scale */
-        /* 26*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763", "", 0, 50, 1, 95, 226, 118, 74.0, 117.2, -1, -1 }, /* Default */
-        /* 27*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.2, 74.0, 115.4, -1, -1 },
-        /* 28*/ { BARCODE_UPCA, -1, -1, -1, 0.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.2, 74.0, 116.4, -1, -1 },
-        /* 29*/ { BARCODE_UPCA, -1, -1, -1, 0.7, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.4, 74.0, 116.6, -1, -1 },
-        /* 30*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.5, 74.0, 116.7, -1, -1 },
-        /* 31*/ { BARCODE_UPCA, -1, -1, -1, 0.8, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.6, 74.0, 116.8, -1, -1 },
-        /* 32*/ { BARCODE_UPCA, -1, -1, -1, 1.0, 0, "01457130763", "", 0, 50, 1, 95, 226, 118, 74.0, 117.2, -1, -1 }, /* Same as default */
-        /* 33*/ { BARCODE_UPCA, -1, -1, -1, 1.1, 0, "01457130763", "", 0, 50, 1, 95, 226, 118.2, 74.0, 117.4, -1, -1 },
-        /* 34*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 119.2, 74.0, 118.4, -1, -1 },
-        /* 35*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 2.5, "01457130763", "", 0, 50, 1, 95, 565, 298, 185.0, 296.0, -1, -1 }, /* Scale */
-        /* 36*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118, 74.0, 117.2, -1, -1 }, /* Default */
-        /* 37*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118, 230.0, 18, 4.0, 82 }, /* Default */
-        /* 38*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116.2, 230.0, 16.2, 4.0, 83.8 },
-        /* 39*/ { BARCODE_UPCA, -1, -1, -1, 0.6, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.2, 230.0, 17.2, 4.0, 82.8 },
-        /* 40*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.5, 230.0, 17.5, 4.0, 82.5 },
-        /* 41*/ { BARCODE_UPCA, -1, -1, -1, 0.9, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.8, 230.0, 17.8, 4.0, 82.2 },
-        /* 42*/ { BARCODE_UPCA, -1, -1, -1, 1.0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118, 74.0, 117.2, -1, -1 }, /* Same as default */
-        /* 43*/ { BARCODE_UPCA, -1, -1, -1, 1.1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118.2, 74.0, 117.4, -1, -1 },
-        /* 44*/ { BARCODE_UPCA, -1, -1, -1, 4.2, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 124.4, 230.0, 24.4, 4.0, 75.6 },
-        /* 45*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118, 74.0, 117.2, -1, -1 }, /* Default */
-        /* 46*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116.2, 74.0, 115.4, -1, -1 },
-        /* 47*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118, 236.0, 42, 4.0, 58 }, /* Default */
-        /* 48*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116.2, 236.0, 40.2, 4.0, 59.8 },
-        /* 49*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.6, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 117.2, 236.0, 41.2, 4.0, 58.8 },
-        /* 50*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.75, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 117.5, 236.0, 41.5, 4.0, 58.5 },
-        /* 51*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118, 236.0, 42, 4.0, 58 }, /* Same as default */
-        /* 52*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118.2, 236.0, 42.2, 4.0, 57.8 },
-        /* 53*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 119.0, 236.0, 43.0, 4.0, 57.0 },
-        /* 54*/ { BARCODE_UPCA_CC, -1, -1, 0, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 110, 236.0, 42, 4.0, 58 }, /* Hide text default */
-        /* 55*/ { BARCODE_UPCA_CC, -1, -1, 0, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 110, 236.0, 43.0, 4.0, 57.0 }, /* Hide text */
+        /* 24*/ { BARCODE_CODE11, -1, -1, -1, -1.0, 0, "1234", "", 0, 50, 1, 62, 124, 112.28, 62.0, 109.344406, -1, -1 },
+        /* 25*/ { BARCODE_CODE11, -1, -1, -1, -0.5, 0, "1234", "", 0, 50, 1, 62, 124, 113.28, 62.0, 110.344406, -1, -1 },
+        /* 26*/ { BARCODE_CODE11, -1, -1, -1, 1, 3.0, "1234", "", 0, 50, 1, 62, 372, 348.84, 186.0, 340.0332, -1, -1 }, /* Scale default */
+        /* 27*/ { BARCODE_CODE11, -1, -1, -1, 0, 3.0, "1234", "", 0, 50, 1, 62, 372, 342.84, 186.0, 334.0332, -1, -1 }, /* Scale */
+        /* 28*/ { BARCODE_CODE11, -1, -1, -1, 0.1, 3.0, "1234", "", 0, 50, 1, 62, 372, 343.44, 186.0, 334.6332, -1, -1 }, /* Scale */
+        /* 29*/ { BARCODE_UPCA, -1, -1, -1, 1, 0, "01457130763", "", 0, 50, 1, 95, 226, 118, 74.0, 117.2, -1, -1 }, /* Default */
+        /* 30*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763", "", 0, 50, 1, 95, 226, 116, 74.0, 115.2, -1, -1 },
+        /* 31*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763", "", 0, 50, 1, 95, 226, 116.2, 74.0, 115.4, -1, -1 },
+        /* 32*/ { BARCODE_UPCA, -1, -1, -1, 0.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.2, 74.0, 116.4, -1, -1 },
+        /* 33*/ { BARCODE_UPCA, -1, -1, -1, 0.7, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.4, 74.0, 116.6, -1, -1 },
+        /* 34*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.5, 74.0, 116.7, -1, -1 },
+        /* 35*/ { BARCODE_UPCA, -1, -1, -1, 0.8, 0, "01457130763", "", 0, 50, 1, 95, 226, 117.6, 74.0, 116.8, -1, -1 },
+        /* 36*/ { BARCODE_UPCA, -1, -1, -1, 1.1, 0, "01457130763", "", 0, 50, 1, 95, 226, 118.2, 74.0, 117.4, -1, -1 },
+        /* 37*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 0, "01457130763", "", 0, 50, 1, 95, 226, 119.2, 74.0, 118.4, -1, -1 },
+        /* 38*/ { BARCODE_UPCA, -1, -1, -1, 1.6, 2.5, "01457130763", "", 0, 50, 1, 95, 565, 298, 185.0, 296.0, -1, -1 }, /* Scale */
+        /* 39*/ { BARCODE_UPCA, -1, -1, -1, 1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118, 74.0, 117.2, -1, -1 }, /* Default */
+        /* 40*/ { BARCODE_UPCA, -1, -1, -1, 1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118, 230.0, 18, 4.0, 82 }, /* Default */
+        /* 41*/ { BARCODE_UPCA, -1, -1, -1, 0, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116, 230.0, 16, 4.0, 84 },
+        /* 42*/ { BARCODE_UPCA, -1, -1, -1, 0.1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 116.2, 230.0, 16.2, 4.0, 83.8 },
+        /* 43*/ { BARCODE_UPCA, -1, -1, -1, 0.6, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.2, 230.0, 17.2, 4.0, 82.8 },
+        /* 44*/ { BARCODE_UPCA, -1, -1, -1, 0.75, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.5, 230.0, 17.5, 4.0, 82.5 },
+        /* 45*/ { BARCODE_UPCA, -1, -1, -1, 0.9, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 117.8, 230.0, 17.8, 4.0, 82.2 },
+        /* 46*/ { BARCODE_UPCA, -1, -1, -1, 1.1, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 118.2, 74.0, 117.4, -1, -1 },
+        /* 47*/ { BARCODE_UPCA, -1, -1, -1, 4.2, 0, "01457130763+10", "", 0, 50, 1, 124, 276, 124.4, 230.0, 24.4, 4.0, 75.6 },
+        /* 48*/ { BARCODE_UPCA_CC, -1, -1, -1, 1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118, 74.0, 117.2, -1, -1 }, /* Default */
+        /* 49*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116, 74.0, 115.2, -1, -1 },
+        /* 50*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116.2, 74.0, 115.4, -1, -1 },
+        /* 51*/ { BARCODE_UPCA_CC, -1, -1, -1, 1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118, 236.0, 42, 4.0, 58 }, /* Default */
+        /* 52*/ { BARCODE_UPCA_CC, -1, -1, -1, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116, 236.0, 40, 4.0, 60 },
+        /* 53*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 116.2, 236.0, 40.2, 4.0, 59.8 },
+        /* 54*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.6, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 117.2, 236.0, 41.2, 4.0, 58.8 },
+        /* 55*/ { BARCODE_UPCA_CC, -1, -1, -1, 0.75, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 117.5, 236.0, 41.5, 4.0, 58.5 },
+        /* 56*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 118.2, 236.0, 42.2, 4.0, 57.8 },
+        /* 57*/ { BARCODE_UPCA_CC, -1, -1, -1, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 119.0, 236.0, 43.0, 4.0, 57.0 },
+        /* 58*/ { BARCODE_UPCA_CC, -1, -1, 0, 1, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 110, 236.0, 42, 4.0, 58 }, /* Hide text default */
+        /* 59*/ { BARCODE_UPCA_CC, -1, -1, 0, 0, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 110, 236.0, 40, 4.0, 60 }, /* Hide text */
+        /* 60*/ { BARCODE_UPCA_CC, -1, -1, 0, 1.5, 0, "01457130763+10", "[91]12", 0, 50, 7, 127, 276, 110, 236.0, 43.0, 4.0, 57.0 }, /* Hide text */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2221,12 +2229,13 @@ static void test_text_gap(const testCtx *const p_ctx) {
 
             if (data[i].expected_set_width == -1.0f) {
                 string = find_string(symbol, data[i].expected_set_x, data[i].expected_set_y);
-                assert_nonnull(string, "i:%d (%d) find_string(%g, %g) NULL\n",
-                    i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y);
+                assert_nonnull(string, "i:%d (%s) find_string(%.9g, %.9g) NULL\n",
+                    i, testUtilBarcodeName(data[i].symbology), data[i].expected_set_x, data[i].expected_set_y);
             } else {
                 rect = find_rect(symbol, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
-                assert_nonnull(rect, "i:%d (%d) find_rect(%g, %g, %g, %g) NULL\n",
-                                        i, data[i].symbology, data[i].expected_set_x, data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
+                assert_nonnull(rect, "i:%d (%s) find_rect(%.9g, %.9g, %.9g, %.9g) NULL\n",
+                                        i, testUtilBarcodeName(data[i].symbology), data[i].expected_set_x,
+                                        data[i].expected_set_y, data[i].expected_set_width, data[i].expected_set_height);
             }
         }
 
@@ -2607,10 +2616,10 @@ static void test_height(const testCtx *const p_ctx) {
         /*348*/ { BARCODE_DAFT, -1, 12, "DAFTDAFTDAFTDAFT", "", 0, 12, 3, 31, 62, 24, "" },
         /*349*/ { BARCODE_DAFT, -1, 16, "DAFTDAFTDAFTDAFT", "", 0, 16, 3, 31, 62, 32, "" },
         /*350*/ { BARCODE_DAFT, COMPLIANT_HEIGHT, 16, "DAFTDAFTDAFTDAFT", "", 0, 16, 3, 31, 62, 32, "" },
-        /*351*/ { BARCODE_DPD, -1, 1, "0123456789012345678901234567", "", 0, 1, 1, 189, 378, 14, "" },
-        /*352*/ { BARCODE_DPD, -1, 62, "0123456789012345678901234567", "", 0, 62, 1, 189, 378, 136, "" },
-        /*353*/ { BARCODE_DPD, COMPLIANT_HEIGHT, 62, "0123456789012345678901234567", "", ZINT_WARN_NONCOMPLIANT, 62, 1, 189, 378, 136, "" },
-        /*354*/ { BARCODE_DPD, COMPLIANT_HEIGHT, 62.5, "0123456789012345678901234567", "", 0, 62.5, 1, 189, 378, 137, "" },
+        /*351*/ { BARCODE_DPD, -1, 1, "0123456789012345678901234567", "", 0, 1, 1, 189, 378, 8, "" },
+        /*352*/ { BARCODE_DPD, -1, 62, "0123456789012345678901234567", "", 0, 62, 1, 189, 378, 130, "" },
+        /*353*/ { BARCODE_DPD, COMPLIANT_HEIGHT, 62, "0123456789012345678901234567", "", ZINT_WARN_NONCOMPLIANT, 62, 1, 189, 378, 130, "" },
+        /*354*/ { BARCODE_DPD, COMPLIANT_HEIGHT, 62.5, "0123456789012345678901234567", "", 0, 62.5, 1, 189, 378, 131, "" },
         /*355*/ { BARCODE_MICROQR, -1, 1, "12345", "", 0, 11, 11, 11, 22, 22, "Fixed width-to-height ratio, symbol->height ignored" },
         /*356*/ { BARCODE_HIBC_128, -1, 1, "1234567890", "", 0, 1, 1, 123, 246, 2, "" },
         /*357*/ { BARCODE_HIBC_128, COMPLIANT_HEIGHT, 1, "1234567890", "", 0, 1, 1, 123, 246, 2, "" },

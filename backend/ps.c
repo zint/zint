@@ -83,14 +83,14 @@ static void ps_convert(const unsigned char *string, unsigned char *ps_string) {
                 *p++ = '\\';
                 *p++ = *s;
                 break;
-            case 0xC2: /* See `to_iso8859_1()` in raster.c */
-                *p++ = *++s;
+            case 0xC2:
+                *p++ = *++s; /* C2 80-BF -> 80-BF */
                 break;
             case 0xC3:
-                *p++ = *++s + 64;
+                *p++ = *++s + 0x40; /* C3 80-BF -> C0-FF */
                 break;
             default:
-                if (*s < 0x80) {
+                if (*s < 0x80) { /* ASCII - all other Unicode points > U+00FF ignored */
                     *p++ = *s;
                 }
                 break;
@@ -189,7 +189,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     int ps_len = 0;
     int iso_latin1 = 0;
     int have_circles_with_width = 0, have_circles_without_width = 0;
-    const int extendable = is_extendable(symbol->symbology);
+    const int upcean = is_upcean(symbol->symbology);
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     const int is_rgb = (symbol->output_options & CMYK_COLOUR) == 0;
 
@@ -400,9 +400,9 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         float hy = symbol->vector->height - hex->y;
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            out_putsf("", 4, (float) (0.5 * previous_diameter) /*radius*/, feps);
-            out_putsf(" ", 4, (float) (0.43301270189221932338 * previous_diameter) /*half_sqrt3_radius*/, feps);
-            out_putsf(" ", 4, (float) (0.25 * previous_diameter) /*half_radius*/, feps);
+            out_putsf("", 4, 0.5f * previous_diameter /*radius*/, feps);
+            out_putsf(" ", 4, 0.43301270189221932338f * previous_diameter /*half_sqrt3_radius*/, feps);
+            out_putsf(" ", 4, 0.25f * previous_diameter /*half_radius*/, feps);
             fputc('\n', feps);
         }
         if (hex->next) {
@@ -420,7 +420,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     for (circle = symbol->vector->circles; circle; circle = circle->next) {
         if (previous_diameter != circle->diameter - circle->width) {
             previous_diameter = circle->diameter - circle->width;
-            radius = (float) (0.5 * previous_diameter);
+            radius = 0.5f * previous_diameter;
         }
         if (circle->colour) { /* Legacy - no longer used */
             /* A 'white' circle */
@@ -458,7 +458,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         const char *font;
         unsigned char *ps_string = (unsigned char *) z_alloca(ps_len + 1);
 
-        if ((symbol->output_options & BOLD_TEXT) && !extendable) {
+        if ((symbol->output_options & BOLD_TEXT) && !upcean) {
             font = "Helvetica-Bold";
         } else {
             font = "Helvetica";
@@ -479,7 +479,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             if (string->fsize != previous_fsize) {
                 fprintf(feps, "/%s findfont", font);
                 /* Compensate for Helvetica being smaller than Zint's OCR-B */
-                out_putsf( " ", 2, extendable ? string->fsize * 1.07f : string->fsize, feps);
+                out_putsf( " ", 2, upcean ? string->fsize * 1.07f : string->fsize, feps);
                 fputs(" scalefont setfont\n", feps);
                 previous_fsize = string->fsize;
             }

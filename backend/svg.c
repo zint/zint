@@ -112,8 +112,8 @@ static void svg_put_opacity_close(const unsigned char alpha, const float val, co
 }
 
 INTERNAL int svg_plot(struct zint_symbol *symbol) {
-    static const char normal_font_family[] = "Arimo, Arial, sans-serif";
-    static const char upcean_font_family[] = "OCRB, monospace";
+    static const char normal_font_family[] = "Arimo";
+    static const char upcean_font_family[] = "OCRB";
     FILE *fsvg;
     int error_number = 0;
     float previous_diameter;
@@ -134,7 +134,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     char colour_code[7];
     int len, html_len;
 
-    const int extendable = is_extendable(symbol->symbology);
+    const int upcean = is_upcean(symbol->symbology);
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     char *html_string;
 
@@ -193,7 +193,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     fputs(" <desc>Zint Generated Symbol</desc>\n", fsvg);
     if ((symbol->output_options & EMBED_VECTOR_FONT) && symbol->vector->strings) {
         fprintf(fsvg, " <style>@font-face {font-family:\"%s\"; src:url(data:font/woff2;base64,%s);}</style>\n",
-                extendable ? "OCRB" : "Arimo", extendable ? upcean_woff2 : normal_woff2);
+                upcean ? "OCRB" : "Arimo", upcean ? upcean_woff2 : normal_woff2);
     }
     fprintf(fsvg, " <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
@@ -241,9 +241,9 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         while (hex) {
             if (previous_diameter != hex->diameter) {
                 previous_diameter = hex->diameter;
-                radius = (float) (0.5 * previous_diameter);
-                half_radius = (float) (0.25 * previous_diameter);
-                half_sqrt3_radius = (float) (0.43301270189221932338 * previous_diameter);
+                radius = 0.5f * previous_diameter;
+                half_radius = 0.25f * previous_diameter;
+                half_sqrt3_radius = 0.43301270189221932338f * previous_diameter;
             }
             if ((hex->rotation == 0) || (hex->rotation == 180)) {
                 out_putsf("M", 2, hex->x, fsvg);
@@ -284,7 +284,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     while (circle) {
         if (previous_diameter != circle->diameter) {
             previous_diameter = circle->diameter;
-            radius = (float) (0.5 * previous_diameter);
+            radius = 0.5f * previous_diameter;
         }
         fputs("  <circle", fsvg);
         svg_put_fattrib(" cx=\"", 2, circle->x, fsvg);
@@ -312,7 +312,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         circle = circle->next;
     }
 
-    bold = (symbol->output_options & BOLD_TEXT) && !extendable;
+    bold = (symbol->output_options & BOLD_TEXT) && !upcean;
     string = symbol->vector->strings;
     while (string) {
         const char *const halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
@@ -320,7 +320,11 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         svg_put_fattrib(" x=\"", 2, string->x, fsvg);
         svg_put_fattrib(" y=\"", 2, string->y, fsvg);
         fprintf(fsvg, " text-anchor=\"%s\"", halign);
-        fprintf(fsvg, " font-family=\"%s\"", extendable ? upcean_font_family : normal_font_family);
+        if (upcean) {
+            fprintf(fsvg, " font-family=\"%s, monospace\"", upcean_font_family);
+        } else {
+            fprintf(fsvg, " font-family=\"%s, Arial, sans-serif\"", normal_font_family);
+        }
         svg_put_fattrib(" font-size=\"", 1, string->fsize, fsvg);
         if (bold) {
             fputs(" font-weight=\"bold\"", fsvg);

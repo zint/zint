@@ -33,7 +33,6 @@
 /*  The function "USPS_MSB_Math_CRC11GenerateFrameCheckSequence"
     is Copyright (C) 2006 United States Postal Service */
 
-#include <stdio.h>
 #include "common.h"
 #include "large.h"
 
@@ -266,11 +265,9 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    strcpy(zip, "");
-    strcpy(tracker, "");
-
     /* separate the tracking code from the routing code */
 
+    tracker[0] = zip[0] = '\0';
     read = 0;
     j = 0;
     for (i = 0; i < length; i++) {
@@ -407,7 +404,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
         }
     }
 
-    strcpy(data_pattern, "");
+    data_pattern[0] = '\0';
     temp[1] = '\0';
     for (i = 0; i < 65; i++) {
         j = 0;

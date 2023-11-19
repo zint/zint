@@ -79,8 +79,8 @@ static void test_checks(const testCtx *const p_ctx) {
         /* 14*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, -1, -1, -1, 0, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 768: Border width out of range (0 to 100)", -1 },
         /* 15*/ { BARCODE_CODE128, -1, "1234", -1, -1, -1, 0, 0, 0, 101, -1, -1, 0, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 768: Border width out of range (0 to 100)", -1 },
         /* 16*/ { BARCODE_CODE128, -1, "1234", -1, GS1_MODE, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", -1 },
-        /* 17*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, -0.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 219: Text gap out of range (0 to 10)", -1 },
-        /* 18*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, 10.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 219: Text gap out of range (0 to 10)", -1 },
+        /* 17*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, -5.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 219: Text gap out of range (-5 to 10)", -1 },
+        /* 18*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, 10.1, -1, -1, ZINT_ERROR_INVALID_OPTION, "Error 219: Text gap out of range (-5 to 10)", -1 },
         /* 19*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, 0, -0.5, -1, ZINT_ERROR_INVALID_OPTION, "Error 769: Guard bar descent out of range (0 to 50)", -1 },
         /* 20*/ { BARCODE_EANX, -1, "123456789012", -1, -1, -1, 0, 0, 0, 101, -1, -1, 0, 50.1, -1, ZINT_ERROR_INVALID_OPTION, "Error 769: Guard bar descent out of range (0 to 50)", -1 },
         /* 21*/ { BARCODE_GS1_128, -1, "[21]12\0004", 8, GS1_MODE, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 262: NUL characters not permitted in GS1 mode", -1 },
@@ -1505,7 +1505,7 @@ static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
             assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
                 i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].x_dim, data[i].filetype, ret, data[i].expected);
 
-            if (data[i].expected > 0.1f && data[i].expected < 200.0f /* Can't round trip scales <= 0.1 or >= 200.0f */
+            if (data[i].expected > 0.1f && data[i].expected < 200.0f /* Can't round trip scales <= 0.1 or >= 200.0 */
                     && (data[i].symbology == BARCODE_MAXICODE || strcmp(data[i].filetype, "gif") != 0)) { /* Non-MAXICODE raster rounds to half-increments */
                 x_dim_from_scale = ZBarcode_XdimDp_From_Scale(data[i].symbology, ret, data[i].dpmm, data[i].filetype);
                 x_dim_from_scale = stripf(stripf(roundf(x_dim_from_scale * 100.0f)) / 100.0f);

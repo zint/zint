@@ -269,8 +269,8 @@ INTERNAL int is_stackable(const int symbology) {
     return 0;
 }
 
-/* Whether `symbology` can have add-on (EAN-2 and EAN-5) */
-INTERNAL int is_extendable(const int symbology) {
+/* Whether `symbology` is EAN/UPC */
+INTERNAL int is_upcean(const int symbology) {
 
     switch (symbology) {
         case BARCODE_EANX:
@@ -590,54 +590,6 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
             local_segs[i].eci = default_eci;
         }
     }
-}
-
-/* Returns red component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_red(const int colour) {
-    int return_val = 0;
-
-    switch (colour) {
-        case 8: /* White */
-        case 3: /* Magenta */
-        case 4: /* Red */
-        case 5: /* Yellow */
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
-}
-
-/* Returns green component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_green(const int colour) {
-    int return_val = 0;
-
-    switch (colour) {
-        case 8: /* White */
-        case 1: /* Cyan */
-        case 5: /* Yellow */
-        case 6: /* Green */
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
-}
-
-/* Returns blue component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_blue(const int colour) {
-    int return_val = 0;
-
-    switch (colour) {
-        case 8: /* White */
-        case 1: /* Cyan */
-        case 2: /* Blue */
-        case 3: /* Magenta */
-            return_val = 255;
-            break;
-    }
-
-    return return_val;
 }
 
 #ifdef ZINT_TEST

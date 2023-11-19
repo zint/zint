@@ -16,7 +16,7 @@ Version 2.12.0.9 (dev) not released yet
 - For Windows, filenames are now assumed to be UTF-8 encoded. Affects `outfile`
   in `zint_symbol` and all API filename arguments
 - Never-used `fontsize` member removed from `zint_symbol`
-- Buffer length of member `text` (HRT) in `zint_symbol` extended 128 -> 160
+- Buffer length of member `text` (HRT) in `zint_symbol` extended 128 -> 200
   (client buffers may need checking/extending)
 - Font of text of SVG vector output now "OCRB, monospace" (EAN/UPC) or
   "Arimo, Arial, sans-serif" (all others)
@@ -27,6 +27,7 @@ Version 2.12.0.9 (dev) not released yet
 - Unlikely-to-be-used `bitmap_byte_length` member removed from `zint_symbol`
   (was only set on BMP output to length of BMP pixel array)
 - EXCODE39 now defaults to displaying check digit in Human Readable Text (HRT)
+- GS1_128 now warns if data > 48 (GS1 General Specifications max)
 
 Changes
 -------
@@ -66,8 +67,7 @@ Changes
 - GUI: use "OCRB" font for EAN/UPC and "Arimo" for all others (was "Helvetica"
   for both); add preview background colour option (default light grey) so as
   whitespace will show up in contrast (access via preview context menu)
-- CODE128/common: move `c128_hrt_cpy_iso8859_1()` to `hrt_cpy_iso8859_1()` and
-  add `ZINT_WARN_HRT_TRUNCATED` warning (for future use)
+- CODE128/common: add `ZINT_WARN_HRT_TRUNCATED` warning
 - QRCODE: better assert(), removing a NOLINT (2 left)
 - CLI: add some more barcode synonyms for DBAR
 - CMake: don't include png.c unless ZINT_USE_PNG (avoids clang warning)
@@ -80,7 +80,12 @@ Changes
 - CODE39/EXCODE39/LOGMARS: new hidden check digit option
 - GUI: move some symbology-specific options into Data Tab so separate tab
   unnecessary
+- DATAMATRIX: add `DM_ISO_144` (--dmiso144) option for ISO placement of ECC
+  codewords instead of default "de facto"
 - manual: add annexes on Qt and Tcl backends
+- CODE128: increase no. symbol chars max 60 -> 99
+- frontend: truncate overlong `--primary` instead of ignoring
+- man page: list size detail for matrix symbols (`--vers`)
 
 Bugs
 ----
@@ -103,6 +108,7 @@ Bugs
   shifting
 - GUI: fix not enabling font combo "Small Bold (vector only)" by default
 - CODEONE: fix S/T quiet zone 1X bottom (props BWIPP issue #245 doc)
+- EAN-2/EAN-5: fix `BARCODE_BIND_TOP/BIND/BOX` output
 
 
 Version 2.12.0 (2022-12-12)

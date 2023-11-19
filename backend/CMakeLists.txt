@@ -70,8 +70,10 @@ endif()
 
 if(ZINT_USE_PNG AND PNG_FOUND)
     zint_target_link_libraries(PNG::PNG)
+    message(STATUS "Using PNG")
 else()
     zint_target_compile_definitions(PRIVATE ZINT_NO_PNG)
+    message(STATUS "Not using PNG")
 endif()
 
 if(ZINT_TEST)

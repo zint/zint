@@ -316,7 +316,7 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(bwidth,  SIGNAL(valueChanged( int )), SLOT(update_preview()));
     connect(btype, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
     connect(cmbFontSetting, SIGNAL(currentIndexChanged( int )), SLOT(update_preview()));
-    connect(spnTextGap, SIGNAL(valueChanged( double )), SLOT(text_gap_zero()));
+    connect(spnTextGap, SIGNAL(valueChanged( double )), SLOT(text_gap_ui_set()));
     connect(spnTextGap, SIGNAL(valueChanged( double )), SLOT(update_preview()));
     connect(btnClearTextGap, SIGNAL(clicked( bool )), SLOT(clear_text_gap()));
     connect(txtData, SIGNAL(textChanged( const QString& )), SLOT(data_ui_set()));
@@ -530,7 +530,7 @@ void MainWindow::load_settings(QSettings &settings)
     spnScale->setValue(settings.value(QSL("studio/appearance/scale"), 1.0).toFloat());
     btype->setCurrentIndex(settings.value(QSL("studio/appearance/border_type"), 0).toInt());
     cmbFontSetting->setCurrentIndex(settings.value(QSL("studio/appearance/font_setting"), 0).toInt());
-    spnTextGap->setValue(settings.value(QSL("studio/appearance/text_gap"), 0.0).toFloat());
+    spnTextGap->setValue(settings.value(QSL("studio/appearance/text_gap"), 1.0).toFloat());
     chkHRTShow->setChecked(settings.value(QSL("studio/appearance/chk_hrt_show"), 1).toInt() ? true : false);
     chkCMYK->setChecked(settings.value(QSL("studio/appearance/chk_cmyk"), 0).toInt() ? true : false);
     chkQuietZones->setChecked(settings.value(QSL("studio/appearance/chk_quiet_zones"), 0).toInt() ? true : false);
@@ -1185,7 +1185,7 @@ void MainWindow::HRTShow_ui_set()
 void MainWindow::text_gap_ui_set()
 {
     bool hrtEnabled = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
-    btnClearTextGap->setEnabled(hrtEnabled && spnTextGap->value() != 0.0);
+    btnClearTextGap->setEnabled(hrtEnabled && spnTextGap->value() != 1.0);
 }
 
 void MainWindow::dotty_ui_set()
@@ -1219,7 +1219,7 @@ void MainWindow::codeone_ui_set()
 void MainWindow::upcean_no_quiet_zones_ui_set()
 {
     int symbology = bstyle_items[bstyle->currentIndex()].symbology;
-    if (!m_bc.bc.isExtendable(symbology) || symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK
+    if (!m_bc.bc.isEANUPC(symbology) || symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK
             || symbology == BARCODE_UPCA_CC)
         return;
 
@@ -1335,19 +1335,9 @@ void MainWindow::structapp_ui_set()
     }
 }
 
-void MainWindow::text_gap_zero()
-{
-    // Make sure special text "Default" triggered as QDoubleSpinBox can return values almost but not quite zero
-    double val = spnTextGap->value();
-    if (val != 0.0 && val < 0.0001) {
-        spnTextGap->setValue(0.0);
-    }
-    text_gap_ui_set();
-}
-
 void MainWindow::clear_text_gap()
 {
-    spnTextGap->setValue(0.0);
+    spnTextGap->setValue(1.0);
     spnTextGap->setFocus();
     update_preview();
 }
@@ -2703,6 +2693,7 @@ void MainWindow::update_preview()
     m_bc.bc.setGuardWhitespace(false);
     m_bc.bc.setDotSize(0.4f / 0.5f);
     m_bc.bc.setGuardDescent(5.0f);
+    m_bc.bc.setTextGap(1.0f);
     m_bc.bc.clearStructApp();
 
     switch (symbology) {
@@ -3613,8 +3604,8 @@ void MainWindow::automatic_info_set()
     } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbCbfWidth")))) {
             if (!isError && cmb->currentIndex() == 0) {
-                const int data = (m_bc.bc.encodedWidth() - 57) / 11;
-                cmb->setItemText(0, QString::asprintf("Automatic (%d (%d data))", data + 5, data));
+                const int data_w = (m_bc.bc.encodedWidth() - 57) / 11;
+                cmb->setItemText(0, QString::asprintf("Automatic (%d (%d data))", data_w + 5, data_w));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -4516,7 +4507,7 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
         if (chkHRTShow->isEnabled()) {
             cmbFontSetting->setCurrentIndex(settings.value(
                 QSL("studio/bc/%1/appearance/font_setting").arg(name), 0).toInt());
-            spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 0.0).toFloat());
+            spnTextGap->setValue(settings.value(QSL("studio/bc/%1/appearance/text_gap").arg(name), 1.0).toFloat());
             chkEmbedVectorFont->setChecked(settings.value(
                 QSL("studio/bc/%1/appearance/chk_embed_vector_font").arg(name), 0).toInt() ? true : false);
             chkHRTShow->setChecked(settings.value(

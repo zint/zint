@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.12.0.9
 %
-% July 2023
+% November 2023
 
 # NAME
 
@@ -327,7 +327,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--scalexdimdp=X[,R]`
 
 :   Scale the image according to X-dimension *X* and resolution *R*, where *X* is in mm and *R* is in dpmm (dots per
-    mm). *X* and *R* may be floating-point. *R* is optional and defaults to 12 dpmm (approximately 300 dpi).
+    mm). *X* and *R* may be floating-point. *R* is optional and defaults to 12 dpmm (approximately 300 dpi). *X* may
+    be zero in which case a symbology-specific default is used.
 
     The scaling takes into account the output filetype, and deals with all the details mentioned above. Units may be
     specified for *X* by appending "in" (inch) or "mm", and for *R* by appending "dpi" (dots per inch) or "dpmm" -
@@ -383,7 +384,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 `--textgap=NUMBER`
 
 :   Adjust the gap between the barcode and the Human Readable Text (HRT). *NUMBER* is in X-dimensions, and may be
-    floating-point. Maximum is 10; zero results in the default 1X being used.
+    floating-point. Maximum is 10 and minimum is -5. The default is 1.
 
 `--vers=INTEGER`
 
@@ -392,13 +393,108 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     For most matrix symbols, it specifies size:
 
         Aztec Code      1 to 36 (1 to 4 compact)
-        Code One        1 to 10
-        Data Matrix     1 to 48 (31 to 48 DMRE)
+                1   15x15     13  53x53     25  105x105
+                2   19x19     14  57x57     26  109x109
+                3   23x23     15  61x61     27  113x113
+                4   27x27     16  67x67     28  117x117
+                5   19x19     17  71x71     29  121x121
+                6   23x23     18  75x75     30  125x125
+                7   27x27     19  79x79     31  131x131
+                8   31x31     20  83x83     32  135x135
+                9   37x37     21  87x87     33  139x139
+                10  41x41     22  91x91     34  143x143
+                11  45x45     23  95x95     35  147x147
+                12  49x49     24  101x101   36  151x151
+        Code One        1 to 10 (9 and 10 variable width) (WxH)
+                1   16x18     6   70x76
+                2   22x22     7   104x98
+                3   28x28     8   148x134
+                4   40x42     9   Wx8
+                5   52x54     10  Wx16
+        Data Matrix     1 to 48 (31 to 48 DMRE) (HxW)
+                1   10x10     17  72x72     33  8x80
+                2   12x12     18  80x80     34  8x96
+                3   14x14     19  88x88     35  8x120
+                4   16x16     20  96x96     36  8x144
+                5   18x18     21  104x104   37  12x64
+                6   20x20     22  120x120   38  12x88
+                7   22x22     23  132x132   39  16x64
+                8   24x24     24  144x144   40  20x36
+                9   26x26     25  8x18      41  20x44
+                10  32x32     26  8x32      42  20x64
+                11  36x36     28  12x26     43  22x48
+                12  40x40     28  12x36     44  24x48
+                13  44x44     29  16x36     45  24x64
+                14  48x48     30  16x48     46  26x40
+                15  52x52     31  8x48      47  26x48
+                16  64x64     32  8x64      48  26x64
         Grid Matrix     1 to 13
+                1   18x18     6   78x78     11  138x138
+                2   30x30     7   90x90     12  150x150
+                3   42x42     8   102x102   13  162x162
+                4   54x54     9   114x114
+                5   66x66     10  126x126
         Han Xin         1 to 84
+                1   23x23     29  79x79     57  135x135
+                2   25x25     30  81x81     58  137x137
+                3   27x27     31  83x83     59  139x139
+                4   29x29     32  85x85     60  141x141
+                5   31x31     33  87x87     61  143x143
+                6   33x33     34  89x89     62  145x145
+                7   35x35     35  91x91     63  147x147
+                8   37x37     36  93x93     64  149x149
+                9   39x39     37  95x95     65  151x151
+                10  41x41     38  97x97     66  153x153
+                11  43x43     39  99x99     67  155x155
+                12  45x45     40  101x101   68  157x157
+                13  47x47     41  103x103   69  159x159
+                14  49x49     42  105x105   70  161x161
+                15  51x51     43  107x107   71  163x163
+                16  53x53     44  109x109   72  165x165
+                17  55x55     45  111x111   73  167x167
+                18  57x57     46  113x113   74  169x169
+                19  59x59     47  115x115   75  171x171
+                20  61x61     48  117x117   76  173x173
+                21  63x63     49  119x119   77  175x175
+                22  65x65     50  121x121   78  177x177
+                23  67x67     51  123x123   79  179x179
+                24  69x69     52  125x125   80  181x181
+                25  71x71     53  127x127   81  183x183
+                26  73x73     54  129x129   82  185x185
+                27  75x75     55  131x131   83  187x187
+                28  77x77     56  133x133   84  189x189
         Micro QR        1 to 4  (M1, M2, M3, M4)
+                1   11x11     3   15x15
+                2   13x13     4   17x17
         QR Code         1 to 40
-        rMQR            1 to 38 (33 to 38 automatic width)
+                1   21x21     15  77x77     29  133x133
+                2   25x25     16  81x81     30  137x137
+                3   29x29     17  85x85     31  141x141
+                4   33x33     18  89x89     32  145x145
+                5   37x37     19  93x93     33  149x149
+                6   41x41     20  97x97     34  153x153
+                7   45x45     21  101x101   35  157x157
+                8   49x49     22  105x105   36  161x161
+                9   53x53     23  109x109   37  165x165
+                10  57x57     24  113x113   38  169x169
+                11  61x61     25  117x117   39  173x173
+                12  65x65     26  121x121   40  177x177
+                13  69x69     27  125x125
+                14  73x73     28  129x129
+        rMQR            1 to 38 (33 to 38 automatic width) (HxW)
+                1   7x73      14  11x77     27  15x139
+                2   7x59      15  11x99     28  17x43
+                3   7x77      16  11x139    29  17x59
+                4   7x99      17  13x27     30  17x77
+                5   7x139     18  13x43     31  17x99
+                6   9x43      19  13x59     32  17x139
+                7   9x59      20  13x77     33  7xW
+                8   9x77      21  13x99     34  9xW
+                9   9x99      22  13x139    35  11xW
+                10  9x139     23  15x43     36  13xW
+                11  11x27     24  15x59     37  15xW
+                12  11x43     25  15x77     38  17xW
+                13  11x59     26  15x99
 
     For a number of linear symbols, it specifies check character options ("hide" or "hidden" means don't show in HRT,
     "visible" means do display in HRT):
@@ -457,7 +553,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     `--version`).
 
 `1`
-:    Human Readable Text was truncated (maximum 159 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
+:    Human Readable Text was truncated (maximum 199 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
 
 `2`
 :    Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)

@@ -232,7 +232,7 @@ INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int le
 
 /* Interleaved 2-of-5 (ITF-14) */
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, error_number, warn_number = 0, zeroes;
+    int i, error_number, zeroes;
     unsigned char localstr[16] = {0};
 
     if (length > 13) {
@@ -272,13 +272,13 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
             /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional
                to symbol->height), same as GS1-128: "in case of further space constraints"
                height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
-            warn_number = set_height(symbol, stripf(5.8f / 1.016f), stripf(31.75f / 0.495f), 0.0f, 0 /*no_errtxt*/);
+            error_number = set_height(symbol, stripf(5.8f / 1.016f), stripf(31.75f / 0.495f), 0.0f, 0 /*no_errtxt*/);
         } else {
             (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
-    return error_number ? error_number : warn_number;
+    return error_number;
 }
 
 /* Deutsche Post Leitcode */

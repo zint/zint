@@ -169,7 +169,7 @@ public:
     float textGap() const; // `symbol->text_gap`
     void setTextGap(float textGap);
 
-    /* Show (true) or hide (false) Human Readable Text */
+    /* Show (true) or hide (false) Human Readable Text (HRT) */
     bool showText() const; // `symbol->show_hrt`
     void setShowText(bool showText);
 
@@ -252,7 +252,8 @@ public:
     /* Test capabilities - `ZBarcode_Cap()` */
     bool hasHRT(int symbology = 0) const;
     bool isStackable(int symbology = 0) const;
-    bool isExtendable(int symbology = 0) const;
+    bool isEANUPC(int symbology = 0) const;
+    bool isExtendable(int symbology = 0) const; /* Legacy - same as `isEANUPC()` */
     bool isComposite(int symbology = 0) const;
     bool supportsECI(int symbology = 0) const;
     bool supportsGS1(int symbology = 0) const;

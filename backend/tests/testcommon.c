@@ -2579,10 +2579,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     int r, h;
     int parse = 0, parsefnc = p_parsefnc ? *p_parsefnc : 0;
 
-    int upcean = is_extendable(symbology);
-    int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
-    char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
-    char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
+    const int upcean = (ZBarcode_Cap(symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC;
+    const int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
+    const char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
+    const char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
     int addon_posn;
     int eci;
     int i, j, len;
@@ -3652,7 +3652,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
             }
             return NULL;
         }
-    } else if (is_extendable(symbology)) {
+    } else if ((ZBarcode_Cap(symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC) {
         if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK) {
             if (length < 9) {
                 if (length < 6) {
@@ -3821,7 +3821,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     const int have_c25inter = (symbology == BARCODE_C25INTER && ((expected_len & 1) || have_c25checkdigit))
                                 || symbology == BARCODE_ITF14 || symbology == BARCODE_DPLEIT
                                 || symbology == BARCODE_DPIDENT;
-    const int is_upcean = is_extendable(symbology);
+    const int is_upcean = (ZBarcode_Cap(symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC;
     const int need_dpd_prefix = (symbology == BARCODE_DPD && expected_len == 27 && symbol->option_2 != 1);
     const int is_vin_international = symbology == BARCODE_VIN && (symbol->option_2 & 1);
 

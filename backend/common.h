@@ -218,8 +218,8 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
 /* Whether `symbology` can have row binding */
 INTERNAL int is_stackable(const int symbology);
 
-/* Whether `symbology` can have add-on (EAN-2 and EAN-5) */
-INTERNAL int is_extendable(const int symbology);
+/* Whether `symbology` is EAN/UPC */
+INTERNAL int is_upcean(const int symbology);
 
 /* Whether `symbology` can have composite 2D component data */
 INTERNAL int is_composite(const int symbology);
@@ -270,16 +270,6 @@ INTERNAL int segs_length(const struct zint_seg segs[], const int seg_count);
 /* Shallow copies segments, adjusting default ECIs */
 INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
                 struct zint_seg local_segs[]);
-
-
-/* Returns red component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_red(const int colour);
-
-/* Returns green component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_green(const int colour);
-
-/* Returns blue component if any of ultra colour indexing "0CBMRYGKW" */
-INTERNAL int colour_to_blue(const int colour);
 
 
 #ifdef ZINT_TEST

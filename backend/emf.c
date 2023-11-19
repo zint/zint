@@ -46,7 +46,7 @@
 #include "emf.h"
 
 /* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
-#define mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0) / 1000.0f)
+#define mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0f) / 1000.0f)
 
 static int emf_count_rectangles(const struct zint_symbol *symbol) {
     int rectangles = 0;
@@ -367,6 +367,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     recordcount++;
 
     if (symbol->symbology == BARCODE_ULTRA) {
+        static const char ultra_chars[] = "0CBMRYGKW";
         for (i = 0; i < 9; i++) {
             emr_createbrushindirect_colour[i].type = 0x00000027; /* EMR_CREATEBRUSHINDIRECT */
             emr_createbrushindirect_colour[i].size = 24;
@@ -377,9 +378,10 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 emr_createbrushindirect_colour[i].log_brush.color.green = fggrn;
                 emr_createbrushindirect_colour[i].log_brush.color.blue = fgblu;
             } else {
-                emr_createbrushindirect_colour[i].log_brush.color.red = colour_to_red(i);
-                emr_createbrushindirect_colour[i].log_brush.color.green = colour_to_green(i);
-                emr_createbrushindirect_colour[i].log_brush.color.blue = colour_to_blue(i);
+                out_colour_char_to_rgb(ultra_chars[i],
+                        &emr_createbrushindirect_colour[i].log_brush.color.red,
+                        &emr_createbrushindirect_colour[i].log_brush.color.green,
+                        &emr_createbrushindirect_colour[i].log_brush.color.blue);
             }
             emr_createbrushindirect_colour[i].log_brush.color.reserved = 0;
             emr_createbrushindirect_colour[i].log_brush.brush_hatch = 0x0006; /* HS_SOLIDCLR */
@@ -479,7 +481,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
            causes various different rendering issues for LibreOffice Draw and Inkscape, so using following hack */
         if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlayed discs */
             previous_diameter = circ->diameter + circ->width;
-            radius = mul3dpf(0.5, previous_diameter);
+            radius = mul3dpf(0.5f, previous_diameter);
         }
         circle[this_circle].type = 0x0000002a; /* EMR_ELLIPSE */
         circle[this_circle].size = 24;
@@ -518,9 +520,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            radius = mul3dpf(0.5, previous_diameter);
-            half_radius = mul3dpf(0.25, previous_diameter);
-            half_sqrt3_radius = mul3dpf(0.43301270189221932338, previous_diameter);
+            radius = mul3dpf(0.5f, previous_diameter);
+            half_radius = mul3dpf(0.25f, previous_diameter);
+            half_sqrt3_radius = mul3dpf(0.43301270189221932338f, previous_diameter);
         }
 
         /* Note rotation done via world transform */
@@ -549,7 +551,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Create font records, alignment records and text color */
     if (symbol->vector->strings) {
-        bold = (symbol->output_options & BOLD_TEXT) && !is_extendable(symbol->symbology);
+        bold = (symbol->output_options & BOLD_TEXT) && !is_upcean(symbol->symbology);
         memset(&emr_extcreatefontindirectw, 0, sizeof(emr_extcreatefontindirectw));
         emr_extcreatefontindirectw.type = 0x00000052; /* EMR_EXTCREATEFONTINDIRECTW */
         emr_extcreatefontindirectw.size = 104;

@@ -1936,9 +1936,6 @@ the barcode in X-dimensions</string>
                 <string>Gap between barcode and text in X-dimensions
 (ignored if disabled)</string>
                </property>
-               <property name="specialValueText">
-                <string>Default</string>
-               </property>
                <property name="prefix">
                 <string/>
                </property>
@@ -1949,7 +1946,7 @@ the barcode in X-dimensions</string>
                 <number>2</number>
                </property>
                <property name="minimum">
-                <double>0.000000000000000</double>
+                <double>-5.000000000000000</double>
                </property>
                <property name="maximum">
                 <double>10.000000000000000</double>
@@ -1958,7 +1955,7 @@ the barcode in X-dimensions</string>
                 <double>0.100000000000000</double>
                </property>
                <property name="value">
-                <double>0.000000000000000</double>
+                <double>1.000000000000000</double>
                </property>
               </widget>
              </item>
@@ -1971,7 +1968,7 @@ the barcode in X-dimensions</string>
                 </size>
                </property>
                <property name="toolTip">
-                <string>Set text gap to zero (default 1X)</string>
+                <string>Set text gap to default 1X</string>
                </property>
                <property name="text">
                 <string/>

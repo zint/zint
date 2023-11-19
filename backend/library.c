@@ -73,6 +73,7 @@ struct zint_symbol *ZBarcode_Create(void) {
     symbol->input_mode = DATA_MODE;
     symbol->eci = 0; /* Default 0 uses ECI 3 */
     symbol->dot_size = 4.0f / 5.0f;
+    symbol->text_gap = 1.0f;
     symbol->guard_descent = 5.0f;
     symbol->warn_level = WARN_DEFAULT;
     symbol->bitmap = NULL;
@@ -1100,8 +1101,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "769: Guard bar descent out of range (0 to 50)");
     }
-    if ((symbol->text_gap < 0.0f) || (symbol->text_gap > 10.0f)) {
-        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Text gap out of range (0 to 10)");
+    if ((symbol->text_gap < -5.0f) || (symbol->text_gap > 10.0f)) {
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "219: Text gap out of range (-5 to 10)");
     }
     if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
         return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "766: Whitespace width out of range (0 to 100)");
@@ -1786,8 +1787,8 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     if ((cap_flag & ZINT_CAP_STACKABLE) && is_stackable(symbol_id)) {
         result |= ZINT_CAP_STACKABLE;
     }
-    if ((cap_flag & ZINT_CAP_EXTENDABLE) && is_extendable(symbol_id)) {
-        result |= ZINT_CAP_EXTENDABLE;
+    if ((cap_flag & ZINT_CAP_EANUPC) && is_upcean(symbol_id)) {
+        result |= ZINT_CAP_EANUPC;
     }
     if ((cap_flag & ZINT_CAP_COMPOSITE) && is_composite(symbol_id)) {
         result |= ZINT_CAP_COMPOSITE;

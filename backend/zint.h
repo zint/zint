@@ -85,7 +85,7 @@ extern "C" {
         struct zint_vector_circle *circles; /* Pointer to first circle */
     };
 
-    /* Structured Append info - ignored unless `zint_structapp.count` is set to non-zero value */
+    /* Structured Append info (see `symbol->structapp` below) - ignored unless `zint_structapp.count` is non-zero */
     struct zint_structapp {
         int index;          /* Position in Structured Append sequence, 1-based. Must be <= `count` */
         int count;          /* Number of symbols in Structured Append sequence. Set >= 2 to add SA Info */
@@ -115,12 +115,12 @@ extern "C" {
         int eci;            /* Extended Channel Interpretation. Default 0 (none) */
         float dpmm;         /* Resolution of output in dots per mm (BMP/EMF/PCX/PNG/TIF only). Default 0 (none) */
         float dot_size;     /* Size of dots used in BARCODE_DOTTY_MODE. Default 0.8 */
-        float text_gap;     /* Gap between barcode and text (HRT). 0 means use default (font-specific) */
+        float text_gap;     /* Gap between barcode and text (HRT) in X-dimensions. Default 1 */
         float guard_descent; /* Height in X-dimensions that EAN/UPC guard bars descend. Default 5 */
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
-        unsigned char text[160]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
+        unsigned char text[200]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
@@ -319,7 +319,7 @@ extern "C" {
 #define ULTRA_COMPRESSION       128     /* Enable Ultracode compression (experimental) */
 
 /* Warning and error conditions (API return values) */
-#define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 159 bytes) */
+#define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 199 bytes) */
 #define ZINT_WARN_INVALID_OPTION    2   /* Invalid option given but overridden by Zint */
 #define ZINT_WARN_USES_ECI          3   /* Automatic ECI inserted by Zint */
 #define ZINT_WARN_NONCOMPLIANT      4   /* Symbol created not compliant with standards */
@@ -343,7 +343,8 @@ extern "C" {
 /* Capability flags (ZBarcode_Cap() `cap_flag`) */
 #define ZINT_CAP_HRT                0x0001  /* Prints Human Readable Text? */
 #define ZINT_CAP_STACKABLE          0x0002  /* Is stackable? */
-#define ZINT_CAP_EXTENDABLE         0x0004  /* Is extendable with add-on data? (Is EAN/UPC?) */
+#define ZINT_CAP_EANUPC             0x0004  /* Is EAN/UPC? */
+#define ZINT_CAP_EXTENDABLE         0x0004  /* Legacy */
 #define ZINT_CAP_COMPOSITE          0x0008  /* Can have composite data? */
 #define ZINT_CAP_ECI                0x0010  /* Supports Extended Channel Interpretations? */
 #define ZINT_CAP_GS1                0x0020  /* Supports GS1 data? */

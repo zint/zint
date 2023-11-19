@@ -1260,7 +1260,7 @@ static void dbar_exp_hrt(struct zint_symbol *symbol, unsigned char source[], con
 
 /* GS1 DataBar Expanded, setting linkage for composite if `cc_rows` set */
 INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
-    int error_number, warn_number = 0;
+    int error_number, warn_number;
     int i, j, k, p, codeblocks, data_chars, vs, group, v_odd, v_even;
     int latch;
     int char_widths[21][8], checksum, check_widths[8], c_group;
@@ -1592,17 +1592,17 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->height = symbol->height ? 34.0f : 34.0f * stack_rows; /* Pass back min row or default height */
     } else {
         if (symbol->output_options & COMPLIANT_HEIGHT) {
-            if (warn_number) {
-                (void) set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
-            } else {
+            if (warn_number == 0) {
                 warn_number = set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 0 /*no_errtxt*/);
+            } else {
+                (void) set_height(symbol, 34.0f, 34.0f * stack_rows, 0.0f, 1 /*no_errtxt*/);
             }
         } else {
             (void) set_height(symbol, 0.0f, 34.0f * stack_rows, 0.0f, 1 /*no_errtxt*/);
         }
     }
 
-    return error_number ? error_number : warn_number;
+    return warn_number;
 }
 
 /* GS1 DataBar Expanded */

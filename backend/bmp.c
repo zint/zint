@@ -53,29 +53,25 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     FILE *bmp_file;
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
-    color_ref_t bg_color_ref;
-    color_ref_t fg_color_ref;
-    color_ref_t ultra_color_ref[8];
+    color_ref_t bg;
+    color_ref_t fg;
+    color_ref_t palette[8];
     int ultra_fg_index = 9;
     unsigned char map[128];
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
 
-    (void) out_colour_get_rgb(symbol->fgcolour, &fg_color_ref.red, &fg_color_ref.green, &fg_color_ref.blue,
-                NULL /*alpha*/);
-    fg_color_ref.reserved = 0x00;
+    (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, NULL /*alpha*/);
+    fg.reserved = 0x00;
 
-    (void) out_colour_get_rgb(symbol->bgcolour, &bg_color_ref.red, &bg_color_ref.green, &bg_color_ref.blue,
-                NULL /*alpha*/);
-    bg_color_ref.reserved = 0x00;
+    (void) out_colour_get_rgb(symbol->bgcolour, &bg.red, &bg.green, &bg.blue, NULL /*alpha*/);
+    bg.reserved = 0x00;
 
     if (symbol->symbology == BARCODE_ULTRA) {
-        static const int ultra_chars[8] = { 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
+        static const unsigned char ultra_chars[8] = { 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
         for (i = 0; i < 8; i++) {
-            ultra_color_ref[i].red = colour_to_red(i + 1);
-            ultra_color_ref[i].green = colour_to_green(i + 1);
-            ultra_color_ref[i].blue = colour_to_blue(i + 1);
-            ultra_color_ref[i].reserved = 0x00;
-            if (memcmp(&ultra_color_ref[i], &fg_color_ref, sizeof(fg_color_ref)) == 0) {
+            out_colour_char_to_rgb(ultra_chars[i], &palette[i].red, &palette[i].green, &palette[i].blue);
+            palette[i].reserved = 0x00;
+            if (memcmp(&palette[i], &fg, sizeof(fg)) == 0) {
                 ultra_fg_index = i + 1;
             }
             map[ultra_chars[i]] = i + 1;
@@ -106,14 +102,14 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     bitmap = bitmap_file_start + data_offset;
 
     /* Pixel Plotting */
-    if (symbol->symbology == BARCODE_ULTRA) {
+    if (bits_per_pixel == 4) {
         for (row = 0; row < symbol->bitmap_height; row++) {
             const unsigned char *pb = pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1));
             for (column = 0; column < symbol->bitmap_width; column++) {
                 bitmap[(column >> 1) + (row * row_size)] |= map[pb[column]] << (!(column & 1) << 2);
             }
         }
-    } else {
+    } else { /* bits_per_pixel == 1 */
         for (row = 0; row < symbol->bitmap_height; row++) {
             const unsigned char *pb = pixelbuf + (symbol->bitmap_width * (symbol->bitmap_height - row - 1));
             for (column = 0; column < symbol->bitmap_width; column++) {
@@ -144,21 +140,22 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     memcpy(bitmap_file_start, &file_header, sizeof(bitmap_file_header_t));
     bmp_posn += sizeof(bitmap_file_header_t);
     memcpy(bmp_posn, &info_header, sizeof(bitmap_info_header_t));
-
     bmp_posn += sizeof(bitmap_info_header_t);
-    memcpy(bmp_posn, &bg_color_ref, sizeof(color_ref_t));
-    if (symbol->symbology == BARCODE_ULTRA) {
+
+    memcpy(bmp_posn, &bg, sizeof(color_ref_t));
+    bmp_posn += sizeof(color_ref_t);
+    if (bits_per_pixel == 4) {
         for (i = 0; i < 8; i++) {
+            memcpy(bmp_posn, &palette[i], sizeof(color_ref_t));
             bmp_posn += sizeof(color_ref_t);
-            memcpy(bmp_posn, &ultra_color_ref[i], sizeof(color_ref_t));
         }
         if (ultra_fg_index == 9) {
-            bmp_posn += sizeof(color_ref_t);
-            memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
+            memcpy(bmp_posn, &fg, sizeof(color_ref_t));
+            /* bmp_posn += sizeof(color_ref_t); */ /* Not needed as long as last */
         }
     } else {
-        bmp_posn += sizeof(color_ref_t);
-        memcpy(bmp_posn, &fg_color_ref, sizeof(color_ref_t));
+        memcpy(bmp_posn, &fg, sizeof(color_ref_t));
+        /* bmp_posn += sizeof(color_ref_t); */ /* Not needed as long as last */
     }
 
     /* Open output file in binary mode */

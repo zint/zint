@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.12.0.9
-July 2023
+November 2023
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -1163,11 +1163,11 @@ followed by the angle of rotation as shown below.
 4.9 Adjusting Image Size (X-dimension)
 
 The size of the image can be altered using the --scale option, which sets the
-X-dimension. The scale is multiplied by 2 (with the exception of MaxiCode)
-before being applied to the X-dimension. The default scale is 1.
+X-dimension. The default scale is 1.
 
-For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for EMF
-vector output, and by 2 otherwise (non-EMF vector output).
+The scale is multiplied by 2 (with the exception of MaxiCode) before being
+applied to the X-dimension. For MaxiCode, it is multiplied by 10 for raster
+output, by 40 for EMF vector output, and by 2 otherwise (non-EMF vector output).
 
 For non-Maxicode raster output, the default scale of 1 results in an X-dimension
 of 2 pixels. For example for non-Maxicode PNG images a scale of 5 will increase
@@ -1179,23 +1179,38 @@ Scales for non-Maxicode raster output should be given in increments of 0.5, i.e.
 symbol due to interpolation. 0.5 increments are also faster to render.
 
 The minimum scale for non-Maxicode raster output in non-dotty mode is 0.5,
-giving a minimum X-dimension of 1 pixel. The minimum scale for raster output in
-dotty mode is 1 (see 4.15 Working with Dots). For raster output, text will not
-be printed for scales less than 1.
+giving a minimum X-dimension of 1 pixel. For MaxiCode, it is 0.2. The minimum
+scale for raster output in dotty mode is 1 (see 4.15 Working with Dots). For
+raster output, text will not be printed for scales less than 1.
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2
-(or for Maxicode EMF output, 4).
+(or for Maxicode EMF output, 4). The maximum scale for both raster and vector is
+200.
 
-The maximum scale for both raster and vector is 200.
+To summarize the more intricate details:
 
-Using measurable units to specify the X-dimension is often more useful, as
-discussed in the next section.
+  -------------------------------------------------------------------
+  MaxiCode?   Output            Multiplier   Min. Scale    Min. Scale
+                                             (non-dotty)   (dotty)
+  ----------- ----------------- ------------ ------------- ----------
+  No          Raster            2            0.5           1
+
+  No          Vector            2            0.1           0.1
+
+  Yes         Raster            10           0.2           N/A
+
+  Yes         Vector (non-EMF)  2            0.1           N/A
+
+  Yes         EMF               40           0.1           N/A
+  -------------------------------------------------------------------
+
+  : Table : Scaling Multipliers and Minima:
 
 4.9.1 Scaling by X-dimension and Resolution
 
-An alternative way to specify the scale which takes the above details into
-account and uses measurable units is to use the --scalexdimdp option, which has
-the format
+An alternative way to specify the scale, which takes the above details into
+account, is to specify measurable units using the --scalexdimdp option, which
+has the format
 
     --scalexdimdp=X[,R]
 
@@ -1259,9 +1274,9 @@ together if required, but only for vector output.
 [zint --bold -d "This Text" --small]
 
 The gap between the barcode and the text can be adjusted using the --textgap
-option, where the gap is given in X-dimensions (maximum 10X). A zero value uses
-the default gap (1X). Note that a very small gap may cause accented texts to
-overlap with the barcode:
+option, where the gap is given in X-dimensions, and may be negative (minimum
+-5X, maximum 10X). The default gap is 1X. Note that a very small gap may cause
+accented texts to overlap with the barcode:
 
 [zint -d "Áccent" --textgap=0.1]
 
@@ -1977,7 +1992,7 @@ encoding stages. The zint_symbol structure consists of the following members:
                                     dotty mode (in
                                     X-dimensions).
 
-  text_gap             float        Gap between barcode and    0 (default 1X)
+  text_gap             float        Gap between barcode and    1.0
                                     text (HRT) in
                                     X-dimensions.
 
@@ -1988,6 +2003,8 @@ encoding stages. The zint_symbol structure consists of the following members:
   structapp            Structured   Mark a symbol as part of a count 0
                        Append       sequence of symbols.       (disabled)
                        structure
+
+  debug                integer      Debugging flags.           0
 
   warn_level           integer      Affects error/warning      WARN_DEFAULT
                                     value returned by Zint
@@ -2007,13 +2024,13 @@ encoding stages. The zint_symbol structure consists of the following members:
   width                integer      Width of the generated     (output only)
                                     symbol.
 
-  encoding_data        array of     Representation of the      (output only)
+  encoded_data         array of     Representation of the      (output only)
                        unsigned     encoded data.
                        character
                        arrays
 
-  row_height           array of     Representation of the      (output only)
-                       floats       height of rows.
+  row_height           array of     Heights of each row.       (output only)
+                       floats
 
   errtxt               character    Error message in the event (output only)
                        string       that an error occurred,
@@ -2083,7 +2100,7 @@ the nature of the error. The errors generated by Zint are:
   Return Value                   Meaning
   ------------------------------ -----------------------------------------------
   ZINT_WARN_HRT_TRUNCATED        The Human Readable Text returned in text was
-                                 truncated (maximum 159 bytes).
+                                 truncated (maximum 199 bytes).
 
   ZINT_WARN_INVALID_OPTION       One of the values in zint_struct was set
                                  incorrectly but Zint has made a guess at what
@@ -2471,8 +2488,7 @@ see which are set.
 
   ZINT_CAP_STACKABLE          Is the symbology stackable?
 
-  ZINT_CAP_EXTENDABLE         Is the symbology extendable with add-on data?
-                              (i.e. is it EAN/UPC?)
+  ZINT_CAP_EANUPC[12]         Is the symbology EAN/UPC?
 
   ZINT_CAP_COMPOSITE          Does the symbology support composite data? (see
                               6.3 GS1 Composite Symbols (ISO 24723) below)
@@ -2945,8 +2961,8 @@ pharmaceuticals. The symbology is able to encode whole numbers between 3 and
 One of the most ubiquitous one-dimensional barcode symbologies, Code 128 was
 developed in 1981 by Computer Identics. This symbology supports full ASCII text
 and uses a three-Code Set system to compress the data into a smaller symbol.
-Zint automatically switches between Code Sets A, B and C (but see the special
-escapes below) and adds a hidden modulo-103 check digit.
+Zint automatically switches between Code Sets A, B and C (but see following) and
+adds a hidden modulo-103 check digit.
 
 Manual switching of Code Sets is possible using the --extraesc option (API
 input_mode |= EXTRA_ESCAPE_MODE) and the Code 128-specific escapes \^A, \^B,
@@ -2969,12 +2985,15 @@ supports the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128
 symbols. The ISO/IEC 8859-1 character set is shown in Annex A.2 Latin Alphabet
 No. 1 (ISO/IEC 8859-1).
 
+Zint can encode a maximum of 99 symbol characters, which allows for e.g. 198
+all-numeric characters.
+
 6.1.10.2 Code 128 Suppress Code Set C (Code Sets A and B only)
 
 [zint -b CODE128AB -d "130170X178"]
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[12] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[13] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special escapes to manually switch Code Sets mentioned above are
@@ -4725,7 +4744,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.12.0.9 % % July 2023
+% ZINT(1) Version 2.12.0.9 % % November 2023
 
 NAME
 
@@ -5088,7 +5107,8 @@ OPTIONS
 
     Scale the image according to X-dimension X and resolution R, where X is in
     mm and R is in dpmm (dots per mm). X and R may be floating-point. R is
-    optional and defaults to 12 dpmm (approximately 300 dpi).
+    optional and defaults to 12 dpmm (approximately 300 dpi). X may be zero in
+    which case a symbology-specific default is used.
 
     The scaling takes into account the output filetype, and deals with all the
     details mentioned above. Units may be specified for X by appending “in”
@@ -5150,8 +5170,8 @@ OPTIONS
 --textgap=NUMBER
 
     Adjust the gap between the barcode and the Human Readable Text (HRT). NUMBER
-    is in X-dimensions, and may be floating-point. Maximum is 10; zero results
-    in the default 1X being used.
+    is in X-dimensions, and may be floating-point. Maximum is 10 and minimum is
+    -5. The default is 1.
 
 --vers=INTEGER
 
@@ -5161,13 +5181,108 @@ OPTIONS
     For most matrix symbols, it specifies size:
 
         Aztec Code      1 to 36 (1 to 4 compact)
-        Code One        1 to 10
-        Data Matrix     1 to 48 (31 to 48 DMRE)
+                1   15x15     13  53x53     25  105x105
+                2   19x19     14  57x57     26  109x109
+                3   23x23     15  61x61     27  113x113
+                4   27x27     16  67x67     28  117x117
+                5   19x19     17  71x71     29  121x121
+                6   23x23     18  75x75     30  125x125
+                7   27x27     19  79x79     31  131x131
+                8   31x31     20  83x83     32  135x135
+                9   37x37     21  87x87     33  139x139
+                10  41x41     22  91x91     34  143x143
+                11  45x45     23  95x95     35  147x147
+                12  49x49     24  101x101   36  151x151
+        Code One        1 to 10 (9 and 10 variable width) (WxH)
+                1   16x18     6   70x76
+                2   22x22     7   104x98
+                3   28x28     8   148x134
+                4   40x42     9   Wx8
+                5   52x54     10  Wx16
+        Data Matrix     1 to 48 (31 to 48 DMRE) (HxW)
+                1   10x10     17  72x72     33  8x80
+                2   12x12     18  80x80     34  8x96
+                3   14x14     19  88x88     35  8x120
+                4   16x16     20  96x96     36  8x144
+                5   18x18     21  104x104   37  12x64
+                6   20x20     22  120x120   38  12x88
+                7   22x22     23  132x132   39  16x64
+                8   24x24     24  144x144   40  20x36
+                9   26x26     25  8x18      41  20x44
+                10  32x32     26  8x32      42  20x64
+                11  36x36     28  12x26     43  22x48
+                12  40x40     28  12x36     44  24x48
+                13  44x44     29  16x36     45  24x64
+                14  48x48     30  16x48     46  26x40
+                15  52x52     31  8x48      47  26x48
+                16  64x64     32  8x64      48  26x64
         Grid Matrix     1 to 13
+                1   18x18     6   78x78     11  138x138
+                2   30x30     7   90x90     12  150x150
+                3   42x42     8   102x102   13  162x162
+                4   54x54     9   114x114
+                5   66x66     10  126x126
         Han Xin         1 to 84
+                1   23x23     29  79x79     57  135x135
+                2   25x25     30  81x81     58  137x137
+                3   27x27     31  83x83     59  139x139
+                4   29x29     32  85x85     60  141x141
+                5   31x31     33  87x87     61  143x143
+                6   33x33     34  89x89     62  145x145
+                7   35x35     35  91x91     63  147x147
+                8   37x37     36  93x93     64  149x149
+                9   39x39     37  95x95     65  151x151
+                10  41x41     38  97x97     66  153x153
+                11  43x43     39  99x99     67  155x155
+                12  45x45     40  101x101   68  157x157
+                13  47x47     41  103x103   69  159x159
+                14  49x49     42  105x105   70  161x161
+                15  51x51     43  107x107   71  163x163
+                16  53x53     44  109x109   72  165x165
+                17  55x55     45  111x111   73  167x167
+                18  57x57     46  113x113   74  169x169
+                19  59x59     47  115x115   75  171x171
+                20  61x61     48  117x117   76  173x173
+                21  63x63     49  119x119   77  175x175
+                22  65x65     50  121x121   78  177x177
+                23  67x67     51  123x123   79  179x179
+                24  69x69     52  125x125   80  181x181
+                25  71x71     53  127x127   81  183x183
+                26  73x73     54  129x129   82  185x185
+                27  75x75     55  131x131   83  187x187
+                28  77x77     56  133x133   84  189x189
         Micro QR        1 to 4  (M1, M2, M3, M4)
+                1   11x11     3   15x15
+                2   13x13     4   17x17
         QR Code         1 to 40
-        rMQR            1 to 38 (33 to 38 automatic width)
+                1   21x21     15  77x77     29  133x133
+                2   25x25     16  81x81     30  137x137
+                3   29x29     17  85x85     31  141x141
+                4   33x33     18  89x89     32  145x145
+                5   37x37     19  93x93     33  149x149
+                6   41x41     20  97x97     34  153x153
+                7   45x45     21  101x101   35  157x157
+                8   49x49     22  105x105   36  161x161
+                9   53x53     23  109x109   37  165x165
+                10  57x57     24  113x113   38  169x169
+                11  61x61     25  117x117   39  173x173
+                12  65x65     26  121x121   40  177x177
+                13  69x69     27  125x125
+                14  73x73     28  129x129
+        rMQR            1 to 38 (33 to 38 automatic width) (HxW)
+                1   7x73      14  11x77     27  15x139
+                2   7x59      15  11x99     28  17x43
+                3   7x77      16  11x139    29  17x59
+                4   7x99      17  13x27     30  17x77
+                5   7x139     18  13x43     31  17x99
+                6   9x43      19  13x59     32  17x139
+                7   9x59      20  13x77     33  7xW
+                8   9x77      21  13x99     34  9xW
+                9   9x99      22  13x139    35  11xW
+                10  9x139     23  15x43     36  13xW
+                11  11x27     24  15x59     37  15xW
+                12  11x43     25  15x77     38  17xW
+                13  11x59     26  15x99
 
     For a number of linear symbols, it specifies check character options (“hide”
     or “hidden” means don’t show in HRT, “visible” means do display in HRT):
@@ -5226,7 +5341,7 @@ EXIT STATUS
     --ecinos, -t | --types, -v | --version).
 
 1
-    Human Readable Text was truncated (maximum 159 bytes)
+    Human Readable Text was truncated (maximum 199 bytes)
     (ZINT_WARN_HRT_TRUNCATED)
 
 2
@@ -5362,5 +5477,8 @@ Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 [11] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.
 
-[12] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[12] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
+recognised.
+
+[13] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.

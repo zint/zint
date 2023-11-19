@@ -36,7 +36,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#define C128_MAX 160
+/* Allow for a reasonable number of special Code Set escapes and for GS1 AI delimiters */
+#define C128_MAX    256
 
 #define C128_LATCHA 'A'
 #define C128_LATCHB 'B'

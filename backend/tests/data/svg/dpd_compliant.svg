@@ -1,11 +1,11 @@
 <?xml version="1.0" standalone="no"?>
 <!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
-<svg width="472" height="162" version="1.1" xmlns="http://www.w3.org/2000/svg">
+<svg width="472" height="156" version="1.1" xmlns="http://www.w3.org/2000/svg">
  <desc>Zint Generated Symbol</desc>
  <g id="barcode" fill="#000000">
-  <rect x="0" y="0" width="472" height="162" fill="#FFFFFF"/>
+  <rect x="0" y="0" width="472" height="156" fill="#FFFFFF"/>
   <path d="M25 6h4v133.33h-4ZM31 6h2v133.33h-2ZM37 6h2v133.33h-2ZM47 6h2v133.33h-2ZM55 6h2v133.33h-2ZM61 6h4v133.33h-4ZM69 6h2v133.33h-2ZM75 6h6v133.33h-6ZM83 6h4v133.33h-4ZM91 6h2v133.33h-2ZM95 6h6v133.33h-6ZM103 6h8v133.33h-8ZM113 6h2v133.33h-2ZM121 6h4v133.33h-4ZM129 6h2v133.33h-2ZM135 6h4v133.33h-4ZM143 6h6v133.33h-6ZM153 6h2v133.33h-2ZM157 6h6v133.33h-6ZM165 6h4v133.33h-4ZM173 6h2v133.33h-2ZM179 6h4v133.33h-4ZM187 6h2v133.33h-2ZM193 6h2v133.33h-2ZM201 6h8v133.33h-8ZM211 6h2v133.33h-2ZM219 6h2v133.33h-2ZM223 6h4v133.33h-4ZM229 6h4v133.33h-4ZM237 6h4v133.33h-4ZM245 6h4v133.33h-4ZM251 6h4v133.33h-4ZM259 6h4v133.33h-4ZM267 6h4v133.33h-4ZM275 6h4v133.33h-4ZM283 6h4v133.33h-4ZM289 6h4v133.33h-4ZM295 6h4v133.33h-4ZM303 6h4v133.33h-4ZM311 6h6v133.33h-6ZM321 6h4v133.33h-4ZM327 6h2v133.33h-2ZM333 6h4v133.33h-4ZM341 6h2v133.33h-2ZM349 6h2v133.33h-2ZM355 6h2v133.33h-2ZM359 6h4v133.33h-4ZM367 6h6v133.33h-6ZM377 6h4v133.33h-4ZM385 6h2v133.33h-2ZM389 6h2v133.33h-2ZM399 6h2v133.33h-2ZM403 6h2v133.33h-2ZM407 6h8v133.33h-8ZM421 6h4v133.33h-4ZM431 6h6v133.33h-6ZM439 6h2v133.33h-2ZM443 6h4v133.33h-4ZM25 0h422v6h-422Z"/>
-  <text x="236" y="152.68" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14">
+  <text x="235" y="152.68" text-anchor="middle" font-family="Arimo, Arial, sans-serif" font-size="14">
    0081 827 0998 0000 0200 28 101 276 B
   </text>
  </g>

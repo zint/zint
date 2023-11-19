@@ -1014,12 +1014,11 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
 }
 
 #ifdef ZINTLOG
-
-static int append_log(char log) {
+static int append_log(unsigned char log) {
     FILE *file;
 
     file = fopen("zintlog.txt", "a+");
-    fprintf(file, "%c", log);
+    fprintf(file, "%02X", log);
     (void) fclose(file);
     return 0;
 }
@@ -1028,8 +1027,7 @@ static int write_log(char log[]) {
     FILE *file;
 
     file = fopen("zintlog.txt", "a+");
-    fprintf(file, log); /*writes*/
-    fprintf(file, "\r\n"); /*writes*/
+    fprintf(file, "%s\n", log); /*writes*/
     (void) fclose(file);
     return 0;
 }
@@ -1055,14 +1053,11 @@ static int qr_evaluate(unsigned char *local, const int size) {
 #ifdef ZINTLOG
     /* bitmask output */
     for (y = 0; y < size; y++) {
-        strcpy(str, "");
         for (x = 0; x < size; x++) {
-            state = local[(y * size) + x];
-            append_log(state);
+            append_log(local[(y * size) + x]);
         }
         write_log("");
     }
-    write_log("");
 #endif
 
     /* Test 1: Adjacent modules in row/column in same colour */
@@ -1297,6 +1292,9 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     int size_squared = size * size;
     unsigned char *mask = (unsigned char *) z_alloca(size_squared);
     unsigned char *local = (unsigned char *) z_alloca(size_squared);
+#ifdef ZINTLOG
+    char str[15];
+#endif
 
     /* Perform data masking */
     memset(mask, 0, size_squared);
@@ -1382,8 +1380,7 @@ static int qr_apply_bitmask(unsigned char *grid, const int size, const int ecc_l
     }
 
 #ifdef ZINTLOG
-    char str[15];
-    sprintf(str, "%d", best_val);
+    sprintf(str, "%d", best_pattern);
     write_log("chose pattern:");
     write_log(str);
 #endif

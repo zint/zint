@@ -328,6 +328,10 @@ static void test_fopen(const testCtx *const p_ctx) {
     testFinish();
 }
 
+#ifndef _WIN32
+extern FILE *fmemopen(void *buf, size_t size, const char *mode);
+#endif
+
 static void test_out_putsf(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 

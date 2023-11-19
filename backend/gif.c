@@ -376,33 +376,12 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
             case '1': /* standard foreground */
                 RGBCur[0] = RGBfg[0]; RGBCur[1] = RGBfg[1]; RGBCur[2] = RGBfg[2];
                 break;
-            case 'W': /* white */
-                RGBCur[0] = 255; RGBCur[1] = 255; RGBCur[2] = 255;
+            default: /* Colour or error case */
+                if (!out_colour_char_to_rgb(pixelColour, &RGBCur[0], &RGBCur[1], &RGBCur[2])) {
+                    strcpy(symbol->errtxt, "612: unknown pixel colour");
+                    return ZINT_ERROR_INVALID_DATA;
+                }
                 break;
-            case 'C': /* cyan */
-                RGBCur[0] = 0; RGBCur[1] = 255; RGBCur[2] = 255;
-                break;
-            case 'B': /* blue */
-                RGBCur[0] = 0; RGBCur[1] = 0; RGBCur[2] = 255;
-                break;
-            case 'M': /* magenta */
-                RGBCur[0] = 255; RGBCur[1] = 0; RGBCur[2] = 255;
-                break;
-            case 'R': /* red */
-                RGBCur[0] = 255; RGBCur[1] = 0; RGBCur[2] = 0;
-                break;
-            case 'Y': /* yellow */
-                RGBCur[0] = 255; RGBCur[1] = 255; RGBCur[2] = 0;
-                break;
-            case 'G': /* green */
-                RGBCur[0] = 0; RGBCur[1] = 255; RGBCur[2] = 0;
-                break;
-            case 'K': /* black */
-                RGBCur[0] = 0; RGBCur[1] = 0; RGBCur[2] = 0;
-                break;
-            default: /* error case - return  */
-                strcpy(symbol->errtxt, "612: unknown pixel colour");
-                return ZINT_ERROR_INVALID_DATA;
         }
         /* Search, if RGB value is already present */
         fFound = 0;

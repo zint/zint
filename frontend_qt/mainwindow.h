@@ -75,7 +75,6 @@ public slots:
     void upcean_no_quiet_zones_ui_set();
     void upcae_no_quiet_zones_ui_set();
     void structapp_ui_set();
-    void text_gap_zero();
     void clear_text_gap();
     void on_encoded();
     void on_errored();
