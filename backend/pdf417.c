@@ -93,7 +93,7 @@ static const char *pdf_mode_str(const int mode) {
 /* text mode processing tables */
 
 /* TEX sub-mode assignments */
-static const char pdf_asciix[127] = {
+static const char pdf_asciix[256] = {
           0,       0,       0,       0,       0,       0,       0,       0, /* 00-07 */
           0, T_MXPNC, T_PUNCT,       0,       0, T_MXPNC,       0,       0, /* 08-0F .<HT><LF>..<CR>.. */
           0,       0,       0,       0,       0,       0,       0,       0, /* 10-17 */
@@ -109,7 +109,11 @@ static const char pdf_asciix[127] = {
     T_PUNCT, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, /* 60-67 `abcdefg */
     T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, /* 68-6F hijklmno */
     T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, T_LOWER, /* 70-77 pqrstuvw */
-    T_LOWER, T_LOWER, T_LOWER, T_PUNCT, T_PUNCT, T_PUNCT, T_PUNCT           /* 78-7E xyz{|}~ */
+    T_LOWER, T_LOWER, T_LOWER, T_PUNCT, T_PUNCT, T_PUNCT, T_PUNCT,       0, /* 78-7E xyz{|}~D */
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*80-9F*/
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*A0-BF*/
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*C0-DF*/
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*E0-FF*/
 };
 
 /* TEX sub-mode values */
@@ -152,7 +156,7 @@ static int pdf_quelmode(const unsigned char codeascii) {
     if (z_isdigit(codeascii)) {
         return PDF_NUM;
     }
-    if (codeascii < 127 && pdf_asciix[codeascii]) {
+    if (pdf_asciix[codeascii]) {
         return PDF_TEX;
     }
     /* 876 */
@@ -233,6 +237,7 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
     int j, indexlistet, curtable = *p_curtable, listet[PDF_MAX_LEN], chainet[PDF_MAX_LEN], wnet = 0;
 
     for (indexlistet = 0; indexlistet < length; indexlistet++) {
+        assert(pdf_asciix[chaine[start + indexlistet]]); /* Should only be dealing with TEX */
         listet[indexlistet] = pdf_asciix[chaine[start + indexlistet]];
     }
 
@@ -283,7 +288,7 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
 
 /* Whether to stay in numeric mode or not */
 static int pdf_num_stay(const unsigned char *chaine, const int indexliste, int liste[3][PDF_MAX_LEN], const int i) {
-    int curtable, last_len, last_ml, next_len, num_cws, tex_cws;
+    int curtable, not_tex, last_len, last_ml, next_len, num_cws, tex_cws;
 
     if (liste[0][i] >= 13 || (indexliste == 1 && liste[0][i] > 5)) {
         return 1;
@@ -293,15 +298,17 @@ static int pdf_num_stay(const unsigned char *chaine, const int indexliste, int l
     }
 
     curtable = T_ALPHA;
-    last_len = i == 0 ? 0 : pdf_text_submode_length(chaine, liste[2][i - 1], liste[0][i - 1], &curtable);
+    not_tex = i == 0 || liste[1][i - 1] == PDF_BYT;
+    last_len = not_tex ? 0 : pdf_text_submode_length(chaine, liste[2][i - 1], liste[0][i - 1], &curtable);
     last_ml = curtable == T_MIXED;
 
     curtable = T_ALPHA; /* Next len if after NUM, sub-mode will be alpha */
-    next_len = i == indexliste - 1 ? 0 : pdf_text_submode_length(chaine, liste[2][i + 1], liste[0][i + 1], &curtable);
+    not_tex = i == indexliste - 1 || liste[1][i + 1] == PDF_BYT;
+    next_len = not_tex ? 0 : pdf_text_submode_length(chaine, liste[2][i + 1], liste[0][i + 1], &curtable);
     num_cws = ((last_len + 1) >> 1) + 1 + 4 + (liste[0][i] > 11) + 1 + ((next_len + 1) >> 1);
 
     curtable = T_MIXED; /* Next len if stay TEX, sub-mode will be mixed */
-    next_len = i == indexliste - 1 ? 0 : pdf_text_submode_length(chaine, liste[2][i + 1], liste[0][i + 1], &curtable);
+    next_len = not_tex ? 0 : pdf_text_submode_length(chaine, liste[2][i + 1], liste[0][i + 1], &curtable);
     tex_cws = (last_len + !last_ml + liste[0][i] + next_len + 1) >> 1;
 
     if (num_cws > tex_cws) {
@@ -505,7 +512,7 @@ static void pdf_textprocess_minimal(int *chainemc, int *p_mclength, const unsign
         const int from = liste[2][i];
         for (j = 0; j < liste[0][i]; j++) {
             const int c = chaine[from + j];
-            const int t_table = c < 127 ? pdf_asciix[c] : 0;
+            const int t_table = pdf_asciix[c];
             if (!t_table) { /* BYT Shift? */
                 if (wnet & 1) {
                     chainet[wnet++] = 29; /* PS or AL (T_PUNCT) */
@@ -665,7 +672,7 @@ INTERNAL void pdf_numbprocess_test(int *chainemc, int *p_mclength, const unsigne
 static int pdf_table_length(const unsigned char source[], const int length, const int position, const int t_table) {
     int i;
 
-    for (i = position; i < length && source[i] < 127 && (pdf_asciix[source[i]] & t_table); i++);
+    for (i = position; i < length && (pdf_asciix[source[i]] & t_table); i++);
 
     return i - position;
 }
@@ -857,7 +864,7 @@ static void pdf_addEdge(const unsigned char *source, const int length, struct pd
 static void pdf_addEdges(const unsigned char source[], const int length, const int lastmode, struct pdf_edge *edges,
             const int from, struct pdf_edge *previous) {
     const unsigned char c = source[from];
-    const int t_table = c < 127 ? pdf_asciix[c] : 0;
+    const int t_table = pdf_asciix[c];
 
     if (t_table & T_ALPHA) {
         const int len = pdf_table_length(source, length, from, T_ALPHA);
