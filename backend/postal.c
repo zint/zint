@@ -559,12 +559,12 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
 
 /* Handles DAFT Code symbols */
 INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int posns[250];
+    int posns[576];
     int loopey;
     int writer;
 
-    if (length > 250) {
-        strcpy(symbol->errtxt, "492: Input too long (250 character maximum)");
+    if (length > 576) { /* 576 * 2 = 1152 */
+        strcpy(symbol->errtxt, "492: Input too long (576 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     to_upper(source, length);
@@ -610,11 +610,11 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
 /* Flattermarken - Not really a barcode symbology! */
 INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length) {
     int loop, error_number = 0;
-    char dest[512]; /* 90 * 4 + 1 ~ */
+    char dest[512]; /* 128 * 4 = 512 */
     char *d = dest;
 
-    if (length > 90) {
-        strcpy(symbol->errtxt, "494: Input too long (90 character maximum)");
+    if (length > 128) { /* 128 * 9 = 1152 */
+        strcpy(symbol->errtxt, "494: Input too long (128 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(NEON_F, source, length)) {

@@ -1,7 +1,7 @@
 /* plessey.c - Handles Plessey and MSI Plessey */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -55,14 +55,14 @@ static const char MSITable[10][8] = {
 INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i;
-    unsigned char checkptr[65 * 4 + 8] = {0};
+    unsigned char checkptr[67 * 4 + 8] = {0};
     static const char grid[9] = {1, 1, 1, 1, 0, 1, 0, 0, 1};
-    char dest[554]; /* 8 + 65 * 8 + 8 * 2 + 9 + 1 = 554 */
+    char dest[570]; /* 8 + 67 * 8 + 2 * 8 + 9 + 1 = 570 */
     char *d = dest;
     int error_number = 0;
 
-    if (length > 65) {
-        strcpy(symbol->errtxt, "370: Input too long (65 character maximum)");
+    if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
+        strcpy(symbol->errtxt, "370: Input too long (67 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(SSET_F, source, length)) {
@@ -130,7 +130,7 @@ static char msi_check_digit_mod10(const unsigned char source[], const int length
     int i, x = 0, undoubled = 0;
 
     for (i = length - 1; i >= 0; i--) {
-        /* Note overflow impossible for max length 65 * max weight 9 * max val 15 == 8775 */
+        /* Note overflow impossible for max length 92 * max weight 9 * max val 15 == 12420 */
         x += vals[undoubled][ctoi(source[i])];
         undoubled = !undoubled;
     }
@@ -144,7 +144,7 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
     int i, x = 0, weight = 2;
 
     for (i = length - 1; i >= 0; i--) {
-        /* Note overflow impossible for max length 65 * max weight 9 * max val 15 == 8775 */
+        /* Note overflow impossible for max length 92 * max weight 9 * max val 15 == 12420 */
         x += weight * ctoi(source[i]);
         weight++;
         if (weight > wrap) {
@@ -204,7 +204,7 @@ static char *msi_plessey_mod1010(struct zint_symbol *symbol, const unsigned char
             const int no_checktext, char *d) {
 
     int i;
-    unsigned char temp[65 + 2 + 1];
+    unsigned char temp[92 + 2 + 1];
 
     /* Append check digits */
     temp[0] = '\0';
@@ -272,7 +272,7 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
     /* Uses the IBM weight system if wrap = 7, and the NCR system if wrap = 9 */
     int i;
     char check_digit;
-    unsigned char temp[65 + 3 + 1];
+    unsigned char temp[92 + 3 + 1];
     int temp_len = length;
 
     temp[0] = '\0';
@@ -308,13 +308,13 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
 
 INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
-    char dest[550]; /* 2 + 65 * 8 + 3 * 8 + 3 + 1 = 550 */
+    char dest[766]; /* 2 + 92 * 8 + 3 * 8 + 3 + 1 = 766 */
     char *d = dest;
     int check_option = symbol->option_2;
     int no_checktext = 0;
 
-    if (length > 65) {
-        strcpy(symbol->errtxt, "372: Input too long (65 character maximum)");
+    if (length > 92) { /* 3 (Start) + 92 * 12 + 3 * 12 + 4 (Stop) = 1147 */
+        strcpy(symbol->errtxt, "372: Input too long (92 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(NEON_F, source, length)) {

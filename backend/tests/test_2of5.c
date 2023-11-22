@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,26 +45,26 @@ static void test_large(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_C25STANDARD, -1, "1", 80, 0, 1, 817 },
-        /*  1*/ { BARCODE_C25STANDARD, -1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_C25STANDARD, 1, "1", 80, 0, 1, 827 },
-        /*  3*/ { BARCODE_C25STANDARD, 1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_C25INTER, -1, "1", 90, 0, 1, 819 },
-        /*  5*/ { BARCODE_C25INTER, -1, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_C25INTER, 1, "1", 90, 0, 1, 837 },
-        /*  7*/ { BARCODE_C25INTER, 1, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_C25IATA, -1, "1", 45, 0, 1, 639 },
-        /*  9*/ { BARCODE_C25IATA, -1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { BARCODE_C25IATA, 1, "1", 45, 0, 1, 653 },
-        /* 11*/ { BARCODE_C25IATA, 1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { BARCODE_C25LOGIC, -1, "1", 80, 0, 1, 809 },
-        /* 13*/ { BARCODE_C25LOGIC, -1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { BARCODE_C25LOGIC, 1, "1", 80, 0, 1, 819 },
-        /* 15*/ { BARCODE_C25LOGIC, 1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_C25IND, -1, "1", 45, 0, 1, 649 },
-        /* 17*/ { BARCODE_C25IND, -1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_C25IND, 1, "1", 45, 0, 1, 663 },
-        /* 19*/ { BARCODE_C25IND, 1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_C25STANDARD, -1, "1", 112, 0, 1, 1137 },
+        /*  1*/ { BARCODE_C25STANDARD, -1, "1", 113, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_C25STANDARD, 1, "1", 112, 0, 1, 1147 },
+        /*  3*/ { BARCODE_C25STANDARD, 1, "1", 113, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_C25INTER, -1, "1", 125, 0, 1, 1143 },
+        /*  5*/ { BARCODE_C25INTER, -1, "1", 126, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { BARCODE_C25INTER, 1, "1", 125, 0, 1, 1143 },
+        /*  7*/ { BARCODE_C25INTER, 1, "1", 126, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_C25IATA, -1, "1", 80, 0, 1, 1129 },
+        /*  9*/ { BARCODE_C25IATA, -1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { BARCODE_C25IATA, 1, "1", 80, 0, 1, 1143 },
+        /* 11*/ { BARCODE_C25IATA, 1, "1", 81, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { BARCODE_C25LOGIC, -1, "1", 113, 0, 1, 1139 },
+        /* 13*/ { BARCODE_C25LOGIC, -1, "1", 114, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { BARCODE_C25LOGIC, 1, "1", 113, 0, 1, 1149 },
+        /* 15*/ { BARCODE_C25LOGIC, 1, "1", 114, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { BARCODE_C25IND, -1, "1", 79, 0, 1, 1125 },
+        /* 17*/ { BARCODE_C25IND, -1, "1", 80, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { BARCODE_C25IND, 1, "1", 79, 0, 1, 1139 },
+        /* 19*/ { BARCODE_C25IND, 1, "1", 80, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 20*/ { BARCODE_DPLEIT, -1, "1", 13, 0, 1, 135 },
         /* 21*/ { BARCODE_DPLEIT, -1, "1", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 22*/ { BARCODE_DPIDENT, -1, "1", 11, 0, 1, 117 },
@@ -74,11 +74,11 @@ static void test_large(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -144,9 +144,9 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -191,9 +191,9 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -316,12 +316,12 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[4096];
     char cmp_msg[1024];
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

@@ -132,8 +132,9 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
 
     int i;
     int h, c_digit, c_weight, c_count, k_digit, k_weight, k_count;
-    int weight[122], error_number = 0;
-    char dest[750]; /* 6 + 121 * 6 + 2 * 6 + 5 + 1 == 750 */
+    int weight[141]; /* 140 + 1 extra for 1st check */
+    char dest[864]; /* 6 + 140 * 6 + 2 * 6 + 5 + 1 = 864 */
+    int error_number = 0;
     char *d = dest;
     int num_check_digits;
     char checkstr[3] = {0};
@@ -142,8 +143,8 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
 
-    if (length > 121) {
-        strcpy(symbol->errtxt, "320: Input too long (121 character maximum)");
+    if (length > 140) { /* 8 (Start) + 140 * 8 + 2 * 8 (Check) + 7 (Stop) = 1151 */
+        strcpy(symbol->errtxt, "320: Input too long (140 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(SODIUM_MNS_F, source, length)) {
@@ -241,8 +242,8 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     int i;
     int counter;
     int error_number = 0;
-    int posns[85];
-    char dest[880]; /* 10 (Start) + 85 * 10 + 10 (Check) + 9 (Stop) + 1 = 880 */
+    int posns[86];
+    char dest[890]; /* 10 (Start) + 86 * 10 + 10 (Check) + 9 (Stop) + 1 = 890 */
     char *d = dest;
     char localstr[2] = {0};
 
@@ -257,17 +258,17 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         strcpy(symbol->errtxt, "322: Input too long (30 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
-    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 69)) {
+    } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 70)) { /* 16 (Start) + 70*16 + 15 (Stop) = 1151 */
         /* Note use 319 (2of5 range) as 340 taken by CODE128 */
-        strcpy(symbol->errtxt, "319: Input too long (67 character maximum)"); /* 69 less '+' and check */
+        strcpy(symbol->errtxt, "319: Input too long (68 character maximum)"); /* 70 less '+' and check */
         return ZINT_ERROR_TOO_LONG;
-    } else if (length > 85) {
-        strcpy(symbol->errtxt, "323: Input too long (85 character maximum)");
+    } else if (length > 86) { /* 13 (Start) + 86*13 + 12 (Stop) = 1143 */
+        strcpy(symbol->errtxt, "323: Input too long (86 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
     to_upper(source, length);
-    if (!is_sane_lookup(SILVER, 43, source, length, posns)) {
+    if (!is_sane_lookup(SILVER, 43 /* Up to "%" */, source, length, posns)) {
         strcpy(symbol->errtxt, "324: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
         return ZINT_ERROR_INVALID_DATA;
     }
@@ -306,7 +307,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     d += 9;
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
-        /* LOGMARS uses wider 'wide' bars than normal Code 39 */
+        /* LOGMARS and HIBC use wider 'wide' bars than normal Code 39 */
         counter = d - dest;
         for (i = 0; i < counter; i++) {
             if (dest[i] == '2') {
@@ -442,14 +443,14 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
 /* Extended Code 39 - ISO/IEC 16388:2007 Annex A */
 INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int length) {
 
-    unsigned char buffer[85 * 2 + 1] = {0};
+    unsigned char buffer[86 * 2 + 1] = {0};
     unsigned char *b = buffer;
     unsigned char check_digit = '\0';
     int i;
     int error_number;
 
-    if (length > 85) {
-        strcpy(symbol->errtxt, "328: Input too long (85 character maximum)");
+    if (length > 86) {
+        strcpy(symbol->errtxt, "328: Input too long (86 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -463,8 +464,8 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
         memcpy(b, EC39Ctrl[source[i]], 2);
         b += EC39Ctrl[source[i]][1] ? 2 : 1;
     }
-    if (b - buffer > 85) {
-        strcpy(symbol->errtxt, "317: Expanded input too long (85 symbol character maximum)");
+    if (b - buffer > 86) {
+        strcpy(symbol->errtxt, "317: Expanded input too long (86 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     *b = '\0';
@@ -501,17 +502,17 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
 
     int i;
     int h, weight, c, k, error_number = 0;
-    int values[110]; /* 107 + 2 (Checks) */
-    char buffer[216]; /* 107*2 (107 full ASCII) + 1 = 215 */
+    int values[125]; /* 123 + 2 (Checks) */
+    char buffer[247]; /* 123*2 (123 full ASCII) + 1 = 247 */
     char *b = buffer;
-    char dest[668]; /* 6 (Start) + 107*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 668 */
+    char dest[764]; /* 6 (Start) + 123*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 764 */
     char *d = dest;
 
     /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
     assert(length > 0);
 
-    if (length > 107) { /* 9 (Start) + 107*9 + 2*9 (Checks) + 10 (Stop) == 1000 */
-        strcpy(symbol->errtxt, "330: Input too long (107 character maximum)");
+    if (length > 123) { /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) = 1144 */
+        strcpy(symbol->errtxt, "330: Input too long (123 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
@@ -529,8 +530,8 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* Now we can check the true length of the barcode */
     h = b - buffer;
-    if (h > 107) {
-        strcpy(symbol->errtxt, "332: Expanded input too long (107 symbol character maximum)");
+    if (h > 123) {
+        strcpy(symbol->errtxt, "332: Expanded input too long (123 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 

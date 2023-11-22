@@ -2564,7 +2564,7 @@ widths.
 
 Developed by Intermec in 1977, Code 11 is similar to Code 2 of 5 Matrix and is
 primarily used in telecommunications. The symbol can encode data consisting of
-the digits 0-9 and the dash character (-) up to a maximum of 121 characters. Two
+the digits 0-9 and the dash character (-) up to a maximum of 140 characters. Two
 modulo-11 check digits are added by default. To add just one check digit, set
 --vers=1 (API option_2 = 1). To add no check digits, set --vers=2 (API
 option_2 = 2).
@@ -2582,9 +2582,9 @@ before using these standards.
 
 Also known as Code 2 of 5 Matrix, this is a self-checking code used in
 industrial applications and photo development. Standard Code 2 of 5 will encode
-numeric input (digits 0-9) up to a maximum of 80 digits. No check digit is added
-by default. To add a check digit, set --vers=1 (API option_2 = 1). To add a
-check digit but not show it in the Human Readable Text, set --vers=2 (API
+numeric input (digits 0-9) up to a maximum of 112 digits. No check digit is
+added by default. To add a check digit, set --vers=1 (API option_2 = 1). To add
+a check digit but not show it in the Human Readable Text, set --vers=2 (API
 option_2 = 2).
 
 6.1.2.2 IATA Code 2 of 5
@@ -2593,7 +2593,7 @@ option_2 = 2).
 
 Used for baggage handling in the air-transport industry by the International Air
 Transport Agency, this self-checking code will encode numeric input (digits 0-9)
-up to a maximum of 45 digits. No check digit is added by default, but can be set
+up to a maximum of 80 digits. No check digit is added by default, but can be set
 the same as for 6.1.2.1 Standard Code 2 of 5.
 
 6.1.2.3 Industrial Code 2 of 5
@@ -2601,7 +2601,7 @@ the same as for 6.1.2.1 Standard Code 2 of 5.
 [zint -b C25IND -d "9212320967"]
 
 Industrial Code 2 of 5 can encode numeric input (digits 0-9) up to a maximum of
-45 digits. No check digit is added by default, but can be set the same as for
+79 digits. No check digit is added by default, but can be set the same as for
 6.1.2.1 Standard Code 2 of 5.
 
 6.1.2.4 Interleaved Code 2 of 5 (ISO 16390)
@@ -2610,7 +2610,7 @@ Industrial Code 2 of 5 can encode numeric input (digits 0-9) up to a maximum of
 
 This self-checking symbology encodes pairs of numbers, and so can only encode an
 even number of digits (0-9). If an odd number of digits is entered a leading
-zero is added by Zint. A maximum of 45 pairs (90 digits) can be encoded. No
+zero is added by Zint. A maximum of 62 pairs (124 digits) can be encoded. No
 check digit is added by default, but can be set the same as for 6.1.2.1 Standard
 Code 2 of 5.
 
@@ -2619,7 +2619,7 @@ Code 2 of 5.
 [zint -b C25LOGIC -d "9212320967"]
 
 Data Logic does not include a check digit by default and can encode numeric
-input (digits 0-9) up to a maximum of 80 digits. Check digit options are the
+input (digits 0-9) up to a maximum of 113 digits. Check digit options are the
 same as for 6.1.2.1 Standard Code 2 of 5.
 
 6.1.2.6 ITF-14
@@ -2803,14 +2803,14 @@ UPC Version E.
 
 Also known as Plessey Code, this symbology was developed by the Plessey Company
 Ltd. in the UK. The symbol can encode data consisting of digits (0-9) or letters
-A-F up to a maximum of 65 characters and includes a hidden CRC check digit.
+A-F up to a maximum of 67 characters and includes a hidden CRC check digit.
 
 6.1.5.2 MSI Plessey
 
 [zint -b MSI_PLESSEY -d "6502" --vers=2]
 
 Based on Plessey and developed by MSI Data Corporation, MSI Plessey can encode
-numeric (digits 0-9) input of up to 65 digits. It has a range of check digit
+numeric (digits 0-9) input of up to 92 digits. It has a range of check digit
 options that are selectable by setting --vers (API option_2), shown in the table
 below:
 
@@ -2837,7 +2837,7 @@ modulo-10 check digits.
 [zint -b TELEPEN --compliantheight -d "Z80"]
 
 Telepen Alpha was developed by SB Electronic Systems Limited and can encode
-ASCII text input, up to a maximum of 30 characters. Telepen includes a hidden
+ASCII text input, up to a maximum of 69 characters. Telepen includes a hidden
 modulo-127 check digit, added by Zint.
 
 6.1.6.2 Telepen Numeric
@@ -2847,7 +2847,7 @@ modulo-127 check digit, added by Zint.
 Telepen Numeric allows compression of numeric data into a Telepen symbol. Data
 can consist of pairs of numbers or pairs consisting of a numerical digit
 followed an X character. For example: 466333 and 466X33 are valid codes whereas
-46X333 is not (the digit pair "X3" is not valid). Up to 60 digits can be
+46X333 is not (the digit pair "X3" is not valid). Up to 136 digits can be
 encoded. Telepen Numeric includes a hidden modulo-127 check digit which is added
 by Zint.
 
@@ -2857,7 +2857,7 @@ by Zint.
 
 [zint -b CODE39 --compliantheight -d "1A" --vers=1]
 
-Standard Code 39 was developed in 1974 by Intermec. Input data can be up to 85
+Standard Code 39 was developed in 1974 by Intermec. Input data can be up to 86
 characters in length and can include the characters 0-9, A-Z, dash (-), full
 stop (.), space, asterisk (*), dollar ($), slash (/), plus (+) and percent (%).
 The standard does not require a check digit but a modulo-43 check digit can be
@@ -2876,10 +2876,10 @@ options are the same as for 6.1.7.1 Standard Code 39 (ISO 16388).
 
 [zint -b CODE93 --compliantheight -d "C93"]
 
-A variation of Extended Code 39, Code 93 also supports full ASCII text. Two
-check characters are added by Zint. By default these check characters are not
-shown in the Human Readable Text, but may be shown by setting --vers=1 (API
-option_2 = 1).
+A variation of Extended Code 39, Code 93 also supports full ASCII text,
+accepting up to 123 characters. Two check characters are added by Zint. By
+default these check characters are not shown in the Human Readable Text, but may
+be shown by setting --vers=1 (API option_2 = 1).
 
 6.1.7.4 PZN (Pharmazentralnummer)
 
@@ -2901,7 +2901,8 @@ or if 7 digits supplied the check digit validated.
 LOGMARS (Logistics Applications of Automated Marking and Reading Symbols) is a
 variation of the Code 39 symbology used by the U.S. Department of Defense.
 LOGMARS encodes the same character set as 6.1.7.1 Standard Code 39 (ISO 16388),
-and the check digit options are also the same.
+and the check digit options are also the same. Input is restricted to a maximum
+of 30 characters.
 
 6.1.7.6 Code 32
 
@@ -2937,7 +2938,7 @@ option_2 = 1).
 Also known as NW-7, Monarch, ABC Codabar, USD-4, Ames Code and Code 27, this
 symbology was developed in 1972 by Monarch Marketing Systems for retail
 purposes. The American Blood Commission adopted Codabar in 1977 as the standard
-symbology for blood identification. Codabar can encode up to 60 characters
+symbology for blood identification. Codabar can encode up to 103 characters
 starting and ending with the letters A-D and containing between these letters
 the numbers 0-9, dash (-), dollar ($), colon (:), slash (/), full stop (.) or
 plus (+). No check character is generated by default, but a modulo-16 one can be
@@ -4446,7 +4447,7 @@ generated using the characters A-E as shown in the table below.
 Used for the recognition of page sequences in print-shops, the Flattermarken is
 not a true barcode symbol and requires precise knowledge of the position of the
 mark on the page. The Flattermarken system can encode numeric data up to a
-maximum of 90 digits and does not include a check digit.
+maximum of 128 digits and does not include a check digit.
 
 7. Legal and Version Information
 

@@ -1,7 +1,7 @@
 /* telepen.c - Handles Telepen and Telepen numeric */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -89,15 +89,15 @@ static const char TeleLens[128] = {
 INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len) {
     int i, count, check_digit;
     int error_number;
-    char dest[521]; /* 12 (start) + 30 * 16 (max for DELs) + 16 (check digit) + 12 (stop) + 1 = 521 */
+    char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
     char *d = dest;
 
     error_number = 0;
 
     count = 0;
 
-    if (src_len > 30) {
-        strcpy(symbol->errtxt, "390: Input too long (30 character maximum)");
+    if (src_len > 69) { /* 16 (Start) + 69 * 16 + 16 (Check) + 16 (Stop) = 1152 */
+        strcpy(symbol->errtxt, "390: Input too long (69 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     /* Start character */
@@ -153,14 +153,14 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     int count, check_digit, glyph;
     int error_number = 0;
     int i;
-    char dest[521]; /* 12 (start) + 30 * 16 (max for DELs) + 16 (check digit) + 12 (stop) + 1 = 521 */
+    char dest[1129]; /* 12 (Start) + 68 * 16 (max for DELs) + 16 (Check) + 12 (Stop) + 1 = 1129 */
     char *d = dest;
-    unsigned char temp[61];
+    unsigned char temp[137];
 
     count = 0;
 
-    if (src_len > 60) {
-        strcpy(symbol->errtxt, "392: Input too long (60 character maximum)");
+    if (src_len > 136) { /* 68*2 */
+        strcpy(symbol->errtxt, "392: Input too long (136 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(SODIUM_X_F, source, src_len)) {

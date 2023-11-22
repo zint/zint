@@ -48,8 +48,8 @@ static void test_large(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_FLAT, "1", 90, 0, 1, 810 },
-        /*  1*/ { BARCODE_FLAT, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_FLAT, "1", 128, 0, 1, 1152 },
+        /*  1*/ { BARCODE_FLAT, "1", 129, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { BARCODE_POSTNET, "1", 11, 0, 2, 123 },
         /*  3*/ { BARCODE_POSTNET, "1", 12, ZINT_WARN_NONCOMPLIANT, 2, 133 },
         /*  4*/ { BARCODE_POSTNET, "1", 38, ZINT_WARN_NONCOMPLIANT, 2, 393 },
@@ -74,16 +74,16 @@ static void test_large(const testCtx *const p_ctx) {
         /* 23*/ { BARCODE_PLANET, "1", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
         /* 24*/ { BARCODE_KIX, "1", 18, 0, 3, 143 },
         /* 25*/ { BARCODE_KIX, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 26*/ { BARCODE_DAFT, "D", 250, 0, 3, 499 },
-        /* 27*/ { BARCODE_DAFT, "D", 251, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 26*/ { BARCODE_DAFT, "D", 576, 0, 3, 1151 },
+        /* 27*/ { BARCODE_DAFT, "D", 577, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -128,9 +128,9 @@ static void test_koreapost(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_koreapost");
+    testStartSymbol("test_koreapost", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -181,9 +181,9 @@ static void test_japanpost(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_japanpost");
+    testStartSymbol("test_japanpost", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -279,14 +279,14 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char cmp_buf[8192];
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -475,7 +475,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char bwipp_buf[8192];
@@ -483,7 +483,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

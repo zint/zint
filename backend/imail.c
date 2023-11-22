@@ -246,7 +246,8 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     char data_pattern[200];
     int error_number = 0;
     int i, j, read;
-    char zip[35], tracker[35], temp[2];
+    char tracker[33] = {0}; /* Zero to prevent false warning from clang-tidy */
+    char zip[33], temp[2];
     large_uint accum;
     large_uint byte_array_reg;
     unsigned char byte_array[13];
@@ -267,7 +268,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* separate the tracking code from the routing code */
 
-    tracker[0] = zip[0] = '\0';
+    zip[0] = '\0';
     read = 0;
     j = 0;
     for (i = 0; i < length; i++) {
@@ -339,7 +340,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* and then the rest */
 
-    for (read = 2, len = (int) strlen(tracker); read < len; read++) {
+    for (read = 2; read < 20; read++) {
 
         large_mul_u64(&accum, 10);
         large_add_u64(&accum, ctoi(tracker[read]));

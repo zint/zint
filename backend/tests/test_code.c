@@ -45,40 +45,42 @@ static void test_large(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "1", 121, 0, 1, 999 }, /* 8 (Start) + 121*8 + 2*8 (Checks) + 7 (Stop) == 999 */
-        /*  1*/ { BARCODE_CODE11, -1, "1", 122, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_CODE39, -1, "1", 85, 0, 1, 1130 }, /* 13 (Start) + 85*13 + 12 (Stop) == 1130 */
-        /*  3*/ { BARCODE_CODE39, -1, "1", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_EXCODE39, -1, "1", 85, 0, 1, 1130 },
-        /*  5*/ { BARCODE_EXCODE39, -1, "1", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_EXCODE39, -1, "a", 42, 0, 1, 1117 }, /* Takes 2 encoding chars per char */
-        /*  7*/ { BARCODE_EXCODE39, -1, "a", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_EXCODE39, -1, "a", 85, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_CODE11, -1, "13", 140, 0, 1, 1151 }, /* 8 (Start) + 140*8 + 2*8 (Checks) + 7 (Stop) == 1151 */
+        /*  1*/ { BARCODE_CODE11, -1, "13", 141, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_CODE39, -1, "1", 86, 0, 1, 1143 }, /* 13 (Start) + 86*13 + 12 (Stop) == 1143 */
+        /*  3*/ { BARCODE_CODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_EXCODE39, -1, "1", 86, 0, 1, 1143 },
+        /*  5*/ { BARCODE_EXCODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { BARCODE_EXCODE39, -1, "a", 43, 0, 1, 1143 }, /* Takes 2 encoding chars per char */
+        /*  7*/ { BARCODE_EXCODE39, -1, "a", 44, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_EXCODE39, -1, "a", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  9*/ { BARCODE_LOGMARS, -1, "1", 30, 0, 1, 511 }, /* 16 (Start) + 30*16 + 15 (Stop) == 511 */
         /* 10*/ { BARCODE_LOGMARS, -1, "1", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { BARCODE_CODE93, -1, "1", 107, 0, 1, 1000 }, /* 9 (Start) + 107*9 + 2*9 (Checks) + 10 (Stop) == 1000 */
-        /* 12*/ { BARCODE_CODE93, -1, "1", 108, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 13*/ { BARCODE_CODE93, -1, "a", 53, 0, 1, 991 }, /* Takes 2 encoding chars per char */
-        /* 14*/ { BARCODE_CODE93, -1, "a", 54, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { BARCODE_CODE93, -1, "a", 107, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142 }, /* Takes 8 with correct check digit */
-        /* 17*/ { BARCODE_PZN, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_PZN, 1, "1", 6, 0, 1, 129 }, /* PZN7 takes 7 with correct check digit */
-        /* 19*/ { BARCODE_PZN, 1, "1", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 20*/ { BARCODE_VIN, -1, "1", 17, 0, 1, 246 },
-        /* 21*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 23*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259 },
-        /* 24*/ { BARCODE_HIBC_39, -1, "1", 67, 0, 1, 1135 }, /* 69 - 2 ('+' and check digit) */
-        /* 25*/ { BARCODE_HIBC_39, -1, "1", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 11*/ { BARCODE_CODE93, -1, "1", 123, 0, 1, 1144 }, /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) == 1144 */
+        /* 12*/ { BARCODE_CODE93, -1, "1", 124, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 13*/ { BARCODE_CODE93, -1, "a", 61, 0, 1, 1135 }, /* Takes 2 encoding chars per char */
+        /* 14*/ { BARCODE_CODE93, -1, "a", 62, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 15*/ { BARCODE_CODE93, -1, "a", 124, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { BARCODE_CODE93, -1, "a1", 82, 0, 1, 1144 }, /* Takes 1.5 encoding chars (1.5*82 == 123) */
+        /* 17*/ { BARCODE_CODE93, -1, "a1", 83, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142 }, /* Takes 8 with correct check digit */
+        /* 19*/ { BARCODE_PZN, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 20*/ { BARCODE_PZN, 1, "1", 6, 0, 1, 129 }, /* PZN7 takes 7 with correct check digit */
+        /* 21*/ { BARCODE_PZN, 1, "1", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 22*/ { BARCODE_VIN, -1, "1", 17, 0, 1, 246 },
+        /* 23*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 24*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 25*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259 },
+        /* 26*/ { BARCODE_HIBC_39, -1, "1", 68, 0, 1, 1151 }, /* 70 - 2 ('+' and check digit) */
+        /* 27*/ { BARCODE_HIBC_39, -1, "1", 69, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -164,9 +166,9 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -272,9 +274,9 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -447,7 +449,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[8192];
@@ -456,7 +458,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

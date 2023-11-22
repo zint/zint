@@ -86,6 +86,8 @@ Changes
 - CODE128: increase no. symbol chars max 60 -> 99
 - frontend: truncate overlong `--primary` instead of ignoring
 - man page: list size detail for matrix symbols (`--vers`)
+- CODE11/C25XXX/CODE39/EXCODE39/HIBC_39/CODE93/CODABAR/PLESSEY/MSI_PLESSEY/FLAT/
+  DAFT/TELEPEN/TELEPEN_NUM: increase allowed lengths
 
 Bugs
 ----

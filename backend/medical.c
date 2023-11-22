@@ -1,7 +1,7 @@
 /* medical.c - Handles 1 track and 2 track pharmacode and Codabar */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -202,14 +202,14 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
 INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i, error_number = 0;
-    int posns[60];
-    char dest[512];
+    int posns[103];
+    char dest[833]; /* (103 + 1) * 8 + 1 == 833 */
     char *d = dest;
     int add_checksum, count = 0, checksum = 0;
     int d_chars = 0;
 
-    if (length > 60) { /* No stack smashing please */
-        strcpy(symbol->errtxt, "356: Input too long (60 character maximum)");
+    if (length > 103) { /* No stack smashing please (103 + 1) * 11 = 1144 */
+        strcpy(symbol->errtxt, "356: Input too long (103 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;

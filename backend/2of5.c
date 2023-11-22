@@ -67,9 +67,9 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
             const int is_matrix, const char *start_stop[2], const int start_length, const int error_base) {
 
     int i;
-    char dest[500]; /* Largest destination 6 + (80 + 1) * 6 + 5 + 1 = 498 */
+    char dest[818]; /* Largest destination 4 + (80 + 1) * 10 + 3 + 1 = 818 */
     char *d = dest;
-    unsigned char temp[80 + 1 + 1]; /* Largest maximum 80 + optional check digit */
+    unsigned char temp[113 + 1 + 1]; /* Largest maximum 113 + optional check digit */
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
     if (length > max) {
@@ -123,35 +123,39 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
 /* Code 2 of 5 Standard (Code 2 of 5 Matrix) */
 INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 80, 1 /*is_matrix*/, C25MatrixStartStop, 6, 301);
+    /* 9 + (112 + 1) * 10 + 8 = 1147 */
+    return c25_common(symbol, source, length, 112, 1 /*is_matrix*/, C25MatrixStartStop, 6, 301);
 }
 
 /* Code 2 of 5 Industrial */
 INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 45, 0 /*is_matrix*/, C25IndustStartStop, 6, 303);
+    /* 10 + (79 + 1) * 14 + 9 = 1139 */
+    return c25_common(symbol, source, length, 79, 0 /*is_matrix*/, C25IndustStartStop, 6, 303);
 }
 
 /* Code 2 of 5 IATA */
 INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 45, 0 /*is_matrix*/, C25IataLogicStartStop, 4, 305);
+    /* 4 + (80 + 1) * 14 + 5 = 1143 */
+    return c25_common(symbol, source, length, 80, 0 /*is_matrix*/, C25IataLogicStartStop, 4, 305);
 }
 
 /* Code 2 of 5 Data Logic */
 INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_common(symbol, source, length, 80, 1 /*is_matrix*/, C25IataLogicStartStop, 4, 307);
+    /* 4 + (113 + 1) * 10 + 5 = 1149 */
+    return c25_common(symbol, source, length, 113, 1 /*is_matrix*/, C25IataLogicStartStop, 4, 307);
 }
 
 /* Common to Interleaved, ITF-14, DP Leitcode, DP Identcode */
 static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
             const int dont_set_height) {
     int i, j, error_number = 0;
-    char dest[468]; /* 4 + (90 + 2) * 5 + 3 + 1 = 468 */
+    char dest[638]; /* 4 + (125 + 1) * 5 + 3 + 1 = 638 */
     char *d = dest;
-    unsigned char temp[90 + 2 + 1];
+    unsigned char temp[125 + 1 + 1];
     int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
-    if (length > 90) {
-        strcpy(symbol->errtxt, "309: Input too long (90 character maximum)");
+    if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
+        strcpy(symbol->errtxt, "309: Input too long (125 character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
     if (!is_sane(NEON_F, source, length)) {

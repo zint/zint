@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,34 +45,34 @@ static void test_large(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 65, 0, 1, 787 },
-        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 65, 0, 1, 799 }, /* 1 mod-10 check digit */
-        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 65, 0, 1, 811 }, /* 2 mod-10 check digits */
-        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 65, 0, 1, 799 }, /* 1 mod-11 check digit */
-        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "3", 65, 0, 1, 811 }, /* 1 mod-11 double check digit "10" */
-        /*  9*/ { BARCODE_MSI_PLESSEY, 3, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 65, 0, 1, 811 }, /* 1 mod-11 and 1 mod-10 check digit */
-        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "3", 65, 0, 1, 823 }, /* 1 mod-11 double check digit "10" and 1 mod-10 check digit */
-        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "3", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 65, 0, 1, 799 }, /* 1 NCR mod-11 check digit */
-        /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 65, 0, 1, 811 }, /* 1 NCR mod-11 and 1 mod-10 check digit */
-        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_PLESSEY, -1, "A", 65, 0, 1, 1107 },
-        /* 19*/ { BARCODE_PLESSEY, -1, "A", 66, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 92, 0, 1, 1111 },
+        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 92, 0, 1, 1123 }, /* 1 mod-10 check digit */
+        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 92, 0, 1, 1135 }, /* 2 mod-10 check digits */
+        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 92, 0, 1, 1123 }, /* 1 mod-11 check digit */
+        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "4", 92, 0, 1, 1135 }, /* 1 mod-11 double check digit "10" */
+        /*  9*/ { BARCODE_MSI_PLESSEY, 3, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 92, 0, 1, 1135 }, /* 1 mod-11 and 1 mod-10 check digit */
+        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "4", 92, 0, 1, 1147 }, /* 1 mod-11 double check digit "10" and 1 mod-10 check digit */
+        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 92, 0, 1, 1123 }, /* 1 NCR mod-11 check digit */
+        /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 92, 0, 1, 1135 }, /* 1 NCR mod-11 and 1 mod-10 check digit */
+        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /* 18*/ { BARCODE_PLESSEY, -1, "A", 67, 0, 1, 1139 },
+        /* 19*/ { BARCODE_PLESSEY, -1, "A", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -144,9 +144,9 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -190,9 +190,9 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -268,7 +268,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char bwipp_buf[4096];
@@ -276,7 +276,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
