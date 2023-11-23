@@ -14,8 +14,10 @@ function run_zxingcpp_test() {
 }
 
 run_zxingcpp_test "test_2of5" "encode"
+run_zxingcpp_test "test_aztec" "large"
 run_zxingcpp_test "test_aztec" "encode"
 run_zxingcpp_test "test_aztec" "encode_segs"
+run_zxingcpp_test "test_aztec" "fuzz"
 run_zxingcpp_test "test_codablock" "input"
 run_zxingcpp_test "test_codablock" "encode"
 run_zxingcpp_test "test_code" "encode"

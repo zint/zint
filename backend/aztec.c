@@ -104,7 +104,6 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     int count;
     char next_mode;
     int reduced_length;
-    int byte_mode = 0;
     char *encode_mode = (char *) z_alloca(src_len + 1);
     unsigned char *reduced_source = (unsigned char *) z_alloca(src_len + 1);
     char *reduced_encode_mode = (char *) z_alloca(src_len + 1);
@@ -497,11 +496,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     current_mode = initial_mode;
     for (i = 0; i < reduced_length; i++) {
 
-        if (reduced_encode_mode[i] != 'B') {
-            byte_mode = 0;
-        }
-
-        if ((reduced_encode_mode[i] != current_mode) && (!byte_mode)) {
+        if (reduced_encode_mode[i] != current_mode) {
             /* Change mode */
             if (current_mode == 'U') {
                 switch (reduced_encode_mode[i]) {
@@ -628,27 +623,43 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
                 }
             }
 
-            /* Byte mode length descriptor */
-            if ((reduced_encode_mode[i] == 'B') && (!byte_mode)) {
+            /* Byte mode - process full block here */
+            if (reduced_encode_mode[i] == 'B') {
+                int big_batch = 0;
                 for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i + count] == 'B'); count++);
 
-                if (count > 2079) {
-                    return 0;
-                }
+                assert(count <= 2047 + 2078); /* Can't be more than 19968 / 8 = 2496 */
 
-                if (count > 31) {
+                if (count > 2047) { /* Max 11-bit number */
+                    big_batch = count > 2078 ? 2078 : count;
                     /* Put 00000 followed by 11-bit number of bytes less 31 */
-                    if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0;
-                    if (!(bp = az_bin_append_posn(count - 31, 11, binary_string, bp))) return 0;
-                } else {
-                    /* Put 5-bit number of bytes */
-                    if (!(bp = az_bin_append_posn(count, 5, binary_string, bp))) return 0;
+                    if (!(bp = az_bin_append_posn(big_batch - 31, 16, binary_string, bp))) return 0;
+                    for (j = 0; j < big_batch; j++) {
+                        if (!(bp = az_bin_append_posn(reduced_source[i++], 8, binary_string, bp))) return 0;
+                    }
+                    count -= big_batch;
                 }
-                byte_mode = 1;
+                if (count) {
+                    if (big_batch) {
+                        if (!(bp = az_bin_append_posn(31, 5, binary_string, bp))) return 0; /* B/S */
+                    }
+                    if (count > 31) {
+                        assert(count <= 2078);
+                        /* Put 00000 followed by 11-bit number of bytes less 31 */
+                        if (!(bp = az_bin_append_posn(count - 31, 16, binary_string, bp))) return 0;
+                    } else {
+                        /* Put 5-bit number of bytes */
+                        if (!(bp = az_bin_append_posn(count, 5, binary_string, bp))) return 0;
+                    }
+                    for (j = 0; j < count; j++) {
+                        if (!(bp = az_bin_append_posn(reduced_source[i++], 8, binary_string, bp))) return 0;
+                    }
+                }
+                i--;
+                continue;
             }
 
-            if ((reduced_encode_mode[i] != 'B') && (reduced_encode_mode[i] != 'u')
-                    && (reduced_encode_mode[i] != 'p')) {
+            if ((reduced_encode_mode[i] != 'u') && (reduced_encode_mode[i] != 'p')) {
                 current_mode = reduced_encode_mode[i];
             }
         }
@@ -709,8 +720,6 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 4, binary_string, bp)))
                     return 0;
             }
-        } else if (reduced_encode_mode[i] == 'B') {
-            if (!(bp = az_bin_append_posn(reduced_source[i], 8, binary_string, bp))) return 0;
         }
     }
 
@@ -1064,17 +1073,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             if (count == codeword_size) {
                 adjusted_string[adjusted_length - 1] = '0';
             }
-
-            if (debug_print) {
-                fputs("Codewords:\n", stdout);
-                for (i = 0; i < (adjusted_length / codeword_size); i++) {
-                    for (j = 0; j < codeword_size; j++) {
-                        printf("%c", adjusted_string[(i * codeword_size) + j]);
-                    }
-                    fputc(' ', stdout);
-                }
-                fputc('\n', stdout);
-            }
+            if (debug_print) printf("Adjusted Length: %d, Data Max Size %d\n", adjusted_length, data_maxsize);
 
         } while (adjusted_length > data_maxsize);
         /* This loop will only repeat on the rare occasions when the rule about not having all 1s or all 0s
@@ -1117,8 +1116,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
                 if (count == 0 || count == (codeword_size - 1)) {
                     /* Codeword of B-1 '0's or B-1 '1's */
-                    adjusted_string[j] = count == 0 ? '1' : '0';
-                    j++;
+                    if (j + 1 >= AZTEC_MAX_CAPACITY) {
+                        strcpy(symbol->errtxt, "704: Data too long for specified Aztec Code symbol size");
+                        return ZINT_ERROR_TOO_LONG;
+                    }
+                    adjusted_string[j++] = count == 0 ? '1' : '0';
                     count = binary_string[i] == '1' ? 1 : 0;
                 } else {
                     count = 0;
@@ -1127,9 +1129,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
                 count++;
             }
-
-            adjusted_string[j] = binary_string[i];
-            j++;
+            adjusted_string[j++] = binary_string[i];
         }
         adjusted_length = j;
 
@@ -1140,6 +1140,18 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             padbits = 0;
         }
         if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
+
+        /* Check if the data actually fits into the selected symbol size */
+        if (compact) {
+            data_maxsize = codeword_size * (AztecCompactSizes[layers - 1] - 3);
+        } else {
+            data_maxsize = codeword_size * (AztecSizes[layers - 1] - 3);
+        }
+
+        if (adjusted_length + padbits > data_maxsize) {
+            strcpy(symbol->errtxt, "505: Data too long for specified Aztec Code symbol size");
+            return ZINT_ERROR_TOO_LONG;
+        }
 
         for (i = 0; i < padbits; i++) {
             adjusted_string[adjusted_length++] = '1';
@@ -1155,26 +1167,15 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             adjusted_string[adjusted_length - 1] = '0';
         }
 
-        /* Check if the data actually fits into the selected symbol size */
-        if (compact) {
-            data_maxsize = codeword_size * (AztecCompactSizes[layers - 1] - 3);
-        } else {
-            data_maxsize = codeword_size * (AztecSizes[layers - 1] - 3);
-        }
+        if (debug_print) printf("Adjusted Length: %d\n", adjusted_length);
+    }
 
-        if (adjusted_length > data_maxsize) {
-            strcpy(symbol->errtxt, "505: Data too long for specified Aztec Code symbol size");
-            return ZINT_ERROR_TOO_LONG;
+    if (debug_print) {
+        printf("Codewords (%d):\n", adjusted_length / codeword_size);
+        for (i = 0; i < (adjusted_length / codeword_size); i++) {
+            printf(" %.*s", codeword_size, adjusted_string + i * codeword_size);
         }
-
-        if (debug_print) {
-            fputs("Codewords:\n", stdout);
-            for (i = 0; i < (adjusted_length / codeword_size); i++) {
-                printf("%.*s ", codeword_size, adjusted_string + i * codeword_size);
-            }
-            fputc('\n', stdout);
-        }
-
+        fputc('\n', stdout);
     }
 
     if (reader && (layers > 22)) {
@@ -1186,14 +1187,16 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (compact) {
         ecc_blocks = AztecCompactSizes[layers - 1] - data_blocks;
+        if (layers == 4) { /* Can use spare blocks for ECC (76 available - 64 max data blocks) */
+            ecc_blocks += 12;
+        }
     } else {
         ecc_blocks = AztecSizes[layers - 1] - data_blocks;
     }
 
     if (debug_print) {
         printf("Generating a %s symbol with %d layers\n", compact ? "compact" : "full-size", layers);
-        printf("Requires %d", compact ? AztecCompactSizes[layers - 1] : AztecSizes[layers - 1]);
-        printf(" codewords of %d-bits\n", codeword_size);
+        printf("Requires %d codewords of %d-bits\n", data_blocks + ecc_blocks, codeword_size);
         printf("    (%d data words, %d ecc words)\n", data_blocks, ecc_blocks);
     }
 

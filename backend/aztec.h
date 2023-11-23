@@ -1,7 +1,7 @@
 /* aztec.h - Handles Aztec 2D Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -104,7 +104,7 @@ static const short AztecSizes[32] = {
 };
 
 static const short AztecCompactSizes[4] = {
-    17, 40, 51, 76
+    17, 40, 51, 64 /* 64 data blocks (Mode Message max) but 76 altogether */
 };
 
 static const short Aztec10DataSizes[32] = {
@@ -136,7 +136,7 @@ static const short Aztec50DataSizes[32] = {
 };
 
 static const short AztecCompact10DataSizes[4] = {
-    78, 198, 336, 520
+    78, 198, 336, 512 /* Max 64 * 8 */
 };
 
 static const short AztecCompact23DataSizes[4] = {

@@ -113,6 +113,11 @@ Bugs
 - EAN-2/EAN-5: fix `BARCODE_BIND_TOP/BIND/BOX` output
 - PDF417: fix out-of-bounds crash in `pdf_text_submode_length()`, ticket #300,
   props Andre Maute
+- AZTEC: fix out-of-bounds crash when user-specified size given, ticket #300,
+  props Andre Maute; fix 4-layer compact block max (76 -> 64); fix encoding of
+  byte-blocks > 11-bit limit
+- library: fix 21-bit Unicode conversion in `escape_char_process()`; fix
+  restricting escaped data length by using de-escaped length to check
 
 
 Version 2.12.0 (2022-12-12)

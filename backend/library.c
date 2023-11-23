@@ -706,19 +706,16 @@ static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int
     return -1;
 }
 
-/* Helper to parse escape sequences */
-static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *p_length) {
+/* Helper to parse escape sequences. If `escaped_string` NULL, calculates length only */
+static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *p_length,
+            unsigned char *escaped_string) {
     const int length = *p_length;
-    int in_posn, out_posn;
+    int in_posn = 0, out_posn = 0;
     int ch;
     int val;
     int i;
     unsigned long unicode;
-    unsigned char *escaped_string = (unsigned char *) z_alloca(length + 1);
     const int extra_escape_mode = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
-
-    in_posn = 0;
-    out_posn = 0;
 
     do {
         if (input_string[in_posn] == '\\') {
@@ -729,7 +726,8 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
             ch = input_string[in_posn + 1];
             /* NOTE: if add escape character, must also update regex in "frontend_qt/datawindow.php" */
             switch (ch) {
-                case '0': escaped_string[out_posn] = 0x00; /* Null */
+                case '0':
+                    if (escaped_string) escaped_string[out_posn] = 0x00; /* Null */
                     in_posn += 2;
                     break;
                 case '^': /* CODE128 specific */
@@ -738,44 +736,64 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     /* Pass thru unaltered */
-                    escaped_string[out_posn++] = '\\';
-                    escaped_string[out_posn] = '^';
+                    if (escaped_string) {
+                        escaped_string[out_posn++] = '\\';
+                        escaped_string[out_posn] = '^';
+                    } else {
+                        out_posn++;
+                    }
                     in_posn += 2;
                     if (in_posn < length) { /* Note allowing '\\^' on its own at end */
-                        escaped_string[++out_posn] = input_string[in_posn++];
+                        if (escaped_string) {
+                            escaped_string[++out_posn] = input_string[in_posn++];
+                        } else {
+                            ++out_posn;
+                            in_posn++;
+                        }
                     }
                     break;
-                case 'E': escaped_string[out_posn] = 0x04; /* End of Transmission */
+                case 'E':
+                    if (escaped_string) escaped_string[out_posn] = 0x04; /* End of Transmission */
                     in_posn += 2;
                     break;
-                case 'a': escaped_string[out_posn] = 0x07; /* Bell */
+                case 'a':
+                    if (escaped_string) escaped_string[out_posn] = 0x07; /* Bell */
                     in_posn += 2;
                     break;
-                case 'b': escaped_string[out_posn] = 0x08; /* Backspace */
+                case 'b':
+                    if (escaped_string) escaped_string[out_posn] = 0x08; /* Backspace */
                     in_posn += 2;
                     break;
-                case 't': escaped_string[out_posn] = 0x09; /* Horizontal tab */
+                case 't':
+                    if (escaped_string) escaped_string[out_posn] = 0x09; /* Horizontal tab */
                     in_posn += 2;
                     break;
-                case 'n': escaped_string[out_posn] = 0x0a; /* Line feed */
+                case 'n':
+                    if (escaped_string) escaped_string[out_posn] = 0x0a; /* Line feed */
                     in_posn += 2;
                     break;
-                case 'v': escaped_string[out_posn] = 0x0b; /* Vertical tab */
+                case 'v':
+                    if (escaped_string) escaped_string[out_posn] = 0x0b; /* Vertical tab */
                     in_posn += 2;
                     break;
-                case 'f': escaped_string[out_posn] = 0x0c; /* Form feed */
+                case 'f':
+                    if (escaped_string) escaped_string[out_posn] = 0x0c; /* Form feed */
                     in_posn += 2;
                     break;
-                case 'r': escaped_string[out_posn] = 0x0d; /* Carriage return */
+                case 'r':
+                    if (escaped_string) escaped_string[out_posn] = 0x0d; /* Carriage return */
                     in_posn += 2;
                     break;
-                case 'e': escaped_string[out_posn] = 0x1b; /* Escape */
+                case 'e':
+                    if (escaped_string) escaped_string[out_posn] = 0x1b; /* Escape */
                     in_posn += 2;
                     break;
-                case 'G': escaped_string[out_posn] = 0x1d; /* Group Separator */
+                case 'G':
+                    if (escaped_string) escaped_string[out_posn] = 0x1d; /* Group Separator */
                     in_posn += 2;
                     break;
-                case 'R': escaped_string[out_posn] = 0x1e; /* Record Separator */
+                case 'R':
+                    if (escaped_string) escaped_string[out_posn] = 0x1e; /* Record Separator */
                     in_posn += 2;
                     break;
                 case 'd':
@@ -784,10 +802,11 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     if ((val = esc_base(symbol, input_string, length, in_posn + 2, ch)) == -1) {
                         return ZINT_ERROR_INVALID_DATA;
                     }
-                    escaped_string[out_posn] = val;
+                    if (escaped_string) escaped_string[out_posn] = val;
                     in_posn += 4 + (ch != 'x');
                     break;
-                case '\\': escaped_string[out_posn] = '\\';
+                case '\\':
+                    if (escaped_string) escaped_string[out_posn] = '\\';
                     in_posn += 2;
                     break;
                 case 'u':
@@ -814,46 +833,59 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                         sprintf(symbol->errtxt, "246: Invalid value for '\\%c' escape sequence in input data", ch);
                         return ZINT_ERROR_INVALID_DATA;
                     }
-                    if (unicode >= 0x800) {
-                        if (unicode >= 0x10000) {
-                            escaped_string[out_posn] = 0xf0 + (unsigned char) (unicode >> 16);
+                    if (unicode < 0x80) {
+                        if (escaped_string) escaped_string[out_posn] = (unsigned char) unicode;
+                    } else if (unicode < 0x800) {
+                        if (escaped_string) {
+                            escaped_string[out_posn++] = (unsigned char) (0xC0 | (unicode >> 6));
+                            escaped_string[out_posn] = (unsigned char) (0x80 | (unicode & 0x3F));
+                        } else {
                             out_posn++;
                         }
-                        escaped_string[out_posn] = 0xe0 + ((unicode & 0xf000) >> 12);
-                        out_posn++;
-                        escaped_string[out_posn] = 0x80 + ((unicode & 0x0fc0) >> 6);
-                        out_posn++;
-                        escaped_string[out_posn] = 0x80 + (unicode & 0x003f);
-                    } else if (unicode >= 0x80) {
-                        escaped_string[out_posn] = 0xc0 + ((unicode & 0x07c0) >> 6);
-                        out_posn++;
-                        escaped_string[out_posn] = 0x80 + (unicode & 0x003f);
+                    } else if (unicode < 0x10000) {
+                        if (escaped_string) {
+                            escaped_string[out_posn++] = (unsigned char) (0xE0 | (unicode >> 12));
+                            escaped_string[out_posn++] = (unsigned char) (0x80 | ((unicode >> 6) & 0x3F));
+                            escaped_string[out_posn] = (unsigned char) (0x80 | (unicode & 0x3F));
+                        } else {
+                            out_posn += 2;
+                        }
                     } else {
-                        escaped_string[out_posn] = unicode & 0x7f;
+                        if (escaped_string) {
+                            escaped_string[out_posn++] = (unsigned char) (0xF0 | (unicode >> 18));
+                            escaped_string[out_posn++] = (unsigned char) (0x80 | ((unicode >> 12) & 0x3F));
+                            escaped_string[out_posn++] = (unsigned char) (0x80 | ((unicode >> 6) & 0x3F));
+                            escaped_string[out_posn] = (unsigned char) (0x80 | (unicode & 0x3F));
+                        } else {
+                            out_posn += 3;
+                        }
                     }
                     in_posn += 6 + (ch == 'U') * 2;
                     break;
-                default: sprintf(symbol->errtxt, "234: Unrecognised escape character '\\%c' in input data", ch);
+                default:
+                    sprintf(symbol->errtxt, "234: Unrecognised escape character '\\%c' in input data", ch);
                     return ZINT_ERROR_INVALID_DATA;
                     break;
             }
         } else {
-            escaped_string[out_posn] = input_string[in_posn];
+            if (escaped_string) escaped_string[out_posn] = input_string[in_posn];
             in_posn++;
         }
         out_posn++;
     } while (in_posn < length);
 
-    memcpy(input_string, escaped_string, out_posn);
-    input_string[out_posn] = '\0';
+    if (escaped_string) {
+        escaped_string[out_posn] = '\0';
+    }
     *p_length = out_posn;
 
     return 0;
 }
 
-#ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *length) {
-    return escape_char_process(symbol, input_string, length);
+#ifdef ZINT_TEST /* Wrapper for direct testing (also used by `testUtilZXingCPPCmp()` in "tests/testcommon.c") */
+INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *p_length,
+                unsigned char *escaped_string) {
+    return escape_char_process(symbol, input_string, p_length, escaped_string);
 }
 #endif
 
@@ -920,10 +952,22 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             }
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, NULL);
         }
-        if (local_segs[i].length > ZINT_MAX_DATA_LEN) {
-            return error_tag(symbol, ZINT_ERROR_TOO_LONG, "777: Input data too long");
+        if (symbol->input_mode & ESCAPE_MODE) { /* Calculate de-escaped length for check against ZINT_MAX_DATA_LEN */
+            int escaped_len = local_segs[i].length;
+            error_number = escape_char_process(symbol, local_segs[i].source, &escaped_len, NULL /*escaped_string*/);
+            if (error_number != 0) { /* Only returns errors, not warnings */
+                return error_tag(symbol, error_number, NULL);
+            }
+            if (escaped_len > ZINT_MAX_DATA_LEN) {
+                return error_tag(symbol, ZINT_ERROR_TOO_LONG, "797: Input data too long");
+            }
+            total_len += escaped_len;
+        } else {
+            if (local_segs[i].length > ZINT_MAX_DATA_LEN) {
+                return error_tag(symbol, ZINT_ERROR_TOO_LONG, "777: Input data too long");
+            }
+            total_len += local_segs[i].length;
         }
-        total_len += local_segs[i].length;
     }
 
     if (total_len == 0) {
@@ -1141,27 +1185,30 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     local_sources = (unsigned char *) z_alloca(total_len + seg_count);
 
+    /* Copy input, de-escaping if required */
     for (i = 0, local_source = local_sources; i < seg_count; i++) {
         local_segs[i].source = local_source;
-        memcpy(local_segs[i].source, segs[i].source, local_segs[i].length);
-        local_segs[i].source[local_segs[i].length] = '\0';
+        if (symbol->input_mode & ESCAPE_MODE) {
+            /* Checked already */
+            (void) escape_char_process(symbol, segs[i].source, &local_segs[i].length, local_segs[i].source);
+        } else {
+            memcpy(local_segs[i].source, segs[i].source, local_segs[i].length);
+            local_segs[i].source[local_segs[i].length] = '\0';
+        }
         local_source += local_segs[i].length + 1;
     }
 
-    /* Start acting on input mode */
-    if (symbol->input_mode & ESCAPE_MODE) {
-        for (i = 0; i < seg_count; i++) {
-            error_number = escape_char_process(symbol, local_segs[i].source, &local_segs[i].length);
-            if (error_number != 0) { /* Only returns errors, not warnings */
-                return error_tag(symbol, error_number, NULL);
-            }
+    if ((symbol->input_mode & ESCAPE_MODE) && symbol->primary[0] && strchr(symbol->primary, '\\') != NULL) {
+        char primary[sizeof(symbol->primary)];
+        int primary_len = (int) strlen(symbol->primary);
+        if (primary_len >= (int) sizeof(symbol->primary)) {
+            return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "799: Invalid primary string");
         }
-        if (symbol->primary[0]) {
-            int primary_len = (int) strlen(symbol->primary);
-            error_number = escape_char_process(symbol, (unsigned char *) symbol->primary, &primary_len);
-            if (error_number != 0) { /* Only returns errors, not warnings */
-                return error_tag(symbol, error_number, NULL);
-            }
+        ustrcpy(primary, symbol->primary);
+        error_number = escape_char_process(symbol, (unsigned char *) primary, &primary_len,
+                                            (unsigned char *) symbol->primary);
+        if (error_number != 0) { /* Only returns errors, not warnings */
+            return error_tag(symbol, error_number, NULL);
         }
     }
 
