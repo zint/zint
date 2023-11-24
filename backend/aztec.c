@@ -839,8 +839,43 @@ static void az_populate_map(short AztecMap[], const int layers) {
     }
 }
 
+/* Helper to insert dummy '0' or '1's into runs of same bits. See ISO/IEC 24778:2008 7.3.1.2 */
+static int az_bitrun_stuff(const char *binary_string, const int data_length, const int codeword_size,
+            char adjusted_string[AZTEC_MAX_CAPACITY]) {
+    int i, j = 0, count = 0;
+
+    for (i = 0; i < data_length; i++) {
+
+        if ((j + 1) % codeword_size == 0) {
+            /* Last bit of codeword */
+            /* 7.3.1.2 "whenever the first B-1 bits ... are all “0”s, then a dummy “1” is inserted..."
+               "Similarly a message codeword that starts with B-1 “1”s has a dummy “0” inserted..." */
+
+            if (count == 0 || count == (codeword_size - 1)) {
+                /* Codeword of B-1 '0's or B-1 '1's */
+                if (j >= AZTEC_MAX_CAPACITY) {
+                    return 0; /* Fail */
+                }
+                adjusted_string[j++] = count == 0 ? '1' : '0';
+                count = binary_string[i] == '1' ? 1 : 0;
+            } else {
+                count = 0;
+            }
+
+        } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
+            count++;
+        }
+        if (j >= AZTEC_MAX_CAPACITY) {
+            return 0; /* Fail */
+        }
+        adjusted_string[j++] = binary_string[i];
+    }
+
+    return j;
+}
+
 INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
-    int x, y, i, j, p, data_blocks, ecc_blocks, layers, total_bits;
+    int x, y, i, p, data_blocks, ecc_blocks, layers, total_bits;
     char bit_pattern[AZTEC_MAP_POSN_MAX + 1]; /* Note AZTEC_MAP_POSN_MAX > AZTEC_BIN_CAPACITY */
     /* To lessen stack usage, share binary_string buffer with bit_pattern, as accessed separately */
     char *binary_string = bit_pattern;
@@ -1024,31 +1059,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
                 codeword_size = 12;
             }
 
-            j = 0;
-            count = 0;
-            for (i = 0; i < data_length; i++) {
-                if ((j + 1) % codeword_size == 0) {
-                    /* Last bit of codeword */
-                    /* 7.3.1.2 "whenever the first B-1 bits ... are all “0”s, then a dummy “1” is inserted..."
-                       "Similarly a message codeword that starts with B-1 “1”s has a dummy “0” inserted..." */
-
-                    if (count == 0 || count == (codeword_size - 1)) {
-                        /* Codeword of B-1 '0's or B-1 '1's */
-                        adjusted_string[j] = count == 0 ? '1' : '0';
-                        j++;
-                        count = binary_string[i] == '1' ? 1 : 0;
-                    } else {
-                        count = 0;
-                    }
-
-                } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
-                    count++;
-                }
-
-                adjusted_string[j] = binary_string[i];
-                j++;
+            adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, adjusted_string);
+            if (adjusted_length == 0) {
+                strcpy(symbol->errtxt, "705: Data too long for specified Aztec Code symbol size");
+                return ZINT_ERROR_TOO_LONG;
             }
-            adjusted_length = j;
             adjustment_size = adjusted_length - data_length;
 
             /* Add padding */
@@ -1107,31 +1122,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             codeword_size = 12;
         }
 
-        j = 0;
-        count = 0;
-        for (i = 0; i < data_length; i++) {
-
-            if ((j + 1) % codeword_size == 0) {
-                /* Last bit of codeword */
-
-                if (count == 0 || count == (codeword_size - 1)) {
-                    /* Codeword of B-1 '0's or B-1 '1's */
-                    if (j + 1 >= AZTEC_MAX_CAPACITY) {
-                        strcpy(symbol->errtxt, "704: Data too long for specified Aztec Code symbol size");
-                        return ZINT_ERROR_TOO_LONG;
-                    }
-                    adjusted_string[j++] = count == 0 ? '1' : '0';
-                    count = binary_string[i] == '1' ? 1 : 0;
-                } else {
-                    count = 0;
-                }
-
-            } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
-                count++;
-            }
-            adjusted_string[j++] = binary_string[i];
+        adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, adjusted_string);
+        if (adjusted_length == 0) {
+            strcpy(symbol->errtxt, "704: Data too long for specified Aztec Code symbol size");
+            return ZINT_ERROR_TOO_LONG;
         }
-        adjusted_length = j;
 
         remainder = adjusted_length % codeword_size;
 
