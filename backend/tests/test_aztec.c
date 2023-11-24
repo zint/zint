@@ -149,6 +149,7 @@ static void test_large(const testCtx *const p_ctx) {
         /* 96*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\xFF", 2150, ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Data too long for specified Aztec Code symbol size" },
         /* 97*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\xFF", 2237, 0, 151, 151, "" },
         /* 98*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\xFF", 2238, ZINT_ERROR_TOO_LONG, -1, -1, "Error 502: Input too long or too many extended ASCII characters" },
+        /* 97*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\xFF", 2205, 0, 151, 151, "" },
         /* 99*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, 0, 143, 143, "" },
         /*100*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Data too long for specified Aztec Code symbol size" },
         /*101*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4483, 0, 147, 147, "" },

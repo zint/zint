@@ -3584,7 +3584,13 @@ void MainWindow::automatic_info_set()
                 if (w <= 27) { // Note Zint always favours Compact on automatic
                     txt->setText(QString::asprintf("(%d X %d Compact)", w, w));
                 } else {
-                    txt->setText(QString::asprintf("(%d X %d (%d Layers))", w, w, (w - 15) / 4));
+                    int layers;
+                    if (w <= 95) {
+                        layers = (w - 16 + (w <= 61)) / 4;
+                    } else {
+                        layers = (w - 20 + (w <= 125) * 2) / 4;
+                    }
+                    txt->setText(QString::asprintf("(%d X %d (%d Layers))", w, w, layers));
                 }
             } else {
                 txt->setText(QSL(""));
