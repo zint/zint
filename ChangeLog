@@ -88,6 +88,7 @@ Changes
 - man page: list size detail for matrix symbols (`--vers`)
 - CODE11/C25XXX/CODE39/EXCODE39/HIBC_39/CODE93/CODABAR/PLESSEY/MSI_PLESSEY/FLAT/
   DAFT/TELEPEN/TELEPEN_NUM: increase allowed lengths
+- API: add `ZBarcode_Reset()` to fully restore `zint_symbol` to default state
 
 Bugs
 ----

@@ -1780,7 +1780,8 @@ be UTF-8 encoded.
 
 If printing more than one barcode, the zint_symbol structure may be re-used by
 calling the ZBarcode_Clear() function after each barcode to free any output
-buffers allocated. The zint_symbol input members must be reset.
+buffers allocated. The zint_symbol input members must be reset. To fully restore
+zint_symbol to its default state, call ZBarcode_Reset() instead.
 
 5.4 Buffering Symbols in Memory (raster)
 

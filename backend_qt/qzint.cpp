@@ -209,7 +209,7 @@ namespace Zint {
         m_lastError.clear();
 
         if (m_zintSymbol) {
-            ZBarcode_Clear(m_zintSymbol);
+            ZBarcode_Reset(m_zintSymbol);
         } else if (!(m_zintSymbol = ZBarcode_Create())) {
             m_error = ZINT_ERROR_MEMORY;
             m_lastError = QSL("Insufficient memory for Zint structure");

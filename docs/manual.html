@@ -3171,7 +3171,9 @@ encoded.</p>
 <p>If printing more than one barcode, the <code>zint_symbol</code>
 structure may be re-used by calling the <code>ZBarcode_Clear()</code>
 function after each barcode to free any output buffers allocated. The
-<code>zint_symbol</code> input members must be reset.</p>
+<code>zint_symbol</code> input members must be reset. To fully restore
+<code>zint_symbol</code> to its default state, call
+<code>ZBarcode_Reset()</code> instead.</p>
 <h2 id="buffering-symbols-in-memory-raster">5.4 Buffering Symbols in
 Memory (raster)</h2>
 <p>In addition to saving barcode images to file Zint allows you to

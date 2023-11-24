@@ -50,12 +50,8 @@ typedef char static_assert_int32_is_32bits[sizeof(int32_t) * CHAR_BIT != 32 ? -1
 typedef char static_assert_uint32_is_32bits[sizeof(uint32_t) * CHAR_BIT != 32 ? -1 : 1];
 typedef char static_assert_uint64_at_least_64bits[sizeof(uint64_t) * CHAR_BIT < 64 ? -1 : 1];
 
-/* Create and initialize a symbol structure */
-struct zint_symbol *ZBarcode_Create(void) {
-    struct zint_symbol *symbol;
-
-    symbol = (struct zint_symbol *) calloc(1, sizeof(*symbol));
-    if (!symbol) return NULL;
+/* Set `symbol` to defaults (does not zeroize) */
+static void set_symbol_defaults(struct zint_symbol *symbol) {
 
     symbol->symbology = BARCODE_CODE128;
     symbol->scale = 1.0f;
@@ -79,6 +75,16 @@ struct zint_symbol *ZBarcode_Create(void) {
     symbol->bitmap = NULL;
     symbol->alphamap = NULL;
     symbol->vector = NULL;
+}
+
+/* Create and initialize a symbol structure */
+struct zint_symbol *ZBarcode_Create(void) {
+    struct zint_symbol *symbol;
+
+    symbol = (struct zint_symbol *) calloc(1, sizeof(*symbol));
+    if (!symbol) return NULL;
+
+    set_symbol_defaults(symbol);
 
     return symbol;
 }
@@ -112,6 +118,22 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
 
     /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
+}
+
+/* Free any output buffers that may have been created and reset all fields to defaults */
+void ZBarcode_Reset(struct zint_symbol *symbol) {
+    if (!symbol) return;
+
+    if (symbol->bitmap != NULL) {
+        free(symbol->bitmap);
+    }
+    if (symbol->alphamap != NULL) {
+        free(symbol->alphamap);
+    }
+    vector_free(symbol);
+
+    memset(symbol, 0, sizeof(*symbol));
+    set_symbol_defaults(symbol);
 }
 
 /* Free a symbol structure, including any output buffers */
@@ -225,8 +247,13 @@ static int error_tag(struct zint_symbol *symbol, int error_number, const char *e
                 error_number = ZINT_ERROR_NONCOMPLIANT;
             } else if (error_number == ZINT_WARN_USES_ECI) {
                 error_number = ZINT_ERROR_USES_ECI;
-            } else { /* ZINT_WARN_INVALID_OPTION */
+            } else if (error_number == ZINT_WARN_INVALID_OPTION) {
                 error_number = ZINT_ERROR_INVALID_OPTION;
+            } else if (error_number == ZINT_WARN_HRT_TRUNCATED) {
+                error_number = ZINT_ERROR_HRT_TRUNCATED;
+            } else { /* Shouldn't happen */
+                assert(0); /* Not reached */
+                error_number = ZINT_ERROR_ENCODING_PROBLEM;
             }
         }
         if (error_number >= ZINT_ERROR) {

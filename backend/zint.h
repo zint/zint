@@ -386,6 +386,9 @@ extern "C" {
     /* Free any output buffers that may have been created and initialize output fields */
     ZINT_EXTERN void ZBarcode_Clear(struct zint_symbol *symbol);
 
+    /* Free any output buffers that may have been created and reset all fields to defaults */
+    ZINT_EXTERN void ZBarcode_Reset(struct zint_symbol *symbol);
+
     /* Free a symbol structure, including any output buffers */
     ZINT_EXTERN void ZBarcode_Delete(struct zint_symbol *symbol);
 
