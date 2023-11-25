@@ -447,6 +447,10 @@ static int c1_c40text_cnt(const int current_mode, const int gs1, unsigned char i
         return 2;
     }
     cnt = 1;
+    if (input & 0x80) {
+        cnt += 2;
+        input -= 128;
+    }
     if ((current_mode == C1_C40 && c40_shift[input]) || (current_mode == C1_TEXT && text_shift[input])) {
         cnt += 1;
     }

@@ -119,6 +119,8 @@ Bugs
   byte-blocks > 11-bit limit
 - library: fix 21-bit Unicode conversion in `escape_char_process()`; fix
   restricting escaped data length by using de-escaped length to check
+- CODEONE: fix out-of-bounds crash in `c1_c40text_cnt()`, ticket #300, props
+  Andre Maute
 
 
 Version 2.12.0 (2022-12-12)
