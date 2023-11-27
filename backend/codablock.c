@@ -586,6 +586,9 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         strcpy(symbol->errtxt, "411: Columns parameter not in 0, 9..67");
         return ZINT_ERROR_INVALID_OPTION;
     }
+    if (columns < 0) { /* Protect against negative overflow (ticket #300 (#9) Andre Maute) */
+        columns = 0;
+    }
 
     data = (unsigned char *) z_alloca(length * 2 + 1);
 

@@ -276,6 +276,8 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length);
 /* Dumps decimal-formatted codewords in symbol->errtxt (for use in testing) */
+INTERNAL void debug_test_codeword_dump_short(struct zint_symbol *symbol, const short *codewords, const int length);
+/* Dumps decimal-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length);
 #endif
 

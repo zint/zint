@@ -810,10 +810,15 @@ INTERNAL int dbar_ltd(struct zint_symbol *symbol, unsigned char source[], int le
 }
 
 /* Check and convert date to DataBar date value */
-INTERNAL int dbar_date(const unsigned char source[], const int src_posn) {
-    int yy = to_int(source + src_posn, 2);
-    int mm = to_int(source + src_posn + 2, 2);
-    int dd = to_int(source + src_posn + 4, 2);
+INTERNAL int dbar_date(const unsigned char source[], const int length, const int src_posn) {
+    int yy, mm, dd;
+
+    if (src_posn + 4 + 2 > length) {
+        return -1;
+    }
+    yy = to_int(source + src_posn, 2);
+    mm = to_int(source + src_posn + 2, 2);
+    dd = to_int(source + src_posn + 4, 2);
 
     /* Month can't be zero but day can (means last day of month,
        GS1 General Specifications Sections 3.4.2 to 3.4.7) */
@@ -875,7 +880,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
                 } else if ((length == 34) && (source[26] == '1')
                             && (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7')
-                            && dbar_date(source, 28) >= 0) {
+                            && dbar_date(source, length, 28) >= 0) {
 
                     /* (01), (310x) and (11) - metric weight and production date */
                     /* (01), (310x) and (13) - metric weight and packaging date */
@@ -906,7 +911,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
                 } else if ((length == 34) && (source[26] == '1')
                             && (source[27] == '1' || source[27] == '3' || source[27] == '5' || source[27] == '7')
-                            && dbar_date(source, 28) >= 0) {
+                            && dbar_date(source, length, 28) >= 0) {
 
                     /* (01), (320x) and (11) - English weight and production date */
                     /* (01), (320x) and (13) - English weight and packaging date */
@@ -1031,7 +1036,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
 
         if (length == 34) {
             /* Date information is included */
-            group_val = dbar_date(source, 28);
+            group_val = dbar_date(source, length, 28);
         } else {
             group_val = 38400;
         }

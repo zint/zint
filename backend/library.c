@@ -677,6 +677,20 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
     return error_number;
 }
 
+/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in angle brackets */
+static void debug_print_escape(const unsigned char *source, const int first_len, char *buf) {
+    int i, j = 0;
+    for (i = 0; i < first_len; i++) {
+        const unsigned char ch = source[i];
+        if (ch < 32 || ch >= 127) {
+            j += sprintf(buf + j, "<%03o>", ch & 0xFF);
+        } else {
+            buf[j++] = ch;
+        }
+    }
+    buf[j] = '\0';
+}
+
 #if defined(__GNUC__) || defined(__clang__)
 #pragma GCC diagnostic pop
 #endif
@@ -1005,14 +1019,18 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         const int len = local_segs[0].length;
         const int primary_len = symbol->primary[0] ? (int) strlen(symbol->primary) : 0;
         char name[32];
+        char source[151], primary[151]; /* 30*5 + 1 = 151 */
         (void) ZBarcode_BarcodeName(symbol->symbology, name);
-        printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1: %d, option_2: %d"
-                ", option_3: %d,\n                      scale: %g, output_options: 0x%X, fg: %s, bg: %s"
-                ", seg_count: %d,\n                      %ssource%s (%d): \"%.*s\", %sprimary (%d): \"%.20s\"\n",
+        debug_print_escape(local_segs[0].source, len > 30 ? 30 : len, source);
+        debug_print_escape((const unsigned char *) symbol->primary, primary_len > 30 ? 30 : primary_len, primary);
+        printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1/2/3: (%d, %d, %d)\n"
+                "                      scale: %g, output_options: 0x%X, fg: %s, bg: %s, seg_count: %d,\n"
+                "                      %ssource%s (%d): \"%s\",\n"
+                "                      %sprimary (%d): \"%s\"\n",
                 name, symbol->symbology, symbol->input_mode, symbol->eci, symbol->option_1, symbol->option_2,
                 symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
-                seg_count, len > 20 ? "First 20 " : "", seg_count > 1 ? "[0]" : "", len, len > 20 ? 20 : len,
-                local_segs[0].source, primary_len > 20 ? "First 20 " : "", primary_len, symbol->primary);
+                seg_count, len > 30 ? "first 30 " : "", seg_count > 1 ? "[0]" : "", len, source,
+                primary_len > 30 ? "first 30 " : "", primary_len, primary);
     }
 
     if (total_len > ZINT_MAX_DATA_LEN) {

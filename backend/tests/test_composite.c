@@ -3457,12 +3457,13 @@ static void test_input(const testCtx *const p_ctx) {
     testFinish();
 }
 
-/* #181 Christian Hartlage OSS-Fuzz */
+/* #181 Christian Hartlage OSS-Fuzz and #300 Andre Maute */
 static void test_fuzz(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
         int symbology;
+        int input_mode;
         char *data;
         int length;
         char *composite;
@@ -3470,11 +3471,13 @@ static void test_fuzz(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /* 0*/ { BARCODE_EANX_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 1*/ { BARCODE_UPCA_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 2*/ { BARCODE_UPCE_CC, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 3*/ { BARCODE_EANX_CC, "+12345", -1, "[21]A12345678", 0 },
-        /* 4*/ { BARCODE_EANX_CC, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 0*/ { BARCODE_EANX_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 1*/ { BARCODE_UPCA_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 2*/ { BARCODE_UPCE_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 3*/ { BARCODE_EANX_CC, -1, "+12345", -1, "[21]A12345678", 0 },
+        /* 4*/ { BARCODE_EANX_CC, -1, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
+        /* 5*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, "kks", -1, "()111%", ZINT_ERROR_INVALID_DATA }, /* #300 (#5), Andre Maute */
+        /* 6*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\153\153\153\153\153\153\153\153\163", -1, "()90", ZINT_ERROR_TOO_LONG }, /* #300 (#6), Andre Maute */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, composite_length, ret;
@@ -3489,7 +3492,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 

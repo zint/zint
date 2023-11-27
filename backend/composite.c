@@ -71,7 +71,7 @@ INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_
 INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int dbar_date(const unsigned char source[], const int src_posn);
+INTERNAL int dbar_date(const unsigned char source[], const int length, const int src_posn);
 
 static int _min(const int first, const int second) {
 
@@ -301,7 +301,8 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     const int length = (int) strlen(source) / 8;
     int i;
     unsigned char *data_string = (unsigned char *) z_alloca(length + 3);
-    int chainemc[180], mclength = 0;
+    short chainemc[180];
+    int mclength = 0;
     int k, j, p, longueur, mccorrection[50] = {0}, offset;
     int total;
     char pattern[580];
@@ -517,7 +518,8 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     const int length = (int) strlen(source) / 8;
     int i, p;
     unsigned char *data_string = (unsigned char *) z_alloca(length + 4);
-    int chainemc[1000], mclength = 0, k;
+    short chainemc[1000];
+    int mclength = 0, k;
     int offset, longueur, loop, total, j, mccorrection[520] = {0};
     int c1, c2, c3, dummy[35];
     char pattern[580];
@@ -843,14 +845,14 @@ static int calc_padding_ccc(const int binary_length, int *cc_width, const int li
 }
 
 /* Handles all data encodation from section 5 of ISO/IEC 24723 */
-static int cc_binary_string(struct zint_symbol *symbol, const unsigned char source[], const int source_len,
+static int cc_binary_string(struct zint_symbol *symbol, const unsigned char source[], const int length,
             char binary_string[], const int cc_mode, int *cc_width, int *ecc, const int linear_width) {
     int encoding_method, read_posn, alpha_pad;
     int i, j, ai_crop, ai_crop_posn, fnc1_latch;
     int ai90_mode, remainder;
     char last_digit = '\0';
     int mode;
-    char *general_field = (char *) z_alloca(source_len + 1);
+    char *general_field = (char *) z_alloca(length + 1);
     int target_bitsize;
     int bp = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
@@ -865,12 +867,12 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     target_bitsize = 0;
     mode = NUMERIC;
 
-    if ((source[0] == '1') && ((source[1] == '0') || (source[1] == '1') || (source[1] == '7'))) {
+    if (length > 1 && (source[0] == '1') && ((source[1] == '0') || (source[1] == '1') || (source[1] == '7'))) {
         /* Source starts (10), (11) or (17) */
-        if (source[1] == '0' || dbar_date(source, 2) >= 0) { /* Check date valid if (11) or (17) */
+        if (source[1] == '0' || dbar_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
             encoding_method = 2;
         }
-    } else if ((source[0] == '9') && (source[1] == '0')) {
+    } else if (length > 1 && (source[0] == '9') && (source[1] == '0')) {
         /* Source starts (90) */
         encoding_method = 3;
     }
@@ -890,8 +892,9 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             read_posn = 2;
         } else {
             /* Production Date (11) or Expiration Date (17) */
+            assert(length >= 8); /* Due to `dbar_date()` check above */
 
-            bp = bin_append_posn(dbar_date(source, 2), 16, binary_string, bp);
+            bp = bin_append_posn(dbar_date(source, length, 2), 16, binary_string, bp);
 
             if (source[1] == '1') {
                 /* Production Date AI 11 */
@@ -902,7 +905,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             }
             read_posn = 8;
 
-            if ((source[read_posn] == '1') && (source[read_posn + 1] == '0')) {
+            if (read_posn + 1 < length && (source[read_posn] == '1') && (source[read_posn + 1] == '0')) {
                 /* Followed by AI 10 - strip this from general field */
                 read_posn += 2;
             } else if (source[read_posn]) {
@@ -925,20 +928,21 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     } else if (encoding_method == 3) {
         /* Encodation Method field of "11" - AI 90 */
-        char *ninety = (char *) z_alloca(source_len + 1);
-        int ninety_len, alpha, alphanum, numeric, test1, test2, test3;
+        unsigned char *ninety = (unsigned char *) z_alloca(length + 1);
+        int ninety_len, alpha, alphanum, numeric, alpha_posn;
 
         /* "This encodation method may be used if an element string with an AI
         90 occurs at the start of the data message, and if the data field
         following the two-digit AI 90 starts with an alphanumeric string which
         complies with a specific format." (para 5.3.2) */
 
-        memset(ninety, 0, source_len + 1);
         i = 0;
-        do {
-            ninety[i] = source[i + 2];
-            i++;
-        } while ((source_len > i + 2) && ('[' != source[i + 2]));
+        if (length > 2) {
+            do {
+                ninety[i] = source[i + 2];
+                i++;
+            } while ((length > i + 2) && ('[' != source[i + 2]));
+        }
         ninety[i] = '\0';
         ninety_len = i;
 
@@ -962,36 +966,27 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
         }
 
         /* must start with 0, 1, 2 or 3 digits followed by an uppercase character */
-        test1 = -1;
-        for (i = 3; i >= 0; i--) {
-            if (z_isupper(ninety[i])) {
-                test1 = i;
+        alpha_posn = -1;
+        if (ninety_len && ninety[0] != '0') { /* Leading zeros are not permitted */
+            for (i = 0; i < ninety_len && i < 4; i++) {
+                if (z_isupper(ninety[i])) {
+                    alpha_posn = i;
+                    break;
+                }
+                if (!z_isdigit(ninety[i])) {
+                    break;
+                }
             }
         }
 
-        test2 = 0;
-        for (i = 0; i < test1; i++) {
-            if (!z_isdigit(ninety[i])) {
-                test2 = 1;
-                break;
-            }
-        }
-
-        /* leading zeros are not permitted */
-        test3 = 0;
-        if ((test1 >= 1) && (ninety[0] == '0')) {
-            test3 = 1;
-        }
-
-        if ((test1 != -1) && (test2 != 1) && (test3 == 0)) {
+        if (alpha_posn != -1) {
             int next_ai_posn;
-            char numeric_part[4];
             int numeric_value;
             int table3_letter;
             /* Encodation method "11" can be used */
             bp = bin_append_posn(3, 2, binary_string, bp); /* "11" */
 
-            numeric -= test1;
+            numeric -= alpha_posn;
             alpha--;
 
             /* Decide on numeric, alpha or alphanumeric mode */
@@ -1016,13 +1011,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
             next_ai_posn = 2 + ninety_len;
 
-            if (next_ai_posn < source_len && source[next_ai_posn] == '[') {
+            if (next_ai_posn < length && source[next_ai_posn] == '[') {
                 /* There are more AIs afterwards */
-                if (next_ai_posn + 2 < source_len
+                if (next_ai_posn + 2 < length
                         && (source[next_ai_posn + 1] == '2') && (source[next_ai_posn + 2] == '1')) {
                     /* AI 21 follows */
                     ai_crop = 1;
-                } else if (next_ai_posn + 4 < source_len
+                } else if (next_ai_posn + 4 < length
                         && (source[next_ai_posn + 1] == '8') && (source[next_ai_posn + 2] == '0')
                         && (source[next_ai_posn + 3] == '0') && (source[next_ai_posn + 4] == '4')) {
                     /* AI 8004 follows */
@@ -1041,20 +1036,11 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                     break;
             }
 
-            if (test1 == 0) {
-                strcpy(numeric_part, "0");
-            } else {
-                for (i = 0; i < test1; i++) {
-                    numeric_part[i] = ninety[i];
-                }
-                numeric_part[i] = '\0';
-            }
-
-            numeric_value = atoi(numeric_part);
+            numeric_value = alpha_posn ? to_int(ninety, alpha_posn) : 0;
 
             table3_letter = -1;
             if (numeric_value < 31) {
-                table3_letter = posn("BDHIJKLNPQRSTVWZ", ninety[test1]);
+                table3_letter = posn("BDHIJKLNPQRSTVWZ", ninety[alpha_posn]);
             }
 
             if (table3_letter != -1) {
@@ -1071,10 +1057,10 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                 bp = bin_append_posn(numeric_value, 10, binary_string, bp);
 
                 /* five bit representation of ASCII character */
-                bp = bin_append_posn(ninety[test1] - 65, 5, binary_string, bp);
+                bp = bin_append_posn(ninety[alpha_posn] - 65, 5, binary_string, bp);
             }
 
-            read_posn = test1 + 3;
+            read_posn = alpha_posn + 3; /* +2 for 90 and +1 to go beyond alpha position */
 
             /* Do Alpha mode encoding of the rest of the AI 90 data field here */
             if (ai90_mode == 2) {
@@ -1118,7 +1104,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
         j++;
     }
 
-    for (i = read_posn; i < source_len; i++) {
+    for (i = read_posn; i < length; i++) {
         /* Skip "[21" or "[8004" AIs if encodation method "11" used */
         if (i == ai_crop_posn) {
             i += ai_crop;

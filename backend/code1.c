@@ -37,6 +37,13 @@
 #include "reedsol.h"
 #include "large.h"
 
+#define C1_ASCII    1
+#define C1_C40      2
+#define C1_DECIMAL  3
+#define C1_TEXT     4
+#define C1_EDI      5
+#define C1_BYTE     6
+
 /* Add solid bar */
 static void c1_horiz(struct zint_symbol *symbol, const int row_no, const int full) {
     int i;
@@ -477,7 +484,7 @@ static void c1_eci_escape(const int eci, unsigned char source[], const int lengt
 /* Convert to codewords */
 static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int length, const int eci,
             const int seg_count, const int gs1, unsigned int target[], int *p_tp, int *p_last_mode) {
-    int current_mode, next_mode;
+    int current_mode, next_mode, last_mode;
     int sp = 0;
     int tp = *p_tp;
     int i;
@@ -563,6 +570,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     do {
+        last_mode = current_mode;
         if (current_mode != next_mode) {
             /* Change mode */
             switch (next_mode) {
@@ -625,6 +633,9 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
                         /* Step B6 */
                         next_mode = c1_look_ahead_test(source, length, sp, current_mode, gs1);
+                        if (next_mode == last_mode) { /* Avoid looping on latch (ticket #300 (#8) Andre Maute) */
+                            next_mode = C1_ASCII;
+                        }
 
                         if (next_mode == C1_ASCII) {
                             if (debug_print) printf("ASC(%d) ", source[sp]);

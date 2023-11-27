@@ -3353,6 +3353,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
+		int option_2;
         char *data;
         int length;
         int ret;
@@ -3361,20 +3362,22 @@ static void test_fuzz(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /* 0*/ { "3333P33B\035333V3333333333333\0363", -1, 0, 1, "" }, /* #181 Nico Gunkel, OSS-Fuzz */
-        /* 1*/ { "{{-06\024755712162106130000000829203983\377", -1, 0, 1, "" }, /* #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1 */
-        /* 2*/ { "\000\000\000\367\000\000\000\000\000\103\040\000\000\244\137\140\140\000\000\000\000\000\000\000\000\000\005\000\000\000\000\000\165\060\060\060\060\061\060\060\114\114\060\010\102\102\102\102\102\102\102\102\057\102\100\102\057\233\100\102", 60, 0, 1, "" }, /* #300 (#4) Andre Maute */
+        /*  0*/ { -1, "3333P33B\035333V3333333333333\0363", -1, 0, 1, "" }, /* #181 Nico Gunkel, OSS-Fuzz */
+        /*  1*/ { -1, "{{-06\024755712162106130000000829203983\377", -1, 0, 1, "" }, /* #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1 */
+        /*  2*/ { -1, "\000\000\000\367\000\000\000\000\000\103\040\000\000\244\137\140\140\000\000\000\000\000\000\000\000\000\005\000\000\000\000\000\165\060\060\060\060\061\060\060\114\114\060\010\102\102\102\102\102\102\102\102\057\102\100\102\057\233\100\102", 60, 0, 1, "" }, /* #300 (#4) Andre Maute */
+        /*  3*/ { 10, "\153\153\153\060\001\000\134\153\153\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 65, ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#8) Andre Maute */
+        /*  4*/ { 10, "\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 39, 0, 1, "" }, /* #300 (#8 shortened) Andre Maute */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char bwipp_buf[32768];
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_fuzz");
+    testStartSymbol("test_fuzz", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3383,22 +3386,19 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        symbol->symbology = BARCODE_CODEONE;
-        symbol->debug |= debug;
-
-        length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
+        length = testUtilSetSymbol(symbol, BARCODE_CODEONE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
 		if (ret < ZINT_ERROR) {
-			if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+			if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
 				if (!data[i].bwipp_cmp) {
 					if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
 				} else {
 					char modules_dump[4096];
 					assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-					ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf), NULL);
+					ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, bwipp_buf, sizeof(bwipp_buf), NULL);
 					assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
 					ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, modules_dump);

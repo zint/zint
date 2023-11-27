@@ -146,6 +146,7 @@ static const char pdf_MicroAutosize[56] = {
 /* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0
    (Numeric Compaction mode) */
 #define PDF_MAX_LEN         2710
+#define PDF_MAX_STREAM_LEN  (PDF_MAX_LEN * 3) /* Allow for tripling up due to shifts/latches (ticket #300 (#7)) */
 
 /* ISO/IEC 24728:2006 5.1.1 c) 3) Max possible number of characters (Numeric Compaction mode) */
 #define MICRO_PDF_MAX_LEN   366
@@ -165,7 +166,7 @@ static int pdf_quelmode(const unsigned char codeascii) {
 }
 
 /* Helper to switch TEX mode sub-mode */
-static int pdf_textprocess_switch(const int curtable, const int newtable, int chainet[PDF_MAX_LEN], int wnet) {
+static int pdf_textprocess_switch(const int curtable, const int newtable, unsigned char chainet[PDF_MAX_STREAM_LEN], int wnet) {
     switch (curtable) {
         case T_ALPHA:
             switch (newtable) {
@@ -234,7 +235,8 @@ static int pdf_text_num_length(int liste[3][PDF_MAX_LEN], const int indexliste, 
 
 /* Calculate length of TEX allowing for sub-mode switches (no-output version of `pdf_textprocess()`) */
 static int pdf_text_submode_length(const unsigned char chaine[], const int start, const int length, int *p_curtable) {
-    int j, indexlistet, curtable = *p_curtable, listet[PDF_MAX_LEN], chainet[PDF_MAX_LEN], wnet = 0;
+    int j, indexlistet, curtable = *p_curtable, listet[PDF_MAX_LEN], wnet = 0;
+    unsigned char chainet[PDF_MAX_STREAM_LEN];
 
     for (indexlistet = 0; indexlistet < length; indexlistet++) {
         assert(pdf_asciix[chaine[start + indexlistet]]); /* Should only be dealing with TEX */
@@ -397,8 +399,8 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, int liste[3][PDF_
 }
 
 /* Helper to pad TEX mode, allowing for whether last segment or not, writing out `chainet` */
-static void pdf_textprocess_end(int *chainemc, int *p_mclength, const int is_last_seg, int chainet[PDF_MAX_LEN],
-            int wnet, int *p_curtable, int *p_tex_padded) {
+static void pdf_textprocess_end(short *chainemc, int *p_mclength, const int is_last_seg,
+            unsigned char chainet[PDF_MAX_STREAM_LEN], int wnet, int *p_curtable, int *p_tex_padded) {
     int i;
 
     *p_tex_padded = wnet & 1;
@@ -422,12 +424,13 @@ static void pdf_textprocess_end(int *chainemc, int *p_mclength, const int is_las
 
 /* 547 */
 /* Text compaction */
-static void pdf_textprocess(int *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
+static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
             const int length, const int lastmode, const int is_last_seg, int *p_curtable, int *p_tex_padded) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
     int j, indexlistet;
     int curtable = real_lastmode == PDF_TEX ? *p_curtable : T_ALPHA; /* Set default table upper alpha */
-    int listet[2][PDF_MAX_LEN] = {{0}}, chainet[PDF_MAX_LEN];
+    int listet[2][PDF_MAX_LEN] = {{0}};
+    unsigned char chainet[PDF_MAX_STREAM_LEN];
     int wnet = 0;
 
     /* add mode indicator if needed */
@@ -492,13 +495,13 @@ static void pdf_textprocess(int *chainemc, int *p_mclength, const unsigned char 
 }
 
 /* Minimal text compaction */
-static void pdf_textprocess_minimal(int *chainemc, int *p_mclength, const unsigned char chaine[],
+static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsigned char chaine[],
             int liste[3][PDF_MAX_LEN], const int indexliste, const int lastmode, const int is_last_seg,
             int *p_curtable, int *p_tex_padded, int *p_i) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
     int i, j, k;
     int curtable = real_lastmode == PDF_TEX ? *p_curtable : T_ALPHA; /* Set default table upper alpha */
-    int chainet[PDF_MAX_LEN];
+    unsigned char chainet[PDF_MAX_STREAM_LEN];
     int wnet = 0;
 
     /* add mode indicator if needed */
@@ -550,7 +553,7 @@ static void pdf_textprocess_minimal(int *chainemc, int *p_mclength, const unsign
 
 /* 671 */
 /* Byte compaction */
-INTERNAL void pdf_byteprocess(int *chainemc, int *p_mclength, const unsigned char chaine[], int start,
+INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
                 const int length, const int lastmode, const int debug_print) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
 
@@ -611,7 +614,7 @@ INTERNAL void pdf_byteprocess(int *chainemc, int *p_mclength, const unsigned cha
 
 /* 712 */
 /* Numeric compaction */
-static void pdf_numbprocess(int *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
+static void pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
             const int length) {
     int j;
 
@@ -660,7 +663,7 @@ static void pdf_numbprocess(int *chainemc, int *p_mclength, const unsigned char 
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing */
-INTERNAL void pdf_numbprocess_test(int *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
+INTERNAL void pdf_numbprocess_test(short *chainemc, int *p_mclength, const unsigned char chaine[], const int start,
                 const int length) {
     pdf_numbprocess(chainemc, p_mclength, chaine, start, length);
 }
@@ -995,7 +998,7 @@ static int pdf_define_mode(int liste[3][PDF_MAX_LEN], int *p_indexliste, const u
 /* Initial processing of data, shared by `pdf417()` and `micropdf417()` */
 static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[], const int length, const int eci,
             const int is_micro, const int is_last_seg, int *p_lastmode, int *p_curtable, int *p_tex_padded,
-            int chainemc[PDF_MAX_LEN], int *p_mclength) {
+            short chainemc[PDF_MAX_STREAM_LEN], int *p_mclength) {
     int i, indexchaine = 0, indexliste = 0;
     int liste[3][PDF_MAX_LEN] = {{0}};
     int mclength;
@@ -1114,7 +1117,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
 
 /* Call `pdf_initial()` for each segment, dealing with Structured Append beforehand */
 static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
-            const int is_micro, int chainemc[PDF_MAX_LEN], int *p_mclength, int structapp_cws[18],
+            const int is_micro, short chainemc[PDF_MAX_STREAM_LEN], int *p_mclength, int structapp_cws[18],
             int *p_structapp_cp) {
     int i;
     int error_number = 0;
@@ -1197,7 +1200,8 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
 /* Encode PDF417 */
 static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, j, longueur, loop, mccorrection[520] = {0}, offset;
-    int total, chainemc[PDF_MAX_LEN], mclength, c1, c2, c3, dummy[35];
+    int total, mclength, c1, c2, c3, dummy[35];
+    short chainemc[PDF_MAX_STREAM_LEN];
     int rows, cols, ecc, ecc_cws, padding;
     char pattern[580];
     int bp = 0;
@@ -1376,7 +1380,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, chainemc, mclength);
+        debug_test_codeword_dump_short(symbol, chainemc, mclength);
     }
 #endif
 
@@ -1492,7 +1496,8 @@ INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const in
 /* like PDF417 only much smaller! */
 INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, k, j, longueur, mccorrection[50] = {0}, offset;
-    int total, chainemc[PDF_MAX_LEN], mclength, error_number = 0;
+    int total, mclength, error_number = 0;
+    short chainemc[PDF_MAX_STREAM_LEN];
     char pattern[580];
     int bp = 0;
     int structapp_cws[18] = {0}; /* 3 (Index) + 10 (ID) + 4 (Count) + 1 (Last) */
@@ -1729,7 +1734,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, chainemc, mclength);
+        debug_test_codeword_dump_short(symbol, chainemc, mclength);
     }
 #endif
 
