@@ -1332,7 +1332,7 @@ static int hyphen(const unsigned char *data, int data_len, int offset, int min, 
 #include "gs1_lint.h"
 
 /* Verify a GS1 input string */
-INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int src_len,
+INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 unsigned char reduced[]) {
     int i, j, last_ai, ai_latch;
     int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
@@ -1341,14 +1341,14 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int error_value = 0;
     char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
     char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
-    int ai_max = chr_cnt(source, src_len, obracket) + 1; /* Plus 1 so non-zero */
+    int ai_max = chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
     int *ai_value = (int *) z_alloca(sizeof(int) * ai_max);
     int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_length = (int *) z_alloca(sizeof(int) * ai_max);
 
     /* Detect extended ASCII characters */
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if (source[i] >= 128) {
             strcpy(symbol->errtxt, "250: Extended ASCII characters are not supported by GS1");
             return ZINT_ERROR_INVALID_DATA;
@@ -1379,7 +1379,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     max_ai_length = 0;
     min_ai_length = 5;
     ai_latch = 0;
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if (source[i] == obracket) {
             bracket_level++;
             if (bracket_level > max_bracket_level) {
@@ -1395,7 +1395,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 min_ai_length = ai_length;
             }
             /* Check zero-length AI has data */
-            if (ai_length == 0 && (i + 1 == src_len || source[i + 1] == obracket)) {
+            if (ai_length == 0 && (i + 1 == length || source[i + 1] == obracket)) {
                 ai_zero_len_no_data = 1;
             } else if (ai_length == 1) {
                 ai_single_digit = 1;
@@ -1446,7 +1446,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
         ai_count = 0;
-        for (i = 1; i < src_len; i++) {
+        for (i = 1; i < length; i++) {
             if (source[i - 1] == obracket) {
                 ai_location[ai_count] = i;
                 for (j = 1; source[i + j] != cbracket; j++);
@@ -1465,7 +1465,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 data_location[i] = ai_location[i] + 3;
             }
             data_length[i] = 0;
-            while ((data_location[i] + data_length[i] < src_len)
+            while ((data_location[i] + data_length[i] < length)
                         && (source[data_location[i] + data_length[i]] != obracket)) {
                 data_length[i]++;
             }
@@ -1501,7 +1501,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     /* Resolve AI data - put resulting string in 'reduced' */
     j = 0;
     ai_latch = 1;
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if ((source[i] != obracket) && (source[i] != cbracket)) {
             reduced[j++] = source[i];
         }
@@ -1510,20 +1510,22 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             if (ai_latch == 0) {
                 reduced[j++] = '[';
             }
-            last_ai = to_int(source + i + 1, 2);
-            ai_latch = 0;
-            /* The following values from "GS1 General Specifications Release 21.0.1"
-               Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
-            if (
-                    ((last_ai >= 0) && (last_ai <= 4))
-                    || ((last_ai >= 11) && (last_ai <= 20))
-                    /* NOTE: as noted by Terry Burton the following complies with ISO/IEC 24724:2011 Table D.1,
-                       but clashes with TPX AI [235], introduced May 2019; awaiting feedback from GS1 */
-                    || (last_ai == 23) /* legacy support */ /* TODO: probably remove */
-                    || ((last_ai >= 31) && (last_ai <= 36))
-                    || (last_ai == 41)
-                    ) {
-                ai_latch = 1;
+            if (i + 1 != length) {
+                last_ai = to_int(source + i + 1, 2);
+                ai_latch = 0;
+                /* The following values from "GS1 General Specifications Release 21.0.1"
+                   Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
+                if (
+                        ((last_ai >= 0) && (last_ai <= 4))
+                        || ((last_ai >= 11) && (last_ai <= 20))
+                        /* NOTE: as noted by Terry Burton the following complies with ISO/IEC 24724:2011 Table D.1,
+                           but clashes with TPX AI [235], introduced May 2019; awaiting feedback from GS1 */
+                        || (last_ai == 23) /* legacy support */ /* TODO: probably remove */
+                        || ((last_ai >= 31) && (last_ai <= 36))
+                        || (last_ai == 41)
+                        ) {
+                    ai_latch = 1;
+                }
             }
         }
         /* The ']' character is simply dropped from the input */

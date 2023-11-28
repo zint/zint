@@ -1031,6 +1031,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 symbol->option_3, symbol->scale, symbol->output_options, symbol->fgcolour, symbol->bgcolour,
                 seg_count, len > 30 ? "first 30 " : "", seg_count > 1 ? "[0]" : "", len, source,
                 primary_len > 30 ? "first 30 " : "", primary_len, primary);
+        fflush(stdout);
     }
 
     if (total_len > ZINT_MAX_DATA_LEN) {

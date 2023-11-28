@@ -219,7 +219,7 @@ static int pdf_textprocess_switch(const int curtable, const int newtable, unsign
 }
 
 /* Check consecutive segments for text/num and return the length */
-static int pdf_text_num_length(int liste[3][PDF_MAX_LEN], const int indexliste, const int start) {
+static int pdf_text_num_length(short liste[3][PDF_MAX_LEN], const int indexliste, const int start) {
     int i, len = 0;
     for (i = start; i < indexliste; i++) {
         if (liste[1][i] == PDF_BYT)
@@ -289,7 +289,7 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
 }
 
 /* Whether to stay in numeric mode or not */
-static int pdf_num_stay(const unsigned char *chaine, const int indexliste, int liste[3][PDF_MAX_LEN], const int i) {
+static int pdf_num_stay(const unsigned char *chaine, const int indexliste, short liste[3][PDF_MAX_LEN], const int i) {
     int curtable, not_tex, last_len, last_ml, next_len, num_cws, tex_cws;
 
     if (liste[0][i] >= 13 || (indexliste == 1 && liste[0][i] > 5)) {
@@ -320,7 +320,7 @@ static int pdf_num_stay(const unsigned char *chaine, const int indexliste, int l
 }
 
 /* Pack segments using the method described in Appendix D of the AIM specification (ISO/IEC 15438:2015 Annex N) */
-static void pdf_appendix_d_encode(const unsigned char *chaine, int liste[3][PDF_MAX_LEN], int *p_indexliste,
+static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PDF_MAX_LEN], int *p_indexliste,
             const int debug_print) {
     const int indexliste = *p_indexliste;
     int i = 0, next, last = 0, stayintext = 0;
@@ -496,7 +496,7 @@ static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned cha
 
 /* Minimal text compaction */
 static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsigned char chaine[],
-            int liste[3][PDF_MAX_LEN], const int indexliste, const int lastmode, const int is_last_seg,
+            short liste[3][PDF_MAX_LEN], const int indexliste, const int lastmode, const int is_last_seg,
             int *p_curtable, int *p_tex_padded, int *p_i) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
     int i, j, k;
@@ -913,7 +913,7 @@ static void pdf_addEdges(const unsigned char source[], const int length, const i
 }
 
 /* Calculate optimized encoding modes */
-static int pdf_define_mode(int liste[3][PDF_MAX_LEN], int *p_indexliste, const unsigned char source[],
+static int pdf_define_mode(short liste[3][PDF_MAX_LEN], int *p_indexliste, const unsigned char source[],
             const int length, const int lastmode, const int debug_print) {
 
     int i, j, v_i;
@@ -980,9 +980,9 @@ static int pdf_define_mode(int liste[3][PDF_MAX_LEN], int *p_indexliste, const u
     }
     *p_indexliste = length - mode_start;
     if (mode_start) {
-        memmove(liste[0], liste[0] + mode_start, sizeof(int) * (*p_indexliste));
-        memmove(liste[1], liste[1] + mode_start, sizeof(int) * (*p_indexliste));
-        memmove(liste[2], liste[2] + mode_start, sizeof(int) * (*p_indexliste));
+        memmove(liste[0], liste[0] + mode_start, sizeof(short) * (*p_indexliste));
+        memmove(liste[1], liste[1] + mode_start, sizeof(short) * (*p_indexliste));
+        memmove(liste[2], liste[2] + mode_start, sizeof(short) * (*p_indexliste));
     }
     if (debug_print) {
         printf("modes (%d):", *p_indexliste);
@@ -1000,7 +1000,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
             const int is_micro, const int is_last_seg, int *p_lastmode, int *p_curtable, int *p_tex_padded,
             short chainemc[PDF_MAX_STREAM_LEN], int *p_mclength) {
     int i, indexchaine = 0, indexliste = 0;
-    int liste[3][PDF_MAX_LEN] = {{0}};
+    short liste[3][PDF_MAX_LEN] = {{0}};
     int mclength;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int fast_encode = symbol->input_mode & FAST_MODE;

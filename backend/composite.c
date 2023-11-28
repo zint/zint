@@ -778,7 +778,7 @@ static int calc_padding_ccb(const int binary_length, const int cc_width) {
     return target_bitsize;
 }
 
-static int calc_padding_ccc(const int binary_length, int *cc_width, const int linear_width, int *ecc) {
+static int calc_padding_ccc(const int binary_length, int *p_cc_width, const int linear_width, int *p_ecc_level) {
     int target_bitsize = 0;
     int byte_length, codewords_used, ecc_level, ecc_codewords, rows;
     int codewords_total, target_codewords, target_bytesize;
@@ -806,22 +806,25 @@ static int calc_padding_ccc(const int binary_length, int *cc_width, const int li
     } else {
         return 0;
     }
-    *(ecc) = ecc_level;
+    *p_ecc_level = ecc_level;
     ecc_codewords = 1 << (ecc_level + 1);
 
     codewords_used += ecc_codewords;
     codewords_used += 3;
 
+    /* Minimum possible linear width (with GS1_NO_CHECK) is 11*5 (start, FNC1, linkage, data, check) + 13 stop */
+    assert(linear_width >= 68);
     /* -52 = 7 left shift (section 12.3 f) + 10 right quiet zone - 17 start + 2x17 row indicators + 18 stop */
-    *(cc_width) = (linear_width - 52) / 17;
-    if (*(cc_width) > 30) {
-        *(cc_width) = 30;
+    *p_cc_width = linear_width == 68 ? 1 : (linear_width - 52) / 17; /* Ensure > 0 */
+    if (*p_cc_width > 30) {
+        *p_cc_width = 30;
     }
-    rows = (int) ceil((double) codewords_used / *(cc_width));
+    assert(*p_cc_width > 0);
+    rows = (int) ceil((double) codewords_used / *p_cc_width);
     /* stop the symbol from becoming too high */
-    while (rows > 30 && *(cc_width) < 30) {
-        *(cc_width) = *(cc_width) + 1;
-        rows = (int) ceil((double) codewords_used / *(cc_width));
+    while (rows > 30 && *p_cc_width < 30) {
+        (*p_cc_width)++;
+        rows = (int) ceil((double) codewords_used / *p_cc_width);
     }
 
     if (rows > 30) { /* Should never happen given `codewords_used` check above (865 / 30 ~ 28.83) */
@@ -831,7 +834,7 @@ static int calc_padding_ccc(const int binary_length, int *cc_width, const int li
         rows = 3;
     }
 
-    codewords_total = *(cc_width) * rows;
+    codewords_total = *p_cc_width * rows;
 
     target_codewords = codewords_total - ecc_codewords;
     target_codewords -= 3;
@@ -846,7 +849,7 @@ static int calc_padding_ccc(const int binary_length, int *cc_width, const int li
 
 /* Handles all data encodation from section 5 of ISO/IEC 24723 */
 static int cc_binary_string(struct zint_symbol *symbol, const unsigned char source[], const int length,
-            char binary_string[], const int cc_mode, int *cc_width, int *ecc, const int linear_width) {
+            char binary_string[], const int cc_mode, int *p_cc_width, int *p_ecc_level, const int linear_width) {
     int encoding_method, read_posn, alpha_pad;
     int i, j, ai_crop, ai_crop_posn, fnc1_latch;
     int ai90_mode, remainder;
@@ -863,7 +866,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     ai_crop_posn = -1;
     fnc1_latch = 0;
     alpha_pad = 0;
-    *ecc = 0;
+    *p_ecc_level = 0;
     target_bitsize = 0;
     mode = NUMERIC;
 
@@ -1133,13 +1136,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     switch (cc_mode) {
         case 1:
-            target_bitsize = calc_padding_cca(bp, *(cc_width));
+            target_bitsize = calc_padding_cca(bp, *p_cc_width);
             break;
         case 2:
-            target_bitsize = calc_padding_ccb(bp, *(cc_width));
+            target_bitsize = calc_padding_ccb(bp, *p_cc_width);
             break;
         case 3:
-            target_bitsize = calc_padding_ccc(bp, cc_width, linear_width, ecc);
+            target_bitsize = calc_padding_ccc(bp, p_cc_width, linear_width, p_ecc_level);
             break;
     }
 
@@ -1170,13 +1173,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     switch (cc_mode) {
         case 1:
-            target_bitsize = calc_padding_cca(bp, *(cc_width));
+            target_bitsize = calc_padding_cca(bp, *p_cc_width);
             break;
         case 2:
-            target_bitsize = calc_padding_ccb(bp, *(cc_width));
+            target_bitsize = calc_padding_ccb(bp, *p_cc_width);
             break;
         case 3:
-            target_bitsize = calc_padding_ccc(bp, cc_width, linear_width, ecc);
+            target_bitsize = calc_padding_ccc(bp, p_cc_width, linear_width, p_ecc_level);
             break;
     }
 
@@ -1203,7 +1206,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     binary_string[target_bitsize] = '\0';
 
     if (debug_print) {
-        printf("ECC: %d, CC width %d\n", *ecc, *cc_width);
+        printf("ECC: %d, CC width %d\n", *p_ecc_level, *p_cc_width);
         printf("Binary: %s (%d)\n", binary_string, target_bitsize);
     }
 

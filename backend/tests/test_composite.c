@@ -3464,24 +3464,36 @@ static void test_fuzz(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
+        int option_1;
         char *data;
         int length;
         char *composite;
         int ret;
+        int bwipp_cmp;
+        char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /* 0*/ { BARCODE_EANX_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 1*/ { BARCODE_UPCA_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 2*/ { BARCODE_UPCE_CC, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 3*/ { BARCODE_EANX_CC, -1, "+12345", -1, "[21]A12345678", 0 },
-        /* 4*/ { BARCODE_EANX_CC, -1, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG },
-        /* 5*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, "kks", -1, "()111%", ZINT_ERROR_INVALID_DATA }, /* #300 (#5), Andre Maute */
-        /* 6*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\153\153\153\153\153\153\153\153\163", -1, "()90", ZINT_ERROR_TOO_LONG }, /* #300 (#6), Andre Maute */
+        /* 0*/ { BARCODE_EANX_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
+        /* 1*/ { BARCODE_UPCA_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG , 1, ""},
+        /* 2*/ { BARCODE_UPCE_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG , 1, ""},
+        /* 3*/ { BARCODE_EANX_CC, -1, -1, "+12345", -1, "[21]A12345678", 0 , 0, "BWIPP checks for proper EAN data"},
+        /* 4*/ { BARCODE_EANX_CC, -1, -1, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
+        /* 5*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "kks", -1, "()111%", ZINT_ERROR_INVALID_DATA, 1, "" }, /* #300 (#5), Andre Maute (`dbar_date()` not checking length + other non-checks) */
+        /* 6*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\153\153\153\153\153\153\153\153\163", -1, "()90", ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#6), Andre Maute (`dbar_date()` not checking length + other non-checks) */
+        /* 7*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\377\002\000\000\153\153\153\153\163\000\000\000\153\153\153\153\153\153\153\060\047\047\043\047\057\153\153\153\153\153\000\000\000\000\153\153\153\161\153\153\153\153\153\153\153\153\153\153\153\153\153\167\167\167\167\167\167\167\167\167\167\167\167\167\167\167\167\001\100\000\000\000\000\000\000\000\167\167\167\167\167\167\167\167\167\167\167\167\167\167", 127, "()904OOOOO)CK0336680OOOOOOOOOOOOOO29[0kkkk%%%%(", ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#11), Andre Maute (`gs1_verify()` not checking length on resolve AI data loop) */
+        /* 8*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\377\002\000\000\153\153\153\153\163\000\000\000\153\153\153\153\153\153\153\060\047\047\043\047\057\153\153\153\153\153\000\000\000\000\153\153\153\161\153\153\153\153\153\153\153\153\153\153\153\153\153\167\167\167\167\167\167\167\167\167\167\167\167\167\167\167\167\001\100\000\000\000\000\000\000\000\167\167\167\167\167\167\167\167\167\167\167\167\167\167", 127, "()904OOOOO)CK0336680OOOOOOOOOOOOOO29[0kkkk%%%%(", ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#11 with EANX_CC) */
+        /* 9*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, 3, "[]28", -1, "[]RRR___________________KKKRRR0000", 0, 1, "" }, /* #300 (#13), Andre Maute (`calc_padding_ccc()` dividing by zero when linear width == 68) */
+        /*10*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, 3, "[]2", -1, "[]RRR___________________KKKRRR0000", 0, 1, "" }, /* #300 (#13 shortened to min linear input (but same linear width 68)) */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char bwipp_buf[32768];
+    char bwipp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
     testStartSymbol("test_fuzz", &symbol);
 
@@ -3492,7 +3504,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
         assert_zero(length >= 128, "i:%d length %d >= 128\n", i, length);
         strcpy(symbol->primary, data[i].data);
 
@@ -3500,6 +3512,23 @@ static void test_fuzz(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[32768];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, -1, data[i].composite, composite_length, symbol->primary, bwipp_buf, sizeof(bwipp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, bwipp_msg, bwipp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, bwipp_msg, bwipp_buf, modules_dump);
+                }
+            }
+        }
 
         ZBarcode_Delete(symbol);
     }

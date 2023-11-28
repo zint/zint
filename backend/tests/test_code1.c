@@ -183,18 +183,20 @@ static void test_large(const testCtx *const p_ctx) {
         /*133*/ { -1, 10, { 0, 0, "" }, "\\", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*134*/ { -1, 10, { 0, 0, "" }, "\200", 36, 0, 16, 49 },
         /*135*/ { -1, 10, { 0, 0, "" }, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*136*/ { 3, 10, { 0, 0, "" }, "A", 46, 0, 16, 49 }, /* Version T-48 with ECI (9 less as PAD escape char + "\123456") */
-        /*137*/ { 3, 10, { 0, 0, "" }, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*138*/ { 3, 10, { 0, 0, "" }, "\001", 32, 0, 16, 49 },
-        /*139*/ { 3, 10, { 0, 0, "" }, "\001", 33, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*136*/ { -1, 10, { 0, 0, "" }, "AAA\200", 31, 0, 16, 49 }, /* ASCII + BYTE (ASCII UpSh - worse than BYTE) */
+        /*137*/ { -1, 10, { 0, 0, "" }, "AAA\200", 32, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*138*/ { 3, 10, { 0, 0, "" }, "A", 46, 0, 16, 49 }, /* Version T-48 with ECI (9 less as PAD escape char + "\123456") */
+        /*139*/ { 3, 10, { 0, 0, "" }, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*140*/ { 3, 10, { 0, 0, "" }, "\001", 32, 0, 16, 49 },
+        /*141*/ { 3, 10, { 0, 0, "" }, "\001", 33, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -282,9 +284,9 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2879,7 +2881,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
     char bwipp_buf[32768];
@@ -2887,7 +2889,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3268,7 +3270,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
     char bwipp_buf[32768];
@@ -3276,7 +3278,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode_segs");
+    testStartSymbol("test_encode_segs", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3364,9 +3366,10 @@ static void test_fuzz(const testCtx *const p_ctx) {
     struct item data[] = {
         /*  0*/ { -1, "3333P33B\035333V3333333333333\0363", -1, 0, 1, "" }, /* #181 Nico Gunkel, OSS-Fuzz */
         /*  1*/ { -1, "{{-06\024755712162106130000000829203983\377", -1, 0, 1, "" }, /* #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1 */
-        /*  2*/ { -1, "\000\000\000\367\000\000\000\000\000\103\040\000\000\244\137\140\140\000\000\000\000\000\000\000\000\000\005\000\000\000\000\000\165\060\060\060\060\061\060\060\114\114\060\010\102\102\102\102\102\102\102\102\057\102\100\102\057\233\100\102", 60, 0, 1, "" }, /* #300 (#4) Andre Maute */
-        /*  3*/ { 10, "\153\153\153\060\001\000\134\153\153\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 65, ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#8) Andre Maute */
+        /*  2*/ { -1, "\000\000\000\367\000\000\000\000\000\103\040\000\000\244\137\140\140\000\000\000\000\000\000\000\000\000\005\000\000\000\000\000\165\060\060\060\060\061\060\060\114\114\060\010\102\102\102\102\102\102\102\102\057\102\100\102\057\233\100\102", 60, 0, 1, "" }, /* #300 (#4) Andre Maute (`c1_c40text_cnt()` not accounting for extended ASCII shifts) */
+        /*  3*/ { 10, "\153\153\153\060\001\000\134\153\153\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 65, ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#8) Andre Maute (`c1_encode()` looping on latch) */
         /*  4*/ { 10, "\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 39, 0, 1, "" }, /* #300 (#8 shortened) Andre Maute */
+        /*  5*/ { 10, "\153\153\153\153\153\060\001\000\000\134\153\153\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\153\153\153\153\153\153\043\000\000\307\000\147\000\000\000\043\113\153\162\162\215\220", 90, ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#12) Andre Maute (too small buffer for Version T) */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

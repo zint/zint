@@ -37,6 +37,9 @@
 #include "reedsol.h"
 #include "large.h"
 
+#define C1_MAX_CWS  1480 /* Max data codewords for Version H */
+#define C1_MAX_ECCS 560 /* Max ECC codewords for Version H */
+
 #define C1_ASCII    1
 #define C1_C40      2
 #define C1_DECIMAL  3
@@ -851,7 +854,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
             }
         }
 
-        if (tp > 1480) {
+        if (tp > C1_MAX_CWS) {
             if (debug_print) fputc('\n', stdout);
             /* Data is too large for symbol */
             return 0;
@@ -953,7 +956,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     /* Re-check length of data */
-    if (tp > 1480) {
+    if (tp > C1_MAX_CWS) {
         /* Data is too large for symbol */
         return 0;
     }
@@ -1135,7 +1138,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     } else if (symbol->option_2 == 10) {
         /* Version T */
-        unsigned int target[90 + 2]; /* Allow for 90 BYTE mode (+ latch and byte count) */
+        unsigned int target[C1_MAX_CWS + C1_MAX_ECCS]; /* Use same buffer size as A to H to avail of loop checks */
         unsigned int ecc[22];
         int data_length;
         int data_cw, ecc_cw, block_width;
@@ -1221,7 +1224,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     } else {
         /* Versions A to H */
-        unsigned int target[1480 + 560];
+        unsigned int target[C1_MAX_CWS + C1_MAX_ECCS];
         unsigned int sub_data[185], sub_ecc[70];
         int data_length;
         int data_cw;
