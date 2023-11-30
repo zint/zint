@@ -31,9 +31,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
-#ifdef ZINT_TEST
 #include <stdio.h>
-#endif
 #include "common.h"
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
