@@ -272,6 +272,8 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
                 struct zint_seg local_segs[]);
 
 
+INTERNAL char *debug_print_escape(const unsigned char *source, const int first_len, char *buf);
+
 #ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length);

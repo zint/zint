@@ -138,7 +138,7 @@ int testUtilSetSymbol(struct zint_symbol *symbol, int symbology, int input_mode,
 const char *testUtilBarcodeName(int symbology);
 const char *testUtilErrorName(int error_number);
 const char *testUtilInputModeName(int input_mode);
-const char *testUtilOption3Name(int option_3);
+const char *testUtilOption3Name(int symbology, int option_3);
 const char *testUtilOutputOptionsName(int output_options);
 
 int testUtilDAFTConvert(const struct zint_symbol *symbol, char *buffer, const int buffer_size);

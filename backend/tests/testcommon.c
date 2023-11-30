@@ -522,30 +522,43 @@ const char *testUtilInputModeName(int input_mode) {
 }
 
 /* Pretty name for option 3 */
-const char *testUtilOption3Name(int option_3) {
+const char *testUtilOption3Name(int symbology, int option_3) {
     static char buffer[64];
 
     const char *name = NULL;
     const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
 
-    if ((option_3 & 0x7F) == DM_SQUARE) {
-        if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-            name = "DM_SQUARE | DM_ISO_144";
+    if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
+        if ((option_3 & 0x7F) == DM_SQUARE) {
+            if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+                name = "DM_SQUARE | DM_ISO_144";
+            } else {
+                name = "DM_SQUARE";
+            }
+        } else if ((option_3 & 0x7F) == DM_DMRE) {
+            if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+                name = "DM_DMRE | DM_ISO_144";
+            } else {
+                name = "DM_DMRE";
+            }
+        } else if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+            name = "DM_ISO_144";
         } else {
-            name = "DM_SQUARE";
+            name = (option_3 & 0xFF) ? "-1" : "0";
         }
-    } else if ((option_3 & 0x7F) == DM_DMRE) {
-        if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-            name = "DM_DMRE | DM_ISO_144";
+    } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
+                || symbology == BARCODE_RMQR || symbology == BARCODE_GRIDMATRIX || symbology == BARCODE_HANXIN) {
+        if ((option_3 & 0xFF) == ZINT_FULL_MULTIBYTE) {
+            name = "ZINT_FULL_MULTIBYTE";
         } else {
-            name = "DM_DMRE";
+            name = (option_3 & 0xFF) ? "-1" : "0";
         }
-    } else if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-        name = "DM_ISO_144";
-    } else if ((option_3 & 0xFF) == ZINT_FULL_MULTIBYTE) {
-        name = "ZINT_FULL_MULTIBYTE";
-    } else if ((option_3 & 0xFF) == ULTRA_COMPRESSION) {
-        name = "ULTRA_COMPRESSION";
+    } else if (symbology == BARCODE_ULTRA) {
+        if ((option_3 & 0xFF) == ULTRA_COMPRESSION) {
+            name = "ULTRA_COMPRESSION";
+        } else {
+            name = (option_3 & 0xFF) ? "-1" : "0";
+        }
     } else {
         if (option_3 != -1 && (option_3 & 0xFF) != 0) {
             fprintf(stderr, "testUtilOption3Name: unknown value (%d)\n", option_3);

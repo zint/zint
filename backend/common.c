@@ -592,6 +592,21 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
     }
 }
 
+/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in angle brackets */
+INTERNAL char *debug_print_escape(const unsigned char *source, const int first_len, char *buf) {
+    int i, j = 0;
+    for (i = 0; i < first_len; i++) {
+        const unsigned char ch = source[i];
+        if (ch < 32 || ch >= 127) {
+            j += sprintf(buf + j, "<%03o>", ch & 0xFF);
+        } else {
+            buf[j++] = ch;
+        }
+    }
+    buf[j] = '\0';
+    return buf;
+}
+
 #ifdef ZINT_TEST
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -71,11 +71,11 @@ static void test_large(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[7829];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -131,9 +131,9 @@ static void test_options(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_options");
+    testStartSymbol("test_options", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -278,7 +278,7 @@ static void test_input(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[32768];
@@ -286,7 +286,7 @@ static void test_input(const testCtx *const p_ctx) {
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -304,7 +304,7 @@ static void test_input(const testCtx *const p_ctx) {
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, \"%s\", %d, %s, %d, \"%s\", %d, \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(data[i].option_3),
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt,
                     data[i].zxingcpp_cmp, data[i].comment);
@@ -3256,7 +3256,7 @@ static void test_encode(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
     char cmp_buf[32768];
@@ -3264,7 +3264,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3283,7 +3283,7 @@ static void test_encode(const testCtx *const p_ctx) {
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %d, %s, \"%s\", %d, %s, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci,
-                    data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
@@ -3540,7 +3540,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     };
     int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
     char cmp_buf[32768];
@@ -3548,7 +3548,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode_segs");
+    testStartSymbol("test_encode_segs", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3573,7 +3573,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
             int length2 = data[i].segs[2].length == -1 ? (int) ustrlen(data[i].segs[2].source) : data[i].segs[2].length;
             printf("        /*%3d*/ { %s, %d, %d, %s, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode),
-                    data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].option_3),
+                    data[i].option_1, data[i].option_2, testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
                     testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
                     testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
                     testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
