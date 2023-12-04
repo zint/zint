@@ -3473,6 +3473,16 @@ int testUtilHaveZXingCPPDecoder(void) {
     return system("zxingcppdecoder " DEV_NULL_STDERR) == 0;
 }
 
+static int testUtilHasNonASCII(const char *source, const int length) {
+    int i;
+    for (i = 0; i < length; i++) {
+        if (source[i] & 0x80) {
+            return 1;
+        }
+    }
+    return 0;
+}
+
 /* Map Zint symbology to ZXing-C++ format name */
 static const char *testUtilZXingCPPName(int index, const struct zint_symbol *symbol, const char *source,
             const int length, const int debug) {
@@ -3627,7 +3637,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_GRIDMATRIX, 142, },
         { "QRCode", BARCODE_UPNQR, 143, },
         { "", BARCODE_ULTRA, 144, },
-        { "", BARCODE_RMQR, 145, },
+        { "rMQR", BARCODE_RMQR, 145, },
     };
     static const int data_size = ARRAY_SIZE(data);
 
@@ -3652,8 +3662,8 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
     if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
             || symbology == BARCODE_RMQR) {
         const int full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
-        if (full_multibyte) { /* TODO: Support in ZXing-C++ */
-            printf("i:%d %s not ZXing-C++ compatible, ZINT_FULL_MULTIBYTE not supported\n",
+        if (full_multibyte && testUtilHasNonASCII(source, length)) { /* TODO: Support in ZXing-C++ */
+            printf("i:%d %s not ZXing-C++ compatible, ZINT_FULL_MULTIBYTE not supported (with non-ASCII data)\n",
                     index, testUtilBarcodeName(symbology));
             return NULL;
         }

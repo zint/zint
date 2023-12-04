@@ -3972,7 +3972,7 @@ height of the symbol while allowing Zint to determine the minimum symbol width.
   ------------------------------------------------------------------------------
   Input   Version   Symbol Size (HxW)     Input   Version   Symbol Size (HxW)
   ------- --------- ------------------ -- ------- --------- --------------------
-  1       R7x43     7 x 73                20      R13x77    13 x 77
+  1       R7x43     7 x 43                20      R13x77    13 x 77
 
   2       R7x59     7 x 59                21      R13x99    13 x 99
 
@@ -5272,7 +5272,7 @@ OPTIONS
                 13  69x69     27  125x125
                 14  73x73     28  129x129
         rMQR            1 to 38 (33 to 38 automatic width) (HxW)
-                1   7x73      14  11x77     27  15x139
+                1   7x43      14  11x77     27  15x139
                 2   7x59      15  11x99     28  17x43
                 3   7x77      16  11x139    29  17x59
                 4   7x99      17  13x27     30  17x77
