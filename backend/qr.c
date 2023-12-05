@@ -109,7 +109,7 @@ static int qr_in_alpha(const unsigned int ddata[], const int length, const int i
             *p_pcent = 0;
         } else {
             /* As above, uneven percents means will fit in alpha pair */
-            *p_cost = !last || !(*p_pccnt & 1) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+            *p_cost = !last || (gs1 && !(*p_pccnt & 1)) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
         }
         return 1;
     }
@@ -136,11 +136,13 @@ static int qr_in_alpha(const unsigned int ddata[], const int length, const int i
     *p_pcent = two_alphas && gs1 && ddata[in_posn + 1] == '%'; /* 2nd char is percent */
     *p_pccnt += *p_pcent; /* No-op unless `gs1` */
     /* Uneven percents means will fit in alpha pair */
-    *p_cost = two_alphas || !(*p_pccnt & 1) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+    *p_cost = two_alphas || (gs1 && !(*p_pccnt & 1)) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
     return 1;
 }
 
-/*#define QR_DEBUG_DEFINE_MODE*/ /* For debugging costings */
+#if 0
+#define QR_DEBUG_DEFINE_MODE /* For debugging costings */
+#endif
 
 /* Indexes into qr_mode_types array (and state array) */
 #define QR_N   0 /* Numeric */
@@ -292,7 +294,7 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
         }
 
         #ifdef QR_DEBUG_DEFINE_MODE
-        printf(" curr");
+        printf(" % 4d: curr", i);
         for (j = 0; j < QR_NUM_MODES; j++) {
             printf(" %c(%c)=%d", qr_mode_types[j], char_modes[cm_i + j], cur_costs[j]);
         }
