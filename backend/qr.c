@@ -101,15 +101,19 @@ static int qr_in_alpha(const unsigned int ddata[], const int length, const int i
 
     /* Attempt to calculate the average 'cost' of using alphanumeric mode in number of bits (times QR_MULT) */
     if (in_posn < (int) *p_end) {
-        if (gs1 && *p_pcent) {
-            /* Previous 2nd char was a percent, so allow for second half of doubled-up percent here */
-            two_alphas = !last && qr_is_alpha(ddata[in_posn + 1], gs1);
-            /* Uneven percents means this will fit evenly in alpha pair */
-            *p_cost = two_alphas || !(*p_pccnt & 1) ? 66 /* 11 * QR_MULT */ : 69 /* (11 / 2 + 6) * QR_MULT */;
-            *p_pcent = 0;
+        if (gs1) {
+            if (*p_pcent) {
+                /* Previous 2nd char was a percent, so allow for second half of doubled-up percent here */
+                two_alphas = !last && qr_is_alpha(ddata[in_posn + 1], gs1);
+                /* Uneven percents means this will fit evenly in alpha pair */
+                *p_cost = two_alphas || !(*p_pccnt & 1) ? 66 /* 11 * QR_MULT */ : 69 /* (11 / 2 + 6) * QR_MULT */;
+                *p_pcent = 0;
+            } else {
+                /* As above, uneven percents means will fit in alpha pair */
+                *p_cost = !last || !(*p_pccnt & 1) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+            }
         } else {
-            /* As above, uneven percents means will fit in alpha pair */
-            *p_cost = !last || (gs1 && !(*p_pccnt & 1)) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+            *p_cost = !last ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
         }
         return 1;
     }
@@ -133,10 +137,14 @@ static int qr_in_alpha(const unsigned int ddata[], const int length, const int i
     }
 
     *p_end = two_alphas ? in_posn + 2 : in_posn + 1;
-    *p_pcent = two_alphas && gs1 && ddata[in_posn + 1] == '%'; /* 2nd char is percent */
-    *p_pccnt += *p_pcent; /* No-op unless `gs1` */
-    /* Uneven percents means will fit in alpha pair */
-    *p_cost = two_alphas || (gs1 && !(*p_pccnt & 1)) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+    if (gs1) {
+        *p_pcent = two_alphas && ddata[in_posn + 1] == '%'; /* 2nd char is percent */
+        *p_pccnt += *p_pcent;
+        /* Uneven percents means will fit in alpha pair */
+        *p_cost = two_alphas || !(*p_pccnt & 1) ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+    } else {
+        *p_cost = two_alphas ? 33 /* (11 / 2) * QR_MULT */ : 36 /* 6 * QR_MULT */;
+    }
     return 1;
 }
 
