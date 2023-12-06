@@ -3637,7 +3637,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_GRIDMATRIX, 142, },
         { "QRCode", BARCODE_UPNQR, 143, },
         { "", BARCODE_ULTRA, 144, },
-        { "rMQR", BARCODE_RMQR, 145, },
+        { "RMQRCode", BARCODE_RMQR, 145, },
     };
     static const int data_size = ARRAY_SIZE(data);
 
