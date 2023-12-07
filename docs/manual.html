@@ -5134,9 +5134,10 @@ aria-hidden="true"><code>zint -b CODABLOCKF -d "CODABLOCK F Symbology" --rows=3<
 <p>This is a stacked symbology based on Code 128 which can encode
 Latin-1 data up to a maximum length of 2725 characters. The width of the
 Codablock-F symbol can be set using the <code>--cols</code> option (API
-<code>option_2</code>). The height (number of rows) can be set using the
-<code>--rows</code> option (API <code>option_1</code>). Zint does not
-currently support encoding of GS1 data in Codablock-F symbols.</p>
+<code>option_2</code>), to a value between 9 and 67. The height (number
+of rows) can be set using the <code>--rows</code> option (API
+<code>option_1</code>), with a maximum of 44. Zint does not currently
+support encoding of GS1 data in Codablock-F symbols.</p>
 <p>A separate symbology ID (<code>BARCODE_HIBC_BLOCKF</code>) can be
 used to encode Health Industry Barcode (HIBC) data which adds a leading
 <code>'+'</code> character and a modulo-49 check digit to the encoded
