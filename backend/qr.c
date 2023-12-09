@@ -77,7 +77,7 @@ static int qr_in_numeric(const unsigned int ddata[], const int length, const int
     }
 
     /* Attempt to calculate the average 'cost' of using numeric mode in number of bits (times QR_MULT) */
-    for (i = in_posn; i < length && i < in_posn + 4 && z_isdigit(ddata[i]); i++);
+    for (i = in_posn; i < length && i < in_posn + 3 && z_isdigit(ddata[i]); i++);
 
     digit_cnt = i - in_posn;
 
@@ -302,11 +302,15 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
         }
 
         #ifdef QR_DEBUG_DEFINE_MODE
-        printf(" % 4d: curr", i);
-        for (j = 0; j < QR_NUM_MODES; j++) {
-            printf(" %c(%c)=%d", qr_mode_types[j], char_modes[cm_i + j], cur_costs[j]);
+        {
+            int min_j = 0;
+            printf(" % 4d: curr", i);
+            for (j = 0; j < QR_NUM_MODES; j++) {
+                printf(" %c(%c)=%d", qr_mode_types[j], char_modes[cm_i + j], cur_costs[j]);
+                if (cur_costs[j] < cur_costs[min_j]) min_j = j;
+            }
+            printf(" min %c(%c)=%d\n", qr_mode_types[min_j], char_modes[cm_i + min_j], cur_costs[min_j]);
         }
-        printf("\n");
         #endif
         memcpy(prev_costs, cur_costs, QR_NUM_MODES * sizeof(unsigned int));
     }
@@ -762,7 +766,7 @@ static int qr_binary_segs(unsigned char datastream[], const int version, const i
     }
 
     if (debug_print) {
-        fputs("Resulting codewords:\n\t", stdout);
+        printf("Resulting codewords (%d):\n\t", target_codewords);
         for (i = 0; i < target_codewords; i++) {
             printf("0x%02X ", datastream[i]);
         }
@@ -867,7 +871,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     }
 
     if (debug_print) {
-        fputs("\nData Stream: \n", stdout);
+        printf("\nData Stream (%d): \n", data_cw + ecc_cw);
         for (j = 0; j < (data_cw + ecc_cw); j++) {
             printf("%2X ", fullstream[j]);
         }

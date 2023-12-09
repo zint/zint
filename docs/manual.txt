@@ -1169,22 +1169,22 @@ The scale is multiplied by 2 (with the exception of MaxiCode) before being
 applied to the X-dimension. For MaxiCode, it is multiplied by 10 for raster
 output, by 40 for EMF vector output, and by 2 otherwise (non-EMF vector output).
 
-For non-Maxicode raster output, the default scale of 1 results in an X-dimension
-of 2 pixels. For example for non-Maxicode PNG images a scale of 5 will increase
-the X-dimension to 10 pixels. For Maxicode, see 4.9.3 MaxiCode Raster Scaling
+For non-MaxiCode raster output, the default scale of 1 results in an X-dimension
+of 2 pixels. For example for non-MaxiCode PNG images a scale of 5 will increase
+the X-dimension to 10 pixels. For MaxiCode, see 4.9.3 MaxiCode Raster Scaling
 below.
 
-Scales for non-Maxicode raster output should be given in increments of 0.5, i.e.
+Scales for non-MaxiCode raster output should be given in increments of 0.5, i.e.
 0.5, 1, 1.5, 2, 2.5, 3, 3.5, etc., to avoid the X-dimension varying across the
 symbol due to interpolation. 0.5 increments are also faster to render.
 
-The minimum scale for non-Maxicode raster output in non-dotty mode is 0.5,
+The minimum scale for non-MaxiCode raster output in non-dotty mode is 0.5,
 giving a minimum X-dimension of 1 pixel. For MaxiCode, it is 0.2. The minimum
 scale for raster output in dotty mode is 1 (see 4.15 Working with Dots). For
 raster output, text will not be printed for scales less than 1.
 
 The minimum scale for vector output is 0.1, giving a minimum X-dimension of 0.2
-(or for Maxicode EMF output, 4). The maximum scale for both raster and vector is
+(or for MaxiCode EMF output, 4). The maximum scale for both raster and vector is
 200.
 
 To summarize the more intricate details:
@@ -3715,6 +3715,9 @@ standards have now been removed from Zint.
 
   : Table : Data Matrix Sizes:
 
+The largest version 24 (144 x 144) can encode 3116 digits, around 2335
+alphanumeric characters, or 1555 bytes of data.
+
 When using automatic symbol sizes you can force Zint to use square symbols
 (versions 1-24) at the command line by using the option --square (API
 option_3 = DM_SQUARE).
@@ -3918,6 +3921,9 @@ that versions M1 and M2 have restrictions on what characters can be encoded.
 
   : Table : Micro QR Code Sizes:
 
+Version M4 can encode up to 35 digits, 21 alphanumerics, 15 bytes or 9 Kanji
+characters.
+
 Except for version M1, which is always ECC level L, the amount of ECC codewords
 can be adjusted using the --secure option (API option_1); however ECC level H is
 not available for any version, and ECC level Q is only available for version M4:
@@ -4013,6 +4019,9 @@ height of the symbol while allowing Zint to determine the minimum symbol width.
   ------------------------------------------------------------------------------
 
   : Table : rMQR Sizes:
+
+The largest version R17x139 (32) can encode up to 361 digits, 219 alphanumerics,
+150 bytes, or 92 Kanji characters.
 
 For barcode readers that support it, non-ASCII data density may be maximized by
 using the --fullmultibyte switch or in the API by setting
@@ -4253,8 +4262,9 @@ data nor for Version S symbols.
 Grid Matrix groups modules in a chequerboard pattern, and by default supports
 the GB 2312 standard set, which includes Hanzi, ASCII and a small number of
 ISO/IEC 8859-1 characters. Input should be entered as UTF-8 with conversion to
-GB 2312 being carried out automatically by Zint. The symbology also supports the
-ECI mechanism. Support for GS1 data has not yet been implemented.
+GB 2312 being carried out automatically by Zint. Up to around 1529 alphanumeric
+characters or 2751 digits may be encoded. The symbology also supports the ECI
+mechanism. Support for GS1 data has not yet been implemented.
 
 The size of the symbol and the error correction capacity can be specified. If
 you specify both of these values then Zint will make a ‘best-fit’ attempt to
@@ -4362,6 +4372,10 @@ to a value between 1 and 84 according to the following table.
 
   : Table : Han Xin Sizes:
 
+The largest version (84) can encode 7827 digits, 4350 ASCII characters, up to
+2175 Chinese characters, or 3261 bytes, making it the most capacious of all the
+barcodes supported by Zint.
+
 There are four levels of error correction capacity available for Han Xin Code
 which can be set by using the --secure option (API option_1) to a value from the
 following table.
@@ -4410,11 +4424,19 @@ initiated through the API by setting
 
     symbol->option_3 = ULTRA_COMPRESSION;
 
-WARNING: Ultracode data compression is experimental and should not be used in a
-production environment.
+With compression, up to 504 digits, 375 alphanumerics or 252 bytes can be
+encoded.
 
-Revision 2 of Ultracode (2021) which swops and inverts the DCCU and DCCL tiles
+Revision 2 of Ultracode (2023) which swops and inverts the DCCU and DCCL tiles
 may be specified using --vers=2 (API option_2 = 2).
+
+--------------------------------------------------------------------------------
+
+WARNING: Revision 2 of Ultracode is currently (December 2023) undergoing major
+modifications, yet to be finalized, and should not be used in a production
+environment.
+
+--------------------------------------------------------------------------------
 
 Ultracode supports Structured Append of up to 8 symbols and an optional numeric
 ID (File Number), which can be set by using the --structapp option (see 4.17

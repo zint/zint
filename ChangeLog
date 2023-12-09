@@ -126,11 +126,14 @@ Bugs
   in `gs1_verify()` on not checking length, ticket #300, props Andre Maute
 - GS1_128_CC: fix divide-by-zero crash in `calc_padding_ccc()`, ticket #300,
   props Andre Maute
+- HANXIN: fix incorrect numeric costings (out-by-1) in `hx_in_numeric()`, ticket
+  #300 (#16), props Andre Maure
 - PDF417: fix out-of-bounds crash in `pdf_text_submode_length()` and
   out-of-bounds crash on overrunning string and codeword buffers, ticket #300,
   props Andre Maute
 - QRCODE: fix out-of-bounds crash due to incorrect mode costings for GS1
-  percents in `qr_in_alpha()`, ticket #300, props Andre Maute
+  percents in `qr_in_alpha()`; fix incorrect numeric costings (out-by-1) in
+  `qr_in_numeric()`; ticket #300 (#14, #15; #16), props Andre Maute
 
 
 Version 2.12.0 (2022-12-12)

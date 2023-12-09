@@ -308,7 +308,7 @@ static int hx_in_numeric(const unsigned int ddata[], const int length, const int
     }
 
     /* Attempt to calculate the average 'cost' of using numeric mode in number of bits (times HX_MULT) */
-    for (i = in_posn; i < length && i < in_posn + 4 && z_isdigit(ddata[i]); i++);
+    for (i = in_posn; i < length && i < in_posn + 3 && z_isdigit(ddata[i]); i++);
 
     digit_cnt = i - in_posn;
 
@@ -548,7 +548,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(1, 4, binary, bp);
 
                 if (debug_print) {
-                    fputs("Numeric\n", stdout);
+                    printf("Numeric (N%d): ", block_length);
                 }
 
                 count = 0; /* Suppress gcc -Wmaybe-uninitialized */
@@ -574,7 +574,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     bp = bin_append_posn(encoding_value, 10, binary, bp);
 
                     if (debug_print) {
-                        printf("0x%3x (%d)", encoding_value, encoding_value);
+                        printf(" 0x%3x(%d)", encoding_value, encoding_value);
                     }
 
                     i += count;
@@ -604,7 +604,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(2, 4, binary, bp);
 
                 if (debug_print) {
-                    fputs("Text\n", stdout);
+                    printf("Text (T%d):", block_length);
                 }
 
                 submode = 1;
@@ -618,7 +618,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                         bp = bin_append_posn(62, 6, binary, bp);
                         submode = hx_getsubmode(ddata[i + position]);
                         if (debug_print) {
-                            fputs("SWITCH ", stdout);
+                            fputs(" SWITCH", stdout);
                         }
                     }
 
@@ -631,7 +631,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     bp = bin_append_posn(encoding_value, 6, binary, bp);
 
                     if (debug_print) {
-                        printf("%.2x [ASC %.2x] ", encoding_value, ddata[i + position]);
+                        printf(" %.2x[ASC %.2x]", encoding_value, ddata[i + position]);
                     }
                     i++;
                 }
@@ -652,7 +652,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(block_length + double_byte, 13, binary, bp);
 
                 if (debug_print) {
-                    printf("Binary Mode (%d):", block_length + double_byte);
+                    printf("Binary Mode (B%d):", block_length + double_byte);
                 }
 
                 i = 0;
@@ -681,7 +681,8 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 }
 
                 if (debug_print) {
-                    printf("Region One%s\n", position == 0 || mode[position - 1] != '2' ? "" : " (NO indicator)" );
+                    printf("Region One%s H(1)%d:",
+                        position == 0 || mode[position - 1] != '2' ? "" : " (NO indicator)", block_length);
                 }
 
                 i = 0;
@@ -706,7 +707,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     }
 
                     if (debug_print) {
-                        printf("%.3x [GB %.4x] ", glyph, ddata[i + position]);
+                        printf(" %.3x[GB %.4x]", glyph, ddata[i + position]);
                     }
 
                     bp = bin_append_posn(glyph, 12, binary, bp);
@@ -718,7 +719,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                                     ? 4095 : 4094, 12, binary, bp);
 
                 if (debug_print) {
-                    printf("(TERM %x)\n", position + block_length == length || mode[position + block_length] != '2'
+                    printf(" (TERM %x)\n", position + block_length == length || mode[position + block_length] != '2'
                             ? 4095 : 4094);
                 }
 
@@ -731,7 +732,8 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 }
 
                 if (debug_print) {
-                    printf("Region Two%s\n", position == 0 || mode[position - 1] != '1' ? "" : " (NO indicator)" );
+                    printf("Region Two%s H(2)%d:",
+                            position == 0 || mode[position - 1] != '1' ? "" : " (NO indicator)", block_length);
                 }
 
                 i = 0;
@@ -743,7 +745,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                     glyph = (0x5e * (first_byte - 0xd8)) + (second_byte - 0xa1);
 
                     if (debug_print) {
-                        printf("%.3x [GB %.4x] ", glyph, ddata[i + position]);
+                        printf(" %.3x[GB %.4x]", glyph, ddata[i + position]);
                     }
 
                     bp = bin_append_posn(glyph, 12, binary, bp);
@@ -755,7 +757,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                                     ? 4095 : 4094, 12, binary, bp);
 
                 if (debug_print) {
-                    printf("(TERM %x)\n", position + block_length == length || mode[position + block_length] != '1'
+                    printf(" (TERM %x)\n", position + block_length == length || mode[position + block_length] != '1'
                             ? 4095 : 4094);
                 }
 
@@ -766,7 +768,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                 bp = bin_append_posn(6, 4, binary, bp);
 
                 if (debug_print) {
-                    fputs("Double byte\n", stdout);
+                    printf("Double byte (H(d)%d):", block_length);
                 }
 
                 i = 0;
@@ -801,7 +803,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
             case 'f':
                 /* Four-byte encoding */
                 if (debug_print) {
-                    fputs("Four byte\n", stdout);
+                    printf("Four byte (H(f)%d):", block_length);
                 }
 
                 i = 0;
@@ -820,7 +822,7 @@ static void hx_calculate_binary(char binary[], const char mode[], const unsigned
                             (0x0a * (third_byte - 0x81)) + (fourth_byte - 0x30);
 
                     if (debug_print) {
-                        printf("%d ", glyph);
+                        printf(" %d", glyph);
                     }
 
                     bp = bin_append_posn(glyph, 21, binary, bp);
@@ -1554,7 +1556,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
         codewords++;
     }
     if (debug_print) {
-        printf("Num. of codewords: %d\n", codewords);
+        printf("Num. of codewords: %d (%d padbits)\n", codewords, bin_len & 0x07);
     }
 
     version = 85;
