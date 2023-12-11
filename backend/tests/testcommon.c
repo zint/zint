@@ -3703,7 +3703,7 @@ int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char 
 int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
             char *buffer, const int buffer_size, int *p_cmp_len) {
     static const char cmd_fmt[] = "zxingcppdecoder -textonly -format %s -width %d -bits '%s'";
-    static const char hint_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -hint '%s' -width %d -bits '%s'";
+    static const char opts_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -opts '%s' -width %d -bits '%s'";
     static const char cs_cmd_fmt[] = "zxingcppdecoder -textonly -format %s -charset %s -width %d -bits '%s'";
 
     const int bits_len = (int) strlen(bits);
@@ -3713,7 +3713,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
     const char *zxingcpp_barcode = NULL;
     const int data_mode = (symbol->input_mode & 0x07) == DATA_MODE;
     int set_charset = 0;
-    const char *hint = NULL;
+    const char *opts = NULL;
 
     FILE *fp = NULL;
     int cnt;
@@ -3728,12 +3728,12 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
 
     if (symbology == BARCODE_EXCODE39) {
         if (symbol->option_2 == 1) {
-            hint = "tryCode39ExtendedMode,validateCode39CheckSum";
+            opts = "tryCode39ExtendedMode,validateCode39CheckSum";
         } else {
-            hint = "tryCode39ExtendedMode";
+            opts = "tryCode39ExtendedMode";
         }
     } else if ((symbology == BARCODE_CODE39 || symbology == BARCODE_LOGMARS) && symbol->option_2 == 1) {
-        hint = "validateCode39CheckSum";
+        opts = "validateCode39CheckSum";
     }
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE && symbol->eci == 0
@@ -3754,8 +3754,8 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
             charset = "ISO8859_1";
         }
         sprintf(cmd, cs_cmd_fmt, zxingcpp_barcode, charset, width, bits);
-    } else if (hint) {
-        sprintf(cmd, hint_cmd_fmt, zxingcpp_barcode, hint, width, bits);
+    } else if (opts) {
+        sprintf(cmd, opts_cmd_fmt, zxingcpp_barcode, opts, width, bits);
     } else {
         sprintf(cmd, cmd_fmt, zxingcpp_barcode, width, bits);
     }
