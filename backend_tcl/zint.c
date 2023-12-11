@@ -598,9 +598,9 @@ EXPORT int Zint_Init (Tcl_Interp *interp)
     int * tkFlagPtr;
     /*------------------------------------------------------------------------*/
 #ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(interp, "8.5", 0) == NULL)
+    if (Tcl_InitStubs(interp, "8.5-", 0) == NULL)
 #else
-    if (Tcl_PkgRequire(interp, "Tcl", "8.5", 0) == NULL)
+    if (Tcl_PkgRequire(interp, "Tcl", "8.5-", 0) == NULL)
 #endif
     {
         return TCL_ERROR;
