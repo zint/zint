@@ -194,13 +194,19 @@
 #include "../backend/zintconfig.h"
 #include <string.h>
 
-#if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
-#define USE_TCL_STUBS
-#define USE_TK_STUBS
-#endif
-
 #include <tcl.h>
 #include <tk.h>
+
+/* TCL 9 compatibility for TCL 8.6 compile */
+#ifndef TCL_SIZE_MAX
+#ifndef Tcl_Size
+typedef int Tcl_Size;
+#endif
+# define Tcl_GetSizeIntFromObj Tcl_GetIntFromObj
+# define Tcl_NewSizeIntObj Tcl_NewIntObj
+# define TCL_SIZE_MAX      INT_MAX
+# define TCL_SIZE_MODIFIER ""
+#endif
 
 #undef EXPORT
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -743,7 +749,7 @@ static int Encode(Tcl_Interp *interp, int objc,
     struct zint_symbol *my_symbol;
     Tcl_DString dsInput;
     char *pStr = NULL;
-    int lStr;
+    Tcl_Size lStr;
     Tcl_Encoding hZINTEncoding;
     int rotate_angle=0;
     int fError = 0;
@@ -1339,7 +1345,7 @@ static int Encode(Tcl_Interp *interp, int objc,
                 Tcl_Obj *poParam;
                 struct zint_structapp structapp = { 0, 0, "" };
                 char *pStructAppId = NULL;
-                int lStructAppId = 0;
+                Tcl_Size lStructAppId = 0;
                 if (TCL_OK != Tcl_ListObjLength(interp,
                     objv[optionPos+1], &lStr))
                 {
@@ -1511,7 +1517,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         }
         if (seg_count) {
             segs[0].source = (unsigned char *) pStr;
-            segs[0].length = lStr;
+            segs[0].length = (int)lStr;
             segs[0].eci = my_symbol->eci;
             for (seg_no = 1; seg_no < seg_count; seg_no++) {
                 if (!pSegDataObjs[seg_no]) {
@@ -1523,14 +1529,16 @@ static int Encode(Tcl_Interp *interp, int objc,
             if (!fError) {
                 for (seg_no = 1; seg_no < seg_count; seg_no++) {
                     if ((my_symbol->input_mode & 0x07) == DATA_MODE) {
+                        Tcl_Size LengthTemp;
                         segs[seg_no].source = (unsigned char *) Tcl_GetByteArrayFromObj(pSegDataObjs[seg_no],
-                            &segs[seg_no].length);
+                            &LengthTemp);
+                        segs[seg_no].length = (int)LengthTemp;
                     } else {
                         pStr = Tcl_GetStringFromObj(pSegDataObjs[seg_no], &lStr);
                         Tcl_DStringInit(& segInputs[seg_no]);
                         Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &segInputs[seg_no]);
                         segs[seg_no].source = (unsigned char *) Tcl_DStringValue( &segInputs[seg_no] );
-                        segs[seg_no].length = Tcl_DStringLength( &segInputs[seg_no] );
+                        segs[seg_no].length = (int)Tcl_DStringLength( &segInputs[seg_no] );
                     }
                 }
             }
@@ -1548,7 +1556,7 @@ static int Encode(Tcl_Interp *interp, int objc,
                 segs, seg_count, rotate_angle);
         } else {
             ErrorNumber = ZBarcode_Encode_and_Buffer(my_symbol,
-                (unsigned char *) pStr, lStr, rotate_angle);
+                (unsigned char *) pStr, (int)lStr, rotate_angle);
         }
         /*--------------------------------------------------------------------*/
         /* >> Show a message */
