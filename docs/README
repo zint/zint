@@ -2,8 +2,8 @@ For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" usin
 
 On Ubuntu/Debian (tested on Ubuntu 22.04)
 
-    wget https://github.com/jgm/pandoc/releases/download/3.1.9/pandoc-3.1.9-1-amd64.deb
-    sudo dpkg -i pandoc-3.1.9-1-amd64.deb
+    wget https://github.com/jgm/pandoc/releases/download/3.1.10/pandoc-3.1.10-1-amd64.deb
+    sudo dpkg -i pandoc-3.1.10-1-amd64.deb
     sudo apt install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"
@@ -18,9 +18,9 @@ On Ubuntu/Debian (tested on Ubuntu 22.04)
 
 On Fedora (tested on Fedora Linux 38 (Workstation Edition))
 
-    wget https://github.com/jgm/pandoc/releases/download/3.1.9/pandoc-3.1.9-linux-amd64.tar.gz
-    tar xf pandoc-3.1.9-linux-amd64.tar.gz
-    sudo mv -i pandoc-3.1.9/bin/pandoc /usr/local/bin
+    wget https://github.com/jgm/pandoc/releases/download/3.1.10/pandoc-3.1.10-linux-amd64.tar.gz
+    tar xf pandoc-3.1.10-linux-amd64.tar.gz
+    sudo mv -i pandoc-3.1.10/bin/pandoc /usr/local/bin
     sudo dnf install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"
