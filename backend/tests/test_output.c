@@ -231,6 +231,89 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
+
+    struct item {
+        int symbology;
+        int whitespace_width;
+        int whitespace_height;
+        int border_width;
+        int output_options;
+        int hide_text;
+        int comp_xoffset;
+        float scaler;
+
+        float expected_xoffset;
+        float expected_yoffset;
+        float expected_roffset;
+        float expected_boffset;
+        float expected_qz_right;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, 1, 0, 0, 0, 0, 0, 0.0f, /*expected*/ 1.0f, 0.0f, 1.0f, 0.0f, 0.0f },
+        /*  1*/ { BARCODE_CODE128, 2, 0, 0, 0, 0, 0, 1.0f, /*expected*/ 2.0f, 0.0f, 2.0f, 0.0f, 0.0f },
+        /*  2*/ { BARCODE_CODE128, 2, 3, 0, 0, 0, 0, 1.0f, /*expected*/ 2.0f, 3.0f, 2.0f, 3.0f, 0.0f },
+        /*  3*/ { BARCODE_CODE128, 2, 3, 1, 0, 0, 0, 1.0f, /*expected*/ 2.0f, 3.0f, 2.0f, 3.0f, 0.0f },
+        /*  4*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 4.0f, 0.0f },
+        /*  5*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f },
+        /*  6*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 2.0f, 4.0f, 2.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
+        /*  7*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 4.0f, 0.0f },
+        /*  8*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
+        /*  9*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 4.0f, 0.0f }, /* BIND_BOX wins */
+        /* 10*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
+        /* 11*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX | BARCODE_QUIET_ZONES, 0, 0, 1.0f, /*expected*/ 13.0f, 4.0f, 13.0f, 4.0f, 10.0f },
+    };
+    int data_size = ARRAY_SIZE(data);
+    int i;
+    struct zint_symbol symbol = {0};
+    float xoffset, yoffset, roffset, boffset, qz_right;
+    int xoffset_si, yoffset_si, roffset_si, boffset_si, qz_right_si;
+
+    testStart("test_set_whitespace_offsets");
+
+    for (i = 0; i < data_size; i++) {
+        if (testContinue(p_ctx, i)) continue;
+
+        xoffset = yoffset = roffset = boffset = qz_right = 0.0f;
+        xoffset_si = yoffset_si = roffset_si = boffset_si = qz_right_si = 0;
+
+        symbol.symbology = data[i].symbology;
+        symbol.whitespace_width = data[i].whitespace_width;
+        symbol.whitespace_height = data[i].whitespace_height;
+        symbol.border_width = data[i].border_width;
+        symbol.output_options = data[i].output_options;
+        out_set_whitespace_offsets(&symbol, data[i].hide_text, data[i].comp_xoffset,
+                &xoffset, &yoffset, &roffset, &boffset, &qz_right, data[i].scaler,
+                &xoffset_si, &yoffset_si, &roffset_si, &boffset_si, &qz_right_si);
+        assert_equal(xoffset, data[i].expected_xoffset, "i:%d xoffset %g != %g\n", i, xoffset, data[i].expected_xoffset);
+        assert_equal(yoffset, data[i].expected_yoffset, "i:%d yoffset %g != %g\n", i, yoffset, data[i].expected_yoffset);
+        assert_equal(roffset, data[i].expected_roffset, "i:%d roffset %g != %g\n", i, roffset, data[i].expected_roffset);
+        assert_equal(boffset, data[i].expected_boffset, "i:%d boffset %g != %g\n", i, boffset, data[i].expected_boffset);
+        assert_equal(qz_right, data[i].expected_qz_right, "i:%d qz_right %g != %g\n", i, qz_right, data[i].expected_qz_right);
+        if (data[i].scaler) {
+            int expected_xoffset_si = (int) (data[i].expected_xoffset * data[i].scaler);
+            int expected_yoffset_si = (int) (data[i].expected_yoffset * data[i].scaler);
+            int expected_roffset_si = (int) (data[i].expected_roffset * data[i].scaler);
+            int expected_boffset_si = (int) (data[i].expected_boffset * data[i].scaler);
+            int expected_qz_right_si = (int) (data[i].expected_qz_right * data[i].scaler);
+            assert_equal(xoffset_si, expected_xoffset_si, "i:%d xoffset_si %d != %d\n", i, xoffset_si, expected_xoffset_si);
+            assert_equal(yoffset_si, expected_yoffset_si, "i:%d yoffset_si %d != %d\n", i, yoffset_si, expected_yoffset_si);
+            assert_equal(roffset_si, expected_roffset_si, "i:%d roffset_si %d != %d\n", i, roffset_si, expected_roffset_si);
+            assert_equal(boffset_si, expected_boffset_si, "i:%d boffset_si %d != %d\n", i, boffset_si, expected_boffset_si);
+            assert_equal(qz_right_si, expected_qz_right_si, "i:%d qz_right_si %d != %d\n", i, qz_right_si, expected_qz_right_si);
+        } else {
+            assert_zero(xoffset_si, "i:%d xoffset_si %d non-zero\n", i, xoffset_si);
+            assert_zero(yoffset_si, "i:%d yoffset_si %d non-zero\n", i, yoffset_si);
+            assert_zero(roffset_si, "i:%d roffset_si %d non-zero\n", i, roffset_si);
+            assert_zero(boffset_si, "i:%d boffset_si %d non-zero\n", i, boffset_si);
+            assert_zero(qz_right_si, "i:%d qz_right_si %d non-zero\n", i, qz_right_si);
+        }
+    }
+
+    testFinish();
+}
+
 #ifdef _WIN32
 #define TEST_OUT_SEP        '\\'
 #define TEST_OUT_SEP_STR    "\\"
@@ -411,6 +494,7 @@ int main(int argc, char *argv[]) {
         { "test_colour_get_rgb", test_colour_get_rgb },
         { "test_colour_get_cmyk", test_colour_get_cmyk },
         { "test_quiet_zones", test_quiet_zones },
+        { "test_set_whitespace_offsets", test_set_whitespace_offsets },
         { "test_fopen", test_fopen },
         { "test_out_putsf", test_out_putsf },
     };

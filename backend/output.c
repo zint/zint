@@ -706,7 +706,7 @@ INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const
     *p_boffset = symbol->whitespace_height + qz_bottom;
     if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP)) {
         *p_yoffset += symbol->border_width;
-        if (symbol->output_options & (BARCODE_BOX | BARCODE_BIND)) {
+        if (!(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
             *p_boffset += symbol->border_width;
         }
     }

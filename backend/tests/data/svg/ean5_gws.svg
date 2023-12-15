@@ -8,7 +8,7 @@
   <text x="47" y="15.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
    12345
   </text>
-  <text x="91.5" y="15.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+  <text x="105" y="15.6" text-anchor="end" font-family="OCRB, monospace" font-size="20">
    &gt;
   </text>
  </g>

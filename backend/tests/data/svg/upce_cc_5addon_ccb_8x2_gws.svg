@@ -17,7 +17,7 @@
   <text x="182" y="59.6" text-anchor="middle" font-family="OCRB, monospace" font-size="20">
    56789
   </text>
-  <text x="225.6" y="59.6" text-anchor="start" font-family="OCRB, monospace" font-size="20">
+  <text x="239" y="59.6" text-anchor="end" font-family="OCRB, monospace" font-size="20">
    &gt;
   </text>
  </g>

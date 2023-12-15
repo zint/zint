@@ -936,6 +936,12 @@ static void test_output_options(const testCtx *const p_ctx) {
         /* 87*/ { BARCODE_ITF14, -1, -1, 0, BARCODE_BOX, 0, 0, "123", 0, 50, 1, 135, 310, 116, 0, 100, 0 },
         /* 88*/ { BARCODE_ITF14, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 0, 0, "123", 0, 50, 1, 135, 330, 136, 1, 110, 0 },
         /* 89*/ { BARCODE_ITF14, -1, -1, -1, OUT_BUFFER_INTERMEDIATE, 90, 0, "123", 0, 50, 1, 135, 136, 330, 1, 0, 110 },
+        /* 90*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, 0, 0, "A123", 0, 20, 2, 101, 242, 44, 1, 43, 24 },
+        /* 91*/ { BARCODE_CODABLOCKF, -1, -1, -1, BARCODE_BIND_TOP, 0, 0, "A123", 0, 20, 2, 101, 242, 42, 0, 41, 24 },
+        /* 92*/ { BARCODE_CODE16K, -1, -1, -1, -1, 0, 0, "A123", 0, 20, 2, 70, 162, 44, 1, 43, 0 },
+        /* 93*/ { BARCODE_CODE16K, -1, -1, -1, BARCODE_BIND_TOP, 0, 0, "A123", 0, 20, 2, 70, 162, 42, 0, 41, 0 },
+        /* 94*/ { BARCODE_CODE49, -1, -1, -1, -1, 0, 0, "A123", 0, 20, 2, 70, 162, 44, 1, 43, 0 },
+        /* 95*/ { BARCODE_CODE49, -1, -1, -1, BARCODE_BIND_TOP, 0, 0, "A123", 0, 20, 2, 70, 162, 42, 0, 41, 0 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

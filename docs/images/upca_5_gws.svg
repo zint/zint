@@ -20,7 +20,7 @@
   <text x="548" y="31.2" text-anchor="middle" font-family="OCRB, monospace" font-size="40">
    12345
   </text>
-  <text x="635.2" y="31.2" text-anchor="start" font-family="OCRB, monospace" font-size="40">
+  <text x="662" y="31.2" text-anchor="end" font-family="OCRB, monospace" font-size="40">
    &gt;
   </text>
  </g>

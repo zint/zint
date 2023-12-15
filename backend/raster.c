@@ -1176,8 +1176,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
             const int upcea_height_adj = ((UPCEAN_FONT_HEIGHT - UPCEAN_SMALL_FONT_HEIGHT) * si + 1) / 2;
 
             int text_yposn = yoffset_si + symbol_height_si + (int) (symbol->text_gap * si);
-            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-                text_yposn += symbol->border_width * si; /* Note not needed for BARCODE_BIND_TOP */
+            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))
+                    && !(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                text_yposn += symbol->border_width * si;
             }
 
             if (upceanflag == 6) { /* UPC-E */
@@ -1297,8 +1298,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
             unsigned char local_text[sizeof(symbol->text)] = {0};
             int text_xposn = (int) ((main_width / 2.0f) * si) + xoffset_si;
             int text_yposn = yoffset_si + symbol_height_si + (int) (symbol->text_gap * si);
-            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-                text_yposn += symbol->border_width * si; /* Note not needed for BARCODE_BIND_TOP */
+            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))
+                    && !(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                text_yposn += symbol->border_width * si;
             }
             to_iso8859_1(symbol->text, local_text);
             /* Put the human readable text at the bottom */

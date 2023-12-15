@@ -91,29 +91,29 @@ static int emf_count_hexagons(const struct zint_symbol *symbol) {
 static int emf_count_strings(const struct zint_symbol *symbol, float *fsize, float *fsize2, int *halign_left,
             int *halign_right) {
     int strings = 0;
-    const struct zint_vector_string *str;
+    const struct zint_vector_string *string;
 
     *fsize = *fsize2 = 0.0f;
     *halign_left = *halign_right = 0;
 
-    str = symbol->vector->strings;
-    while (str) {
+    string = symbol->vector->strings;
+    while (string) {
         /* Allow 2 font sizes */
         if (*fsize == 0.0f) {
-            *fsize = str->fsize;
-        } else if (str->fsize != *fsize && *fsize2 == 0.0f) {
-            *fsize2 = str->fsize;
+            *fsize = string->fsize;
+        } else if (string->fsize != *fsize && *fsize2 == 0.0f) {
+            *fsize2 = string->fsize;
         }
         /* Only 3 haligns possible and centre align always assumed used */
-        if (str->halign) { /* Left or right align */
-            if (str->halign == 1) { /* Left align */
-                *halign_left = str->halign;
+        if (string->halign) { /* Left or right align */
+            if (string->halign == 1) { /* Left align */
+                *halign_left = string->halign;
             } else { /* Right align */
-                *halign_right = str->halign;
+                *halign_right = string->halign;
             }
         }
         strings++;
-        str = str->next;
+        string = string->next;
     }
 
     return strings;
@@ -190,12 +190,13 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     int draw_background = 1;
     int bold;
+    const int upcean = is_upcean(symbol->symbology);
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 
     struct zint_vector_rect *rect;
     struct zint_vector_circle *circ;
     struct zint_vector_hexagon *hex;
-    struct zint_vector_string *str;
+    struct zint_vector_string *string;
 
     /* Allow for up to 6 strings (current max 3 for UPC/EAN) */
     unsigned char *this_string[6];
@@ -617,24 +618,24 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     this_text = 0;
     /* Loop over font sizes so that they're grouped together, so only have to select font twice at most */
     for (i = 0, current_fsize = fsize; i < 2 && current_fsize; i++, current_fsize = fsize2) {
-        str = symbol->vector->strings;
+        string = symbol->vector->strings;
         current_halign = -1;
-        while (str) {
+        while (string) {
             int utfle_len;
             int bumped_len;
-            if (str->fsize != current_fsize) {
-                str = str->next;
+            if (string->fsize != current_fsize) {
+                string = string->next;
                 continue;
             }
-            text_fsizes[this_text] = str->fsize;
-            text_haligns[this_text] = str->halign;
+            text_fsizes[this_text] = string->fsize;
+            text_haligns[this_text] = string->halign;
             if (text_haligns[this_text] != current_halign) {
                 current_halign = text_haligns[this_text];
                 bytecount += 12;
                 recordcount++;
             }
-            assert(str->length > 0);
-            utfle_len = emf_utfle_length(str->text, str->length);
+            assert(string->length > 0);
+            utfle_len = emf_utfle_length(string->text, string->length);
             bumped_len = emf_bump_up(utfle_len);
             if (!(this_string[this_text] = (unsigned char *) malloc(bumped_len))) {
                 for (i = 0; i < this_text; i++) {
@@ -653,8 +654,15 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             text[this_text].i_graphics_mode = 0x00000002; /* GM_ADVANCED */
             text[this_text].ex_scale = 1.0f;
             text[this_text].ey_scale = 1.0f;
-            text[this_text].w_emr_text.reference.x = (int32_t) str->x;
-            text[this_text].w_emr_text.reference.y = (int32_t) str->y;
+            /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
+            if (upcean && string->halign == 1 && string->text[0] == '<') {
+                text[this_text].w_emr_text.reference.x = 0;
+            } else if (upcean && string->halign == 2 && string->text[0] == '>') {
+                text[this_text].w_emr_text.reference.x = (int32_t) (symbol->vector->width - 1);
+            } else {
+                text[this_text].w_emr_text.reference.x = (int32_t) string->x;
+            }
+            text[this_text].w_emr_text.reference.y = (int32_t) string->y;
             text[this_text].w_emr_text.chars = utfle_len;
             text[this_text].w_emr_text.off_string = 76;
             text[this_text].w_emr_text.options = 0;
@@ -663,12 +671,12 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             text[this_text].w_emr_text.rectangle.right = 0xffffffff;
             text[this_text].w_emr_text.rectangle.bottom = 0xffffffff;
             text[this_text].w_emr_text.off_dx = 0;
-            emf_utfle_copy(this_string[this_text], str->text, str->length);
+            emf_utfle_copy(this_string[this_text], string->text, string->length);
             bytecount += 76 + bumped_len;
             recordcount++;
 
             this_text++;
-            str = str->next;
+            string = string->next;
         }
     }
     /* Suppress clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */

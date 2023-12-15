@@ -388,7 +388,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     int addon_len = 0;
     int addon_gap = 0;
     float addon_text_yposn = 0.0f;
-    float xoffset, yoffset, roffset, boffset;
+    float xoffset, yoffset, roffset, boffset, qz_right;
     float textoffset;
     int upceanflag = 0;
     int addon_latch = 0;
@@ -412,6 +412,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     float addon_row_yposn;
     float addon_row_height;
     int upcae_outside_font_height = 0; /* UPC-A/E outside digits font size */
+    const float gws_left_fudge = 0.5f; /* These make the guard whitespaces appear closer to the edge for SVG/qzint */
+    const float gws_right_fudge = 0.5f; /* (undone by EMF/EPS) */
     /* Note using "ascender" to mean height above digits as "ascent" usually measured from baseline */
     const float digit_ascender_factor = 0.22f; /* Assuming digit ascender height roughly 22% of font size */
     float digit_ascender = 0.0f; /* Avoid gcc -Wmaybe-uninitialized */
@@ -473,7 +475,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
 
     hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
 
-    out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, NULL,
+    out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, &qz_right,
         0 /*scaler*/, NULL, NULL, NULL, NULL, NULL);
 
     xoffset_comp = xoffset + comp_xoffset;
@@ -740,8 +742,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         if (upceanflag >= 6) { /* UPC-E, EAN-8, UPC-A, EAN-13 */
 
             float text_yposn = yoffset + symbol->height + font_height + text_gap - antialias_fudge; /* Baseline */
-            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-                text_yposn += symbol->border_width; /* Note not needed for BARCODE_BIND_TOP */
+            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))
+                    && !(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                text_yposn += symbol->border_width;
             }
 
             if (upceanflag == 6) { /* UPC-E */
@@ -763,20 +766,20 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     if (!vector_add_string(symbol, addon, addon_len, text_xposn, addon_text_yposn, font_height,
                             textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     if (upcean_guard_whitespace) {
-                        text_xposn = (addon_len == 2 ? 70.0f : 97.0f) - 0.2f + xoffset_comp + addon_gap;
+                        text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                         textwidth = 8.5f;
                         if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, addon_text_yposn,
-                                font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                                font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     }
                 }
 
             } else if (upceanflag == 8) { /* EAN-8 */
                 float text_xposn;
                 if (upcean_guard_whitespace) {
-                    text_xposn = -0.75f + xoffset_comp;
+                    text_xposn = -7.0f - gws_left_fudge + xoffset_comp;
                     textwidth = 8.5f;
                     if (!vector_add_string(symbol, (const unsigned char *) "<", 1, text_xposn, text_yposn,
-                            font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                            font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
                 }
                 text_xposn = (17.0f + 0.5f) + xoffset_comp;
                 textwidth = 4.0f * 8.5f;
@@ -791,16 +794,16 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     if (!vector_add_string(symbol, addon, addon_len, text_xposn, addon_text_yposn, font_height,
                             textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     if (upcean_guard_whitespace) {
-                        text_xposn = (addon_len == 2 ? 86.0f : 113.0f) - 0.2f + xoffset_comp + addon_gap;
+                        text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                         textwidth = 8.5f;
                         if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, addon_text_yposn,
-                                font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                                font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     }
                 } else if (upcean_guard_whitespace) {
-                    text_xposn = (68.0f - 0.2f) + xoffset_comp;
+                    text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                     textwidth = 8.5f;
                     if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, text_yposn,
-                            font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                            font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                 }
 
             } else if (upceanflag == 12) { /* UPC-A */
@@ -827,10 +830,10 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     if (!vector_add_string(symbol, addon, addon_len, text_xposn, addon_text_yposn, font_height,
                             textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     if (upcean_guard_whitespace) {
-                        text_xposn = (addon_len == 2 ? 114.0f : 141.0f) - 0.2f + xoffset_comp + addon_gap;
+                        text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                         textwidth = 8.5f;
                         if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, addon_text_yposn,
-                                font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                                font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     }
                 }
 
@@ -852,16 +855,16 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     if (!vector_add_string(symbol, addon, addon_len, text_xposn, addon_text_yposn, font_height,
                             textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     if (upcean_guard_whitespace) {
-                        text_xposn = (addon_len == 2 ? 114.0f : 141.0f) + xoffset_comp + addon_gap;
+                        text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                         textwidth = 8.5f;
                         if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, addon_text_yposn,
-                                font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                                font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                     }
                 } else if (upcean_guard_whitespace) {
-                    text_xposn = 96.0f + xoffset_comp;
+                    text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                     textwidth = 8.5f;
                     if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, text_yposn,
-                            font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                            font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
                 }
             }
 
@@ -881,10 +884,10 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             if (!vector_add_string(symbol, symbol->text, addon_len, text_xposn, text_yposn, font_height,
                     textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
             if (upcean_guard_whitespace) {
-                text_xposn = (addon_len == 2 ? 18.75f : 45.75f) + xoffset + addon_gap;
+                text_xposn = symbol->width + gws_right_fudge + qz_right + xoffset;
                 textwidth = 8.5f;
                 if (!vector_add_string(symbol, (const unsigned char *) ">", 1, text_xposn, text_yposn,
-                        font_height, textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
+                        font_height, textwidth, 2 /*right align*/, &last_string)) return ZINT_ERROR_MEMORY;
             }
 
         } else {
@@ -892,8 +895,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             float text_xposn = main_width / 2.0f + xoffset_comp;
             float text_yposn = yoffset + symbol->height + font_height + text_gap; /* Calculated to bottom of text */
             text_yposn -= symbol->output_options & SMALL_TEXT ? descent_small : descent;
-            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))) {
-                text_yposn += symbol->border_width; /* Note not needed for BARCODE_BIND_TOP */
+            if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BOX | BARCODE_BIND))
+                    && !(symbol->output_options & BARCODE_BIND_TOP)) { /* Trumps BARCODE_BOX & BARCODE_BIND */
+                text_yposn += symbol->border_width;
             }
             if (!vector_add_string(symbol, symbol->text, -1, text_xposn, text_yposn, font_height, symbol->width, 0,
                     &last_string)) return ZINT_ERROR_MEMORY;

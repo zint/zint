@@ -483,7 +483,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
                 fputs(" scalefont setfont\n", feps);
                 previous_fsize = string->fsize;
             }
-            out_putsf(" ", 2, string->x, feps);
+            /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
+            if (upcean && string->halign == 1 && string->text[0] == '<') {
+                out_putsf(" ", 2, 0, feps);
+            } else if (upcean && string->halign == 2 && string->text[0] == '>') {
+                out_putsf(" ", 2, symbol->vector->width, feps);
+            } else {
+                out_putsf(" ", 2, string->x, feps);
+            }
             out_putsf(" ", 2, symbol->vector->height - string->y, feps);
             fputs(" moveto\n", feps);
             if (string->rotation != 0) {
