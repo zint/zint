@@ -485,9 +485,11 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
             }
             /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
             if (upcean && string->halign == 1 && string->text[0] == '<') {
-                out_putsf(" ", 2, 0, feps);
+                const float gws_left_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
+                out_putsf(" ", 2, string->x + gws_left_fudge, feps);
             } else if (upcean && string->halign == 2 && string->text[0] == '>') {
-                out_putsf(" ", 2, symbol->vector->width, feps);
+                const float gws_right_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
+                out_putsf(" ", 2, string->x - gws_right_fudge, feps);
             } else {
                 out_putsf(" ", 2, string->x, feps);
             }

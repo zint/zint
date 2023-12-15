@@ -656,9 +656,11 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             text[this_text].ey_scale = 1.0f;
             /* Unhack the guard whitespace `gws_left_fudge`/`gws_right_fudge` hack */
             if (upcean && string->halign == 1 && string->text[0] == '<') {
-                text[this_text].w_emr_text.reference.x = 0;
+                const float gws_left_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
+                text[this_text].w_emr_text.reference.x = (int32_t) (string->x + gws_left_fudge);
             } else if (upcean && string->halign == 2 && string->text[0] == '>') {
-                text[this_text].w_emr_text.reference.x = (int32_t) (symbol->vector->width - 1);
+                const float gws_right_fudge = symbol->scale < 0.1f ? 0.1f : symbol->scale; /* 0.5 * 2 * scale */
+                text[this_text].w_emr_text.reference.x = (int32_t) (string->x - gws_right_fudge);
             } else {
                 text[this_text].w_emr_text.reference.x = (int32_t) string->x;
             }
