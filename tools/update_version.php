@@ -142,6 +142,35 @@ function rc_replace($file, $rc_str1, $rc_str2, $year = '') {
     }
 }
 
+function year_replace($file, $year) {
+    global $basename;
+
+    if (($get = file_get_contents($file)) === false) {
+        exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+    }
+
+    $match_pattern = '/Copyright /';
+    $lines = explode("\n", $get);
+    $done = 0;
+    foreach ($lines as $li => $line) {
+        if (preg_match($match_pattern, $line)) {
+            $cnt = 0;
+            $lines[$li] = preg_replace('/[0-9]+/', $year, $line, 1, $cnt);
+            if ($cnt === 0 || $lines[$li] === NULL) {
+                exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
+            }
+            $done++;
+            break;
+        }
+    }
+    if ($done !== 1) {
+        exit("$basename: ERROR: Failed to replace Copyright year in file \"$file\"" . PHP_EOL);
+    }
+    if (!file_put_contents($file, implode("\n", $lines))) {
+        exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+    }
+}
+
 // CMakeLists.txt
 
 $file = $data_dirname . 'CMakeLists.txt';
@@ -242,6 +271,10 @@ version_replace(2, $data_dirname . 'backend_tcl/zint_tcl.dsp', '/ZINT_VERSION="\
 // backend_tcl/lib/zint/pkgIndex.tcl
 
 version_replace(1, $data_dirname . 'backend_tcl/lib/zint/pkgIndex.tcl', '/zint /', '/zint [0-9.]+/', 'zint ' . $v_base_str . '');
+
+// backend_tcl/licence.txt
+
+year_replace($data_dirname . 'backend_tcl/licence.txt', $year);
 
 // frontend/zint.rc
 

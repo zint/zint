@@ -10,6 +10,8 @@ Build:
 The header files of a TCL and Tk build are required for the build.
 
 - MS-VC6 project file "zint_tcl.dsp" may be opened by the GUI.
+  (will need to add your version of tcl/tk libs to LINK32, e.g.
+  "tcl85.lib" and "tk85.lib")
 - Linux/Unix build is provided by the configure script.
   Thanks to Christian Werner for that.
 
