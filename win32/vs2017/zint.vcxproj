@@ -52,7 +52,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;_DEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION="2.12.0.9";ZINT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <ExceptionHandling />
@@ -71,7 +71,7 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
-      <AdditionalIncludeDirectories>..\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\backend;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>WIN32;_WIN32;NDEBUG;_CRT_SECURE_NO_WARNINGS;_CRT_NONSTDC_NO_WARNINGS;ZINT_VERSION="2.12.0.9";ZINT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <ExceptionHandling />
@@ -84,16 +84,16 @@
     </ClCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\getopt\getopt.c" />
-    <ClCompile Include="..\getopt\getopt1.c" />
-    <ClCompile Include="..\frontend\main.c" />
+    <ClCompile Include="..\..\getopt\getopt.c" />
+    <ClCompile Include="..\..\getopt\getopt1.c" />
+    <ClCompile Include="..\..\frontend\main.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\frontend\resource.h" />
-    <ClInclude Include="..\getopt\getopt.h" />
+    <ClInclude Include="..\..\frontend\resource.h" />
+    <ClInclude Include="..\..\getopt\getopt.h" />
   </ItemGroup>
   <ItemGroup>
-    <ResourceCompile Include="..\frontend\zint.rc" />
+    <ResourceCompile Include="..\..\frontend\zint.rc" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="libzint.vcxproj">

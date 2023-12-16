@@ -89,8 +89,8 @@ QMAKE_LIBDIR += C:/qt/5.15.2static/lib
 
 !contains(DEFINES, ZINT_NO_PNG) {
 # Win
-    win32:LIBS += -llibpng16 -lzlib
-    win32:QMAKE_LIBDIR+="../../lpng/projects/vstudio/Release Library"
+    win32:LIBS += -llibpng -lzlib
+    win32:QMAKE_LIBDIR+=../../lpng/ ../../zlib
 # Unix
     #unix:LIBS += -lpng -zlib
     #unix:QMAKE_LIBDIR += /usr/local/lib /usr/lib/x86_64-linux-gnu/

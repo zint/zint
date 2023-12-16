@@ -4602,13 +4602,12 @@ symbol->option_3 = ULTRA_COMPRESSION;
 With compression, up to 504 digits, 375 alphanumerics or 252 bytes can be
 encoded.
 
-Revision 2 of Ultracode (2023) which swops and inverts the DCCU and DCCL tiles
-may be specified using `--vers=2` (API `option_2 = 2`).
+Revision 2 of Ultracode (2023) may be specified using `--vers=2` (API
+`option_2 = 2`).
 
 * * *
-WARNING: Revision 2 of Ultracode is currently (December 2023) undergoing major
-modifications, yet to be finalized, and should not be used in a production
-environment.
+WARNING: Revision 2 of Ultracode was only finalized December 2023 and Zint has
+not yet been updated to support it. Do not use.
 
 * * *
 

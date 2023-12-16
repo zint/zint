@@ -1,4 +1,4 @@
-Visual Studio 2017
+Visual Studio 2022
 ------------------
 
 To build the Zint library DLL and the command line tool "zint.exe" with PNG
@@ -7,8 +7,8 @@ support for x86/Win32:
 Install git (https://git-scm.com/downloads)
 Install cmake (https://cmake.org/download/)
 
-Open a "Developer Command Prompt for VS 2017" (should be available under the
-"Visual Studio 2017" tab in the Start menu).
+Open a "Developer Command Prompt for VS 2022" (should be available under the
+"Visual Studio 2022" tab in the Start menu).
 
 Make sure git and cmake are in your PATH, e.g. (your paths may differ)
 
@@ -29,25 +29,18 @@ and cloning each:
 First build zlib:
 
   cd zlib
-
   nmake -f win32\Makefile.msc clean
   nmake -f win32\Makefile.msc
-
   cd ..
 
 and then lpng:
 
   cd lpng
-
-  cmake -G "Visual Studio 15 2017" -DCMAKE_BUILD_TYPE=Release^
-        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
-        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
-
-  cmake --build build --config Release
-
+  nmake -f scripts\makefile.vcwin32 clean
+  nmake -f scripts\makefile.vcwin32
   cd ..
 
-If you now open "%cd%\zint\win32\zint.sln" with Visual Studio 2017, you
+If you now open "%cd%\zint\win32\zint.sln" with Visual Studio 2022, you
 should be able to build the Release configuration for Win32.
 
 "zint.dll" and "zint.exe" will be in "zint\win32\Release".
@@ -58,32 +51,28 @@ involves signing up for a Qt account and installing the Qt Maintenance Tool.
 Using this tool you can install various versions of Qt and various optional
 components.
 
-The following requires the "MSVC 2017 32-bit" component to be installed.
+The following requires the "MSVC 2019 32-bit" component to be installed.
 
-As of writing Qt 5.14.2 is the latest release that includes this component and
+As of writing Qt 5.15.2 is the latest release that includes this component and
 is used here. Add the location of this component to your PATH, e.g. (your path
 may differ):
 
-  set "PATH=C:\Qt\5.14.2\msvc2017\bin;%PATH%"
+  set "PATH=C:\Qt\5.15.2\msvc2019\bin;%PATH%"
 
 Next build the Zint backend Qt library "QtZintDLL.lib":
 
   cd zint\backend_qt
-
   qmake backend_qt_zintdll.pro
   nmake clean
   nmake release
-
   cd ..\..
 
 Then Zint Studio "qtZint.exe":
 
   cd zint\frontend_qt
-
   qmake frontend_qt_zintdll.pro
   nmake clean
   nmake release
-
   cd ..\..
 
 This creates "zint\frontend_qt\release\qtZint.exe". It requires the Zint DLL to
@@ -96,40 +85,25 @@ You should now be able to run Zint Studio:
   zint\frontend_qt\release\qtZint
 
 
-Visual Studio 2019
-------------------
+Visual Studio 2019 and 2017
+---------------------------
 
-A solution for Visual Studio 2019 is in sub-directory vs2019. The steps are the
-same as for Visual Studio 2017. To build lpng use
-
-  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release^
-        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
-        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
-
-(note the extra argument "-A Win32"). For Qt, the latest Qt5 version as of
-writing to support Visual Studio 2019 is 15.5.2. Install this and the
-"MSVC 2019 32-bit" component. Zint Studio can also be built using Qt6.
+Solutions for Visual Studio 2019 and 2017 are in sub-directories vs2019 and
+vs2017. The steps are the same as for Visual Studio 2022.
 
 
 Visual Studio 2015
 ------------------
 
-The solution and project files for Visual Studio 2015 have been moved to the
-sub-directory vs2015. The steps are almost the same as for Visual Studio 2017,
-except that "rc.exe" may not be available. If so, you need to install a Windows
-Kit and then update your PATH, e.g. (adjust for version):
+A solution for Visual Studio 2015 is in sub-directory vs2015. The steps are
+almost the same as for Visual Studio 2022, except that "rc.exe" may not be
+available. If so, you need to install a Windows Kit and then update your PATH,
+e.g. (adjust for version):
 
-  set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
-
-To build lpng use
-
-  cmake -G "Visual Studio 14 2015" -DCMAKE_BUILD_TYPE=Release^
-        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
-        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
+  set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86;%PATH%"
 
 Recent versions of Qt no longer supply a specific component for Visual Studio
-2015 32-bit, but you can use "MSVC 2017 32-bit" or "MSVC 2019 32-bit" instead as
-they're compatible.
+2015 32-bit, but you can use "MSVC 2019 32-bit" instead as it's compatible.
 
 For information on building a standalone version of Zint Studio using Visual
 Studio 2015, see "frontend_qt\howto_build_qzint_using_msvs2015.txt"
@@ -141,23 +115,7 @@ CMake and Visual Studio
 Zint can also be built using CMake with Visual Studio 2022, 2019, 2017 or 2015.
 The following example uses Visual Studio 2019 to build for x86/Win32:
 
-As above, cd <project-directory> and clone lpng, zlib and zint into it. Then
-
-  cd zlib
-  ml /safeseh /coff /c contrib/masmx86/match686.asm
-  ml /safeseh /coff /c contrib/masmx86/inffas32.asm
-  nmake -f win32\Makefile.msc LOC="-DASMV -DASMINF=" OBJA="inffas32.obj match686.obj"
-  cd ..
-
-(compiling the zlib assembler with "SAFESEH" seems to be required when building
-zint using CMake)
-
-  cd lpng
-  cmake -G "Visual Studio 16 2019" -A Win32 -DCMAKE_BUILD_TYPE=Release^
-        -DPNG_BUILD_ZLIB=ON -DZLIB_INCLUDE_DIRS=..\zlib^
-        -DPNG_STATIC=ON -DPNG_SHARED=OFF -B build
-  cmake --build build --config Release
-  cd ..
+As above, follow the steps to build zlib and lpng.
 
 CMake needs to be able to find zlib and lpng. One way to do this (requires
 Administrator privileges) is to create two sub-directories in
@@ -166,10 +124,7 @@ Administrator privileges) is to create two sub-directories in
   "zlib\zlib.h", "zlib\zconf.h", "lpng\png.h", "lpng\pngconf.h" and
   "lpng\pnglibconf.h" into "include", and
 
-  "zlib\zlib.lib" and "lpng\build\Release\libpng16_static.lib" into "lib".
-
-You may need to rename "libpng16_static.lib" to "libpng.lib" depending on the
-version of cmake you have.
+  "zlib\zlib.lib" and "lpng\libpng.lib" into "lib".
 
 This example uses Qt 5.15.2 and component "MSVC 2019 32-bit" so install them and
 add to path (your path may differ):

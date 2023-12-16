@@ -14,59 +14,63 @@ Build static Qt:
 - Install Python (https://www.python.org/downloads/windows/) and make it available within the path.
 
 - Start the VS2015 x86 native console by the start menu entry:
-Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
-  ("Eingabeaufforderung" = "Command Prompt")
+  Visual Studio 2015\Visual Studio Tools\Windows Desktop Command Prompts\VS2015 x86 Native Tools-Eingabeaufforderung
+- ("Eingabeaufforderung" = "Command Prompt")
 
-Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
-- set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
+- Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
+  set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.20348.0\x86;%PATH%"
 
-- cd C:\qt\qt-everywhere-src-5.15.2
-- configure.bat -static -release -prefix c:\qt\5.15.2static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
-  One may set another destination folder after the -prefix option.
-  Attention, the upper command is one long line.
-- nmake
-- nmake install
-  The last 3 commands run around 3 hours.
-  Make sure, that python may be found in the path.
+  cd C:\qt\qt-everywhere-src-5.15.2
+  configure.bat -static -release -prefix c:\qt\5.15.2static -qt-zlib -qt-pcre -qt-libpng -qt-libjpeg -qt-freetype -opengl desktop -no-openssl -opensource -confirm-license -make libs -nomake tools -nomake examples -nomake tests -mp
+- One may set another destination folder after the -prefix option.
+- Attention, the upper command is one long line.
+  nmake
+  nmake install
+- The last 3 commands run around 3 hours.
+- Make sure, that python may be found in the path.
 - the huge source folder may be deleted to save around 6GB of space.
 
 Zint Folder structure:
 ----------------------
-- zint source files in $ZH
-  -> this file is in $ZH\frontend_qt
-- png1620.zip unzipped in $ZH\..\lpng
-  -> $ZH\..\lpng\png.h exists
-- zlib128.zip unzipped in folder $ZH\..\zlib
-  -> $ZH\..\zlib\zlib.h exists
+- zint source files in %ZH%, e.g.
+  set "ZH=%cd%\zint"
+  git clone https://git.code.sf.net/p/zint/code "%ZH%"
+-> this file is in %ZH%\frontend_qt
+
+- libpng source files in %ZH%\..\lpng
+  git clone https://git.code.sf.net/p/libpng/code "%ZH%\..\lpng"
+-> %ZH%\..\lpng\png.h exists
+
+- zlib source files in %ZH%\..\zlib
+  git clone https://github.com/madler/zlib.git "%ZH%\..\zlib"
+-> %ZH%\..\zlib\zlib.h exists
 
 Build libpng:
 -------------
-Open $ZH\..\lpng\projects\vstudio with VS2015 gui and convert the project
-Set Project settings->C++->Code Generation->Library: Multi-Threadded DLL /MD
-Copy the zlib source as required by the make file (in my case: zlib-1.2.8)
-Build targets "Release Library" for zlib and libpng.
+  cd "%ZH%\..\zlib"
+  nmake -f win32\Makefile.msc clean
+  nmake -f win32\Makefile.msc
+  cd ..\lpng
+  nmake -f scripts\makefile.vcwin32 clean
+  nmake -f scripts\makefile.vcwin32
 
 Build zint:
 -----------
-- Start in the start menu: "VS2015 x86 Native Tools-Eingabeaufforderung"
-- set QTDIR=C:\Qt\5.15.2static
-- set PATH=C:\Qt\5.15.2static\bin;%PATH%
-- set QMAKESPEC=win32-msvc
-- cd $ZH
+  set QTDIR=C:\Qt\5.15.2static
+  set PATH=C:\Qt\5.15.2static\bin;%PATH%
+  set QMAKESPEC=win32-msvc
+  cd "%ZH%"
 
-Note: if "rc.exe" not available, install a Windows Kit and update PATH (e.g.):
-- set "PATH=C:\Program Files (x86)\Windows Kits\10\bin\10.0.19041.0\x86;%PATH%"
+  cd backend_qt
+  qmake backend_qt.pro
+  nmake clean
+  nmake release
 
-- cd backend_qt
-- qmake backend_qt.pro
-- nmake clean
-- nmake release
-
-- cd ..\frontend_qt
-- qmake frontend_qt.pro
-- nmake clean
-- nmake release
-  -> qtZint.exe is in the release folder
+  cd ..\frontend_qt
+  qmake frontend_qt.pro
+  nmake clean
+  nmake release
+-> qtZint.exe is in the release folder
 
 Note:
 For me, qt5core.lib was not found in the last step.
