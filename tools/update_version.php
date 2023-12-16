@@ -307,10 +307,6 @@ version_replace(6, $data_dirname . 'win32/vs2015/libzint.vcxproj', '/ZINT_VERSIO
 
 version_replace(6, $data_dirname . 'win32/vs2015/zint.vcxproj', '/ZINT_VERSION="/', '/ZINT_VERSION="[0-9.]+"/', 'ZINT_VERSION="' . $v_str . '"');
 
-// win32/vs2015/vsx/libzintMD.vcxproj
-
-version_replace(1, $data_dirname . 'win32/vs2015/vsx/libzintMD.vcxproj', '/ZINT_VERSION="/', '/ZINT_VERSION="[0-9.]+"/', 'ZINT_VERSION="' . $v_str . '"');
-
 // win32/vs2017/libzint.vcxproj
 
 version_replace(2, $data_dirname . 'win32/vs2017/libzint.vcxproj', '/ZINT_VERSION="/', '/ZINT_VERSION="[0-9.]+"/', 'ZINT_VERSION="' . $v_str . '"');
