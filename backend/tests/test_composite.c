@@ -3475,9 +3475,9 @@ static void test_fuzz(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /* 0*/ { BARCODE_EANX_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
-        /* 1*/ { BARCODE_UPCA_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG , 1, ""},
-        /* 2*/ { BARCODE_UPCE_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG , 1, ""},
-        /* 3*/ { BARCODE_EANX_CC, -1, -1, "+12345", -1, "[21]A12345678", 0 , 0, "BWIPP checks for proper EAN data"},
+        /* 1*/ { BARCODE_UPCA_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
+        /* 2*/ { BARCODE_UPCE_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
+        /* 3*/ { BARCODE_EANX_CC, -1, -1, "+12345", -1, "[21]A12345678", 0 , 0, "BWIPP checks for proper EAN data" },
         /* 4*/ { BARCODE_EANX_CC, -1, -1, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "" },
         /* 5*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "kks", -1, "()111%", ZINT_ERROR_INVALID_DATA, 1, "" }, /* #300 (#5), Andre Maute (`dbar_date()` not checking length + other non-checks) */
         /* 6*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\153\153\153\153\153\153\153\153\163", -1, "()90", ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#6), Andre Maute (`dbar_date()` not checking length + other non-checks) */
