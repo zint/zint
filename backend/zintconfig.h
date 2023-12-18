@@ -37,7 +37,7 @@
 #define ZINT_VERSION_MAJOR      2
 #define ZINT_VERSION_MINOR      13
 #define ZINT_VERSION_RELEASE    0
-#define ZINT_VERSION_BUILD      0
+#define ZINT_VERSION_BUILD      9
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* ZINTCONFIG_H */
