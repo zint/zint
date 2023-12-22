@@ -92,7 +92,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     unsigned char palette[32][5];
     int color_map_size = 0;
     int extra_samples = 0;
-    uint32_t free_memory;
+    size_t free_memory;
     int row, column, strip;
     int strip_row;
     unsigned int bytes_put;
@@ -291,7 +291,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     free_memory = sizeof(tiff_header_t);
 
     for (i = 0; i < strip_count; i++) {
-        strip_offset[i] = free_memory;
+        strip_offset[i] = (uint32_t) free_memory;
         if (i != (strip_count - 1)) {
             strip_bytes[i] = bytes_per_strip;
         } else {
@@ -339,7 +339,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         header.byte_order = 0x4949; /* "II" little-endian */
     }
     header.identity = 42;
-    header.offset = free_memory;
+    header.offset = (uint32_t) free_memory;
 
     fwrite(&header, sizeof(tiff_header_t), 1, tif_file);
     total_bytes_put = sizeof(tiff_header_t);
@@ -425,7 +425,16 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         file_pos = ftell(tif_file);
         fseek(tif_file, 4, SEEK_SET);
         free_memory = file_pos;
-        fwrite(&free_memory, 4, 1, tif_file);
+        temp32 = (uint32_t) free_memory;
+        /* Shouldn't happen as `free_memory` checked above to be <= 0xffff0000 & should only decrease */
+        if (free_memory != temp32 || (long) free_memory != file_pos) {
+            strcpy(symbol->errtxt, "982: Output file size too big");
+            if (!output_to_stdout) {
+                (void) fclose(tif_file);
+            }
+            return ZINT_ERROR_MEMORY;
+        }
+        fwrite(&temp32, 4, 1, tif_file);
         fseek(tif_file, file_pos, SEEK_SET);
     }
 
@@ -450,7 +459,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             tags[entries++].offset = (bits_per_sample << 16) | bits_per_sample;
         } else {
             update_offsets[offsets++] = entries;
-            tags[entries++].offset = free_memory;
+            tags[entries++].offset = (uint32_t) free_memory;
             free_memory += samples_per_pixel * 2;
         }
     }
@@ -472,7 +481,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         tags[entries++].offset = strip_offset[0];
     } else {
         update_offsets[offsets++] = entries;
-        tags[entries++].offset = free_memory;
+        tags[entries++].offset = (uint32_t) free_memory;
         free_memory += strip_count * 4;
     }
 
@@ -527,7 +536,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         tags[entries].type = 3; /* SHORT */
         tags[entries].count = color_map_size * 3;
         update_offsets[offsets++] = entries;
-        tags[entries++].offset = free_memory;
+        tags[entries++].offset = (uint32_t) free_memory;
         /* free_memory += color_map_size * 3 * 2; Unnecessary as long as last use */
     }
 

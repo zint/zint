@@ -98,7 +98,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int have_tiffinfo = testUtilHaveTiffInfo();
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStartSymbol("test_pixel_plot", &symbol);
+    testStart("test_pixel_plot");
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");

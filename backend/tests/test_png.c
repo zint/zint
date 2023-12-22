@@ -65,7 +65,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStartSymbol("test_pixel_plot", &symbol);
+    testStart("test_pixel_plot");
 
     for (i = 0; i < data_size; i++) {
         int size;

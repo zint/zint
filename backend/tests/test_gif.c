@@ -37,6 +37,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
+        int symbology;
         int width;
         int height;
         char *pattern;
@@ -45,21 +46,21 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { 1, 1, "1", 0, 0 },
-        /*  1*/ { 2, 1, "11", 0, 0 },
-        /*  2*/ { 3, 1, "101", 0, 0 },
-        /*  3*/ { 4, 1, "1010", 0, 0 },
-        /*  4*/ { 5, 1, "10101", 0, 0 },
-        /*  5*/ { 3, 2, "101010", 0, 0 },
-        /*  6*/ { 3, 3, "101010101", 0, 0 },
-        /*  7*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
-        /*  8*/ { 20, 30, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWKCKBKMKRKYKGKK", 1, 0 }, /* Single LZW block, size 255 */
-        /*  9*/ { 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1, 0 }, /* Two LZW blocks, last size 1 */
-        /* 10*/ { 1, 1, "D", 0, ZINT_ERROR_INVALID_DATA },
+        /*  0*/ { BARCODE_CODE128, 1, 1, "1", 0, 0 },
+        /*  1*/ { BARCODE_CODE128, 2, 1, "11", 0, 0 },
+        /*  2*/ { BARCODE_CODE128, 3, 1, "101", 0, 0 },
+        /*  3*/ { BARCODE_CODE128, 4, 1, "1010", 0, 0 },
+        /*  4*/ { BARCODE_CODE128, 5, 1, "10101", 0, 0 },
+        /*  5*/ { BARCODE_CODE128, 3, 2, "101010", 0, 0 },
+        /*  6*/ { BARCODE_CODE128, 3, 3, "101010101", 0, 0 },
+        /*  7*/ { BARCODE_ULTRA, 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
+        /*  8*/ { BARCODE_ULTRA, 20, 30, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWKCKBKMKRKYKGKK", 1, 0 }, /* Single LZW block, size 255 */
+        /*  9*/ { BARCODE_ULTRA, 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1, 0 }, /* Two LZW blocks, last size 1 */
+        /* 10*/ { BARCODE_ULTRA, 1, 1, "D", 0, 0 }, /* This used to fail, now just maps unknown codes to 0 (1st colour index) */
     };
     int data_size = ARRAY_SIZE(data);
     int i, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char *gif = "out.gif";
 
@@ -79,6 +80,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
         strcpy(symbol->outfile, gif);
 
+        symbol->symbology = data[i].symbology;
         symbol->bitmap_width = data[i].width;
         symbol->bitmap_height = data[i].height;
         symbol->debug |= debug;
@@ -103,7 +105,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
                 ret = testUtilVerifyIdentify(have_identify, symbol->outfile, debug);
                 assert_zero(ret, "i:%d identify %s ret %d != 0\n", i, symbol->outfile, ret);
             }
-            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
+            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) { /* -d 64 */
                 assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
             }
         } else {
@@ -168,18 +170,21 @@ static void test_print(const testCtx *const p_ctx) {
         /* 23*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "000000", "FFFFFF00", "12", "dotcode_bgtrans.gif", "" },
         /* 24*/ { BARCODE_DOTCODE, -1, CMYK_COLOUR, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "71,0,40,44", "", "12", "dotcode_cmyk_fg.gif", "" },
         /* 25*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF0000", "12", "ultra_fgbg_hvwsp1_box1.gif", "" },
-        /* 26*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
-        /* 27*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
-        /* 28*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
-        /* 29*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
-        /* 30*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
-        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
-        /* 32*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
-        /* 33*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
+        /* 26*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgfgtrans.gif", "" },
+        /* 27*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF", "FF000000", "12", "ultra_fgbg_hvwsp1_box1_bgtrans.gif", "" },
+        /* 28*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, 0, 0, 0, { 0, 0, "" }, "0000FF00", "FF0000", "12", "ultra_fgbg_hvwsp1_box1_fgtrans.gif", "" },
+        /* 29*/ { BARCODE_ITF14, 4, BARCODE_BIND, 24, -1, -1, -1, 61.8, 3, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height61.8_bind4_wsp24_3.gif", "#204 ARM-Cortex crash" },
+        /* 30*/ { BARCODE_ITF14, 0, BARCODE_BIND, -1, -1, -1, -1, 0.5, 0.5, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_box0_0.5.gif", "No box, no text" },
+        /* 31*/ { BARCODE_ITF14, -1, -1, -1, -1, -1, -1, 0.5, 1.1, 0, { 0, 0, "" }, "", "", "0501054800395", "itf14_height0.5_1.1.gif", "" },
+        /* 32*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 0.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height0.5_wsp3_vwsp5.gif", "Separator covers bars" },
+        /* 33*/ { BARCODE_CODE16K, -1, -1, 3, 5, -1, -1, 1.5, 0, 0, { 0, 0, "" }, "", "", "1234567890", "code16k_height1.5_wsp3_vwsp5.gif", "" },
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 2, 9, "001002" }, "", "", "1234567890", "datamatrix_seq2of9.gif", "" },
+        /* 35*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
+        /* 36*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     const char *data_dir = "/backend/tests/data/gif";
     const char *gif = "out.gif";
@@ -189,7 +194,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart("test_print");
+    testStartSymbol("test_print", &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -319,13 +324,11 @@ static void test_large_scale(const testCtx *const p_ctx) {
 
     length = (int) strlen(data);
 
+    ZBarcode_Reset(&symbol);
     symbol.symbology = BARCODE_ITF14;
-    strcpy(symbol.fgcolour, "000000");
-    strcpy(symbol.bgcolour, "ffffff");
     strcpy(symbol.outfile, "out.gif");
     /* X-dimension 0.27mm * 95 = 25.65 ~ 25 pixels so 12.5 gives 95 dpmm (2400 dpi) */
-    symbol.scale = 12.5f; /* 70.0f would cause re-alloc as LZW > 1MB but very slow */
-    symbol.dot_size = 4.0f / 5.0f;
+    symbol.scale = 12.5f; /* 70.0f would cause paging as LZW > 1MB but very slow */
 
     ret = ZBarcode_Encode_and_Print(&symbol, (unsigned char *) data, length, 0 /*rotate_angle*/);
     assert_zero(ret, "%s ZBarcode_Encode_and_Print ret %d != 0 %s\n", testUtilBarcodeName(symbol.symbology), ret, symbol.errtxt);
@@ -340,6 +343,35 @@ static void test_large_scale(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_too_big(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    int length, ret;
+    struct zint_symbol symbol = {0};
+    char data[] = "12345";
+
+    (void)debug;
+
+    testStart("test_too_big");
+
+    length = (int) strlen(data);
+
+    ZBarcode_Reset(&symbol);
+    symbol.symbology = BARCODE_EANX;
+    strcpy(symbol.outfile, "out.gif");
+    symbol.scale = 200.0f;
+    symbol.whitespace_width = 32;
+
+    /* Fails in `plot_raster_default()` with `image_size` 0x4029C800 > 1GB */
+    ret = ZBarcode_Encode_and_Print(&symbol, (unsigned char *) data, length, 0 /*rotate_angle*/);
+    assert_equal(ret, ZINT_ERROR_MEMORY, "%s ZBarcode_Encode_and_Print ret %d != ZINT_ERROR_MEMORY %s\n",
+                    testUtilBarcodeName(symbol.symbology), ret, symbol.errtxt);
+
+    ZBarcode_Clear(&symbol);
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -347,6 +379,7 @@ int main(int argc, char *argv[]) {
         { "test_print", test_print },
         { "test_outfile", test_outfile },
         { "test_large_scale", test_large_scale },
+        { "test_too_big", test_too_big },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

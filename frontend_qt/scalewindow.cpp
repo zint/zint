@@ -86,6 +86,7 @@ ScaleWindow::ScaleWindow(BarcodeItem *bc, Zint::QZintXdimDpVars *vars, double or
     } else {
         spnResolution->setSingleStep(1);
     }
+    set_maxima();
 
     size_msg_ui_set();
 
@@ -179,6 +180,7 @@ void ScaleWindow::update_scale()
         emit scaleChanged(scale);
         m_unset = false;
         btnScaleUnset->setEnabled(true);
+        set_maxima();
     }
 }
 
@@ -246,6 +248,22 @@ const char *ScaleWindow::getFileType() const
 {
     static const char *filetypes[3] = { "GIF", "SVG", "EMF" };
     return filetypes[std::max(std::min(cmbFileType->currentIndex(), 2), 0)];
+}
+
+void ScaleWindow::set_maxima()
+{
+    float maxXdim = m_bc->bc.getXdimDpFromScale(200.0f, get_dpmm(), getFileType());
+    if (cmbXdimUnits->currentIndex() == 1) { // Inches
+        spnXdim->setMaximum(maxXdim / 25.4);
+    } else {
+        spnXdim->setMaximum(maxXdim);
+    }
+    float maxRes = m_bc->bc.getXdimDpFromScale(200.0f, get_x_dim_mm(), getFileType());
+    if (cmbResolutionUnits->currentIndex() == 1) { // Inches
+        spnResolution->setMaximum(maxRes * 25.4);
+    } else {
+        spnResolution->setMaximum(maxRes);
+    }
 }
 
 double ScaleWindow::update_vars()

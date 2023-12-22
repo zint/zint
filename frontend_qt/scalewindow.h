@@ -57,6 +57,7 @@ private:
     float get_x_dim_mm() const;
     float get_dpmm() const;
     const char *getFileType() const;
+    void set_maxima();
     double update_vars();
     double m_originalScale;
     bool m_unset;

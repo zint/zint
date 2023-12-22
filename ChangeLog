@@ -1,6 +1,23 @@
 Version 2.13.0.9 (dev) not released yet
 =======================================
 
+**Incompatible changes**
+------------------------
+None so far
+
+Changes
+-------
+- BMP: lessen heap memory usage by only `malloc()`ing a row
+- GIF: lessen heap memory usage by paging; use standard colour char map
+
+Bugs
+----
+- raster/BMP/GIF/PCX/TIF: fix dealing with very large data (use `size_t`)
+- raster: add `raster_malloc()` to fail > 1GB (avoids very large output files;
+  also lessens to some degree chances of being victim of OOM killer on Linux)
+- GUI: printing scale dialog: set maxima on X-dim and resolution to keep scale
+  <= 200
+
 
 Version 2.13.0 (2023-12-18)
 ===========================

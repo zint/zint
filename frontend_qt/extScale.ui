@@ -54,7 +54,7 @@
         <double>0.001000000000000</double>
        </property>
        <property name="maximum">
-        <double>100.000000000000000</double>
+        <double>10.000000000000000</double>
        </property>
        <property name="singleStep">
         <double>0.010000000000000</double>
@@ -140,7 +140,7 @@
         <string/>
        </property>
        <property name="maximum">
-        <number>9999</number>
+        <number>1000</number>
        </property>
        <property name="minimum">
         <number>1</number>

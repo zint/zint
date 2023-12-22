@@ -48,9 +48,10 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     int run_count;
     FILE *pcx_file;
     pcx_header_t header;
-    int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); /* Must be even */
     unsigned char previous;
+    const unsigned char *pb;
     const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
+    const int bytes_per_line = symbol->bitmap_width + (symbol->bitmap_width & 1); /* Must be even */
     unsigned char *rle_row = (unsigned char *) z_alloca(bytes_per_line);
 
     rle_row[bytes_per_line - 1] = 0; /* Will remain zero if bitmap_width odd */
@@ -104,8 +105,7 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     fwrite(&header, sizeof(pcx_header_t), 1, pcx_file);
 
-    for (row = 0; row < symbol->bitmap_height; row++) {
-        const unsigned char *const pb = pixelbuf + row * symbol->bitmap_width;
+    for (row = 0, pb = pixelbuf; row < symbol->bitmap_height; row++, pb += symbol->bitmap_width) {
         for (colour = 0; colour < header.number_of_planes; colour++) {
             for (column = 0; column < symbol->bitmap_width; column++) {
                 const unsigned char ch = pb[column];
