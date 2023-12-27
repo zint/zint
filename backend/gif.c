@@ -32,18 +32,15 @@
 
 #include <errno.h>
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <io.h>
-#include <fcntl.h>
-#endif
 #include "common.h"
+#include "filemem.h"
 #include "output.h"
 
 /* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
 #define GIF_LZW_PAGE_SIZE   0x100000 /* Megabyte */
 
 typedef struct s_statestruct {
-    FILE *file;
+    struct filemem *fmp;
     unsigned char *pOut;
     const unsigned char *pIn;
     const unsigned char *pInEnd;
@@ -65,7 +62,7 @@ static void BufferNextByte(statestruct *pState) {
     (pState->OutPosCur)++;
     if (pState->fOutPaged && pState->OutPosCur + 2 >= pState->OutLength) {
         /* Keep last 256 bytes so `OutByteCountPos` within range */
-        fwrite(pState->pOut, 1, pState->OutPosCur - 256, pState->file);
+        fm_write(pState->pOut, 1, pState->OutPosCur - 256, pState->fmp);
         memmove(pState->pOut, pState->pOut + pState->OutPosCur - 256, 256);
         pState->OutByteCountPos -= pState->OutPosCur - 256;
         pState->OutPosCur = 256;
@@ -241,6 +238,7 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
  * Called function to save in gif format
  */
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
+    struct filemem fm;
     unsigned char outbuf[10];
     unsigned short usTemp;
     unsigned char paletteRGB[10][3];
@@ -250,7 +248,6 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     statestruct State;
     int transparent_index;
     int bgindex = -1, fgindex = -1;
-    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 
     static const unsigned char RGBUnused[3] = {0,0,0};
     unsigned char RGBfg[3];
@@ -277,22 +274,14 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         return ZINT_ERROR_MEMORY;
     }
 
+    State.fmp = &fm;
+
     /* Open output file in binary mode */
-    if (output_to_stdout) {
-#ifdef _MSC_VER
-        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "610: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
-            free(State.pOut);
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-#endif
-        State.file = stdout;
-    } else {
-        if (!(State.file = out_fopen(symbol->outfile, "wb"))) {
-            sprintf(symbol->errtxt, "611: Could not open output file (%d: %.30s)", errno, strerror(errno));
-            free(State.pOut);
-            return ZINT_ERROR_FILE_ACCESS;
-        }
+    if (!fm_open(State.fmp, symbol, "wb")) {
+        sprintf(symbol->errtxt, "611: Could not open output file (%d: %.30s)", State.fmp->err,
+                strerror(State.fmp->err));
+        free(State.pOut);
+        return ZINT_ERROR_FILE_ACCESS;
     }
 
     /*
@@ -310,7 +299,6 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
      * 'K': black
      * '0' and '1' may be identical to one of the other values
      */
-    paletteCount = 0;
     memset(State.map, 0, sizeof(State.map));
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
@@ -375,7 +363,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (transparent_index != -1)
         outbuf[4] = '9';
 
-    fwrite(outbuf, 1, 6, State.file);
+    fm_write(outbuf, 1, 6, State.fmp);
     /* Screen Descriptor (7) */
     /* Screen Width */
     usTemp = (unsigned short) symbol->bitmap_width;
@@ -402,12 +390,12 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     outbuf[5] = bgindex == -1 ? 0 : bgindex;
     /* Byte 7 must be 0x00  */
     outbuf[6] = 0x00;
-    fwrite(outbuf, 1, 7, State.file);
+    fm_write(outbuf, 1, 7, State.fmp);
     /* Global Color Table (paletteSize*3) */
-    fwrite(paletteRGB, 1, 3*paletteCount, State.file);
+    fm_write(paletteRGB, 1, 3*paletteCount, State.fmp);
     /* add unused palette items to fill palette size */
     for (i = paletteCount; i < paletteSize; i++) {
-        fwrite(RGBUnused, 1, 3, State.file);
+        fm_write(RGBUnused, 1, 3, State.fmp);
     }
 
     /* Graphic control extension (8) */
@@ -435,7 +423,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         outbuf[6] = (unsigned char) transparent_index;
         /* Block Terminator */
         outbuf[7] = 0;
-        fwrite(outbuf, 1, 8, State.file);
+        fm_write(outbuf, 1, 8, State.fmp);
     }
     /* Image Descriptor */
     /* Image separator character = ',' */
@@ -458,41 +446,32 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
      * There is no local color table if its most significant bit is reset.
      */
     outbuf[9] = 0x00;
-    fwrite(outbuf, 1, 10, State.file);
+    fm_write(outbuf, 1, 10, State.fmp);
 
     /* call lzw encoding */
     if (!gif_lzw(&State, paletteBitSize)) {
         free(State.pOut);
-        if (!output_to_stdout) {
-            (void) fclose(State.file);
-        }
+        (void) fm_close(State.fmp, symbol);
         strcpy(symbol->errtxt, "613: Insufficient memory for LZW buffer");
         return ZINT_ERROR_MEMORY;
     }
-    fwrite((const char *) State.pOut, 1, State.OutPosCur, State.file);
+    fm_write((const char *) State.pOut, 1, State.OutPosCur, State.fmp);
     free(State.pOut);
 
     /* GIF terminator */
-    fputc('\x3b', State.file);
+    fm_putc('\x3b', State.fmp);
 
-    if (ferror(State.file)) {
-        sprintf(symbol->errtxt, "615: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(State.file);
-        }
+    if (fm_error(State.fmp)) {
+        sprintf(symbol->errtxt, "615: Incomplete write to output (%d: %.30s)", State.fmp->err,
+                    strerror(State.fmp->err));
+        (void) fm_close(State.fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(State.file) != 0) {
-            sprintf(symbol->errtxt, "616: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
-    } else {
-        if (fclose(State.file) != 0) {
-            sprintf(symbol->errtxt, "617: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
+    if (!fm_close(State.fmp, symbol)) {
+        sprintf(symbol->errtxt, "617: Failure on closing output file (%d: %.30s)", State.fmp->err,
+                    strerror(State.fmp->err));
+        return ZINT_ERROR_FILE_WRITE;
     }
 
     return 0;

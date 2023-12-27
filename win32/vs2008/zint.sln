@@ -1,0 +1,29 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "zint", "zint.vcproj", "{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B} = {5C08DC40-8F7D-475E-AA3C-814DED735A4B}
+	EndProjectSection
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "libzint", "libzint.vcproj", "{5C08DC40-8F7D-475E-AA3C-814DED735A4B}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Debug|Win32.ActiveCfg = Debug|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Debug|Win32.Build.0 = Debug|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Release|Win32.ActiveCfg = Release|Win32
+		{3169C7FA-E52C-4BFC-B7BB-E55EBA133770}.Release|Win32.Build.0 = Release|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Debug|Win32.ActiveCfg = Debug|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Debug|Win32.Build.0 = Debug|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Release|Win32.ActiveCfg = Release|Win32
+		{5C08DC40-8F7D-475E-AA3C-814DED735A4B}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

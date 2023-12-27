@@ -77,9 +77,6 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
 INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
 #endif
 
-/* Output float without trailing zeroes to `fp` with decimal pts `dp` (precision) */
-INTERNAL void out_putsf(const char *const prefix, const int dp, const float arg, FILE *fp);
-
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

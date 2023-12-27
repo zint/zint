@@ -62,16 +62,17 @@ December 2023
     -   5.3 Encoding and Printing Functions in Depth
     -   5.4 Buffering Symbols in Memory (raster)
     -   5.5 Buffering Symbols in Memory (vector)
-    -   5.6 Setting Options
-    -   5.7 Handling Errors
-    -   5.8 Specifying a Symbology
-    -   5.9 Adjusting Output Options
-    -   5.10 Setting the Input Mode
-    -   5.11 Multiple Segments
-    -   5.12 Scaling Helpers
-    -   5.13 Verifying Symbology Availability
-    -   5.14 Checking Symbology Capabilities
-    -   5.15 Zint Version
+    -   5.6 Buffering Symbols in Memory (memfile)
+    -   5.7 Setting Options
+    -   5.8 Handling Errors
+    -   5.9 Specifying a Symbology
+    -   5.10 Adjusting Output Options
+    -   5.11 Setting the Input Mode
+    -   5.12 Multiple Segments
+    -   5.13 Scaling Helpers
+    -   5.14 Verifying Symbology Availability
+    -   5.15 Checking Symbology Capabilities
+    -   5.16 Zint Version
 -   6. Types of Symbology
     -   6.1 One-Dimensional Symbols
         -   6.1.1 Code 11
@@ -1130,7 +1131,7 @@ format. For example:
 
 [zint -d "This Text" --fg=00FF0055]
 
-will produce a semi-transparent green foreground with standard (white)
+will produce a semi-transparent green foreground with a standard (white)
 background. Note that transparency is treated differently by raster and vector
 (SVG) output formats, as for vector output the background will “shine through” a
 transparent foreground. For instance
@@ -1742,7 +1743,7 @@ function as shown in the next example:
     }
 
 Note that when using the API, the input data is assumed to be 8-bit binary
-unless the input_mode member of the zint_symbol structure is set - see 5.10
+unless the input_mode member of the zint_symbol structure is set - see 5.11
 Setting the Input Mode for details.
 
 5.3 Encoding and Printing Functions in Depth
@@ -1899,24 +1900,53 @@ draw_string(), and draw_circle() routines available:
         draw_circle(circle->x, circle->y, circle->diameter, circle->width);
     }
 
-5.6 Setting Options
+5.6 Buffering Symbols in Memory (memfile)
+
+Symbols can also be stored as “in-memory” file buffers by giving the
+BARCODE_MEMORY_FILE option to the output_options member, which saves the print
+output to member memfile instead of to the output file outfile. The length of
+the buffer is given in memfile_size. For instance:
+
+    #include <zint.h>
+    #include <stdio.h>
+    #include <string.h>
+    int main(int argc, char **argv)
+    {
+        struct zint_symbol *my_symbol;
+        my_symbol = ZBarcode_Create();
+        my_symbol->output_options |= BARCODE_MEMORY_FILE;
+        /* Only the extension is used, to determine output format */
+        strcpy(my_symbol->outfile, "mem.svg");
+        ZBarcode_Encode_and_Print(my_symbol, argv[1], 0, 0);
+        /* `my_symbol->memfile` now contains the SVG output */
+        fwrite(my_symbol->memfile, 1, my_symbol->memfile_size, stdout);
+        ZBarcode_Delete(my_symbol);
+        return 0;
+    }
+
+will print the SVG output to stdout (the file “mem.svg” is not created). This is
+particularly useful for the textual formats EPS and SVG,[7] allowing the output
+to be manipulated and processed by the client.
+
+5.7 Setting Options
 
 So far our application is not very useful unless we plan to only make Code 128
-symbols and we don’t mind that they only save to "out.png". As with the CLI
-program, of course, these options can be altered. The way this is done is by
-altering the contents of the zint_symbol structure between the creation and
-encoding stages. The zint_symbol structure consists of the following members:
+symbols and we don’t mind that they only save to "out.png" (or to memory, as
+above). As with the CLI program, of course, these options can be altered. The
+way this is done is by altering the contents of the zint_symbol structure
+between the creation and encoding stages. The zint_symbol structure consists of
+the following members:
 
   ------------------------------------------------------------------------------
   Member Name          Type         Meaning                    Default Value
   -------------------- ------------ -------------------------- -----------------
-  symbology            integer      Symbol to use - see 5.8    BARCODE_CODE128
+  symbology            integer      Symbol to use - see 5.9    BARCODE_CODE128
                                     Specifying a Symbology.
 
   height               float        Symbol height in           Symbol dependent
                                     X-dimensions, excluding
                                     fixed width-to-height
-                                    symbols.[7]
+                                    symbols.[8]
 
   scale                float        Scale factor for adjusting 1.0
                                     size of image (sets
@@ -1932,7 +1962,7 @@ encoding stages. The zint_symbol structure consists of the following members:
                                     X-dimensions.
 
   output_options       integer      Set various output         0 (none)
-                                    parameters - see 5.9
+                                    parameters - see 5.10
                                     Adjusting Output Options.
 
   fgcolour             character    Foreground (ink) colour as "000000"
@@ -1963,7 +1993,7 @@ encoding stages. The zint_symbol structure consists of the following members:
                                     end in .png, .gif, .bmp,
                                     .emf, .eps, .pcx, .svg,
                                     .tif or .txt followed by a
-                                    terminating NUL.[8]
+                                    terminating NUL.[9]
 
   primary              character    Primary message data for   "" (empty)
                        string       more complex symbols, with
@@ -1979,7 +2009,7 @@ encoding stages. The zint_symbol structure consists of the following members:
                                     Readable Text (HRT).
 
   input_mode           integer      Set encoding of input      DATA_MODE
-                                    data - see 5.10 Setting
+                                    data - see 5.11 Setting
                                     the Input Mode.
 
   eci                  integer      Extended Channel           0 (none)
@@ -2009,7 +2039,7 @@ encoding stages. The zint_symbol structure consists of the following members:
 
   warn_level           integer      Affects error/warning      WARN_DEFAULT
                                     value returned by Zint
-                                    API - see 5.7 Handling
+                                    API - see 5.8 Handling
                                     Errors.
 
   text                 unsigned     Human Readable Text, which "" (empty)
@@ -2036,7 +2066,7 @@ encoding stages. The zint_symbol structure consists of the following members:
   errtxt               character    Error message in the event (output only)
                        string       that an error occurred,
                                     with a terminating NUL -
-                                    see 5.7 Handling Errors.
+                                    see 5.8 Handling Errors.
 
   bitmap               pointer to   Pointer to stored bitmap   (output only)
                        unsigned     image - see 5.4 Buffering
@@ -2062,6 +2092,16 @@ encoding stages. The zint_symbol structure consists of the following members:
                        structure    vector elements - see 5.5
                                     Buffering Symbols in
                                     Memory (vector).
+
+  memfile              pointer to   Pointer to in-memory file  (output only)
+                       unsigned     buffer if
+                       character    BARCODE_MEMORY_FILE set in
+                       array        output_options - see 5.6
+                                    Buffering Symbols in
+                                    Memory (memfile).
+
+  memfile_size         integer      Length of in-memory file   (output only)
+                                    buffer.
   ------------------------------------------------------------------------------
 
   : Table  : API Structure zint_symbol
@@ -2091,7 +2131,7 @@ ignored:
 
 This is what the CLI option --nobackground does - see 4.7 Using Colour.
 
-5.7 Handling Errors
+5.8 Handling Errors
 
 If errors occur during encoding a non-zero integer value is passed back to the
 calling application. In addition the errtxt member is set to a message detailing
@@ -2198,7 +2238,7 @@ This code will exit with the appropriate message:
 
 To treat all warnings as errors, set symbol->warn_level to WARN_FAIL_ALL.
 
-5.8 Specifying a Symbology
+5.9 Specifying a Symbology
 
 Symbologies can be specified by number or by name as shown in the Table
 : Barcode Types (Symbologies). For example
@@ -2209,7 +2249,7 @@ means the same as
 
     symbol->symbology = 50;
 
-5.9 Adjusting Output Options
+5.10 Adjusting Output Options
 
 The output_options member can be used to adjust various aspects of the output
 file. To select more than one option from the table below simply OR them
@@ -2222,10 +2262,10 @@ together when adjusting this value:
   -------------------------- ---------------------------------------------------
   0                          No options selected.
 
-  BARCODE_BIND_TOP           Boundary bar above the symbol only.[9]
+  BARCODE_BIND_TOP           Boundary bar above the symbol only.[10]
 
   BARCODE_BIND               Boundary bars above and below the symbol and
-                             between rows if stacking multiple symbols.[10]
+                             between rows if stacking multiple symbols.[11]
 
   BARCODE_BOX                Add a box surrounding the symbol and whitespace.
 
@@ -2252,7 +2292,7 @@ together when adjusting this value:
                              Symbols in Memory (raster).
 
   BARCODE_QUIET_ZONES        Add compliant quiet zones (additional to any
-                             specified whitespace).[11]
+                             specified whitespace).[12]
 
   BARCODE_NO_QUIET_ZONES     Disable quiet zones, notably those with defaults.
 
@@ -2264,11 +2304,14 @@ together when adjusting this value:
 
   EMBED_VECTOR_FONT          Embed font in vector output - currently available
                              for SVG output only.
+
+  BARCODE_MEMORY_FILE        Write output to in-memory buffer symbol->memfile
+                             instead of to outfile file.
   ------------------------------------------------------------------------------
 
   : Table  : API output_options Values
 
-5.10 Setting the Input Mode
+5.11 Setting the Input Mode
 
 The way in which the input data is encoded can be set using the input_mode
 member. Valid values are shown in the table below.
@@ -2345,7 +2388,7 @@ FAST_MODE causes a less optimal encodation scheme to be used for Data Matrix,
 MicroPDF417 and PDF417. For QR Code and UPNQR, it affects Zint’s automatic mask
 selection - see 6.6.3 QR Code (ISO 18004) for details.
 
-5.11 Multiple Segments
+5.12 Multiple Segments
 
 For input data requiring multiple ECIs, the following functions may be used:
 
@@ -2399,7 +2442,7 @@ example:
 A maximum of 256 segments may be specified. Use of multiple segments with GS1
 data is not currently supported.
 
-5.12 Scaling Helpers
+5.13 Scaling Helpers
 
 To help with scaling the output, the following three function are available:
 
@@ -2442,7 +2485,7 @@ due to the symbology, resolution and filetype but also due to the type of
 scanner used, the intended scanning distance, and what media (“substrates”) the
 barcode appears on.
 
-5.13 Verifying Symbology Availability
+5.14 Verifying Symbology Availability
 
 An additional function available in the API is:
 
@@ -2472,7 +2515,7 @@ success. For instance:
 
 will print BARCODE_PDF417.
 
-5.14 Checking Symbology Capabilities
+5.15 Checking Symbology Capabilities
 
 It can be useful for frontend programs to know the capabilities of a symbology.
 This can be determined using another additional function:
@@ -2489,7 +2532,7 @@ see which are set.
 
   ZINT_CAP_STACKABLE          Is the symbology stackable?
 
-  ZINT_CAP_EANUPC[12]         Is the symbology EAN/UPC?
+  ZINT_CAP_EANUPC[13]         Is the symbology EAN/UPC?
 
   ZINT_CAP_COMPOSITE          Does the symbology support composite data? (see
                               6.3 GS1 Composite Symbols (ISO 24723) below)
@@ -2535,7 +2578,7 @@ For example:
         printf("PDF417 does not support ECI\n");
     }
 
-5.15 Zint Version
+5.16 Zint Version
 
 Whether the Zint library linked to was built with PNG support may be determined
 with:
@@ -2995,7 +3038,7 @@ all-numeric characters.
 [zint -b CODE128AB -d "130170X178"]
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[13] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[14] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special escapes to manually switch Code Sets mentioned above are
@@ -4689,7 +4732,7 @@ QZint renders a barcode by drawing the vector representation (see 5.5 Buffering
 Symbols in Memory (vector)) provided by the Zint library libzint.
 
 The main class is Zint::QZint, which has getter/setter properties that
-correspond to the zint_symbol structure (see 5.6 Setting Options), and a main
+correspond to the zint_symbol structure (see 5.7 Setting Options), and a main
 method render() which takes a Qt QPainter to paint with, and a QRectF
 rectangular area specifying where to paint into:
 
@@ -5492,24 +5535,28 @@ the yen sign (¥), and tilde (~) to overline (U+203E).
 [6] ISO/IEC 646 Invariant is a subset of ASCII with 12 characters undefined: #,
 $, @, [, \, ], ^, `, {, |, }, ~.
 
-[7] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
+[7] BARCODE_MEMORY_FILE textual formats EPS and SVG will have Unix newlines (LF)
+on both Windows and Unix, i.e. not CR+LF on Windows.
+
+[8] The height value is ignored for Aztec (including HIBC and Aztec Rune), Code
 One, Data Matrix (including HIBC), DotCode, Grid Matrix, Han Xin, MaxiCode, QR
 Code (including HIBC, Micro QR, rMQR and UPNQR), and Ultracode - all of which
 have a fixed width-to-height ratio (or, in the case of Code One, a fixed
 height).
 
-[8] For Windows, outfile is assumed to be UTF-8 encoded.
+[9] For Windows, outfile is assumed to be UTF-8 encoded.
 
-[9] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD Code.
+[10] The BARCODE_BIND_TOP flag is set by default for DPD - see 6.1.10.7 DPD
+Code.
 
-[10] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
+[11] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[11] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
+[12] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.
 
-[12] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
+[13] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
 recognised.
 
-[13] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[14] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.

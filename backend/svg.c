@@ -35,6 +35,7 @@
 #include <stdio.h>
 
 #include "common.h"
+#include "filemem.h"
 #include "output.h"
 #include "fonts/normal_woff2.h"
 #include "fonts/upcean_woff2.h"
@@ -95,26 +96,27 @@ static void svg_make_html_friendly(const unsigned char *string, char *html_versi
 }
 
 /* Helper to output floating point attribute */
-static void svg_put_fattrib(const char *prefix, const int dp, const float val, FILE *fsvg) {
-    out_putsf(prefix, dp, val, fsvg);
-    fputc('"', fsvg);
+static void svg_put_fattrib(const char *prefix, const int dp, const float val, struct filemem *fmp) {
+    fm_putsf(prefix, dp, val, fmp);
+    fm_putc('"', fmp);
 }
 
 /* Helper to output opacity attribute attribute and close tag (maybe) */
-static void svg_put_opacity_close(const unsigned char alpha, const float val, const int close, FILE *fsvg) {
+static void svg_put_opacity_close(const unsigned char alpha, const float val, const int close, struct filemem *fmp) {
     if (alpha != 0xff) {
-        svg_put_fattrib(" opacity=\"", 3, val, fsvg);
+        svg_put_fattrib(" opacity=\"", 3, val, fmp);
     }
     if (close) {
-        fputc('/', fsvg);
+        fm_putc('/', fmp);
     }
-    fputs(">\n", fsvg);
+    fm_puts(">\n", fmp);
 }
 
 INTERNAL int svg_plot(struct zint_symbol *symbol) {
     static const char normal_font_family[] = "Arimo";
     static const char upcean_font_family[] = "OCRB";
-    FILE *fsvg;
+    struct filemem fm;
+    struct filemem *const fmp = &fm;
     int error_number = 0;
     float previous_diameter;
     float radius, half_radius, half_sqrt3_radius;
@@ -135,7 +137,6 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     int len, html_len;
 
     const int upcean = is_upcean(symbol->symbology);
-    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
     char *html_string;
 
     (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggreen, &fgblue, &fg_alpha);
@@ -175,69 +176,68 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
         strcpy(symbol->errtxt, "681: Vector header NULL");
         return ZINT_ERROR_INVALID_DATA;
     }
-    if (output_to_stdout) {
-        fsvg = stdout;
-    } else {
-        if (!(fsvg = out_fopen(symbol->outfile, "w"))) {
-            sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_ACCESS;
-        }
+    if (!fm_open(fmp, symbol, "w")) {
+        sprintf(symbol->errtxt, "680: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_ACCESS;
     }
 
     /* Start writing the header */
-    fputs("<?xml version=\"1.0\" standalone=\"no\"?>\n"
+    fm_puts("<?xml version=\"1.0\" standalone=\"no\"?>\n"
           "<!DOCTYPE svg PUBLIC \"-//W3C//DTD SVG 1.1//EN\" \"http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd\">\n",
-          fsvg);
-    fprintf(fsvg, "<svg width=\"%d\" height=\"%d\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n",
+          fmp);
+    fm_printf(fmp, "<svg width=\"%d\" height=\"%d\" version=\"1.1\" xmlns=\"http://www.w3.org/2000/svg\">\n",
             (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
-    fputs(" <desc>Zint Generated Symbol</desc>\n", fsvg);
+    fm_puts(" <desc>Zint Generated Symbol</desc>\n", fmp);
     if ((symbol->output_options & EMBED_VECTOR_FONT) && symbol->vector->strings) {
-        fprintf(fsvg, " <style>@font-face {font-family:\"%s\"; src:url(data:font/woff2;base64,%s);}</style>\n",
-                upcean ? "OCRB" : "Arimo", upcean ? upcean_woff2 : normal_woff2);
+        /* Split into `puts()` rather than one very large `printf()` */
+        fm_printf(fmp, " <style>@font-face {font-family:\"%s\"; src:url(data:font/woff2;base64,",
+                    upcean ? "OCRB" : "Arimo");
+        fm_puts(upcean ? upcean_woff2 : normal_woff2, fmp);
+        fm_puts(");}</style>\n", fmp);
     }
-    fprintf(fsvg, " <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
+    fm_printf(fmp, " <g id=\"barcode\" fill=\"#%s\">\n", fgcolour_string);
 
     if (bg_alpha != 0) {
-        fprintf(fsvg, "  <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
+        fm_printf(fmp, "  <rect x=\"0\" y=\"0\" width=\"%d\" height=\"%d\" fill=\"#%s\"",
                 (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height), bgcolour_string);
-        svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fsvg);
+        svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fmp);
     }
 
     if (symbol->vector->rectangles) {
         int current_colour = 0;
         rect = symbol->vector->rectangles;
-        fputs("  <path d=\"", fsvg);
+        fm_puts("  <path d=\"", fmp);
         while (rect) {
             if (current_colour && rect->colour != current_colour) {
-                fputc('"', fsvg);
+                fm_putc('"', fmp);
                 if (current_colour != -1) {
                     svg_pick_colour(current_colour, colour_code);
-                    fprintf(fsvg, " fill=\"#%s\"", colour_code);
+                    fm_printf(fmp, " fill=\"#%s\"", colour_code);
                 }
-                svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
-                fputs("  <path d=\"", fsvg);
+                svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fmp);
+                fm_puts("  <path d=\"", fmp);
             }
             current_colour = rect->colour;
-            out_putsf("M", 2, rect->x, fsvg);
-            out_putsf(" ", 2, rect->y, fsvg);
-            out_putsf("h", 2, rect->width, fsvg);
-            out_putsf("v", 2, rect->height, fsvg);
-            out_putsf("h-", 2, rect->width, fsvg);
-            fputs("Z", fsvg);
+            fm_putsf("M", 2, rect->x, fmp);
+            fm_putsf(" ", 2, rect->y, fmp);
+            fm_putsf("h", 2, rect->width, fmp);
+            fm_putsf("v", 2, rect->height, fmp);
+            fm_putsf("h-", 2, rect->width, fmp);
+            fm_puts("Z", fmp);
             rect = rect->next;
         }
-        fputc('"', fsvg);
+        fm_putc('"', fmp);
         if (current_colour != -1) {
             svg_pick_colour(current_colour, colour_code);
-            fprintf(fsvg, " fill=\"#%s\"", colour_code);
+            fm_printf(fmp, " fill=\"#%s\"", colour_code);
         }
-        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fmp);
     }
 
     if (symbol->vector->hexagons) {
         previous_diameter = radius = half_radius = half_sqrt3_radius = 0.0f;
         hex = symbol->vector->hexagons;
-        fputs("  <path d=\"", fsvg);
+        fm_puts("  <path d=\"", fmp);
         while (hex) {
             if (previous_diameter != hex->diameter) {
                 previous_diameter = hex->diameter;
@@ -246,37 +246,37 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
                 half_sqrt3_radius = 0.43301270189221932338f * previous_diameter;
             }
             if ((hex->rotation == 0) || (hex->rotation == 180)) {
-                out_putsf("M", 2, hex->x, fsvg);
-                out_putsf(" ", 2, hex->y + radius, fsvg);
-                out_putsf("L", 2, hex->x + half_sqrt3_radius, fsvg);
-                out_putsf(" ", 2, hex->y + half_radius, fsvg);
-                out_putsf("L", 2, hex->x + half_sqrt3_radius, fsvg);
-                out_putsf(" ", 2, hex->y - half_radius, fsvg);
-                out_putsf("L", 2, hex->x, fsvg);
-                out_putsf(" ", 2, hex->y - radius, fsvg);
-                out_putsf("L", 2, hex->x - half_sqrt3_radius, fsvg);
-                out_putsf(" ", 2, hex->y - half_radius, fsvg);
-                out_putsf("L", 2, hex->x - half_sqrt3_radius, fsvg);
-                out_putsf(" ", 2, hex->y + half_radius, fsvg);
+                fm_putsf("M", 2, hex->x, fmp);
+                fm_putsf(" ", 2, hex->y + radius, fmp);
+                fm_putsf("L", 2, hex->x + half_sqrt3_radius, fmp);
+                fm_putsf(" ", 2, hex->y + half_radius, fmp);
+                fm_putsf("L", 2, hex->x + half_sqrt3_radius, fmp);
+                fm_putsf(" ", 2, hex->y - half_radius, fmp);
+                fm_putsf("L", 2, hex->x, fmp);
+                fm_putsf(" ", 2, hex->y - radius, fmp);
+                fm_putsf("L", 2, hex->x - half_sqrt3_radius, fmp);
+                fm_putsf(" ", 2, hex->y - half_radius, fmp);
+                fm_putsf("L", 2, hex->x - half_sqrt3_radius, fmp);
+                fm_putsf(" ", 2, hex->y + half_radius, fmp);
             } else {
-                out_putsf("M", 2, hex->x - radius, fsvg);
-                out_putsf(" ", 2, hex->y, fsvg);
-                out_putsf("L", 2, hex->x - half_radius, fsvg);
-                out_putsf(" ", 2, hex->y + half_sqrt3_radius, fsvg);
-                out_putsf("L", 2, hex->x + half_radius, fsvg);
-                out_putsf(" ", 2, hex->y + half_sqrt3_radius, fsvg);
-                out_putsf("L", 2, hex->x + radius, fsvg);
-                out_putsf(" ", 2, hex->y, fsvg);
-                out_putsf("L", 2, hex->x + half_radius, fsvg);
-                out_putsf(" ", 2, hex->y - half_sqrt3_radius, fsvg);
-                out_putsf("L", 2, hex->x - half_radius, fsvg);
-                out_putsf(" ", 2, hex->y - half_sqrt3_radius, fsvg);
+                fm_putsf("M", 2, hex->x - radius, fmp);
+                fm_putsf(" ", 2, hex->y, fmp);
+                fm_putsf("L", 2, hex->x - half_radius, fmp);
+                fm_putsf(" ", 2, hex->y + half_sqrt3_radius, fmp);
+                fm_putsf("L", 2, hex->x + half_radius, fmp);
+                fm_putsf(" ", 2, hex->y + half_sqrt3_radius, fmp);
+                fm_putsf("L", 2, hex->x + radius, fmp);
+                fm_putsf(" ", 2, hex->y, fmp);
+                fm_putsf("L", 2, hex->x + half_radius, fmp);
+                fm_putsf(" ", 2, hex->y - half_sqrt3_radius, fmp);
+                fm_putsf("L", 2, hex->x - half_radius, fmp);
+                fm_putsf(" ", 2, hex->y - half_sqrt3_radius, fmp);
             }
-            fputc('Z', fsvg);
+            fm_putc('Z', fmp);
             hex = hex->next;
         }
-        fputc('"', fsvg);
-        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
+        fm_putc('"', fmp);
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fmp);
     }
 
     previous_diameter = radius = 0.0f;
@@ -286,28 +286,28 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
             previous_diameter = circle->diameter;
             radius = 0.5f * previous_diameter;
         }
-        fputs("  <circle", fsvg);
-        svg_put_fattrib(" cx=\"", 2, circle->x, fsvg);
-        svg_put_fattrib(" cy=\"", 2, circle->y, fsvg);
-        svg_put_fattrib(" r=\"", circle->width ? 3 : 2, radius, fsvg);
+        fm_puts("  <circle", fmp);
+        svg_put_fattrib(" cx=\"", 2, circle->x, fmp);
+        svg_put_fattrib(" cy=\"", 2, circle->y, fmp);
+        svg_put_fattrib(" r=\"", circle->width ? 3 : 2, radius, fmp);
 
         if (circle->colour) { /* Legacy - no longer used */
             if (circle->width) {
-                fprintf(fsvg, " stroke=\"#%s\"", bgcolour_string);
-                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fsvg);
-                fputs(" fill=\"none\"", fsvg);
+                fm_printf(fmp, " stroke=\"#%s\"", bgcolour_string);
+                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fmp);
+                fm_puts(" fill=\"none\"", fmp);
             } else {
-                fprintf(fsvg, " fill=\"#%s\"", bgcolour_string);
+                fm_printf(fmp, " fill=\"#%s\"", bgcolour_string);
             }
             /* This doesn't work how the user is likely to expect - more work needed! */
-            svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fsvg);
+            svg_put_opacity_close(bg_alpha, bg_alpha_opacity, 1 /*close*/, fmp);
         } else {
             if (circle->width) {
-                fprintf(fsvg, " stroke=\"#%s\"", fgcolour_string);
-                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fsvg);
-                fputs(" fill=\"none\"", fsvg);
+                fm_printf(fmp, " stroke=\"#%s\"", fgcolour_string);
+                svg_put_fattrib(" stroke-width=\"", 3, circle->width, fmp);
+                fm_puts(" fill=\"none\"", fmp);
             }
-            svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fsvg);
+            svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 1 /*close*/, fmp);
         }
         circle = circle->next;
     }
@@ -316,53 +316,44 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     string = symbol->vector->strings;
     while (string) {
         const char *const halign = string->halign == 2 ? "end" : string->halign == 1 ? "start" : "middle";
-        fputs("  <text", fsvg);
-        svg_put_fattrib(" x=\"", 2, string->x, fsvg);
-        svg_put_fattrib(" y=\"", 2, string->y, fsvg);
-        fprintf(fsvg, " text-anchor=\"%s\"", halign);
+        fm_puts("  <text", fmp);
+        svg_put_fattrib(" x=\"", 2, string->x, fmp);
+        svg_put_fattrib(" y=\"", 2, string->y, fmp);
+        fm_printf(fmp, " text-anchor=\"%s\"", halign);
         if (upcean) {
-            fprintf(fsvg, " font-family=\"%s, monospace\"", upcean_font_family);
+            fm_printf(fmp, " font-family=\"%s, monospace\"", upcean_font_family);
         } else {
-            fprintf(fsvg, " font-family=\"%s, Arial, sans-serif\"", normal_font_family);
+            fm_printf(fmp, " font-family=\"%s, Arial, sans-serif\"", normal_font_family);
         }
-        svg_put_fattrib(" font-size=\"", 1, string->fsize, fsvg);
+        svg_put_fattrib(" font-size=\"", 1, string->fsize, fmp);
         if (bold) {
-            fputs(" font-weight=\"bold\"", fsvg);
+            fm_puts(" font-weight=\"bold\"", fmp);
         }
         if (string->rotation != 0) {
-            fprintf(fsvg, " transform=\"rotate(%d", string->rotation);
-            out_putsf(",", 2, string->x, fsvg);
-            out_putsf(",", 2, string->y, fsvg);
-            fputs(")\"", fsvg);
+            fm_printf(fmp, " transform=\"rotate(%d", string->rotation);
+            fm_putsf(",", 2, string->x, fmp);
+            fm_putsf(",", 2, string->y, fmp);
+            fm_puts(")\"", fmp);
         }
-        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 0 /*close*/, fsvg);
+        svg_put_opacity_close(fg_alpha, fg_alpha_opacity, 0 /*close*/, fmp);
         svg_make_html_friendly(string->text, html_string);
-        fprintf(fsvg, "   %s\n", html_string);
-        fputs("  </text>\n", fsvg);
+        fm_printf(fmp, "   %s\n", html_string);
+        fm_puts("  </text>\n", fmp);
         string = string->next;
     }
 
-    fputs(" </g>\n"
-          "</svg>\n", fsvg);
+    fm_puts(" </g>\n"
+          "</svg>\n", fmp);
 
-    if (ferror(fsvg)) {
-        sprintf(symbol->errtxt, "682: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(fsvg);
-        }
+    if (fm_error(fmp)) {
+        sprintf(symbol->errtxt, "682: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(fsvg) != 0) {
-            sprintf(symbol->errtxt, "683: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
-    } else {
-        if (fclose(fsvg) != 0) {
-            sprintf(symbol->errtxt, "684: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
+    if (!fm_close(fmp, symbol)) {
+        sprintf(symbol->errtxt, "684: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_WRITE;
     }
 
     return error_number;

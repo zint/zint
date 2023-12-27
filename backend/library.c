@@ -75,6 +75,7 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
     symbol->bitmap = NULL;
     symbol->alphamap = NULL;
     symbol->vector = NULL;
+    symbol->memfile = NULL;
 }
 
 /* Create and initialize a symbol structure */
@@ -115,6 +116,11 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     }
     symbol->bitmap_width = 0;
     symbol->bitmap_height = 0;
+    if (symbol->memfile != NULL) {
+        free(symbol->memfile);
+        symbol->memfile = NULL;
+    }
+    symbol->memfile_size = 0;
 
     /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
@@ -130,6 +136,9 @@ void ZBarcode_Reset(struct zint_symbol *symbol) {
     if (symbol->alphamap != NULL) {
         free(symbol->alphamap);
     }
+    if (symbol->memfile != NULL) {
+        free(symbol->memfile);
+    }
     vector_free(symbol);
 
     memset(symbol, 0, sizeof(*symbol));
@@ -144,6 +153,8 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
         free(symbol->bitmap);
     if (symbol->alphamap != NULL)
         free(symbol->alphamap);
+    if (symbol->memfile != NULL)
+        free(symbol->memfile);
 
     /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
@@ -1556,7 +1567,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
 
         fileLen = ftell(file);
 
-        /* On many Linux distros ftell() returns LONG_MAX not -1 on error */
+        /* On many Linux distros `ftell()` returns LONG_MAX not -1 on error */
         if (fileLen <= 0 || fileLen == LONG_MAX) {
             (void) fclose(file);
             return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "235: Input file empty or unseekable");

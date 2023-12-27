@@ -90,6 +90,7 @@ TEA_ADD_SOURCES([
 	../backend/dotcode.c
 	../backend/eci.c
 	../backend/emf.c
+	../backend/filemem.c
 	../backend/general_field.c
 	../backend/gif.c
 	../backend/gridmtx.c

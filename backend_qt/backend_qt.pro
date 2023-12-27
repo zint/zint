@@ -42,6 +42,7 @@ HEADERS +=  ../backend/aztec.h \
             ../backend/gb18030.h \
             ../backend/gb2312.h \
             ../backend/gbk.h \
+            ../backend/filemem.h \
             ../backend/general_field.h \
             ../backend/gridmtx.h \
             ../backend/gs1.h \
@@ -86,6 +87,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/dotcode.c \
            ../backend/eci.c \
            ../backend/emf.c \
+           ../backend/filemem.c \
            ../backend/general_field.c \
            ../backend/gif.c \
            ../backend/gridmtx.c \

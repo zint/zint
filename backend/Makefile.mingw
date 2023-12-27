@@ -24,7 +24,7 @@ APP:=zint
 DLL:=$(APP).dll
 STATLIB:=lib$(APP).a
 
-COMMON_OBJ:= common.o library.o large.o reedsol.o gs1.o eci.o general_field.o sjis.o gb2312.o gb18030.o
+COMMON_OBJ:= common.o library.o large.o reedsol.o gs1.o eci.o filemem.o general_field.o sjis.o gb2312.o gb18030.o
 ONEDIM_OBJ:= code.o code128.o 2of5.o upcean.o telepen.o medical.o plessey.o rss.o
 POSTAL_OBJ:= postal.o auspost.o imail.o mailmark.o
 TWODIM_OBJ:= code16k.o codablock.o dmatrix.o pdf417.o qr.o maxicode.o composite.o aztec.o code49.o code1.o gridmtx.o hanxin.o dotcode.o ultra.o

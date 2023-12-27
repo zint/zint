@@ -144,8 +144,9 @@ static void test_print(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    const char *data_dir = "/backend/tests/data/svg";
-    const char *svg = "out.svg";
+    const char data_dir[] = "/backend/tests/data/svg";
+    const char svg[] = "out.svg";
+    const char memfile[] = "mem.eps";
     char expected_file[1024];
     char escaped[1024];
     int escaped_size = 1024;
@@ -240,7 +241,25 @@ static void test_print(const testCtx *const p_ctx) {
 
             ret = testUtilCmpSvgs(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
-            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
+
+            symbol->output_options |= BARCODE_MEMORY_FILE;
+            ret = ZBarcode_Print(symbol, data[i].rotate_angle);
+            assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
+                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+            assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
+            assert_nonzero(symbol->memfile_size, "i:%d %s memfile_size 0\n", i, testUtilBarcodeName(data[i].symbology));
+
+            ret = testUtilWriteFile(memfile, symbol->memfile, symbol->memfile_size, "wb");
+            assert_zero(ret, "%d: testUtilWriteFile(%s) fail ret %d != 0\n", i, memfile, ret);
+
+            ret = testUtilCmpSvgs(symbol->outfile, memfile);
+            assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, memfile, ret);
+
+            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
+                assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
+                assert_zero(testUtilRemove(memfile), "i:%d testUtilRemove(%s) != 0\n", i, memfile);
+            }
         }
 
         ZBarcode_Delete(symbol);

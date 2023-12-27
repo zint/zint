@@ -409,8 +409,8 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     const float descent_small = 0.948426545f; /* Arimo value for SMALL_TEXT (font height 5) */
 
     /* For UPC/EAN only */
-    float addon_row_yposn;
-    float addon_row_height;
+    float addon_row_yposn = 0.0f; /* Suppress gcc -Wmaybe-uninitialized false positive */
+    float addon_row_height = 0.0f; /* Ditto */
     int upcae_outside_font_height = 0; /* UPC-A/E outside digits font size */
     const float gws_left_fudge = 0.5f; /* These make the guard whitespaces appear closer to the edge for SVG/qzint */
     const float gws_right_fudge = 0.5f; /* (undone by EMF/EPS) */
@@ -442,6 +442,10 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     error_number = out_check_colour_options(symbol);
     if (error_number != 0) {
         return error_number;
+    }
+    if (symbol->rows <= 0) {
+        strcpy(symbol->errtxt, "697: No rows");
+        return ZINT_ERROR_INVALID_OPTION;
     }
 
     /* Allocate memory */

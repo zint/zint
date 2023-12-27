@@ -997,34 +997,4 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
     return outfile;
 }
 
-/* Output float without trailing zeroes to `fp` with decimal pts `dp` (precision) */
-INTERNAL void out_putsf(const char *const prefix, const int dp, const float arg, FILE *fp) {
-    int i, end;
-    char buf[256]; /* Assuming `dp` reasonable */
-    const int len = sprintf(buf, "%.*f", dp, arg);
-
-    if (*prefix) {
-        fputs(prefix, fp);
-    }
-
-    /* Adapted from https://stackoverflow.com/a/36202854/664741 */
-    for (i = len - 1, end = len; i >= 0; i--) {
-        if (buf[i] == '0') {
-            if (end == i + 1) {
-                end = i;
-            }
-        } else if (!z_isdigit(buf[i]) && buf[i] != '-') { /* If not digit or minus then decimal point */
-            if (end == i + 1) {
-                end = i;
-            } else {
-                buf[i] = '.'; /* Overwrite any locale-specific setting for decimal point */
-            }
-            buf[end] = '\0';
-            break;
-        }
-    }
-
-    fputs(buf, fp);
-}
-
 /* vim: set ts=4 sw=4 et : */

@@ -31,7 +31,6 @@
 
 #include "testcommon.h"
 #include "../output.h"
-#include <locale.h>
 #ifdef _WIN32
 #include <windows.h>
 #include <direct.h>
@@ -411,82 +410,6 @@ static void test_fopen(const testCtx *const p_ctx) {
     testFinish();
 }
 
-#ifndef _WIN32
-extern FILE *fmemopen(void *buf, size_t size, const char *mode);
-#endif
-
-static void test_out_putsf(const testCtx *const p_ctx) {
-    int debug = p_ctx->debug;
-
-    struct item {
-        const char *prefix;
-        int dp;
-        float arg;
-        const char *locale;
-        const char *expected;
-    };
-    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { "", 2, 1234.123, "", "1234.12" },
-        /*  1*/ { "", 3, 1234.123, "", "1234.123" },
-        /*  2*/ { "prefix ", 4, 1234.123, "", "prefix 1234.123" },
-        /*  3*/ { "", 2, -1234.126, "", "-1234.13" },
-        /*  4*/ { "", 2, 1234.1, "", "1234.1" },
-        /*  5*/ { "", 3, 1234.1, "", "1234.1" },
-        /*  6*/ { "", 4, 1234.1, "", "1234.1" },
-        /*  7*/ { "", 2, 1234.0, "", "1234" },
-        /*  8*/ { "", 2, -1234.0, "", "-1234" },
-        /*  9*/ { "", 3, 1234.1234, "de_DE.UTF-8", "1234.123" },
-        /* 10*/ { "", 4, -1234.1234, "de_DE.UTF-8", "-1234.1234" },
-        /* 11*/ { "prefix ", 4, -1234.1234, "de_DE.UTF-8", "prefix -1234.1234" },
-    };
-    int data_size = ARRAY_SIZE(data);
-    int i;
-
-    FILE *fp;
-    char buf[512] = {0}; /* Suppress clang-16/17 run-time exception MemorySanitizer: use-of-uninitialized-value */
-
-    testStart("test_out_putsf");
-
-#ifdef _WIN32
-    (void)i; (void)fp; (void)buf;
-    testSkip("Test not implemented on Windows");
-#else
-
-    for (i = 0; i < data_size; i++) {
-        const char *locale = NULL;
-
-        if (testContinue(p_ctx, i)) continue;
-
-        buf[0] = '\0';
-        fp = fmemopen(buf, sizeof(buf), "w");
-        assert_nonnull(fp, "%d: fmemopen fail (%d, %s)\n", i, errno, strerror(errno));
-
-        if (data[i].locale && data[i].locale[0]) {
-            locale = setlocale(LC_ALL, data[i].locale);
-            if (!locale) { /* May not be available - warn unless quiet mode */
-                if (!(debug & ZINT_DEBUG_TEST_LESS_NOISY)) {
-                    printf("%d: Warning: locale \"%s\" not available\n", i, data[i].locale);
-                }
-            }
-        }
-
-        out_putsf(data[i].prefix, data[i].dp, data[i].arg, fp);
-
-        assert_zero(fclose(fp), "%d: fclose fail (%d, %s)\n", i, errno, strerror(errno));
-
-        if (locale) {
-            assert_nonnull(setlocale(LC_ALL, locale), "%d: setlocale(%s) restore fail (%d, %s)\n",
-                i, locale, errno, strerror(errno));
-        }
-
-        assert_zero(strcmp(buf, data[i].expected), "%d: strcmp(%s, %s) != 0\n", i, buf, data[i].expected);
-    }
-
-    testFinish();
-#endif /* _WIN32 */
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -496,7 +419,6 @@ int main(int argc, char *argv[]) {
         { "test_quiet_zones", test_quiet_zones },
         { "test_set_whitespace_offsets", test_set_whitespace_offsets },
         { "test_fopen", test_fopen },
-        { "test_out_putsf", test_out_putsf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

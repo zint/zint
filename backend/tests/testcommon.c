@@ -1516,6 +1516,67 @@ int testUtilRmROFile(const char *filename) {
     return testUtilRemove(filename);
 }
 
+/* Read file into buffer */
+int testUtilReadFile(const char *filename, unsigned char *buffer, int buffer_size, int *p_size) {
+    long fileLen;
+    size_t n;
+    size_t nRead = 0;
+    FILE *fp = testUtilOpen(filename, "rb");
+    if (!fp) {
+        return 1;
+    }
+    if (fseek(fp, 0, SEEK_END) != 0) {
+        (void) fclose(fp);
+        return 2;
+    }
+    fileLen = ftell(fp);
+    if (fileLen <= 0 || fileLen == LONG_MAX) {
+        (void) fclose(fp);
+        return 3;
+    }
+    if (fseek(fp, 0, SEEK_SET) != 0) {
+        (void) fclose(fp);
+        return 4;
+    }
+    if (fileLen > (long) buffer_size) {
+        (void) fclose(fp);
+        return 5;
+    }
+    do {
+        n = fread(buffer + nRead, 1, fileLen - nRead, fp);
+        if (ferror(fp)) {
+            (void) fclose(fp);
+            return 6;
+        }
+        nRead += n;
+    } while (!feof(fp) && (0 < n) && ((long) nRead < fileLen));
+
+    if (fclose(fp) != 0) {
+        return 7;
+    }
+
+    *p_size = (int) nRead;
+
+    return 0;
+}
+
+/* Write file from buffer */
+int testUtilWriteFile(const char *filename, const unsigned char *buffer, const int buffer_size, const char *mode) {
+    FILE *fp = testUtilOpen(filename, mode);
+    if (!fp) {
+        return 1;
+    }
+    if (fwrite(buffer, 1, buffer_size, fp) == 0) {
+        (void) fclose(fp);
+        return 2;
+    }
+    if (fclose(fp) != 0) {
+        return 3;
+    }
+
+    return 0;
+}
+
 /* Compare 2 PNG files */
 int testUtilCmpPngs(const char *png1, const char *png2) {
     int ret = -1;
@@ -3945,7 +4006,15 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             int primary_len = (int) strlen(primary);
             int maxi_len = 0;
             if (symbol->option_2 >= 1 && symbol->option_2 <= 100) {
+/* Suppress gcc warning null destination pointer [-Wformat-overflow=] false-positive */
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wformat-overflow="
+#endif
                 sprintf(maxi, "[)>\03601\035%02d", symbol->option_2 - 1);
+#if defined(__GNUC__) && !defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
                 maxi_len = (int) strlen(maxi);
             }
             #if 1

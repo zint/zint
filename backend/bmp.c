@@ -33,11 +33,8 @@
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <io.h>
-#include <fcntl.h>
-#endif
 #include "common.h"
+#include "filemem.h"
 #include "output.h"
 #include "bmp.h"        /* Bitmap header structure */
 
@@ -47,7 +44,8 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     int colour_count;
     int resolution;
     size_t row_size, data_offset, file_size;
-    FILE *bmp_file;
+    struct filemem fm;
+    struct filemem *const fmp = &fm;
     bitmap_file_header_t file_header;
     bitmap_info_header_t info_header;
     color_ref_t bg;
@@ -55,7 +53,6 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     color_ref_t palette[8];
     int ultra_fg_index = 9;
     unsigned char map[128];
-    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT; /* Suppress gcc -fanalyzer warning */
     unsigned char *rowbuf;
 
     (void) out_colour_get_rgb(symbol->fgcolour, &fg.red, &fg.green, &fg.blue, NULL /*alpha*/);
@@ -119,36 +116,25 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     info_header.important_colours = colour_count;
 
     /* Open output file in binary mode */
-    if (output_to_stdout) {
-#ifdef _MSC_VER
-        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "600: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
-            free(rowbuf);
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-#endif
-        bmp_file = stdout;
-    } else {
-        if (!(bmp_file = out_fopen(symbol->outfile, "wb"))) {
-            sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", errno, strerror(errno));
-            free(rowbuf);
-            return ZINT_ERROR_FILE_ACCESS;
-        }
+    if (!fm_open(fmp, symbol, "wb")) {
+        sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        free(rowbuf);
+        return ZINT_ERROR_FILE_ACCESS;
     }
 
-    fwrite(&file_header, sizeof(bitmap_file_header_t), 1, bmp_file);
-    fwrite(&info_header, sizeof(bitmap_info_header_t), 1, bmp_file);
+    fm_write(&file_header, sizeof(bitmap_file_header_t), 1, fmp);
+    fm_write(&info_header, sizeof(bitmap_info_header_t), 1, fmp);
 
-    fwrite(&bg, sizeof(color_ref_t), 1, bmp_file);
+    fm_write(&bg, sizeof(color_ref_t), 1, fmp);
     if (bits_per_pixel == 4) {
         for (i = 0; i < 8; i++) {
-            fwrite(&palette[i], sizeof(color_ref_t), 1, bmp_file);
+            fm_write(&palette[i], sizeof(color_ref_t), 1, fmp);
         }
         if (ultra_fg_index == 9) {
-            fwrite(&fg, sizeof(color_ref_t), 1, bmp_file);
+            fm_write(&fg, sizeof(color_ref_t), 1, fmp);
         }
     } else {
-        fwrite(&fg, sizeof(color_ref_t), 1, bmp_file);
+        fm_write(&fg, sizeof(color_ref_t), 1, fmp);
     }
 
     /* Pixel Plotting */
@@ -159,7 +145,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             for (column = 0; column < symbol->bitmap_width; column++) {
                 rowbuf[column >> 1] |= map[pb[column]] << (!(column & 1) << 2);
             }
-            fwrite(rowbuf, 1, row_size, bmp_file);
+            fm_write(rowbuf, 1, row_size, fmp);
         }
     } else { /* bits_per_pixel == 1 */
         for (row = 0; row < symbol->bitmap_height; row++) {
@@ -168,29 +154,20 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             for (column = 0; column < symbol->bitmap_width; column++) {
                 rowbuf[column >> 3] |= map[pb[column]] >> (column & 7);
             }
-            fwrite(rowbuf, 1, row_size, bmp_file);
+            fm_write(rowbuf, 1, row_size, fmp);
         }
     }
     free(rowbuf);
 
-    if (ferror(bmp_file)) {
-        sprintf(symbol->errtxt, "603: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(bmp_file);
-        }
+    if (fm_error(fmp)) {
+        sprintf(symbol->errtxt, "603: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(bmp_file) != 0) {
-            sprintf(symbol->errtxt, "604: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
-    } else {
-        if (fclose(bmp_file) != 0) {
-            sprintf(symbol->errtxt, "605: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
+    if (!fm_close(fmp, symbol)) {
+        sprintf(symbol->errtxt, "605: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_WRITE;
     }
 
     return 0;

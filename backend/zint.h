@@ -131,6 +131,8 @@ extern "C" {
         int bitmap_height;  /* Height of bitmap image (raster output only) */
         unsigned char *alphamap; /* Array of alpha values used (raster output only) */
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
+        unsigned char *memfile; /* Pointer to in-memory file buffer if BARCODE_MEMORY_FILE (output only) */
+        int memfile_size;   /* Length of in-memory file buffer (output only) */
     };
 
     /* Segment for use with `ZBarcode_Encode_Segs()` below */
@@ -273,25 +275,26 @@ extern "C" {
 #define BARCODE_LAST            146 /* Max barcode number marker, not barcode */
 
 /* Output options (`symbol->output_options`) */
-#define BARCODE_BIND_TOP        0x0001  /* Boundary bar above the symbol only (not below), does not affect stacking */
+#define BARCODE_BIND_TOP        0x00001 /* Boundary bar above the symbol only (not below), does not affect stacking */
                                         /* Note: value was once used by the legacy (never-used) BARCODE_NO_ASCII */
-#define BARCODE_BIND            0x0002  /* Boundary bars above & below the symbol and between stacked symbols */
-#define BARCODE_BOX             0x0004  /* Box around symbol */
-#define BARCODE_STDOUT          0x0008  /* Output to stdout */
-#define READER_INIT             0x0010  /* Reader Initialisation (Programming) */
-#define SMALL_TEXT              0x0020  /* Use smaller font */
-#define BOLD_TEXT               0x0040  /* Use bold font */
-#define CMYK_COLOUR             0x0080  /* CMYK colour space (Encapsulated PostScript and TIF) */
-#define BARCODE_DOTTY_MODE      0x0100  /* Plot a matrix symbol using dots rather than squares */
-#define GS1_GS_SEPARATOR        0x0200  /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
-#define OUT_BUFFER_INTERMEDIATE 0x0400  /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
-#define BARCODE_QUIET_ZONES     0x0800  /* Add compliant quiet zones (additional to any specified whitespace) */
+#define BARCODE_BIND            0x00002 /* Boundary bars above & below the symbol and between stacked symbols */
+#define BARCODE_BOX             0x00004 /* Box around symbol */
+#define BARCODE_STDOUT          0x00008 /* Output to stdout */
+#define READER_INIT             0x00010 /* Reader Initialisation (Programming) */
+#define SMALL_TEXT              0x00020 /* Use smaller font */
+#define BOLD_TEXT               0x00040 /* Use bold font */
+#define CMYK_COLOUR             0x00080 /* CMYK colour space (Encapsulated PostScript and TIF) */
+#define BARCODE_DOTTY_MODE      0x00100 /* Plot a matrix symbol using dots rather than squares */
+#define GS1_GS_SEPARATOR        0x00200 /* Use GS instead of FNC1 as GS1 separator (Data Matrix) */
+#define OUT_BUFFER_INTERMEDIATE 0x00400 /* Return ASCII values in bitmap buffer (OUT_BUFFER only) */
+#define BARCODE_QUIET_ZONES     0x00800 /* Add compliant quiet zones (additional to any specified whitespace) */
                                         /* Note: CODE16K, CODE49, CODABLOCKF, ITF14, EAN/UPC have default quiet zones
                                          */
-#define BARCODE_NO_QUIET_ZONES  0x1000  /* Disable quiet zones, notably those with defaults as listed above */
-#define COMPLIANT_HEIGHT        0x2000  /* Warn if height not compliant, or use standard height (if any) as default */
-#define EANUPC_GUARD_WHITESPACE 0x4000  /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
-#define EMBED_VECTOR_FONT       0x8000  /* Embed font in vector output - currently only for SVG output */
+#define BARCODE_NO_QUIET_ZONES  0x01000 /* Disable quiet zones, notably those with defaults as listed above */
+#define COMPLIANT_HEIGHT        0x02000 /* Warn if height not compliant, or use standard height (if any) as default */
+#define EANUPC_GUARD_WHITESPACE 0x04000 /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
+#define EMBED_VECTOR_FONT       0x08000 /* Embed font in vector output - currently only for SVG output */
+#define BARCODE_MEMORY_FILE     0x10000 /* Write output to in-memory buffer `memfile` instead of to `outfile` */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */

@@ -44,16 +44,20 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 #endif
 
-/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
-#if !defined(_MSC_VER) && (!defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L)
-#define ZINT_IS_C89
+/* Determine if C89 or C99 (excluding MSVC, which doesn't define __STDC_VERSION__) */
+#ifndef _MSC_VER
+#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
+#    define ZINT_IS_C89
+#  elif __STDC_VERSION__ <= 199901L /* Actually includes pseudo-standards "C94/C95" as well */
+#    define ZINT_IS_C99
+#  endif
 #endif
 
 #ifdef _MSC_VER
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  if defined(ZINT_IS_C89) || defined(__NuttX__) /* C89 or NuttX RTOS */
+#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99) || defined(__NuttX__) /* C89 or C99 or NuttX RTOS */
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)

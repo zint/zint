@@ -244,12 +244,14 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
 #ifndef ZINT_NO_PNG
             error_number = png_pixel_plot(symbol, rotated_pixbuf);
 #else
-            if (rotate_angle) {
-                free(rotated_pixbuf);
-            }
-            return ZINT_ERROR_INVALID_OPTION;
+            error_number = ZINT_ERROR_INVALID_OPTION;
 #endif
             break;
+#if defined(__GNUC__) && !defined(__clang__) && defined(NDEBUG) && defined(ZINT_NO_PNG)
+/* Suppress gcc warning ‘<unknown>’ may be used uninitialized - only when Release and ZINT_NO_PNG */
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wmaybe-uninitialized"
+#endif
         case OUT_PCX_FILE:
             error_number = pcx_pixel_plot(symbol, rotated_pixbuf);
             break;
@@ -262,6 +264,9 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
         default:
             error_number = bmp_pixel_plot(symbol, rotated_pixbuf);
             break;
+#if defined(__GNUC__) && !defined(__clang__) && defined(NDEBUG) && defined(ZINT_NO_PNG)
+#pragma GCC diagnostic pop
+#endif
     }
 
     if (rotate_angle) {
@@ -1416,6 +1421,10 @@ INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_
     error = out_check_colour_options(symbol);
     if (error != 0) {
         return error;
+    }
+    if (symbol->rows <= 0) {
+        strcpy(symbol->errtxt, "664: No rows");
+        return ZINT_ERROR_INVALID_OPTION;
     }
 
     if (symbol->symbology == BARCODE_MAXICODE) {

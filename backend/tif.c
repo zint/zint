@@ -34,11 +34,8 @@
 #include <errno.h>
 #include <math.h>
 #include <stdio.h>
-#ifdef _MSC_VER
-#include <io.h>
-#include <fcntl.h>
-#endif
 #include "common.h"
+#include "filemem.h"
 #include "output.h"
 #include "tif.h"
 #include "tif_lzw.h"
@@ -97,7 +94,8 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     int strip_row;
     unsigned int bytes_put;
     long total_bytes_put;
-    FILE *tif_file;
+    struct filemem fm;
+    struct filemem *const fmp = &fm;
     const unsigned char *pb;
     int compression = TIF_NO_COMPRESSION;
     tif_lzw_state lzw_state;
@@ -315,19 +313,11 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     /* Open output file in binary mode */
-    if (output_to_stdout) {
-#ifdef _MSC_VER
-        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "671: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-#endif
-        tif_file = stdout;
-    } else {
-        if (!(tif_file = out_fopen(symbol->outfile, "wb+"))) { /* '+' as use fseek/ftell() */
-            sprintf(symbol->errtxt, "672: Could not open output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_ACCESS;
-        }
+    if (!fm_open(fmp, symbol, "wb")) {
+        sprintf(symbol->errtxt, "672: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_ACCESS;
+    }
+    if (!output_to_stdout) {
         compression = TIF_LZW;
         tif_lzw_init(&lzw_state);
     }
@@ -341,7 +331,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     header.identity = 42;
     header.offset = (uint32_t) free_memory;
 
-    fwrite(&header, sizeof(tiff_header_t), 1, tif_file);
+    fm_write(&header, sizeof(tiff_header_t), 1, fmp);
     total_bytes_put = sizeof(tiff_header_t);
 
     /* Pixel data */
@@ -387,14 +377,14 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         if (strip_row == rows_per_strip || (strip == strip_count - 1 && strip_row == rows_last_strip)) {
             /* End of strip */
             if (compression == TIF_LZW) {
-                file_pos = ftell(tif_file);
-                if (!tif_lzw_encode(&lzw_state, tif_file, strip_buf, bytes_put)) { /* Only fails if can't malloc */
+                file_pos = fm_tell(fmp);
+                if (!tif_lzw_encode(&lzw_state, fmp, strip_buf, bytes_put)) { /* Only fails if can't malloc */
                     tif_lzw_cleanup(&lzw_state);
-                    (void) fclose(tif_file); /* Only use LZW if not STDOUT, so ok to close */
+                    (void) fm_close(fmp, symbol);
                     strcpy(symbol->errtxt, "673: Failed to malloc LZW hash table");
                     return ZINT_ERROR_MEMORY;
                 }
-                bytes_put = ftell(tif_file) - file_pos;
+                bytes_put = fm_tell(fmp) - file_pos;
                 if (bytes_put != strip_bytes[strip]) {
                     const int diff = bytes_put - strip_bytes[strip];
                     strip_bytes[strip] = bytes_put;
@@ -403,7 +393,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
                     }
                 }
             } else {
-                fwrite(strip_buf, 1, bytes_put, tif_file);
+                fm_write(strip_buf, 1, bytes_put, fmp);
             }
             strip++;
             total_bytes_put += bytes_put;
@@ -415,27 +405,25 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (total_bytes_put & 1) {
-        putc(0, tif_file); /* IFD must be on word boundary */
+        fm_putc(0, fmp); /* IFD must be on word boundary */
         total_bytes_put++;
     }
 
     if (compression == TIF_LZW) {
         tif_lzw_cleanup(&lzw_state);
 
-        file_pos = ftell(tif_file);
-        fseek(tif_file, 4, SEEK_SET);
+        file_pos = fm_tell(fmp);
+        fm_seek(fmp, 4, SEEK_SET);
         free_memory = file_pos;
         temp32 = (uint32_t) free_memory;
         /* Shouldn't happen as `free_memory` checked above to be <= 0xffff0000 & should only decrease */
         if (free_memory != temp32 || (long) free_memory != file_pos) {
             strcpy(symbol->errtxt, "982: Output file size too big");
-            if (!output_to_stdout) {
-                (void) fclose(tif_file);
-            }
+            (void) fm_close(fmp, symbol);
             return ZINT_ERROR_MEMORY;
         }
-        fwrite(&temp32, 4, 1, tif_file);
-        fseek(tif_file, file_pos, SEEK_SET);
+        fm_write(&temp32, 4, 1, fmp);
+        fm_seek(fmp, file_pos, SEEK_SET);
     }
 
     /* Image File Directory */
@@ -504,7 +492,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         tags[entries++].offset = strip_bytes[0];
     } else {
         update_offsets[offsets++] = entries;
-        tags[entries++].offset = free_memory;
+        tags[entries++].offset = (uint32_t) free_memory;
         free_memory += strip_count * 4;
     }
 
@@ -512,14 +500,14 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     tags[entries].type = 5; /* RATIONAL */
     tags[entries].count = 1;
     update_offsets[offsets++] = entries;
-    tags[entries++].offset = free_memory;
+    tags[entries++].offset = (uint32_t) free_memory;
     free_memory += 8;
 
     tags[entries].tag = 0x011b; /* YResolution */
     tags[entries].type = 5; /* RATIONAL */
     tags[entries].count = 1;
     update_offsets[offsets++] = entries;
-    tags[entries++].offset = free_memory;
+    tags[entries++].offset = (uint32_t) free_memory;
     free_memory += 8;
 
     tags[entries].tag = 0x0128; /* ResolutionUnit */
@@ -552,14 +540,14 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         tags[update_offsets[i]].offset += ifd_size;
     }
 
-    fwrite(&entries, sizeof(entries), 1, tif_file);
-    fwrite(&tags, sizeof(tiff_tag_t), entries, tif_file);
-    fwrite(&offset, sizeof(offset), 1, tif_file);
+    fm_write(&entries, sizeof(entries), 1, fmp);
+    fm_write(&tags, sizeof(tiff_tag_t), entries, fmp);
+    fm_write(&offset, sizeof(offset), 1, fmp);
     total_bytes_put += ifd_size;
 
     if (samples_per_pixel > 2) {
         for (i = 0; i < samples_per_pixel; i++) {
-            fwrite(&bits_per_sample, sizeof(bits_per_sample), 1, tif_file);
+            fm_write(&bits_per_sample, sizeof(bits_per_sample), 1, fmp);
         }
         total_bytes_put += sizeof(bits_per_sample) * samples_per_pixel;
     }
@@ -567,66 +555,59 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     if (strip_count != 1) {
         /* Strip offsets */
         for (i = 0; i < strip_count; i++) {
-            fwrite(&strip_offset[i], 4, 1, tif_file);
+            fm_write(&strip_offset[i], 4, 1, fmp);
         }
 
         /* Strip byte lengths */
         for (i = 0; i < strip_count; i++) {
-            fwrite(&strip_bytes[i], 4, 1, tif_file);
+            fm_write(&strip_bytes[i], 4, 1, fmp);
         }
         total_bytes_put += strip_count * 8;
     }
 
     /* XResolution */
     temp32 = symbol->dpmm ? symbol->dpmm : 72;
-    fwrite(&temp32, 4, 1, tif_file);
+    fm_write(&temp32, 4, 1, fmp);
     temp32 = symbol->dpmm ? 10 /*cm*/ : 1;
-    fwrite(&temp32, 4, 1, tif_file);
+    fm_write(&temp32, 4, 1, fmp);
     total_bytes_put += 8;
 
     /* YResolution */
     temp32 = symbol->dpmm ? symbol->dpmm : 72;
-    fwrite(&temp32, 4, 1, tif_file);
+    fm_write(&temp32, 4, 1, fmp);
     temp32 = symbol->dpmm ? 10 /*cm*/ : 1;
-    fwrite(&temp32, 4, 1, tif_file);
+    fm_write(&temp32, 4, 1, fmp);
     total_bytes_put += 8;
 
     if (color_map_size) {
         for (i = 0; i < color_map_size; i++) {
-            fwrite(&color_map[i].red, 2, 1, tif_file);
+            fm_write(&color_map[i].red, 2, 1, fmp);
         }
         for (i = 0; i < color_map_size; i++) {
-            fwrite(&color_map[i].green, 2, 1, tif_file);
+            fm_write(&color_map[i].green, 2, 1, fmp);
         }
         for (i = 0; i < color_map_size; i++) {
-            fwrite(&color_map[i].blue, 2, 1, tif_file);
+            fm_write(&color_map[i].blue, 2, 1, fmp);
         }
         total_bytes_put += 6 * color_map_size;
     }
 
-    if (ferror(tif_file)) {
-        sprintf(symbol->errtxt, "679: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(tif_file);
-        }
+    if (fm_error(fmp)) {
+        sprintf(symbol->errtxt, "679: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(tif_file) != 0) {
-            sprintf(symbol->errtxt, "980: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
-    } else {
-        if (ftell(tif_file) != total_bytes_put) {
-            (void) fclose(tif_file);
+    if (!output_to_stdout) {
+        if (fm_tell(fmp) != total_bytes_put) {
+            (void) fm_close(fmp, symbol);
             strcpy(symbol->errtxt, "674: Failed to write all output");
             return ZINT_ERROR_FILE_WRITE;
         }
-        if (fclose(tif_file) != 0) {
-            sprintf(symbol->errtxt, "981: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
+    }
+    if (!fm_close(fmp, symbol)) {
+        sprintf(symbol->errtxt, "981: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_WRITE;
     }
 
     return 0;

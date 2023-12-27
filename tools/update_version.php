@@ -326,11 +326,11 @@ version_replace(2, $data_dirname . 'win32/zint_cmdline_vc6/zint_cmdline_vc6.dsp'
 
 // win32/vs2008/libzint.vcproj
 
-version_replace(3, $data_dirname . 'win32/vs2008/libzint.vcproj', '/ZINT_VERSION=&quot;/', '/&quot;[0-9.]+/', '&quot;' . $v_str);
+version_replace(2, $data_dirname . 'win32/vs2008/libzint.vcproj', '/ZINT_VERSION=&quot;/', '/&quot;[0-9.]+/', '&quot;' . $v_str);
 
 // win32/vs2008/zint.vcproj
 
-version_replace(3, $data_dirname . 'win32/vs2008/zint.vcproj', '/ZINT_VERSION=&quot;/', '/&quot;[0-9.]+/', '&quot;' . $v_str);
+version_replace(2, $data_dirname . 'win32/vs2008/zint.vcproj', '/ZINT_VERSION=&quot;/', '/&quot;[0-9.]+/', '&quot;' . $v_str);
 
 // win32/vs2015/libzint.vcxproj
 

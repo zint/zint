@@ -3,12 +3,16 @@ Version 2.13.0.9 (dev) not released yet
 
 **Incompatible changes**
 ------------------------
-None so far
+- New `memfile` & `memfile_size` fields in `symbol` for use with new output
+  option `BARCODE_MEMORY_FILE`
 
 Changes
 -------
 - BMP: lessen heap memory usage by only `malloc()`ing a row
 - GIF: lessen heap memory usage by paging; use standard colour char map
+- Add `BARCODE_MEMORY_FILE` to `symbol->output_options` to allow outputting to
+  in-memory buffer `symbol->memfile` instead of to file `symbol->outfile`,
+  ticket #301
 
 Bugs
 ----

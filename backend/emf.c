@@ -37,11 +37,8 @@
 #include <stdio.h>
 #include <assert.h>
 #include <math.h>
-#ifdef _MSC_VER
-#include <io.h>
-#include <fcntl.h>
-#endif
 #include "common.h"
+#include "filemem.h"
 #include "output.h"
 #include "emf.h"
 
@@ -164,7 +161,8 @@ static int emf_utfle_length(const unsigned char *input, const int length) {
 
 INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int i;
-    FILE *emf_file;
+    struct filemem fm;
+    struct filemem *const fmp = &fm;
     unsigned char fgred, fggrn, fgblu, bgred, bggrn, bgblu, bgalpha;
     int error_number = 0;
     int rectangle_count, this_rectangle;
@@ -191,7 +189,6 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     int draw_background = 1;
     int bold;
     const int upcean = is_upcean(symbol->symbology);
-    const int output_to_stdout = symbol->output_options & BARCODE_STDOUT;
 
     struct zint_vector_rect *rect;
     struct zint_vector_circle *circ;
@@ -703,66 +700,56 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     emr_header.emf_header.records = recordcount;
 
     /* Send EMF data to file */
-    if (output_to_stdout) {
-#ifdef _MSC_VER
-        if (-1 == _setmode(_fileno(stdout), _O_BINARY)) {
-            sprintf(symbol->errtxt, "642: Could not set stdout to binary (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_ACCESS;
-        }
-#endif
-        emf_file = stdout;
-    } else {
-        if (!(emf_file = out_fopen(symbol->outfile, "wb"))) {
-            sprintf(symbol->errtxt, "640: Could not open output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_ACCESS;
-        }
+    if (!fm_open(fmp, symbol, "wb")) {
+        sprintf(symbol->errtxt, "640: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_ACCESS;
     }
 
-    fwrite(&emr_header, sizeof(emr_header_t), 1, emf_file);
+    fm_write(&emr_header, sizeof(emr_header_t), 1, fmp);
 
-    fwrite(&emr_mapmode, sizeof(emr_mapmode_t), 1, emf_file);
+    fm_write(&emr_mapmode, sizeof(emr_mapmode_t), 1, fmp);
 
     if (rotate_angle) {
-        fwrite(&emr_setworldtransform, sizeof(emr_setworldtransform_t), 1, emf_file);
+        fm_write(&emr_setworldtransform, sizeof(emr_setworldtransform_t), 1, fmp);
     }
 
-    fwrite(&emr_createbrushindirect_bg, sizeof(emr_createbrushindirect_t), 1, emf_file);
+    fm_write(&emr_createbrushindirect_bg, sizeof(emr_createbrushindirect_t), 1, fmp);
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
             if (rectangle_bycolour[i]) {
-                fwrite(&emr_createbrushindirect_colour[i], sizeof(emr_createbrushindirect_t), 1, emf_file);
+                fm_write(&emr_createbrushindirect_colour[i], sizeof(emr_createbrushindirect_t), 1, fmp);
             }
         }
     } else {
-        fwrite(&emr_createbrushindirect_fg, sizeof(emr_createbrushindirect_t), 1, emf_file);
+        fm_write(&emr_createbrushindirect_fg, sizeof(emr_createbrushindirect_t), 1, fmp);
     }
 
-    fwrite(&emr_createpen, sizeof(emr_createpen_t), 1, emf_file);
+    fm_write(&emr_createpen, sizeof(emr_createpen_t), 1, fmp);
 
     if (symbol->vector->strings) {
-        fwrite(&emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw_t), 1, emf_file);
+        fm_write(&emr_extcreatefontindirectw, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
         if (fsize2) {
-            fwrite(&emr_extcreatefontindirectw2, sizeof(emr_extcreatefontindirectw_t), 1, emf_file);
+            fm_write(&emr_extcreatefontindirectw2, sizeof(emr_extcreatefontindirectw_t), 1, fmp);
         }
     }
 
-    fwrite(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, emf_file);
-    fwrite(&emr_selectobject_pen, sizeof(emr_selectobject_t), 1, emf_file);
+    fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
+    fm_write(&emr_selectobject_pen, sizeof(emr_selectobject_t), 1, fmp);
     if (draw_background) {
-        fwrite(&background, sizeof(emr_rectangle_t), 1, emf_file);
+        fm_write(&background, sizeof(emr_rectangle_t), 1, fmp);
     }
 
     if (symbol->symbology == BARCODE_ULTRA) {
         for (i = 0; i < 9; i++) {
             if (rectangle_bycolour[i]) {
-                fwrite(&emr_selectobject_colour[i], sizeof(emr_selectobject_t), 1, emf_file);
+                fm_write(&emr_selectobject_colour[i], sizeof(emr_selectobject_t), 1, fmp);
 
                 rect = symbol->vector->rectangles;
                 this_rectangle = 0;
                 while (rect) {
                     if ((i == 0 && rect->colour == -1) || rect->colour == i) {
-                        fwrite(&rectangle[this_rectangle], sizeof(emr_rectangle_t), 1, emf_file);
+                        fm_write(&rectangle[this_rectangle], sizeof(emr_rectangle_t), 1, fmp);
                     }
                     this_rectangle++;
                     rect = rect->next;
@@ -770,42 +757,42 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
             }
         }
     } else {
-        fwrite(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, emf_file);
+        fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
 
         /* Rectangles */
         for (i = 0; i < rectangle_count; i++) {
-            fwrite(&rectangle[i], sizeof(emr_rectangle_t), 1, emf_file);
+            fm_write(&rectangle[i], sizeof(emr_rectangle_t), 1, fmp);
         }
     }
 
     /* Hexagons */
     for (i = 0; i < hexagon_count; i++) {
-        fwrite(&hexagon[i], sizeof(emr_polygon_t), 1, emf_file);
+        fm_write(&hexagon[i], sizeof(emr_polygon_t), 1, fmp);
     }
 
     /* Circles */
     if (symbol->symbology == BARCODE_MAXICODE) {
         /* Bullseye needed */
         for (i = 0; i < circle_count; i++) {
-            fwrite(&circle[i], sizeof(emr_ellipse_t), 1, emf_file);
+            fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
             if (i < circle_count - 1) {
                 if (i % 2) {
-                    fwrite(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, emf_file);
+                    fm_write(&emr_selectobject_fgbrush, sizeof(emr_selectobject_t), 1, fmp);
                 } else {
-                    fwrite(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, emf_file);
+                    fm_write(&emr_selectobject_bgbrush, sizeof(emr_selectobject_t), 1, fmp);
                 }
             }
         }
     } else {
         for (i = 0; i < circle_count; i++) {
-            fwrite(&circle[i], sizeof(emr_ellipse_t), 1, emf_file);
+            fm_write(&circle[i], sizeof(emr_ellipse_t), 1, fmp);
         }
     }
 
     /* Text */
     if (string_count > 0) {
-        fwrite(&emr_selectobject_font, sizeof(emr_selectobject_t), 1, emf_file);
-        fwrite(&emr_settextcolor, sizeof(emr_settextcolor_t), 1, emf_file);
+        fm_write(&emr_selectobject_font, sizeof(emr_selectobject_t), 1, fmp);
+        fm_write(&emr_settextcolor, sizeof(emr_settextcolor_t), 1, fmp);
     }
 
     current_fsize = fsize;
@@ -813,43 +800,34 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     for (i = 0; i < string_count; i++) {
         if (text_fsizes[i] != current_fsize) {
             current_fsize = text_fsizes[i];
-            fwrite(&emr_selectobject_font2, sizeof(emr_selectobject_t), 1, emf_file);
+            fm_write(&emr_selectobject_font2, sizeof(emr_selectobject_t), 1, fmp);
         }
         if (text_haligns[i] != current_halign) {
             current_halign = text_haligns[i];
             if (current_halign == 0) {
-                fwrite(&emr_settextalign_centre, sizeof(emr_settextalign_t), 1, emf_file);
+                fm_write(&emr_settextalign_centre, sizeof(emr_settextalign_t), 1, fmp);
             } else if (current_halign == 1) {
-                fwrite(&emr_settextalign_left, sizeof(emr_settextalign_t), 1, emf_file);
+                fm_write(&emr_settextalign_left, sizeof(emr_settextalign_t), 1, fmp);
             } else {
-                fwrite(&emr_settextalign_right, sizeof(emr_settextalign_t), 1, emf_file);
+                fm_write(&emr_settextalign_right, sizeof(emr_settextalign_t), 1, fmp);
             }
         }
-        fwrite(&text[i], sizeof(emr_exttextoutw_t), 1, emf_file);
-        fwrite(this_string[i], emf_bump_up(text[i].w_emr_text.chars), 1, emf_file);
+        fm_write(&text[i], sizeof(emr_exttextoutw_t), 1, fmp);
+        fm_write(this_string[i], emf_bump_up(text[i].w_emr_text.chars), 1, fmp);
         free(this_string[i]);
     }
 
-    fwrite(&emr_eof, sizeof(emr_eof_t), 1, emf_file);
+    fm_write(&emr_eof, sizeof(emr_eof_t), 1, fmp);
 
-    if (ferror(emf_file)) {
-        sprintf(symbol->errtxt, "644: Incomplete write to output (%d: %.30s)", errno, strerror(errno));
-        if (!output_to_stdout) {
-            (void) fclose(emf_file);
-        }
+    if (fm_error(fmp)) {
+        sprintf(symbol->errtxt, "644: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
-    if (output_to_stdout) {
-        if (fflush(emf_file) != 0) {
-            sprintf(symbol->errtxt, "940: Incomplete flush to output (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
-    } else {
-        if (fclose(emf_file) != 0) {
-            sprintf(symbol->errtxt, "941: Failure on closing output file (%d: %.30s)", errno, strerror(errno));
-            return ZINT_ERROR_FILE_WRITE;
-        }
+    if (!fm_close(fmp, symbol)) {
+        sprintf(symbol->errtxt, "941: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        return ZINT_ERROR_FILE_WRITE;
     }
     return error_number;
 }

@@ -155,6 +155,8 @@ static void test_print(const testCtx *const p_ctx) {
     char expected_file[4096];
     char escaped[1024];
     int escaped_size = 1024;
+    unsigned char filebuf[32768];
+    int filebuf_size;
 
     const char *const have_identify = testUtilHaveIdentify();
 
@@ -220,7 +222,23 @@ static void test_print(const testCtx *const p_ctx) {
 
             ret = testUtilCmpBins(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
-            assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
+
+            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size); /* For BARCODE_MEMORY_FILE */
+            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+
+            if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
+                assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
+            }
+
+            symbol->output_options |= BARCODE_MEMORY_FILE;
+            ret = ZBarcode_Print(symbol, 0);
+            assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
+                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+            assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
+            assert_equal(symbol->memfile_size, filebuf_size, "i:%d %s memfile_size %d != %d\n",
+                            i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
+            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size), "i:%d %s memcmp(memfile, filebuf) != 0\n",
+                            i, testUtilBarcodeName(data[i].symbology));
         }
 
         ZBarcode_Delete(symbol);

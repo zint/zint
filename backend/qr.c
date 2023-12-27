@@ -827,7 +827,8 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
         }
 
         for (j = 0; j < length_this_block; j++) {
-            data_block[j] = datastream[in_posn + j]; /* NOLINT false-positive popped up with clang-tidy 14.0.1 */
+            /* This false-positive popped up with clang-tidy 14.0.1 */
+            data_block[j] = datastream[in_posn + j]; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
         }
 
         rs_encode(&rs, length_this_block, data_block, ecc_block);
@@ -848,7 +849,8 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
         }
 
         for (j = 0; j < short_data_block_length; j++) {
-            interleaved_data[(j * blocks) + i] = data_block[j]; /* NOLINT and another with clang-tidy 14.0.6 */
+            /* And another with clang-tidy 14.0.6 */
+            interleaved_data[(j * blocks) + i] = data_block[j]; /* NOLINT(clang-analyzer-core.uninitialized.Assign) */
         }
 
         if (i >= qty_short_blocks) {
