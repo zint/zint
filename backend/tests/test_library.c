@@ -34,7 +34,6 @@
 #include <math.h>
 #include <sys/stat.h>
 #include "testcommon.h"
-#include "../common.h"
 
 static void test_checks(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
@@ -946,14 +945,20 @@ static void test_encode_file_unreadable(const testCtx *const p_ctx) {
 
 /* #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method */
 static void test_encode_file_directory(const testCtx *const p_ctx) {
+#ifndef __NetBSD__
     int ret;
     struct zint_symbol *symbol;
     char dirname[] = "in_dir";
+#endif
 
     (void)p_ctx;
 
     testStart("test_encode_file_directory");
 
+#ifdef __NetBSD__
+    /* Reading a directory works on NetBSD, and get `code128()` ZINT_ERROR_TOO_LONG instead */
+    testSkip("Test not implemented on NetBSD");
+#else
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
 
@@ -970,6 +975,7 @@ static void test_encode_file_directory(const testCtx *const p_ctx) {
     ZBarcode_Delete(symbol);
 
     testFinish();
+#endif /* __NetBSD__ */
 }
 
 static void test_encode_file(const testCtx *const p_ctx) {

@@ -193,7 +193,8 @@ pkg_add zint zint-gui
 exit
 ```
 
-To build from source see `"README.bsd"` in the project root directory.
+To build from source (including for NetBSD) see `"README.bsd"` in the project
+root directory.
 
 ## 2.3 Microsoft Windows
 

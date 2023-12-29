@@ -464,7 +464,7 @@ namespace Zint {
             memset(m_structapp.id, 0, sizeof(m_structapp.id));
             if (!id.isEmpty()) {
                 QByteArray idArr = id.toLatin1();
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && __GNUC__ >= 8 && !defined(__clang__)
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
 #endif

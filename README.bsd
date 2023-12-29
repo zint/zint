@@ -1,4 +1,4 @@
-% Tested on FreeBSD 13.2-RELEASE (with X11 + GNOME installed) and OpenBSD 7.3 (with X11)
+% Tested on FreeBSD 14.0-RELEASE (with X11 + GNOME installed), OpenBSD 7.4 (with X11) and NetBSD 9.3 (with X11)
 
 1. Prerequisites for building zint
 ==================================
@@ -13,6 +13,12 @@ or OpenBSD (make and clang should already be installed):
 
     su
     pkg_add git cmake png
+    exit
+
+or NetBSD (make and gcc should already be installed):
+
+    su
+    pkgin install git cmake png
     exit
 
 Then clone the latest source
@@ -36,6 +42,12 @@ On OpenBSD:
     pkg_add qtbase qttools qtsvg
     exit
 
+On NetBSD:
+
+    su
+    pkgin install qt5-qtbase qt5-qttools qt5-qtsvg
+    exit
+
 
 3. Build
 ========
@@ -53,6 +65,10 @@ The rest is standard CMake (allowing for absence of sudo)
 except that on OpenBSD you need to use
 
     cmake -DCMAKE_PREFIX_PATH=/usr/local/lib/qt5/cmake ..
+
+and on NetBSD
+
+    cmake -DCMAKE_PREFIX_PATH=/usr/pkg/qt5 ..
 
 instead.
 

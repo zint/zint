@@ -187,7 +187,7 @@ INTERNAL int fm_write(const void *restrict ptr, const size_t size, const size_t 
         fm_setpos(fmp, fmp->mempos + tot_size);
         return 1;
     }
-    if (fwrite(ptr, size, nitems, fmp->fp) == 0) {
+    if (fwrite(ptr, size, nitems, fmp->fp) != nitems) {
         return fm_seterr(fmp, errno);
     }
     return 1;
@@ -304,11 +304,8 @@ INTERNAL int fm_printf(struct filemem *restrict const fmp, const char *fmt, ...)
     }
     va_start(ap, fmt);
     ret = vfprintf(fmp->fp, fmt, ap) >= 0; /* NOLINT(clang-analyzer-valist.Uninitialized) - see above */
-    if (!ret) {
-        (void) fm_seterr(fmp, errno);
-    }
     va_end(ap);
-    return ret != 0;
+    return ret ? 1 : fm_seterr(fmp, errno);
 }
 
 /* Output float without trailing zeroes to `fmp` with decimal pts `dp` (precision), returning 1 on success, 0 on
@@ -436,9 +433,12 @@ INTERNAL long fm_tell(struct filemem *restrict const fmp) {
     return ret;
 }
 
-/* Return `err`, which uses `errno` values */
+/* Return `err`, which uses `errno` values; if file and `err` not set, test `ferror()` also */
 INTERNAL int fm_error(struct filemem *restrict const fmp) {
     assert(fmp);
+    if (fmp->err == 0 && !(fmp->flags & BARCODE_MEMORY_FILE) && ferror(fmp->fp)) {
+        (void) fm_seterr(fmp, EIO);
+    }
     return fmp->err;
 }
 

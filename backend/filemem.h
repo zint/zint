@@ -84,7 +84,7 @@ INTERNAL int fm_seek(struct filemem *restrict const fmp, const long offset, cons
 /* `ftell()` returns current file/memory offset if successful, -1 on failure */
 INTERNAL long fm_tell(struct filemem *restrict const fmp);
 
-/* Return `err`, which uses `errno` values */
+/* Return `err`, which uses `errno` values; if file and `err` not set, test `ferror()` also */
 INTERNAL int fm_error(struct filemem *restrict const fmp);
 
 /* `fflush()` if file, no-op if memory, returning 1 on success, 0 on failure

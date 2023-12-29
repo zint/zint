@@ -1245,6 +1245,9 @@ static void test_other_opts(const testCtx *const p_ctx) {
     for (i = 0; i < data_size; i++) {
 
         if (testContinue(p_ctx, i)) continue;
+#ifdef __NetBSD__
+        if (strcmp(data[i].opt, " -bg=") == 0) continue; /* `getopt_long_only()` not available on NetBSD */
+#endif
 
         strcpy(cmd, "zint");
 

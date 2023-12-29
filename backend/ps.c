@@ -263,17 +263,18 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     /* Start writing the header */
-    fm_puts("%!PS-Adobe-3.0 EPSF-3.0\n", fmp);
+    fm_puts("%!PS-Adobe-3.0 EPSF-3.0\n"
+            "%%Creator: Zint ", fmp);
     if (ZINT_VERSION_BUILD) {
-        fm_printf(fmp, "%%%%Creator: Zint %d.%d.%d.%d\n",
+        fm_printf(fmp, "%d.%d.%d.%d\n",
                 ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
     } else {
-        fm_printf(fmp, "%%%%Creator: Zint %d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+        fm_printf(fmp, "%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
     }
     fm_puts("%%Title: Zint Generated Symbol\n"
-          "%%Pages: 0\n", fmp);
-    fm_printf(fmp, "%%%%BoundingBox: 0 0 %d %d\n",
-            (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
+            "%%Pages: 0\n"
+            "%%BoundingBox: 0 0 ", fmp);
+    fm_printf(fmp, "%d %d\n", (int) ceilf(symbol->vector->width), (int) ceilf(symbol->vector->height));
     fm_puts("%%EndComments\n", fmp);
 
     /* Definitions */

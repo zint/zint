@@ -123,7 +123,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
         unsigned char red = 0, green = 0, blue = 0, alpha = 0, rgb_alpha = 0;
         int cyan, magenta, yellow, black;
         int have_alpha;
-        char rgb[9];
+        char rgb[16];
         char cmyk[16];
 
         if (testContinue(p_ctx, i)) continue;
@@ -181,7 +181,7 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
     for (i = 0; i < data_size; i++) {
         int cyan, magenta, yellow, black;
         unsigned char red, green, blue, alpha, rgb_alpha;
-        char rgb[9];
+        char rgb[16];
 
         if (testContinue(p_ctx, i)) continue;
 

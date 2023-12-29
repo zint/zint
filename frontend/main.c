@@ -26,19 +26,26 @@
 #include <string.h>
 
 #ifndef _MSC_VER
-#include <getopt.h>
-#include <zint.h>
+#  include <getopt.h>
+#  ifdef __NetBSD__ /* `getopt_long_only()` not available */
+#    define getopt_long_only getopt_long
+#  endif
+#  include <zint.h>
 #else
-#include "../getopt/getopt.h"
-#include "zint.h"
-#if _MSC_VER != 1200 /* VC6 */
-#pragma warning(disable: 4996) /* function or variable may be unsafe */
-#endif
+#  include "../getopt/getopt.h"
+#  include "zint.h"
+#  if _MSC_VER != 1200 /* VC6 */
+#    pragma warning(disable: 4996) /* function or variable may be unsafe */
+#  endif
 #endif /* _MSC_VER */
+
+/* Following copied from "backend/library.c" */
 
 /* It's assumed that int is at least 32 bits, the following will compile-time fail if not
  * https://stackoverflow.com/a/1980056 */
 typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 : 1];
+
+/* Following copied from "backend/common.h" */
 
 #ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
