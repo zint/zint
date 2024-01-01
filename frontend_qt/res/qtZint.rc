@@ -58,7 +58,7 @@ BEGIN
 
             VALUE "InternalName", "qtZint"
 
-            VALUE "LegalCopyright", "Copyright © 2023 Robin Stuart & BogDan Vatra"
+            VALUE "LegalCopyright", "Copyright © 2024 Robin Stuart & BogDan Vatra"
 
             VALUE "License", "GNU General Public License version 3"
 

@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2024 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -784,7 +784,7 @@ void MainWindow::about()
             "<p>A free barcode generator</p>"
             "<p>Instruction manual is available at the project homepage:<br>"
             "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
-            "<p>Copyright &copy; 2006-2023 Robin Stuart and others.<br>"
+            "<p>Copyright &copy; 2006-2024 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
             "<p>Qt version %2</p>"

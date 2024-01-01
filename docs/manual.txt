@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-December 2023
+January 2024
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -4520,7 +4520,7 @@ maximum of 128 digits and does not include a check digit.
 
 7.1 License
 
-Zint, libzint and Zint Barcode Studio are Copyright © 2023 Robin Stuart. All
+Zint, libzint and Zint Barcode Studio are Copyright © 2024 Robin Stuart. All
 historical versions are distributed under the GNU General Public License version
 3 or later. Versions 2.5 and later are released under a dual license: the
 encoding library is released under the BSD (3 clause) license whereas the GUI,
@@ -4812,7 +4812,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % December 2023
+% ZINT(1) Version 2.13.0.9 % % January 2024
 
 NAME
 
