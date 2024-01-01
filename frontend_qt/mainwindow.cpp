@@ -778,7 +778,7 @@ void MainWindow::about()
         /*: %1 is Zint version, %2 is Qt version */
         tr(
 #ifdef Q_OS_MACOS
-            "<style>h2, p { font-size:11px; font-weight:normal; } td { font-size:8px; font-weight:normal; }</style>"
+            "<style>h2, p { font-size:11px; font-weight:normal; }</style>"
 #endif
             "<h2>Zint Barcode Studio %1</h2>"
             "<p>A free barcode generator</p>"
@@ -788,29 +788,12 @@ void MainWindow::about()
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
             "<p>Qt version %2</p>"
-            "<p>\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
-            "\"Telepen\" is a Registered Trademark of SB Electronics.<br>"
-            "\"Mailmark\" is a Registered Trademark of Royal Mail.</p>"
+            "<p>\"Mailmark\" is a Registered Trademark of Royal Mail.<br>"
+            "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
+            "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
             "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
                 "Git Lost, Alonso Schaich, Andre Maute and many others at "
                 "<a href=\"https://sourceforge.net/projects/zint/\">SourceForge</a>.</p>"
-            "<p><table border=1><tr><td>"
-#ifndef Q_OS_MACOS
-            "<small>"
-#endif
-            "Currently supported standards include:<br>"
-            "ISO/IEC 24778:2008, ANSI/AIM BC12-1998, EN 798:1996,<br>"
-            "AIM ISS-X-24 (1995), ISO/IEC 15417:2007, EN 12323:2005,<br>"
-            "ISO/IEC 16388:2007, ANSI/AIM BC6-2000, ANSI/AIM BC5-1995,<br>"
-            "AIM USS Code One (1994), ISO/IEC 16022:2006, ISO/IEC 21471:2019,<br>"
-            "ISO/IEC 15420:2009, AIMD014 (v 1.63) (2008), ISO/IEC 24723:2010,<br>"
-            "ISO/IEC 24724:2011, ISO/IEC 20830:2021, ISO/IEC 16390:2007,<br>"
-            "ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC 15438:2015,<br>"
-            "ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)"
-#ifndef Q_OS_MACOS
-            "</small>"
-#endif
-            "</td></tr></table></p>"
         ).arg(zint_version).arg(QT_VERSION_STR));
 }
 
