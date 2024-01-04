@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -142,12 +142,12 @@ static void test_options(const testCtx *const p_ctx) {
         /*  7*/ { BARCODE_PDF417, 7, 2, -1, 0, { 0, 0, "" }, "12345", ZINT_WARN_INVALID_OPTION, 0, 87, 120, "Warning 748: Columns increased from 2 to 3", -1 }, /* ECC 7, cols 2 auto-upped to 3 but now with warning */
         /*  8*/ { BARCODE_PDF417, 7, 2, -1, WARN_FAIL_ALL, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, 0, 87, 120, "Error 748: Columns increased from 2 to 3", -1 },
         /*  9*/ { BARCODE_PDF417, -1, 10, -1, 0, { 0, 0, "" }, "12345", 0, 0, 3, 239, "", -1 }, /* ECC auto-set to 2, cols 10 */
-        /* 10*/ { BARCODE_PDF417, 9, -1, -1, 0, { 0, 0, "" }, "12345", ZINT_WARN_INVALID_OPTION, 0, 6, 103, "Warning 460: Security value out of range", -1 }, /* Invalid ECC, auto-set */
-        /* 11*/ { BARCODE_PDF417, -1, 31, -1, 0, { 0, 0, "" }, "12345", ZINT_WARN_INVALID_OPTION, 0, 6, 103, "Warning 461: Number of columns out of range (1 to 30)", 0 }, /* Invalid cols, auto-set */
+        /* 10*/ { BARCODE_PDF417, 9, -1, -1, 0, { 0, 0, "" }, "12345", ZINT_WARN_INVALID_OPTION, 0, 6, 103, "Warning 460: Security value out of range (0 to 8), ignored", -1 }, /* Invalid ECC, auto-set */
+        /* 11*/ { BARCODE_PDF417, -1, 31, -1, 0, { 0, 0, "" }, "12345", ZINT_WARN_INVALID_OPTION, 0, 6, 103, "Warning 461: Number of columns out of range (1 to 30), ignored", 0 }, /* Invalid cols, auto-set */
         /* 12*/ { BARCODE_PDF417, -1, -1, 2, 0, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 466: Number of rows out of range (3 to 90)", -1 }, /* Invalid rows, error */
         /* 13*/ { BARCODE_PDF417, -1, -1, 91, 0, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 466: Number of rows out of range (3 to 90)", -1 }, /* Invalid rows, error */
-        /* 14*/ { BARCODE_PDF417, 9, -1, -1, WARN_FAIL_ALL, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 460: Security value out of range", -1 }, /* Invalid ECC */
-        /* 15*/ { BARCODE_PDF417, -1, 31, -1, WARN_FAIL_ALL, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 461: Number of columns out of range (1 to 30)", -1 }, /* Invalid cols */
+        /* 14*/ { BARCODE_PDF417, 9, -1, -1, WARN_FAIL_ALL, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 462: Security value out of range (0 to 8)", -1 }, /* Invalid ECC */
+        /* 15*/ { BARCODE_PDF417, -1, 31, -1, WARN_FAIL_ALL, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 473: Number of columns out of range (1 to 30)", -1 }, /* Invalid cols */
         /* 16*/ { BARCODE_PDF417, -1, 30, 31, 0, { 0, 0, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 475: Columns x rows out of range (1 to 928)", -1 }, /* Rows * cols (930) > 928 */
         /* 17*/ { BARCODE_PDF417, -1, 1, -1, 0, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHI", ZINT_WARN_INVALID_OPTION, 0, 65, 120, "Warning 748: Columns increased from 1 to 3", -1 }, /* Cols 1 too small, used to fail, now auto-upped to 3 with warning */
         /* 18*/ { BARCODE_PDF417, -1, -1, 4, 0, { 0, 0, "" }, "12345", 0, 0, 4, 120, "", -1 }, /* Specify rows 4 (cols 3) */

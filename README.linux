@@ -1,4 +1,4 @@
-% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS and Fedora Linux 38 (Workstation Edition)
+% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS and Fedora Linux 39 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -112,11 +112,13 @@ A number of options are available:
 
 ZINT_COVERAGE:BOOL=OFF # Set code coverage flags
 ZINT_DEBUG:BOOL=OFF    # Set debug compile flags
+ZINT_FRONTEND:BOOL=ON  # Build frontend
 ZINT_NOOPT:BOOL=OFF    # Set no optimize compile flags
 ZINT_SANITIZE:BOOL=OFF # Set sanitize compile/link flags
 ZINT_SHARED:BOOL=ON    # Build shared library
 ZINT_STATIC:BOOL=OFF   # Build static library
 ZINT_TEST:BOOL=OFF     # Set test compile flag
+ZINT_UNINSTALL:BOOL=ON # Add uninstall target
 ZINT_USE_PNG:BOOL=ON   # Build with PNG support
 ZINT_USE_QT:BOOL=ON    # Build with Qt support
 ZINT_QT6:BOOL=OFF      # If ZINT_USE_QT, use Qt6

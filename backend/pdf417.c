@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -320,15 +320,11 @@ static int pdf_num_stay(const unsigned char *chaine, const int indexliste, short
 }
 
 /* Pack segments using the method described in Appendix D of the AIM specification (ISO/IEC 15438:2015 Annex N) */
-static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PDF_MAX_LEN], int *p_indexliste,
-            const int debug_print) {
+static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PDF_MAX_LEN], int *p_indexliste) {
     const int indexliste = *p_indexliste;
     int i = 0, next, last = 0, stayintext = 0;
 
     while (i < indexliste) {
-        if (debug_print) {
-            printf("Encoding block %d = %d (%d)\n", i, liste[1][i], liste[0][i]);
-        }
 
         if ((liste[1][i] == PDF_NUM) && pdf_num_stay(chaine, indexliste, liste, i)) {
             /* leave as numeric */
@@ -554,30 +550,23 @@ static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsi
 /* 671 */
 /* Byte compaction */
 INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
-                const int length, const int lastmode, const int debug_print) {
+                const int length, const int lastmode) {
     const int real_lastmode = PDF_REAL_MODE(lastmode);
-
-    if (debug_print) printf("\nEntering byte mode at position %d\n", start);
 
     if (length == 1) {
         /* shift or latch depending on previous mode */
         chainemc[(*p_mclength)++] = real_lastmode == PDF_TEX ? 913 : 901;
         chainemc[(*p_mclength)++] = chaine[start];
-        if (debug_print) {
-            printf("%s %d\n", real_lastmode == PDF_TEX ? "913" : "901", chaine[start]);
-        }
     } else {
         int len;
         /* select the switch for multiple of 6 bytes */
         if (length % 6 == 0) {
             chainemc[(*p_mclength)++] = 924;
-            if (debug_print) fputs("924 ", stdout);
         } else {
             /* Default mode for MICROPDF417 is Byte Compaction (ISO/IEC 24728:2006 5.4.3), but not emitting it
              * depends on whether an ECI has been emitted previously (or not) it appears, so simpler and safer
              * to always emit it. */
             chainemc[(*p_mclength)++] = 901;
-            if (debug_print) fputs("901 ", stdout);
         }
 
         len = 0;
@@ -1025,11 +1014,13 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
         if (debug_print) {
             fputs("\nInitial block pattern:\n", stdout);
             for (i = 0; i < indexliste; i++) {
-                printf("Start: %d  Len: %d  Type: %s\n", liste[2][i], liste[0][i], pdf_mode_str(liste[1][i]));
+                int j;
+                for (j = 0; j < liste[0][i]; j++) fputc(pdf_mode_str(liste[1][i])[0], stdout);
             }
+            fputc('\n', stdout);
         }
 
-        pdf_appendix_d_encode(chaine, liste, &indexliste, debug_print);
+        pdf_appendix_d_encode(chaine, liste, &indexliste);
      } else {
         if (!pdf_define_mode(liste, &indexliste, chaine, length, *p_lastmode, debug_print)) {
             strcpy(symbol->errtxt, "749: Insufficient memory for mode buffers");
@@ -1040,9 +1031,10 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
     if (debug_print) {
         fputs("\nCompacted block pattern:\n", stdout);
         for (i = 0; i < indexliste; i++) {
-            printf("Start: %d  Len: %d  Type: %s\n", liste[2][i], liste[0][i],
-                    pdf_mode_str(PDF_REAL_MODE(liste[1][i])));
+            int j;
+            for (j = 0; j < liste[0][i]; j++) fputc(pdf_mode_str(PDF_REAL_MODE(liste[1][i]))[0], stdout);
         }
+        fputc('\n', stdout);
     }
 
     /* 541 - now compress the data */
@@ -1092,7 +1084,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
                 }
                 break;
             case PDF_BYT: /* 670 - octet stream mode */
-                pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode, debug_print);
+                pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode);
                 /* don't switch mode on single byte shift from text mode */
                 if (PDF_REAL_MODE(*p_lastmode) != PDF_TEX || liste[0][i] != 1) {
                     *p_lastmode = PDF_BYT;
@@ -1457,18 +1449,20 @@ INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const in
     error_number = 0;
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
-        strcpy(symbol->errtxt, "460: Security value out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
+            strcpy(symbol->errtxt, "462: Security value out of range (0 to 8)");
             return ZINT_ERROR_INVALID_OPTION;
         }
+        strcpy(symbol->errtxt, "460: Security value out of range (0 to 8), ignored");
         symbol->option_1 = -1;
         error_number = ZINT_WARN_INVALID_OPTION;
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
-        strcpy(symbol->errtxt, "461: Number of columns out of range (1 to 30)");
         if (symbol->warn_level == WARN_FAIL_ALL) {
+            strcpy(symbol->errtxt, "473: Number of columns out of range (1 to 30)");
             return ZINT_ERROR_INVALID_OPTION;
         }
+        strcpy(symbol->errtxt, "461: Number of columns out of range (1 to 30), ignored");
         symbol->option_2 = 0;
         error_number = ZINT_WARN_INVALID_OPTION;
     }

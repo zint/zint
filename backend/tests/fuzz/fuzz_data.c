@@ -1,8 +1,7 @@
-/* pdf417.h - PDF417 tables and coefficients declarations */
+/*  fuzz_data.c - fuzzer for libzint (DATA_MODE, all symbologies except GS1_128, DBAR_EXP/STK & composites) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
-    Portions Copyright (C) 2004 Grandzebu
+    Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,33 +30,58 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-/* See "pdf417_tabs.h" for table definitions */
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
 
-#ifndef Z_PDF417_H
-#define Z_PDF417_H
+#if 0
+#define Z_FUZZ_DEBUG                 /* Set `symbol->debug` flag */
+#define Z_FUZZ_SET_OUTPUT_OPTIONS    /* Set `symbol->output_options` */
+#endif
+#include "fuzz.h"
 
-/* PDF417 error correction coefficients from Grand Zebu */
-INTERNAL_DATA_EXTERN const unsigned short pdf_coefrs[1022];
+int LLVMFuzzerTestOneInput(const unsigned char *data, size_t size) {
+    struct zint_symbol *symbol;
+    int idx;
 
-INTERNAL_DATA_EXTERN const unsigned short pdf_bitpattern[2787];
+    /* Ignore empty or very large input */
+    if (size < 1 || size > 10000) {
+        return 0;
+    }
 
-/* MicroPDF417 coefficients from ISO/IEC 24728:2006 Annex F */
-INTERNAL_DATA_EXTERN const unsigned short pdf_Microcoeffs[344];
+    symbol = ZBarcode_Create();
+    assert(symbol);
 
-/* rows, columns, error codewords, k-offset of valid MicroPDF417 sizes from ISO/IEC 24728:2006 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_MicroVariants[136];
+    for (idx = 0; idx < ZARRAY_SIZE(settings); idx++) {
+        const unsigned char *input;
+        int length;
+        int ret;
 
-/* following is Left RAP, Centre RAP, Right RAP and Start Cluster from ISO/IEC 24728:2006 tables 10, 11 and 12 */
-INTERNAL_DATA_EXTERN const char pdf_RAPTable[136];
+        if (!ZBarcode_ValidID(idx)) {
+            continue;
+        }
+        if (idx == BARCODE_GS1_128 || idx == BARCODE_DBAR_EXP || idx == BARCODE_DBAR_EXPSTK
+                || (ZBarcode_Cap(idx, ZINT_CAP_COMPOSITE) & ZINT_CAP_COMPOSITE)) {
+            continue;
+        }
 
-/* Left and Right Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_rap_side[52];
+        input = data;
+        length = set_symbol(symbol, idx, 1 /*chk_sane*/, 0 /*no_eci*/, &input, size);
+        if (!length) {
+            continue;
+        }
 
-/* Centre Row Address Pattern from Table 2 */
-INTERNAL_DATA_EXTERN const unsigned short pdf_rap_centre[52];
+        ret = ZBarcode_Encode(symbol, input, length);
+        assert(ret != ZINT_ERROR_ENCODING_PROBLEM);
+    }
 
-INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
-                const int length, const int lastmode);
+    ZBarcode_Delete(symbol);
+
+    return 0;
+}
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 /* vim: set ts=4 sw=4 et : */
-#endif /* Z_PDF417_H */

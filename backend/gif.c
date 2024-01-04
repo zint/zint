@@ -1,7 +1,7 @@
 /* gif.c - Handles output to gif file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,10 +36,10 @@
 #include "filemem.h"
 #include "output.h"
 
-/* Limit initial LZW buffer size to this in expectation that compressed data will fit for typical scalings */
+/* Set LZW buffer paging size to this in expectation that compressed data will fit for typical scalings */
 #define GIF_LZW_PAGE_SIZE   0x100000 /* Megabyte */
 
-typedef struct s_statestruct {
+struct gif_state {
     struct filemem *fmp;
     unsigned char *pOut;
     const unsigned char *pIn;
@@ -56,9 +56,9 @@ typedef struct s_statestruct {
     unsigned short NodeNext[4096];
     unsigned char NodePix[4096];
     unsigned char map[256];
-} statestruct;
+};
 
-static void BufferNextByte(statestruct *pState) {
+static void gif_BufferNextByte(struct gif_state *pState) {
     (pState->OutPosCur)++;
     if (pState->fOutPaged && pState->OutPosCur + 2 >= pState->OutLength) {
         /* Keep last 256 bytes so `OutByteCountPos` within range */
@@ -83,18 +83,18 @@ static void BufferNextByte(statestruct *pState) {
     (pState->pOut)[pState->OutPosCur] = 0x00;
 }
 
-static void AddCodeToBuffer(statestruct *pState, unsigned short CodeIn, unsigned char CodeBits) {
+static void gif_AddCodeToBuffer(struct gif_state *pState, unsigned short CodeIn, unsigned char CodeBits) {
     /* Check, if we may fill up the current byte completely */
     if (CodeBits >= pState->OutBitsFree) {
         (pState->pOut)[pState->OutPosCur] |= (unsigned char) (CodeIn << (8 - pState->OutBitsFree));
-        BufferNextByte(pState);
+        gif_BufferNextByte(pState);
         CodeIn = (unsigned short) (CodeIn >> pState->OutBitsFree);
         CodeBits -= pState->OutBitsFree;
         pState->OutBitsFree = 8;
         /* Write a full byte if there are at least 8 code bits left */
         if (CodeBits >= pState->OutBitsFree) {
             (pState->pOut)[pState->OutPosCur] = (unsigned char) CodeIn;
-            BufferNextByte(pState);
+            gif_BufferNextByte(pState);
             CodeIn = (unsigned short) (CodeIn >> 8);
             CodeBits -= 8;
         }
@@ -106,14 +106,14 @@ static void AddCodeToBuffer(statestruct *pState, unsigned short CodeIn, unsigned
     }
 }
 
-static void FlushStringTable(statestruct *pState) {
+static void gif_FlushStringTable(struct gif_state *pState) {
     unsigned short Pos;
     for (Pos = 0; Pos < pState->ClearCode; Pos++) {
         (pState->NodeAxon)[Pos] = 0;
     }
 }
 
-static unsigned short FindPixelOutlet(statestruct *pState, unsigned short HeadNode, unsigned char Byte) {
+static unsigned short gif_FindPixelOutlet(struct gif_state *pState, unsigned short HeadNode, unsigned char Byte) {
     unsigned short Outlet;
 
     Outlet = (pState->NodeAxon)[HeadNode];
@@ -125,27 +125,27 @@ static unsigned short FindPixelOutlet(statestruct *pState, unsigned short HeadNo
     return 0;
 }
 
-static int NextCode(statestruct *pState, unsigned char *pPixelValueCur, unsigned char CodeBits) {
+static int gif_NextCode(struct gif_state *pState, unsigned char *pPixelValueCur, unsigned char CodeBits) {
     unsigned short UpNode;
     unsigned short DownNode;
     /* start with the root node for last pixel chain */
     UpNode = *pPixelValueCur;
     if (pState->pIn == pState->pInEnd) {
-        AddCodeToBuffer(pState, UpNode, CodeBits);
+        gif_AddCodeToBuffer(pState, UpNode, CodeBits);
         return 0;
     }
     *pPixelValueCur = pState->map[*pState->pIn++];
     /* Follow the string table and the data stream to the end of the longest string that has a code */
-    while (0 != (DownNode = FindPixelOutlet(pState, UpNode, *pPixelValueCur))) {
+    while (0 != (DownNode = gif_FindPixelOutlet(pState, UpNode, *pPixelValueCur))) {
         UpNode = DownNode;
         if (pState->pIn == pState->pInEnd) {
-            AddCodeToBuffer(pState, UpNode, CodeBits);
+            gif_AddCodeToBuffer(pState, UpNode, CodeBits);
             return 0;
         }
         *pPixelValueCur = pState->map[*pState->pIn++];
     }
     /* Submit 'UpNode' which is the code of the longest string */
-    AddCodeToBuffer(pState, UpNode, CodeBits);
+    gif_AddCodeToBuffer(pState, UpNode, CodeBits);
     /* ... and extend the string by appending 'PixelValueCur' */
     /* Create a successor node for 'PixelValueCur' whose code is 'freecode' */
     (pState->NodePix)[pState->FreeCode] = *pPixelValueCur;
@@ -163,7 +163,7 @@ static int NextCode(statestruct *pState, unsigned char *pPixelValueCur, unsigned
     return 1;
 }
 
-static int gif_lzw(statestruct *pState, int paletteBitSize) {
+static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
     unsigned char PixelValueCur;
     unsigned char CodeBits;
     unsigned short Pos;
@@ -190,26 +190,26 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
     for (Pos = 0; Pos < pState->ClearCode; Pos++)
         (pState->NodePix)[Pos] = (unsigned char) Pos;
 
-    FlushStringTable(pState);
+    gif_FlushStringTable(pState);
 
     /* Write what the GIF specification calls the "code size". */
     (pState->pOut)[pState->OutPosCur] = paletteBitSize;
     /* Reserve first bytecount byte */
-    BufferNextByte(pState);
+    gif_BufferNextByte(pState);
     pState->OutByteCountPos = pState->OutPosCur;
-    BufferNextByte(pState);
+    gif_BufferNextByte(pState);
     pState->fByteCountByteSet = 1;
     /* Submit one 'ClearCode' as the first code */
-    AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
+    gif_AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
 
     for (;;) {
         /* generate and save the next code, which may consist of multiple input pixels. */
-        if (!NextCode(pState, &PixelValueCur, CodeBits)) { /* Check for end of data stream */
+        if (!gif_NextCode(pState, &PixelValueCur, CodeBits)) { /* Check for end of data stream */
             /* submit 'eoi' as the last item of the code stream */
-            AddCodeToBuffer(pState, (unsigned short) (pState->ClearCode + 1), CodeBits);
+            gif_AddCodeToBuffer(pState, (unsigned short) (pState->ClearCode + 1), CodeBits);
             pState->fByteCountByteSet = 0;
             if (pState->OutBitsFree < 8) {
-                BufferNextByte(pState);
+                gif_BufferNextByte(pState);
             }
             /* > Update last bytecount byte; */
             if (pState->OutByteCountPos < pState->OutPosCur) {
@@ -225,8 +225,8 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
         pState->FreeCode++;
         /* Check for full stringtable - for widest compatibility with gif decoders, empty when 0xfff, not 0x1000 */
         if (pState->FreeCode == 0xfff) {
-            FlushStringTable(pState);
-            AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
+            gif_FlushStringTable(pState);
+            gif_AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
 
             CodeBits = (unsigned char) (1 + paletteBitSize);
             pState->FreeCode = (unsigned short) (pState->ClearCode + 2);
@@ -240,12 +240,11 @@ static int gif_lzw(statestruct *pState, int paletteBitSize) {
 INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf) {
     struct filemem fm;
     unsigned char outbuf[10];
-    unsigned short usTemp;
     unsigned char paletteRGB[10][3];
     int paletteCount, i;
     int paletteBitSize;
     int paletteSize;
-    statestruct State;
+    struct gif_state State;
     int transparent_index;
     int bgindex = -1, fgindex = -1;
 
@@ -359,20 +358,14 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     paletteSize = 1 << paletteBitSize;
 
     /* GIF signature (6) */
-    memcpy(outbuf, "GIF87a", 6);
-    if (transparent_index != -1)
-        outbuf[4] = '9';
-
-    fm_write(outbuf, 1, 6, State.fmp);
+    fm_write(transparent_index == -1 ? "GIF87a" : "GIF89a", 1, 6, State.fmp);
     /* Screen Descriptor (7) */
     /* Screen Width */
-    usTemp = (unsigned short) symbol->bitmap_width;
-    outbuf[0] = (unsigned char) (0xff & usTemp);
-    outbuf[1] = (unsigned char) ((0xff00 & usTemp) / 0x100);
+    outbuf[0] = (unsigned char) (0xff & symbol->bitmap_width);
+    outbuf[1] = (unsigned char) (0xff & (symbol->bitmap_width >> 8));
     /* Screen Height */
-    usTemp = (unsigned short) symbol->bitmap_height;
-    outbuf[2] = (unsigned char) (0xff & usTemp);
-    outbuf[3] = (unsigned char) ((0xff00 & usTemp) / 0x100);
+    outbuf[2] = (unsigned char) (0xff & symbol->bitmap_height);
+    outbuf[3] = (unsigned char) (0xff & (symbol->bitmap_height >> 8));
     /* write ImageBits-1 to the three least significant bits of byte 5  of
      * the Screen Descriptor
      * Bits 76543210
@@ -436,10 +429,10 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     outbuf[4] = 0x00;
     /* Image Width (low byte first) */
     outbuf[5] = (unsigned char) (0xff & symbol->bitmap_width);
-    outbuf[6] = (unsigned char) ((0xff00 & symbol->bitmap_width) / 0x100);
+    outbuf[6] = (unsigned char) (0xff & (symbol->bitmap_width >> 8));
     /* Image Height */
     outbuf[7] = (unsigned char) (0xff & symbol->bitmap_height);
-    outbuf[8] = (unsigned char) ((0xff00 & symbol->bitmap_height) / 0x100);
+    outbuf[8] = (unsigned char) (0xff & (symbol->bitmap_height >> 8));
 
     /* Byte 10 contains the interlaced flag and
      * information on the local color table.

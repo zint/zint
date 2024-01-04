@@ -1,7 +1,7 @@
 /* composite.c - Handles GS1 Composite Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -326,7 +326,7 @@ static void cc_b(struct zint_symbol *symbol, const char source[], const int cc_w
     /* "the CC-B component shall have codeword 920 in the first symbol character position" (section 9a) */
     chainemc[mclength++] = 920;
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
 
     /* Now figure out which variant of the symbol to use and load values accordingly */
 
@@ -540,7 +540,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     chainemc[mclength++] = 0; /* space for length descriptor */
     chainemc[mclength++] = 920; /* CC-C identifier */
 
-    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0, debug_print);
+    pdf_byteprocess(chainemc, &mclength, data_string, 0, length, 0);
 
     chainemc[0] = mclength;
 

@@ -1,0 +1,13 @@
+homepage: "https://zint.org.uk"
+language: c
+primary_contact: "burmartke@gmail.com"
+main_repo: "https://github.com/zint/zint"
+file_github_issue: true
+sanitizers:
+ - address
+ - memory:
+    experimental: True
+ - undefined
+architectures:
+ - x86_64
+ - i386
