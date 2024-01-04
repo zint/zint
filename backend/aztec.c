@@ -576,7 +576,9 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
                 int big_batch = 0;
                 for (count = 0; ((i + count) < reduced_length) && (reduced_encode_mode[i + count] == 'B'); count++);
 
-                assert(count <= 2047 + 2078); /* Can't be more than 19968 / 8 = 2496 */
+                if (count > 2047 + 2078) { /* Can't be more than 19968 / 8 = 2496 */
+                    return 0;
+                }
 
                 if (count > 2047) { /* Max 11-bit number */
                     big_batch = count > 2078 ? 2078 : count;
