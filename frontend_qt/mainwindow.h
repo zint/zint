@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2023 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2024 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -18,11 +18,11 @@
 #ifndef Z_MAINWINDOW_H
 #define Z_MAINWINDOW_H
 
-#include <QtGui>
-#include <QGraphicsItem>
-#include <QMainWindow>
-#include <QGraphicsScene>
 #include <QButtonGroup>
+#include <QMainWindow>
+#include <QGraphicsItem>
+#include <QGraphicsScene>
+#include <QSettings>
 
 class QLabel;
 class QShortcut;
@@ -54,8 +54,8 @@ public slots:
     void update_preview();
     void change_options();
 
-    void on_fgcolor_clicked();
-    void on_bgcolor_clicked();
+    void fgcolor_clicked();
+    void bgcolor_clicked();
     void fgcolor_changed(const QColor& color);
     void bgcolor_changed(const QColor& color);
     void fgcolor_edited();

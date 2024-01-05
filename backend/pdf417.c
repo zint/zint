@@ -166,7 +166,8 @@ static int pdf_quelmode(const unsigned char codeascii) {
 }
 
 /* Helper to switch TEX mode sub-mode */
-static int pdf_textprocess_switch(const int curtable, const int newtable, unsigned char chainet[PDF_MAX_STREAM_LEN], int wnet) {
+static int pdf_textprocess_switch(const int curtable, const int newtable, unsigned char chainet[PDF_MAX_STREAM_LEN],
+            int wnet) {
     switch (curtable) {
         case T_ALPHA:
             switch (newtable) {

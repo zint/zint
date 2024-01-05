@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,16 +19,17 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
-#include <QUiLoader>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
 #include <QStringBuilder>
+#include <QUiLoader>
 
 #include "exportwindow.h"
 
 // Shorthand
-#define QSL QStringLiteral
+#define QSL     QStringLiteral
+#define QSEmpty QLatin1String("")
 
 ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     : m_bc(bc), m_output_data(output_data), m_lines(0)
@@ -50,7 +51,7 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     linDestPath->setText(settings.value(QSL("studio/export/destination"),
                         QDir::toNativeSeparators(QDir::homePath())).toString());
     linPrefix->setText(settings.value(QSL("studio/export/file_prefix"), QSL("bcs_")).toString());
-    linPostfix->setText(settings.value(QSL("studio/export/file_postfix"), QSL("")).toString());
+    linPostfix->setText(settings.value(QSL("studio/export/file_postfix"), QSEmpty).toString());
     cmbFileName->setCurrentIndex(settings.value(QSL("studio/export/name_format"), 0).toInt());
     cmbFileType->setCurrentIndex(std::min(settings.value(QSL("studio/export/filetype"), 0).toInt(),
                     cmbFileType->count() - 1));
@@ -60,9 +61,9 @@ ExportWindow::ExportWindow(BarcodeItem *bc, const QString& output_data)
     QIcon folderIcon(QIcon::fromTheme(QSL("folder"), QIcon(QSL(":res/folder.svg"))));
     btnDestPath->setIcon(folderIcon);
 
-    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
-    connect(btnOK, SIGNAL( clicked( bool )), SLOT(process()));
-    connect(btnDestPath, SIGNAL( clicked( bool )), SLOT(get_directory()));
+    connect(btnCancel, SIGNAL(clicked(bool)), SLOT(close()));
+    connect(btnOK, SIGNAL(clicked(bool)), SLOT(process()));
+    connect(btnDestPath, SIGNAL(clicked(bool)), SLOT(get_directory()));
 
     m_dataList = m_output_data.split('\n');
     m_lines = m_dataList.size();

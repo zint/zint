@@ -178,7 +178,7 @@ using it install the packages:
 (This should include mingw32-libz-dll)
 
 Any reasonably modern version of Qt can be used. The following uses Qt 5.14.2.
-Using the Qt Maintenance Tool (see the Visual Studio 2017 instructions above)
+Using the Qt Maintenance Tool (see the Visual Studio 2022 instructions above)
 install the "MinGW 7.3.0 32-bit" component.
 
 (Note the Qt MinGW versions actually refer to Mingw-w64, the 64-bit fork of

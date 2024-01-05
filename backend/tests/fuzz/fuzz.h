@@ -81,8 +81,8 @@
 
 #define IS_UHX_F    (IS_UAD_F | IS_UBC_F | IS_UE__F | IS_UF__F) /* Uppercase hex */
 #define IS_LHX_F    (IS_LAD_F | IS_LBC_F | IS_LE__F | IS_LF__F) /* Lowercase hex */
-#define IS_UPR_F    (IS_UPO_F | IS_UHX_F) /* Uppercase letters */
-#define IS_LWR_F    (IS_LWO_F | IS_LHX_F) /* Lowercase letters */
+#define IS_UPR_F    (IS_UPO_F | IS_UHX_F | IS_UT__F | IS_UX__F) /* Uppercase letters */
+#define IS_LWR_F    (IS_LWO_F | IS_LHX_F | IS_LT__F | IS_LX__F) /* Lowercase letters */
 
 /* Flag table for `is_chr()` and `is_sane()` (taken from "backend/common.c") */
 #define IS_CLS_F    (IS_CLI_F | IS_SIL_F)

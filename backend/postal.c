@@ -1,7 +1,7 @@
 /* postal.c - Handles POSTNET, PLANET, CEPNet, FIM. RM4SCC and Flattermarken */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
     Including bug fixes by Bryan Hatton
 
     Redistribution and use in source and binary forms, with or without
@@ -135,7 +135,8 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
 
 /* Handles the POSTNET system used for Zip codes in the US */
 /* Also handles Brazilian CEPNet - more information CEPNet e Código Bidimensional Datamatrix 2D (26/05/2021) at
- * https://www.correios.com.br/enviar/correspondencia/arquivos/nacional/guia-tecnico-cepnet-e-2d-triagem-enderecamento-27-04-2021.pdf/view
+   https://www.correios.com.br/enviar/correspondencia/arquivos/nacional/
+    guia-tecnico-cepnet-e-2d-triagem-enderecamento-27-04-2021.pdf/view
  */
 static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;

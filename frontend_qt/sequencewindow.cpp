@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,16 +20,17 @@
 
 //#include <QDebug>
 #include <QFile>
-#include <QUiLoader>
 #include <QFileDialog>
 #include <QMessageBox>
 #include <QSettings>
+#include <QUiLoader>
 
 #include "sequencewindow.h"
 #include "exportwindow.h"
 
 // Shorthand
-#define QSL QStringLiteral
+#define QSL     QStringLiteral
+#define QSEmpty QLatin1String("")
 
 SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
 {
@@ -46,7 +47,7 @@ SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
     spnSeqEndVal->setValue(settings.value(QSL("studio/sequence/end_value"), 10).toInt());
     spnSeqIncVal->setValue(settings.value(QSL("studio/sequence/increment"), 1).toInt());
     linSeqFormat->setText(settings.value(QSL("studio/sequence/format"), QSL("$$$$$$")).toString());
-    txtSeqPreview->setPlainText(settings.value(QSL("studio/sequence/preview"), QSL("")).toString());
+    txtSeqPreview->setPlainText(settings.value(QSL("studio/sequence/preview"), QSEmpty).toString());
 
     QIcon closeIcon(QIcon::fromTheme(QSL("window-close"), QIcon(QSL(":res/x.svg"))));
     QIcon clearIcon(QSL(":res/delete.svg"));
@@ -54,12 +55,12 @@ SequenceWindow::SequenceWindow(BarcodeItem *bc) : m_bc(bc)
     btnSeqClear->setIcon(clearIcon);
     check_generate();
 
-    connect(btnSeqClose, SIGNAL( clicked( bool )), SLOT(close()));
-    connect(btnSeqClear, SIGNAL( clicked( bool )), SLOT(clear_preview()));
-    connect(btnSeqCreate, SIGNAL( clicked( bool )), SLOT(create_sequence()));
-    connect(txtSeqPreview, SIGNAL( textChanged()), SLOT(check_generate()));
-    connect(btnSeqFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
-    connect(btnSeqExport, SIGNAL( clicked( bool )), SLOT(generate_sequence()));
+    connect(btnSeqClose, SIGNAL(clicked(bool)), SLOT(close()));
+    connect(btnSeqClear, SIGNAL(clicked(bool)), SLOT(clear_preview()));
+    connect(btnSeqCreate, SIGNAL(clicked(bool)), SLOT(create_sequence()));
+    connect(txtSeqPreview, SIGNAL(textChanged()), SLOT(check_generate()));
+    connect(btnSeqFromFile, SIGNAL(clicked(bool)), SLOT(from_file()));
+    connect(btnSeqExport, SIGNAL(clicked(bool)), SLOT(generate_sequence()));
 }
 
 SequenceWindow::~SequenceWindow()

@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -20,11 +20,11 @@
 
 //#include <QDebug>
 #include <QFileDialog>
-#include <QUiLoader>
-#include <QStringList>
 #include <QMessageBox>
-#include <QSettings>
 #include <QRegularExpression>
+#include <QSettings>
+#include <QStringList>
+#include <QUiLoader>
 
 #include "datawindow.h"
 
@@ -67,7 +67,7 @@ DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid
                 lastPosn = match.capturedEnd(0);
             }
         }
-        out += input.mid(lastPosn);
+        out += input.midRef(lastPosn);
         txtDataInput->setPlainText(out);
         statusBarData->showMessage(tr("Converted LFs"), tempMessageTimeout);
     } else {
@@ -75,11 +75,11 @@ DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid
     }
     txtDataInput->moveCursor(QTextCursor::End, QTextCursor::MoveAnchor);
 
-    connect(btnCancel, SIGNAL( clicked( bool )), SLOT(close()));
-    connect(btnDataClear, SIGNAL( clicked( bool )), SLOT(clear_data()));
-    connect(btnOK, SIGNAL( clicked( bool )), SLOT(okay()));
-    connect(btnFromFile, SIGNAL( clicked( bool )), SLOT(from_file()));
-    connect(txtDataInput, SIGNAL( textChanged() ), this, SLOT(text_changed()));
+    connect(btnCancel, SIGNAL(clicked(bool)), SLOT(close()));
+    connect(btnDataClear, SIGNAL(clicked(bool)), SLOT(clear_data()));
+    connect(btnOK, SIGNAL(clicked(bool)), SLOT(okay()));
+    connect(btnFromFile, SIGNAL(clicked(bool)), SLOT(from_file()));
+    connect(txtDataInput, SIGNAL(textChanged()), this, SLOT(text_changed()));
 
     btnDataClear->setEnabled(!txtDataInput->toPlainText().isEmpty());
 }

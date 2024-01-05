@@ -1,7 +1,7 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra                                    *
  *   bogdan@licentia.eu                                                    *
- *   Copyright (C) 2010-2023 Robin Stuart                                  *
+ *   Copyright (C) 2010-2024 Robin Stuart                                  *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -23,27 +23,30 @@
 #endif
 
 //#include <QDebug>
-#include "qzint.h"
-#include <math.h>
-#include <stdio.h>
 #include <QFontDatabase>
 #include <QFontMetrics>
 /* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
 #include <QPainterPath>
 #include <QRegularExpression>
+
+#include <math.h>
+#include <stdio.h>
+#include "qzint.h"
 #include "../backend/fonts/normal_ttf.h" /* Arimo */
 #include "../backend/fonts/upcean_ttf.h" /* OCR-B subset (digits, "<", ">") */
 
 // Shorthand
-#define QSL QStringLiteral
+#define QSL     QStringLiteral
+#define QSEmpty QLatin1String("")
 
 namespace Zint {
     static const int maxSegs = 256;
     static const int maxCLISegs = 10; /* CLI restricted to 10 segments (including main data) */
 
     /* Matches RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string */
-    static const QRegularExpression colorRE(
+    static const QString colorREstr(
                                 QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
+    Q_GLOBAL_STATIC_WITH_ARGS(QRegularExpression, colorRE, (colorREstr));
 
     static const QString normalFontFamily = QSL("Arimo"); /* Sans-serif metrically compatible with Arial */
     static const QString upceanFontFamily = QSL("OCRB"); /* Monospace OCR-B */
@@ -88,19 +91,19 @@ namespace Zint {
             int comma1 = text.indexOf(',');
             int comma2 = text.indexOf(',', comma1 + 1);
             int comma3 = text.indexOf(',', comma2 + 1);
-            int black = 100 - text.mid(comma3 + 1).toInt();
-            int val = 100 - text.mid(0, comma1).toInt();
+            int black = 100 - text.midRef(comma3 + 1).toInt();
+            int val = 100 - text.midRef(0, comma1).toInt();
             r = (int) roundf((0xFF * val * black) / 10000.0f);
-            val = 100 - text.mid(comma1 + 1, comma2 - comma1 - 1).toInt();
+            val = 100 - text.midRef(comma1 + 1, comma2 - comma1 - 1).toInt();
             g = (int) roundf((0xFF * val * black) / 10000.0f);
-            val = 100 - text.mid(comma2 + 1, comma3 - comma2 - 1).toInt();
+            val = 100 - text.midRef(comma2 + 1, comma3 - comma2 - 1).toInt();
             b = (int) roundf((0xFF * val * black) / 10000.0f);
             a = 0xFF;
         } else {
-            r = text.mid(0, 2).toInt(nullptr, 16);
-            g = text.mid(2, 2).toInt(nullptr, 16);
-            b = text.mid(4, 2).toInt(nullptr, 16);
-            a = text.length() == 8 ? text.mid(6, 2).toInt(nullptr, 16) : 0xFF;
+            r = text.midRef(0, 2).toInt(nullptr, 16);
+            g = text.midRef(2, 2).toInt(nullptr, 16);
+            b = text.midRef(4, 2).toInt(nullptr, 16);
+            a = text.length() == 8 ? text.midRef(6, 2).toInt(nullptr, 16) : 0xFF;
         }
         color.setRgb(r, g, b, a);
         return color;
@@ -488,7 +491,7 @@ namespace Zint {
     }
 
     bool QZint::setFgStr(const QString& fgStr) {
-        if (fgStr.indexOf(colorRE) == 0) {
+        if (fgStr.indexOf(*colorRE) == 0) {
             m_fgStr = fgStr;
             return true;
         }
@@ -510,7 +513,7 @@ namespace Zint {
     }
 
     bool QZint::setBgStr(const QString& bgStr) {
-        if (bgStr.indexOf(colorRE) == 0) {
+        if (bgStr.indexOf(*colorRE) == 0) {
             m_bgStr = bgStr;
             return true;
         }
@@ -1195,7 +1198,7 @@ namespace Zint {
         if (ZBarcode_BarcodeName(symbology, buf) == 0) {
             return QString(buf);
         }
-        return QSL("");
+        return QSEmpty;
     }
 
     /* Whether Zint library "libzint" built with PNG support or not */

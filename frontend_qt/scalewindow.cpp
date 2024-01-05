@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,8 +19,8 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
-#include <QUiLoader>
 #include <QSettings>
+#include <QUiLoader>
 
 #include <math.h>
 #include "scalewindow.h"
@@ -98,16 +98,16 @@ ScaleWindow::ScaleWindow(BarcodeItem *bc, Zint::QZintXdimDpVars *vars, double or
     btnScaleUnset->setEnabled(m_vars.set);
     btnOK->setIcon(okIcon);
 
-    connect(btnCancel, SIGNAL(clicked( bool )), SLOT(close()));
-    connect(btnScaleUnset, SIGNAL( clicked( bool )), SLOT(unset_scale()));
-    connect(btnOK, SIGNAL(clicked( bool )), SLOT(okay()));
-    connect(spnXdim, SIGNAL(valueChanged( double )), SLOT(update_scale()));
-    connect(cmbXdimUnits, SIGNAL(currentIndexChanged( int )), SLOT(x_dim_units_change()));
-    connect(btnXdimDefault, SIGNAL(clicked( bool )), SLOT(x_dim_default()));
-    connect(spnResolution, SIGNAL(valueChanged( int )), SLOT(update_scale()));
-    connect(cmbResolutionUnits, SIGNAL(currentIndexChanged( int )), SLOT(resolution_units_change()));
-    connect(btnResolutionDefault, SIGNAL(clicked( bool )), SLOT(resolution_default()));
-    connect(cmbFileType, SIGNAL(currentIndexChanged( int )), SLOT(update_scale()));
+    connect(btnCancel, SIGNAL(clicked(bool)), SLOT(close()));
+    connect(btnScaleUnset, SIGNAL(clicked(bool)), SLOT(unset_scale()));
+    connect(btnOK, SIGNAL(clicked(bool)), SLOT(okay()));
+    connect(spnXdim, SIGNAL(valueChanged(double)), SLOT(update_scale()));
+    connect(cmbXdimUnits, SIGNAL(currentIndexChanged(int)), SLOT(x_dim_units_change()));
+    connect(btnXdimDefault, SIGNAL(clicked(bool)), SLOT(x_dim_default()));
+    connect(spnResolution, SIGNAL(valueChanged(int)), SLOT(update_scale()));
+    connect(cmbResolutionUnits, SIGNAL(currentIndexChanged(int)), SLOT(resolution_units_change()));
+    connect(btnResolutionDefault, SIGNAL(clicked(bool)), SLOT(resolution_default()));
+    connect(cmbFileType, SIGNAL(currentIndexChanged(int)), SLOT(update_scale()));
 }
 
 ScaleWindow::~ScaleWindow()

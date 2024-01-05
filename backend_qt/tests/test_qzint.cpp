@@ -14,7 +14,8 @@
  ***************************************************************************/
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-#include <QtTest/QtTest>
+#include <QtTest/QSignalSpy>
+#include <QtTest/QTest>
 #include "../qzint.h" /* Don't use <qzint.h> in case it's been changed */
 
 #ifndef ARRAY_SIZE

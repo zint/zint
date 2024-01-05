@@ -1,6 +1,6 @@
 /*
     Zint Barcode Generator - the open source barcode generator
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -19,14 +19,15 @@
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
 //#include <QDebug>
-#include <QSettings>
 #include <QClipboard>
 #include <QMimeData>
+#include <QSettings>
 
 #include "cliwindow.h"
 
 // Shorthand
-#define QSL QStringLiteral
+#define QSL     QStringLiteral
+#define QSEmpty QLatin1String("")
 
 static const int tempMessageTimeout = 2000;
 
@@ -64,13 +65,13 @@ CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double height
     btnCLICopy->setIcon(copyIcon);
     btnCLIClose->setIcon(closeIcon);
 
-    connect(btnCLIClose, SIGNAL( clicked( bool )), SLOT(close()));
-    connect(btnCLICopy, SIGNAL( clicked( bool )), SLOT(copy_to_clipboard()));
-    connect(radCLIUnix, SIGNAL(toggled( bool )), SLOT(generate_cli()));
-    connect(radCLIWin, SIGNAL(toggled( bool )), SLOT(generate_cli()));
-    connect(chkCLILongOpts, SIGNAL(toggled( bool )), SLOT(generate_cli()));
-    connect(chkCLIBarcodeName, SIGNAL(toggled( bool )), SLOT(generate_cli()));
-    connect(chkCLINoEXE, SIGNAL(toggled( bool )), SLOT(generate_cli()));
+    connect(btnCLIClose, SIGNAL(clicked(bool)), SLOT(close()));
+    connect(btnCLICopy, SIGNAL(clicked(bool)), SLOT(copy_to_clipboard()));
+    connect(radCLIUnix, SIGNAL(toggled(bool)), SLOT(generate_cli()));
+    connect(radCLIWin, SIGNAL(toggled(bool)), SLOT(generate_cli()));
+    connect(chkCLILongOpts, SIGNAL(toggled(bool)), SLOT(generate_cli()));
+    connect(chkCLIBarcodeName, SIGNAL(toggled(bool)), SLOT(generate_cli()));
+    connect(chkCLINoEXE, SIGNAL(toggled(bool)), SLOT(generate_cli()));
 
     generate_cli();
 }
@@ -107,7 +108,7 @@ void CLIWindow::generate_cli()
         chkCLINoEXE->setEnabled(false);
     }
     QString cmd = m_bc->bc.getAsCLI(radCLIWin->isChecked(), chkCLILongOpts->isChecked(),
-                    chkCLIBarcodeName->isChecked(), noEXE, m_autoHeight, m_heightPerRow, QSL("") /*outfile*/,
+                    chkCLIBarcodeName->isChecked(), noEXE, m_autoHeight, m_heightPerRow, QSEmpty /*outfile*/,
                     m_xdimdpVars);
 
     txtCLICmd->setPlainText(cmd);
