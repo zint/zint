@@ -1,7 +1,7 @@
 /* medical.c - Handles 1 track and 2 track pharmacode and Codabar */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -275,7 +275,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
            narrow/wide ratio as 2 and I = X) width = ((2 * N + 5) * C + (N – 1) * (D + 2)) * X + I * (C – 1) + 2Q
            = ((4 + 5) * C + (D + 2) + C - 1 + 2 * 10) * X = (10 * C + D + 21) * X
            Length (C) includes start/stop chars */
-        const float min_height_min = stripf(5.0f / 0.43f);
+        const float min_height_min = 11.6279068f; /* 5.0 / 0.43 */
         float min_height = stripf((10.0f * ((add_checksum ? length + 1 : length) + 2.0f) + d_chars + 21.0f) * 0.15f);
         if (min_height < min_height_min) {
             min_height = min_height_min;

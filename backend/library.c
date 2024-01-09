@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -68,7 +68,7 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
     symbol->show_hrt = 1; /* Show human readable text */
     symbol->input_mode = DATA_MODE;
     symbol->eci = 0; /* Default 0 uses ECI 3 */
-    symbol->dot_size = 4.0f / 5.0f;
+    symbol->dot_size = 0.8f; /* 0.4 / 0.5 */
     symbol->text_gap = 1.0f;
     symbol->guard_descent = 5.0f;
     symbol->warn_level = WARN_DEFAULT;

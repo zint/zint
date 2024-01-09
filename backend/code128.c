@@ -1,7 +1,7 @@
 /* code128.c - Handles Code 128 and derivatives */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
     Bugfixes thanks to Christian Sakowski and BogDan Vatra
 
     Redistribution and use in source and binary forms, with or without
@@ -989,8 +989,8 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**):
            same as ITF-14: "in case of further space constraints" height 5.8mm / 1.016mm (X max) ~ 5.7;
            default 31.75mm / 0.495mm ~ 64.14 */
-        const float min_height = stripf(5.8f / 1.016f);
-        const float default_height = stripf(31.75f / 0.495f);
+        const float min_height = 5.70866156f; /* 5.8 / 1.016 */
+        const float default_height = 64.1414108f; /* 31.75 / 0.495 */
         if (symbol->symbology == BARCODE_GS1_128_CC) {
             /* Pass back via temporary linear structure */
             symbol->height = symbol->height ? min_height : default_height;
@@ -1153,9 +1153,11 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
         /* DPD Parcel Label Specification Version 2.4.1 (19.01.2021) Section 4.6.1.2
            25mm / 0.4mm (X max) = 62.5 min, 25mm / 0.375 (X) ~ 66.66 default */
         if (relabel) { /* If relabel then half-size */
-            error_number = set_height(symbol, 31.25f, stripf(12.5f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+            const float default_height = 33.3333321f; /* 12.5 / 0.375 */
+            error_number = set_height(symbol, 31.25f, default_height, 0.0f, 0 /*no_errtxt*/);
         } else {
-            error_number = set_height(symbol, 62.5f, stripf(25.0f / 0.375f), 0.0f, 0 /*no_errtxt*/);
+            const float default_height = 66.6666641f; /* 25.0 / 0.375 */
+            error_number = set_height(symbol, 62.5f, default_height, 0.0f, 0 /*no_errtxt*/);
         }
     } else {
         (void) set_height(symbol, 0.0f, relabel ? 25.0f : 50.0f, 0.0f, 1 /*no_errtxt*/);
@@ -1299,7 +1301,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Universal Postal Union S10 Section 8, using max X 0.51mm & minimum height 12.5mm or 15% of width */
-        const float min_height_min = stripf(12.5f / 0.51f);
+        const float min_height_min = 24.5098038f; /* 12.5 / 0.51 */
         float min_height = stripf(symbol->width * 0.15f);
         if (min_height < min_height_min) {
             min_height = min_height_min;

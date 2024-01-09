@@ -1,7 +1,7 @@
 /*  upcean.c - Handles UPC, EAN and ISBN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -135,7 +135,7 @@ static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
            same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-        const float height = stripf(22.85f / 0.33f);
+        const float height = 69.242424f; /* 22.85 / 0.33 */
         if (symbol->symbology == BARCODE_UPCA_CC) {
             symbol->height = height; /* Pass back min row == default height */
         } else {
@@ -307,7 +307,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
            same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-        const float height = stripf(22.85f / 0.33f);
+        const float height = 69.242424f; /* 22.85 / 0.33 */
         if (symbol->symbology == BARCODE_UPCE_CC) {
             symbol->height = height; /* Pass back min row == default height */
         } else {
@@ -443,7 +443,7 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 797:1996 4.5.1 Nominal dimensions 22.85mm / 0.33mm (X) ~ 69.24,
            same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-        const float height = stripf(22.85f / 0.33f);
+        const float height = 69.242424f; /* 22.85 / 0.33 */
         if (symbol->symbology == BARCODE_EANX_CC) {
             symbol->height = height; /* Pass back min row == default height */
         } else {
@@ -492,7 +492,7 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* BS EN 797:1996 4.5.1 Nominal dimensions 18.23mm / 0.33mm (X) ~ 55.24,
            same as minimum GS1 General Specifications 21.0.1 5.12.3.1 */
-        const float height = stripf(18.23f / 0.33f);
+        const float height = 55.242424f; /* 18.23 / 0.33 */
         if (symbol->symbology == BARCODE_EANX_CC) {
             symbol->height = height; /* Pass back min row == default height */
         } else {
@@ -817,7 +817,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     ustrcpy(symbol->text, first_part);
                     if (symbol->output_options & COMPLIANT_HEIGHT) {
                         /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-6 */
-                        const float height = stripf(21.9f / 0.33f); /* 21.9mm / 0.33mm ~ 66.36 */
+                        const float height = 66.3636398f; /* 21.9 / 0.33 */
                         error_number = set_height(symbol, height, height, 0.0f, 0 /*no_errtxt*/);
                     } else {
                         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);

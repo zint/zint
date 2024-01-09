@@ -1,7 +1,7 @@
 /*  emf.c - Support for Microsoft Enhanced Metafile Format */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,7 +43,7 @@
 #include "emf.h"
 
 /* Multiply truncating to 3 decimal places (avoids rounding differences on various platforms) */
-#define mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0f) / 1000.0f)
+#define emf_mul3dpf(m, arg) stripf(roundf((m) * (arg) * 1000.0f) / 1000.0f)
 
 static int emf_count_rectangles(const struct zint_symbol *symbol) {
     int rectangles = 0;
@@ -479,7 +479,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
            causes various different rendering issues for LibreOffice Draw and Inkscape, so using following hack */
         if (previous_diameter != circ->diameter + circ->width) { /* Drawing MaxiCode bullseye using overlayed discs */
             previous_diameter = circ->diameter + circ->width;
-            radius = mul3dpf(0.5f, previous_diameter);
+            radius = emf_mul3dpf(0.5f, previous_diameter);
         }
         circle[this_circle].type = 0x0000002a; /* EMR_ELLIPSE */
         circle[this_circle].size = 24;
@@ -518,9 +518,9 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
         if (previous_diameter != hex->diameter) {
             previous_diameter = hex->diameter;
-            radius = mul3dpf(0.5f, previous_diameter);
-            half_radius = mul3dpf(0.25f, previous_diameter);
-            half_sqrt3_radius = mul3dpf(0.43301270189221932338f, previous_diameter);
+            radius = emf_mul3dpf(0.5f, previous_diameter);
+            half_radius = emf_mul3dpf(0.25f, previous_diameter);
+            half_sqrt3_radius = emf_mul3dpf(0.43301270189221932338f, previous_diameter);
         }
 
         /* Note rotation done via world transform */

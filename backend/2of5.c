@@ -1,7 +1,7 @@
 /* 2of5.c - Handles Code 2 of 5 barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -213,7 +213,7 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
                (P = character pairs, N = wide/narrow ratio = 3)
                width = (P(4N + 6) + N + 6)X = (length / 2) * 18 + 9 */
             /* Taking min X = 0.330mm from Annex D.3.1 (application specification) */
-            const float min_height_min = stripf(5.0f / 0.33f);
+            const float min_height_min = 15.151515f; /* 5.0 / 0.33 */
             float min_height = stripf((18.0f * (length / 2) + 9.0f) * 0.15f);
             if (min_height < min_height_min) {
                 min_height = min_height_min;
@@ -276,7 +276,9 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
             /* GS1 General Specifications 21.0.1 5.12.3.2 table 2, including footnote (**): (note bind/box additional
                to symbol->height), same as GS1-128: "in case of further space constraints"
                height 5.8mm / 1.016mm (X max) ~ 5.7; default 31.75mm / 0.495mm ~ 64.14 */
-            error_number = set_height(symbol, stripf(5.8f / 1.016f), stripf(31.75f / 0.495f), 0.0f, 0 /*no_errtxt*/);
+            const float min_height = 5.70866156f; /* 5.8 / 1.016 */
+            const float default_height = 64.1414108f; /* 31.75 / 0.495 */
+            error_number = set_height(symbol, min_height, default_height, 0.0f, 0 /*no_errtxt*/);
         } else {
             (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }

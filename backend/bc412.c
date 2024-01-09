@@ -1,7 +1,7 @@
 /* bc412.c - Handles IBM BC412 (SEMI T1-95) symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -134,11 +134,14 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* SEMI T1-95 Table 1 "Module" (Character) Height 2mm ± 0.025mm, using Module Spacing 0.12mm ± 0.025mm as
            X-dimension */
-        error_number = set_height(symbol, stripf(1.975f / 0.145f), stripf(2.0f / 0.12f), stripf(2.025f / 0.095f),
-                        0 /*no_errtxt*/);
+        const float min_height = 13.6206894f; /* 1.975 / 0.145 */
+        const float default_height = 16.666666f; /* 2.0 / 0.12 */
+        const float max_height = 21.3157902f; /* 2.025 / 0.095 */
+        error_number = set_height(symbol, min_height, default_height, max_height, 0 /*no_errtxt*/);
     } else {
         /* Using compliant height as default as no backwards compatibility to consider */
-        (void) set_height(symbol, 0.0f, stripf(2.0f / 0.12f), 0.0f, 1 /*no_errtxt*/);
+        const float default_height = 16.666666f; /* 2.0 / 0.12 */
+        (void) set_height(symbol, 0.0f, default_height, 0.0f, 1 /*no_errtxt*/);
     }
 
     return error_number;

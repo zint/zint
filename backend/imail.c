@@ -1,7 +1,7 @@
 /* imail.c - Handles Intelligent Mail (aka OneCode) for USPS */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -437,10 +437,12 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
            Tracker 0.048" (average of 0.039" - 0.057")
            Ascender/descender 0.0965" (average of 0.082" - 0.111") less T = 0.0485"
          */
-        symbol->row_height[0] = stripf(0.0485f * 43); /* 2.0855 */
-        symbol->row_height[1] = stripf(0.048f * 43); /* 2.064 */
+        const float min_height = 4.875f; /* 0.125 * 39 */
+        const float max_height = 7.75500011f; /* 0.165 * 47 */
+        symbol->row_height[0] = 2.0855f; /* 0.0485 * 43 */
+        symbol->row_height[1] = 2.06399989f; /* 0.048 * 43 */
         /* Note using max X for minimum and min X for maximum */
-        error_number = daft_set_height(symbol, stripf(0.125f * 39) /*4.875*/, stripf(0.165f * 47) /*7.755*/);
+        error_number = daft_set_height(symbol, min_height, max_height);
     } else {
         symbol->row_height[0] = 3.0f;
         symbol->row_height[1] = 2.0f;

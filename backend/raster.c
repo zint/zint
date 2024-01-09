@@ -1,7 +1,7 @@
 /* raster.c - Handles output to raster files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -825,8 +825,10 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, const int rotate_ang
     }
     if (error_number == 0) {
         /* Check whether size is compliant */
+        const float min_ratio = 0.92993629f; /* 24.82 / 26.69 */
+        const float max_ratio = 1.177984f; /* 27.93 / 23.71 */
         const float size_ratio = (float) hex_image_width / hex_image_height;
-        if (size_ratio < 24.82f / 26.69f || size_ratio > 27.93f / 23.71f) {
+        if (size_ratio < min_ratio || size_ratio > max_ratio) {
             strcpy(symbol->errtxt, "663: Size not within the minimum/maximum ranges");
             error_number = ZINT_WARN_NONCOMPLIANT;
         }

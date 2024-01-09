@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -682,7 +682,7 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
         /*128*/ { BARCODE_UPNQR, "1234567890AB", "", 77, 77, 77, 154, 154 },
         /*129*/ { BARCODE_ULTRA, "1234567890", "", 13, 13, 18, 36, 26 },
         /*130*/ { BARCODE_RMQR, "12345", "", 11, 11, 27, 54, 22 },
-        /*131*/ { BARCODE_BC412, "1234567", "", 16.666668, 1, 102, 204, 49.613335 },
+        /*131*/ { BARCODE_BC412, "1234567", "", 16.666666, 1, 102, 204, 49.613335 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2012,8 +2012,8 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         /*292*/ { BARCODE_ULTRA, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 13, 13, 15, 34, 30, 2, 2, 30, 2 },
         /*293*/ { BARCODE_RMQR, -1, -1, -1, -1, "1234", "", 0, 11, 11, 27, 54, 22, 0, 0, 14, 2 },
         /*294*/ { BARCODE_RMQR, BARCODE_QUIET_ZONES, -1, -1, -1, "1234", "", 0, 11, 11, 27, 62, 30, 4, 4, 14, 2 },
-        /*295*/ { BARCODE_BC412, -1, -1, -1, -1, "1234567", "", 0, 16.666668, 1, 102, 204, 49.613335, 0, 0, 2, 33.333336 },
-        /*296*/ { BARCODE_BC412, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567", "", 0, 16.666668, 1, 102, 244, 49.613335, 20, 0, 2, 33.333336 },
+        /*295*/ { BARCODE_BC412, -1, -1, -1, -1, "1234567", "", 0, 16.666666, 1, 102, 204, 49.613335, 0, 0, 2, 33.333336 },
+        /*296*/ { BARCODE_BC412, BARCODE_QUIET_ZONES, -1, -1, -1, "1234567", "", 0, 16.666666, 1, 102, 244, 49.613335, 20, 0, 2, 33.333336 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -2590,8 +2590,8 @@ static void test_height(const testCtx *const p_ctx) {
         /*316*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 4.8, "12345678901234567890", "", ZINT_WARN_NONCOMPLIANT, 4.8000002, 3, 129, 258, 9.6000004, "" },
         /*317*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 4.9, "12345678901234567890", "", 0, 4.9000001, 3, 129, 258, 9.8000002, "" },
         /*318*/ { BARCODE_USPS_IMAIL, -1, 7.7, "12345678901234567890", "", 0, 7.6999998, 3, 129, 258, 15.4, "" },
-        /*319*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 7.7, "12345678901234567890", "", 0, 7.7000003, 3, 129, 258, 15.400001, "" },
-        /*320*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 7.8, "12345678901234567890", "", ZINT_WARN_NONCOMPLIANT, 7.7999997, 3, 129, 258, 15.599999, "" },
+        /*319*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 7.7, "12345678901234567890", "", 0, 7.69999981, 3, 129, 258, 15.3999996, "" },
+        /*320*/ { BARCODE_USPS_IMAIL, COMPLIANT_HEIGHT, 7.8, "12345678901234567890", "", ZINT_WARN_NONCOMPLIANT, 7.80000019, 3, 129, 258, 15.6000004, "" },
         /*321*/ { BARCODE_PLESSEY, -1, 1, "1234567890", "", 0, 1, 1, 227, 454, 2, "" },
         /*322*/ { BARCODE_PLESSEY, COMPLIANT_HEIGHT, 1, "1234567890", "", 0, 1, 1, 227, 454, 2, "TODO: Find doc" },
         /*323*/ { BARCODE_PLESSEY, -1, 4, "1234567890", "", 0, 4, 1, 227, 454, 8, "" },

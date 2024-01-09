@@ -1,7 +1,7 @@
 /* code.c - Handles Code 11, 39, 39+, 93, PZN, Channel and VIN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -327,8 +327,9 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
             /* MIL-STD-1189 Rev. B Section 5.2
                Min height 0.25" / 0.04" (X max) = 6.25
                Default height 0.625" (average of 0.375" - 0.875") / 0.01375" (average of 0.0075" - 0.02") ~ 45.45 */
-            error_number = set_height(symbol, 6.25f, stripf(0.625f / 0.01375f), stripf(0.875f / 0.0075f),
-                                        0 /*no_errtxt*/);
+            const float default_height = 45.4545441f; /* 0.625 / 0.01375 */
+            const float max_height = 116.666664f; /* 0.875 / 0.0075 */
+            error_number = set_height(symbol, 6.25f, default_height, max_height, 0 /*no_errtxt*/);
         } else if (symbol->symbology == BARCODE_CODE39 || symbol->symbology == BARCODE_EXCODE39
                     || symbol->symbology == BARCODE_HIBC_39) {
             /* ISO/IEC 16388:2007 4.4 (e) recommended min height 5.0mm or 15% of width excluding quiet zones;
@@ -429,7 +430,9 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
            "normal" X 0.25mm (0.187mm - 0.45mm), height 8mm - 20mm for 0.25mm X, 10mm mentioned so use that
            as default, 10mm / 0.25mm = 40 */
         if (error_number < ZINT_ERROR) {
-            error_number = set_height(symbol, stripf(8.0f / 0.45f), 40.0f, stripf(20.0f / 0.187f), 0 /*no_errtxt*/);
+            const float min_height = 17.7777786f; /* 8.0 / 0.45 */
+            const float max_height = 106.951874f; /* 20.0 / 0.187 */
+            error_number = set_height(symbol, min_height, 40.0f, max_height, 0 /*no_errtxt*/);
         }
     } else {
         if (error_number < ZINT_ERROR) {
@@ -588,7 +591,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
         /* ANSI/AIM BC5-1995 Section 2.6 minimum height 0.2" or 15% of symbol length, whichever is greater
            no max X given so for min height use symbol length = (9 * (C + 4) + 1) * X + 2 * Q = symbol->width + 20;
            use 40 as default height based on figures in spec */
-        float min_height = stripf((symbol->width + 20) * 0.15f);
+        const float min_height = stripf((symbol->width + 20) * 0.15f);
         error_number = set_height(symbol, min_height, min_height > 40.0f ? min_height : 40.0f, 0.0f, 0 /*no_errtxt*/);
     } else {
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);

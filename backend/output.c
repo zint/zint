@@ -1,7 +1,7 @@
 /*  output.c - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -504,8 +504,8 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* USPS DMM 300 2006 (2011) 708.9.3 (top/bottom zero)
                right 0.125" (min) / 0.03925" (X max) ~ 3.18, left 1.25" - 0.66725" (max width of barcode)
                - 0.375 (max right) = 0.20775" / 0.03925" (X max) ~ 5.29 */
-            *right = (float) (0.125 / 0.03925);
-            *left = (float) (0.20775 / 0.03925);
+            *right = 3.18471336f; /* 0.125 / 0.03925 */
+            *left = 5.29299355f; /* 0.20775 / 0.03925 */
             done = 1;
             break;
         case BARCODE_PHARMA:
@@ -561,13 +561,13 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* Customer Barcode Technical Specifications (2012) left/right 6mm / 0.6mm = 10,
                top/bottom 2mm / 0.6mm ~ 3.33 (X max) */
             *left = *right = 10.0f;
-            *top = *bottom = (float) (2.0 / 0.6);
+            *top = *bottom = 3.33333325f; /* 2.0 / 0.6 */
             done = 1;
             break;
         case BARCODE_RM4SCC:
             /* Royal Mail Know How User's Manual Appendix C: using CBC, same as MAILMARK_4S, 2mm all round,
                use X max (25.4mm / 39) i.e. 20 bars per 25.4mm */
-            *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
+            *left = *right = *top = *bottom = 3.07086611f; /* (2.0 * 39.0) / 25.4 */
             done = 1;
             break;
         case BARCODE_DATAMATRIX:
@@ -578,7 +578,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             break;
         case BARCODE_JAPANPOST:
             /* Japan Post Zip/Barcode Manual p.13 2mm all round, X 0.6mm, 2mm / 0.6mm ~ 3.33 */
-            *left = *right = *top = *bottom = (float) (2.0 / 0.6);
+            *left = *right = *top = *bottom = 3.33333325f; /* 2.0 / 0.6 */
             done = 1;
             break;
 
@@ -591,8 +591,8 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_USPS_IMAIL:
             /* USPS-B-3200 (2015) Section 2.3.2 left/right 0.125", top/bottom 0.026", use X max (1 / 39)
                i.e. 20 bars per inch */
-            *left = *right = 0.125f * 39.0f; /* 4.875 */
-            *top = *bottom = 0.026f * 39.0f; /* 1.014 */
+            *left = *right = 4.875f; /* 0.125 * 39.0 */
+            *top = *bottom = 1.01400006f; /* 0.026 * 39.0 */
             done = 1;
             break;
 
@@ -604,7 +604,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
 
         case BARCODE_KIX:
             /* Handleiding KIX code brochure - same as RM4SCC/MAILMARK_4S */
-            *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
+            *left = *right = *top = *bottom = 3.07086611f; /* (2.0 * 39.0) / 25.4 */
             done = 1;
             break;
         case BARCODE_AZTEC:
@@ -630,7 +630,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_MAILMARK_4S:
             /* Royal Mail Mailmark Barcode Definition Document Section 3.5.2, 2mm all round, use X max (25.4mm / 39)
                i.e. 20 bars per 25.4mm */
-            *left = *right = *top = *bottom = (float) ((2.0 * 39.0) / 25.4); /* ~ 3.07 */
+            *left = *right = *top = *bottom = 3.07086611f; /* (2.0 * 39.0) / 25.4 */
             done = 1;
             break;
         case BARCODE_UPU_S10:

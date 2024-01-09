@@ -1,6 +1,16 @@
 /*  gen_corpora.c - write out initial fuzz data for zint, allowing for how `set_symbol()` in "fuzz.h" uses first X
     bytes to set various `zint_symbol` members (namely `input_mode`, `option_1`, `option_2`, `eci`, `option_3`) */
 /*
+    From "backend/tests/fuzz" directory:
+
+	rm -rf fuzz_data_corpus fuzz_gs1_corpus
+	rm -f fuzz_data_seed_corpus.zip fuzz_gs1_seed_corpus.zip
+	gcc gen_corpora.c -o gen_corpora -lzint -fsanitize=address
+	./gen_corpora
+	zip -j fuzz_data_seed_corpus.zip fuzz_data_corpus/*
+	zip -j fuzz_gs1_seed_corpus.zip fuzz_gs1_corpus/*
+*/
+/*
     libzint - the open source barcode library
     Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
 

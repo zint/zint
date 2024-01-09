@@ -1,7 +1,7 @@
 /* main.c - Command line handling routines for Zint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     This program is free software; you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 #ifndef _MSC_VER
 #  include <getopt.h>
-#  ifdef __NetBSD__ /* `getopt_long_only()` not available */
+#  if defined(__NetBSD__) && !defined(getopt_long_only) /* `getopt_long_only()` not available */
 #    define getopt_long_only getopt_long
 #  endif
 #  include <zint.h>
@@ -1817,13 +1817,11 @@ int main(int argc, char **argv) {
                     return do_exit(ZINT_ERROR_INVALID_OPTION);
                 }
                 switch (val) {
-                    case 90: rotate_angle = 90;
-                        break;
-                    case 180: rotate_angle = 180;
-                        break;
-                    case 270: rotate_angle = 270;
-                        break;
-                    case 0: rotate_angle = 0;
+                    case 0:
+                    case 90:
+                    case 180:
+                    case 270:
+                        rotate_angle = val;
                         break;
                     default:
                         fprintf(stderr,

@@ -1,7 +1,7 @@
 /* mailmark.c - Royal Mail 4-state and 2D Mailmark barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -497,10 +497,12 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
            Using recommended 1.9mm and 1.3mm heights for Ascender/Descenders and Trackers resp. as defaults
            Min height 4.22mm * 39 (max pitch) / 25.4mm ~ 6.47, max height 5.84mm * 47 (min pitch) / 25.4mm ~ 10.8
          */
-        symbol->row_height[0] = stripf((1.9f * 42.3f) / 25.4f); /* ~3.16 */
-        symbol->row_height[1] = stripf((1.3f * 42.3f) / 25.4f); /* ~2.16 */
+        const float min_height = 6.47952747f; /* (4.22 * 39) / 25.4 */
+        const float max_height = 10.8062992f; /* (5.84 * 47) / 25.4 */
+        symbol->row_height[0] = 3.16417313f; /* (1.9 * 42.3) / 25.4 */
+        symbol->row_height[1] = 2.16496062f; /* (1.3 * 42.3) / 25.4 */
         /* Note using max X for minimum and min X for maximum */
-        error_number = daft_set_height(symbol, stripf((4.22f * 39) / 25.4f), stripf((5.84f * 47) / 25.4f));
+        error_number = daft_set_height(symbol, min_height, max_height);
     } else {
         symbol->row_height[0] = 4.0f;
         symbol->row_height[1] = 2.0f;
