@@ -1,3 +1,5 @@
+% docs/README 2014-01-17
+
 For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" using a recent version of pandoc
 
 On Ubuntu/Debian (tested on Ubuntu 22.04)

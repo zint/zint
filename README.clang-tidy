@@ -1,4 +1,5 @@
-Current as of latest clang-tidy-18 from Ubuntu 22.04 apt package (2023-12-26)
+% README.clang-tidy 2024-01-17
+% Current as of latest clang-tidy-18 from Ubuntu 22.04 apt package
 
 Requires cmake in "build" sub-directory with -DCMAKE_EXPORT_COMPILE_COMMANDS=ON (for "build/compile_commands.json")
 and -DCMAKE_BUILD_TYPE=Debug (so `assert()`s defined), and then make (for Qt generated includes).

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -123,8 +123,8 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
         unsigned char red = 0, green = 0, blue = 0, alpha = 0, rgb_alpha = 0;
         int cyan, magenta, yellow, black;
         int have_alpha;
-        char rgb[16];
-        char cmyk[16];
+        char rgb[64];
+        char cmyk[64];
 
         if (testContinue(p_ctx, i)) continue;
 

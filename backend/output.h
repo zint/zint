@@ -1,7 +1,7 @@
 /*  output.h - Common routines for raster/vector */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -76,6 +76,42 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode);
 /* Do `fopen()` on Windows, assuming `filename` is UTF-8 encoded. Props Marcel, ticket #288 */
 INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
 #endif
+
+/* Little-endian output */
+#define out_le_u16(b, n) do { \
+        unsigned char *bp = (unsigned char *) &(b); \
+        uint16_t u16 = (uint16_t) (n); \
+        bp[0] = (unsigned char) (u16 & 0xFF); \
+        bp[1] = (unsigned char) ((u16 >> 8) & 0xFF); \
+    } while (0)
+
+#define out_le_u32(b, n) do { \
+        unsigned char *bp = (unsigned char *) &(b); \
+        uint32_t u32 = (uint32_t) (n); \
+        bp[0] = (unsigned char) (u32 & 0xFF); \
+        bp[1] = (unsigned char) ((u32 >> 8) & 0xFF); \
+        bp[2] = (unsigned char) ((u32 >> 16) & 0xFF); \
+        bp[3] = (unsigned char) ((u32 >> 24) & 0xFF); \
+    } while (0)
+
+#define out_le_i32(b, n) do { \
+        unsigned char *bp = (unsigned char *) &(b); \
+        int32_t i32 = (int32_t) (n); \
+        bp[0] = (unsigned char) (i32 & 0xFF); \
+        bp[1] = (unsigned char) ((i32 >> 8) & 0xFF); \
+        bp[2] = (unsigned char) ((i32 >> 16) & 0xFF); \
+        bp[3] = (unsigned char) ((i32 >> 24) & 0xFF); \
+    } while (0)
+
+#define out_le_float(b, n) do { \
+        unsigned char *bp = (unsigned char *) &(b); \
+        float f = n; \
+        uint32_t *p_u32 = (uint32_t *) &(f); \
+        bp[0] = (unsigned char) (*p_u32 & 0xFF); \
+        bp[1] = (unsigned char) ((*p_u32 >> 8) & 0xFF); \
+        bp[2] = (unsigned char) ((*p_u32 >> 16) & 0xFF); \
+        bp[3] = (unsigned char) ((*p_u32 >> 24) & 0xFF); \
+    } while (0)
 
 #ifdef __cplusplus
 }

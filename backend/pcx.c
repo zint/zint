@@ -1,7 +1,7 @@
 /* pcx.c - Handles output to ZSoft PCX file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -60,11 +60,11 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     header.version = 5; /* Version 3.0 */
     header.encoding = 1; /* Run length encoding */
     header.bits_per_pixel = 8; /* TODO: 1-bit monochrome black/white */
-    header.window_xmin = 0;
-    header.window_ymin = 0;
-    header.window_xmax = symbol->bitmap_width - 1;
-    header.window_ymax = symbol->bitmap_height - 1;
-    header.horiz_dpi = symbol->dpmm ? (uint16_t) roundf(stripf(symbol->dpmm * 25.4f)) : 300;
+    out_le_u16(header.window_xmin, 0);
+    out_le_u16(header.window_ymin, 0);
+    out_le_u16(header.window_xmax, symbol->bitmap_width - 1);
+    out_le_u16(header.window_ymax, symbol->bitmap_height - 1);
+    out_le_u16(header.horiz_dpi, symbol->dpmm ? roundf(stripf(symbol->dpmm * 25.4f)) : 300);
     header.vert_dpi = header.horiz_dpi;
 
     for (i = 0; i < 48; i++) {
@@ -74,11 +74,11 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     header.reserved = 0;
     header.number_of_planes = 3 + (fgalpha != 0xFF || bgalpha != 0xFF); /* TODO: 1-bit monochrome black/white */
 
-    header.bytes_per_line = bytes_per_line;
+    out_le_u16(header.bytes_per_line, bytes_per_line);
 
-    header.palette_info = 1; /* Colour */
-    header.horiz_screen_size = 0;
-    header.vert_screen_size = 0;
+    out_le_u16(header.palette_info, 1); /* Colour */
+    out_le_u16(header.horiz_screen_size, 0);
+    out_le_u16(header.vert_screen_size, 0);
 
     for (i = 0; i < 54; i++) {
         header.filler[i] = 0x00;

@@ -21,6 +21,8 @@ Bugs
   also lessens to some degree chances of being victim of OOM killer on Linux)
 - GUI: printing scale dialog: set maxima on X-dim and resolution to keep scale
   <= 200
+- BMP/EMF/PCX/TIF: fix endianness on big-endian machines (note TIF now always
+  written as little-endian - simplifies testing)
 
 
 Version 2.13.0 (2023-12-18)

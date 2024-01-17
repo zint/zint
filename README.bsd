@@ -1,3 +1,4 @@
+% README.bsd 2024-01-17
 % Tested on FreeBSD 14.0-RELEASE (with X11 + GNOME installed), OpenBSD 7.4 (with X11) and NetBSD 9.3 (with X11)
 
 1. Prerequisites for building zint

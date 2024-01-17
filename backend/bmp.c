@@ -1,7 +1,7 @@
 /* bmp.c - Handles output to Windows Bitmap file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -97,23 +97,23 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         return ZINT_ERROR_MEMORY;
     }
 
-    file_header.header_field = 0x4d42; /* "BM" */
-    file_header.file_size = (uint32_t) file_size;
-    file_header.reserved = 0;
-    file_header.data_offset = (uint32_t) data_offset;
+    out_le_u16(file_header.header_field, 0x4d42); /* "BM" */
+    out_le_u32(file_header.file_size, file_size);
+    out_le_u32(file_header.reserved, 0);
+    out_le_u32(file_header.data_offset, data_offset);
 
-    info_header.header_size = sizeof(bitmap_info_header_t);
-    info_header.width = symbol->bitmap_width;
-    info_header.height = symbol->bitmap_height;
-    info_header.colour_planes = 1;
-    info_header.bits_per_pixel = bits_per_pixel;
-    info_header.compression_method = 0; /* BI_RGB */
-    info_header.image_size = 0;
+    out_le_u32(info_header.header_size, sizeof(bitmap_info_header_t));
+    out_le_i32(info_header.width, symbol->bitmap_width);
+    out_le_i32(info_header.height, symbol->bitmap_height);
+    out_le_u16(info_header.colour_planes, 1);
+    out_le_u16(info_header.bits_per_pixel, bits_per_pixel);
+    out_le_u32(info_header.compression_method, 0); /* BI_RGB */
+    out_le_u32(info_header.image_size, 0);
     resolution = symbol->dpmm ? (int) roundf(stripf(symbol->dpmm * 1000.0f)) : 0; /* pixels per metre */
-    info_header.horiz_res = resolution;
-    info_header.vert_res = resolution;
-    info_header.colours = colour_count;
-    info_header.important_colours = colour_count;
+    out_le_i32(info_header.horiz_res, resolution);
+    out_le_i32(info_header.vert_res, resolution);
+    out_le_u32(info_header.colours, colour_count);
+    out_le_u32(info_header.important_colours, colour_count);
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
