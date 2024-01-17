@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -945,19 +945,18 @@ static void test_encode_file_unreadable(const testCtx *const p_ctx) {
 
 /* #181 Nico Gunkel OSS-Fuzz (buffer not freed on fread() error) Note: unable to reproduce fread() error using this method */
 static void test_encode_file_directory(const testCtx *const p_ctx) {
-#ifndef __NetBSD__
     int ret;
     struct zint_symbol *symbol;
     char dirname[] = "in_dir";
-#endif
 
     (void)p_ctx;
 
     testStart("test_encode_file_directory");
 
-#ifdef __NetBSD__
+#if defined(__NetBSD__) || defined(_AIX)
     /* Reading a directory works on NetBSD, and get `code128()` ZINT_ERROR_TOO_LONG instead */
-    testSkip("Test not implemented on NetBSD");
+    (void)ret; (void)symbol; (void)dirname;
+    testSkip("Test not implemented on NetBSD or AIX");
 #else
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");

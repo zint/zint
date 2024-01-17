@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1245,9 +1245,6 @@ static void test_other_opts(const testCtx *const p_ctx) {
     for (i = 0; i < data_size; i++) {
 
         if (testContinue(p_ctx, i)) continue;
-#ifdef __NetBSD__
-        if (strcmp(data[i].opt, " -bg=") == 0) continue; /* `getopt_long_only()` not available on NetBSD */
-#endif
 
         strcpy(cmd, "zint");
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1590,7 +1590,7 @@ int testUtilCmpPngs(const char *png1, const char *png2) {
     int width1, height1, width2, height2;
     png_byte color_type1, color_type2;
     png_byte bit_depth1, bit_depth2;
-    png_bytep row1 = NULL, row2 = NULL;
+    png_bytep row1, row2;
     size_t rowbytes1, rowbytes2;
     int r;
 
@@ -1634,6 +1634,7 @@ int testUtilCmpPngs(const char *png1, const char *png2) {
         return 7;
     }
 
+    row1 = row2 = NULL; /* Init here to avoid potential "clobbered" warning */
     if (setjmp(png_jmpbuf(png_ptr1))) {
         if (row1) {
             free(row1);
@@ -4007,12 +4008,12 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             int maxi_len = 0;
             if (symbol->option_2 >= 1 && symbol->option_2 <= 100) {
 /* Suppress gcc warning null destination pointer [-Wformat-overflow=] false-positive */
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-overflow="
 #endif
                 sprintf(maxi, "[)>\03601\035%02d", symbol->option_2 - 1);
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
 #pragma GCC diagnostic pop
 #endif
                 maxi_len = (int) strlen(maxi);

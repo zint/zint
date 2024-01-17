@@ -1,7 +1,7 @@
 /* common.c - Contains functions needed for a number of barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -607,7 +607,7 @@ INTERNAL char *debug_print_escape(const unsigned char *source, const int first_l
 
 #ifdef ZINT_TEST
 /* Suppress gcc warning null destination pointer [-Wformat-overflow=] false-positive */
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wformat-overflow="
 #endif
@@ -660,7 +660,7 @@ INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int
     }
     symbol->errtxt[strlen(symbol->errtxt) - 1] = '\0'; /* Zap last space */
 }
-#if defined(__GNUC__) && !defined(__clang__)
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
 #pragma GCC diagnostic pop
 #endif
 #endif /*ZINT_TEST*/

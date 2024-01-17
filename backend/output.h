@@ -105,8 +105,8 @@ INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
 
 #define out_le_float(b, n) do { \
         unsigned char *bp = (unsigned char *) &(b); \
-        float f = n; \
-        uint32_t *p_u32 = (uint32_t *) &(f); \
+        float f = (float) (n); \
+        uint32_t *p_u32 = (uint32_t *) &f; \
         bp[0] = (unsigned char) (*p_u32 & 0xFF); \
         bp[1] = (unsigned char) ((*p_u32 >> 8) & 0xFF); \
         bp[2] = (unsigned char) ((*p_u32 >> 16) & 0xFF); \

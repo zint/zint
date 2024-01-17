@@ -25,19 +25,20 @@
 #include <stdlib.h>
 #include <string.h>
 
-#ifndef _MSC_VER
+#if !defined(_MSC_VER) && !defined(__NetBSD__) && !defined(_AIX)
 #  include <getopt.h>
-#  if defined(__NetBSD__) && !defined(getopt_long_only) /* `getopt_long_only()` not available */
-#    define getopt_long_only getopt_long
-#  endif
 #  include <zint.h>
 #else
 #  include "../getopt/getopt.h"
-#  include "zint.h"
-#  if _MSC_VER != 1200 /* VC6 */
-#    pragma warning(disable: 4996) /* function or variable may be unsafe */
+#  ifdef _MSC_VER
+#    include "zint.h"
+#    if _MSC_VER != 1200 /* VC6 */
+#      pragma warning(disable: 4996) /* function or variable may be unsafe */
+#    endif
+#  else
+#    include <zint.h>
 #  endif
-#endif /* _MSC_VER */
+#endif
 
 /* Following copied from "backend/library.c" */
 
@@ -64,7 +65,7 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
 #else
-#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99) || defined(__NuttX__) /* C89 or C99 or NuttX RTOS */
+#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99) || defined(__NuttX__) || defined(_AIX)
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)

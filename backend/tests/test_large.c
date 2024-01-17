@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -29,6 +29,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <limits.h>
+
 #include "testcommon.h"
 #include "../large.h"
 
@@ -43,7 +45,7 @@
 #  elif defined(__GNUC__)
 #    pragma GCC diagnostic ignored "-Wformat" /* Unfortunately doesn't seem to be way to only avoid non-ISO warnings */
 #  endif
-#elif defined(_MSC_VER) || defined(__APPLE__) || defined(__OpenBSD__) || __WORDSIZE == 32
+#elif (defined(__WORDSIZE) && __WORDSIZE == 32) || (defined(ULONG_MAX) && ULONG_MAX <= 0xFFFFFFFF)
 #  define LX_FMT "ll"
 #else
 #  define LX_FMT "l"
