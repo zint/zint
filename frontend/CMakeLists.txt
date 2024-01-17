@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2021 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 project(zint_frontend)
@@ -21,7 +21,7 @@ if(ZINT_SHARED)
 else()
     target_link_libraries(${PROJECT_NAME} zint-static)
 endif()
-if(NOT HAVE_GETOPT)
+if(NOT HAVE_GETOPT_LONG_ONLY)
     target_link_libraries(${PROJECT_NAME} zint_bundled_getopt)
 endif()
 
