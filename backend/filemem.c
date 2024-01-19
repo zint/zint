@@ -1,7 +1,7 @@
 /*  filemem.c - write to file/memory abstraction */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -287,7 +287,7 @@ static int fm_vprintf(struct filemem *restrict const fmp, const char *fmt, va_li
     return 1;
 }
 
-/* `fprintf()` to memory or file, returning 1 on success, 0 on failure */
+/* `fprintf()` to file or memory, returning 1 on success, 0 on failure */
 INTERNAL int fm_printf(struct filemem *restrict const fmp, const char *fmt, ...) {
     va_list ap;
     int ret;

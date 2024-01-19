@@ -51,22 +51,22 @@
 static const int tempMessageTimeout = 2000;
 
 // Use on Windows also (i.e. not using QKeySequence::Quit)
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, quitKeySeq, (Qt::CTRL | Qt::Key_Q));
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, quitKeySeq, (Qt::CTRL | Qt::Key_Q))
 
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, openCLISeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_C));
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, openCLISeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_C))
 
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyBMPSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_B));
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyEMFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_E));
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyGIFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_G));
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyPNGSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_P));
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copySVGSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_S));
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyTIFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_T));
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyBMPSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_B))
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyEMFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_E))
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyGIFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_G))
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyPNGSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_P))
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copySVGSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_S))
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, copyTIFSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_T))
 
-Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, factoryResetSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_R));
+Q_GLOBAL_STATIC_WITH_ARGS(QKeySequence, factoryResetSeq, (Qt::SHIFT | Qt::CTRL | Qt::Key_R))
 
 // RGB hexadecimal 6 or 8 in length or CMYK comma-separated decimal percentages "C,M,Y,K"
 static const QString colorREstr(QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
-Q_GLOBAL_STATIC_WITH_ARGS(QRegularExpression, colorRE, (colorREstr));
+Q_GLOBAL_STATIC_WITH_ARGS(QRegularExpression, colorRE, (colorREstr))
 
 static const QString fgDefault(QSL("000000"));
 static const QString bgDefault(QSL("FFFFFF"));

@@ -129,13 +129,13 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
     black = 100 - to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
 
     val = 100 - to_int((const unsigned char *) colour, (int) (comma1 - colour)); /* Cyan */
-    *red = (int) roundf((0xFF * val * black) / 10000.0f);
+    *red = (int) round((0xFF * val * black) / 10000.0);
 
     val = 100 - to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
-    *green = (int) roundf((0xFF * val * black) / 10000.0f);
+    *green = (int) round((0xFF * val * black) / 10000.0);
 
     val = 100 - to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
-    *blue = (int) roundf((0xFF * val * black) / 10000.0f);
+    *blue = (int) round((0xFF * val * black) / 10000.0);
 
     if (alpha) {
         *alpha = 0xFF;
@@ -176,10 +176,10 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
         *cyan = *magenta = *yellow = 0;
         *black = 100;
     } else {
-        *cyan = (int) roundf((k - red) * 100.0f / k);
-        *magenta = (int) roundf((k - green) * 100.0f / k);
-        *yellow = (int) roundf((k - blue) * 100.0f / k);
-        *black = (int) roundf(((0xFF - k) * 100.0f) / 0xFF);
+        *cyan = (int) round((k - red) * 100.0 / k);
+        *magenta = (int) round((k - green) * 100.0 / k);
+        *yellow = (int) round((k - blue) * 100.0 / k);
+        *black = (int) round(((0xFF - k) * 100.0) / 0xFF);
     }
 
     if (rgb_alpha) {

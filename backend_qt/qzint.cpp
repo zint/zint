@@ -46,7 +46,7 @@ namespace Zint {
     /* Matches RGB(A) hex string or CMYK decimal "C,M,Y,K" percentage string */
     static const QString colorREstr(
                                 QSL("^([0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?)|(((100|[0-9]{0,2}),){3}(100|[0-9]{0,2}))$"));
-    Q_GLOBAL_STATIC_WITH_ARGS(QRegularExpression, colorRE, (colorREstr));
+    Q_GLOBAL_STATIC_WITH_ARGS(QRegularExpression, colorRE, (colorREstr))
 
     static const QString normalFontFamily = QSL("Arimo"); /* Sans-serif metrically compatible with Arial */
     static const QString upceanFontFamily = QSL("OCRB"); /* Monospace OCR-B */

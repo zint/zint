@@ -1,4 +1,4 @@
-% win32/README 2024-01-17
+% win32/README 2024-01-18
 
 Visual Studio 2022
 ------------------
@@ -179,12 +179,12 @@ using it install the packages:
 
 (This should include mingw32-libz-dll)
 
-Any reasonably modern version of Qt can be used. The following uses Qt 5.14.2.
+Any reasonably modern version of Qt can be used. The following uses Qt 5.15.2.
 Using the Qt Maintenance Tool (see the Visual Studio 2022 instructions above)
-install the "MinGW 7.3.0 32-bit" component.
+install the "MinGW 8.1.0 32-bit" component.
 
 (Note the Qt MinGW versions actually refer to Mingw-w64, the 64-bit fork of
-MinGW, but versions up to 8.1 seem to be compatible.)
+MinGW, but versions up to 8.1.0 at least are compatible.)
 
 Open a MinGW/MSYS shell by clicking/running e.g. (your path may differ)
 
@@ -192,10 +192,10 @@ Open a MinGW/MSYS shell by clicking/running e.g. (your path may differ)
 
 As above make sure git and cmake are in your PATH.
 
-Add the Qt MinGW 7.3.0 32-bit component to your PATH, e.g. (your path may
+Add the Qt MinGW 8.1.0 32-bit component to your PATH, e.g. (your path may
 differ):
 
-  export PATH="/c/Qt/5.14.2/mingw73_32/bin":${PATH}
+  export PATH="/c/Qt/5.15.2/mingw81_32/bin":${PATH}
 
 Go into the directory you want to use and clone zint and libpng:
 
