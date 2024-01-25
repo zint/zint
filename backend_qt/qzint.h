@@ -24,6 +24,7 @@
 #ifndef QZINT_H
 #define QZINT_H
 
+#include <QObject>
 #include <QColor>
 #include <QPainter>
 #include "zint.h"

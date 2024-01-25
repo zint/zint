@@ -150,7 +150,7 @@ void ScaleWindow::size_msg_ui_set()
 
 void ScaleWindow::unset_scale()
 {
-    m_vars.x_dim = m_bc->bc.getXdimDpFromScale(m_originalScale, get_dpmm(), getFileType());
+    m_vars.x_dim = std::min(m_bc->bc.getXdimDpFromScale(m_originalScale, get_dpmm(), getFileType()), 10.0f);
     m_vars.set = 0;
 
     if (cmbXdimUnits->currentIndex() == 1) { // Inches
@@ -252,7 +252,7 @@ const char *ScaleWindow::getFileType() const
 
 void ScaleWindow::set_maxima()
 {
-    float maxXdim = m_bc->bc.getXdimDpFromScale(200.0f, get_dpmm(), getFileType());
+    float maxXdim = std::min(m_bc->bc.getXdimDpFromScale(200.0f, get_dpmm(), getFileType()), 10.0f);
     if (cmbXdimUnits->currentIndex() == 1) { // Inches
         spnXdim->setMaximum(maxXdim / 25.4);
     } else {

@@ -91,19 +91,19 @@ namespace Zint {
             int comma1 = text.indexOf(',');
             int comma2 = text.indexOf(',', comma1 + 1);
             int comma3 = text.indexOf(',', comma2 + 1);
-            int black = 100 - text.midRef(comma3 + 1).toInt();
-            int val = 100 - text.midRef(0, comma1).toInt();
+            int black = 100 - text.mid(comma3 + 1).toInt();
+            int val = 100 - text.mid(0, comma1).toInt();
             r = (int) roundf((0xFF * val * black) / 10000.0f);
-            val = 100 - text.midRef(comma1 + 1, comma2 - comma1 - 1).toInt();
+            val = 100 - text.mid(comma1 + 1, comma2 - comma1 - 1).toInt();
             g = (int) roundf((0xFF * val * black) / 10000.0f);
-            val = 100 - text.midRef(comma2 + 1, comma3 - comma2 - 1).toInt();
+            val = 100 - text.mid(comma2 + 1, comma3 - comma2 - 1).toInt();
             b = (int) roundf((0xFF * val * black) / 10000.0f);
             a = 0xFF;
         } else {
-            r = text.midRef(0, 2).toInt(nullptr, 16);
-            g = text.midRef(2, 2).toInt(nullptr, 16);
-            b = text.midRef(4, 2).toInt(nullptr, 16);
-            a = text.length() == 8 ? text.midRef(6, 2).toInt(nullptr, 16) : 0xFF;
+            r = text.mid(0, 2).toInt(nullptr, 16);
+            g = text.mid(2, 2).toInt(nullptr, 16);
+            b = text.mid(4, 2).toInt(nullptr, 16);
+            a = text.length() == 8 ? text.mid(6, 2).toInt(nullptr, 16) : 0xFF;
         }
         color.setRgb(r, g, b, a);
         return color;

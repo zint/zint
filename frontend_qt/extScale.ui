@@ -140,7 +140,7 @@
         <string/>
        </property>
        <property name="maximum">
-        <number>1000</number>
+        <number>25400</number>
        </property>
        <property name="minimum">
         <number>1</number>

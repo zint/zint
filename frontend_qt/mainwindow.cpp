@@ -89,19 +89,19 @@ static QColor str_to_qcolor(const QString &str)
         int comma1 = str.indexOf(',');
         int comma2 = str.indexOf(',', comma1 + 1);
         int comma3 = str.indexOf(',', comma2 + 1);
-        int black = 100 - str.midRef(comma3 + 1).toInt();
-        int val = 100 - str.midRef(0, comma1).toInt();
+        int black = 100 - str.mid(comma3 + 1).toInt();
+        int val = 100 - str.mid(0, comma1).toInt();
         r = (int) roundf((0xFF * val * black) / 10000.0f);
-        val = 100 - str.midRef(comma1 + 1, comma2 - comma1 - 1).toInt();
+        val = 100 - str.mid(comma1 + 1, comma2 - comma1 - 1).toInt();
         g = (int) roundf((0xFF * val * black) / 10000.0f);
-        val = 100 - str.midRef(comma2 + 1, comma3 - comma2 - 1).toInt();
+        val = 100 - str.mid(comma2 + 1, comma3 - comma2 - 1).toInt();
         b = (int) roundf((0xFF * val * black) / 10000.0f);
         a = 0xFF;
     } else {
-        r = str.midRef(0, 2).toInt(nullptr, 16);
-        g = str.midRef(2, 2).toInt(nullptr, 16);
-        b = str.midRef(4, 2).toInt(nullptr, 16);
-        a = str.length() == 8 ? str.midRef(6, 2).toInt(nullptr, 16) : 0xFF;
+        r = str.mid(0, 2).toInt(nullptr, 16);
+        g = str.mid(2, 2).toInt(nullptr, 16);
+        b = str.mid(4, 2).toInt(nullptr, 16);
+        a = str.length() == 8 ? str.mid(6, 2).toInt(nullptr, 16) : 0xFF;
     }
     color.setRgb(r, g, b, a);
     return color;
@@ -546,12 +546,15 @@ void MainWindow::load_settings(QSettings &settings)
     chkDotty->setChecked(settings.value(QSL("studio/appearance/chk_dotty"), 0).toInt() ? true : false);
     spnDotSize->setValue(settings.value(QSL("studio/appearance/dot_size"), 4.0 / 5.0).toFloat());
     // These are "system-wide"
-    m_xdimdpVars.resolution_units = settings.value(QSL("studio/xdimdpvars/resolution_units"), 0).toInt();
+    m_xdimdpVars.resolution_units = std::max(std::min(settings.value(QSL("studio/xdimdpvars/resolution_units"),
+                                                        0).toInt(), 1), 0);
     const int defaultResolution = m_xdimdpVars.resolution_units == 1 ? 300 : 12; // 300dpi or 12dpmm
-    m_xdimdpVars.resolution = settings.value(QSL("studio/xdimdpvars/resolution"), defaultResolution).toInt();
+    const int maxRes = m_xdimdpVars.resolution_units == 1 ? 25400 : 1000;
+    m_xdimdpVars.resolution = std::max(std::min(settings.value(QSL("studio/xdimdpvars/resolution"),
+                                                        defaultResolution).toInt(), maxRes), 1);
     m_xdimdpVars.filetype = std::max(std::min(settings.value(QSL("studio/xdimdpvars/filetype"), 0).toInt(), 1), 0);
-    m_xdimdpVars.filetype_maxicode
-                = std::max(std::min(settings.value(QSL("studio/xdimdpvars/filetype_maxicode"), 0).toInt(), 2), 0);
+    m_xdimdpVars.filetype_maxicode = std::max(std::min(settings.value(QSL("studio/xdimdpvars/filetype_maxicode"),
+                                                        0).toInt(), 2), 0);
 }
 
 QString MainWindow::get_zint_version(void)
@@ -1424,7 +1427,7 @@ void MainWindow::size_msg_ui_set()
         struct Zint::QZintXdimDpVars *vars = m_scaleWindow ? &m_scaleWindow->m_vars : &m_xdimdpVars;
         if (vars->x_dim == 0.0) {
             vars->x_dim_units = 0;
-            vars->x_dim = m_bc.bc.getXdimDpFromScale(scale, get_dpmm(vars), getFileType(vars));
+            vars->x_dim = std::min(m_bc.bc.getXdimDpFromScale(scale, get_dpmm(vars), getFileType(vars)), 10.0f);
         } else {
             // Scale trumps stored X-dimension
             double x_dim_mm = vars->x_dim_units == 1 ? vars->x_dim * 25.4 : vars->x_dim;

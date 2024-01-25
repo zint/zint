@@ -70,7 +70,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     char dest[818]; /* Largest destination 4 + (80 + 1) * 10 + 3 + 1 = 818 */
     char *d = dest;
     unsigned char temp[113 + 1 + 1]; /* Largest maximum 113 + optional check digit */
-    int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
+    const int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
@@ -147,12 +147,12 @@ INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int le
 
 /* Common to Interleaved, ITF-14, DP Leitcode, DP Identcode */
 static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], int length,
-            const int dont_set_height) {
+            const int checkdigit_option, const int dont_set_height) {
     int i, j, error_number = 0;
     char dest[638]; /* 4 + (125 + 1) * 5 + 3 + 1 = 638 */
     char *d = dest;
     unsigned char temp[125 + 1 + 1];
-    int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
+    const int have_checkdigit = checkdigit_option == 1 || checkdigit_option == 2;
 
     if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
         strcpy(symbol->errtxt, "309: Input too long (125 character maximum)");
@@ -202,7 +202,7 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
     expand(symbol, dest, d - dest);
 
     ustrcpy(symbol->text, temp);
-    if (symbol->option_2 == 2) {
+    if (checkdigit_option == 2) {
         /* Remove check digit from HRT */
         symbol->text[length - 1] = '\0';
     }
@@ -231,7 +231,7 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
 
 /* Code 2 of 5 Interleaved ISO/IEC 16390:2007 */
 INTERNAL int c25inter(struct zint_symbol *symbol, unsigned char source[], int length) {
-    return c25_inter_common(symbol, source, length, 0 /*dont_set_height*/);
+    return c25_inter_common(symbol, source, length, symbol->option_2 /*checkdigit_option*/, 0 /*dont_set_height*/);
 }
 
 /* Interleaved 2-of-5 (ITF-14) */
@@ -259,7 +259,7 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* Calculate the check digit - the same method used for EAN-13 */
     localstr[13] = gs1_check_digit(localstr, 13);
     localstr[14] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
     ustrcpy(symbol->text, localstr);
 
     if (error_number < ZINT_ERROR) {
@@ -320,7 +320,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     localstr[13] = c25_check_digit(count);
     localstr[14] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 14, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
        https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
@@ -368,7 +368,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     }
     localstr[11] = c25_check_digit(count);
     localstr[12] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 12, 1 /*dont_set_height*/);
+    error_number = c25_inter_common(symbol, localstr, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
     for (i = 0, j = 0; i <= 12; i++) {

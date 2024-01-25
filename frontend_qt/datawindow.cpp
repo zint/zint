@@ -67,7 +67,7 @@ DataWindow::DataWindow(const QString &input, bool isEscaped, int seg_no) : Valid
                 lastPosn = match.capturedEnd(0);
             }
         }
-        out += input.midRef(lastPosn);
+        out += input.mid(lastPosn);
         txtDataInput->setPlainText(out);
         statusBarData->showMessage(tr("Converted LFs"), tempMessageTimeout);
     } else {
