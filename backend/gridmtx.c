@@ -1,7 +1,7 @@
 /*  gridmtx.c - Grid Matrix */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -156,15 +156,15 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     unsigned int numeral_end = 0, numeral_cost = 0, byte_count = 0; /* State */
     int double_byte, space, numeric, lower, upper, control, double_digit, eol;
 
-    int i, j, k, cm_i;
+    int i, j, k;
     unsigned int min_cost;
     char cur_mode;
     unsigned int prev_costs[GM_NUM_MODES];
     unsigned int cur_costs[GM_NUM_MODES];
-    char *char_modes = (char *) z_alloca(length * GM_NUM_MODES);
+    char (*char_modes)[GM_NUM_MODES] = (char (*)[GM_NUM_MODES]) z_alloca(GM_NUM_MODES * length);
 
-    /* char_modes[i * GM_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
-     * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
+    /* char_modes[i][j] represents the mode to encode the code point at index i such that the final segment
+       ends in mode_types[j] and the total number of bits is minimized over all possible choices */
     memset(char_modes, 0, length * GM_NUM_MODES);
 
     /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
@@ -172,7 +172,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     memcpy(prev_costs, head_costs, GM_NUM_MODES * sizeof(unsigned int));
 
     /* Calculate costs using dynamic programming */
-    for (i = 0, cm_i = 0; i < length; i++, cm_i += GM_NUM_MODES) {
+    for (i = 0; i < length; i++) {
         memset(cur_costs, 0, GM_NUM_MODES * sizeof(unsigned int));
 
         space = numeric = lower = upper = control = double_digit = eol = 0;
@@ -201,7 +201,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
 
         /* Hanzi mode can encode anything */
         cur_costs[GM_H] = prev_costs[GM_H] + (double_digit || eol ? 39 : 78); /* (6.5 : 13) * GM_MULT */
-        char_modes[cm_i + GM_H] = GM_CHINESE;
+        char_modes[i][GM_H] = GM_CHINESE;
 
         /* Byte mode can encode anything */
         if (byte_count == 512 || (double_byte && byte_count == 511)) {
@@ -213,39 +213,39 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
             byte_count = 0;
         }
         cur_costs[GM_B] += prev_costs[GM_B] + (double_byte ? 96 : 48); /* (16 : 8) * GM_MULT */
-        char_modes[cm_i + GM_B] = GM_BYTE;
+        char_modes[i][GM_B] = GM_BYTE;
         byte_count += double_byte ? 2 : 1;
 
         if (gm_in_numeral(ddata, length, i, &numeral_end, &numeral_cost)) {
             cur_costs[GM_N] = prev_costs[GM_N] + numeral_cost;
-            char_modes[cm_i + GM_N] = GM_NUMBER;
+            char_modes[i][GM_N] = GM_NUMBER;
         }
 
         if (control) {
             cur_costs[GM_L] = prev_costs[GM_L] + 78; /* (7 + 6) * GM_MULT */
-            char_modes[cm_i + GM_L] = GM_LOWER;
+            char_modes[i][GM_L] = GM_LOWER;
             cur_costs[GM_U] = prev_costs[GM_U] + 78; /* (7 + 6) * GM_MULT */
-            char_modes[cm_i + GM_U] = GM_UPPER;
+            char_modes[i][GM_U] = GM_UPPER;
             cur_costs[GM_M] = prev_costs[GM_M] + 96; /* (10 + 6) * GM_MULT */
-            char_modes[cm_i + GM_M] = GM_MIXED;
+            char_modes[i][GM_M] = GM_MIXED;
         } else {
             if (lower || space) {
                 cur_costs[GM_L] = prev_costs[GM_L] + 30; /* 5 * GM_MULT */
-                char_modes[cm_i + GM_L] = GM_LOWER;
+                char_modes[i][GM_L] = GM_LOWER;
             }
             if (upper || space) {
                 cur_costs[GM_U] = prev_costs[GM_U] + 30; /* 5 * GM_MULT */
-                char_modes[cm_i + GM_U] = GM_UPPER;
+                char_modes[i][GM_U] = GM_UPPER;
             }
             if (numeric || lower || upper || space) {
                 cur_costs[GM_M] = prev_costs[GM_M] + 36; /* 6 * GM_MULT */
-                char_modes[cm_i + GM_M] = GM_MIXED;
+                char_modes[i][GM_M] = GM_MIXED;
             }
         }
 
         if (i == length - 1) { /* Add end of data costs if last character */
             for (j = 0; j < GM_NUM_MODES; j++) {
-                if (char_modes[cm_i + j]) {
+                if (char_modes[i][j]) {
                     cur_costs[j] += eod_costs[j];
                 }
             }
@@ -254,11 +254,11 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
         /* Start new segment at the end to switch modes */
         for (j = 0; j < GM_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < GM_NUM_MODES; k++) { /* From mode */
-                if (j != k && char_modes[cm_i + k]) {
+                if (j != k && char_modes[i][k]) {
                     const unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
-                    if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
+                    if (!char_modes[i][j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
-                        char_modes[cm_i + j] = mode_types[k];
+                        char_modes[i][j] = mode_types[k];
                     }
                 }
             }
@@ -278,9 +278,9 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     }
 
     /* Get optimal mode for each code point by tracing backwards */
-    for (i = length - 1, cm_i = i * GM_NUM_MODES; i >= 0; i--, cm_i -= GM_NUM_MODES) {
+    for (i = length - 1; i >= 0; i--) {
         j = posn(mode_types, cur_mode);
-        cur_mode = char_modes[cm_i + j];
+        cur_mode = char_modes[i][j];
         mode[i] = cur_mode;
     }
 

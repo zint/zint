@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -109,7 +109,11 @@ static void test_svg(const testCtx *const p_ctx) {
     testFinish();
 }
 
-#ifndef _WIN32
+#if defined(_WIN32) || (defined(__sun) && defined(__SVR4))
+#define ZINT_TEST_NO_FMEMOPEN
+#endif
+
+#ifndef ZINT_TEST_NO_FMEMOPEN
 extern FILE *fmemopen(void *buf, size_t size, const char *mode);
 #endif
 
@@ -145,7 +149,7 @@ static void test_putsf(const testCtx *const p_ctx) {
     struct zint_symbol *const symbol = &symbol_data;
     struct filemem fm;
     struct filemem *const fmp = &fm;
-#ifndef _WIN32
+#ifndef ZINT_TEST_NO_FMEMOPEN
     FILE *fp;
     char buf[512] = {0}; /* Suppress clang-16/17 run-time exception MemorySanitizer: use-of-uninitialized-value */
 #endif
@@ -153,8 +157,8 @@ static void test_putsf(const testCtx *const p_ctx) {
     testStart("test_putsf");
 
     for (j = 0; j < 2; j++) { /* 1st `memfile`, then file */
-#ifdef _WIN32
-        if (j == 1) break; /* Skip file test on Windows */
+#ifdef ZINT_TEST_NO_FMEMOPEN
+        if (j == 1) break; /* Skip file test on Windows/Solaris */
 #endif
         for (i = 0; i < data_size; i++) {
             const char *locale = NULL;
@@ -164,7 +168,7 @@ static void test_putsf(const testCtx *const p_ctx) {
 
             ZBarcode_Reset(symbol);
             if (j == 1) {
-#ifndef _WIN32
+#ifndef ZINT_TEST_NO_FMEMOPEN
                 buf[0] = '\0';
                 fp = fmemopen(buf, sizeof(buf), "w");
                 assert_nonnull(fp, "%d: fmemopen fail (%d, %s)\n", i, errno, strerror(errno));
@@ -174,7 +178,7 @@ static void test_putsf(const testCtx *const p_ctx) {
             }
             assert_nonzero(fm_open(fmp, symbol, "w"), "i:%d: fm_open fail (%d, %s)\n", i, fmp->err, strerror(fmp->err));
             if (j == 1) {
-#ifndef _WIN32
+#ifndef ZINT_TEST_NO_FMEMOPEN
                 /* Hack in `fmemopen()` fp */
                 assert_zero(fclose(fmp->fp), "i:%d fclose(fmp->fp) fail (%d, %s)\n", i, errno, strerror(errno));
                 fmp->fp = fp;
@@ -200,7 +204,7 @@ static void test_putsf(const testCtx *const p_ctx) {
             }
 
             if (j == 1) {
-#ifndef _WIN32
+#ifndef ZINT_TEST_NO_FMEMOPEN
                 assert_zero(strcmp(buf, data[i].expected), "%d: strcmp(%s, %s) != 0\n", i, buf, data[i].expected);
 #endif
             } else {

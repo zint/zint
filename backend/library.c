@@ -568,16 +568,15 @@ static int has_hrt(const int symbology) {
     return 1;
 }
 
-/* Suppress warning ISO C forbids initialization between function pointer and ‘void *’ */
-#if defined(__GNUC__) || defined(__clang__)
+/* Suppress clang warning: a function declaration without a prototype is deprecated in all versions of C
+   (not included in gcc's "-wpedantic") */
+#if defined(__clang__)
 #pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wpedantic"
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #endif
 
 /* Used for dispatching barcodes and for whether symbol id valid */
-typedef int (*barcode_segs_func_t)(struct zint_symbol *, struct zint_seg[], const int);
-typedef int (*barcode_func_t)(struct zint_symbol *, unsigned char[], int);
-static const void *barcode_funcs[BARCODE_LAST + 1] = {
+static int (*const barcode_funcs[BARCODE_LAST + 1])() = {
           NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
           NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
           NULL,        NULL,        NULL,        eanx,        eanx, /*10-14*/
@@ -610,6 +609,12 @@ static const void *barcode_funcs[BARCODE_LAST + 1] = {
           rmqr,       bc412,
 };
 
+#if defined(__clang__)
+#pragma GCC diagnostic pop
+#endif
+
+typedef int (*barcode_segs_func_t)(struct zint_symbol *, struct zint_seg[], const int);
+typedef int (*barcode_func_t)(struct zint_symbol *, unsigned char[], int);
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 
 /* Main dispatch, checking for barcodes which handle ECIs/character sets themselves, otherwise calling
@@ -687,10 +692,6 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
 
     return error_number;
 }
-
-#if defined(__GNUC__) || defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
 
 /* Remove Unicode BOM at start of data */
 static void strip_bom(unsigned char *source, int *input_length) {

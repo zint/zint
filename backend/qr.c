@@ -1,7 +1,7 @@
 /* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -237,18 +237,18 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
     };
     int m1, m2;
 
-    int i, j, k, cm_i;
+    int i, j, k;
     unsigned int min_cost;
     char cur_mode;
     unsigned int prev_costs[QR_NUM_MODES];
     unsigned int cur_costs[QR_NUM_MODES];
-    char *char_modes = (char *) z_alloca(length * QR_NUM_MODES);
+    char (*char_modes)[QR_NUM_MODES] = (char (*)[QR_NUM_MODES]) z_alloca(QR_NUM_MODES * length);
 
     state[QR_VER] = (unsigned int) version;
 
-    /* char_modes[i * QR_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
-     * segment ends in qr_mode_types[j] and the total number of bits is minimized over all possible choices */
-    memset(char_modes, 0, length * QR_NUM_MODES);
+    /* char_modes[i][j] represents the mode to encode the code point at index i such that the final segment
+       ends in qr_mode_types[j] and the total number of bits is minimized over all possible choices */
+    memset(char_modes, 0, QR_NUM_MODES * length);
 
     /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/QR_MULT)
      * bits needed to encode the entire string prefix of length i, and end in qr_mode_types[j] */
@@ -257,13 +257,13 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
     #ifdef QR_DEBUG_DEFINE_MODE
     printf(" head");
     for (j = 0; j < QR_NUM_MODES; j++) {
-        printf(" %c(%c)=%d", qr_mode_types[j], char_modes[j], prev_costs[j]);
+        printf(" %c(%c)=%d", qr_mode_types[j], char_modes[0][j], prev_costs[j]);
     }
     printf("\n");
     #endif
 
     /* Calculate costs using dynamic programming */
-    for (i = 0, cm_i = 0; i < length; i++, cm_i += QR_NUM_MODES) {
+    for (i = 0; i < length; i++) {
         memset(cur_costs, 0, QR_NUM_MODES * sizeof(unsigned int));
 
         m1 = version == MICROQR_VERSION;
@@ -271,31 +271,31 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
 
         if (ddata[i] > 0xFF) {
             cur_costs[QR_B] = prev_costs[QR_B] + ((m1 || m2) ? QR_MICROQR_MAX : 96); /* 16 * QR_MULT */
-            char_modes[cm_i + QR_B] = 'B';
+            char_modes[i][QR_B] = 'B';
             cur_costs[QR_K] = prev_costs[QR_K] + ((m1 || m2) ? QR_MICROQR_MAX : 78); /* 13 * QR_MULT */
-            char_modes[cm_i + QR_K] = 'K';
+            char_modes[i][QR_K] = 'K';
         } else {
             if (qr_in_numeric(ddata, length, i, &state[QR_N_END], &state[QR_N_COST])) {
                 cur_costs[QR_N] = prev_costs[QR_N] + state[QR_N_COST];
-                char_modes[cm_i + QR_N] = 'N';
+                char_modes[i][QR_N] = 'N';
             }
             if (qr_in_alpha(ddata, length, i, &state[QR_A_END], &state[QR_A_COST], &state[QR_A_PCENT],
                     &state[QR_A_PCCNT], gs1)) {
                 cur_costs[QR_A] = prev_costs[QR_A] + (m1 ? QR_MICROQR_MAX : state[QR_A_COST]);
-                char_modes[cm_i + QR_A] = 'A';
+                char_modes[i][QR_A] = 'A';
             }
             cur_costs[QR_B] = prev_costs[QR_B] + ((m1 || m2) ? QR_MICROQR_MAX : 48); /* 8 * QR_MULT */
-            char_modes[cm_i + QR_B] = 'B';
+            char_modes[i][QR_B] = 'B';
         }
 
         /* Start new segment at the end to switch modes */
         for (j = 0; j < QR_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < QR_NUM_MODES; k++) { /* From mode */
-                if (j != k && char_modes[cm_i + k]) {
+                if (j != k && char_modes[i][k]) {
                     const unsigned int new_cost = cur_costs[k] + state[j]; /* Switch costs same as head costs */
-                    if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
+                    if (!char_modes[i][j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
-                        char_modes[cm_i + j] = qr_mode_types[k];
+                        char_modes[i][j] = qr_mode_types[k];
                     }
                 }
             }
@@ -306,10 +306,10 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
             int min_j = 0;
             printf(" % 4d: curr", i);
             for (j = 0; j < QR_NUM_MODES; j++) {
-                printf(" %c(%c)=%d", qr_mode_types[j], char_modes[cm_i + j], cur_costs[j]);
+                printf(" %c(%c)=%d", qr_mode_types[j], char_modes[i][j], cur_costs[j]);
                 if (cur_costs[j] < cur_costs[min_j]) min_j = j;
             }
-            printf(" min %c(%c)=%d\n", qr_mode_types[min_j], char_modes[cm_i + min_j], cur_costs[min_j]);
+            printf(" min %c(%c)=%d\n", qr_mode_types[min_j], char_modes[i][min_j], cur_costs[min_j]);
         }
         #endif
         memcpy(prev_costs, cur_costs, QR_NUM_MODES * sizeof(unsigned int));
@@ -326,9 +326,9 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
     }
 
     /* Get optimal mode for each code point by tracing backwards */
-    for (i = length - 1, cm_i = i * QR_NUM_MODES; i >= 0; i--, cm_i -= QR_NUM_MODES) {
+    for (i = length - 1; i >= 0; i--) {
         j = posn(qr_mode_types, cur_mode);
-        cur_mode = char_modes[cm_i + j];
+        cur_mode = char_modes[i][j];
         mode[i] = cur_mode;
     }
 

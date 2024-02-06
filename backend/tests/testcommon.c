@@ -1685,7 +1685,11 @@ int testUtilCmpPngs(const char *png1, const char *png2) {
     color_type1 = png_get_color_type(png_ptr1, info_ptr1);
     bit_depth1 = png_get_bit_depth(png_ptr1, info_ptr1);
     if (bit_depth1 == 16) {
+#if defined(PNG_LIBPNG_VER) && PNG_LIBPNG_VER >= 10504
         png_set_scale_16(png_ptr1);
+#else
+        png_set_strip_16(png_ptr1);
+#endif
     }
     if (color_type1 == PNG_COLOR_TYPE_PALETTE) {
         png_set_palette_to_rgb(png_ptr1);
@@ -1707,7 +1711,11 @@ int testUtilCmpPngs(const char *png1, const char *png2) {
     color_type2 = png_get_color_type(png_ptr2, info_ptr2);
     bit_depth2 = png_get_bit_depth(png_ptr2, info_ptr2);
     if (bit_depth2 == 16) {
+#if defined(PNG_LIBPNG_VER) && PNG_LIBPNG_VER >= 10504
         png_set_scale_16(png_ptr2);
+#else
+        png_set_strip_16(png_ptr2);
+#endif
     }
     if (color_type2 == PNG_COLOR_TYPE_PALETTE) {
         png_set_palette_to_rgb(png_ptr2);
@@ -4036,7 +4044,9 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             expected_len += maxi_len;
         }
     } else if (symbology == BARCODE_CODABAR) {
-        /* Start A/B/C/D and stop A/B/C/D chars not returned by ZXing-C++ */
+        /* Ignore start A/B/C/D and stop A/B/C/D chars to avoid upper/lowercase issues */
+        cmp_buf++;
+        cmp_len -= 2;
         expected++;
         expected_len -= 2;
         if (symbol->option_2 == 1 || symbol->option_2 == 2) {

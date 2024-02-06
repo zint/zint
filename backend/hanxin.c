@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -384,28 +384,28 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     unsigned int numeric_end = 0, numeric_cost = 0, text_submode = 1, fourbyte_end = 0, fourbyte_cost = 0; /* State */
     int text1, text2;
 
-    int i, j, k, cm_i;
+    int i, j, k;
     unsigned int min_cost;
     char cur_mode;
     unsigned int prev_costs[HX_NUM_MODES];
     unsigned int cur_costs[HX_NUM_MODES];
-    char *char_modes = (char *) z_alloca(length * HX_NUM_MODES);
+    char (*char_modes)[HX_NUM_MODES] = (char (*)[HX_NUM_MODES]) z_alloca(HX_NUM_MODES * length);
 
-    /* char_modes[i * HX_NUM_MODES + j] represents the mode to encode the code point at index i such that the final
-     * segment ends in mode_types[j] and the total number of bits is minimized over all possible choices */
-    memset(char_modes, 0, length * HX_NUM_MODES);
+    /* char_modes[i][j] represents the mode to encode the code point at index i such that the final segment
+       ends in mode_types[j] and the total number of bits is minimized over all possible choices */
+    memset(char_modes, 0, HX_NUM_MODES * length);
 
     /* At the beginning of each iteration of the loop below, prev_costs[j] is the minimum number of 1/6 (1/XX_MULT)
      * bits needed to encode the entire string prefix of length i, and end in mode_types[j] */
     memcpy(prev_costs, head_costs, HX_NUM_MODES * sizeof(unsigned int));
 
     /* Calculate costs using dynamic programming */
-    for (i = 0, cm_i = 0; i < length; i++, cm_i += HX_NUM_MODES) {
+    for (i = 0; i < length; i++) {
         memset(cur_costs, 0, HX_NUM_MODES * sizeof(unsigned int));
 
         if (hx_in_numeric(ddata, length, i, &numeric_end, &numeric_cost)) {
             cur_costs[HX_N] = prev_costs[HX_N] + numeric_cost;
-            char_modes[cm_i + HX_N] = 'n';
+            char_modes[i][HX_N] = 'n';
             text1 = 1;
             text2 = 0;
         } else {
@@ -420,35 +420,35 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
             } else {
                 cur_costs[HX_T] = prev_costs[HX_T] + 36; /* 6 * HX_MULT */
             }
-            char_modes[cm_i + HX_T] = 't';
+            char_modes[i][HX_T] = 't';
         } else {
             text_submode = 1;
         }
 
         /* Binary mode can encode anything */
         cur_costs[HX_B] = prev_costs[HX_B] + (ddata[i] > 0xFF ? 96 : 48); /* (16 : 8) * HX_MULT */
-        char_modes[cm_i + HX_B] = 'b';
+        char_modes[i][HX_B] = 'b';
 
         if (hx_in_fourbyte(ddata, length, i, &fourbyte_end, &fourbyte_cost)) {
             cur_costs[HX_F] = prev_costs[HX_F] + fourbyte_cost;
-            char_modes[cm_i + HX_F] = 'f';
+            char_modes[i][HX_F] = 'f';
         } else {
             if (hx_isDoubleByte(ddata[i])) {
                 cur_costs[HX_D] = prev_costs[HX_D] + 90; /* 15 * HX_MULT */
-                char_modes[cm_i + HX_D] = 'd';
+                char_modes[i][HX_D] = 'd';
                 if (hx_isRegion1(ddata[i])) { /* Subset */
                     cur_costs[HX_1] = prev_costs[HX_1] + 72; /* 12 * HX_MULT */
-                    char_modes[cm_i + HX_1] = '1';
+                    char_modes[i][HX_1] = '1';
                 } else if (hx_isRegion2(ddata[i])) { /* Subset */
                     cur_costs[HX_2] = prev_costs[HX_2] + 72; /* 12 * HX_MULT */
-                    char_modes[cm_i + HX_2] = '2';
+                    char_modes[i][HX_2] = '2';
                 }
             }
         }
 
         if (i == length - 1) { /* Add end of data costs if last character */
             for (j = 0; j < HX_NUM_MODES; j++) {
-                if (char_modes[cm_i + j]) {
+                if (char_modes[i][j]) {
                     cur_costs[j] += eod_costs[j];
                 }
             }
@@ -457,11 +457,11 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
         /* Start new segment at the end to switch modes */
         for (j = 0; j < HX_NUM_MODES; j++) { /* To mode */
             for (k = 0; k < HX_NUM_MODES; k++) { /* From mode */
-                if (j != k && char_modes[cm_i + k]) {
+                if (j != k && char_modes[i][k]) {
                     const unsigned int new_cost = cur_costs[k] + switch_costs[k][j];
-                    if (!char_modes[cm_i + j] || new_cost < cur_costs[j]) {
+                    if (!char_modes[i][j] || new_cost < cur_costs[j]) {
                         cur_costs[j] = new_cost;
-                        char_modes[cm_i + j] = mode_types[k];
+                        char_modes[i][j] = mode_types[k];
                     }
                 }
             }
@@ -481,9 +481,9 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     }
 
     /* Get optimal mode for each code point by tracing backwards */
-    for (i = length - 1, cm_i = i * HX_NUM_MODES; i >= 0; i--, cm_i -= HX_NUM_MODES) {
+    for (i = length - 1; i >= 0; i--) {
         j = posn(mode_types, cur_mode);
-        cur_mode = char_modes[cm_i + j];
+        cur_mode = char_modes[i][j];
         mode[i] = cur_mode;
     }
 
