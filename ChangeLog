@@ -13,6 +13,7 @@ Changes
 - Add `BARCODE_MEMORY_FILE` to `symbol->output_options` to allow outputting to
   in-memory buffer `symbol->memfile` instead of to file `symbol->outfile`,
   ticket #301
+- CODE128: improve encodation on A/B shifting, props Daniel Gredler (Okapi)
 
 Bugs
 ----

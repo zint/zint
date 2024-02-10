@@ -131,21 +131,22 @@ static void c128_grwp(int list[2][C128_MAX], int *p_indexliste) {
  * Implements rules from ISO 15417 Annex E
  */
 INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char *manual_set) {
-    int i, last, next;
+    int i, j, nextshift, nextshift_i = 0;
     const int indexliste = *p_indexliste;
 
     for (i = 0; i < indexliste; i++) {
         int current = list[1][i]; /* Either C128_ABORC, C128_AORB, C128_SHIFTA or C128_SHIFTB */
         int length = list[0][i];
-        if (i != 0) {
-            last = list[1][i - 1];
-        } else {
-            last = 0;
-        }
-        if (i != indexliste - 1) {
-            next = list[1][i + 1];
-        } else {
-            next = 0;
+        if (i == nextshift_i) {
+            nextshift = 0;
+            /* Set next shift to aid deciding between latching to A or B - taken from Okapi, props Daniel Gredler */
+            for (j = i + 1; j < indexliste; j++) {
+                if (list[1][j] == C128_SHIFTA || list[1][j] == C128_SHIFTB) {
+                    nextshift = list[1][j];
+                    nextshift_i = j;
+                    break;
+                }
+            }
         }
 
         if (i == 0) { /* first block */
@@ -168,7 +169,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char
             if (current == C128_AORB) {
                 if (manual_set && (manual_set[i] == 'A' || manual_set[i] == 'B')) {
                     list[1][i] = manual_set[i];
-                } else if (next == C128_SHIFTA) {
+                } else if (nextshift == C128_SHIFTA) {
                     /* Rule 1c */
                     list[1][i] = C128_LATCHA;
                 } else {
@@ -183,6 +184,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char
                 list[1][i] = C128_LATCHB;
             }
         } else {
+            int last = list[1][i - 1];
             if (current == C128_ABORC) {
                 if (manual_set && manual_set[i]) {
                     list[1][i] = manual_set[i];
@@ -202,7 +204,7 @@ INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char
                     list[1][i] = C128_LATCHA;
                 } else if (last == C128_LATCHB || last == C128_SHIFTA) { /* Maintain state */
                     list[1][i] = C128_LATCHB;
-                } else if (next == C128_SHIFTA) {
+                } else if (nextshift == C128_SHIFTA) {
                     list[1][i] = C128_LATCHA;
                 } else {
                     list[1][i] = C128_LATCHB;

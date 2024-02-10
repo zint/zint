@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -349,7 +349,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 57*/ { UNICODE_MODE, "aééééébcdeééé", -1, 0, 244, 1, "(22) 104 65 100 100 73 73 73 73 73 100 66 100 67 100 68 100 69 73 73 73 83 106", "StartB a Latch é (5) Shift b Shift c Shift d Shift e é (3)" },
         /* 58*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, 1, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
         /* 59*/ { DATA_MODE, "\200\200\200\200\200\101\060\060\060\060\101\200", -1, 0, 222, 1, "(20) 103 101 101 64 64 64 64 64 101 101 33 99 0 0 101 33 101 64 73 106", "StartA Latch PAD (4) Unlatch A CodeC 00 00 CodeA A FNC4 PAD" },
-        /* 60*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code128/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
+        /* 60*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code129/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
         /* 61*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 233, 0, "(21) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 100 33 91 106", "Above with trailing non-shifted (as still latched) extended; BWIPP different encodation" },
         /* 62*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "@g(\302\302\302\302\3025555\302\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 100 34 34 34 34 34 34 34 34 25 106", "Okapi code128/extended-mode-with-short-embedded-code-set-c.png (chose different solution); BWIPP different encodation" },
         /* 63*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "@g(\302\302\302\302\302555555\302\302\302\302\302\302\302", -1, 0, 277, 0, "(25) 104 32 71 8 100 100 34 34 34 34 34 99 55 55 55 100 34 34 34 34 34 34 34 76 106", "Above with extra 55 instead of \xC2; BWIPP different encodation" },
@@ -366,8 +366,10 @@ static void test_input(const testCtx *const p_ctx) {
         /* 74*/ { UNICODE_MODE, "ÿÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 409, 0, "(37) 104 100 95 100 95 99 12 34 101 74 100 100 64 65 98 74 17 98 74 99 78 90 100 100 64 33", "BWIPP different encodation, CodeA instead of ShA, shorter" },
         /* 75*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 684, 0, "(62) 104 100 95 99 12 34 56 78 101 74 101 98 64 99 12 34 56 78 100 65 66 67 68 69 70 98 74", "BWIPP different encodation, CodeA instead of ShA, shorter" },
         /* 76*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^A12\\^C34\\^A\\^B5\\^C67\\^A\\^B\\^CA\\^B\\^A", -1, 0, 145, 0, "(13) 103 17 18 99 34 100 21 99 67 100 33 69 106", "BWIPP no manual mode" },
-        /* 77*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 100 33 34 35 99 12 101 74 36 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
+        /* 77*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 101 33 34 35 99 12 101 74 39 106", "StartC 12 34 CodeA A B C CodeC 12 CodeA LF; BWIPP no manual mode" },
         /* 78*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF" },
+        /* 79*/ { UNICODE_MODE, "A\0121234A12\012", -1, 0, 145, 1, "(13) 103 33 74 99 12 34 101 33 17 18 74 99 106", "StartA A <LF> CodeC 12 34 CodeA A 1 2 <LF>; Okapi c128/improved-lookahead-mode-a.png" },
+        /* 80*/ { UNICODE_MODE, "21*\015\012M0", -1, 0, 112, 1, "(10) 103 18 17 10 77 74 45 16 9 106", "StartA 2 1 * <CR> <LF> M 0; Okapi c128/improved-lookahead-rule-1c.png" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
