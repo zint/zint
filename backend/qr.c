@@ -1060,22 +1060,22 @@ static void qr_populate_grid(unsigned char *grid, const int h_size, const int v_
 }
 
 #ifdef ZINTLOG
-static int append_log(unsigned char log) {
+static void append_log(const unsigned char log) {
     FILE *file;
 
-    file = fopen("zintlog.txt", "a+");
-    fprintf(file, "%02X", log);
-    (void) fclose(file);
-    return 0;
+    if ((file = fopen("zintlog.txt", "a+"))) {
+        fprintf(file, "%02X", log);
+        (void) fclose(file);
+    }
 }
 
-static int write_log(char log[]) {
+static void write_log(const char log[]) {
     FILE *file;
 
-    file = fopen("zintlog.txt", "a+");
-    fprintf(file, "%s\n", log); /*writes*/
-    (void) fclose(file);
-    return 0;
+    if ((file = fopen("zintlog.txt", "a+"))) {
+        fprintf(file, "%s\n", log); /*writes*/
+        (void) fclose(file);
+    }
 }
 #endif
 

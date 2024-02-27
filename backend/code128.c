@@ -131,7 +131,7 @@ static void c128_grwp(int list[2][C128_MAX], int *p_indexliste) {
  * Implements rules from ISO 15417 Annex E
  */
 INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *p_indexliste, const char *manual_set) {
-    int i, j, nextshift, nextshift_i = 0;
+    int i, j, nextshift = 0 /*Suppresses gcc -Wmaybe-uninitialized false positive*/, nextshift_i = 0;
     const int indexliste = *p_indexliste;
 
     for (i = 0; i < indexliste; i++) {

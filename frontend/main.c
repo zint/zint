@@ -379,8 +379,8 @@ static void to_lower(char source[]) {
 
 /* Return symbology id if `barcode_name` a barcode name */
 static int get_barcode_name(const char *barcode_name) {
-    struct name { const int symbology; const char *n; };
-    static const struct name names[] = { /* Must be sorted for binary search to work */
+    /* Must be sorted for binary search to work */
+    static const struct { int symbology; const char *n; } names[] = {
         { BARCODE_C25LOGIC, "2of5datalogic" }, /* Synonym */
         { BARCODE_C25IATA, "2of5iata" }, /* Synonym */
         { BARCODE_C25IND, "2of5ind" }, /* Synonym */
@@ -534,6 +534,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_C25IND, "industrialcode2of5" }, /* Synonym */
         { BARCODE_C25INTER, "interleaved2of5" }, /* Synonym */
         { BARCODE_C25INTER, "interleavedcode2of5" }, /* Synonym */
+        { BARCODE_ISBNX, "isbn" }, /* Synonym */
         { BARCODE_ISBNX, "isbnx" },
         { BARCODE_ITF14, "itf14" },
         { BARCODE_JAPANPOST, "japanpost" },
@@ -636,7 +637,7 @@ static int get_barcode_name(const char *barcode_name) {
 
 /* Whether `filetype` supported by Zint. Sets `png_refused` if `no_png` and PNG requested */
 static int supported_filetype(const char *filetype, const int no_png, int *png_refused) {
-    static const char *filetypes[] = {
+    static const char filetypes[][4] = {
         "bmp", "emf", "eps", "gif", "pcx", "png", "svg", "tif", "txt",
     };
     char lc_filetype[4] = {0};
@@ -702,7 +703,7 @@ static void set_extension(char *file, const char *filetype) {
 
 /* Whether `filetype` is raster type */
 static int is_raster(const char *filetype, const int no_png) {
-    static const char *raster_filetypes[] = {
+    static const char raster_filetypes[][4] = {
         "bmp", "gif", "pcx", "png", "tif",
     };
     int i;
@@ -727,7 +728,7 @@ static int is_raster(const char *filetype, const int no_png) {
 }
 
 /* Helper for `validate_scalexdimdp()` to search for units, returning -2 on error, -1 if not found, else index */
-static int validate_units(char *buf, const char *units[], int units_size) {
+static int validate_units(char *buf, const char units[][5], int units_size) {
     int i;
     char *unit;
 
@@ -749,8 +750,8 @@ static int validate_units(char *buf, const char *units[], int units_size) {
 
 /* Parse and validate argument "xdim[,resolution]" to "--scalexdimdp" */
 static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_dpmm) {
-    static const char *x_units[] = { "mm", "in" };
-    static const char *r_units[] = { "dpmm", "dpi" };
+    static const char x_units[][5] = { "mm", "in" };
+    static const char r_units[][5] = { "dpmm", "dpi" };
     char x_buf[7 + 1 + 4 + 1] = {0}; /* Allow for 7 digits + dot + 4-char unit + NUL */
     char r_buf[7 + 1 + 4 + 1] = {0}; /* As above */
     int units_i; /* For `validate_units()` */
@@ -1406,7 +1407,7 @@ static int do_exit(int error_number) {
     return error_number; /* Not reached */
 }
 
-typedef struct { char *arg; int opt; } arg_opt;
+typedef struct { const char *arg; int opt; } arg_opt;
 
 int main(int argc, char **argv) {
     struct zint_symbol *my_symbol;
