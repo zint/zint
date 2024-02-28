@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1381,14 +1381,12 @@ static void test_get_best_eci(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { "\300\301", -1, 0 },
-        /*  1*/ { "ÀÁ", -1, 3 },
-        /*  2*/ { "Ђ", -1, 7 },
-        /*  3*/ { "Ѐ", -1, 26 }, /* Cyrillic U+0400 not in single-byte code pages */
-        /*  4*/ { "β", -1, 9 },
-        /*  5*/ { "˜", -1, 23 },
-        /*  6*/ { "βЂ", -1, 26 },
-        /*  7*/ { "AB\200", -1, 0 },
+        /*  0*/ { "ÀÁ", -1, 3 },
+        /*  1*/ { "Ђ", -1, 7 },
+        /*  2*/ { "Ѐ", -1, 26 }, /* Cyrillic U+0400 not in single-byte code pages */
+        /*  3*/ { "β", -1, 9 },
+        /*  4*/ { "˜", -1, 23 },
+        /*  5*/ { "βЂ", -1, 26 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1417,16 +1415,15 @@ static void test_get_best_eci_segs(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ { { { TU("\300\301"), -1, 0 }, { TU(""), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 },
-        /*  1*/ { { { TU("A"), -1, 0 }, { TU("\300\301"), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 },
-        /*  2*/ { { { TU("A"), -1, 0 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 }, /* As 1st seg default ECI, 3 not returned */
-        /*  3*/ { { { TU("A"), -1, 4 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 3, 0 },
-        /*  4*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
-        /*  5*/ { { { TU("A"), -1, 4 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
-        /*  6*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("Ѐ"), -1, 0 } }, 26, 0 }, /* Cyrillic U+0400 not in single-byte code pages */
-        /*  7*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU("β"), -1, 0 } }, 7, 0 },
-        /*  8*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("β"), -1, 0 } }, 9, 0 },
-        /*  9*/ { { { TU("˜"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU(""), 0, 0 } }, 23, 23 },
+        /*  0*/ { { { TU("A"), -1, 0 }, { TU(""), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 },
+        /*  1*/ { { { TU("A"), -1, 0 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 0, 0 }, /* As 1st seg default ECI, 3 not returned */
+        /*  2*/ { { { TU("A"), -1, 4 }, { TU("ÀÁ"), -1, 0 }, { TU(""), 0, 0 } }, 3, 0 },
+        /*  3*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
+        /*  4*/ { { { TU("A"), -1, 4 }, { TU("Ђ"), -1, 0 }, { TU(""), 0, 0 } }, 7, 0 },
+        /*  5*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("Ѐ"), -1, 0 } }, 26, 0 }, /* Cyrillic U+0400 not in single-byte code pages */
+        /*  6*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 0 }, { TU("β"), -1, 0 } }, 7, 0 },
+        /*  7*/ { { { TU("A"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU("β"), -1, 0 } }, 9, 0 },
+        /*  8*/ { { { TU("˜"), -1, 0 }, { TU("Ђ"), -1, 7 }, { TU(""), 0, 0 } }, 23, 23 },
     };
     int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
