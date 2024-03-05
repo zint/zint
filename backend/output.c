@@ -971,7 +971,7 @@ INTERNAL FILE *out_fopen(const char filename[256], const char *mode) {
         memcpy(dirname, filename, dirend - filename);
         dirname[dirend - filename] = '/';
         dirname[dirend - filename + 1] = '\0';
-#if _WIN32
+#ifdef _WIN32
         for (d = dirname; *d; d++) { /* Convert to Unix separators */
             if (*d == '\\') {
                 *d = '/';
