@@ -130,15 +130,13 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
 void ZBarcode_Reset(struct zint_symbol *symbol) {
     if (!symbol) return;
 
-    if (symbol->bitmap != NULL) {
+    if (symbol->bitmap != NULL)
         free(symbol->bitmap);
-    }
-    if (symbol->alphamap != NULL) {
+    if (symbol->alphamap != NULL)
         free(symbol->alphamap);
-    }
-    if (symbol->memfile != NULL) {
+    if (symbol->memfile != NULL)
         free(symbol->memfile);
-    }
+
     vector_free(symbol);
 
     memset(symbol, 0, sizeof(*symbol));
@@ -156,7 +154,6 @@ void ZBarcode_Delete(struct zint_symbol *symbol) {
     if (symbol->memfile != NULL)
         free(symbol->memfile);
 
-    /* If there is a rendered version, ensure its memory is released */
     vector_free(symbol);
 
     free(symbol);
@@ -748,6 +745,9 @@ static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int
 /* Helper to parse escape sequences. If `escaped_string` NULL, calculates length only */
 static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *p_length,
             unsigned char *escaped_string) {
+                               /* NUL   EOT   BEL   BS    HT    LF    VT    FF    CR    ESC   GS    RS   \ */
+    static const char escs[] = {  '0',  'E',  'a',  'b',  't',  'n',  'v',  'f',  'r',  'e',  'G',  'R', '\\', '\0' };
+    static const char vals[] = { 0x00, 0x04, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x1B, 0x1D, 0x1E, 0x5C };
     const int length = *p_length;
     int in_posn = 0, out_posn = 0;
     int ch;
@@ -766,7 +766,19 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
             /* NOTE: if add escape character, must also update regex in "frontend_qt/datawindow.php" */
             switch (ch) {
                 case '0':
-                    if (escaped_string) escaped_string[out_posn] = 0x00; /* Null */
+                case 'E':
+                case 'a':
+                case 'b':
+                case 't':
+                case 'n':
+                case 'v':
+                case 'f':
+                case 'r':
+                case 'e':
+                case 'G':
+                case 'R':
+                case '\\':
+                    if (escaped_string) escaped_string[out_posn] = vals[posn(escs, ch)];
                     in_posn += 2;
                     break;
                 case '^': /* CODE128 specific */
@@ -791,50 +803,6 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                         }
                     }
                     break;
-                case 'E':
-                    if (escaped_string) escaped_string[out_posn] = 0x04; /* End of Transmission */
-                    in_posn += 2;
-                    break;
-                case 'a':
-                    if (escaped_string) escaped_string[out_posn] = 0x07; /* Bell */
-                    in_posn += 2;
-                    break;
-                case 'b':
-                    if (escaped_string) escaped_string[out_posn] = 0x08; /* Backspace */
-                    in_posn += 2;
-                    break;
-                case 't':
-                    if (escaped_string) escaped_string[out_posn] = 0x09; /* Horizontal tab */
-                    in_posn += 2;
-                    break;
-                case 'n':
-                    if (escaped_string) escaped_string[out_posn] = 0x0a; /* Line feed */
-                    in_posn += 2;
-                    break;
-                case 'v':
-                    if (escaped_string) escaped_string[out_posn] = 0x0b; /* Vertical tab */
-                    in_posn += 2;
-                    break;
-                case 'f':
-                    if (escaped_string) escaped_string[out_posn] = 0x0c; /* Form feed */
-                    in_posn += 2;
-                    break;
-                case 'r':
-                    if (escaped_string) escaped_string[out_posn] = 0x0d; /* Carriage return */
-                    in_posn += 2;
-                    break;
-                case 'e':
-                    if (escaped_string) escaped_string[out_posn] = 0x1b; /* Escape */
-                    in_posn += 2;
-                    break;
-                case 'G':
-                    if (escaped_string) escaped_string[out_posn] = 0x1d; /* Group Separator */
-                    in_posn += 2;
-                    break;
-                case 'R':
-                    if (escaped_string) escaped_string[out_posn] = 0x1e; /* Record Separator */
-                    in_posn += 2;
-                    break;
                 case 'd':
                 case 'o':
                 case 'x':
@@ -843,10 +811,6 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
                     }
                     if (escaped_string) escaped_string[out_posn] = val;
                     in_posn += 4 + (ch != 'x');
-                    break;
-                case '\\':
-                    if (escaped_string) escaped_string[out_posn] = '\\';
-                    in_posn += 2;
                     break;
                 case 'u':
                 case 'U':
@@ -1294,16 +1258,14 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             && (symbol->input_mode & 0x07) == UNICODE_MODE) {
         /* Try another ECI mode */
         const int first_eci_set = get_best_eci_segs(symbol, local_segs, seg_count);
-        if (first_eci_set != 0) {
-            error_number = extended_or_reduced_charset(symbol, local_segs, seg_count);
-            /* Inclusion of ECI more noteworthy than other warnings, so overwrite (if any) */
-            if (error_number < ZINT_ERROR) {
-                error_number = ZINT_WARN_USES_ECI;
-                if (!(symbol->debug & ZINT_DEBUG_TEST)) {
-                    sprintf(symbol->errtxt, "222: Encoded data includes ECI %d", first_eci_set);
-                }
-                if (symbol->debug & ZINT_DEBUG_PRINT) printf("Added ECI %d\n", first_eci_set);
+        error_number = extended_or_reduced_charset(symbol, local_segs, seg_count);
+        /* Inclusion of ECI more noteworthy than other warnings, so overwrite (if any) */
+        if (error_number < ZINT_ERROR) {
+            error_number = ZINT_WARN_USES_ECI;
+            if (!(symbol->debug & ZINT_DEBUG_TEST)) {
+                sprintf(symbol->errtxt, "222: Encoded data includes ECI %d", first_eci_set);
             }
+            if (symbol->debug & ZINT_DEBUG_PRINT) printf("Added ECI %d\n", first_eci_set);
         }
     }
 
@@ -1345,8 +1307,7 @@ static int check_output_args(struct zint_symbol *symbol, int rotate_angle) {
     return 0;
 }
 
-struct zint_filetypes { const char extension[4]; int is_raster; int filetype; };
-static const struct zint_filetypes filetypes[] = {
+static const struct { const char extension[4]; int is_raster; int filetype; } filetypes[] = {
     { "BMP", 1, OUT_BMP_FILE }, { "EMF", 0, OUT_EMF_FILE }, { "EPS", 0, OUT_EPS_FILE },
     { "GIF", 1, OUT_GIF_FILE }, { "PCX", 1, OUT_PCX_FILE }, { "PNG", 1, OUT_PNG_FILE },
     { "SVG", 0, OUT_SVG_FILE }, { "TIF", 1, OUT_TIF_FILE }, { "TXT", 0, 0 }
@@ -1445,19 +1406,16 @@ int ZBarcode_Encode_and_Print(struct zint_symbol *symbol, const unsigned char *s
 int ZBarcode_Encode_Segs_and_Print(struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count,
             int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Print(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
-    return error_number;
+
+    return error_number ? error_number : warn_number;
 }
 
 /* Encode and output a symbol to memory as raster (`symbol->bitmap`) */
@@ -1478,20 +1436,16 @@ int ZBarcode_Encode_and_Buffer(struct zint_symbol *symbol, const unsigned char *
 int ZBarcode_Encode_Segs_and_Buffer(struct zint_symbol *symbol, const struct zint_seg segs[],
             const int seg_count, int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Buffer(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Encode and output a symbol to memory as vector (`symbol->vector`) */
@@ -1512,20 +1466,16 @@ int ZBarcode_Encode_and_Buffer_Vector(struct zint_symbol *symbol, const unsigned
 int ZBarcode_Encode_Segs_and_Buffer_Vector(struct zint_symbol *symbol, const struct zint_seg segs[],
             const int seg_count, int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_Segs(symbol, segs, seg_count);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Buffer_Vector(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Encode a barcode using input data from file `filename` */
@@ -1624,58 +1574,46 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
 /* Encode a symbol using input data from file `filename` and output to file `symbol->outfile` */
 int ZBarcode_Encode_File_and_Print(struct zint_symbol *symbol, const char *filename, int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_File(symbol, filename);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Print(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Encode a symbol using input data from file `filename` and output to memory as raster (`symbol->bitmap`) */
 int ZBarcode_Encode_File_and_Buffer(struct zint_symbol *symbol, char const *filename, int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_File(symbol, filename);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Buffer(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Encode a symbol using input data from file `filename` and output to memory as vector (`symbol->vector`) */
 int ZBarcode_Encode_File_and_Buffer_Vector(struct zint_symbol *symbol, const char *filename, int rotate_angle) {
     int error_number;
-    int first_err;
+    int warn_number;
 
-    error_number = ZBarcode_Encode_File(symbol, filename);
-    if (error_number >= ZINT_ERROR) {
-        return error_number;
+    warn_number = ZBarcode_Encode_File(symbol, filename);
+    if (warn_number >= ZINT_ERROR) {
+        return warn_number;
     }
 
-    first_err = error_number;
     error_number = ZBarcode_Buffer_Vector(symbol, rotate_angle);
-    if (error_number == 0) {
-        error_number = first_err;
-    }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* Checks whether a symbology is supported */

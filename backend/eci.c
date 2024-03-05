@@ -795,10 +795,7 @@ INTERNAL int get_best_eci_segs(struct zint_symbol *symbol, struct zint_seg segs[
 
     for (i = 0; i < seg_count; i++) {
         if (segs[i].eci == 0) {
-            int eci = get_best_eci(segs[i].source, segs[i].length);
-            if (eci == 0) {
-                return 0;
-            }
+            const int eci = get_best_eci(segs[i].source, segs[i].length);
             if (eci == default_eci) {
                 if (i != 0 && segs[i - 1].eci != 0 && segs[i - 1].eci != default_eci) {
                     segs[i].eci = eci;
