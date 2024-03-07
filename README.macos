@@ -1,4 +1,4 @@
-% README.macos 2014-01-18
+% README.macos 2024-01-18
 % Tested on macOS 12.7.2 Monterey VirtualBox (thanks to https://github.com/myspaghetti/macos-virtualbox)
 
 1. Prerequisites for building zint and zint-qt
