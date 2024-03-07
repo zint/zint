@@ -775,6 +775,9 @@ void MainWindow::factory_reset()
     setColorTxtBtn(m_fgstr, txt_fgcolor, fgcolor);
     setColorTxtBtn(m_bgstr, txt_bgcolor, bgcolor);
 
+    m_previewBgColor = QColor(0xF4, 0xF4, 0xF4);
+    m_bc.setColor(m_previewBgColor);
+
     txtData->setFocus(Qt::OtherFocusReason);
     update_preview();
 }
