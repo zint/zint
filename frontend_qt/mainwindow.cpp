@@ -785,9 +785,10 @@ void MainWindow::factory_reset()
 void MainWindow::about()
 {
     QString zint_version = get_zint_version();
+    QSettings settings;
 
     QMessageBox::about(this, tr("About Zint"),
-        /*: %1 is Zint version, %2 is Qt version */
+        /*: %1 is Zint version, %2 is Qt version, %3 is QSettings file/registry path */
         tr(
 #ifdef Q_OS_MACOS
             "<style>h2, p { font-size:11px; font-weight:normal; }</style>"
@@ -799,14 +800,14 @@ void MainWindow::about()
             "<p>Copyright &copy; 2006-2024 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
-            "<p>Qt version %2</p>"
+            "<p>Qt version %2 (QSettings:<br>%3)</p>"
             "<p>\"Mailmark\" is a Registered Trademark of Royal Mail.<br>"
             "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
             "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
             "<p>With thanks to Harald Oehlmann, Norbert Szab&oacute;, Robert Elliott, Milton Neal, "
                 "Git Lost, Alonso Schaich, Andre Maute and many others at "
                 "<a href=\"https://sourceforge.net/projects/zint/\">SourceForge</a>.</p>"
-        ).arg(zint_version, QT_VERSION_STR));
+        ).arg(zint_version, QT_VERSION_STR, settings.fileName()));
 }
 
 void MainWindow::help()
