@@ -6,6 +6,7 @@ GenericName=Barcode Generator
 Comment=GUI for the creation of barcodes
 Exec=zint-qt
 Icon=zint-qt
+StartupWMClass=uk.org.zint.zint-qt
 Terminal=false
 Type=Application
 Categories=Graphics;2DGraphics;
