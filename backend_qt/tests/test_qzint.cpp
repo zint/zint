@@ -338,12 +338,12 @@ private slots:
         int width = 12;
         bc.setWidth(width);
         QCOMPARE(bc.width(), width);
-        QCOMPARE(bc.option1(), width);
+        QCOMPARE(bc.option2(), width);
 
         int securityLevel = 2;
         bc.setSecurityLevel(securityLevel);
         QCOMPARE(bc.securityLevel(), securityLevel);
-        QCOMPARE(bc.option2(), securityLevel);
+        QCOMPARE(bc.option1(), securityLevel);
 
         int pdf417CodeWords = 123;
         bc.setPdf417CodeWords(pdf417CodeWords);

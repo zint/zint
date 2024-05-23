@@ -798,10 +798,10 @@ namespace Zint {
     }
 
     /* Legacy property getters/setters */
-    void QZint::setWidth(int width) { setOption1(width); }
-    int QZint::width() const { return m_option_1; }
-    void QZint::setSecurityLevel(int securityLevel) { setOption2(securityLevel); }
-    int QZint::securityLevel() const { return m_option_2; }
+    void QZint::setWidth(int width) { setOption2(width); }
+    int QZint::width() const { return m_option_2; }
+    void QZint::setSecurityLevel(int securityLevel) { setOption1(securityLevel); }
+    int QZint::securityLevel() const { return m_option_1; }
     void QZint::setPdf417CodeWords(int /*pdf417CodeWords*/) {}
     int QZint::pdf417CodeWords() const { return 0; }
     void QZint::setHideText(bool hide) { setShowText(!hide); }

@@ -238,9 +238,9 @@ public:
 
 
     /* Legacy property getters/setters */
-    void setWidth(int width); /* `symbol->option_1` */
+    void setWidth(int width); /* `symbol->option_2` */
     int width() const;
-    void setSecurityLevel(int securityLevel); /* `symbol->option_2` */
+    void setSecurityLevel(int securityLevel); /* `symbol->option_1` */
     int securityLevel() const;
     void setPdf417CodeWords(int pdf417CodeWords); /* No-op */
     int pdf417CodeWords() const;
