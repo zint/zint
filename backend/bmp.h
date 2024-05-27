@@ -1,7 +1,7 @@
 /*  bmp.h - header structure for Windows bitmap files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,14 +37,16 @@
 extern "C" {
 #endif
 
-#pragma pack (1)
+#ifdef _MSC_VER
+#pragma pack(1)
+#endif
 
     typedef struct bitmap_file_header {
         uint16_t header_field;
         uint32_t file_size;
         uint32_t reserved;
         uint32_t data_offset;
-    } bitmap_file_header_t;
+    } OUT_PACK bitmap_file_header_t;
 
     typedef struct bitmap_info_header {
         uint32_t header_size;
@@ -58,16 +60,18 @@ extern "C" {
         int32_t vert_res;
         uint32_t colours;
         uint32_t important_colours;
-    } bitmap_info_header_t;
+    } OUT_PACK bitmap_info_header_t;
 
     typedef struct color_ref {
         uint8_t blue;
         uint8_t green;
         uint8_t red;
         uint8_t reserved;
-    } color_ref_t;
+    } OUT_PACK color_ref_t;
 
-#pragma pack ()
+#ifdef _MSC_VER
+#pragma pack()
+#endif
 
 #ifdef __cplusplus
 }

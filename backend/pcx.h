@@ -37,7 +37,9 @@
 extern "C" {
 #endif
 
-#pragma pack (1)
+#ifdef _MSC_VER
+#pragma pack(1)
+#endif
 
     typedef struct pcx_header {
         uint8_t manufacturer;
@@ -58,9 +60,11 @@ extern "C" {
         uint16_t horiz_screen_size;
         uint16_t vert_screen_size;
         uint8_t filler[54];
-    } pcx_header_t;
+    } OUT_PACK pcx_header_t;
 
-#pragma pack ()
+#ifdef _MSC_VER
+#pragma pack()
+#endif
 
 #ifdef __cplusplus
 }

@@ -631,19 +631,19 @@ static void channel_generate_precalc(int channels, long value, int mod, int last
 #include "channel_precalcs.h"
 #endif
 
-static long channel_copy_precalc(channel_precalc precalc, int B[8], int S[8], int bmax[7], int smax[7]) {
+static long channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[8], int bmax[7], int smax[7]) {
     int i;
 
     for (i = 0; i < 7; i++) {
-        B[i] = precalc.B[i];
-        S[i] = precalc.S[i];
-        bmax[i] = precalc.bmax[i];
-        smax[i] = precalc.smax[i];
+        B[i] = precalc->B[i];
+        S[i] = precalc->S[i];
+        bmax[i] = precalc->bmax[i];
+        smax[i] = precalc->smax[i];
     }
-    B[7] = precalc.B[7];
-    S[7] = precalc.S[7];
+    B[7] = precalc->B[7];
+    S[7] = precalc->S[7];
 
-    return precalc.value;
+    return precalc->value;
 }
 
 /* CHNCHR is adapted from ANSI/AIM BC12-1998 Annex D Figure D5 and is Copyright (c) AIM 1997 */
@@ -676,14 +676,14 @@ static void CHNCHR(int channels, long target_value, int B[8], int S[8]) {
     int bmax[7], smax[7];
     long value = 0;
 
-    channel_copy_precalc(initial_precalcs[channels - 3], B, S, bmax, smax);
+    channel_copy_precalc(&initial_precalcs[channels - 3], B, S, bmax, smax);
 
 #ifndef CHANNEL_GENERATE_PRECALCS
     if (channels == 7 && target_value >= channel_precalcs7[0].value) {
-        value = channel_copy_precalc(channel_precalcs7[(target_value / channel_precalcs7[0].value) - 1], B, S, bmax,
+        value = channel_copy_precalc(&channel_precalcs7[(target_value / channel_precalcs7[0].value) - 1], B, S, bmax,
                                     smax);
     } else if (channels == 8 && target_value >= channel_precalcs8[0].value) {
-        value = channel_copy_precalc(channel_precalcs8[(target_value / channel_precalcs8[0].value) - 1], B, S, bmax,
+        value = channel_copy_precalc(&channel_precalcs8[(target_value / channel_precalcs8[0].value) - 1], B, S, bmax,
                                     smax);
     }
 #endif

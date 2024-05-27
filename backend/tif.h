@@ -1,7 +1,7 @@
 /* tif.h - Aldus Tagged Image File Format */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -37,28 +37,32 @@
 extern "C" {
 #endif
 
+#ifdef _MSC_VER
 #pragma pack(1)
+#endif
 
     typedef struct tiff_header {
         uint16_t byte_order;
         uint16_t identity;
         uint32_t offset;
-    } tiff_header_t;
+    } OUT_PACK tiff_header_t;
 
     typedef struct tiff_tag {
         uint16_t tag;
         uint16_t type;
         uint32_t count;
         uint32_t offset;
-    } tiff_tag_t;
+    } OUT_PACK tiff_tag_t;
 
     typedef struct tiff_color {
         uint16_t red;
         uint16_t green;
         uint16_t blue;
-    } tiff_color_t;
+    } OUT_PACK tiff_color_t;
 
+#ifdef _MSC_VER
 #pragma pack()
+#endif
 
 #ifdef  __cplusplus
 }

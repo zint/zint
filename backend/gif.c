@@ -397,9 +397,9 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
      */
     if (transparent_index != -1) {
         /* Extension Introducer = '!' */
-        outbuf[0] = '\x21';
+        outbuf[0] = '!';
         /* Graphic Control Label */
-        outbuf[1] = '\xf9';
+        outbuf[1] = 0xf9;
         /* Block Size */
         outbuf[2] = 4;
         /* Packet fields:
@@ -452,7 +452,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     free(State.pOut);
 
     /* GIF terminator */
-    fm_putc('\x3b', State.fmp);
+    fm_putc(';', State.fmp);
 
     if (fm_error(State.fmp)) {
         sprintf(symbol->errtxt, "615: Incomplete write to output (%d: %.30s)", State.fmp->err,

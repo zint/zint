@@ -113,6 +113,13 @@ INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
         bp[3] = (unsigned char) ((*p_u32 >> 24) & 0xFF); \
     } while (0)
 
+/* For more portability, use `#pragma pack()` pair for MSCV, per-type packed attribute otherwise */
+#ifdef _MSC_VER
+#  define OUT_PACK
+#else
+#  define OUT_PACK __attribute__((__packed__))
+#endif
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */
