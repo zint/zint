@@ -420,7 +420,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     }
     /* Image Descriptor */
     /* Image separator character = ',' */
-    outbuf[0] = 0x2c;
+    outbuf[0] = ',';
     /* "Image Left" */
     outbuf[1] = 0x00;
     outbuf[2] = 0x00;
@@ -448,7 +448,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         strcpy(symbol->errtxt, "613: Insufficient memory for LZW buffer");
         return ZINT_ERROR_MEMORY;
     }
-    fm_write((const char *) State.pOut, 1, State.OutPosCur, State.fmp);
+    fm_write(State.pOut, 1, State.OutPosCur, State.fmp);
     free(State.pOut);
 
     /* GIF terminator */

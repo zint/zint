@@ -2,9 +2,9 @@
 /* Generate mod 928 powers table for `encode928()` in "composite.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 */
-/* vim: set ts=4 sw=4 et : */
+/* SPDX-License-Identifier: BSD-3-Clause */
 
 /* The functions "getBit", "init928" and "encode928" are copyright BSI and are
    released with permission under the following terms:
@@ -35,7 +35,7 @@ for ($j = 1; $j < 69; $j++) {
     $pwr928[$j][0] = $cw[0] = (2 * $cw[0]) + (int)($v / 928);
 }
 
-printf("static const UINT pwr928[69][7] = {\n");
+printf("static const unsigned short cc_pwr928[69][7] = {\n");
 for ($i = 0; $i < 69; $i++) {
     printf("    { ");
     for ($j = 0; $j < 7; $j++) {
@@ -44,3 +44,5 @@ for ($i = 0; $i < 69; $i++) {
     printf("},\n");
 }
 printf("};\n");
+
+/* vim: set ts=4 sw=4 et : */

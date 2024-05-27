@@ -45,7 +45,6 @@ static int utf8_to_wchar(const char *str, wchar_t *out) {
             decode_utf8(&state, &codepoint, *str++);
         } while (*str && state != 0 && state != 12);
         if (state != 0) {
-            fprintf(stderr, "utf8_to_wchar: warning: invalid UTF-8\n");
             return 0;
         }
         *out++ = codepoint;

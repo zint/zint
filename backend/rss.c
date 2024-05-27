@@ -1,7 +1,7 @@
 /* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -390,35 +390,35 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         data_group[2] = 4;
     }
 
-    v_odd[0] = (data_character[0] - g_sum_table[data_group[0]]) / t_table[data_group[0]];
-    v_even[0] = (data_character[0] - g_sum_table[data_group[0]]) % t_table[data_group[0]];
-    v_odd[1] = (data_character[1] - g_sum_table[data_group[1]]) % t_table[data_group[1]];
-    v_even[1] = (data_character[1] - g_sum_table[data_group[1]]) / t_table[data_group[1]];
-    v_odd[3] = (data_character[3] - g_sum_table[data_group[3]]) % t_table[data_group[3]];
-    v_even[3] = (data_character[3] - g_sum_table[data_group[3]]) / t_table[data_group[3]];
-    v_odd[2] = (data_character[2] - g_sum_table[data_group[2]]) / t_table[data_group[2]];
-    v_even[2] = (data_character[2] - g_sum_table[data_group[2]]) % t_table[data_group[2]];
+    v_odd[0] = (data_character[0] - dbar_g_sum_table[data_group[0]]) / dbar_t_table[data_group[0]];
+    v_even[0] = (data_character[0] - dbar_g_sum_table[data_group[0]]) % dbar_t_table[data_group[0]];
+    v_odd[1] = (data_character[1] - dbar_g_sum_table[data_group[1]]) % dbar_t_table[data_group[1]];
+    v_even[1] = (data_character[1] - dbar_g_sum_table[data_group[1]]) / dbar_t_table[data_group[1]];
+    v_odd[3] = (data_character[3] - dbar_g_sum_table[data_group[3]]) % dbar_t_table[data_group[3]];
+    v_even[3] = (data_character[3] - dbar_g_sum_table[data_group[3]]) / dbar_t_table[data_group[3]];
+    v_odd[2] = (data_character[2] - dbar_g_sum_table[data_group[2]]) / dbar_t_table[data_group[2]];
+    v_even[2] = (data_character[2] - dbar_g_sum_table[data_group[2]]) % dbar_t_table[data_group[2]];
 
     /* Use DataBar subset width algorithm */
     for (i = 0; i < 4; i++) {
         if ((i == 0) || (i == 2)) {
-            getRSSwidths(widths, v_odd[i], modules_odd[data_group[i]], 4, widest_odd[data_group[i]], 1);
+            getRSSwidths(widths, v_odd[i], dbar_modules_odd[data_group[i]], 4, dbar_widest_odd[data_group[i]], 1);
             data_widths[0][i] = widths[0];
             data_widths[2][i] = widths[1];
             data_widths[4][i] = widths[2];
             data_widths[6][i] = widths[3];
-            getRSSwidths(widths, v_even[i], modules_even[data_group[i]], 4, widest_even[data_group[i]], 0);
+            getRSSwidths(widths, v_even[i], dbar_modules_even[data_group[i]], 4, dbar_widest_even[data_group[i]], 0);
             data_widths[1][i] = widths[0];
             data_widths[3][i] = widths[1];
             data_widths[5][i] = widths[2];
             data_widths[7][i] = widths[3];
         } else {
-            getRSSwidths(widths, v_odd[i], modules_odd[data_group[i]], 4, widest_odd[data_group[i]], 0);
+            getRSSwidths(widths, v_odd[i], dbar_modules_odd[data_group[i]], 4, dbar_widest_odd[data_group[i]], 0);
             data_widths[0][i] = widths[0];
             data_widths[2][i] = widths[1];
             data_widths[4][i] = widths[2];
             data_widths[6][i] = widths[3];
-            getRSSwidths(widths, v_even[i], modules_even[data_group[i]], 4, widest_even[data_group[i]], 1);
+            getRSSwidths(widths, v_even[i], dbar_modules_even[data_group[i]], 4, dbar_widest_even[data_group[i]], 1);
             data_widths[1][i] = widths[0];
             data_widths[3][i] = widths[1];
             data_widths[5][i] = widths[2];
@@ -429,10 +429,10 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     checksum = 0;
     /* Calculate the checksum */
     for (i = 0; i < 8; i++) {
-        checksum += checksum_weight[i] * data_widths[i][0];
-        checksum += checksum_weight[i + 8] * data_widths[i][1];
-        checksum += checksum_weight[i + 16] * data_widths[i][2];
-        checksum += checksum_weight[i + 24] * data_widths[i][3];
+        checksum += dbar_checksum_weight[i] * data_widths[i][0];
+        checksum += dbar_checksum_weight[i + 8] * data_widths[i][1];
+        checksum += dbar_checksum_weight[i + 16] * data_widths[i][2];
+        checksum += dbar_checksum_weight[i + 24] * data_widths[i][3];
     }
     checksum %= 79;
 
@@ -462,8 +462,8 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         total_widths[i + 36] = data_widths[7 - i][2];
     }
     for (i = 0; i < 5; i++) {
-        total_widths[i + 10] = finder_pattern[i + (5 * c_left)];
-        total_widths[i + 31] = finder_pattern[(4 - i) + (5 * c_right)];
+        total_widths[i + 10] = dbar_finder_pattern[i + (5 * c_left)];
+        total_widths[i + 31] = dbar_finder_pattern[(4 - i) + (5 * c_right)];
     }
 
     /* Put this data into the symbol */
@@ -720,24 +720,24 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
         right_group = 0;
     }
 
-    left_odd = (int) (left_character / t_even_ltd[left_group]);
-    left_even = (int) (left_character % t_even_ltd[left_group]);
-    right_odd = (int) (right_character / t_even_ltd[right_group]);
-    right_even = (int) (right_character % t_even_ltd[right_group]);
+    left_odd = (int) (left_character / dbar_ltd_t_even[left_group]);
+    left_even = (int) (left_character % dbar_ltd_t_even[left_group]);
+    right_odd = (int) (right_character / dbar_ltd_t_even[right_group]);
+    right_even = (int) (right_character % dbar_ltd_t_even[right_group]);
 
-    getRSSwidths(widths, left_odd, modules_odd_ltd[left_group], 7, widest_odd_ltd[left_group], 1);
+    getRSSwidths(widths, left_odd, dbar_ltd_modules_odd[left_group], 7, dbar_ltd_widest_odd[left_group], 1);
     for (i = 0; i <= 6; i++) {
         left_widths[i * 2] = widths[i];
     }
-    getRSSwidths(widths, left_even, modules_even_ltd[left_group], 7, widest_even_ltd[left_group], 0);
+    getRSSwidths(widths, left_even, dbar_ltd_modules_even[left_group], 7, dbar_ltd_widest_even[left_group], 0);
     for (i = 0; i <= 6; i++) {
         left_widths[i * 2 + 1] = widths[i];
     }
-    getRSSwidths(widths, right_odd, modules_odd_ltd[right_group], 7, widest_odd_ltd[right_group], 1);
+    getRSSwidths(widths, right_odd, dbar_ltd_modules_odd[right_group], 7, dbar_ltd_widest_odd[right_group], 1);
     for (i = 0; i <= 6; i++) {
         right_widths[i * 2] = widths[i];
     }
-    getRSSwidths(widths, right_even, modules_even_ltd[right_group], 7, widest_even_ltd[right_group], 0);
+    getRSSwidths(widths, right_even, dbar_ltd_modules_even[right_group], 7, dbar_ltd_widest_even[right_group], 0);
     for (i = 0; i <= 6; i++) {
         right_widths[i * 2 + 1] = widths[i];
     }
@@ -748,13 +748,13 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 #if defined(_MSC_VER) && _MSC_VER == 1900 && defined(_WIN64) /* MSVC 2015 x64 */
         checksum %= 89; /* Hack to get around optimizer bug */
 #endif
-        checksum += checksum_weight_ltd[i] * left_widths[i];
-        checksum += checksum_weight_ltd[i + 14] * right_widths[i];
+        checksum += dbar_ltd_checksum_weight[i] * left_widths[i];
+        checksum += dbar_ltd_checksum_weight[i + 14] * right_widths[i];
     }
     checksum %= 89;
 
     for (i = 0; i < 14; i++) {
-        check_elements[i] = finder_pattern_ltd[i + (checksum * 14)];
+        check_elements[i] = dbar_ltd_finder_pattern[i + (checksum * 14)];
     }
 
     total_widths[0] = 1;
@@ -1350,16 +1350,16 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         } else {
             group = 5;
         }
-        v_odd = (vs - g_sum_exp[group - 1]) / t_even_exp[group - 1];
-        v_even = (vs - g_sum_exp[group - 1]) % t_even_exp[group - 1];
+        v_odd = (vs - dbar_exp_g_sum[group - 1]) / dbar_exp_t_even[group - 1];
+        v_even = (vs - dbar_exp_g_sum[group - 1]) % dbar_exp_t_even[group - 1];
         if (debug_print) printf("%s%d", i == 0 || (i & 1) ? " " : ",", vs);
 
-        getRSSwidths(widths, v_odd, modules_odd_exp[group - 1], 4, widest_odd_exp[group - 1], 0);
+        getRSSwidths(widths, v_odd, dbar_exp_modules_odd[group - 1], 4, dbar_exp_widest_odd[group - 1], 0);
         char_widths[i][0] = widths[0];
         char_widths[i][2] = widths[1];
         char_widths[i][4] = widths[2];
         char_widths[i][6] = widths[3];
-        getRSSwidths(widths, v_even, modules_even_exp[group - 1], 4, widest_even_exp[group - 1], 1);
+        getRSSwidths(widths, v_even, dbar_exp_modules_even[group - 1], 4, dbar_exp_widest_even[group - 1], 1);
         char_widths[i][1] = widths[0];
         char_widths[i][3] = widths[1];
         char_widths[i][5] = widths[2];
@@ -1372,9 +1372,9 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
        elements in the data characters. */
     checksum = 0;
     for (i = 0; i < data_chars; i++) {
-        int row = weight_rows[(((data_chars - 2) / 2) * 21) + i];
+        int row = dbar_exp_weight_rows[(((data_chars - 2) / 2) * 21) + i];
         for (j = 0; j < 8; j++) {
-            checksum += (char_widths[i][j] * checksum_weight_exp[(row * 8) + j]);
+            checksum += (char_widths[i][j] * dbar_exp_checksum_weight[(row * 8) + j]);
 
         }
     }
@@ -1397,15 +1397,15 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         c_group = 5;
     }
 
-    c_odd = (check_char - g_sum_exp[c_group - 1]) / t_even_exp[c_group - 1];
-    c_even = (check_char - g_sum_exp[c_group - 1]) % t_even_exp[c_group - 1];
+    c_odd = (check_char - dbar_exp_g_sum[c_group - 1]) / dbar_exp_t_even[c_group - 1];
+    c_even = (check_char - dbar_exp_g_sum[c_group - 1]) % dbar_exp_t_even[c_group - 1];
 
-    getRSSwidths(widths, c_odd, modules_odd_exp[c_group - 1], 4, widest_odd_exp[c_group - 1], 0);
+    getRSSwidths(widths, c_odd, dbar_exp_modules_odd[c_group - 1], 4, dbar_exp_widest_odd[c_group - 1], 0);
     check_widths[0] = widths[0];
     check_widths[2] = widths[1];
     check_widths[4] = widths[2];
     check_widths[6] = widths[3];
-    getRSSwidths(widths, c_even, modules_even_exp[c_group - 1], 4, widest_even_exp[c_group - 1], 1);
+    getRSSwidths(widths, c_even, dbar_exp_modules_even[c_group - 1], 4, dbar_exp_widest_even[c_group - 1], 1);
     check_widths[1] = widths[0];
     check_widths[3] = widths[1];
     check_widths[5] = widths[2];
@@ -1421,7 +1421,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     for (i = 0; i < codeblocks; i++) {
         k = p + i;
         for (j = 0; j < 5; j++) {
-            elements[(21 * i) + j + 10] = finder_pattern_exp[((finder_sequence[k] - 1) * 5) + j];
+            elements[(21 * i) + j + 10] = dbar_exp_finder_pattern[((dbar_exp_finder_sequence[k] - 1) * 5) + j];
         }
     }
 

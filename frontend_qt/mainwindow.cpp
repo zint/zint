@@ -355,6 +355,8 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     connect(btnSave, SIGNAL(clicked(bool)), SLOT(save()));
     connect(spnScale, SIGNAL(valueChanged(double)), SLOT(update_preview()));
     connect(btnExit, SIGNAL(clicked(bool)), SLOT(quit_now()));
+    connect(fgcolor, SIGNAL(clicked(bool)), SLOT(fgcolor_clicked()));
+    connect(bgcolor, SIGNAL(clicked(bool)), SLOT(bgcolor_clicked()));
     connect(btnReset, SIGNAL(clicked(bool)), SLOT(reset_colours()));
     connect(btnReverse, SIGNAL(clicked(bool)), SLOT(reverse_colours()));
     connect(btnMoreData, SIGNAL(clicked(bool)), SLOT(open_data_dialog()));

@@ -56,7 +56,6 @@
 #include "gs1.h"
 #include "general_field.h"
 
-#define UINT unsigned short
 #include "composite.h"
 
 INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_mode,
@@ -73,7 +72,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int dbar_date(const unsigned char source[], const int length, const int src_posn);
 
-static int _min(const int first, const int second) {
+static int cc_min(const int first, const int second) {
 
     if (first <= second)
         return first;
@@ -82,23 +81,23 @@ static int _min(const int first, const int second) {
 }
 
 /* gets bit in bitString at bitPos */
-static int getBit(const UINT *bitStr, const int bitPos) {
+static int cc_getBit(const unsigned short *bitStr, const int bitPos) {
     return !!(bitStr[bitPos >> 4] & (0x8000 >> (bitPos & 15)));
 }
 
 /* converts bit string to base 928 values, codeWords[0] is highest order */
-static int encode928(const UINT bitString[], UINT codeWords[], const int bitLng) {
+static int cc_encode928(const unsigned short bitString[], unsigned short codeWords[], const int bitLng) {
     int i, j, b, cwNdx, cwLng;
     for (cwNdx = cwLng = b = 0; b < bitLng; b += 69, cwNdx += 7) {
-        const int bitCnt = _min(bitLng - b, 69);
+        const int bitCnt = cc_min(bitLng - b, 69);
         int cwCnt;
         cwLng += cwCnt = bitCnt / 10 + 1;
         for (i = 0; i < cwCnt; i++)
             codeWords[cwNdx + i] = 0; /* init 0 */
         for (i = 0; i < bitCnt; i++) {
-            if (getBit(bitString, b + bitCnt - i - 1)) {
+            if (cc_getBit(bitString, b + bitCnt - i - 1)) {
                 for (j = 0; j < cwCnt; j++)
-                    codeWords[cwNdx + j] += pwr928[i][j + 7 - cwCnt];
+                    codeWords[cwNdx + j] += cc_pwr928[i][j + 7 - cwCnt];
             }
         }
         for (i = cwCnt - 1; i > 0; i--) {
@@ -117,8 +116,8 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
     int LeftRAPStart, RightRAPStart, CentreRAPStart, StartCluster;
     int LeftRAP, RightRAP, CentreRAP, Cluster;
     int loop;
-    UINT codeWords[28] = {0};
-    UINT bitStr[13] = {0};
+    unsigned short codeWords[28] = {0};
+    unsigned short bitStr[13] = {0};
     char pattern[580];
     int bp = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
@@ -140,7 +139,7 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
     }
 
     /* encode codeWords from bitStr */
-    cwCnt = encode928(bitStr, codeWords, bitlen);
+    cwCnt = cc_encode928(bitStr, codeWords, bitlen);
 
     switch (cc_width) {
         case 2:
@@ -191,9 +190,9 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
             break;
     }
 
-    rows = ccaVariants[variant];
-    k = ccaVariants[17 + variant];
-    offset = ccaVariants[34 + variant];
+    rows = cc_aVariants[variant];
+    k = cc_aVariants[17 + variant];
+    offset = cc_aVariants[34 + variant];
 
     /* Reed-Solomon error correction */
 
@@ -201,9 +200,9 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
         total = (codeWords[i] + rsCodeWords[k - 1]) % 929;
         for (j = k - 1; j >= 0; j--) {
             if (j == 0) {
-                rsCodeWords[j] = (929 - (total * ccaCoeffs[offset + j]) % 929) % 929;
+                rsCodeWords[j] = (929 - (total * cc_aCoeffs[offset + j]) % 929) % 929;
             } else {
-                rsCodeWords[j] = (rsCodeWords[j - 1] + 929 - (total * ccaCoeffs[offset + j]) % 929) % 929;
+                rsCodeWords[j] = (rsCodeWords[j - 1] + 929 - (total * cc_aCoeffs[offset + j]) % 929) % 929;
             }
         }
     }
@@ -220,10 +219,10 @@ static void cc_a(struct zint_symbol *symbol, const char source[], const int cc_w
     }
 
     /* Place data into table */
-    LeftRAPStart = aRAPTable[variant];
-    CentreRAPStart = aRAPTable[variant + 17];
-    RightRAPStart = aRAPTable[variant + 34];
-    StartCluster = aRAPTable[variant + 51] / 3;
+    LeftRAPStart = cc_aRAPTable[variant];
+    CentreRAPStart = cc_aRAPTable[variant + 17];
+    RightRAPStart = cc_aRAPTable[variant + 34];
+    StartCluster = cc_aRAPTable[variant + 51] / 3;
 
     LeftRAP = LeftRAPStart;
     CentreRAP = CentreRAPStart;
@@ -652,7 +651,7 @@ static void cc_c(struct zint_symbol *symbol, const char source[], const int cc_w
     }
 }
 
-static int calc_padding_cca(const int binary_length, const int cc_width) {
+static int cc_a_calc_padding(const int binary_length, const int cc_width) {
     int target_bitsize = 0;
 
     switch (cc_width) {
@@ -704,7 +703,7 @@ static int calc_padding_cca(const int binary_length, const int cc_width) {
     return target_bitsize;
 }
 
-static int calc_padding_ccb(const int binary_length, const int cc_width) {
+static int cc_b_calc_padding(const int binary_length, const int cc_width) {
     int target_bitsize = 0;
 
     switch (cc_width) {
@@ -778,7 +777,7 @@ static int calc_padding_ccb(const int binary_length, const int cc_width) {
     return target_bitsize;
 }
 
-static int calc_padding_ccc(const int binary_length, int *p_cc_width, const int linear_width, int *p_ecc_level) {
+static int cc_c_calc_padding(const int binary_length, int *p_cc_width, const int linear_width, int *p_ecc_level) {
     int target_bitsize = 0;
     int byte_length, codewords_used, ecc_level, ecc_codewords, rows;
     int codewords_total, target_codewords, target_bytesize;
@@ -1136,13 +1135,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     switch (cc_mode) {
         case 1:
-            target_bitsize = calc_padding_cca(bp, *p_cc_width);
+            target_bitsize = cc_a_calc_padding(bp, *p_cc_width);
             break;
         case 2:
-            target_bitsize = calc_padding_ccb(bp, *p_cc_width);
+            target_bitsize = cc_b_calc_padding(bp, *p_cc_width);
             break;
         case 3:
-            target_bitsize = calc_padding_ccc(bp, p_cc_width, linear_width, p_ecc_level);
+            target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc_level);
             break;
     }
 
@@ -1173,13 +1172,13 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     switch (cc_mode) {
         case 1:
-            target_bitsize = calc_padding_cca(bp, *p_cc_width);
+            target_bitsize = cc_a_calc_padding(bp, *p_cc_width);
             break;
         case 2:
-            target_bitsize = calc_padding_ccb(bp, *p_cc_width);
+            target_bitsize = cc_b_calc_padding(bp, *p_cc_width);
             break;
         case 3:
-            target_bitsize = calc_padding_ccc(bp, p_cc_width, linear_width, p_ecc_level);
+            target_bitsize = cc_c_calc_padding(bp, p_cc_width, linear_width, p_ecc_level);
             break;
     }
 
@@ -1214,7 +1213,8 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 }
 
 /* Calculate the width of the linear part (primary) */
-static int linear_dummy_run(int input_mode, unsigned char *source, const int length, const int debug, char *errtxt) {
+static int cc_linear_dummy_run(int input_mode, unsigned char *source, const int length, const int debug,
+            char *errtxt) {
     struct zint_symbol dummy = {0};
     int error_number;
     int linear_width;
@@ -1235,9 +1235,8 @@ static int linear_dummy_run(int input_mode, unsigned char *source, const int len
     return linear_width;
 }
 
-static const char in_linear_comp[] = " in linear component";
-
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
+    static const char in_linear_comp[] = " in linear component";
     int error_number, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
@@ -1273,10 +1272,10 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
+        linear_width = cc_linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
                                         symbol->debug, symbol->errtxt);
         if (linear_width == 0) {
-            if (strlen(symbol->errtxt) + strlen(in_linear_comp) < sizeof(symbol->errtxt)) {
+            if (strlen(symbol->errtxt) + sizeof(in_linear_comp) <= sizeof(symbol->errtxt)) {
                 strcat(symbol->errtxt, in_linear_comp);
             }
             return ZINT_ERROR_INVALID_DATA;
@@ -1445,7 +1444,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (error_number) {
         strcpy(symbol->errtxt, linear->errtxt);
-        if (strlen(symbol->errtxt) + strlen(in_linear_comp) < sizeof(symbol->errtxt)) {
+        if (strlen(symbol->errtxt) + sizeof(in_linear_comp) <= sizeof(symbol->errtxt)) {
             strcat(symbol->errtxt, in_linear_comp);
         }
         if (error_number >= ZINT_ERROR) {

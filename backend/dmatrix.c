@@ -1,7 +1,7 @@
 /* dmatrix.c Handles Data Matrix ECC 200 symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     developed from and including some functions from:
         IEC16022 bar code generation
@@ -930,7 +930,7 @@ static void dm_addEdges(struct zint_symbol *symbol, const unsigned char source[]
     /* Not possible to unlatch a full EDF edge to something else */
     if (previous == NULL || previous->endMode != DM_EDIFACT) {
 
-        static const int c40text_modes[] = { DM_C40, DM_TEXT };
+        static const char c40text_modes[] = { DM_C40, DM_TEXT };
 
         if (z_isdigit(source[from]) && from + 1 < length && z_isdigit(source[from + 1])) {
             dm_addEdge(symbol, source, length, edges, DM_ASCII, from, 2, previous, 0);
@@ -1886,7 +1886,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     }
 
     /* ecc code */
-    if (symbolsize == INTSYMBOL144 && !(symbol->option_3 & DM_ISO_144)) {
+    if (symbolsize == DMINTSYMBOL144 && !(symbol->option_3 & DM_ISO_144)) {
         skew = 1;
     }
     dm_ecc(binary, bytes, datablock, rsblock, skew);

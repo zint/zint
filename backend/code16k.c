@@ -1,7 +1,7 @@
 /* code16k.c - Handles Code 16k stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,18 +41,18 @@
 
 /* Note using C128Table with extra entry at 106 (Triple Shift) for C16KTable */
 
+/* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
 static const char C16KStartStop[8][4] = {
-    /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
     {'3','2','1','1'}, {'2','2','2','1'}, {'2','1','2','2'}, {'1','4','1','1'},
     {'1','1','3','2'}, {'1','2','3','1'}, {'1','1','1','4'}, {'3','1','1','2'}
 };
 
 /* EN 12323 Table 5 - Start and stop values defining row numbers */
-static const int C16KStartValues[16] = {
+static const unsigned char C16KStartValues[16] = {
     0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3, 4, 5, 6, 7
 };
 
-static const int C16KStopValues[16] = {
+static const unsigned char C16KStopValues[16] = {
     0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3
 };
 

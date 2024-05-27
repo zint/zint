@@ -123,7 +123,7 @@ typedef unsigned __int64 uint64_t;
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
-#if (defined(_MSC_VER) && _MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
+#if (defined(_MSC_VER) && _MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 #  define ceilf (float) ceil
 #  define floorf (float) floor
 #  define fmodf (float) fmod
@@ -136,7 +136,7 @@ typedef unsigned __int64 uint64_t;
 
 #ifdef _MSC_VER
 #  pragma warning(disable: 4244) /* conversion from int to float */
-#  if _MSC_VER != 1200 /* VC6 */
+#  if _MSC_VER > 1200 /* VC6 */
 #    pragma warning(disable: 4996) /* function or variable may be unsafe */
 #  endif
 #endif
@@ -144,17 +144,17 @@ typedef unsigned __int64 uint64_t;
 /* Is float integral value? (https://stackoverflow.com/a/40404149) */
 #define isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
 
-#if (defined(__GNUC__) || defined(__clang__)) && !defined(ZINT_TEST) && !defined(__MINGW32__)
-#  define INTERNAL __attribute__ ((visibility ("hidden")))
+#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(ZINT_TEST) && !defined(__MINGW32__)
+#  define INTERNAL __attribute__((__visibility__("hidden")))
 #elif defined(ZINT_TEST)
 #  define INTERNAL ZINT_EXTERN /* The test suite references INTERNAL functions, so they need to be exported */
 #else
 #  define INTERNAL
 #endif
 
-#if (defined(__GNUC__) || defined(__clang__)) && !defined(__MINGW32__)
-#  define INTERNAL_DATA_EXTERN __attribute__ ((visibility ("hidden"))) extern
-#  define INTERNAL_DATA __attribute__ ((visibility ("hidden")))
+#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(__MINGW32__)
+#  define INTERNAL_DATA_EXTERN __attribute__((__visibility__("hidden"))) extern
+#  define INTERNAL_DATA __attribute__((__visibility__("hidden")))
 #else
 #  define INTERNAL_DATA_EXTERN extern
 #  define INTERNAL_DATA

@@ -43,18 +43,15 @@ static const char SILVER[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%abcd";
 
 #define ARSENIC_F       (IS_NUM_F | IS_ARS_F) /* ARSENIC "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" */
 
-static const char C11Table[11][6] = {
+static const char C11Table[11 + 1][6] = {
     {'1','1','1','1','2','1'}, {'2','1','1','1','2','1'}, {'1','2','1','1','2','1'}, {'2','2','1','1','1','1'},
     {'1','1','2','1','2','1'}, {'2','1','2','1','1','1'}, {'1','2','2','1','1','1'}, {'1','1','1','2','2','1'},
-    {'2','1','1','2','1','1'}, {'2','1','1','1','1','1'}, {'1','1','2','1','1','1'}
+    {'2','1','1','2','1','1'}, {'2','1','1','1','1','1'}, {'1','1','2','1','1','1'},
+    {'1','1','2','2','1','1'} /* Start character (full 6), Stop character (first 5) */
 };
 
-/* Code 39 tables checked against ISO/IEC 16388:2007 */
-
-/* Incorporates Table A1 */
-
-static const char C39Table[43][10] = {
-    /* Code 39 character assignments (Table 1) */
+/* Code 39 character assignments (ISO/IEC 16388:2007 Table 1 and Table A.1) */
+static const char C39Table[43 + 1][10] = {
     {'1','1','1','2','2','1','2','1','1','1'}, {'2','1','1','2','1','1','1','1','2','1'},
     {'1','1','2','2','1','1','1','1','2','1'}, {'2','1','2','2','1','1','1','1','1','1'},
     {'1','1','1','2','2','1','1','1','2','1'}, {'2','1','1','2','2','1','1','1','1','1'},
@@ -76,11 +73,12 @@ static const char C39Table[43][10] = {
     {'1','2','1','1','1','1','2','1','2','1'}, {'2','2','1','1','1','1','2','1','1','1'},
     {'1','2','2','1','1','1','2','1','1','1'}, {'1','2','1','2','1','2','1','1','1','1'},
     {'1','2','1','2','1','1','1','2','1','1'}, {'1','2','1','1','1','2','1','2','1','1'},
-    {'1','1','1','2','1','2','1','2','1','1'}
+    {'1','1','1','2','1','2','1','2','1','1'},
+    {'1','2','1','1','2','1','2','1','1','1'} /* Start character (full 10), Stop character (first 9) */
 };
 
+/* Encoding the full ASCII character set in Code 39 (ISO/IEC 16388:2007 Table A.2) */
 static const char EC39Ctrl[128][2] = {
-    /* Encoding the full ASCII character set in Code 39 (Table A2) */
     {'%','U'}, {'$','A'}, {'$','B'}, {'$','C'}, {'$','D'}, {'$','E'}, {'$','F'}, {'$','G'}, {'$','H'}, {'$','I'},
     {'$','J'}, {'$','K'}, {'$','L'}, {'$','M'}, {'$','N'}, {'$','O'}, {'$','P'}, {'$','Q'}, {'$','R'}, {'$','S'},
     {'$','T'}, {'$','U'}, {'$','V'}, {'$','W'}, {'$','X'}, {'$','Y'}, {'$','Z'}, {'%','A'}, {'%','B'}, {'%','C'},
@@ -96,6 +94,7 @@ static const char EC39Ctrl[128][2] = {
     {'+','X'}, {'+','Y'}, {'+','Z'}, {'%','P'}, {'%','Q'}, {'%','R'}, {'%','S'}, {'%','T'}
 };
 
+/* Code 93 ANSI/AIM BC5-1995 Table 3 */
 static const char C93Ctrl[128][2] = {
     {'b','U'}, {'a','A'}, {'a','B'}, {'a','C'}, {'a','D'}, {'a','E'}, {'a','F'}, {'a','G'}, {'a','H'}, {'a','I'},
     {'a','J'}, {'a','K'}, {'a','L'}, {'a','M'}, {'a','N'}, {'a','O'}, {'a','P'}, {'a','Q'}, {'a','R'}, {'a','S'},
@@ -112,6 +111,7 @@ static const char C93Ctrl[128][2] = {
     {'d','X'}, {'d','Y'}, {'d','Z'}, {'b','P'}, {'b','Q'}, {'b','R'}, {'b','S'}, {'b','T'}
 };
 
+/* Code 93 ANSI/AIM BC5-1995 Table 2 */
 static const char C93Table[47][6] = {
     {'1','3','1','1','1','2'}, {'1','1','1','2','1','3'}, {'1','1','1','3','1','2'}, {'1','1','1','4','1','1'},
     {'1','2','1','1','1','3'}, {'1','2','1','2','1','2'}, {'1','2','1','3','1','1'}, {'1','1','1','1','1','4'},
@@ -127,8 +127,8 @@ static const char C93Table[47][6] = {
     {'3','1','2','1','1','1'}, {'3','1','1','1','2','1'}, {'1','2','2','2','1','1'}
 };
 
-/* *********************** CODE 11 ******************** */
-INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int length) { /* Code 11 */
+/* Code 11 */
+INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int length) {
 
     int i;
     int h, c_digit, c_weight, c_count, k_digit, k_weight, k_count;
@@ -170,7 +170,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     k_count = 0;
 
     /* start character */
-    memcpy(d, "112211", 6);
+    memcpy(d, C11Table[11], 6);
     d +=  6;
 
     /* Draw main body of barcode */
@@ -223,7 +223,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Stop character */
-    memcpy(d, "11221", 5);
+    memcpy(d, C11Table[11], 5);
     d += 5;
 
     expand(symbol, dest, d - dest);
@@ -274,7 +274,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Start character */
-    memcpy(d, "1211212111", 10);
+    memcpy(d, C39Table[43], 10);
     d += 10;
 
     for (i = 0; i < length; i++, d += 10) {
@@ -303,7 +303,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     /* Stop character */
-    memcpy(d, "121121211", 9);
+    memcpy(d, C39Table[43], 9);
     d += 9;
 
     if ((symbol->symbology == BARCODE_LOGMARS) || (symbol->symbology == BARCODE_HIBC_39)) {
@@ -844,7 +844,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     char output_check;
     int sum;
     int i;
-    static const int weight[17] = {8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2};
+    static const char weight[17] = { 8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2 };
 
     /* Check length */
     if (length != 17) {
@@ -900,7 +900,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     /* Start character */
-    memcpy(d, "1211212111", 10);
+    memcpy(d, C39Table[43], 10);
     d += 10;
 
     /* Import character 'I' prefix? */
@@ -915,7 +915,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     /* Stop character */
-    memcpy(d, "121121211", 9);
+    memcpy(d, C39Table[43], 9);
     d += 9;
 
     expand(symbol, dest, d - dest);

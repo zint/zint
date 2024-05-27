@@ -1,7 +1,7 @@
 /* code1.c - USS Code One */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -461,7 +461,7 @@ static int c1_c40text_cnt(const int current_mode, const int gs1, unsigned char i
         cnt += 2;
         input -= 128;
     }
-    if ((current_mode == C1_C40 && c40_shift[input]) || (current_mode == C1_TEXT && text_shift[input])) {
+    if ((current_mode == C1_C40 && c1_c40_shift[input]) || (current_mode == C1_TEXT && c1_text_shift[input])) {
         cnt += 1;
     }
 
@@ -689,11 +689,11 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                 const char *ct_shift, *ct_value;
 
                 if (current_mode == C1_C40) {
-                    ct_shift = c40_shift;
-                    ct_value = c40_value;
+                    ct_shift = c1_c40_shift;
+                    ct_value = c1_c40_value;
                 } else {
-                    ct_shift = text_shift;
-                    ct_value = text_value;
+                    ct_shift = c1_text_shift;
+                    ct_value = c1_text_value;
                 }
                 if (debug_print) fputs(current_mode == C1_C40 ? "C40 " : "TEXT ", stdout);
 

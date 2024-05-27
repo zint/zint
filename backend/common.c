@@ -551,10 +551,9 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
 }
 
 /* Prevent inlining of `stripf()` which can optimize away its effect */
-#if defined(__GNUC__) || defined(__clang__)
+#if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
 __attribute__((__noinline__))
-#endif
-#if defined(_MSC_VER) && _MSC_VER >= 1310 /* MSVC 2003 (VC++ 7.1) */
+#elif defined(_MSC_VER) && _MSC_VER >= 1310 /* MSVC 2003 (VC++ 7.1) */
 __declspec(noinline)
 #endif
 /* Removes excess precision from floats - see https://stackoverflow.com/q/503436 */

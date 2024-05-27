@@ -1,7 +1,7 @@
 /* plessey.c - Handles Plessey and MSI Plessey */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -123,7 +123,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 /* Modulo 10 check digit - Luhn algorithm
    See https://en.wikipedia.org/wiki/Luhn_algorithm */
 static char msi_check_digit_mod10(const unsigned char source[], const int length) {
-    static const int vals[2][10] = {
+    static const char vals[2][10] = {
         { 0, 2, 4, 6, 8, 1, 3, 5, 7, 9 }, /* Doubled and digits summed */
         { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }, /* Single */
     };

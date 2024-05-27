@@ -507,7 +507,7 @@ static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsi
     }
 
     for (i = *p_i; i < indexliste && PDF_REAL_MODE(liste[1][i]) == PDF_TEX; i++) {
-        static const int newtables[5] = { 0, T_ALPHA, T_LOWER, T_MIXED, T_PUNCT };
+        static const unsigned char newtables[5] = { 0, T_ALPHA, T_LOWER, T_MIXED, T_PUNCT };
         const int newtable = newtables[liste[1][i]];
         const int from = liste[2][i];
         for (j = 0; j < liste[0][i]; j++) {
@@ -1202,7 +1202,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int structapp_cp = 0;
     int error_number;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    static const int ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
+    static const short ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
     if (segs_length(segs, seg_count) > PDF_MAX_LEN) {
         strcpy(symbol->errtxt, "463: Input string too long");

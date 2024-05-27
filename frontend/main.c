@@ -32,7 +32,7 @@
 #  include "../getopt/getopt.h"
 #  ifdef _MSC_VER
 #    include "zint.h"
-#    if _MSC_VER != 1200 /* VC6 */
+#    if _MSC_VER > 1200 /* VC6 */
 #      pragma warning(disable: 4996) /* function or variable may be unsafe */
 #    endif
 #  else

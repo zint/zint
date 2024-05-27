@@ -65,7 +65,7 @@ extern "C" {
 #define testutil_pclose(stream) pclose(stream)
 #endif
 
-#if defined(__clang__) || defined(__GNUC__)
+#if defined(__GNUC__)
 #  pragma GCC diagnostic ignored "-Wpedantic"
 #  pragma GCC diagnostic ignored "-Woverlength-strings"
 #elif defined(_MSC_VER)
@@ -105,7 +105,7 @@ typedef struct s_testFunction {
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size);
 int testContinue(const testCtx *const p_ctx, const int i);
 
-#if (defined(_MSC_VER) &&_MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
+#if (defined(_MSC_VER) &&_MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 void assert_zero(int exp, const char *fmt, ...);
 void assert_nonzero(int exp, const char *fmt, ...);
 void assert_null(const void *exp, const char *fmt, ...);

@@ -1,7 +1,7 @@
 /* aztec.c - Handles Aztec 2D Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,6 +41,7 @@
 #define AZTEC_MAP_SIZE      22801 /* AztecMap Version 32 151 x 151 */
 #define AZTEC_MAP_POSN_MAX  20039 /* Maximum position index in AztecMap */
 
+/* Count number of consecutive (. SP) or (, SP) Punct mode doubles for comparison against Digit mode encoding */
 static int az_count_doubles(const unsigned char source[], int i, const int length) {
     int c = 0;
 
@@ -52,6 +53,7 @@ static int az_count_doubles(const unsigned char source[], int i, const int lengt
     return c;
 }
 
+/* Count number of consecutive full stops or commas (can be encoded in Punct or Digit mode) */
 static int az_count_dotcomma(const unsigned char source[], int i, const int length) {
     int c = 0;
 
@@ -63,6 +65,7 @@ static int az_count_dotcomma(const unsigned char source[], int i, const int leng
     return c;
 }
 
+/* Count number of consecutive `chr`s */
 static int az_count_chr(const unsigned char source[], int i, const int length, const unsigned char chr) {
     int c = 0;
 
@@ -74,6 +77,7 @@ static int az_count_chr(const unsigned char source[], int i, const int length, c
     return c;
 }
 
+/* Return mode following current, or 'E' if none */
 static char az_get_next_mode(const char encode_mode[], const int src_len, int i) {
     int current_mode = encode_mode[i];
 
@@ -87,6 +91,7 @@ static char az_get_next_mode(const char encode_mode[], const int src_len, int i)
     }
 }
 
+/* Same as `bin_append_posn()`, except check for buffer overflow first */
 static int az_bin_append_posn(const int arg, const int length, char *binary, const int bin_posn) {
 
     if (bin_posn + length > AZTEC_BIN_CAPACITY) {
@@ -95,6 +100,7 @@ static int az_bin_append_posn(const int arg, const int length, char *binary, con
     return bin_append_posn(arg, length, binary, bin_posn);
 }
 
+/* Determine encoding modes and encode */
 static int aztec_text_process(const unsigned char source[], int src_len, int bp, char binary_string[], const int gs1,
             const int eci, char *p_current_mode, int *data_length, const int debug_print) {
 
@@ -112,7 +118,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
         if (source[i] >= 128) {
             encode_mode[i] = 'B';
         } else {
-            encode_mode[i] = AztecModes[(int) source[i]];
+            encode_mode[i] = AztecModes[source[i]];
         }
     }
 
@@ -618,15 +624,13 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
             if (reduced_source[i] == ' ') {
                 if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; /* SP */
             } else {
-                if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return 0;
+                if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 5, binary_string, bp))) return 0;
             }
         } else if (reduced_encode_mode[i] == 'L') {
             if (reduced_source[i] == ' ') {
                 if (!(bp = az_bin_append_posn(1, 5, binary_string, bp))) return 0; /* SP */
             } else {
-                if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return 0;
+                if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 5, binary_string, bp))) return 0;
             }
         } else if (reduced_encode_mode[i] == 'M') {
             if (reduced_source[i] == ' ') {
@@ -634,8 +638,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
             } else if (reduced_source[i] == 13) {
                 if (!(bp = az_bin_append_posn(14, 5, binary_string, bp))) return 0; /* CR */
             } else {
-                if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return 0;
+                if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 5, binary_string, bp))) return 0;
             }
         } else if ((reduced_encode_mode[i] == 'P') || (reduced_encode_mode[i] == 'p')) {
             if (gs1 && (reduced_source[i] == '[')) {
@@ -656,8 +659,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
             } else if (reduced_source[i] == '.') {
                 if (!(bp = az_bin_append_posn(19, 5, binary_string, bp))) return 0; /* Full stop */
             } else {
-                if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 5, binary_string, bp)))
-                    return 0;
+                if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 5, binary_string, bp))) return 0;
             }
         } else if (reduced_encode_mode[i] == 'D') {
             if (reduced_source[i] == ' ') {
@@ -667,8 +669,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
             } else if (reduced_source[i] == '.') {
                 if (!(bp = az_bin_append_posn(13, 4, binary_string, bp))) return 0; /* Full stop */
             } else {
-                if (!(bp = az_bin_append_posn(AztecSymbolChar[(int) reduced_source[i]], 4, binary_string, bp)))
-                    return 0;
+                if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 4, binary_string, bp))) return 0;
             }
         }
     }

@@ -137,7 +137,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     };
 
     /* Cost of switching modes from k to j - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
-    static const unsigned int switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
+    static const unsigned char switch_costs[GM_NUM_MODES][GM_NUM_MODES] = {
         /*      H             N                   L             U             M             B  */
         /*H*/ {            0, (13 + 2) * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, 13 * GM_MULT, (13 + 9) * GM_MULT },
         /*N*/ { 10 * GM_MULT,                  0, 10 * GM_MULT, 10 * GM_MULT, 10 * GM_MULT, (10 + 9) * GM_MULT },
@@ -148,7 +148,7 @@ static void gm_define_mode(char *mode, const unsigned int ddata[], const int len
     };
 
     /* Final end-of-data cost - see AIMD014 Rev. 1.63 Table 9 – Type conversion codes */
-    static const unsigned int eod_costs[GM_NUM_MODES] = {
+    static const unsigned char eod_costs[GM_NUM_MODES] = {
     /*  H             N             L            U            M             B  */
         13 * GM_MULT, 10 * GM_MULT, 5 * GM_MULT, 5 * GM_MULT, 10 * GM_MULT, 4 * GM_MULT
     };

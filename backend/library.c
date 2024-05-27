@@ -711,7 +711,8 @@ INTERNAL void strip_bom_test(unsigned char *source, int *input_length) {
 #endif
 
 /* Helper to convert base octal, decimal, hexadecimal escape sequence */
-static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int length, int in_posn, int base) {
+static int esc_base(struct zint_symbol *symbol, const unsigned char *input_string, const int length,
+            const int in_posn, const unsigned char base) {
     int c1, c2, c3;
     int min_len = base == 'x' ? 2 : 3;
 
@@ -743,14 +744,14 @@ static int esc_base(struct zint_symbol *symbol, unsigned char *input_string, int
 }
 
 /* Helper to parse escape sequences. If `escaped_string` NULL, calculates length only */
-static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_string, int *p_length,
+static int escape_char_process(struct zint_symbol *symbol, const unsigned char *input_string, int *p_length,
             unsigned char *escaped_string) {
                                /* NUL   EOT   BEL   BS    HT    LF    VT    FF    CR    ESC   GS    RS   \ */
     static const char escs[] = {  '0',  'E',  'a',  'b',  't',  'n',  'v',  'f',  'r',  'e',  'G',  'R', '\\', '\0' };
     static const char vals[] = { 0x00, 0x04, 0x07, 0x08, 0x09, 0x0A, 0x0B, 0x0C, 0x0D, 0x1B, 0x1D, 0x1E, 0x5C };
     const int length = *p_length;
     int in_posn = 0, out_posn = 0;
-    int ch;
+    unsigned char ch;
     int val;
     int i;
     unsigned long unicode;
@@ -886,7 +887,7 @@ static int escape_char_process(struct zint_symbol *symbol, unsigned char *input_
 }
 
 #ifdef ZINT_TEST /* Wrapper for direct testing (also used by `testUtilZXingCPPCmp()` in "tests/testcommon.c") */
-INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *p_length,
+INTERNAL int escape_char_process_test(struct zint_symbol *symbol, const unsigned char *input_string, int *p_length,
                 unsigned char *escaped_string) {
     return escape_char_process(symbol, input_string, p_length, escaped_string);
 }
@@ -1235,7 +1236,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                 if (error_number) {
                     static const char in_2d_comp[] = " in 2D component";
                     if (is_composite(symbol->symbology)
-                            && strlen(symbol->errtxt) + strlen(in_2d_comp) < sizeof(symbol->errtxt)) {
+                            && strlen(symbol->errtxt) + sizeof(in_2d_comp) <= sizeof(symbol->errtxt)) {
                         strcat(symbol->errtxt, in_2d_comp);
                     }
                     error_number = error_tag(symbol, error_number, NULL);

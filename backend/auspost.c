@@ -1,7 +1,7 @@
 /* auspost.c - Handles Australia Post 4-State Barcode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -91,7 +91,7 @@ static char *aus_rs_error(char data_pattern[], char *d) {
     rs_encode(&rs, triple_writer, triple, result);
 
     for (reader = 4; reader > 0; reader--, d += 3) {
-        memcpy(d, AusBarTable[(int) result[reader - 1]], 3);
+        memcpy(d, AusBarTable[result[reader - 1]], 3);
     }
 
     return d;

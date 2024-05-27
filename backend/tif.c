@@ -115,7 +115,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     (void) out_colour_get_rgb(symbol->bgcolour, &bg[0], &bg[1], &bg[2], &bg[3]);
 
     if (symbol->symbology == BARCODE_ULTRA) {
-        static const int ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
+        static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
 
         if (symbol->output_options & CMYK_COLOUR) {
             static const unsigned char ultra_cmyks[8][4] = {

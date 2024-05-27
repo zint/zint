@@ -364,7 +364,7 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     };
 
     /* Cost of switching modes from k to j */
-    static const unsigned int switch_costs[HX_NUM_MODES][HX_NUM_MODES] = {
+    static const unsigned char switch_costs[HX_NUM_MODES][HX_NUM_MODES] = {
         /*      N                   T                   B                        1                   2                   D                   F */
         /*N*/ {                  0, (10 + 4) * HX_MULT, (10 + 4 + 13) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, (10 + 4) * HX_MULT, 10 * HX_MULT },
         /*T*/ {  (6 + 4) * HX_MULT,                  0,  (6 + 4 + 13) * HX_MULT,  (6 + 4) * HX_MULT,  (6 + 4) * HX_MULT,  (6 + 4) * HX_MULT,  6 * HX_MULT },
@@ -376,7 +376,7 @@ static void hx_define_mode(char *mode, const unsigned int ddata[], const int len
     };
 
     /* Final end-of-data costs */
-    static const unsigned int eod_costs[HX_NUM_MODES] = {
+    static const unsigned char eod_costs[HX_NUM_MODES] = {
     /*  N             T            B  1             2             D             F */
         10 * HX_MULT, 6 * HX_MULT, 0, 12 * HX_MULT, 12 * HX_MULT, 15 * HX_MULT, 0
     };

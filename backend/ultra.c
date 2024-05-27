@@ -1,7 +1,7 @@
 /*  ultra.c - Ultracode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -58,11 +58,11 @@ static const char ult_colour[] = "0CBMRYGKW";
 
 /* Max size and min cols adjusted to BWIPP values as updated 2021-07-14
    https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc */
-static const int ult_maxsize[] = {37, 84, 161, 282};
+static const short ult_maxsize[] = { 37, 84, 161, 282 };
 
-static const int ult_mincols[] = {5, 13, 22, 29};
+static const char ult_mincols[] = { 5, 13, 22, 29 };
 
-static const int ult_kec[] = {0, 1, 2, 4, 6, 8}; /* Value K(EC) from Table 12 */
+static const char ult_kec[] = { 0, 1, 2, 4, 6, 8 }; /* Value K(EC) from Table 12 */
 
 /* Taken from BWIPP - change in DCCU/DCCL tiles for revision 2 2021-09-28 */
 static const unsigned short ult_dccu[2][32] = {
@@ -95,7 +95,7 @@ static const unsigned short ult_dccl[2][32] = {
     },
 };
 
-static const int ult_tiles[] = {
+static const unsigned short ult_tiles[] = {
     013135, 013136, 013153, 013156, 013163, 013165, 013513, 013515, 013516, 013531, /*   0-9 */
     013535, 013536, 013561, 013563, 013565, 013613, 013615, 013616, 013631, 013635, /*  10-19 */
     013636, 013651, 013653, 013656, 015135, 015136, 015153, 015163, 015165, 015313, /*  20-29 */

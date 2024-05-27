@@ -339,7 +339,7 @@ static void qr_define_mode(char mode[], const unsigned int ddata[], const int le
 
 /* Returns mode indicator based on version and mode */
 static int qr_mode_indicator(const int version, const int mode) {
-    static const int mode_indicators[6][QR_NUM_MODES] = {
+    static const char mode_indicators[6][QR_NUM_MODES] = {
         /*N  A  B  K */
         { 1, 2, 4, 8, }, /* QRCODE */
         { 1, 2, 3, 4, }, /* RMQR */
@@ -373,7 +373,7 @@ static int qr_mode_bits(const int version) {
 
 /* Return character count indicator bits based on version and mode */
 static int qr_cci_bits(const int version, const int mode) {
-    static const int cci_bits[7][QR_NUM_MODES] = {
+    static const char cci_bits[7][QR_NUM_MODES] = {
         /* N   A   B   K */
         { 10,  9,  8,  8, }, /* QRCODE */
         { 12, 11, 16, 10, },
@@ -383,7 +383,7 @@ static int qr_cci_bits(const int version, const int mode) {
         {  5,  4,  4,  3, },
         {  6,  5,  5,  4, }
     };
-    static const unsigned short *rmqr_ccis[QR_NUM_MODES] = {
+    static const unsigned char *rmqr_ccis[QR_NUM_MODES] = {
         rmqr_numeric_cci, rmqr_alphanum_cci, rmqr_byte_cci, rmqr_kanji_cci,
     };
     int mode_index = posn(qr_mode_types, (const char) mode);

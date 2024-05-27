@@ -72,11 +72,11 @@ static const unsigned char mailmark_data_symbol_even[30] = {
     0x33, 0x35, 0x36, 0x39, 0x3A, 0x3C
 };
 
-static const unsigned short mailmark_extender_group_c[22] = {
+static const unsigned char mailmark_extender_group_c[22] = {
     3, 5, 7, 11, 13, 14, 16, 17, 19, 0, 1, 2, 4, 6, 8, 9, 10, 12, 15, 18, 20, 21
 };
 
-static const unsigned short mailmark_extender_group_l[26] = {
+static const unsigned char mailmark_extender_group_l[26] = {
     2, 5, 7, 8, 13, 14, 15, 16, 21, 22, 23, 0, 1, 3, 4, 6, 9, 10, 11, 12, 17, 18, 19, 20, 24, 25
 };
 

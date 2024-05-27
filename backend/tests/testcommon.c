@@ -64,7 +64,7 @@ static const char *testFunc = NULL;
 
 /* Visual C++ 6 doesn't support variadic args to macros, so make do with functions, which have inferior behaviour,
    e.g. don't exit on failure, `assert_equal()` type-specific */
-#if (defined(_MSC_VER) && _MSC_VER == 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
+#if (defined(_MSC_VER) && _MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 #include <stdarg.h>
 void assert_zero(int exp, const char *fmt, ...) {
     assertionNum++;
@@ -3895,7 +3895,7 @@ int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, 
     return 0;
 }
 
-INTERNAL int escape_char_process_test(struct zint_symbol *symbol, unsigned char *input_string, int *length,
+INTERNAL int escape_char_process_test(struct zint_symbol *symbol, const unsigned char *input_string, int *length,
                 unsigned char *escaped_string);
 
 #include "../gs1.h"
