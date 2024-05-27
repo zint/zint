@@ -552,6 +552,7 @@ static void test_input(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int j;
+        char *slash;
 
         if (testContinue(p_ctx, i)) continue;
 #ifdef _WIN32
@@ -591,8 +592,14 @@ static void test_input(const testCtx *const p_ctx) {
         }
 
         assert_zero(testUtilRemove(input_filename), "i:%d testUtilRemove(%s) != 0 (%d: %s)\n", i, input_filename, errno, strerror(errno));
-        if (data[i].batch && data[i].mirror && data[i].outfile && data[i].outfile[0] && strcmp(data[i].outfile, TEST_MIRRORED_DIR_TOO_LONG) != 0) {
-            assert_zero(testUtilRmDir(data[i].outfile), "i:%d testUtilRmDir(%s) != 0 (%d: %s)\n", i, data[i].outfile, errno, strerror(errno));
+
+        /* Remove directory if any */
+        if (data[i].outfile && (slash = strrchr(data[i].outfile, '/')) != NULL && strcmp(data[i].outfile, TEST_MIRRORED_DIR_TOO_LONG) != 0) {
+            char dirpath[256];
+            assert_nonzero((size_t) (slash - data[i].outfile) < sizeof(dirpath), "i: %d output directory too long\n", i);
+            strncpy(dirpath, data[i].outfile, slash - data[i].outfile);
+            dirpath[slash - data[i].outfile] = '\0';
+            assert_zero(testUtilRmDir(dirpath), "i:%d testUtilRmDir(%s) != 0 (%d: %s)\n", i, dirpath, errno, strerror(errno));
         }
     }
 

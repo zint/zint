@@ -716,7 +716,7 @@ static int az_avoidReferenceGrid(int output) {
 
 /* Calculate the position of the bits in the grid (non-compact) */
 static void az_populate_map(short AztecMap[], const int layers) {
-    int layer, n, i;
+    int layer;
     int x, y;
     const int offset = AztecOffset[layers - 1];
     const int endoffset = 151 - offset;
@@ -725,53 +725,50 @@ static void az_populate_map(short AztecMap[], const int layers) {
         const int start = (112 * layer) + (16 * layer * layer) + 2;
         const int length = 28 + (layer * 4) + (layer + 1) * 4;
         int av0, av1;
+        int n = start, end;
         /* Top */
-        i = 0;
         x = 64 - (layer * 2);
         y = 63 - (layer * 2);
         av0 = az_avoidReferenceGrid(y) * 151;
         av1 = az_avoidReferenceGrid(y - 1) * 151;
-        for (n = start; n < (start + length); n += 2) {
-            int avxi = az_avoidReferenceGrid(x + i);
-            AztecMap[av0 + avxi] = n;
-            AztecMap[av1 + avxi] = n + 1;
-            i++;
+        end = start + length;
+        while (n < end) {
+            const int avxi = az_avoidReferenceGrid(x++);
+            AztecMap[av0 + avxi] = n++;
+            AztecMap[av1 + avxi] = n++;
         }
         /* Right */
-        i = 0;
         x = 78 + (layer * 2);
         y = 64 - (layer * 2);
         av0 = az_avoidReferenceGrid(x);
         av1 = az_avoidReferenceGrid(x + 1);
-        for (n = start + length; n < (start + (length * 2)); n += 2) {
-            int avyi = az_avoidReferenceGrid(y + i) * 151;
-            AztecMap[avyi + av0] = n;
-            AztecMap[avyi + av1] = n + 1;
-            i++;
+        end += length;
+        while (n < end) {
+            const int avyi = az_avoidReferenceGrid(y++) * 151;
+            AztecMap[avyi + av0] = n++;
+            AztecMap[avyi + av1] = n++;
         }
         /* Bottom */
-        i = 0;
         x = 77 + (layer * 2);
         y = 78 + (layer * 2);
         av0 = az_avoidReferenceGrid(y) * 151;
         av1 = az_avoidReferenceGrid(y + 1) * 151;
-        for (n = start + (length * 2); n < (start + (length * 3)); n += 2) {
-            int avxi = az_avoidReferenceGrid(x - i);
-            AztecMap[av0 + avxi] = n;
-            AztecMap[av1 + avxi] = n + 1;
-            i++;
+        end += length;
+        while (n < end) {
+            const int avxi = az_avoidReferenceGrid(x--);
+            AztecMap[av0 + avxi] = n++;
+            AztecMap[av1 + avxi] = n++;
         }
         /* Left */
-        i = 0;
         x = 63 - (layer * 2);
         y = 77 + (layer * 2);
         av0 = az_avoidReferenceGrid(x);
         av1 = az_avoidReferenceGrid(x - 1);
-        for (n = start + (length * 3); n < (start + (length * 4)); n += 2) {
-            int avyi = az_avoidReferenceGrid(y - i) * 151;
-            AztecMap[avyi + av0] = n;
-            AztecMap[avyi + av1] = n + 1;
-            i++;
+        end += length;
+        while (n < end) {
+            const int avyi = az_avoidReferenceGrid(y--) * 151;
+            AztecMap[avyi + av0] = n++;
+            AztecMap[avyi + av1] = n++;
         }
     }
 
