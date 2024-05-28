@@ -197,7 +197,8 @@ static char *posixly_correct;
    whose names are inconsistent.  */
 
 #ifndef getenv
-extern char *getenv ();
+/* zint: prototype it to avoid warning `-Wdeprecated-non-prototype` (will be error in C2x) */
+extern char *getenv (const char *); /* was extern char *getenv (); */
 #endif
 
 #endif /* not __GNU_LIBRARY__ */

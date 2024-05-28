@@ -683,7 +683,7 @@ static void test_escape_char_process_test(const testCtx *const p_ctx) {
 
         symbol.symbology = data[i].symbology;
         symbol.input_mode = data[i].input_mode;
-        length = strlen(data[i].data);
+        length = (int) strlen(data[i].data);
 
         escaped_len = length;
         ret = escape_char_process_test(&symbol, (unsigned char *) data[i].data, &escaped_len, NULL);
