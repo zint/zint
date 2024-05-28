@@ -136,7 +136,7 @@ struct option
    `getopt'.  */
 
 /* zint: prototype it always to avoid warning `-Wdeprecated-non-prototype` (will be error in C2x) */
-#ifdef 1 /* was __GNU_LIBRARY__ */
+#if 1 /* was #ifdef __GNU_LIBRARY__ */
 /* Many other libraries have conflicting prototypes for getopt, with
    differences in the consts, in stdlib.h.  To avoid compilation
    errors, only prototype getopt for the GNU C library.  */
