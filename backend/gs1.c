@@ -1,7 +1,7 @@
 /* gs1.c - Verifies GS1 data */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -206,7 +206,8 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
     if (data_len < min) {
         return 0;
     }
-    if (data_len && data_len < 2) { /* Do this check separately for backward compatibility */
+    /* Do this check separately for backward compatibility */
+    if (data_len && data_len < 2) {
         *p_err_no = 4;
         return 0;
     }
@@ -253,7 +254,8 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
     if (data_len < min) {
         return 0;
     }
-    if (data_len && data_len < 2) { /* Do this check separately for backward compatibility */
+    /* Do this check separately for backward compatibility */
+    if (data_len && data_len < 2) {
         *p_err_no = 4;
         return 0;
     }
@@ -272,13 +274,81 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
     return 1;
 }
 
+/* Note following date/time checkers (!length_only) assume data all digits, i.e. `numeric()` has succeeded */
+
+/* Check for a date YYYYMMDD with zero day allowed */
+static int yyyymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    static const char days_in_month[13] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
+
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min || (data_len && data_len < 8)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        int month, day;
+
+        month = to_int(data + offset + 4, 2);
+        if (month == 0 || month > 12) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 4 + 1;
+            sprintf(err_msg, "Invalid month '%.2s'", data + offset + 4);
+            return 0;
+        }
+
+        day = to_int(data + offset + 6, 2);
+        if (day && day > days_in_month[month]) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 6 + 1;
+            sprintf(err_msg, "Invalid day '%.2s'", data + offset + 6);
+            return 0;
+        }
+        /* Leap year check */
+        if (month == 2 && day == 29) {
+            const int year = to_int(data + offset, 4);
+            if ((year & 3) || (year % 100 == 0 && year % 400 != 0)) {
+                *p_err_no = 3;
+                *p_err_posn = offset + 6 + 1;
+                sprintf(err_msg, "Invalid day '%.2s'", data + offset + 6);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a date YYYYMMDD. Zero day NOT allowed */
+static int yyyymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    if (!yyyymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+        return 0;
+    }
+
+    data_len -= offset;
+
+    if (!length_only && data_len) {
+        const int day = to_int(data + offset + 6, 2);
+        if (day == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 6 + 1;
+            sprintf(err_msg, "Invalid day '%.2s'", data + offset + 6);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
 /* Check for a date YYMMDD with zero day allowed */
 static int yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
-
-    static const char days_in_month[] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
-
-    (void)max;
 
     data_len -= offset;
 
@@ -287,31 +357,14 @@ static int yymmd0(const unsigned char *data, int data_len, int offset, int min, 
     }
 
     if (!length_only && data_len) {
-        int month, day;
+        /* For leap year detection, only matters if 00 represents century divisible by 400 or not */
+        /* Following good until 2050 when 00 will mean 2100 (GS1 General Specifications 7.12) */
+        unsigned char buf[8] = { '2', '0' };
 
-        month = to_int(data + offset + 2, 2);
-        if (month == 0 || month > 12) {
-            *p_err_no = 3;
-            *p_err_posn = offset + 2 + 1;
-            sprintf(err_msg, "Invalid month '%.2s'", data + offset + 2);
+        memcpy(buf + 2, data + offset, 6);
+        if (!yyyymmd0(buf, 8, 0, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+            *p_err_posn += offset - 2;
             return 0;
-        }
-
-        day = to_int(data + offset + 4, 2);
-        if (day && day > days_in_month[month]) {
-            *p_err_no = 3;
-            *p_err_posn = offset + 4 + 1;
-            sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
-            return 0;
-        }
-        if (month == 2 && day == 29) { /* Leap year check */
-            const int year = to_int(data + offset, 2);
-            if (year & 3) { /* Good until 2050 when 00 will mean 2100 (GS1 General Specifications 7.12) */
-                *p_err_no = 3;
-                *p_err_posn = offset + 4 + 1;
-                sprintf(err_msg, "Invalid day '%.2s'", data + offset + 4);
-                return 0;
-            }
         }
     }
 
@@ -473,7 +526,8 @@ static int iso3166list(const unsigned char *data, int data_len, int offset, int 
     if (data_len < min || (data_len && data_len < 3)) {
         return 0;
     }
-    if (data_len && data_len_max % 3) { /* Do this check separately for backward compatibility */
+    /* Do this check separately for backward compatibility */
+    if (data_len && data_len_max % 3) {
         *p_err_no = 4;
         return 0;
     }
@@ -767,7 +821,8 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
     if (data_len < min) {
         return 0;
     }
-    if (data_len && data_len < 5) { /* Do this check separately for backward compatibility */
+    /* Do this check separately for backward compatibility */
+    if (data_len && data_len < 5) {
         *p_err_no = 4;
         return 0;
     }
@@ -778,7 +833,8 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
         int checksum = 0;
         int given_checksum;
 
-        if (!z_isupper(d[0]) || !z_isupper(d[1])) { /* 1st 2 chars alphabetic country code */
+        /* 1st 2 chars alphabetic country code */
+        if (!z_isupper(d[0]) || !z_isupper(d[1])) {
             *p_err_no = 3;
             *p_err_posn = d - data + 1;
             sprintf(err_msg, "Non-alphabetic IBAN country code '%.2s'", d);
@@ -791,7 +847,8 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
             return 0;
         }
         d += 2;
-        if (!z_isdigit(d[0]) || !z_isdigit(d[1])) { /* 2nd 2 chars numeric checksum */
+        /* 2nd 2 chars numeric checksum */
+        if (!z_isdigit(d[0]) || !z_isdigit(d[1])) {
             *p_err_no = 3;
             *p_err_posn = d - data + 1;
             sprintf(err_msg, "Non-numeric IBAN checksum '%.2s'", d);
@@ -952,7 +1009,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
     if (data_len < min) {
         return 0;
     }
-    if (data_len && data_len < min_req_len) { /* Do separately for backward compatibility */
+    /* Do separately for backward compatibility */
+    if (data_len && data_len < min_req_len) {
         *p_err_no = 4;
         return 0;
     }
@@ -1169,7 +1227,8 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
     if (data_len < min) {
         return 0;
     }
-    if (data_len && (data_len < min_len || data_len > max_len)) { /* Do separately for backward compatibility */
+    /* Do separately for backward compatibility */
+    if (data_len && (data_len < min_len || data_len > max_len)) {
         *p_err_no = 4;
         return 0;
     }
@@ -1322,6 +1381,100 @@ static int hyphen(const unsigned char *data, int data_len, int offset, int min, 
                 strcpy(err_msg, "Invalid temperature indicator (hyphen only)");
                 return 0;
             }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for an ISO/IEC 5128 code for the representation of human sexes (GSCN 22-246) */
+static int iso5218(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        /* 0 = Not known, 1 = Male, 2 = Female, 9 = Not applicable */
+        if (data[offset] != '0' && data[offset] != '1' && data[offset] != '2' && data[offset] != '9') {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Invalid biological sex code (0, 1, 2 or 9 only)");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Validate sequence indicator, slash-separated (GSCN 22-246) */
+static int posinseqslash(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    data_len -= offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+        const unsigned char *slash = NULL;
+        int pos, tot;
+
+        for (; d < de; d++) {
+            if (!z_isdigit(*d)) {
+                if (*d != '/') {
+                    *p_err_no = 3;
+                    *p_err_posn = d - data + 1;
+                    sprintf(err_msg, "Invalid character '%c' in sequence", *d);
+                    return 0;
+                }
+                if (slash) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - data + 1;
+                    strcpy(err_msg, "Single sequence separator ('/') only");
+                    return 0;
+                }
+                if (d == data + offset || d + 1 == de) {
+                    *p_err_no = 3;
+                    *p_err_posn = d - data + 1;
+                    strcpy(err_msg, "Sequence separator '/' cannot start or end");
+                    return 0;
+                }
+                slash = d;
+            }
+        }
+        if (!slash) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "No sequence separator ('/')");
+            return 0;
+        }
+        pos = to_int(data + offset, slash - (data + offset));
+        if (pos == 0) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Sequence position cannot be zero");
+            return 0;
+        }
+        tot = to_int(slash + 1, de - (slash + 1));
+        if (tot == 0) {
+            *p_err_no = 3;
+            *p_err_posn = slash + 1 - data + 1;
+            strcpy(err_msg, "Sequence total cannot be zero");
+            return 0;
+        }
+        if (pos > tot) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "Sequence position greater than total");
+            return 0;
         }
     }
 

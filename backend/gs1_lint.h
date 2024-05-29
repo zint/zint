@@ -4,7 +4,7 @@
  */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -354,7 +354,7 @@ static int n6_yymmdd__n6__yymmdd(const unsigned char *data, const int data_len,
             && yymmdd(data, data_len, 6, 0, 6, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* X..10 (Used by FISHING GEAR TYPE) */
+/* X..10 (Used by FISHING GEAR TYPE, SUFFIX) */
 static int x__10(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 10
@@ -424,6 +424,63 @@ static int x__25(const unsigned char *data, const int data_len,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 25
             && cset82(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg);
+}
+
+/* N8,yyyymmdd (Used by DOB) */
+static int n8_yyyymmdd(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 8
+            && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg)
+            && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* N8,yyyymmdd N4,hhmm (Used by DOB TIME) */
+static int n8_yyyymmdd_n4_hhmm(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 12
+            && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hhmm(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg)
+            && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg)
+            && hhmm(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* N1,iso5218 (Used by BIO SEX) */
+static int n1_iso5218(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 1
+            && iso5218(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg)
+            && iso5218(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* X..40,pcenc (Used by FAMILY NAME, GIVEN NAME, BABY) */
+static int x__40_pcenc(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 1 && data_len <= 40
+            && pcenc(data, data_len, 0, 1, 40, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 1, 40, p_err_no, p_err_posn, err_msg)
+            && pcenc(data, data_len, 0, 1, 40, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* X..90,pcenc (Used by FULL NAME) */
+static int x__90_pcenc(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 1 && data_len <= 90
+            && pcenc(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg)
+            && pcenc(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* X3,posinseqslash (Used by BIRTH SEQUENCE) */
+static int x3_posinseqslash(const unsigned char *data, const int data_len,
+            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 3
+            && posinseqslash(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
+            && posinseqslash(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N4,nonzero N5,nonzero N3,nonzero N1,winding N1 (Used by DIMENSIONS) */
@@ -823,6 +880,30 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 7242) {
             return x__25(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7250) {
+            return n8_yyyymmdd(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7251) {
+            return n8_yyyymmdd_n4_hhmm(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7252) {
+            return n1_iso5218(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7253 || ai == 7254 || ai == 7259) {
+            return x__40_pcenc(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7255) {
+            return x__10(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7256) {
+            return x__90_pcenc(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7257) {
+            return x__70_pcenc(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7258) {
+            return x3_posinseqslash(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 8100) {

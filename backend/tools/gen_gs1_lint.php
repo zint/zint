@@ -2,7 +2,7 @@
 /* Generate GS1 verify include "backend/gs1_lint.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2023 <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 <rstuart114@gmail.com>
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -27,7 +27,8 @@ $dirdirname = basename(dirname($dirname)) . '/' . basename($dirname);
 $opts = getopt('c:f:h:l:t:');
 
 $print_copyright = isset($opts['c']) ? (bool) $opts['c'] : true;
-$file = isset($opts['f']) ? $opts['f'] : 'https://raw.githubusercontent.com/gs1/gs1-syntax-dictionary/main/gs1-syntax-dictionary.txt';
+$file = isset($opts['f']) ? $opts['f']
+                    : 'https://raw.githubusercontent.com/gs1/gs1-syntax-dictionary/main/gs1-syntax-dictionary.txt';
 $print_h_guard = isset($opts['h']) ? (bool) $opts['h'] : true;
 $use_length_only = isset($opts['l']) ? (bool) $opts['l'] : true;
 $tab = isset($opts['t']) ? $opts['t'] : '    ';
@@ -55,12 +56,14 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *] )([NXYZ][0-9.][ NXYZ0-9.,a-z=|+\[\]]*)(?:# (.+))?$/', $line, $matches)) {
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *?]* )([NXYZ][0-9.][ NXYZ0-9.,a-z=|+\[\]]*)(?:# (.+))?$/',
+                    $line, $matches)) {
         print $line . PHP_EOL;
         exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
     }
     $ai = $matches[1];
-    $fixed = trim($matches[2]);
+    $flags = trim($matches[2]);
+    $fixed = strpos($flags, "*") !== false;
     $spec = preg_replace('/ +req=[0-9,n+]*/', '', trim($matches[3])); // Strip mandatory association info
     $spec = preg_replace('/ +ex=[0-9,n]*/', '', $spec); // Strip invalid pairings info
     $spec = preg_replace('/ +dlpkey[=0-9,|]*/', '', $spec); // Strip Digital Link primary key info
@@ -156,7 +159,8 @@ foreach ($lines as $line) {
                 $validator = "cset64";
             }
         } else {
-            exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no" . PHP_EOL);
+            exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no"
+                    . PHP_EOL);
         }
         $spec_parts[$spec][] = array($min, $max, $validator, $checkers);
     }
@@ -239,7 +243,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
