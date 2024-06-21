@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -350,7 +350,7 @@ static void test_numeric(const testCtx *const p_ctx) {
         /*307*/ { 900, 0 },
         /*308*/ { 901, 1 },
         /*309*/ { 902, 0 },
-        /*310*/ { 924, 0 },
+        /*310*/ { 924, 1 },
         /*311*/ { 925, 1 },
         /*312*/ { 926, 0 },
         /*313*/ { 927, 1 },
@@ -358,7 +358,7 @@ static void test_numeric(const testCtx *const p_ctx) {
         /*315*/ { 929, 1 },
         /*316*/ { 930, 1 },
         /*317*/ { 931, 1 },
-        /*318*/ { 932, 1 },
+        /*318*/ { 932, 1 }, /* TODO: 1 -> 0, 1 Sept 2024 */
         /*319*/ { 933, 1 },
         /*320*/ { 934, 1 },
         /*321*/ { 935, 0 },
@@ -447,7 +447,7 @@ static void test_numeric(const testCtx *const p_ctx) {
 
 /* Binary chop version: Whether ISO 4217 numeric */
 static int bc_iso4217_numeric(int cc) {
-    static const short codes[180] = {
+    static const short codes[181] = {
         /*ALL*/   8, /*DZD*/  12, /*ARS*/  32, /*AUD*/  36, /*BSD*/  44, /*BHD*/  48, /*BDT*/  50, /*AMD*/  51, /*BBD*/  52, /*BMD*/  60,
         /*BTN*/  64, /*BOB*/  68, /*BWP*/  72, /*BZD*/  84, /*SBD*/  90, /*BND*/  96, /*MMK*/ 104, /*BIF*/ 108, /*KHR*/ 116, /*CAD*/ 124,
         /*CVE*/ 132, /*KYD*/ 136, /*LKR*/ 144, /*CLP*/ 152, /*CNY*/ 156, /*COP*/ 170, /*KMF*/ 174, /*CRC*/ 188, /*HRK*/ 191, /*CUP*/ 192,
@@ -460,8 +460,9 @@ static int bc_iso4217_numeric(int cc) {
         /*PYG*/ 600, /*PEN*/ 604, /*PHP*/ 608, /*QAR*/ 634, /*RUB*/ 643, /*RWF*/ 646, /*SHP*/ 654, /*SAR*/ 682, /*SCR*/ 690, /*SLL*/ 694,
         /*SGD*/ 702, /*VND*/ 704, /*SOS*/ 706, /*ZAR*/ 710, /*SSP*/ 728, /*SZL*/ 748, /*SEK*/ 752, /*CHF*/ 756, /*SYP*/ 760, /*THB*/ 764,
         /*TOP*/ 776, /*TTD*/ 780, /*AED*/ 784, /*TND*/ 788, /*UGX*/ 800, /*MKD*/ 807, /*EGP*/ 818, /*GBP*/ 826, /*TZS*/ 834, /*USD*/ 840,
-        /*UYU*/ 858, /*UZS*/ 860, /*WST*/ 882, /*YER*/ 886, /*TWD*/ 901, /*SLE*/ 925, /*UYW*/ 927, /*VES*/ 928, /*MRU*/ 929, /*STN*/ 930,
-        /*CUC*/ 931, /*ZWL*/ 932, /*BYN*/ 933, /*TMT*/ 934, /*GHS*/ 936, /*SDG*/ 938, /*UYI*/ 940, /*RSD*/ 941, /*MZN*/ 943, /*AZN*/ 944,
+        /*UYU*/ 858, /*UZS*/ 860, /*WST*/ 882, /*YER*/ 886, /*TWD*/ 901, /*ZWG*/ 924, /*SLE*/ 925, /*UYW*/ 927, /*VES*/ 928, /*MRU*/ 929,
+        /*STN*/ 930, /*CUC*/ 931, /*ZWL*/ 932, /* TODO: remove 1 Sept 2024 */
+        /*BYN*/ 933, /*TMT*/ 934, /*GHS*/ 936, /*SDG*/ 938, /*UYI*/ 940, /*RSD*/ 941, /*MZN*/ 943, /*AZN*/ 944,
         /*RON*/ 946, /*CHE*/ 947, /*CHW*/ 948, /*TRY*/ 949, /*XAF*/ 950, /*XCD*/ 951, /*XOF*/ 952, /*XPF*/ 953, /*XBA*/ 955, /*XBB*/ 956,
         /*XBC*/ 957, /*XBD*/ 958, /*XAU*/ 959, /*XDR*/ 960, /*XAG*/ 961, /*XPT*/ 962, /*XTS*/ 963, /*XPD*/ 964, /*XUA*/ 965, /*ZMW*/ 967,
         /*SRD*/ 968, /*MGA*/ 969, /*COU*/ 970, /*AFN*/ 971, /*TJS*/ 972, /*AOA*/ 973, /*BGN*/ 975, /*CDF*/ 976, /*BAM*/ 977, /*EUR*/ 978,
