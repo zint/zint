@@ -4,9 +4,7 @@
 
 project(zint_frontend)
 
-set(${PROJECT_NAME}_SRCS main.c)
-
-add_executable(${PROJECT_NAME} ${zint_frontend_SRCS})
+add_executable(${PROJECT_NAME} main.c)
 
 if(WIN32)
     target_sources(${PROJECT_NAME} PRIVATE zint.rc)
@@ -25,9 +23,9 @@ if(NOT HAVE_GETOPT_LONG_ONLY)
     target_link_libraries(${PROJECT_NAME} zint_bundled_getopt)
 endif()
 
-install(TARGETS ${PROJECT_NAME} DESTINATION "${BIN_INSTALL_DIR}" RUNTIME)
+install(TARGETS ${PROJECT_NAME} DESTINATION "${CMAKE_INSTALL_BINDIR}" RUNTIME)
 if(UNIX)
-    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../docs/zint.1" DESTINATION "${MAN_INSTALL_DIR}/man1" COMPONENT doc)
+    install(FILES "${CMAKE_CURRENT_SOURCE_DIR}/../docs/zint.1" DESTINATION "${CMAKE_INSTALL_MANDIR}/man1" COMPONENT doc)
 endif()
 
 if(ZINT_TEST)

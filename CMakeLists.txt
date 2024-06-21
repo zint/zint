@@ -15,8 +15,6 @@ set(ZINT_VERSION "${ZINT_VERSION_MAJOR}.${ZINT_VERSION_MINOR}.${ZINT_VERSION_REL
 
 add_definitions(-DZINT_VERSION=\"${ZINT_VERSION}\")
 
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/modules")
-
 option(ZINT_DEBUG     "Set debug compile flags"         OFF)
 option(ZINT_NOOPT     "Set no optimize compile flags"   OFF)
 option(ZINT_SANITIZE  "Set sanitize compile/link flags" OFF)
@@ -34,7 +32,12 @@ if(NOT ZINT_SHARED AND NOT ZINT_STATIC)
     message(SEND_ERROR "Either ZINT_SHARED or ZINT_STATIC or both must be set")
 endif()
 
-include(SetPaths.cmake)
+include(GNUInstallDirs)
+# Taken from old (2008) KDE "SetPaths.cmake"
+# Set a default build type for single-configuration CMake generators if no build type is set
+if(NOT CMAKE_CONFIGURATION_TYPES AND NOT CMAKE_BUILD_TYPE)
+   set(CMAKE_BUILD_TYPE RelWithDebInfo)
+endif()
 
 include(CheckCCompilerFlag)
 include(CheckFunctionExists)
@@ -120,25 +123,6 @@ if(ZINT_COVERAGE)
     endif()
 endif()
 
-if(APPLE)
-    if(UNIVERSAL) # TODO: make universal binary
-        if(NOT ZINT_HAS_BEEN_RUN_BEFORE)
-            if(EXISTS /Developer/SDKs/MacOSX10.5.sdk OR EXISTS /SDKs/MacOSX10.5.sdk)
-                set(CMAKE_OSX_ARCHITECTURES "ppc;i386;ppc64;x86_64" CACHE STRING "Build architectures for OSX" FORCE)
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING
-                    "Flags used by the compiler during all build types." FORCE)
-            elseif(EXISTS /Developer/SDKs/MacOSX10.4u.sdk OR EXISTS /SDKs/MacOSX10.4u.sdk)
-                set(CMAKE_OSX_ARCHITECTURES "ppc;i386" CACHE STRING "Build architectures for OSX" FORCE)
-                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fvisibility-inlines-hidden -Wl -single_module " CACHE STRING
-                    "Flags used by the compiler during all build types." FORCE)
-            endif()
-            message("Build architectures for OSX:${CMAKE_OSX_ARCHITECTURES}")
-        endif()
-    else()
-        set(CMAKE_OSX_SYSROOT "/")
-    endif()
-endif()
-
 check_function_exists(getopt_long_only HAVE_GETOPT_LONG_ONLY)
 if(NOT HAVE_GETOPT_LONG_ONLY)
     add_subdirectory(getopt)
@@ -198,20 +182,5 @@ if(ZINT_UNINSTALL)
       "${CMAKE_COMMAND}" -P "${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake")
 endif()
 
-# staniek: don't install
-if(DATA_INSTALL_DIR)
-    set(CMAKE_MODULES_INSTALL_PATH ${DATA_INSTALL_DIR}/cmake/modules)
-else()
-    set(CMAKE_MODULES_INSTALL_PATH ${CMAKE_ROOT}/Modules)
-endif()
-
-install(FILES cmake/modules/FindZint.cmake DESTINATION ${CMAKE_MODULES_INSTALL_PATH} COMPONENT Devel)
 configure_file("zint-config.cmake.in" "zint-config.cmake" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zint-config.cmake" DESTINATION "${SHARE_INSTALL_PREFIX}/zint")
-
-# This needs to be run very last so other parts of the scripts can take
-# advantage of this.
-if(NOT ZINT_HAS_BEEN_RUN_BEFORE)
-    set(ZINT_HAS_BEEN_RUN_BEFORE 1 CACHE INTERNAL
-        "Flag to track whether this is the first time running CMake or if CMake has been configured before")
-endif()
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zint-config.cmake" DESTINATION "${CMAKE_INSTALL_DATADIR}/zint")

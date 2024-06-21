@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 project(zint)
@@ -93,8 +93,13 @@ endif()
 
 zint_target_include_directories(PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
-    $<INSTALL_INTERFACE:${INCLUDE_INSTALL_DIR}>
+    $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
+
+# Adapted from old (2008) KDE "SetPaths.cmake" to use GNUInstallDirs
+set(INSTALL_TARGETS_DEFAULT_ARGS RUNTIME DESTINATION "${CMAKE_INSTALL_BINDIR}"
+                                 LIBRARY DESTINATION "${CMAKE_INSTALL_LIBDIR}"
+                                 ARCHIVE DESTINATION "${CMAKE_INSTALL_LIBDIR}" COMPONENT Devel)
 
 if(ZINT_SHARED)
     install(TARGETS zint EXPORT zint-targets ${INSTALL_TARGETS_DEFAULT_ARGS})
@@ -102,8 +107,8 @@ endif()
 if(ZINT_STATIC)
     install(TARGETS zint-static EXPORT zint-targets ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif()
-install(EXPORT zint-targets NAMESPACE zint:: DESTINATION "${SHARE_INSTALL_PREFIX}/zint")
-install(FILES zint.h DESTINATION ${INCLUDE_INSTALL_DIR} COMPONENT Devel)
+install(EXPORT zint-targets NAMESPACE zint:: DESTINATION "${CMAKE_INSTALL_DATADIR}/zint")
+install(FILES zint.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Devel)
 
 if(ZINT_TEST)
     add_subdirectory(tests)
