@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack(1)
 #endif
 
@@ -69,7 +69,7 @@ extern "C" {
         uint8_t reserved;
     } OUT_PACK color_ref_t;
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack()
 #endif
 

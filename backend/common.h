@@ -37,28 +37,67 @@
 extern "C" {
 #endif /* __cplusplus */
 
-#ifndef ARRAY_SIZE
-#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
+#include "zint.h"
+#include "zintconfig.h"
+#include <stdlib.h>
+#include <string.h>
+
+#ifdef _MSC_VER
+typedef unsigned __int8 uint8_t;
+typedef unsigned __int16 uint16_t;
+typedef __int32 int32_t;
+typedef unsigned __int32 uint32_t;
+typedef unsigned __int64 uint64_t;
+#else
+#include <stdint.h>
 #endif
 
-/* Determine if C89 or C99 (excluding MSVC, which doesn't define __STDC_VERSION__) */
-#ifndef _MSC_VER
-#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
-#    define ZINT_IS_C89
-#  elif __STDC_VERSION__ <= 199901L /* Actually includes pseudo-standards "C94/C95" as well */
-#    define ZINT_IS_C99
-#  endif
-#endif
+/* Note if change following must also change "frontend/main.c" copy */
+#define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
 #ifdef _MSC_VER
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
+#elif defined(__COMPCERT__)
+#  define z_alloca(nmemb) malloc(nmemb) /* So links - leads to loads of leaks obs */
 #else
-#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99) || defined(__NuttX__) || defined(_AIX) \
+#  if (defined(__GNUC__) && !defined(alloca) && !defined(__NetBSD__)) || defined(__NuttX__) || defined(_AIX) \
         || (defined(__sun) && defined(__SVR4) /*Solaris*/)
 #    include <alloca.h>
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)
+#endif
+/* End of "frontend/main.c" copy */
+
+#ifdef _MSC_VER
+#  pragma warning(disable: 4125) /* decimal digit terminates octal escape sequence */
+#  pragma warning(disable: 4244) /* conversion from int to float */
+#  if _MSC_VER > 1200 /* VC6 */
+#    pragma warning(disable: 4996) /* function or variable may be unsafe */
+#  endif
+#endif
+
+#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(ZINT_TEST) && !defined(__MINGW32__)
+#  define INTERNAL __attribute__((__visibility__("hidden")))
+#elif defined(ZINT_TEST)
+#  define INTERNAL ZINT_EXTERN /* The test suite references INTERNAL functions, so they need to be exported */
+#else
+#  define INTERNAL
+#endif
+
+#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(__MINGW32__)
+#  define INTERNAL_DATA_EXTERN __attribute__((__visibility__("hidden"))) extern
+#  define INTERNAL_DATA __attribute__((__visibility__("hidden")))
+#else
+#  define INTERNAL_DATA_EXTERN extern
+#  define INTERNAL_DATA
+#endif
+
+/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
+#ifndef _MSC_VER
+#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
+#    define ZINT_IS_C89
+#  endif
 #endif
 
 #ifdef _MSC_VER
@@ -73,17 +112,47 @@ extern "C" {
 #  endif
 #endif
 
-#ifdef _MSC_VER
-typedef unsigned __int8 uint8_t;
-typedef unsigned __int16 uint16_t;
-typedef __int32 int32_t;
-typedef unsigned __int32 uint32_t;
-typedef unsigned __int64 uint64_t;
-#else
-#include <stdint.h>
+#if (defined(_MSC_VER) && _MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
+#  define ceilf (float) ceil
+#  define floorf (float) floor
+#  define fmodf (float) fmod
+#endif
+/* `round()` (C99) not before MSVC 2013 (C++ 12.0) */
+#if (defined(_MSC_VER) && _MSC_VER < 1800) || defined(ZINT_IS_C89)
+#  define round(arg) floor((arg) + 0.5)
+#  define roundf(arg) floorf((arg) + 0.5f)
 #endif
 
-/* `is_sane()` flags */
+/* Is float integral value? (https://stackoverflow.com/a/40404149) */
+#define isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
+
+/* Simple versions of <ctype.h> functions with no dependence on locale */
+#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
+#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
+#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
+
+/* Helpers to cast away char pointer signedness */
+#define ustrlen(source) strlen((const char *) (source))
+#define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
+#define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
+#define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
+
+/* Converts a character 0-9, A-F to its equivalent integer value */
+INTERNAL int ctoi(const char source);
+
+/* Converts an integer value to its hexadecimal character */
+INTERNAL char itoc(const int source);
+
+/* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
+INTERNAL int to_int(const unsigned char source[], const int length);
+
+/* Converts lower case characters to upper case in string `source` */
+INTERNAL void to_upper(unsigned char source[], const int length);
+
+/* Returns the number of times a character occurs in `source` */
+INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsigned char c);
+
+/* `is_chr()` & `is_sane()` flags */
 #define IS_SPC_F    0x0001 /* Space */
 #define IS_HSH_F    0x0002 /* Hash sign # */
 #define IS_AST_F    0x0004 /* Asterisk sign * */
@@ -107,91 +176,6 @@ typedef unsigned __int64 uint64_t;
 /* The most commonly used set */
 #define NEON_F      IS_NUM_F /* NEON "0123456789" */
 
-/* Simple versions of <ctype.h> functions with no dependence on locale */
-#define z_isdigit(c) ((c) <= '9' && (c) >= '0')
-#define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
-#define z_islower(c) ((c) >= 'a' && (c) <= 'z')
-
-#include "zint.h"
-#include "zintconfig.h"
-#include <stdlib.h>
-#include <string.h>
-
-/* Helpers to cast away char pointer signedness */
-#define ustrlen(source) strlen((const char *) (source))
-#define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
-#define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
-#define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
-
-#if (defined(_MSC_VER) && _MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
-#  define ceilf (float) ceil
-#  define floorf (float) floor
-#  define fmodf (float) fmod
-#endif
-/* `round()` (C99) not before MSVC 2013 (C++ 12.0) */
-#if (defined(_MSC_VER) && _MSC_VER < 1800) || defined(ZINT_IS_C89)
-#  define round(arg) floor((arg) + 0.5)
-#  define roundf(arg) floorf((arg) + 0.5f)
-#endif
-
-#ifdef _MSC_VER
-#  pragma warning(disable: 4244) /* conversion from int to float */
-#  if _MSC_VER > 1200 /* VC6 */
-#    pragma warning(disable: 4996) /* function or variable may be unsafe */
-#  endif
-#endif
-
-/* Is float integral value? (https://stackoverflow.com/a/40404149) */
-#define isfintf(arg) (fmodf(arg, 1.0f) == 0.0f)
-
-#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(ZINT_TEST) && !defined(__MINGW32__)
-#  define INTERNAL __attribute__((__visibility__("hidden")))
-#elif defined(ZINT_TEST)
-#  define INTERNAL ZINT_EXTERN /* The test suite references INTERNAL functions, so they need to be exported */
-#else
-#  define INTERNAL
-#endif
-
-#if defined(__GNUC__) && __GNUC__ >= 4 && !defined(__MINGW32__)
-#  define INTERNAL_DATA_EXTERN __attribute__((__visibility__("hidden"))) extern
-#  define INTERNAL_DATA __attribute__((__visibility__("hidden")))
-#else
-#  define INTERNAL_DATA_EXTERN extern
-#  define INTERNAL_DATA
-#endif
-
-#define Z_COMMON_INLINE   1
-
-#ifdef Z_COMMON_INLINE
-/* Returns true (1) if a module is dark/black, otherwise false (0) */
-#  define module_is_set(s, y, x) (((s)->encoded_data[(y)][(x) >> 3] >> ((x) & 0x07)) & 1)
-
-/* Sets a module to dark/black */
-#  define set_module(s, y, x) do { (s)->encoded_data[(y)][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
-
-/* Returns true (1-8) if a module is colour, otherwise false (0) */
-#  define module_colour_is_set(s, y, x) ((s)->encoded_data[(y)][(x)])
-
-/* Sets a module to a colour */
-#  define set_module_colour(s, y, x, c) do { (s)->encoded_data[(y)][(x)] = (c); } while (0)
-#endif
-
-/* Converts a character 0-9, A-F to its equivalent integer value */
-INTERNAL int ctoi(const char source);
-
-/* Converts an integer value to its hexadecimal character */
-INTERNAL char itoc(const int source);
-
-/* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
-INTERNAL int to_int(const unsigned char source[], const int length);
-
-/* Converts lower case characters to upper case in string `source` */
-INTERNAL void to_upper(unsigned char source[], const int length);
-
-/* Returns the number of times a character occurs in `source` */
-INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsigned char c);
-
-
 /* Whether a character matches `flg` */
 INTERNAL int is_chr(const unsigned int flg, const unsigned int c);
 
@@ -211,7 +195,15 @@ INTERNAL int posn(const char set_string[], const char data);
 INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn);
 
 
-#ifndef Z_COMMON_INLINE
+#define Z_COMMON_INLINE   1
+
+#ifdef Z_COMMON_INLINE
+#  define module_is_set(s, y, x) (((s)->encoded_data[y][(x) >> 3] >> ((x) & 0x07)) & 1)
+#  define set_module(s, y, x) do { (s)->encoded_data[y][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
+#  define module_colour_is_set(s, y, x) ((s)->encoded_data[y][x])
+#  define set_module_colour(s, y, x, c) do { (s)->encoded_data[y][x] = (c); } while (0)
+#  define unset_module(s, y, x) do { (s)->encoded_data[y][(x) >> 3] &= ~(1 << ((x) & 0x07)); } while (0)
+#else
 /* Returns true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
 
@@ -224,9 +216,10 @@ INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_
 /* Sets a module to a colour */
 INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord,
                 const int colour);
-#endif
+
 /* Sets a dark/black module to white (i.e. unsets) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+#endif /* Z_COMMON_INLINE */
 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length);

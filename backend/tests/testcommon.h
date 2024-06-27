@@ -57,10 +57,8 @@ extern "C" {
 #define testutil_pclose(stream) _pclose(stream)
 #else
 #include <unistd.h>
-#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99)
-    extern FILE *popen(const char *command, const char *type);
-    extern int pclose(FILE *stream);
-#  endif
+extern FILE *popen(const char *command, const char *type);
+extern int pclose(FILE *stream);
 #define testutil_popen(command, mode) popen(command, mode)
 #define testutil_pclose(stream) pclose(stream)
 #endif
@@ -70,6 +68,7 @@ extern "C" {
 #  pragma GCC diagnostic ignored "-Woverlength-strings"
 #elif defined(_MSC_VER)
 #  pragma warning(disable: 4305) /* truncation from 'double' to 'float' */
+#  pragma warning(disable: 4702) /* unreachable code */
 #endif
 
 extern int assertionFailed;

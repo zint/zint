@@ -68,7 +68,7 @@ static const char pdf_smodes[] = { '?', 'A', 'L', 'M', 'P', 'B', 'N' };
 
 /* Return (real) mode text */
 static const char *pdf_mode_str(const int mode) {
-    static const char *modes[3] = { "Text", "Byte", "Number" };
+    static const char modes[3][7] = { "Text", "Byte", "Number" };
     return mode >= PDF_TEX && mode <= PDF_NUM ? modes[mode - PDF_TEX] : "ERROR";
 }
 

@@ -48,24 +48,15 @@ typedef char static_assert_int_at_least_32bits[sizeof(int) * CHAR_BIT < 32 ? -1 
 
 /* Following copied from "backend/common.h" */
 
-#ifndef ARRAY_SIZE
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
-#endif
-
-/* Determine if C89 or C99 (excluding MSVC, which doesn't define __STDC_VERSION__) */
-#ifndef _MSC_VER
-#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
-#    define ZINT_IS_C89
-#  elif __STDC_VERSION__ <= 199901L /* Actually includes pseudo-standards "C94/C95" as well */
-#    define ZINT_IS_C99
-#  endif
-#endif
 
 #ifdef _MSC_VER
 #  include <malloc.h>
 #  define z_alloca(nmemb) _alloca(nmemb)
+#elif defined(__COMPCERT__)
+#  define z_alloca(nmemb) malloc(nmemb) /* So links - leads to loads of leaks obs */
 #else
-#  if defined(ZINT_IS_C89) || defined(ZINT_IS_C99) || defined(__NuttX__) || defined(_AIX) \
+#  if (defined(__GNUC__) && !defined(alloca) && !defined(__NetBSD__)) || defined(__NuttX__) || defined(_AIX) \
         || (defined(__sun) && defined(__SVR4) /*Solaris*/)
 #    include <alloca.h>
 #  endif
@@ -749,20 +740,20 @@ static int validate_units(char *buf, const char units[][5], int units_size) {
 }
 
 /* Parse and validate argument "xdim[,resolution]" to "--scalexdimdp" */
-static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_dpmm) {
+static int validate_scalexdimdp(const char *arg, float *p_x_dim_mm, float *p_dpmm) {
     static const char x_units[][5] = { "mm", "in" };
     static const char r_units[][5] = { "dpmm", "dpi" };
     char x_buf[7 + 1 + 4 + 1] = {0}; /* Allow for 7 digits + dot + 4-char unit + NUL */
     char r_buf[7 + 1 + 4 + 1] = {0}; /* As above */
     int units_i; /* For `validate_units()` */
     char errbuf[64]; /* For `validate_float()` */
-    const char *comma = strchr(optarg, ',');
+    const char *comma = strchr(arg, ',');
     if (comma) {
-        if (comma == optarg || comma - optarg >= ARRAY_SIZE(x_buf)) {
-            fprintf(stderr, "Error 174: scalexdimdp X-dim too %s\n", comma == optarg ? "short" : "long");
+        if (comma == arg || comma - arg >= ARRAY_SIZE(x_buf)) {
+            fprintf(stderr, "Error 174: scalexdimdp X-dim too %s\n", comma == arg ? "short" : "long");
             return 0;
         }
-        strncpy(x_buf, optarg, comma - optarg);
+        strncpy(x_buf, arg, comma - arg);
         comma++;
         if (!*comma || strlen(comma) >= ARRAY_SIZE(r_buf)) {
             fprintf(stderr, "Error 175: scalexdimdp resolution too %s\n", !*comma ? "short" : "long");
@@ -770,11 +761,11 @@ static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_
         }
         strcpy(r_buf, comma);
     } else {
-        if (!*optarg || strlen(optarg) >= ARRAY_SIZE(x_buf)) {
-            fprintf(stderr, "Error 176: scalexdimdp X-dim too %s\n", !*optarg ? "short" : "long");
+        if (!*arg || strlen(arg) >= ARRAY_SIZE(x_buf)) {
+            fprintf(stderr, "Error 176: scalexdimdp X-dim too %s\n", !*arg ? "short" : "long");
             return 0;
         }
-        strcpy(x_buf, optarg);
+        strcpy(x_buf, arg);
     }
     if ((units_i = validate_units(x_buf, x_units, ARRAY_SIZE(x_units))) == -2) {
         fprintf(stderr, "Error 177: scalexdimdp X-dim units must occur at end\n");
@@ -809,19 +800,19 @@ static int validate_scalexdimdp(const char *optarg, float *p_x_dim_mm, float *p_
 }
 
 /* Parse and validate Structured Append argument "index,count[,ID]" to "--structapp" */
-static int validate_structapp(const char *optarg, struct zint_structapp *structapp) {
+static int validate_structapp(const char *arg, struct zint_structapp *structapp) {
     char index[10] = {0}, count[10] = {0};
-    const char *comma = strchr(optarg, ',');
+    const char *comma = strchr(arg, ',');
     const char *comma2;
     if (!comma) {
         fprintf(stderr, "Error 155: Invalid Structured Append argument, expect \"index,count[,ID]\"\n");
         return 0;
     }
-    if (comma == optarg || comma - optarg > 9) {
-        fprintf(stderr, "Error 156: Structured Append index too %s\n", comma == optarg ? "short" : "long");
+    if (comma == arg || comma - arg > 9) {
+        fprintf(stderr, "Error 156: Structured Append index too %s\n", comma == arg ? "short" : "long");
         return 0;
     }
-    strncpy(index, optarg, comma - optarg);
+    strncpy(index, arg, comma - arg);
     comma++;
     comma2 = strchr(comma, ',');
     if (comma2) {
@@ -864,14 +855,14 @@ static int validate_structapp(const char *optarg, struct zint_structapp *structa
 }
 
 /* Parse and validate the segment argument "ECI,DATA" to "--segN" */
-static int validate_seg(const char *optarg, const int N, struct zint_seg segs[10]) {
+static int validate_seg(const char *arg, const int N, struct zint_seg segs[10]) {
     char eci[10] = {0};
-    const char *comma = strchr(optarg, ',');
-    if (!comma || comma == optarg || comma - optarg > 9 || *(comma + 1) == '\0') {
+    const char *comma = strchr(arg, ',');
+    if (!comma || comma == arg || comma - arg > 9 || *(comma + 1) == '\0') {
         fprintf(stderr, "Error 166: Invalid segment argument, expect \"ECI,DATA\"\n");
         return 0;
     }
-    strncpy(eci, optarg, comma - optarg);
+    strncpy(eci, arg, comma - arg);
     if (!validate_int(eci, -1 /*len*/, &segs[N].eci)) {
         fprintf(stderr, "Error 167: Invalid segment ECI (digits only)\n");
         return 0;
@@ -902,6 +893,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     char format_string[256], reversed_string[256], format_char;
     int format_len, i, o, mirror_start_o = 0;
     char adjusted[2] = {0};
+    const int from_stdin = strcmp(filename, "-") == 0; /* Suppress clang-19 warning clang-analyzer-unix.Stream */
 
     if (mirror_mode) {
         /* Use directory if any from outfile */
@@ -936,7 +928,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
         }
     }
 
-    if (strcmp(filename, "-") == 0) {
+    if (from_stdin) {
         file = stdin;
     } else {
 #ifdef _WIN32
@@ -1113,7 +1105,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
         warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
     }
 
-    if (file != stdin) {
+    if (!from_stdin) {
         if (fclose(file) != 0) {
             fprintf(stderr, "Warning 196: Failure on closing input file '%s' (%d: %s)\n", filename, errno,
                     strerror(errno));

@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack(1)
 #endif
 
@@ -237,7 +237,7 @@ extern "C" {
         emr_rectangle_t right;
     } OUT_PACK box_t;
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack()
 #endif
 

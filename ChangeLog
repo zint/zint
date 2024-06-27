@@ -5,6 +5,7 @@ Version 2.13.0.9 (dev) not released yet
 ------------------------
 - New `memfile` & `memfile_size` fields in `symbol` for use with new output
   option `BARCODE_MEMORY_FILE`
+- Invalid `input_mode` now returns warning
 
 Changes
 -------
@@ -14,6 +15,12 @@ Changes
   in-memory buffer `symbol->memfile` instead of to file `symbol->outfile`,
   ticket #301
 - CODE128: improve encodation on A/B shifting, props Daniel Gredler (Okapi)
+- library: return warning on invalid `input_mode` reset
+- GS1: new AIs 7250-7259 (GSCN 22-246), new linters `yyyymmdd()`, `iso5218()`,
+  `posinseqslash()`; remove old linter `iso3166list`;
+  iso4217: new ISO 4217 currency code 924
+- AZTEC: workaround MSVC 2022 optimizer bug in `az_populate_map()` loops,
+  ticket #317, props Andre Maute
 
 Bugs
 ----
@@ -26,6 +33,9 @@ Bugs
   written as little-endian - simplifies testing)
 - ITF14/DPLEIT/DPIDENT: ignore `option_2` (check digit options)
 - GUI: scalewindow: fix cropping of initial resolution and bound X-dim <= 10
+- GUI: factory reset: reset preview background colour also
+- QZint: fix legacy width and security level getters/setters, MR #158, props
+  Philip Ye
 
 
 Version 2.13.0 (2023-12-18)

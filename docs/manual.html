@@ -199,7 +199,7 @@
     tbody tr:first-child td {
       padding-top: 0.5em;
     }
-    header {
+    thead > tr {
       margin-bottom: 4em;
       text-align: center;
     }
@@ -332,7 +332,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.13.0.9</p>
-<p class="date">May 2024</p>
+<p class="date">June 2024</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -1198,25 +1198,25 @@ as given below:</p>
 data-tag=": Sequence Format Characters">
 <caption><span>Table : Sequence Format Characters</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Character</th>
 <th style="text-align: left;">Effect</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>$</code></td>
 <td style="text-align: left;">Insert leading zeroes</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>#</code></td>
 <td style="text-align: left;">Insert leading spaces</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>*</code></td>
 <td style="text-align: left;">Insert leading asterisks</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Any other character</td>
 <td style="text-align: left;">Interpreted literally</td>
 </tr>
@@ -1310,7 +1310,7 @@ table below.</p>
 <col style="width: 57%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Escape Sequence</th>
 <th style="text-align: left;">ASCII Equivalent</th>
 <th style="text-align: left;">Name</th>
@@ -1318,106 +1318,106 @@ table below.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\0</code></td>
 <td style="text-align: left;">0x00</td>
 <td style="text-align: left;"><code>NUL</code></td>
 <td style="text-align: left;">Null character</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\E</code></td>
 <td style="text-align: left;">0x04</td>
 <td style="text-align: left;"><code>EOT</code></td>
 <td style="text-align: left;">End of Transmission</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\a</code></td>
 <td style="text-align: left;">0x07</td>
 <td style="text-align: left;"><code>BEL</code></td>
 <td style="text-align: left;">Bell</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\b</code></td>
 <td style="text-align: left;">0x08</td>
 <td style="text-align: left;"><code>BS</code></td>
 <td style="text-align: left;">Backspace</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\t</code></td>
 <td style="text-align: left;">0x09</td>
 <td style="text-align: left;"><code>HT</code></td>
 <td style="text-align: left;">Horizontal Tab</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\n</code></td>
 <td style="text-align: left;">0x0A</td>
 <td style="text-align: left;"><code>LF</code></td>
 <td style="text-align: left;">Line Feed</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\v</code></td>
 <td style="text-align: left;">0x0B</td>
 <td style="text-align: left;"><code>VT</code></td>
 <td style="text-align: left;">Vertical Tab</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\f</code></td>
 <td style="text-align: left;">0x0C</td>
 <td style="text-align: left;"><code>FF</code></td>
 <td style="text-align: left;">Form Feed</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\r</code></td>
 <td style="text-align: left;">0x0D</td>
 <td style="text-align: left;"><code>CR</code></td>
 <td style="text-align: left;">Carriage Return</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\e</code></td>
 <td style="text-align: left;">0x1B</td>
 <td style="text-align: left;"><code>ESC</code></td>
 <td style="text-align: left;">Escape</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\G</code></td>
 <td style="text-align: left;">0x1D</td>
 <td style="text-align: left;"><code>GS</code></td>
 <td style="text-align: left;">Group Separator</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\R</code></td>
 <td style="text-align: left;">0x1E</td>
 <td style="text-align: left;"><code>RS</code></td>
 <td style="text-align: left;">Record Separator</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\\</code></td>
 <td style="text-align: left;">0x5C</td>
 <td style="text-align: left;"><code>\</code></td>
 <td style="text-align: left;">Backslash</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\dNNN</code></td>
 <td style="text-align: left;">NNN</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Any 8-bit character where NNN is decimal
 (000-255)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\oNNN</code></td>
 <td style="text-align: left;">0oNNN</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Any 8-bit character where NNN is octal
 (000-377)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\xNN</code></td>
 <td style="text-align: left;">0xNN</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">Any 8-bit character where NN is
 hexadecimal (00-FF)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>\uNNNN</code></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -1425,7 +1425,7 @@ hexadecimal (00-FF)</td>
 class="footnote-ref" id="fnref2" role="doc-noteref"><sup>2</sup></a>
 character where NNNN is hexadecimal (0000-FFFF)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>\UNNNNNN</code></td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -1468,45 +1468,45 @@ following table.</p>
 <table id="tbl:output_file_formats" data-tag=": Output File Formats">
 <caption><span>Table : Output File Formats</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Extension</th>
 <th style="text-align: left;">File format</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>bmp</td>
 <td style="text-align: left;">Windows Bitmap</td>
 </tr>
-<tr class="even">
+<tr>
 <td>emf</td>
 <td style="text-align: left;">Enhanced Metafile Format</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>eps</td>
 <td style="text-align: left;">Encapsulated PostScript</td>
 </tr>
-<tr class="even">
+<tr>
 <td>gif</td>
 <td style="text-align: left;">Graphics Interchange Format</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>pcx</td>
 <td style="text-align: left;">ZSoft Paintbrush image</td>
 </tr>
-<tr class="even">
+<tr>
 <td>png</td>
 <td style="text-align: left;">Portable Network Graphic</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>svg</td>
 <td style="text-align: left;">Scalable Vector Graphic</td>
 </tr>
-<tr class="even">
+<tr>
 <td>tif</td>
 <td style="text-align: left;">Tagged Image File Format</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>txt</td>
 <td style="text-align: left;">Text file (see <a
 href="#other-options">4.19 Other Options</a>)</td>
@@ -1541,7 +1541,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb22-1"><a href=
 <col style="width: 55%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Numeric Value</th>
 <th style="text-align: left;">Name<a href="#fn3" class="footnote-ref"
 id="fnref3" role="doc-noteref"><sup>3</sup></a></th>
@@ -1549,507 +1549,507 @@ id="fnref3" role="doc-noteref"><sup>3</sup></a></th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;"><code>BARCODE_CODE11</code></td>
 <td style="text-align: left;">Code 11</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">2<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_C25STANDARD</code></td>
 <td style="text-align: left;">Standard Code 2 of 5</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;"><code>BARCODE_C25INTER</code></td>
 <td style="text-align: left;">Interleaved 2 of 5</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;"><code>BARCODE_C25IATA</code></td>
 <td style="text-align: left;">Code 2 of 5 IATA</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;"><code>BARCODE_C25LOGIC</code></td>
 <td style="text-align: left;">Code 2 of 5 Data Logic</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;"><code>BARCODE_C25IND</code></td>
 <td style="text-align: left;">Code 2 of 5 Industrial</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;"><code>BARCODE_CODE39</code></td>
 <td style="text-align: left;">Code 3 of 9 (Code 39)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">9</td>
 <td style="text-align: left;"><code>BARCODE_EXCODE39</code></td>
 <td style="text-align: left;">Extended Code 3 of 9 (Code 39+)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">13</td>
 <td style="text-align: left;"><code>BARCODE_EANX</code></td>
 <td style="text-align: left;">EAN (EAN-2, EAN-5, EAN-8 and EAN-13)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">14</td>
 <td style="text-align: left;"><code>BARCODE_EANX_CHK</code></td>
 <td style="text-align: left;">EAN + Check Digit</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">16<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_GS1_128</code></td>
 <td style="text-align: left;">GS1-128 (UCC.EAN-128)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">18</td>
 <td style="text-align: left;"><code>BARCODE_CODABAR</code></td>
 <td style="text-align: left;">Codabar</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">20</td>
 <td style="text-align: left;"><code>BARCODE_CODE128</code></td>
 <td style="text-align: left;">Code 128 (automatic Code Set
 switching)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">21</td>
 <td style="text-align: left;"><code>BARCODE_DPLEIT</code></td>
 <td style="text-align: left;">Deutsche Post Leitcode</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">22</td>
 <td style="text-align: left;"><code>BARCODE_DPIDENT</code></td>
 <td style="text-align: left;">Deutsche Post Identcode</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">23</td>
 <td style="text-align: left;"><code>BARCODE_CODE16K</code></td>
 <td style="text-align: left;">Code 16K</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">24</td>
 <td style="text-align: left;"><code>BARCODE_CODE49</code></td>
 <td style="text-align: left;">Code 49</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">25</td>
 <td style="text-align: left;"><code>BARCODE_CODE93</code></td>
 <td style="text-align: left;">Code 93</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">28</td>
 <td style="text-align: left;"><code>BARCODE_FLAT</code></td>
 <td style="text-align: left;">Flattermarken</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">29<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMN</code></td>
 <td style="text-align: left;">GS1 DataBar Omnidirectional (including GS1
 DataBar Truncated)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">30<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_LTD</code></td>
 <td style="text-align: left;">GS1 DataBar Limited</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">31<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXP</code></td>
 <td style="text-align: left;">GS1 DataBar Expanded</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">32</td>
 <td style="text-align: left;"><code>BARCODE_TELEPEN</code></td>
 <td style="text-align: left;">Telepen Alpha</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">34</td>
 <td style="text-align: left;"><code>BARCODE_UPCA</code></td>
 <td style="text-align: left;">UPC-A</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">35</td>
 <td style="text-align: left;"><code>BARCODE_UPCA_CHK</code></td>
 <td style="text-align: left;">UPC-A + Check Digit</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">37</td>
 <td style="text-align: left;"><code>BARCODE_UPCE</code></td>
 <td style="text-align: left;">UPC-E</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">38</td>
 <td style="text-align: left;"><code>BARCODE_UPCE_CHK</code></td>
 <td style="text-align: left;">UPC-E + Check Digit</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">40</td>
 <td style="text-align: left;"><code>BARCODE_POSTNET</code></td>
 <td style="text-align: left;">POSTNET</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">47</td>
 <td style="text-align: left;"><code>BARCODE_MSI_PLESSEY</code></td>
 <td style="text-align: left;">MSI Plessey</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">49</td>
 <td style="text-align: left;"><code>BARCODE_FIM</code></td>
 <td style="text-align: left;">FIM</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">50</td>
 <td style="text-align: left;"><code>BARCODE_LOGMARS</code></td>
 <td style="text-align: left;">LOGMARS</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">51</td>
 <td style="text-align: left;"><code>BARCODE_PHARMA</code></td>
 <td style="text-align: left;">Pharmacode One-Track</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">52</td>
 <td style="text-align: left;"><code>BARCODE_PZN</code></td>
 <td style="text-align: left;">PZN</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">53</td>
 <td style="text-align: left;"><code>BARCODE_PHARMA_TWO</code></td>
 <td style="text-align: left;">Pharmacode Two-Track</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">54</td>
 <td style="text-align: left;"><code>BARCODE_CEPNET</code></td>
 <td style="text-align: left;">Brazilian CEPNet</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">55</td>
 <td style="text-align: left;"><code>BARCODE_PDF417</code></td>
 <td style="text-align: left;">PDF417</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">56<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_PDF417COMP</code></td>
 <td style="text-align: left;">Compact PDF417 (Truncated PDF417)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">57</td>
 <td style="text-align: left;"><code>BARCODE_MAXICODE</code></td>
 <td style="text-align: left;">MaxiCode</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">58</td>
 <td style="text-align: left;"><code>BARCODE_QRCODE</code></td>
 <td style="text-align: left;">QR Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">60</td>
 <td style="text-align: left;"><code>BARCODE_CODE128AB</code></td>
 <td style="text-align: left;">Code 128 (Suppress Code Set C)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">63</td>
 <td style="text-align: left;"><code>BARCODE_AUSPOST</code></td>
 <td style="text-align: left;">Australia Post Standard Customer</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">66</td>
 <td style="text-align: left;"><code>BARCODE_AUSREPLY</code></td>
 <td style="text-align: left;">Australia Post Reply Paid</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">67</td>
 <td style="text-align: left;"><code>BARCODE_AUSROUTE</code></td>
 <td style="text-align: left;">Australia Post Routing</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">68</td>
 <td style="text-align: left;"><code>BARCODE_AUSDIRECT</code></td>
 <td style="text-align: left;">Australia Post Redirection</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">69</td>
 <td style="text-align: left;"><code>BARCODE_ISBNX</code></td>
 <td style="text-align: left;">ISBN (EAN-13 with verification stage)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">70</td>
 <td style="text-align: left;"><code>BARCODE_RM4SCC</code></td>
 <td style="text-align: left;">Royal Mail 4-State Customer Code
 (RM4SCC)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">71</td>
 <td style="text-align: left;"><code>BARCODE_DATAMATRIX</code></td>
 <td style="text-align: left;">Data Matrix (ECC200)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">72</td>
 <td style="text-align: left;"><code>BARCODE_EAN14</code></td>
 <td style="text-align: left;">EAN-14</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">73</td>
 <td style="text-align: left;"><code>BARCODE_VIN</code></td>
 <td style="text-align: left;">Vehicle Identification Number</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">74</td>
 <td style="text-align: left;"><code>BARCODE_CODABLOCKF</code></td>
 <td style="text-align: left;">Codablock-F</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">75</td>
 <td style="text-align: left;"><code>BARCODE_NVE18</code></td>
 <td style="text-align: left;">NVE-18 (SSCC-18)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">76</td>
 <td style="text-align: left;"><code>BARCODE_JAPANPOST</code></td>
 <td style="text-align: left;">Japanese Postal Code</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">77</td>
 <td style="text-align: left;"><code>BARCODE_KOREAPOST</code></td>
 <td style="text-align: left;">Korea Post</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">79<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_STK</code></td>
 <td style="text-align: left;">GS1 DataBar Stacked</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">80<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMNSTK</code></td>
 <td style="text-align: left;">GS1 DataBar Stacked Omnidirectional</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">81<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXPSTK</code></td>
 <td style="text-align: left;">GS1 DataBar Expanded Stacked</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">82</td>
 <td style="text-align: left;"><code>BARCODE_PLANET</code></td>
 <td style="text-align: left;">PLANET</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">84</td>
 <td style="text-align: left;"><code>BARCODE_MICROPDF417</code></td>
 <td style="text-align: left;">MicroPDF417</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">85<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_USPS_IMAIL</code></td>
 <td style="text-align: left;">USPS Intelligent Mail (OneCode)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">86</td>
 <td style="text-align: left;"><code>BARCODE_PLESSEY</code></td>
 <td style="text-align: left;">UK Plessey</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">87</td>
 <td style="text-align: left;"><code>BARCODE_TELEPEN_NUM</code></td>
 <td style="text-align: left;">Telepen Numeric</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">89</td>
 <td style="text-align: left;"><code>BARCODE_ITF14</code></td>
 <td style="text-align: left;">ITF-14</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">90</td>
 <td style="text-align: left;"><code>BARCODE_KIX</code></td>
 <td style="text-align: left;">Dutch Post KIX Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">92</td>
 <td style="text-align: left;"><code>BARCODE_AZTEC</code></td>
 <td style="text-align: left;">Aztec Code</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">93</td>
 <td style="text-align: left;"><code>BARCODE_DAFT</code></td>
 <td style="text-align: left;">DAFT Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">96</td>
 <td style="text-align: left;"><code>BARCODE_DPD</code></td>
 <td style="text-align: left;">DPD Code</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">97</td>
 <td style="text-align: left;"><code>BARCODE_MICROQR</code></td>
 <td style="text-align: left;">Micro QR Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">98</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_128</code></td>
 <td style="text-align: left;">HIBC Code 128</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">99</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_39</code></td>
 <td style="text-align: left;">HIBC Code 39</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">102</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_DM</code></td>
 <td style="text-align: left;">HIBC Data Matrix ECC200</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">104</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_QR</code></td>
 <td style="text-align: left;">HIBC QR Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">106</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_PDF</code></td>
 <td style="text-align: left;">HIBC PDF417</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">108</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_MICPDF</code></td>
 <td style="text-align: left;">HIBC MicroPDF417</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">110</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_BLOCKF</code></td>
 <td style="text-align: left;">HIBC Codablock-F</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">112</td>
 <td style="text-align: left;"><code>BARCODE_HIBC_AZTEC</code></td>
 <td style="text-align: left;">HIBC Aztec Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">115</td>
 <td style="text-align: left;"><code>BARCODE_DOTCODE</code></td>
 <td style="text-align: left;">DotCode</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">116</td>
 <td style="text-align: left;"><code>BARCODE_HANXIN</code></td>
 <td style="text-align: left;">Han Xin (Chinese Sensible) Code</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">119</td>
 <td style="text-align: left;"><code>BARCODE_MAILMARK_2D</code></td>
 <td style="text-align: left;">Royal Mail 2D Mailmark (CMDM) (Data
 Matrix)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">121</td>
 <td style="text-align: left;"><code>BARCODE_MAILMARK_4S</code></td>
 <td style="text-align: left;">Royal Mail 4-State Mailmark</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">128</td>
 <td style="text-align: left;"><code>BARCODE_AZRUNE</code></td>
 <td style="text-align: left;">Aztec Runes</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">129</td>
 <td style="text-align: left;"><code>BARCODE_CODE32</code></td>
 <td style="text-align: left;">Code 32</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">130</td>
 <td style="text-align: left;"><code>BARCODE_EANX_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with EAN linear
 component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">131<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_GS1_128_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1-128 linear
 component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">132<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMN_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Omnidirectional linear component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">133<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_LTD_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Limited linear component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">134<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXP_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Expanded linear component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">135</td>
 <td style="text-align: left;"><code>BARCODE_UPCA_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with UPC-A linear
 component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">136</td>
 <td style="text-align: left;"><code>BARCODE_UPCE_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with UPC-E linear
 component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">137<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_STK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Stacked component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">138<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMNSTK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Stacked Omnidirectional component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">139<code>*</code></td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXPSTK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Expanded Stacked component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">140</td>
 <td style="text-align: left;"><code>BARCODE_CHANNEL</code></td>
 <td style="text-align: left;">Channel Code</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">141</td>
 <td style="text-align: left;"><code>BARCODE_CODEONE</code></td>
 <td style="text-align: left;">Code One</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">142</td>
 <td style="text-align: left;"><code>BARCODE_GRIDMATRIX</code></td>
 <td style="text-align: left;">Grid Matrix</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">143</td>
 <td style="text-align: left;"><code>BARCODE_UPNQR</code></td>
 <td style="text-align: left;">UPNQR (Univerzalnega Plačilnega Naloga
 QR)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">144</td>
 <td style="text-align: left;"><code>BARCODE_ULTRA</code></td>
 <td style="text-align: left;">Ultracode</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">145</td>
 <td style="text-align: left;"><code>BARCODE_RMQR</code></td>
 <td style="text-align: left;">Rectangular Micro QR Code (rMQR)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">146</td>
 <td style="text-align: left;"><code>BARCODE_BC412</code></td>
 <td style="text-align: left;">IBM BC412 (SEMI T1-95)</td>
@@ -2271,7 +2271,7 @@ data-tag=": Scaling Multipliers and Minima">
 <col style="width: 15%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>MaxiCode?</th>
 <th style="text-align: left;">Output</th>
 <th>Multiplier</th>
@@ -2280,35 +2280,35 @@ data-tag=": Scaling Multipliers and Minima">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>No</td>
 <td style="text-align: left;">Raster</td>
 <td>2</td>
 <td style="text-align: left;">0.5</td>
 <td style="text-align: left;">1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>No</td>
 <td style="text-align: left;">Vector</td>
 <td>2</td>
 <td style="text-align: left;">0.1</td>
 <td style="text-align: left;">0.1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Yes</td>
 <td style="text-align: left;">Raster</td>
 <td>10</td>
 <td style="text-align: left;">0.2</td>
 <td style="text-align: left;">N/A</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Yes</td>
 <td style="text-align: left;">Vector (non-EMF)</td>
 <td>2</td>
 <td style="text-align: left;">0.1</td>
 <td style="text-align: left;">N/A</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>Yes</td>
 <td style="text-align: left;">EMF</td>
 <td>40</td>
@@ -2422,100 +2422,100 @@ character set is Latin-2 (ISO/IEC 8859-2 plus ASCII).</p>
 data-tag=": Default Character Sets">
 <caption><span>Table : Default Character Sets</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Symbology</th>
 <th style="text-align: left;">Default character sets</th>
 <th>Alternate if input not Latin-1</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Aztec Code</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Codablock-F</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Code 128</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Code 16K</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Code One</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Data Matrix</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">DotCode</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Grid Matrix</td>
 <td style="text-align: left;">GB 2312 (includes ASCII)</td>
 <td>N/A</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Han Xin</td>
 <td style="text-align: left;">Latin-1</td>
 <td>GB 18030 (includes ASCII)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">MaxiCode</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">MicroPDF417</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Micro QR Code</td>
 <td style="text-align: left;">Latin-1</td>
 <td>Shift JIS (includes ASCII<a href="#fn5" class="footnote-ref"
 id="fnref5" role="doc-noteref"><sup>5</sup></a>)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">PDF417</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">QR Code</td>
 <td style="text-align: left;">Latin-1</td>
 <td>Shift JIS (see above)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">rMQR</td>
 <td style="text-align: left;">Latin-1</td>
 <td>Shift JIS (see above)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Ultracode</td>
 <td style="text-align: left;">Latin-1</td>
 <td>None</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">UPNQR</td>
 <td style="text-align: left;">Latin-2</td>
 <td>N/A</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">All others</td>
 <td style="text-align: left;">ASCII</td>
 <td>N/A</td>
@@ -2568,22 +2568,22 @@ that support ECI are</p>
 data-tag=": ECI-Aware Symbologies">
 <caption><span>Table : ECI-Aware Symbologies</span> </caption>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Aztec Code</td>
 <td style="text-align: left;">Grid Matrix</td>
 <td style="text-align: left;">PDF417</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Code One</td>
 <td style="text-align: left;">Han Xin Code</td>
 <td style="text-align: left;">QR Code</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Data Matrix</td>
 <td style="text-align: left;">MaxiCode</td>
 <td style="text-align: left;">rMQR</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">DotCode</td>
 <td style="text-align: left;">MicroPDF417</td>
 <td style="text-align: left;">Ultracode</td>
@@ -2604,142 +2604,142 @@ translates the data into the target encoding.</p>
 <table id="tbl:eci_codes" data-tag=": ECI Codes">
 <caption><span>Table : ECI Codes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>ECI Code</th>
 <th>Character Encoding Scheme (ISO/IEC 8859 schemes include ASCII)</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>ISO/IEC 8859-1 - Latin alphabet No. 1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>ISO/IEC 8859-2 - Latin alphabet No. 2</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>ISO/IEC 8859-3 - Latin alphabet No. 3</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>ISO/IEC 8859-4 - Latin alphabet No. 4</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>ISO/IEC 8859-5 - Latin/Cyrillic alphabet</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>ISO/IEC 8859-6 - Latin/Arabic alphabet</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>ISO/IEC 8859-7 - Latin/Greek alphabet</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>ISO/IEC 8859-8 - Latin/Hebrew alphabet</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>11</td>
 <td>ISO/IEC 8859-9 - Latin alphabet No. 5 (Turkish)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>12</td>
 <td>ISO/IEC 8859-10 - Latin alphabet No. 6 (Nordic)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>13</td>
 <td>ISO/IEC 8859-11 - Latin/Thai alphabet</td>
 </tr>
-<tr class="even">
+<tr>
 <td>15</td>
 <td>ISO/IEC 8859-13 - Latin alphabet No. 7 (Baltic)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>16</td>
 <td>ISO/IEC 8859-14 - Latin alphabet No. 8 (Celtic)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>17</td>
 <td>ISO/IEC 8859-15 - Latin alphabet No. 9</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>18</td>
 <td>ISO/IEC 8859-16 - Latin alphabet No. 10</td>
 </tr>
-<tr class="even">
+<tr>
 <td>20</td>
 <td>Shift JIS (JIS X 0208 and JIS X 0201)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>21</td>
 <td>Windows 1250 - Latin 2 (Central Europe)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>22</td>
 <td>Windows 1251 - Cyrillic</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>23</td>
 <td>Windows 1252 - Latin 1</td>
 </tr>
-<tr class="even">
+<tr>
 <td>24</td>
 <td>Windows 1256 - Arabic</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>25</td>
 <td>UTF-16BE (High order byte first)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>26</td>
 <td>UTF-8</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>27</td>
 <td>ASCII (ISO/IEC 646 IRV)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>28</td>
 <td>Big5 (Taiwan) Chinese Character Set</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>29</td>
 <td>GB 2312 (PRC) Chinese Character Set</td>
 </tr>
-<tr class="even">
+<tr>
 <td>30</td>
 <td>Korean Character Set EUC-KR (KS X 1001:2002)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>31</td>
 <td>GBK Chinese Character Set</td>
 </tr>
-<tr class="even">
+<tr>
 <td>32</td>
 <td>GB 18030 Chinese Character Set</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>33</td>
 <td>UTF-16LE (Low order byte first)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>34</td>
 <td>UTF-32BE (High order bytes first)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>35</td>
 <td>UTF-32LE (Low order bytes first)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>170</td>
 <td>ISO/IEC 646 Invariant<a href="#fn6" class="footnote-ref" id="fnref6"
 role="doc-noteref"><sup>6</sup></a></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>899</td>
 <td>8-bit binary data</td>
 </tr>
@@ -2852,26 +2852,26 @@ the output filename as shown in the table below:</p>
 data-tag=": Batch Filename Formatting">
 <caption><span>Table : Batch Filename Formatting</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input Character</th>
 <th style="text-align: left;">Interpretation</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>~</code></td>
 <td style="text-align: left;">Insert a number or 0</td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>#</code></td>
 <td style="text-align: left;">Insert a number or space</td>
 </tr>
-<tr class="odd">
+<tr>
 <td><code>@</code></td>
 <td style="text-align: left;">Insert a number or <code>*</code> (or
 <code>+</code> on Windows)</td>
 </tr>
-<tr class="even">
+<tr>
 <td>Any other</td>
 <td style="text-align: left;">Insert literally</td>
 </tr>
@@ -2887,33 +2887,33 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb50-1"><a href=
 data-tag=": Batch Filename Examples">
 <caption><span>Table : Batch Filename Examples</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Input</th>
 <th style="text-align: left;">Filenames Generated</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>-o file~~~.svg</code></td>
 <td style="text-align: left;"><code>"file001.svg"</code>,
 <code>"file002.svg"</code>, <code>"file003.svg"</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>-o @@@@bar.png</code></td>
 <td style="text-align: left;"><code>"***1.png"</code>,
 <code>"***2.png"</code>, <code>"***3.png"</code> (except Windows)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>-o @@@@bar.png</code></td>
 <td style="text-align: left;"><code>"+++1.png"</code>,
 <code>"+++2.png"</code>, <code>"+++3.png"</code> (on Windows)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>-o my~~~bar.eps</code></td>
 <td style="text-align: left;"><code>"my001bar.eps"</code>,
 <code>"my002bar.eps"</code>, <code>"my003bar.eps"</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>-o t#es~t~.png</code></td>
 <td style="text-align: left;"><code>"t es0t1.png"</code>,
 <code>"t es0t2.png"</code>, <code>"t es0t3.png"</code></td>
@@ -2928,18 +2928,18 @@ when creating a large number of barcodes:</p>
 data-tag=": Batch Directory Examples">
 <caption><span>Table : Batch Directory Examples</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Input</th>
 <th style="text-align: left;">Filenames Generated</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>-o dir~/file~~~.svg</code></td>
 <td style="text-align: left;"><code>"dir0/file001.svg"</code>,
 <code>"dir0/file002.svg"</code>, …</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"></td>
 <td style="text-align: left;">, <code>"dir0/file999.svg"</code>,
 <code>"dir1/file000.svg"</code>, …</td>
@@ -3344,7 +3344,7 @@ Structure <code>zint_symbol</code> </caption>
 <col style="width: 23%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Member Name</th>
 <th style="text-align: left;">Type</th>
 <th style="text-align: left;">Meaning</th>
@@ -3352,14 +3352,14 @@ Structure <code>zint_symbol</code> </caption>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>symbology</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Symbol to use - see <a
 href="#specifying-a-symbology">5.9 Specifying a Symbology</a>.</td>
 <td style="text-align: left;"><code>BARCODE_CODE128</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>height</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Symbol height in X-dimensions, excluding
@@ -3367,41 +3367,41 @@ fixed width-to-height symbols.<a href="#fn8" class="footnote-ref"
 id="fnref8" role="doc-noteref"><sup>8</sup></a></td>
 <td style="text-align: left;">Symbol dependent</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>scale</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Scale factor for adjusting size of image
 (sets X-dimension).</td>
 <td style="text-align: left;">1.0</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>whitespace_width</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Horizontal whitespace width in
 X-dimensions.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>whitespace_height</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Vertical whitespace height in
 X-dimensions.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>border_width</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Border width in X-dimensions.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>output_options</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Set various output parameters - see <a
 href="#adjusting-output-options">5.10 Adjusting Output Options</a>.</td>
 <td style="text-align: left;">0 (none)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>fgcolour</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Foreground (ink) colour as RGB/RGBA
@@ -3409,7 +3409,7 @@ hexadecimal string or <code>"C,M,Y,K"</code> decimal percentages string,
 with a terminating <code>NUL</code>.</td>
 <td style="text-align: left;"><code>"000000"</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>bgcolour</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Background (paper) colour as RGB/RGBA
@@ -3417,21 +3417,21 @@ hexadecimal string or <code>"C,M,Y,K"</code> decimal percentages string,
 with a terminating <code>NUL</code>.</td>
 <td style="text-align: left;"><code>"ffffff"</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>fgcolor</code></td>
 <td style="text-align: left;">pointer</td>
 <td style="text-align: left;">Points to fgcolour allowing alternate
 spelling.</td>
 <td style="text-align: left;"></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>bgcolor</code></td>
 <td style="text-align: left;">pointer</td>
 <td style="text-align: left;">Points to bgcolour allowing alternate
 spelling.</td>
 <td style="text-align: left;"></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>outfile</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Contains the name of the file to output a
@@ -3443,100 +3443,100 @@ resulting barcode symbol to. Must end in <code>.png</code>,
 role="doc-noteref"><sup>9</sup></a></td>
 <td style="text-align: left;"><code>"out.png"</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>primary</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Primary message data for more complex
 symbols, with a terminating <code>NUL</code>.</td>
 <td style="text-align: left;"><code>""</code> (empty)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>option_1</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Symbol specific options.</td>
 <td style="text-align: left;">-1</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>option_2</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Symbol specific options.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>option_3</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Symbol specific options.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>show_hrt</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Set to 0 to hide Human Readable Text
 (HRT).</td>
 <td style="text-align: left;">1</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>input_mode</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Set encoding of input data - see <a
 href="#setting-the-input-mode">5.11 Setting the Input Mode</a>.</td>
 <td style="text-align: left;"><code>DATA_MODE</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>eci</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Extended Channel Interpretation code.</td>
 <td style="text-align: left;">0 (none)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>dpmm</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Resolution of output in dots per mm (BMP,
 EMF, PCX, PNG and TIF only).</td>
 <td style="text-align: left;">0 (none)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>dot_size</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Diameter of dots used in dotty mode (in
 X-dimensions).</td>
 <td style="text-align: left;">0.8</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>text_gap</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Gap between barcode and text (HRT) in
 X-dimensions.</td>
 <td style="text-align: left;">1.0</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>guard_descent</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Height of guard bar descent (EAN/UPC only)
 in X-dimensions.</td>
 <td style="text-align: left;">5.0</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>structapp</code></td>
 <td style="text-align: left;">Structured Append structure</td>
 <td style="text-align: left;">Mark a symbol as part of a sequence of
 symbols.</td>
 <td style="text-align: left;">count 0 (disabled)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>debug</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Debugging flags.</td>
 <td style="text-align: left;">0</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>warn_level</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Affects error/warning value returned by
 Zint API - see <a href="#handling-errors">5.8 Handling Errors</a>.</td>
 <td style="text-align: left;"><code>WARN_DEFAULT</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>text</code></td>
 <td style="text-align: left;">unsigned character string</td>
 <td style="text-align: left;">Human Readable Text, which usually
@@ -3544,31 +3544,31 @@ consists of input data plus one more check digit. Uses UTF-8 formatting,
 with a terminating <code>NUL</code>.</td>
 <td style="text-align: left;"><code>""</code> (empty) (output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>rows</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Number of rows used by the symbol.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>width</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Width of the generated symbol.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>encoded_data</code></td>
 <td style="text-align: left;">array of unsigned character arrays</td>
 <td style="text-align: left;">Representation of the encoded data.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>row_height</code></td>
 <td style="text-align: left;">array of floats</td>
 <td style="text-align: left;">Heights of each row.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>errtxt</code></td>
 <td style="text-align: left;">character string</td>
 <td style="text-align: left;">Error message in the event that an error
@@ -3576,7 +3576,7 @@ occurred, with a terminating <code>NUL</code> - see <a
 href="#handling-errors">5.8 Handling Errors</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>bitmap</code></td>
 <td style="text-align: left;">pointer to unsigned character array</td>
 <td style="text-align: left;">Pointer to stored bitmap image - see <a
@@ -3584,21 +3584,21 @@ href="#buffering-symbols-in-memory-raster">5.4 Buffering Symbols in
 Memory (raster)</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>bitmap_width</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Width of stored bitmap image (in pixels) -
 see <code>bitmap</code> member.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>bitmap_height</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Height of stored bitmap image (in pixels)
 - see <code>bitmap</code> member.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>alphamap</code></td>
 <td style="text-align: left;">pointer to unsigned character array</td>
 <td style="text-align: left;">Pointer to array representing alpha
@@ -3606,7 +3606,7 @@ channel of stored bitmap image (or <code>NULL</code> if no alpha channel
 used) - see <code>bitmap</code> member.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>vector</code></td>
 <td style="text-align: left;">pointer to vector structure</td>
 <td style="text-align: left;">Pointer to vector header containing
@@ -3615,7 +3615,7 @@ href="#buffering-symbols-in-memory-vector">5.5 Buffering Symbols in
 Memory (vector)</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>memfile</code></td>
 <td style="text-align: left;">pointer to unsigned character array</td>
 <td style="text-align: left;">Pointer to in-memory file buffer if
@@ -3624,7 +3624,7 @@ see <a href="#buffering-symbols-in-memory-memfile">5.6 Buffering Symbols
 in Memory (memfile)</a>.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>memfile_size</code></td>
 <td style="text-align: left;">integer</td>
 <td style="text-align: left;">Length of in-memory file buffer.</td>
@@ -3669,57 +3669,57 @@ data-tag=": API Warning and Error Return Values">
 <col style="width: 60%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Return Value</th>
 <th style="text-align: left;">Meaning</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">The Human Readable Text returned in
 <code>text</code> was truncated (maximum 199 bytes).</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_INVALID_OPTION</code></td>
 <td style="text-align: left;">One of the values in
 <code>zint_struct</code> was set incorrectly but Zint has made a guess
 at what it should have been and generated a barcode accordingly.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_USES_ECI</code></td>
 <td style="text-align: left;">Zint has automatically inserted an ECI
 character. The symbol may not be readable with some readers.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_NONCOMPLIANT</code></td>
 <td style="text-align: left;">The symbol was created but is not
 compliant with certain standards set in its specification (e.g. height,
 GS1 AI data lengths).</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR</code></td>
 <td style="text-align: left;">Marks the divide between warnings and
 errors. For return values greater than or equal to this no symbol (or
 only an incomplete symbol) is generated.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_TOO_LONG</code></td>
 <td style="text-align: left;">The input data is too long or too short
 for the selected symbology. No symbol has been generated.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_INVALID_DATA</code></td>
 <td style="text-align: left;">The data to be encoded includes characters
 which are not permitted by the selected symbology (e.g. alphabetic
 characters in an EAN symbol). No symbol has been generated.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_INVALID_CHECK</code></td>
 <td style="text-align: left;">Data with an incorrect check digit has
 been entered. No symbol has been generated.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td
 style="text-align: left;"><code>ZINT_ERROR_INVALID_OPTION</code></td>
 <td style="text-align: left;">One of the values in
@@ -3727,42 +3727,42 @@ style="text-align: left;"><code>ZINT_ERROR_INVALID_OPTION</code></td>
 unwilling) to guess what it should have been. No symbol has been
 generated.</td>
 </tr>
-<tr class="even">
+<tr>
 <td
 style="text-align: left;"><code>ZINT_ERROR_ENCODING_PROBLEM</code></td>
 <td style="text-align: left;">A problem has occurred during encoding of
 the data. This should never happen. Please contact the developer if you
 encounter this error.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_FILE_ACCESS</code></td>
 <td style="text-align: left;">Zint was unable to open the requested
 output file. This is usually a file permissions problem.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_MEMORY</code></td>
 <td style="text-align: left;">Zint ran out of memory. This should only
 be a problem with legacy systems.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_FILE_WRITE</code></td>
 <td style="text-align: left;">Zint failed to write all contents to the
 requested output file. This should only occur if the output device
 becomes full.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_USES_ECI</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_USES_ECI</code>
 occurs.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_NONCOMPLIANT</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_NONCOMPLIANT</code>
 occurs.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_ERROR_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_TRUNCATED</code>
@@ -3823,101 +3823,101 @@ value:</p>
 <col style="width: 65%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Value</th>
 <th style="text-align: left;">Effect</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">0</td>
 <td style="text-align: left;">No options selected.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BARCODE_BIND_TOP</code></td>
 <td style="text-align: left;">Boundary bar above the symbol only.<a
 href="#fn10" class="footnote-ref" id="fnref10"
 role="doc-noteref"><sup>10</sup></a></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>BARCODE_BIND</code></td>
 <td style="text-align: left;">Boundary bars above and below the symbol
 and between rows if stacking multiple symbols.<a href="#fn11"
 class="footnote-ref" id="fnref11"
 role="doc-noteref"><sup>11</sup></a></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BARCODE_BOX</code></td>
 <td style="text-align: left;">Add a box surrounding the symbol and
 whitespace.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>BARCODE_STDOUT</code></td>
 <td style="text-align: left;">Output the file to stdout.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>READER_INIT</code></td>
 <td style="text-align: left;">Create as a Reader Initialisation
 (Programming) symbol.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>SMALL_TEXT</code></td>
 <td style="text-align: left;">Use a smaller font for the Human Readable
 Text.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BOLD_TEXT</code></td>
 <td style="text-align: left;">Embolden the Human Readable Text.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>CMYK_COLOUR</code></td>
 <td style="text-align: left;">Select the CMYK colour space option for
 Encapsulated PostScript and TIF files.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BARCODE_DOTTY_MODE</code></td>
 <td style="text-align: left;">Plot a matrix symbol using dots rather
 than squares.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>GS1_GS_SEPARATOR</code></td>
 <td style="text-align: left;">Use GS (Group Separator) instead of FNC1
 as GS1 separator (Data Matrix only).</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>OUT_BUFFER_INTERMEDIATE</code></td>
 <td style="text-align: left;">Return the bitmap buffer as ASCII values
 instead of separate colour channels - see <a
 href="#buffering-symbols-in-memory-raster">5.4 Buffering Symbols in
 Memory (raster)</a>.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>BARCODE_QUIET_ZONES</code></td>
 <td style="text-align: left;">Add compliant quiet zones (additional to
 any specified whitespace).<a href="#fn12" class="footnote-ref"
 id="fnref12" role="doc-noteref"><sup>12</sup></a></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BARCODE_NO_QUIET_ZONES</code></td>
 <td style="text-align: left;">Disable quiet zones, notably those with
 defaults.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>COMPLIANT_HEIGHT</code></td>
 <td style="text-align: left;">Warn if height specified not compliant, or
 use standard height (if any) as default.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>EANUPC_GUARD_WHITESPACE</code></td>
 <td style="text-align: left;">Add quiet zone indicators (“&lt;” and/or
 “&gt;”) to HRT whitespace (EAN/UPC).</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>EMBED_VECTOR_FONT</code></td>
 <td style="text-align: left;">Embed font in vector output - currently
 available for SVG output only.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>BARCODE_MEMORY_FILE</code></td>
 <td style="text-align: left;">Write output to in-memory buffer
 <code>symbol-&gt;memfile</code> instead of to <code>outfile</code>
@@ -3939,62 +3939,62 @@ below.</p>
 <col style="width: 74%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Value</th>
 <th style="text-align: left;">Effect</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>DATA_MODE</code></td>
 <td style="text-align: left;">Uses full 8-bit range interpreted as
 binary data.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>UNICODE_MODE</code></td>
 <td style="text-align: left;">Uses UTF-8 input.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>GS1_MODE</code></td>
 <td style="text-align: left;">Encodes GS1 data using FNC1
 characters.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"><em>The above are exclusive, the following
 optional and OR-ed.</em></td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ESCAPE_MODE</code></td>
 <td style="text-align: left;">Process input data for escape
 sequences.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>GS1PARENS_MODE</code></td>
 <td style="text-align: left;">Parentheses (round brackets) used in GS1
 data instead of square brackets to delimit Application Identifiers
 (parentheses must not otherwise occur in the data).</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>GS1NOCHECK_MODE</code></td>
 <td style="text-align: left;">Do not check GS1 data for validity,
 i.e. suppress checks for valid AIs and data lengths. Invalid characters
 (e.g. control characters, extended ASCII characters) are still checked
 for.</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>HEIGHTPERROW_MODE</code></td>
 <td style="text-align: left;">Interpret the <code>height</code> member
 as per-row rather than as overall height.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>FAST_MODE</code></td>
 <td style="text-align: left;">Use faster if less optimal encodation or
 other shortcuts if available (affects <code>DATAMATRIX</code>,
 <code>MICROPDF417</code>, <code>PDF417</code>, <code>QRCODE</code> and
 <code>UPNQR</code> only).</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>EXTRA_ESCAPE_MODE</code></td>
 <td style="text-align: left;">Process special symbology-specific escape
 sequences (<code>CODE128</code> only).</td>
@@ -4164,77 +4164,77 @@ argument and checking the return to see which are set.</p>
 <col style="width: 64%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Value</th>
 <th style="text-align: left;">Meaning</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_HRT</code></td>
 <td style="text-align: left;">Can the symbology print Human Readable
 Text?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_STACKABLE</code></td>
 <td style="text-align: left;">Is the symbology stackable?</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
 href="#fn13" class="footnote-ref" id="fnref13"
 role="doc-noteref"><sup>13</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_COMPOSITE</code></td>
 <td style="text-align: left;">Does the symbology support composite data?
 (see <a href="#gs1-composite-symbols-iso-24723">6.3 GS1 Composite
 Symbols (ISO 24723)</a> below)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_ECI</code></td>
 <td style="text-align: left;">Does the symbology support Extended
 Channel Interpretations?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_GS1</code></td>
 <td style="text-align: left;">Does the symbology support GS1 data?</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_DOTTY</code></td>
 <td style="text-align: left;">Can the symbology be outputted as
 dots?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_QUIET_ZONES</code></td>
 <td style="text-align: left;">Does the symbology have default quiet
 zones?</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_FIXED_RATIO</code></td>
 <td style="text-align: left;">Does the symbology have a fixed
 width-to-height (aspect) ratio?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_READER_INIT</code></td>
 <td style="text-align: left;">Does the symbology support Reader
 Initialisation?</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_FULL_MULTIBYTE</code></td>
 <td style="text-align: left;">Is the <code>ZINT_FULL_MULTIBYTE</code>
 option applicable?</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_MASK</code></td>
 <td style="text-align: left;">Is mask selection applicable?</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;"><code>ZINT_CAP_STRUCTAPP</code></td>
 <td style="text-align: left;">Does the symbology support Structured
 Append?</td>
 </tr>
-<tr class="even">
+<tr>
 <td
 style="text-align: left;"><code>ZINT_CAP_COMPLIANT_HEIGHT</code></td>
 <td style="text-align: left;">Does the symbology have a compliant height
@@ -4595,37 +4595,37 @@ data-tag=": MSI Plessey Check Digit Options">
 <caption><span>Table : MSI Plessey Check Digit Options</span>
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Value</th>
 <th style="text-align: left;">Check Digits</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>0</td>
 <td style="text-align: left;">None</td>
 </tr>
-<tr class="even">
+<tr>
 <td>1</td>
 <td style="text-align: left;">Modulo-10 (Luhn)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>2</td>
 <td style="text-align: left;">Modulo-10 &amp; Modulo-10</td>
 </tr>
-<tr class="even">
+<tr>
 <td>3</td>
 <td style="text-align: left;">Modulo-11 (IBM)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>4</td>
 <td style="text-align: left;">Modulo-11 (IBM) &amp; Modulo-10</td>
 </tr>
-<tr class="even">
+<tr>
 <td>5</td>
 <td style="text-align: left;">Modulo-11 (NCR)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>6</td>
 <td style="text-align: left;">Modulo-11 (NCR) &amp; Modulo-10</td>
 </tr>
@@ -4933,7 +4933,7 @@ alphanumeric, and is of the form:</p>
 <col style="width: 29%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Destination Post Code</th>
 <th style="text-align: left;">Tracking Number</th>
 <th style="text-align: left;">Service Code</th>
@@ -4941,7 +4941,7 @@ alphanumeric, and is of the form:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">PPPPPPP (7 alphanumerics)</td>
 <td style="text-align: left;">TTTTTTTTTTTTTT (14 alphanumerics)</td>
 <td style="text-align: left;">SSS (3 digits)</td>
@@ -5077,39 +5077,39 @@ shown in the table below:</p>
 <table id="tbl:channel_maxima" data-tag=": Channel Value Ranges">
 <caption><span>Table : Channel Value Ranges</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Channels</th>
 <th style="text-align: left;">Minimum Value</th>
 <th style="text-align: left;">Maximum Value</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">3</td>
 <td style="text-align: left;">00</td>
 <td style="text-align: left;">26</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;">000</td>
 <td style="text-align: left;">292</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">5</td>
 <td style="text-align: left;">0000</td>
 <td style="text-align: left;">3493</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">00000</td>
 <td style="text-align: left;">44072</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">000000</td>
 <td style="text-align: left;">576688</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;">0000000</td>
 <td style="text-align: left;">7742862</td>
@@ -5367,68 +5367,68 @@ data-tag=": GS1 Composite Symbology Values">
 <col style="width: 53%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Numeric Value</th>
 <th style="text-align: left;">Name</th>
 <th style="text-align: left;">Barcode Name</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">130</td>
 <td style="text-align: left;"><code>BARCODE_EANX_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with EAN linear
 component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">131</td>
 <td style="text-align: left;"><code>BARCODE_GS1_128_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1-128 linear
 component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">132</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMN_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Omnidirectional linear component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">133</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_LTD_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Limited linear component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">134</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXP_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Expanded linear component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">135</td>
 <td style="text-align: left;"><code>BARCODE_UPCA_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with UPC-A linear
 component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">136</td>
 <td style="text-align: left;"><code>BARCODE_UPCE_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with UPC-E linear
 component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">137</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_STK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Stacked component</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">138</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_OMNSTK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
 Stacked Omnidirectional component</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">139</td>
 <td style="text-align: left;"><code>BARCODE_DBAR_EXPSTK_CC</code></td>
 <td style="text-align: left;">GS1 Composite Symbol with GS1 DataBar
@@ -5590,7 +5590,7 @@ data-tag=": Australia Post Input Formats">
 <col style="width: 12%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Input Length</th>
 <th style="text-align: left;">Required Input Format</th>
 <th>Symbol Length</th>
@@ -5599,35 +5599,35 @@ data-tag=": Australia Post Input Formats">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;"><code>99999999</code></td>
 <td>37-bar</td>
 <td>11</td>
 <td style="text-align: left;">None</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">13</td>
 <td style="text-align: left;"><code>99999999AAAAA</code></td>
 <td>52-bar</td>
 <td>59</td>
 <td style="text-align: left;">C</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">16</td>
 <td style="text-align: left;"><code>9999999999999999</code></td>
 <td>52-bar</td>
 <td>59</td>
 <td style="text-align: left;">N</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">18</td>
 <td style="text-align: left;"><code>99999999AAAAAAAAAA</code></td>
 <td>67-bar</td>
 <td>62</td>
 <td style="text-align: left;">C</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">23</td>
 <td style="text-align: left;"><code>99999999999999999999999</code></td>
 <td>67-bar</td>
@@ -5716,7 +5716,7 @@ data-tag=": Royal Mail 4-State Mailmark Input Fields">
 <col style="width: 23%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Format</th>
 <th style="text-align: left;">Version ID</th>
 <th style="text-align: left;">Class</th>
@@ -5726,7 +5726,7 @@ data-tag=": Royal Mail 4-State Mailmark Input Fields">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">1 digit (0-4)</td>
 <td style="text-align: left;">1 digit (0-3)</td>
 <td style="text-align: left;">1 alphanum. (0-9A-E)</td>
@@ -5745,12 +5745,12 @@ data-tag=": Royal Mail Mailmark Destination+DPS Patterns">
 <caption><span>Table : Royal Mail Mailmark Destination+DPS
 Patterns:</span> </caption>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>FNFNLLNLS</code></td>
 <td><code>FFNNLLNLS</code></td>
 <td><code>FFNNNLLNL</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>FFNFNLLNL</code></td>
 <td><code>FNNLLNLSS</code></td>
 <td><code>FNNNLLNLS</code></td>
@@ -5846,7 +5846,7 @@ from Zint.</p>
 <table id="tbl:datamatrix_sizes" data-tag=": Data Matrix Sizes">
 <caption><span>Table : Data Matrix Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -5858,7 +5858,7 @@ from Zint.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>10 x 10</td>
 <td></td>
@@ -5868,7 +5868,7 @@ from Zint.</p>
 <td>21</td>
 <td>104 x 104</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>12 x 12</td>
 <td></td>
@@ -5878,7 +5878,7 @@ from Zint.</p>
 <td>22</td>
 <td>120 x 120</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>14 x 14</td>
 <td></td>
@@ -5888,7 +5888,7 @@ from Zint.</p>
 <td>23</td>
 <td>132 x 132</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>16 x 16</td>
 <td></td>
@@ -5898,7 +5898,7 @@ from Zint.</p>
 <td>24</td>
 <td>144 x 144</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>18 x 18</td>
 <td></td>
@@ -5908,7 +5908,7 @@ from Zint.</p>
 <td>25</td>
 <td>8 x 18</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>20 x 20</td>
 <td></td>
@@ -5918,7 +5918,7 @@ from Zint.</p>
 <td>26</td>
 <td>8 x 32</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>22 x 22</td>
 <td></td>
@@ -5928,7 +5928,7 @@ from Zint.</p>
 <td>28</td>
 <td>12 x 26</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>24 x 24</td>
 <td></td>
@@ -5938,7 +5938,7 @@ from Zint.</p>
 <td>28</td>
 <td>12 x 36</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>26 x 26</td>
 <td></td>
@@ -5948,7 +5948,7 @@ from Zint.</p>
 <td>29</td>
 <td>16 x 36</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>32 x 32</td>
 <td></td>
@@ -5972,7 +5972,7 @@ generated with the following values as before:</p>
 <table id="tbl:dmre_sizes" data-tag=": DMRE Sizes">
 <caption><span>Table : DMRE Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -5981,63 +5981,63 @@ generated with the following values as before:</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>31</td>
 <td>8 x 48</td>
 <td></td>
 <td>40</td>
 <td>20 x 36</td>
 </tr>
-<tr class="even">
+<tr>
 <td>32</td>
 <td>8 x 64</td>
 <td></td>
 <td>41</td>
 <td>20 x 44</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>33</td>
 <td>8 x 80</td>
 <td></td>
 <td>42</td>
 <td>20 x 64</td>
 </tr>
-<tr class="even">
+<tr>
 <td>34</td>
 <td>8 x 96</td>
 <td></td>
 <td>43</td>
 <td>22 x 48</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>35</td>
 <td>8 x 120</td>
 <td></td>
 <td>44</td>
 <td>24 x 48</td>
 </tr>
-<tr class="even">
+<tr>
 <td>36</td>
 <td>8 x 144</td>
 <td></td>
 <td>45</td>
 <td>24 x 64</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>37</td>
 <td>12 x 64</td>
 <td></td>
 <td>46</td>
 <td>26 x 40</td>
 </tr>
-<tr class="even">
+<tr>
 <td>38</td>
 <td>12 x 88</td>
 <td></td>
 <td>47</td>
 <td>26 x 48</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>39</td>
 <td>16 x 64</td>
 <td></td>
@@ -6089,64 +6089,64 @@ data-tag=": Royal Mail 2D Mailmark Input Fields">
 <caption><span>Table : Royal Mail 2D Mailmark Input Fields</span>
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Field Name</th>
 <th style="text-align: left;">Length</th>
 <th style="text-align: left;">Values</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">UPU Country ID</td>
 <td style="text-align: left;">4</td>
 <td style="text-align: left;"><code>"JGB "</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Information Type</td>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;">Alphanumeric</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Version ID</td>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;"><code>"1"</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Class</td>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;">Alphanumeric</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Supply Chain ID</td>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">Numeric</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Item ID</td>
 <td style="text-align: left;">8</td>
 <td style="text-align: left;">Numeric</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Destination+DPS</td>
 <td style="text-align: left;">9</td>
 <td style="text-align: left;">Alphanumeric (1 of 6 patterns)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Service Type</td>
 <td style="text-align: left;">1</td>
 <td style="text-align: left;">Numeric</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">RTS Post Code</td>
 <td style="text-align: left;">7</td>
 <td style="text-align: left;">Alphanumeric (1 of 6 patterns)</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Reserved</td>
 <td style="text-align: left;">6</td>
 <td style="text-align: left;">Spaces</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Customer Data</td>
 <td style="text-align: left;">6, 45 or 29</td>
 <td style="text-align: left;">Anything (Latin-1)</td>
@@ -6166,12 +6166,12 @@ data-tag=": Royal Mail 2D Mailmark RTS Patterns">
 <caption><span>Table : Royal Mail 2D Mailmark RTS Patterns</span>
 </caption>
 <tbody>
-<tr class="odd">
+<tr>
 <td><code>FNFNLLS</code></td>
 <td><code>FFNNLLS</code></td>
 <td><code>FFNNNLL</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td><code>FFNFNLL</code></td>
 <td><code>FNNLLSS</code></td>
 <td><code>FNNNLLS</code></td>
@@ -6189,7 +6189,7 @@ amounts of optional customer data:</p>
 data-tag=": Royal Mail 2D Mailmark Sizes">
 <caption><span>Table : Royal Mail 2D Mailmark Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th style="text-align: left;">Name</th>
 <th style="text-align: left;">Size</th>
 <th>Customer Data</th>
@@ -6197,19 +6197,19 @@ data-tag=": Royal Mail 2D Mailmark Sizes">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Type 7</td>
 <td style="text-align: left;">24 x 24</td>
 <td>6 characters</td>
 <td>8</td>
 </tr>
-<tr class="even">
+<tr>
 <td style="text-align: left;">Type 9</td>
 <td style="text-align: left;">32 x 32</td>
 <td>45 characters</td>
 <td>10</td>
 </tr>
-<tr class="odd">
+<tr>
 <td style="text-align: left;">Type 29</td>
 <td style="text-align: left;">16 x 48</td>
 <td>29 characters</td>
@@ -6244,7 +6244,7 @@ following table.</p>
 <table id="tbl:qrcode_eccs" data-tag=": QR Code ECC Levels">
 <caption><span>Table : QR Code ECC Levels</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>ECC Level</th>
 <th>Error Correction Capacity</th>
@@ -6252,25 +6252,25 @@ following table.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>L</td>
 <td>Approx 20% of symbol</td>
 <td>Approx 7%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>M</td>
 <td>Approx 37% of symbol</td>
 <td>Approx 15%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>Q</td>
 <td>Approx 55% of symbol</td>
 <td>Approx 25%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>H</td>
 <td>Approx 65% of symbol</td>
@@ -6287,7 +6287,7 @@ table below.</p>
 <table id="tbl:qrcode_sizes" data-tag=": QR Code Sizes">
 <caption><span>Table : QR Code Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -6299,7 +6299,7 @@ table below.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>21 x 21</td>
 <td></td>
@@ -6309,7 +6309,7 @@ table below.</p>
 <td>29</td>
 <td>133 x 133</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>25 x 25</td>
 <td></td>
@@ -6319,7 +6319,7 @@ table below.</p>
 <td>30</td>
 <td>137 x 137</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>29 x 29</td>
 <td></td>
@@ -6329,7 +6329,7 @@ table below.</p>
 <td>31</td>
 <td>141 x 141</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>33 x 33</td>
 <td></td>
@@ -6339,7 +6339,7 @@ table below.</p>
 <td>32</td>
 <td>145 x 145</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>37 x 37</td>
 <td></td>
@@ -6349,7 +6349,7 @@ table below.</p>
 <td>33</td>
 <td>149 x 149</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>41 x 41</td>
 <td></td>
@@ -6359,7 +6359,7 @@ table below.</p>
 <td>34</td>
 <td>153 x 153</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>45 x 45</td>
 <td></td>
@@ -6369,7 +6369,7 @@ table below.</p>
 <td>35</td>
 <td>157 x 157</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>49 x 49</td>
 <td></td>
@@ -6379,7 +6379,7 @@ table below.</p>
 <td>36</td>
 <td>161 x 161</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>53 x 53</td>
 <td></td>
@@ -6389,7 +6389,7 @@ table below.</p>
 <td>37</td>
 <td>165 x 165</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>57 x 57</td>
 <td></td>
@@ -6399,7 +6399,7 @@ table below.</p>
 <td>38</td>
 <td>169 x 169</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>11</td>
 <td>61 x 61</td>
 <td></td>
@@ -6409,7 +6409,7 @@ table below.</p>
 <td>39</td>
 <td>173 x 173</td>
 </tr>
-<tr class="even">
+<tr>
 <td>12</td>
 <td>65 x 65</td>
 <td></td>
@@ -6419,7 +6419,7 @@ table below.</p>
 <td>40</td>
 <td>177 x 177</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>13</td>
 <td>69 x 69</td>
 <td></td>
@@ -6429,7 +6429,7 @@ table below.</p>
 <td></td>
 <td></td>
 </tr>
-<tr class="even">
+<tr>
 <td>14</td>
 <td>73 x 73</td>
 <td></td>
@@ -6501,7 +6501,7 @@ data-tag=": Micro QR Code Sizes">
 <col style="width: 48%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Version</th>
 <th>Symbol Size</th>
@@ -6509,26 +6509,26 @@ data-tag=": Micro QR Code Sizes">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>M1</td>
 <td>11 x 11</td>
 <td style="text-align: left;">Numeric only</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>M2</td>
 <td>13 x 13</td>
 <td style="text-align: left;">Numeric, uppercase letters, space, and the
 characters <code>"$%*+-./:"</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>M3</td>
 <td>15 x 15</td>
 <td style="text-align: left;">Latin-1 and Shift JIS</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>M4</td>
 <td>17 x 17</td>
@@ -6555,7 +6555,7 @@ data-tag=": Micro QR ECC Levels">
 <col style="width: 20%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th style="text-align: left;">ECC Level</th>
 <th style="text-align: left;">Error Correction Capacity</th>
@@ -6564,21 +6564,21 @@ data-tag=": Micro QR ECC Levels">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td style="text-align: left;">L</td>
 <td style="text-align: left;">Approx 20% of symbol</td>
 <td style="text-align: left;">Approx 7%</td>
 <td style="text-align: left;">M1, M2, M3, M4</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td style="text-align: left;">M</td>
 <td style="text-align: left;">Approx 37% of symbol</td>
 <td style="text-align: left;">Approx 15%</td>
 <td style="text-align: left;">M2, M3, M4</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td style="text-align: left;">Q</td>
 <td style="text-align: left;">Approx 55% of symbol</td>
@@ -6620,7 +6620,7 @@ for this type of symbol.</p>
 <table id="tbl:rmqr_eccs" data-tag=": rMQR ECC Levels">
 <caption><span>Table : rMQR ECC Levels</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>ECC Level</th>
 <th>Error Correction Capacity</th>
@@ -6628,13 +6628,13 @@ for this type of symbol.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>2</td>
 <td>M</td>
 <td>Approx 37% of symbol</td>
 <td>Approx 15%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>H</td>
 <td>Approx 65% of symbol</td>
@@ -6660,7 +6660,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <col style="width: 28%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Version</th>
 <th>Symbol Size (HxW)</th>
@@ -6671,7 +6671,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>R7x43</td>
 <td>7 x 43</td>
@@ -6680,7 +6680,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R13x77</td>
 <td style="text-align: left;">13 x 77</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>R7x59</td>
 <td>7 x 59</td>
@@ -6689,7 +6689,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R13x99</td>
 <td style="text-align: left;">13 x 99</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>R7x77</td>
 <td>7 x 77</td>
@@ -6698,7 +6698,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R13x139</td>
 <td style="text-align: left;">13 x 139</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>R7x99</td>
 <td>7 x 99</td>
@@ -6707,7 +6707,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15x43</td>
 <td style="text-align: left;">15 x 43</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>R7x139</td>
 <td>7 x 139</td>
@@ -6716,7 +6716,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15x59</td>
 <td style="text-align: left;">15 x 59</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>R9x43</td>
 <td>9 x 43</td>
@@ -6725,7 +6725,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15x77</td>
 <td style="text-align: left;">15 x 77</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>R9x59</td>
 <td>9 x 59</td>
@@ -6734,7 +6734,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15x99</td>
 <td style="text-align: left;">15 x 99</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>R9x77</td>
 <td>9 x 77</td>
@@ -6743,7 +6743,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15x139</td>
 <td style="text-align: left;">15 x 139</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>R9x99</td>
 <td>9 x 99</td>
@@ -6752,7 +6752,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R17x43</td>
 <td style="text-align: left;">17 x 43</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>R9x139</td>
 <td>9 x 139</td>
@@ -6761,7 +6761,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R17x59</td>
 <td style="text-align: left;">17 x 59</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>11</td>
 <td>R11x27</td>
 <td>11 x 27</td>
@@ -6770,7 +6770,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R17x77</td>
 <td style="text-align: left;">17 x 77</td>
 </tr>
-<tr class="even">
+<tr>
 <td>12</td>
 <td>R11x43</td>
 <td>11 x 43</td>
@@ -6779,7 +6779,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R17x99</td>
 <td style="text-align: left;">17 x 99</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>13</td>
 <td>R11x59</td>
 <td>11 x 59</td>
@@ -6788,7 +6788,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R17x139</td>
 <td style="text-align: left;">17 x 139</td>
 </tr>
-<tr class="even">
+<tr>
 <td>14</td>
 <td>R11x77</td>
 <td>11 x 77</td>
@@ -6797,7 +6797,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R7xW</td>
 <td style="text-align: left;">7 x automatic width</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>15</td>
 <td>R11x99</td>
 <td>11 x 99</td>
@@ -6806,7 +6806,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R9xW</td>
 <td style="text-align: left;">9 x automatic width</td>
 </tr>
-<tr class="even">
+<tr>
 <td>16</td>
 <td>R11x139</td>
 <td>11 x 139</td>
@@ -6815,7 +6815,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R11xW</td>
 <td style="text-align: left;">11 x automatic width</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>17</td>
 <td>R13x27</td>
 <td>13 x 27</td>
@@ -6824,7 +6824,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R13xW</td>
 <td style="text-align: left;">13 x automatic width</td>
 </tr>
-<tr class="even">
+<tr>
 <td>18</td>
 <td>R13x43</td>
 <td>13 x 43</td>
@@ -6833,7 +6833,7 @@ while allowing Zint to determine the minimum symbol width.</p>
 <td>R15xW</td>
 <td style="text-align: left;">15 x automatic width</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>19</td>
 <td>R13x59</td>
 <td>13 x 59</td>
@@ -6864,7 +6864,7 @@ set by Zint and do not need to be specified. UPNQR is unusual in that it
 uses Latin-2 (ISO/IEC 8859-2 plus ASCII) formatted data. Zint will
 accept UTF-8 data and convert it to Latin-2, or if your data is already
 Latin-2 formatted use the <code>--binary</code> switch (API
-<code>input_mode = DATA MODE</code>).</p>
+<code>input_mode = DATA_MODE</code>).</p>
 <p>The following example creates a symbol from data saved as a Latin-2
 file:</p>
 <div class="sourceCode" id="cb113"><pre
@@ -6893,46 +6893,46 @@ data-tag=": MaxiCode Structured Carrier Message Format">
 <caption><span>Table : MaxiCode Structured Carrier Message
 Format:</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Characters</th>
 <th style="text-align: left;">Meaning</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1 - 9</td>
 <td style="text-align: left;">Postcode data which can consist of up to 9
 digits (for mode 2)</td>
 </tr>
-<tr class="even">
+<tr>
 <td></td>
 <td style="text-align: left;">or up to 6 alphanumeric characters (for
 mode 3). Remaining</td>
 </tr>
-<tr class="odd">
+<tr>
 <td></td>
 <td style="text-align: left;">unused characters for mode 3 can be filled
 with the SPACE</td>
 </tr>
-<tr class="even">
+<tr>
 <td></td>
 <td style="text-align: left;">character (ASCII 32) or omitted.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td></td>
 <td style="text-align: left;">(adjust the following character positions
 according to postcode</td>
 </tr>
-<tr class="even">
+<tr>
 <td></td>
 <td style="text-align: left;">length)</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>10 - 12</td>
 <td style="text-align: left;">Three-digit country code according to ISO
 3166-1.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>13 - 15</td>
 <td style="text-align: left;">Three-digit service code. This depends on
 your parcel courier.</td>
@@ -6989,7 +6989,7 @@ data-tag=": MaxiCode Data Length Maxima">
 <col style="width: 30%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Mode</th>
 <th>Maximum Data Length for Capital Letters</th>
 <th style="text-align: left;">Maximum Data Length for Numeric
@@ -6998,31 +6998,31 @@ Digits</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>2<code>*</code></td>
 <td>84</td>
 <td style="text-align: left;">126</td>
 <td style="text-align: left;">50</td>
 </tr>
-<tr class="even">
+<tr>
 <td>3<code>*</code></td>
 <td>84</td>
 <td style="text-align: left;">126</td>
 <td style="text-align: left;">50</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>4</td>
 <td>93</td>
 <td style="text-align: left;">138</td>
 <td style="text-align: left;">50</td>
 </tr>
-<tr class="even">
+<tr>
 <td>5</td>
 <td>77</td>
 <td style="text-align: left;">113</td>
 <td style="text-align: left;">66</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>6</td>
 <td>93</td>
 <td style="text-align: left;">138</td>
@@ -7064,7 +7064,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <table id="tbl:aztec_sizes" data-tag=": Aztec Code Sizes">
 <caption><span>Table : Aztec Code Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -7076,7 +7076,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>15 x 15<code>*</code></td>
 <td></td>
@@ -7086,7 +7086,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>25</td>
 <td>105 x 105</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>19 x 19<code>*</code></td>
 <td></td>
@@ -7096,7 +7096,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>26</td>
 <td>109 x 109</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>23 x 23<code>*</code></td>
 <td></td>
@@ -7106,7 +7106,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>27</td>
 <td>113 x 113</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>27 x 27<code>*</code></td>
 <td></td>
@@ -7116,7 +7116,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>28</td>
 <td>117 x 117</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>19 x 19</td>
 <td></td>
@@ -7126,7 +7126,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>29</td>
 <td>121 x 121</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>23 x 23</td>
 <td></td>
@@ -7136,7 +7136,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>30</td>
 <td>125 x 125</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>27 x 27</td>
 <td></td>
@@ -7146,7 +7146,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>31</td>
 <td>131 x 131</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>31 x 31</td>
 <td></td>
@@ -7156,7 +7156,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>32</td>
 <td>135 x 135</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>37 x 37</td>
 <td></td>
@@ -7166,7 +7166,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>33</td>
 <td>139 x 139</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>41 x 41</td>
 <td></td>
@@ -7176,7 +7176,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>34</td>
 <td>143 x 143</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>11</td>
 <td>45 x 45</td>
 <td></td>
@@ -7186,7 +7186,7 @@ have a smaller bullseye pattern at the centre of the symbol.</p>
 <td>35</td>
 <td>147 x 147</td>
 </tr>
-<tr class="even">
+<tr>
 <td>12</td>
 <td>49 x 49</td>
 <td></td>
@@ -7211,25 +7211,25 @@ data-tag=": Aztec Code Error Correction Modes">
 <caption><span>Table : Aztec Code Error Correction Modes</span>
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Mode</th>
 <th>Error Correction Capacity</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>&gt;10% + 3 codewords</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>&gt;23% + 3 codewords</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>&gt;36% + 3 codewords</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>&gt;50% + 3 codewords</td>
 </tr>
@@ -7287,7 +7287,7 @@ data-tag=": Code One Sizes">
 <col style="width: 22%" />
 </colgroup>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Version</th>
 <th style="text-align: left;">Size (W x H)</th>
@@ -7296,70 +7296,70 @@ data-tag=": Code One Sizes">
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>A</td>
 <td style="text-align: left;">16 x 18</td>
 <td style="text-align: left;">22</td>
 <td style="text-align: left;">13</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>B</td>
 <td style="text-align: left;">22 x 22</td>
 <td style="text-align: left;">44</td>
 <td style="text-align: left;">27</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>C</td>
 <td style="text-align: left;">28 x 28</td>
 <td style="text-align: left;">104</td>
 <td style="text-align: left;">64</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>D</td>
 <td style="text-align: left;">40 x 42</td>
 <td style="text-align: left;">217</td>
 <td style="text-align: left;">135</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>E</td>
 <td style="text-align: left;">52 x 54</td>
 <td style="text-align: left;">435</td>
 <td style="text-align: left;">271</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>F</td>
 <td style="text-align: left;">70 x 76</td>
 <td style="text-align: left;">886</td>
 <td style="text-align: left;">553</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>G</td>
 <td style="text-align: left;">104 x 98</td>
 <td style="text-align: left;">1755</td>
 <td style="text-align: left;">1096</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>H</td>
 <td style="text-align: left;">148 x 134</td>
 <td style="text-align: left;">3550</td>
 <td style="text-align: left;">2218</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>S</td>
 <td style="text-align: left;">width x 8</td>
 <td style="text-align: left;">18</td>
 <td style="text-align: left;">N/A</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>T</td>
 <td style="text-align: left;">width x 16</td>
@@ -7403,7 +7403,7 @@ specified by using the <code>--secure</code> option (API
 <table id="tbl:gridmatrix_sizes" data-tag=": Grid Matrix Sizes">
 <caption><span>Table : Grid Matrix Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -7412,49 +7412,49 @@ specified by using the <code>--secure</code> option (API
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>18 x 18</td>
 <td></td>
 <td>8</td>
 <td>102 x 102</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>30 x 30</td>
 <td></td>
 <td>9</td>
 <td>114 x 114</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>42 x 42</td>
 <td></td>
 <td>10</td>
 <td>126 x 126</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>54 x 54</td>
 <td></td>
 <td>11</td>
 <td>138 x 138</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>66 x 66</td>
 <td></td>
 <td>12</td>
 <td>150 x 150</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>78 x 78</td>
 <td></td>
 <td>13</td>
 <td>162 x 162</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>90 x 90</td>
 <td></td>
@@ -7470,29 +7470,29 @@ data-tag=": Grid Matrix Error Correction Modes">
 <caption><span>Table : Grid Matrix Error Correction Modes</span>
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Mode</th>
 <th>Error Correction Capacity</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>Approximately 10%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>Approximately 20%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>Approximately 30%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>Approximately 40%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>Approximately 50%</td>
 </tr>
@@ -7555,7 +7555,7 @@ to the following table.</p>
 <table id="tbl:hanxin_sizes" data-tag=": Han Xin Sizes">
 <caption><span>Table : Han Xin Sizes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Input</th>
 <th>Symbol Size</th>
 <th></th>
@@ -7567,7 +7567,7 @@ to the following table.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>23 x 23</td>
 <td></td>
@@ -7577,7 +7577,7 @@ to the following table.</p>
 <td>57</td>
 <td>135 x 135</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>25 x 25</td>
 <td></td>
@@ -7587,7 +7587,7 @@ to the following table.</p>
 <td>58</td>
 <td>137 x 137</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>27 x 27</td>
 <td></td>
@@ -7597,7 +7597,7 @@ to the following table.</p>
 <td>59</td>
 <td>139 x 139</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>29 x 29</td>
 <td></td>
@@ -7607,7 +7607,7 @@ to the following table.</p>
 <td>60</td>
 <td>141 x 141</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>31 x 31</td>
 <td></td>
@@ -7617,7 +7617,7 @@ to the following table.</p>
 <td>61</td>
 <td>143 x 143</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>33 x 33</td>
 <td></td>
@@ -7627,7 +7627,7 @@ to the following table.</p>
 <td>62</td>
 <td>145 x 145</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>7</td>
 <td>35 x 35</td>
 <td></td>
@@ -7637,7 +7637,7 @@ to the following table.</p>
 <td>63</td>
 <td>147 x 147</td>
 </tr>
-<tr class="even">
+<tr>
 <td>8</td>
 <td>37 x 37</td>
 <td></td>
@@ -7647,7 +7647,7 @@ to the following table.</p>
 <td>64</td>
 <td>149 x 149</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>9</td>
 <td>39 x 39</td>
 <td></td>
@@ -7657,7 +7657,7 @@ to the following table.</p>
 <td>65</td>
 <td>151 x 151</td>
 </tr>
-<tr class="even">
+<tr>
 <td>10</td>
 <td>41 x 41</td>
 <td></td>
@@ -7667,7 +7667,7 @@ to the following table.</p>
 <td>66</td>
 <td>153 x 153</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>11</td>
 <td>43 x 43</td>
 <td></td>
@@ -7677,7 +7677,7 @@ to the following table.</p>
 <td>67</td>
 <td>155 x 155</td>
 </tr>
-<tr class="even">
+<tr>
 <td>12</td>
 <td>45 x 45</td>
 <td></td>
@@ -7687,7 +7687,7 @@ to the following table.</p>
 <td>68</td>
 <td>157 x 157</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>13</td>
 <td>47 x 47</td>
 <td></td>
@@ -7697,7 +7697,7 @@ to the following table.</p>
 <td>69</td>
 <td>159 x 159</td>
 </tr>
-<tr class="even">
+<tr>
 <td>14</td>
 <td>49 x 49</td>
 <td></td>
@@ -7707,7 +7707,7 @@ to the following table.</p>
 <td>70</td>
 <td>161 x 161</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>15</td>
 <td>51 x 51</td>
 <td></td>
@@ -7717,7 +7717,7 @@ to the following table.</p>
 <td>71</td>
 <td>163 x 163</td>
 </tr>
-<tr class="even">
+<tr>
 <td>16</td>
 <td>53 x 53</td>
 <td></td>
@@ -7727,7 +7727,7 @@ to the following table.</p>
 <td>72</td>
 <td>165 x 165</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>17</td>
 <td>55 x 55</td>
 <td></td>
@@ -7737,7 +7737,7 @@ to the following table.</p>
 <td>73</td>
 <td>167 x 167</td>
 </tr>
-<tr class="even">
+<tr>
 <td>18</td>
 <td>57 x 57</td>
 <td></td>
@@ -7747,7 +7747,7 @@ to the following table.</p>
 <td>74</td>
 <td>169 x 169</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>19</td>
 <td>59 x 59</td>
 <td></td>
@@ -7757,7 +7757,7 @@ to the following table.</p>
 <td>75</td>
 <td>171 x 171</td>
 </tr>
-<tr class="even">
+<tr>
 <td>20</td>
 <td>61 x 61</td>
 <td></td>
@@ -7767,7 +7767,7 @@ to the following table.</p>
 <td>76</td>
 <td>173 x 173</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>21</td>
 <td>63 x 63</td>
 <td></td>
@@ -7777,7 +7777,7 @@ to the following table.</p>
 <td>77</td>
 <td>175 x 175</td>
 </tr>
-<tr class="even">
+<tr>
 <td>22</td>
 <td>65 x 65</td>
 <td></td>
@@ -7787,7 +7787,7 @@ to the following table.</p>
 <td>78</td>
 <td>177 x 177</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>23</td>
 <td>67 x 67</td>
 <td></td>
@@ -7797,7 +7797,7 @@ to the following table.</p>
 <td>79</td>
 <td>179 x 179</td>
 </tr>
-<tr class="even">
+<tr>
 <td>24</td>
 <td>69 x 69</td>
 <td></td>
@@ -7807,7 +7807,7 @@ to the following table.</p>
 <td>80</td>
 <td>181 x 181</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>25</td>
 <td>71 x 71</td>
 <td></td>
@@ -7817,7 +7817,7 @@ to the following table.</p>
 <td>81</td>
 <td>183 x 183</td>
 </tr>
-<tr class="even">
+<tr>
 <td>26</td>
 <td>73 x 73</td>
 <td></td>
@@ -7827,7 +7827,7 @@ to the following table.</p>
 <td>82</td>
 <td>185 x 185</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>27</td>
 <td>75 x 75</td>
 <td></td>
@@ -7837,7 +7837,7 @@ to the following table.</p>
 <td>83</td>
 <td>187 x 187</td>
 </tr>
-<tr class="even">
+<tr>
 <td>28</td>
 <td>77 x 77</td>
 <td></td>
@@ -7860,25 +7860,25 @@ Xin Code which can be set by using the <code>--secure</code> option (API
 <table id="tbl:hanxin_eccs" data-tag=": Han Xin Error Correction Modes">
 <caption><span>Table : Han Xin Error Correction Modes</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Mode</th>
 <th>Recovery Capacity</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>Approx 8%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>Approx 15%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>Approx 23%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>Approx 30%</td>
 </tr>
@@ -7914,39 +7914,39 @@ data-tag=": Ultracode Error Correction Values">
 <caption><span>Table : Ultracode Error Correction Values</span>
 </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Value</th>
 <th>EC Level</th>
 <th>Amount of symbol holding error correction data</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>1</td>
 <td>EC0</td>
 <td>0% - Error detection only</td>
 </tr>
-<tr class="even">
+<tr>
 <td>2</td>
 <td>EC1</td>
 <td>Approx 5%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>3</td>
 <td>EC2</td>
 <td>Approx 9% - Default value</td>
 </tr>
-<tr class="even">
+<tr>
 <td>4</td>
 <td>EC3</td>
 <td>Approx 17%</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>5</td>
 <td>EC4</td>
 <td>Approx 25%</td>
 </tr>
-<tr class="even">
+<tr>
 <td>6</td>
 <td>EC5</td>
 <td>Approx 33%</td>
@@ -7989,37 +7989,37 @@ below.</p>
 <table id="tbl:fim_characters" data-tag=": Valid FIM Characters">
 <caption><span>Table : Valid FIM Characters</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Code Letter</th>
 <th style="text-align: left;">Usage</th>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>A</td>
 <td style="text-align: left;">Used for courtesy reply mail and metered
 reply mail with a</td>
 </tr>
-<tr class="even">
+<tr>
 <td></td>
 <td style="text-align: left;">pre-printed POSTNET symbol.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>B</td>
 <td style="text-align: left;">Used for business reply mail without a
 pre-printed zip code.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>C</td>
 <td style="text-align: left;">Used for business reply mail with a
 pre-printed zip code.</td>
 </tr>
-<tr class="odd">
+<tr>
 <td>D</td>
 <td style="text-align: left;">Used for Information Based Indicia (IBI)
 postage.</td>
 </tr>
-<tr class="even">
+<tr>
 <td>E</td>
 <td style="text-align: left;">Used for customized mail with a USPS
 Intelligent Mail barcode.</td>
@@ -8202,7 +8202,7 @@ It’s reproduced here for reference.</p>
 <table id="tbl:ascii" data-tag=": ASCII">
 <caption><span>Table : ASCII</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Hex</th>
 <th style="text-align: left;">0</th>
 <th style="text-align: left;">1</th>
@@ -8215,7 +8215,7 @@ It’s reproduced here for reference.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>0</td>
 <td style="text-align: left;"><code>NUL</code></td>
 <td style="text-align: left;"><code>DLE</code></td>
@@ -8226,7 +8226,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>`</code></td>
 <td style="text-align: left;"><code>p</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>1</td>
 <td style="text-align: left;"><code>SOH</code></td>
 <td style="text-align: left;"><code>DC1</code></td>
@@ -8237,7 +8237,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>a</code></td>
 <td style="text-align: left;"><code>q</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>2</td>
 <td style="text-align: left;"><code>STX</code></td>
 <td style="text-align: left;"><code>DC2</code></td>
@@ -8248,7 +8248,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>b</code></td>
 <td style="text-align: left;"><code>r</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>3</td>
 <td style="text-align: left;"><code>ETX</code></td>
 <td style="text-align: left;"><code>DC3</code></td>
@@ -8259,7 +8259,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>c</code></td>
 <td style="text-align: left;"><code>s</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>4</td>
 <td style="text-align: left;"><code>EOT</code></td>
 <td style="text-align: left;"><code>DC4</code></td>
@@ -8270,7 +8270,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>d</code></td>
 <td style="text-align: left;"><code>t</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>5</td>
 <td style="text-align: left;"><code>ENQ</code></td>
 <td style="text-align: left;"><code>NAK</code></td>
@@ -8281,7 +8281,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>e</code></td>
 <td style="text-align: left;"><code>u</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>6</td>
 <td style="text-align: left;"><code>ACK</code></td>
 <td style="text-align: left;"><code>SYN</code></td>
@@ -8292,7 +8292,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>f</code></td>
 <td style="text-align: left;"><code>v</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>7</td>
 <td style="text-align: left;"><code>BEL</code></td>
 <td style="text-align: left;"><code>ETB</code></td>
@@ -8303,7 +8303,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>g</code></td>
 <td style="text-align: left;"><code>w</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>8</td>
 <td style="text-align: left;"><code>BS</code></td>
 <td style="text-align: left;"><code>CAN</code></td>
@@ -8314,7 +8314,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>h</code></td>
 <td style="text-align: left;"><code>x</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>9</td>
 <td style="text-align: left;"><code>TAB</code></td>
 <td style="text-align: left;"><code>EM</code></td>
@@ -8325,7 +8325,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>i</code></td>
 <td style="text-align: left;"><code>y</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>A</td>
 <td style="text-align: left;"><code>LF</code></td>
 <td style="text-align: left;"><code>SUB</code></td>
@@ -8336,7 +8336,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>j</code></td>
 <td style="text-align: left;"><code>z</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>B</td>
 <td style="text-align: left;"><code>VT</code></td>
 <td style="text-align: left;"><code>ESC</code></td>
@@ -8347,7 +8347,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>k</code></td>
 <td style="text-align: left;"><code>{</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>C</td>
 <td style="text-align: left;"><code>FF</code></td>
 <td style="text-align: left;"><code>FS</code></td>
@@ -8358,7 +8358,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>l</code></td>
 <td style="text-align: left;"><code>|</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>D</td>
 <td style="text-align: left;"><code>CR</code></td>
 <td style="text-align: left;"><code>GS</code></td>
@@ -8369,7 +8369,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>m</code></td>
 <td style="text-align: left;"><code>}</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>E</td>
 <td style="text-align: left;"><code>SO</code></td>
 <td style="text-align: left;"><code>RS</code></td>
@@ -8380,7 +8380,7 @@ It’s reproduced here for reference.</p>
 <td style="text-align: left;"><code>n</code></td>
 <td style="text-align: left;"><code>~</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>F</td>
 <td style="text-align: left;"><code>SI</code></td>
 <td style="text-align: left;"><code>US</code></td>
@@ -8406,7 +8406,7 @@ not defined.</p>
 <table id="tbl:iso_iec_8869_1" data-tag=": ISO/IEC 8859-1">
 <caption><span>Table : ISO/IEC 8859-1</span> </caption>
 <thead>
-<tr class="header">
+<tr>
 <th>Hex</th>
 <th style="text-align: left;">8</th>
 <th style="text-align: left;">9</th>
@@ -8419,7 +8419,7 @@ not defined.</p>
 </tr>
 </thead>
 <tbody>
-<tr class="odd">
+<tr>
 <td>0</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8430,7 +8430,7 @@ not defined.</p>
 <td style="text-align: left;"><code>à</code></td>
 <td style="text-align: left;"><code>ð</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>1</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8441,7 +8441,7 @@ not defined.</p>
 <td style="text-align: left;"><code>á</code></td>
 <td style="text-align: left;"><code>ñ</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>2</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8452,7 +8452,7 @@ not defined.</p>
 <td style="text-align: left;"><code>â</code></td>
 <td style="text-align: left;"><code>ò</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>3</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8463,7 +8463,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ã</code></td>
 <td style="text-align: left;"><code>ó</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>4</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8474,7 +8474,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ä</code></td>
 <td style="text-align: left;"><code>ô</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>5</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8485,7 +8485,7 @@ not defined.</p>
 <td style="text-align: left;"><code>å</code></td>
 <td style="text-align: left;"><code>õ</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>6</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8496,7 +8496,7 @@ not defined.</p>
 <td style="text-align: left;"><code>æ</code></td>
 <td style="text-align: left;"><code>ö</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>7</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8507,7 +8507,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ç</code></td>
 <td style="text-align: left;"><code>÷</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>8</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8518,7 +8518,7 @@ not defined.</p>
 <td style="text-align: left;"><code>è</code></td>
 <td style="text-align: left;"><code>ø</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>9</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8529,7 +8529,7 @@ not defined.</p>
 <td style="text-align: left;"><code>é</code></td>
 <td style="text-align: left;"><code>ù</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>A</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8540,7 +8540,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ê</code></td>
 <td style="text-align: left;"><code>ú</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>B</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8551,7 +8551,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ë</code></td>
 <td style="text-align: left;"><code>û</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>C</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8562,7 +8562,7 @@ not defined.</p>
 <td style="text-align: left;"><code>ì</code></td>
 <td style="text-align: left;"><code>ü</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>D</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8573,7 +8573,7 @@ not defined.</p>
 <td style="text-align: left;"><code>í</code></td>
 <td style="text-align: left;"><code>ý</code></td>
 </tr>
-<tr class="odd">
+<tr>
 <td>E</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>
@@ -8584,7 +8584,7 @@ not defined.</p>
 <td style="text-align: left;"><code>î</code></td>
 <td style="text-align: left;"><code>þ</code></td>
 </tr>
-<tr class="even">
+<tr>
 <td>F</td>
 <td style="text-align: left;"></td>
 <td style="text-align: left;"></td>

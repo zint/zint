@@ -257,7 +257,7 @@ static void test_options(const testCtx *const p_ctx) {
         /* 15*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character in data (digits only)" },
         /* 16*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input out of range (0 to 255)" },
         /* 17*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "" },
-        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "12345678901234567890123456789012" }, "1234567890", 0, 23, 23, "" },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "" },
         /* 19*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count out of range (2-26)" },
         /* 20*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index out of range (1-2)" },
         /* 21*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index out of range (1-2)" },

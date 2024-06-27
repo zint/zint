@@ -1,7 +1,7 @@
 /* ps.c - Post Script output */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -265,12 +265,11 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     /* Start writing the header */
     fm_puts("%!PS-Adobe-3.0 EPSF-3.0\n"
             "%%Creator: Zint ", fmp);
-    if (ZINT_VERSION_BUILD) {
-        fm_printf(fmp, "%d.%d.%d.%d\n",
-                ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
-    } else {
-        fm_printf(fmp, "%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
-    }
+#if ZINT_VERSION_BUILD
+    fm_printf(fmp, "%d.%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE, ZINT_VERSION_BUILD);
+#else
+    fm_printf(fmp, "%d.%d.%d\n", ZINT_VERSION_MAJOR, ZINT_VERSION_MINOR, ZINT_VERSION_RELEASE);
+#endif
     fm_puts("%%Title: Zint Generated Symbol\n"
             "%%Pages: 0\n"
             "%%BoundingBox: 0 0 ", fmp);

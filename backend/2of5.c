@@ -49,9 +49,9 @@ static const char C25IndustTable[10][10] = {
 };
 
 /* Note `c25_common()` assumes Stop string length one less than Start */
-static const char *C25MatrixStartStop[2] = { "411111", "41111" };
-static const char *C25IndustStartStop[2] = { "313111", "31113" };
-static const char *C25IataLogicStartStop[2] = { "1111", "311" };
+static const char C25MatrixStartStop[2][6] =    { {'4', '1', '1', '1', '1', '1'}, {'4', '1', '1', '1', '1'} };
+static const char C25IndustStartStop[2][6] =    { {'3', '1', '3', '1', '1', '1'}, {'3', '1', '1', '1', '3'} };
+static const char C25IataLogicStartStop[2][6] = { {'1', '1', '1', '1'},           {'3', '1', '1'} };
 
 static const char C25InterTable[10][5] = {
     {'1','1','3','3','1'}, {'3','1','1','1','3'}, {'1','3','1','1','3'}, {'3','3','1','1','1'}, {'1','1','3','1','3'},
@@ -64,7 +64,7 @@ static char c25_check_digit(const unsigned int count) {
 
 /* Common to Standard (Matrix), Industrial, IATA, and Data Logic */
 static int c25_common(struct zint_symbol *symbol, const unsigned char source[], int length, const int max,
-            const int is_matrix, const char *start_stop[2], const int start_length, const int error_base) {
+            const int is_matrix, const char start_stop[2][6], const int start_length, const int error_base) {
 
     int i;
     char dest[818]; /* Largest destination 4 + (80 + 1) * 10 + 3 + 1 = 818 */

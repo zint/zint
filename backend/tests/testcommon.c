@@ -3263,36 +3263,36 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     /* Hack in various adjustments */
     if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_LTD || symbology == BARCODE_DBAR_EXP) {
         /* Begin with space */
-        char adj[5] = " -sbs";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sbs";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39
             || symbology == BARCODE_CODABAR || symbology == BARCODE_PHARMA || symbology == BARCODE_PZN
             || symbology == BARCODE_CODE32 || symbology == BARCODE_VIN) {
         /* Ratio 3 width bar/space -> 2 width */
-        char adj[8] = " -sr=0.6";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sr=0.6";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT
             || symbology == BARCODE_ITF14) {
         /* Ratio 2 width bar/space -> 3 width */
-        char adj[8] = " -sr=1.3";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sr=1.3";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_FIM) {
         /* Ratio 2.25 width bar/space -> 1 width */
-        char adj[10] = " -sr=0.444";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sr=0.444";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_PLESSEY) {
         /* Ceiling ratio 3/4/5 width bar/space -> 2 width then round ratio 2 width bar/space -> 3 width */
-        char adj[16] = " -sc=0.4 -sr=1.3";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sc=0.4 -sr=1.3";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_CODE11 || symbology == BARCODE_CODE39 || symbology == BARCODE_EXCODE39
             || symbology == BARCODE_HIBC_39 || symbology == BARCODE_LOGMARS || symbology == BARCODE_PHARMA
@@ -3300,28 +3300,28 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             || symbology == BARCODE_C25INTER || symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT
             || symbology == BARCODE_ITF14 || symbology == BARCODE_PHARMA_TWO) {
         /* End sbs loop on bar */
-        char adj[6] = " -selb";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -selb";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_C25STANDARD) {
         /* Zint uses 4X start/stop wides while BWIPP uses 3X - convert */
-        char adj[91] = " -sp='i 0 eq i limit 4 sub eq or sbs i get 3 eq and { (1111) print true } { false } ifelse'";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sp='i 0 eq i limit 4 sub eq or sbs i get 3 eq and { (1111) print true } { false } ifelse'";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_POSTNET || symbology == BARCODE_PLANET || symbology == BARCODE_RM4SCC
             || symbology == BARCODE_JAPANPOST || symbology == BARCODE_KIX || symbology == BARCODE_DAFT
             || symbology == BARCODE_USPS_IMAIL || symbology == BARCODE_AUSPOST || symbology == BARCODE_PHARMA_TWO) {
         /* Emulate rows with BWIPP heights. */
-        char adj[5] = " -shs";
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -shs";
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
     if (symbology == BARCODE_CODE16K || symbology == BARCODE_CODE49) {
-        char adj[15] = " -sxs=10 -sxe=1"; /* Strip first 10 and last zero */
-        memmove(cmd + GS_INITIAL_LEN + sizeof(adj), cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
-        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj));
+        char adj[] = " -sxs=10 -sxe=1"; /* Strip first 10 and last zero */
+        memmove(cmd + GS_INITIAL_LEN + sizeof(adj) - 1, cmd + GS_INITIAL_LEN, strlen(cmd) + 1 - GS_INITIAL_LEN);
+        memcpy(cmd + GS_INITIAL_LEN, adj, sizeof(adj) - 1);
     }
 
     if (symbol->debug & ZINT_DEBUG_TEST_PRINT) {

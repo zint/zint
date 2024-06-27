@@ -37,8 +37,8 @@
 #define Z_GS1_LINT_H
 
 /* N18,csum,key (Used by SSCC, GSRN - PROVIDER, GSRN - RECIPIENT) */
-static int n18_csum_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n18_csum_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 18
             && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -48,8 +48,8 @@ static int n18_csum_key(const unsigned char *data, const int data_len,
 }
 
 /* N14,csum,key (Used by GTIN, CONTENT) */
-static int n14_csum_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n14_csum_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 14
             && csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -58,16 +58,16 @@ static int n14_csum_key(const unsigned char *data, const int data_len,
             && key(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* X..20 (Used by BATCH/LOT, SERIAL, CPV, PCN...) */
-static int x__20(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* X..20 (Used by BATCH/LOT, SERIAL, CPV, PCN, GLN EXTENSION COMPONENT, SHIP TO POST, RTN TO POST, REFURB LOT, ...) */
+static int x__20(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 20
             && cset82(data, data_len, 0, 1, 20, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6,yymmd0 (Used by PROD DATE, DUE DATE, PACK DATE, BEST BEFORE or BEST BY...) */
-static int n6_yymmd0(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* N6,yymmd0 (Used by PROD DATE, DUE DATE, PACK DATE, BEST BEFORE or BEST BY, SELL BY, USE BY or EXPIRY) */
+static int n6_yymmd0(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 6
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
@@ -75,36 +75,36 @@ static int n6_yymmd0(const unsigned char *data, const int data_len,
 }
 
 /* N2 (Used by VARIANT) */
-static int n2(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n2(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 2
             && numeric(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..28 (Used by TPX) */
-static int x__28(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__28(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 28
             && cset82(data, data_len, 0, 1, 28, p_err_no, p_err_posn, err_msg);
 }
 
-/* X..30 (Used by ADDITIONAL ID, CUST. PART No., SECONDARY SERIAL, REF. TO SOURCE...) */
-static int x__30(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* X..30 (Used by ADDITIONAL ID, CUST. PART No., SECONDARY SERIAL, REF. TO SOURCE, ORDER NUMBER, ROUTE, SHIP TO...) */
+static int x__30(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 30
             && cset82(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg);
 }
 
 /* N..6 (Used by MTO VARIANT) */
-static int n__6(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__6(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 6
             && numeric(data, data_len, 0, 1, 6, p_err_no, p_err_posn, err_msg);
 }
 
 /* N13,csum,key [X..17] (Used by GDTI) */
-static int n13_csum_key__x__17_(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n13_csum_key__x__17_(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 13 && data_len <= 30
             && csum(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -115,8 +115,8 @@ static int n13_csum_key__x__17_(const unsigned char *data, const int data_len,
 }
 
 /* N13,csum,key [N..12] (Used by GCN) */
-static int n13_csum_key__n__12_(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n13_csum_key__n__12_(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 13 && data_len <= 25
             && csum(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -127,29 +127,29 @@ static int n13_csum_key__n__12_(const unsigned char *data, const int data_len,
 }
 
 /* N..8 (Used by VAR. COUNT, COUNT) */
-static int n__8(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__8(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 8
             && numeric(data, data_len, 0, 1, 8, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6 (Used by NET WEIGHT (kg), LENGTH (m), WIDTH (m), HEIGHT (m)...) */
-static int n6(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* N6 (Used by NET WEIGHT (kg), LENGTH (m), WIDTH (m), HEIGHT (m), AREA (m²), NET VOLUME (l), NET VOLUME (m³)...) */
+static int n6(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 6
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg);
 }
 
 /* N..15 (Used by AMOUNT, PRICE) */
-static int n__15(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__15(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 15
             && numeric(data, data_len, 0, 1, 15, p_err_no, p_err_posn, err_msg);
 }
 
 /* N3,iso4217 N..15 (Used by AMOUNT, PRICE) */
-static int n3_iso4217_n__15(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n3_iso4217_n__15(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 4 && data_len <= 18
             && iso4217(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
@@ -158,15 +158,15 @@ static int n3_iso4217_n__15(const unsigned char *data, const int data_len,
 }
 
 /* N4 (Used by PRCNT OFF, POINTS) */
-static int n4(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n4(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 4
             && numeric(data, data_len, 0, 4, 4, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..30,key (Used by GINC, GIAI - ASSEMBLY, GIAI) */
-static int x__30_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__30_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 30
             && key(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg)
@@ -174,8 +174,8 @@ static int x__30_key(const unsigned char *data, const int data_len,
 }
 
 /* N17,csum,key (Used by GSIN) */
-static int n17_csum_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n17_csum_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 17
             && csum(data, data_len, 0, 17, 17, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 17, 17, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -184,9 +184,9 @@ static int n17_csum_key(const unsigned char *data, const int data_len,
             && key(data, data_len, 0, 17, 17, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N13,csum,key (Used by SHIP TO LOC, BILL TO, PURCHASE FROM, SHIP FOR LOC...) */
-static int n13_csum_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* N13,csum,key (Used by SHIP TO LOC, BILL TO, PURCHASE FROM, SHIP FOR LOC, LOC No., PAY TO, PROD/SERV LOC, PARTY) */
+static int n13_csum_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 13
             && csum(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -196,8 +196,8 @@ static int n13_csum_key(const unsigned char *data, const int data_len,
 }
 
 /* N3,iso3166 X..9 (Used by SHIP TO POST) */
-static int n3_iso3166_x__9(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n3_iso3166_x__9(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 4 && data_len <= 12
             && iso3166(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
@@ -206,42 +206,54 @@ static int n3_iso3166_x__9(const unsigned char *data, const int data_len,
 }
 
 /* N3,iso3166 (Used by ORIGIN, COUNTRY - PROCESS, COUNTRY - FULL PROCESS) */
-static int n3_iso3166(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n3_iso3166(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 3
             && iso3166(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
             && iso3166(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N..15,iso3166list (Used by COUNTRY - INITIAL PROCESS, COUNTRY - DISASSEMBLY) */
-static int n__15_iso3166list(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
-    return data_len >= 1 && data_len <= 15
-            && iso3166list(data, data_len, 0, 1, 15, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && numeric(data, data_len, 0, 1, 15, p_err_no, p_err_posn, err_msg)
-            && iso3166list(data, data_len, 0, 1, 15, p_err_no, p_err_posn, err_msg, 0);
+/* N3,iso3166 [N3],iso3166 [N3],iso3166 [N3],iso3166 [N3],iso3166 (Used by COUNTRY - INITIAL PROCESS, COUNTRY -...) */
+static int n3_iso3166__n3__iso3166__n3__iso3166__n3__iso3166__n3__iso3166(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 3 && data_len <= 15
+            && iso3166(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && iso3166(data, data_len, 3, 0, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && iso3166(data, data_len, 6, 0, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && iso3166(data, data_len, 9, 0, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && iso3166(data, data_len, 12, 0, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
+            && iso3166(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 3, 0, 3, p_err_no, p_err_posn, err_msg)
+            && iso3166(data, data_len, 3, 0, 3, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 6, 0, 3, p_err_no, p_err_posn, err_msg)
+            && iso3166(data, data_len, 6, 0, 3, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 9, 0, 3, p_err_no, p_err_posn, err_msg)
+            && iso3166(data, data_len, 9, 0, 3, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 12, 0, 3, p_err_no, p_err_posn, err_msg)
+            && iso3166(data, data_len, 12, 0, 3, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* X..3 (Used by ORIGIN SUBDIVISION, AQUATIC SPECIES) */
-static int x__3(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__3(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 3
             && cset82(data, data_len, 0, 1, 3, p_err_no, p_err_posn, err_msg);
 }
 
-/* X..35,pcenc (Used by SHIP TO COMP, SHIP TO NAME, RTN TO COMP, RTN TO NAME...) */
-static int x__35_pcenc(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* X..35,pcenc (Used by SHIP TO COMP, SHIP TO NAME, RTN TO COMP, RTN TO NAME, SRV DESCRIPTION) */
+static int x__35_pcenc(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 35
             && pcenc(data, data_len, 0, 1, 35, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 35, p_err_no, p_err_posn, err_msg)
             && pcenc(data, data_len, 0, 1, 35, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* X..70,pcenc (Used by SHIP TO ADD1, SHIP TO ADD2, SHIP TO SUB, SHIP TO LOC...) */
-static int x__70_pcenc(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* X..70,pcenc (Used by SHIP TO ADD1, SHIP TO ADD2, SHIP TO SUB, SHIP TO LOC, SHIP TO REG, RTN TO ADD1, RTN TO ...) */
+static int x__70_pcenc(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 70
             && pcenc(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg)
@@ -249,8 +261,8 @@ static int x__70_pcenc(const unsigned char *data, const int data_len,
 }
 
 /* X2,iso3166alpha2 (Used by SHIP TO COUNTRY, RTN TO COUNTRY) */
-static int x2_iso3166alpha2(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x2_iso3166alpha2(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 2
             && iso3166alpha2(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg)
@@ -258,8 +270,8 @@ static int x2_iso3166alpha2(const unsigned char *data, const int data_len,
 }
 
 /* N10,latitude N10,longitude (Used by SHIP TO GEO) */
-static int n10_latitude_n10_longitude(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n10_latitude_n10_longitude(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 20
             && latitude(data, data_len, 0, 10, 10, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && longitude(data, data_len, 10, 10, 10, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -270,8 +282,8 @@ static int n10_latitude_n10_longitude(const unsigned char *data, const int data_
 }
 
 /* N1,yesno (Used by DANGEROUS GOODS, AUTH TO LEAVE, SIG REQUIRED) */
-static int n1_yesno(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n1_yesno(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 1
             && yesno(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg)
@@ -279,8 +291,8 @@ static int n1_yesno(const unsigned char *data, const int data_len,
 }
 
 /* N6,yymmd0 N4,hhmm (Used by NOT BEF DEL DT, NOT AFT DEL DT) */
-static int n6_yymmd0_n4_hhmm(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6_yymmd0_n4_hhmm(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 10
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -291,8 +303,8 @@ static int n6_yymmd0_n4_hhmm(const unsigned char *data, const int data_len,
 }
 
 /* N6,yymmdd (Used by REL DATE, FIRST FREEZE DATE) */
-static int n6_yymmdd(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6_yymmdd(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 6
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
@@ -300,8 +312,8 @@ static int n6_yymmdd(const unsigned char *data, const int data_len,
 }
 
 /* N6 [X1],hyphen (Used by MAX TEMP F., MAX TEMP C., MIN TEMP F., MIN TEMP C.) */
-static int n6__x1__hyphen(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6__x1__hyphen(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 6 && data_len <= 7
             && hyphen(data, data_len, 6, 0, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
@@ -310,15 +322,15 @@ static int n6__x1__hyphen(const unsigned char *data, const int data_len,
 }
 
 /* N13 (Used by NSN) */
-static int n13(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n13(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 13
             && numeric(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg);
 }
 
 /* N6,yymmdd N4,hhmm (Used by EXPIRY TIME) */
-static int n6_yymmdd_n4_hhmm(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6_yymmdd_n4_hhmm(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 10
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -329,22 +341,22 @@ static int n6_yymmdd_n4_hhmm(const unsigned char *data, const int data_len,
 }
 
 /* N..4 (Used by ACTIVE POTENCY) */
-static int n__4(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__4(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 4
             && numeric(data, data_len, 0, 1, 4, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..12 (Used by CATCH AREA) */
-static int x__12(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__12(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 12
             && cset82(data, data_len, 0, 1, 12, p_err_no, p_err_posn, err_msg);
 }
 
 /* N6,yymmdd [N6],yymmdd (Used by HARVEST DATE) */
-static int n6_yymmdd__n6__yymmdd(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6_yymmdd__n6__yymmdd(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 6 && data_len <= 12
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && yymmdd(data, data_len, 6, 0, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -355,22 +367,22 @@ static int n6_yymmdd__n6__yymmdd(const unsigned char *data, const int data_len,
 }
 
 /* X..10 (Used by FISHING GEAR TYPE, SUFFIX) */
-static int x__10(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__10(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 10
             && cset82(data, data_len, 0, 1, 10, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..2 (Used by PROD METHOD) */
-static int x__2(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__2(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 2
             && cset82(data, data_len, 0, 1, 2, p_err_no, p_err_posn, err_msg);
 }
 
 /* N6,yymmdd [N4],hhmm (Used by TEST BY DATE) */
-static int n6_yymmdd__n4__hhmm(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n6_yymmdd__n4__hhmm(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 6 && data_len <= 10
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && hhmm(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -380,9 +392,9 @@ static int n6_yymmdd__n4__hhmm(const unsigned char *data, const int data_len,
             && hhmm(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N3,iso3166999 X..27 (Used by PROCESSOR # 0, PROCESSOR # 1, PROCESSOR # 2, PROCESSOR # 3...) */
-static int n3_iso3166999_x__27(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* N3,iso3166999 X..27 (Used by PROCESSOR # 0, PROCESSOR # 1, PROCESSOR # 2, PROCESSOR # 3, PROCESSOR # 4, PROC...) */
+static int n3_iso3166999_x__27(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 4 && data_len <= 30
             && iso3166999(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
@@ -391,8 +403,8 @@ static int n3_iso3166999_x__27(const unsigned char *data, const int data_len,
 }
 
 /* N1 X1 X1 X1,importeridx (Used by UIC+EXT) */
-static int n1_x1_x1_x1_importeridx(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n1_x1_x1_x1_importeridx(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 4
             && importeridx(data, data_len, 3, 1, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg)
@@ -402,17 +414,17 @@ static int n1_x1_x1_x1_importeridx(const unsigned char *data, const int data_len
             && importeridx(data, data_len, 3, 1, 1, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* X2 X..28 (Used by CERT # 1, CERT # 2, CERT # 3, CERT # 4...) */
-static int x2_x__28(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+/* X2 X..28 (Used by CERT # 1, CERT # 2, CERT # 3, CERT # 4, CERT # 5, CERT # 6, CERT # 7, CERT # 8, CERT # 9, ...) */
+static int x2_x__28(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 3 && data_len <= 30
             && cset82(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg)
             && cset82(data, data_len, 2, 1, 28, p_err_no, p_err_posn, err_msg);
 }
 
 /* N2,mediatype (Used by AIDC MEDIA TYPE) */
-static int n2_mediatype(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n2_mediatype(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 2
             && mediatype(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 2, 2, p_err_no, p_err_posn, err_msg)
@@ -420,15 +432,15 @@ static int n2_mediatype(const unsigned char *data, const int data_len,
 }
 
 /* X..25 (Used by VCN, REF No.) */
-static int x__25(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__25(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 25
             && cset82(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg);
 }
 
 /* N8,yyyymmdd (Used by DOB) */
-static int n8_yyyymmdd(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n8_yyyymmdd(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 8
             && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg)
@@ -436,8 +448,8 @@ static int n8_yyyymmdd(const unsigned char *data, const int data_len,
 }
 
 /* N8,yyyymmdd N4,hhmm (Used by DOB TIME) */
-static int n8_yyyymmdd_n4_hhmm(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n8_yyyymmdd_n4_hhmm(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 12
             && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && hhmm(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -448,8 +460,8 @@ static int n8_yyyymmdd_n4_hhmm(const unsigned char *data, const int data_len,
 }
 
 /* N1,iso5218 (Used by BIO SEX) */
-static int n1_iso5218(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n1_iso5218(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 1
             && iso5218(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg)
@@ -457,8 +469,8 @@ static int n1_iso5218(const unsigned char *data, const int data_len,
 }
 
 /* X..40,pcenc (Used by FAMILY NAME, GIVEN NAME, BABY) */
-static int x__40_pcenc(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__40_pcenc(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 40
             && pcenc(data, data_len, 0, 1, 40, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 40, p_err_no, p_err_posn, err_msg)
@@ -466,8 +478,8 @@ static int x__40_pcenc(const unsigned char *data, const int data_len,
 }
 
 /* X..90,pcenc (Used by FULL NAME) */
-static int x__90_pcenc(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__90_pcenc(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 90
             && pcenc(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg)
@@ -475,8 +487,8 @@ static int x__90_pcenc(const unsigned char *data, const int data_len,
 }
 
 /* X3,posinseqslash (Used by BIRTH SEQUENCE) */
-static int x3_posinseqslash(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x3_posinseqslash(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 3
             && posinseqslash(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 3, 3, p_err_no, p_err_posn, err_msg)
@@ -484,8 +496,8 @@ static int x3_posinseqslash(const unsigned char *data, const int data_len,
 }
 
 /* N4,nonzero N5,nonzero N3,nonzero N1,winding N1 (Used by DIMENSIONS) */
-static int n4_nonzero_n5_nonzero_n3_nonzero_n1_winding_n1(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n4_nonzero_n5_nonzero_n3_nonzero_n1_winding_n1(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 14
             && nonzero(data, data_len, 0, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && nonzero(data, data_len, 4, 5, 5, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -503,8 +515,8 @@ static int n4_nonzero_n5_nonzero_n3_nonzero_n1_winding_n1(const unsigned char *d
 }
 
 /* N1,zero N13,csum,key [X..16] (Used by GRAI) */
-static int n1_zero_n13_csum_key__x__16_(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n1_zero_n13_csum_key__x__16_(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 14 && data_len <= 30
             && zero(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && csum(data, data_len, 1, 13, 13, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -518,8 +530,8 @@ static int n1_zero_n13_csum_key__x__16_(const unsigned char *data, const int dat
 }
 
 /* N14,csum N4,pieceoftotal (Used by ITIP, ITIP CONTENT) */
-static int n14_csum_n4_pieceoftotal(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n14_csum_n4_pieceoftotal(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 18
             && csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && pieceoftotal(data, data_len, 14, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -530,8 +542,8 @@ static int n14_csum_n4_pieceoftotal(const unsigned char *data, const int data_le
 }
 
 /* X..34,iban (Used by IBAN) */
-static int x__34_iban(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__34_iban(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 34
             && iban(data, data_len, 0, 1, 34, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 34, p_err_no, p_err_posn, err_msg)
@@ -539,8 +551,8 @@ static int x__34_iban(const unsigned char *data, const int data_len,
 }
 
 /* N8,yymmddhh [N..4],mmoptss (Used by PROD TIME) */
-static int n8_yymmddhh__n__4__mmoptss(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n8_yymmddhh__n__4__mmoptss(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 8 && data_len <= 12
             && yymmddhh(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && mmoptss(data, data_len, 8, 0, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -551,15 +563,15 @@ static int n8_yymmddhh__n__4__mmoptss(const unsigned char *data, const int data_
 }
 
 /* X..50 (Used by OPTSEN) */
-static int x__50(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__50(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 50
             && cset82(data, data_len, 0, 1, 50, p_err_no, p_err_posn, err_msg);
 }
 
 /* Y..30,key (Used by CPID) */
-static int y__30_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int y__30_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 30
             && key(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset39(data, data_len, 0, 1, 30, p_err_no, p_err_posn, err_msg)
@@ -567,8 +579,8 @@ static int y__30_key(const unsigned char *data, const int data_len,
 }
 
 /* N..12,nozeroprefix (Used by CPID SERIAL) */
-static int n__12_nozeroprefix(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__12_nozeroprefix(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 12
             && nozeroprefix(data, data_len, 0, 1, 12, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 1, 12, p_err_no, p_err_posn, err_msg)
@@ -576,8 +588,8 @@ static int n__12_nozeroprefix(const unsigned char *data, const int data_len,
 }
 
 /* X..25,csumalpha,key (Used by GMN) */
-static int x__25_csumalpha_key(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__25_csumalpha_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 25
             && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
@@ -587,22 +599,22 @@ static int x__25_csumalpha_key(const unsigned char *data, const int data_len,
 }
 
 /* N..10 (Used by SRIN) */
-static int n__10(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int n__10(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 10
             && numeric(data, data_len, 0, 1, 10, p_err_no, p_err_posn, err_msg);
 }
 
 /* Z..90 (Used by DIGSIG) */
-static int z__90(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int z__90(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 90
             && cset64(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..70,couponcode */
-static int x__70_couponcode(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__70_couponcode(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 70
             && couponcode(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg)
@@ -610,8 +622,8 @@ static int x__70_couponcode(const unsigned char *data, const int data_len,
 }
 
 /* X..70,couponposoffer */
-static int x__70_couponposoffer(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__70_couponposoffer(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 70
             && couponposoffer(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && cset82(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg)
@@ -619,15 +631,15 @@ static int x__70_couponposoffer(const unsigned char *data, const int data_len,
 }
 
 /* X..70 (Used by PRODUCT URL) */
-static int x__70(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__70(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 70
             && cset82(data, data_len, 0, 1, 70, p_err_no, p_err_posn, err_msg);
 }
 
 /* X..90 (Used by INTERNAL) */
-static int x__90(const unsigned char *data, const int data_len,
-            int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int x__90(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 1 && data_len <= 90
             && cset82(data, data_len, 0, 1, 90, p_err_no, p_err_posn, err_msg);
 }
@@ -711,7 +723,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return n3_iso3166(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 423 || ai == 425) {
-            return n__15_iso3166list(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n3_iso3166__n3__iso3166__n3__iso3166__n3__iso3166__n3__iso3166(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 427) {
             return x__3(data, data_len, p_err_no, p_err_posn, err_msg);

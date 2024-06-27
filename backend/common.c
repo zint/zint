@@ -204,12 +204,12 @@ INTERNAL int module_colour_is_set(const struct zint_symbol *symbol, const int y_
 INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, const int x_coord, const int colour) {
     symbol->encoded_data[y_coord][x_coord] = colour;
 }
-#endif
 
 /* Sets a dark/black module to white (i.e. unsets) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord >> 3] &= ~(1 << (x_coord & 0x07));
 }
+#endif
 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length) {

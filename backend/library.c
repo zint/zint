@@ -498,25 +498,6 @@ static int supports_eci(const int symbology) {
     return 0;
 }
 
-/* Returns 1 if symbology is Health Industry Bar Code */
-static int is_hibc(const int symbology) {
-
-    switch (symbology) {
-        case BARCODE_HIBC_128:
-        case BARCODE_HIBC_39:
-        case BARCODE_HIBC_DM:
-        case BARCODE_HIBC_QR:
-        case BARCODE_HIBC_PDF:
-        case BARCODE_HIBC_MICPDF:
-        case BARCODE_HIBC_BLOCKF:
-        case BARCODE_HIBC_AZTEC:
-            return 1;
-            break;
-    }
-
-    return 0;
-}
-
 /* Returns 1 if symbology supports HRT */
 static int has_hrt(const int symbology) {
 
@@ -565,15 +546,12 @@ static int has_hrt(const int symbology) {
     return 1;
 }
 
-/* Suppress clang warning: a function declaration without a prototype is deprecated in all versions of C
-   (not included in gcc's "-wpedantic") */
-#if defined(__clang__)
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstrict-prototypes"
-#endif
+typedef int (*barcode_src_func_t)(struct zint_symbol *, unsigned char[], int);
+typedef int (*barcode_seg_func_t)(struct zint_symbol *, struct zint_seg[], const int);
 
-/* Used for dispatching barcodes and for whether symbol id valid */
-static int (*const barcode_funcs[BARCODE_LAST + 1])() = {
+/* Used for dispatching `barcode_src_func_t` barcodes */
+/* Also used, with `barcode_seg_funcs` below, for testing whether symbol id valid in `ZBarcode_ValidID()` */
+static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
           NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
           NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
           NULL,        NULL,        NULL,        eanx,        eanx, /*10-14*/
@@ -585,33 +563,52 @@ static int (*const barcode_funcs[BARCODE_LAST + 1])() = {
        postnet,        NULL,        NULL,        NULL,        NULL, /*40-44*/
           NULL,        NULL, msi_plessey,        NULL,         fim, /*45-49*/
         code39,      pharma,         pzn,  pharma_two,     postnet, /*50-54*/
-        pdf417,      pdf417,    maxicode,      qrcode,        NULL, /*55-59*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*55-59*/
        code128,        NULL,        NULL,     auspost,        NULL, /*60-64*/
           NULL,     auspost,     auspost,     auspost,        eanx, /*65-69*/
-        rm4scc,  datamatrix,       ean14,         vin,  codablockf, /*70-74*/
+        rm4scc,        NULL,       ean14,         vin,  codablockf, /*70-74*/
          nve18,   japanpost,   koreapost,        NULL,    dbar_omn, /*75-79*/
-      dbar_omn,    dbar_exp,      planet,        NULL, micropdf417, /*80-84*/
+      dbar_omn,    dbar_exp,      planet,        NULL,        NULL, /*80-84*/
     usps_imail,     plessey, telepen_num,        NULL,       itf14, /*85-89*/
-           kix,        NULL,       aztec,        daft,        NULL, /*90-94*/
-          NULL,         dpd,     microqr,        hibc,        hibc, /*95-99*/
-          NULL,        NULL,        hibc,        NULL,        hibc, /*100-104*/
-          NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
-          hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
-       dotcode,      hanxin,        NULL,        NULL, mailmark_2d, /*115-119*/
+           kix,        NULL,        NULL,        daft,        NULL, /*90-94*/
+          NULL,         dpd,     microqr,        NULL,        NULL, /*95-99*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*100-104*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*105-109*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*110-114*/
+          NULL,        NULL,        NULL,        NULL, mailmark_2d, /*115-119*/
        upu_s10, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
           NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
-       channel,     codeone,  gridmatrix,       upnqr,       ultra, /*140-144*/
-          rmqr,       bc412,
+       channel,        NULL,        NULL,       upnqr,        NULL, /*140-144*/
+          NULL,       bc412,                                        /*145-146*/
 };
 
-#if defined(__clang__)
-#pragma GCC diagnostic pop
-#endif
+#define LIB_SEG_FUNCS_START 55
 
-typedef int (*barcode_segs_func_t)(struct zint_symbol *, struct zint_seg[], const int);
-typedef int (*barcode_func_t)(struct zint_symbol *, unsigned char[], int);
+/* Used for dispatching `barcode_seg_func_t` barcodes */
+static const barcode_seg_func_t barcode_seg_funcs[BARCODE_LAST + 1 - LIB_SEG_FUNCS_START] = {
+        pdf417,      pdf417,    maxicode,      qrcode,        NULL, /*55-59*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*60-64*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*65-69*/
+          NULL,  datamatrix,        NULL,        NULL,        NULL, /*70-74*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*75-79*/
+          NULL,        NULL,        NULL,        NULL, micropdf417, /*80-84*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*85-89*/
+          NULL,        NULL,       aztec,        NULL,        NULL, /*90-94*/
+          NULL,        NULL,        NULL,        hibc,        hibc, /*95-99*/
+          NULL,        NULL,        hibc,        NULL,        hibc, /*100-104*/
+          NULL,        hibc,        NULL,        hibc,        NULL, /*105-109*/
+          hibc,        NULL,        hibc,        NULL,        NULL, /*110-114*/
+       dotcode,      hanxin,        NULL,        NULL,        NULL, /*115-119*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*120-124*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*125-129*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*130-134*/
+          NULL,        NULL,        NULL,        NULL,        NULL, /*135-139*/
+          NULL,     codeone,  gridmatrix,        NULL,       ultra, /*140-144*/
+          rmqr,        NULL,                                        /*145-146*/
+};
+
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
 
 /* Main dispatch, checking for barcodes which handle ECIs/character sets themselves, otherwise calling
@@ -625,13 +622,12 @@ static int extended_or_reduced_charset(struct zint_symbol *symbol, struct zint_s
         case BARCODE_GRIDMATRIX:
         case BARCODE_HANXIN:
         case BARCODE_RMQR:
-            error_number = (*(barcode_segs_func_t)barcode_funcs[symbol->symbology])(symbol, segs, seg_count);
+            error_number = barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START](symbol, segs, seg_count);
             break;
         /* These are the standards which have support for specific character sets but not ECI */
         case BARCODE_MICROQR:
         case BARCODE_UPNQR:
-            error_number = (*(barcode_func_t)barcode_funcs[symbol->symbology])(symbol, segs[0].source,
-                                                                                segs[0].length);
+            error_number = barcode_src_funcs[symbol->symbology](symbol, segs[0].source, segs[0].length);
             break;
         default: error_number = reduced_charset(symbol, segs, seg_count);
             break;
@@ -671,19 +667,19 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
                 preprocessed += local_segs[i].length + 1;
             }
         }
-        if (supports_eci(symbol->symbology) || is_hibc(symbol->symbology)) {
-            error_number = (*(barcode_segs_func_t)barcode_funcs[symbol->symbology])(symbol, local_segs, seg_count);
+        if (barcode_src_funcs[symbol->symbology]) {
+            error_number = barcode_src_funcs[symbol->symbology](symbol, local_segs[0].source, local_segs[0].length);
         } else {
-            error_number = (*(barcode_func_t)barcode_funcs[symbol->symbology])(symbol, local_segs[0].source,
-                                                                                local_segs[0].length);
+            error_number = barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START](symbol, local_segs, seg_count);
         }
     } else {
-        if (supports_eci(symbol->symbology) || is_hibc(symbol->symbology)) {
-            segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
-            error_number = (*(barcode_segs_func_t)barcode_funcs[symbol->symbology])(symbol, local_segs, seg_count);
+        if (barcode_src_funcs[symbol->symbology]) {
+            error_number = barcode_src_funcs[symbol->symbology](symbol, segs[0].source, segs[0].length);
         } else {
-            error_number = (*(barcode_func_t)barcode_funcs[symbol->symbology])(symbol, segs[0].source,
-                                                                                segs[0].length);
+            assert(symbol->symbology >= LIB_SEG_FUNCS_START); /* Suppress clang-tidy-19 warning */
+            assert(barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START]); /* Suppress clang-tidy-19 warning */
+            segs_cpy(symbol, segs, seg_count, local_segs); /* Shallow copy (needed to set default ECIs) */
+            error_number = barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START](symbol, local_segs, seg_count);
         }
     }
 
@@ -893,6 +889,72 @@ INTERNAL int escape_char_process_test(struct zint_symbol *symbol, const unsigned
 }
 #endif
 
+/* For backward-compatibility, map certain invalid symbol ids to zint equivalents, some silently, some with warning */
+static int map_invalid_symbology(struct zint_symbol *symbol) {
+
+    /* Symbol ids 1 to 126 are defined by tbarcode */
+    /* 26 allowed: UPC-A up to tbarcode 9, ISSN for tbarcode 10+, mapped to UPC-A */
+    /* 27 error: UPCD1 up to tbarcode 9, ISSN + 2 digit add-on for tbarcode 10+ */
+    /* 91 warning: BC412 up to tbarcode 9, Code 32 for tbarcode 10+, mapped to Code 128 */
+    /* Note: non-zero table entries map silently, i.e. do not produce a warning */
+    #define LIB_ID_MAP_LAST 111
+    static const unsigned char id_map[LIB_ID_MAP_LAST + 1] = {
+                          0,                   0,                0,                0,                   0, /*0-4*/
+        BARCODE_C25STANDARD,                   0,                0,                0,                   0, /*5-9*/
+               BARCODE_EANX,        BARCODE_EANX,     BARCODE_EANX,                0,                   0, /*10-14*/
+               BARCODE_EANX,                   0,     BARCODE_UPCA,                0,     BARCODE_CODABAR, /*15-19*/
+                          0,                   0,                0,                0,                   0, /*20-24*/
+                          0,        BARCODE_UPCA,                0,                0,                   0, /*25-29*/
+                          0,                   0,                0,  BARCODE_GS1_128,                   0, /*30-34*/
+                          0,        BARCODE_UPCA,                0,                0,        BARCODE_UPCE, /*35-39*/
+                          0,     BARCODE_POSTNET,  BARCODE_POSTNET,  BARCODE_POSTNET,     BARCODE_POSTNET, /*40-44*/
+            BARCODE_POSTNET,     BARCODE_PLESSEY,                0,    BARCODE_NVE18,                   0, /*45-49*/
+                          0,                   0,                0,                0,                   0, /*50-54*/
+                          0,                   0,                0,                0,     BARCODE_CODE128, /*55-59*/
+                          0,     BARCODE_CODE128,   BARCODE_CODE93,                0,     BARCODE_AUSPOST, /*60-64*/
+            BARCODE_AUSPOST,                   0,                0,                0,                   0, /*65-69*/
+                          0,                   0,                0,                0,                   0, /*70-74*/
+                          0,                   0,                0, BARCODE_DBAR_OMN,                   0, /*75-79*/
+                          0,                   0,                0,   BARCODE_PLANET,                   0, /*80-84*/
+                          0,                   0,                0,  BARCODE_GS1_128,                   0, /*85-89*/
+                          0,                   0,                0,                0,                   0, /*90-94*/
+                          0,                   0,                0,                0,                   0, /*95-99*/
+           BARCODE_HIBC_128,     BARCODE_HIBC_39,                0,  BARCODE_HIBC_DM,                   0, /*100-104*/
+            BARCODE_HIBC_QR,                   0, BARCODE_HIBC_PDF,                0, BARCODE_HIBC_MICPDF, /*105-109*/
+                          0, BARCODE_HIBC_BLOCKF,                                                          /*110-111*/
+    };
+    const int orig_symbology = symbol->symbology; /* For self-check */
+    int warn_number = 0;
+
+    if (symbol->symbology == 19) {
+        /* Has specific error message */
+        warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "207: Codabar 18 not supported");
+        if (warn_number >= ZINT_ERROR) {
+            return warn_number;
+        }
+        symbol->symbology = BARCODE_CODABAR;
+    } else if (symbol->symbology == 27) {
+        /* Not mapped */
+        return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "208: UPCD1 not supported");
+
+    } else if (symbol->symbology <= 0 || symbol->symbology > LIB_ID_MAP_LAST || id_map[symbol->symbology] == 0) {
+        warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "206: Symbology out of range");
+        if (warn_number >= ZINT_ERROR) {
+            return warn_number;
+        }
+        symbol->symbology = BARCODE_CODE128;
+    } else {
+        symbol->symbology = id_map[symbol->symbology];
+    }
+
+    if (symbol->symbology == orig_symbology) { /* Should never happen */
+        assert(0); /* Not reached */
+        return error_tag(symbol, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error");
+    }
+
+    return warn_number;
+}
+
 /* Encode a barcode. If `length` is 0, `source` must be NUL-terminated */
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length) {
     struct zint_seg segs[1];
@@ -925,11 +987,24 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     if (seg_count > ZINT_MAX_SEG_COUNT) {
         return error_tag(symbol, ZINT_ERROR_INVALID_DATA, "771: Too many input segments (max 256)");
     }
-    local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     if ((symbol->input_mode & 0x07) > 2) {
-        symbol->input_mode = DATA_MODE; /* Reset completely TODO: in future, warn/error */
+        symbol->input_mode = DATA_MODE; /* Reset completely */
+        warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "212: Invalid input mode - reset to DATA_MODE");
+        if (warn_number >= ZINT_ERROR) {
+            return warn_number;
+        }
     }
+
+    /* Check the symbology field */
+    if (!ZBarcode_ValidID(symbol->symbology)) {
+        warn_number = map_invalid_symbology(symbol);
+        if (warn_number >= ZINT_ERROR) {
+            return warn_number;
+        }
+    }
+
+    local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     /* Check segment lengths */
     for (i = 0; i < seg_count; i++) {
@@ -943,9 +1018,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         }
         if (local_segs[i].length <= 0) {
             if (i == 0) {
-                /* Note: should really be referencing the symbology only after the symbology check switch below */
-                if (is_composite(symbol->symbology) &&
-                        ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology))) {
+                if (is_composite(symbol->symbology)
+                        && ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology))) {
                     strcpy(symbol->errtxt, "779: No composite data in 2D component");
                 } else {
                     sprintf(symbol->errtxt, "778: No input data%s",
@@ -1012,111 +1086,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             local_segs[0].eci = symbol->eci;
         } else {
             symbol->eci = local_segs[0].eci;
-        }
-    }
-
-    /* Check the symbology field */
-    if (!ZBarcode_ValidID(symbol->symbology)) {
-        int orig_symbology = symbol->symbology; /* For self-check */
-        if (symbol->symbology < 1) {
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "206: Symbology out of range");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
-        /* symbol->symbologys 1 to 126 are defined by tbarcode */
-        } else if (symbol->symbology == 5) {
-            symbol->symbology = BARCODE_C25STANDARD;
-        } else if ((symbol->symbology >= 10) && (symbol->symbology <= 12)) {
-            symbol->symbology = BARCODE_EANX;
-        } else if (symbol->symbology == 15) {
-            symbol->symbology = BARCODE_EANX;
-        } else if (symbol->symbology == 17) {
-            symbol->symbology = BARCODE_UPCA;
-        } else if (symbol->symbology == 19) {
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "207: Codabar 18 not supported");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODABAR;
-        } else if (symbol->symbology == 26) { /* UPC-A up to tbarcode 9, ISSN for tbarcode 10+ */
-            symbol->symbology = BARCODE_UPCA;
-        } else if (symbol->symbology == 27) { /* UPCD1 up to tbarcode 9, ISSN + 2 digit add-on for tbarcode 10+ */
-            return error_tag(symbol, ZINT_ERROR_INVALID_OPTION, "208: UPCD1 not supported");
-        } else if (symbol->symbology == 33) {
-            symbol->symbology = BARCODE_GS1_128;
-        } else if (symbol->symbology == 36) {
-            symbol->symbology = BARCODE_UPCA;
-        } else if (symbol->symbology == 39) {
-            symbol->symbology = BARCODE_UPCE;
-        } else if ((symbol->symbology >= 41) && (symbol->symbology <= 45)) {
-            symbol->symbology = BARCODE_POSTNET;
-        } else if (symbol->symbology == 46) {
-            symbol->symbology = BARCODE_PLESSEY;
-        } else if (symbol->symbology == 48) {
-            symbol->symbology = BARCODE_NVE18;
-        } else if ((symbol->symbology == 59) || (symbol->symbology == 61)) {
-            symbol->symbology = BARCODE_CODE128;
-        } else if (symbol->symbology == 62) {
-            symbol->symbology = BARCODE_CODE93;
-        } else if ((symbol->symbology == 64) || (symbol->symbology == 65)) {
-            symbol->symbology = BARCODE_AUSPOST;
-        } else if (symbol->symbology == 78) {
-            symbol->symbology = BARCODE_DBAR_OMN;
-        } else if (symbol->symbology == 83) {
-            symbol->symbology = BARCODE_PLANET;
-        } else if (symbol->symbology == 88) {
-            symbol->symbology = BARCODE_GS1_128;
-        } else if (symbol->symbology == 91) { /* BC412 up to tbarcode 9, Code 32 for tbarcode 10+ */
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "212: Symbology out of range");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
-        } else if ((symbol->symbology >= 94) && (symbol->symbology <= 95)) {
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "213: Symbology out of range");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
-        } else if (symbol->symbology == 100) {
-            symbol->symbology = BARCODE_HIBC_128;
-        } else if (symbol->symbology == 101) {
-            symbol->symbology = BARCODE_HIBC_39;
-        } else if (symbol->symbology == 103) {
-            symbol->symbology = BARCODE_HIBC_DM;
-        } else if (symbol->symbology == 105) {
-            symbol->symbology = BARCODE_HIBC_QR;
-        } else if (symbol->symbology == 107) {
-            symbol->symbology = BARCODE_HIBC_PDF;
-        } else if (symbol->symbology == 109) {
-            symbol->symbology = BARCODE_HIBC_MICPDF;
-        } else if (symbol->symbology == 111) {
-            symbol->symbology = BARCODE_HIBC_BLOCKF;
-        } else if ((symbol->symbology == 113) || (symbol->symbology == 114)) {
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "214: Symbology out of range");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
-        } else if ((symbol->symbology >= 117) && (symbol->symbology <= 127)) {
-            if (symbol->symbology < 119 || symbol->symbology > 121) { /* BARCODE_MAILMARK_2D/4S/UPU_S10 */
-                warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "215: Symbology out of range");
-                if (warn_number >= ZINT_ERROR) {
-                    return warn_number;
-                }
-                symbol->symbology = BARCODE_CODE128;
-            }
-        /* Everything from 128 up is Zint-specific */
-        } else if (symbol->symbology > BARCODE_LAST) {
-            warn_number = error_tag(symbol, ZINT_WARN_INVALID_OPTION, "216: Symbology out of range");
-            if (warn_number >= ZINT_ERROR) {
-                return warn_number;
-            }
-            symbol->symbology = BARCODE_CODE128;
-        }
-        if (symbol->symbology == orig_symbology) { /* Should never happen */
-            return error_tag(symbol, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error"); /* Not reached */
         }
     }
 
@@ -1624,165 +1593,44 @@ int ZBarcode_ValidID(int symbol_id) {
         return 0;
     }
 
-    return barcode_funcs[symbol_id] != NULL;
+    return barcode_src_funcs[symbol_id] != NULL
+            || (symbol_id >= LIB_SEG_FUNCS_START && barcode_seg_funcs[symbol_id - LIB_SEG_FUNCS_START] != NULL);
 }
 
 /* Copy BARCODE_XXX name of `symbol_id` into `name` buffer, NUL-terminated.
-   Returns 0 if valid, non-zero (1 or -1) if not valid */
+   Returns 0 if valid, 1 if not valid */
 int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
-    struct item {
-        const char *name;
-        int define;
-        int val;
-    };
-    static const struct item data[] = {
-        { "", -1, 0 },
-        { "BARCODE_CODE11", BARCODE_CODE11, 1 },
-        { "BARCODE_C25STANDARD", BARCODE_C25STANDARD, 2 },
-        { "BARCODE_C25INTER", BARCODE_C25INTER, 3 },
-        { "BARCODE_C25IATA", BARCODE_C25IATA, 4 },
-        { "", -1, 5 },
-        { "BARCODE_C25LOGIC", BARCODE_C25LOGIC, 6 },
-        { "BARCODE_C25IND", BARCODE_C25IND, 7 },
-        { "BARCODE_CODE39", BARCODE_CODE39, 8 },
-        { "BARCODE_EXCODE39", BARCODE_EXCODE39, 9 },
-        { "", -1, 10 },
-        { "", -1, 11 },
-        { "", -1, 12 },
-        { "BARCODE_EANX", BARCODE_EANX, 13 },
-        { "BARCODE_EANX_CHK", BARCODE_EANX_CHK, 14 },
-        { "", -1, 15 },
-        { "BARCODE_GS1_128", BARCODE_GS1_128, 16 },
-        { "", -1, 17 },
-        { "BARCODE_CODABAR", BARCODE_CODABAR, 18 },
-        { "", -1, 19 },
-        { "BARCODE_CODE128", BARCODE_CODE128, 20 },
-        { "BARCODE_DPLEIT", BARCODE_DPLEIT, 21 },
-        { "BARCODE_DPIDENT", BARCODE_DPIDENT, 22 },
-        { "BARCODE_CODE16K", BARCODE_CODE16K, 23 },
-        { "BARCODE_CODE49", BARCODE_CODE49, 24 },
-        { "BARCODE_CODE93", BARCODE_CODE93, 25 },
-        { "", -1, 26 },
-        { "", -1, 27 },
-        { "BARCODE_FLAT", BARCODE_FLAT, 28 },
-        { "BARCODE_DBAR_OMN", BARCODE_DBAR_OMN, 29 },
-        { "BARCODE_DBAR_LTD", BARCODE_DBAR_LTD, 30 },
-        { "BARCODE_DBAR_EXP", BARCODE_DBAR_EXP, 31 },
-        { "BARCODE_TELEPEN", BARCODE_TELEPEN, 32 },
-        { "", -1, 33 },
-        { "BARCODE_UPCA", BARCODE_UPCA, 34 },
-        { "BARCODE_UPCA_CHK", BARCODE_UPCA_CHK, 35 },
-        { "", -1, 36 },
-        { "BARCODE_UPCE", BARCODE_UPCE, 37 },
-        { "BARCODE_UPCE_CHK", BARCODE_UPCE_CHK, 38 },
-        { "", -1, 39 },
-        { "BARCODE_POSTNET", BARCODE_POSTNET, 40 },
-        { "", -1, 41 },
-        { "", -1, 42 },
-        { "", -1, 43 },
-        { "", -1, 44 },
-        { "", -1, 45 },
-        { "", -1, 46 },
-        { "BARCODE_MSI_PLESSEY", BARCODE_MSI_PLESSEY, 47 },
-        { "", -1, 48 },
-        { "BARCODE_FIM", BARCODE_FIM, 49 },
-        { "BARCODE_LOGMARS", BARCODE_LOGMARS, 50 },
-        { "BARCODE_PHARMA", BARCODE_PHARMA, 51 },
-        { "BARCODE_PZN", BARCODE_PZN, 52 },
-        { "BARCODE_PHARMA_TWO", BARCODE_PHARMA_TWO, 53 },
-        { "BARCODE_CEPNET", BARCODE_CEPNET, 54 },
-        { "BARCODE_PDF417", BARCODE_PDF417, 55 },
-        { "BARCODE_PDF417COMP", BARCODE_PDF417COMP, 56 },
-        { "BARCODE_MAXICODE", BARCODE_MAXICODE, 57 },
-        { "BARCODE_QRCODE", BARCODE_QRCODE, 58 },
-        { "", -1, 59 },
-        { "BARCODE_CODE128AB", BARCODE_CODE128AB, 60 },
-        { "", -1, 61 },
-        { "", -1, 62 },
-        { "BARCODE_AUSPOST", BARCODE_AUSPOST, 63 },
-        { "", -1, 64 },
-        { "", -1, 65 },
-        { "BARCODE_AUSREPLY", BARCODE_AUSREPLY, 66 },
-        { "BARCODE_AUSROUTE", BARCODE_AUSROUTE, 67 },
-        { "BARCODE_AUSREDIRECT", BARCODE_AUSREDIRECT, 68 },
-        { "BARCODE_ISBNX", BARCODE_ISBNX, 69 },
-        { "BARCODE_RM4SCC", BARCODE_RM4SCC, 70 },
-        { "BARCODE_DATAMATRIX", BARCODE_DATAMATRIX, 71 },
-        { "BARCODE_EAN14", BARCODE_EAN14, 72 },
-        { "BARCODE_VIN", BARCODE_VIN, 73 },
-        { "BARCODE_CODABLOCKF", BARCODE_CODABLOCKF, 74 },
-        { "BARCODE_NVE18", BARCODE_NVE18, 75 },
-        { "BARCODE_JAPANPOST", BARCODE_JAPANPOST, 76 },
-        { "BARCODE_KOREAPOST", BARCODE_KOREAPOST, 77 },
-        { "", -1, 78 },
-        { "BARCODE_DBAR_STK", BARCODE_DBAR_STK, 79 },
-        { "BARCODE_DBAR_OMNSTK", BARCODE_DBAR_OMNSTK, 80 },
-        { "BARCODE_DBAR_EXPSTK", BARCODE_DBAR_EXPSTK, 81 },
-        { "BARCODE_PLANET", BARCODE_PLANET, 82 },
-        { "", -1, 83 },
-        { "BARCODE_MICROPDF417", BARCODE_MICROPDF417, 84 },
-        { "BARCODE_USPS_IMAIL", BARCODE_USPS_IMAIL, 85 },
-        { "BARCODE_PLESSEY", BARCODE_PLESSEY, 86 },
-        { "BARCODE_TELEPEN_NUM", BARCODE_TELEPEN_NUM, 87 },
-        { "", -1, 88 },
-        { "BARCODE_ITF14", BARCODE_ITF14, 89 },
-        { "BARCODE_KIX", BARCODE_KIX, 90 },
-        { "", -1, 91 },
-        { "BARCODE_AZTEC", BARCODE_AZTEC, 92 },
-        { "BARCODE_DAFT", BARCODE_DAFT, 93 },
-        { "", -1, 94 },
-        { "", -1, 95 },
-        { "BARCODE_DPD", BARCODE_DPD, 96 },
-        { "BARCODE_MICROQR", BARCODE_MICROQR, 97 },
-        { "BARCODE_HIBC_128", BARCODE_HIBC_128, 98 },
-        { "BARCODE_HIBC_39", BARCODE_HIBC_39, 99 },
-        { "", -1, 100 },
-        { "", -1, 101 },
-        { "BARCODE_HIBC_DM", BARCODE_HIBC_DM, 102 },
-        { "", -1, 103 },
-        { "BARCODE_HIBC_QR", BARCODE_HIBC_QR, 104 },
-        { "", -1, 105 },
-        { "BARCODE_HIBC_PDF", BARCODE_HIBC_PDF, 106 },
-        { "", -1, 107 },
-        { "BARCODE_HIBC_MICPDF", BARCODE_HIBC_MICPDF, 108 },
-        { "", -1, 109 },
-        { "BARCODE_HIBC_BLOCKF", BARCODE_HIBC_BLOCKF, 110 },
-        { "", -1, 111 },
-        { "BARCODE_HIBC_AZTEC", BARCODE_HIBC_AZTEC, 112 },
-        { "", -1, 113 },
-        { "", -1, 114 },
-        { "BARCODE_DOTCODE", BARCODE_DOTCODE, 115 },
-        { "BARCODE_HANXIN", BARCODE_HANXIN, 116 },
-        { "", -1, 117 },
-        { "", -1, 118 },
-        { "BARCODE_MAILMARK_2D", BARCODE_MAILMARK_2D, 119 },
-        { "BARCODE_UPU_S10", BARCODE_UPU_S10, 120 },
-        { "BARCODE_MAILMARK_4S", BARCODE_MAILMARK_4S, 121 },
-        { "", -1, 122 },
-        { "", -1, 123 },
-        { "", -1, 124 },
-        { "", -1, 125 },
-        { "", -1, 126 },
-        { "", -1, 127 },
-        { "BARCODE_AZRUNE", BARCODE_AZRUNE, 128 },
-        { "BARCODE_CODE32", BARCODE_CODE32, 129 },
-        { "BARCODE_EANX_CC", BARCODE_EANX_CC, 130 },
-        { "BARCODE_GS1_128_CC", BARCODE_GS1_128_CC, 131 },
-        { "BARCODE_DBAR_OMN_CC", BARCODE_DBAR_OMN_CC, 132 },
-        { "BARCODE_DBAR_LTD_CC", BARCODE_DBAR_LTD_CC, 133 },
-        { "BARCODE_DBAR_EXP_CC", BARCODE_DBAR_EXP_CC, 134 },
-        { "BARCODE_UPCA_CC", BARCODE_UPCA_CC, 135 },
-        { "BARCODE_UPCE_CC", BARCODE_UPCE_CC, 136 },
-        { "BARCODE_DBAR_STK_CC", BARCODE_DBAR_STK_CC, 137 },
-        { "BARCODE_DBAR_OMNSTK_CC", BARCODE_DBAR_OMNSTK_CC, 138 },
-        { "BARCODE_DBAR_EXPSTK_CC", BARCODE_DBAR_EXPSTK_CC, 139 },
-        { "BARCODE_CHANNEL", BARCODE_CHANNEL, 140 },
-        { "BARCODE_CODEONE", BARCODE_CODEONE, 141 },
-        { "BARCODE_GRIDMATRIX", BARCODE_GRIDMATRIX, 142 },
-        { "BARCODE_UPNQR", BARCODE_UPNQR, 143 },
-        { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
-        { "BARCODE_RMQR", BARCODE_RMQR, 145 },
-        { "BARCODE_BC412", BARCODE_BC412, 146 },
+    static const char *const names[] = {
+        "",            "CODE11",      "C25STANDARD", "C25INTER",       "C25IATA",        /*0-4*/
+        "",            "C25LOGIC",    "C25IND",      "CODE39",         "EXCODE39",       /*5-9*/
+        "",            "",            "",            "EANX",           "EANX_CHK",       /*10-14*/
+        "",            "GS1_128",     "",            "CODABAR",        "",               /*15-19*/
+        "CODE128",     "DPLEIT",      "DPIDENT",     "CODE16K",        "CODE49",         /*20-24*/
+        "CODE93",      "",            "",            "FLAT",           "DBAR_OMN",       /*25-29*/
+        "DBAR_LTD",    "DBAR_EXP",    "TELEPEN",     "",               "UPCA",           /*30-34*/
+        "UPCA_CHK",    "",            "UPCE",        "UPCE_CHK",       "",               /*35-39*/
+        "POSTNET",     "",            "",            "",               "",               /*40-44*/
+        "",            "",            "MSI_PLESSEY", "",               "FIM",            /*45-49*/
+        "LOGMARS",     "PHARMA",      "PZN",         "PHARMA_TWO",     "CEPNET",         /*50-54*/
+        "PDF417",      "PDF417COMP",  "MAXICODE",    "QRCODE",         "",               /*55-59*/
+        "CODE128AB",   "",            "",            "AUSPOST",        "",               /*60-64*/
+        "",            "AUSREPLY",    "AUSROUTE",    "AUSREDIRECT",    "ISBNX",          /*65-69*/
+        "RM4SCC",      "DATAMATRIX",  "EAN14",       "VIN",            "CODABLOCKF",     /*70-74*/
+        "NVE18",       "JAPANPOST",   "KOREAPOST",   "",               "DBAR_STK",       /*75-79*/
+        "DBAR_OMNSTK", "DBAR_EXPSTK", "PLANET",      "",               "MICROPDF417",    /*80-84*/
+        "USPS_IMAIL",  "PLESSEY",     "TELEPEN_NUM", "",               "ITF14",          /*85-89*/
+        "KIX",         "",            "AZTEC",       "DAFT",            "",              /*90-94*/
+        "",            "DPD",         "MICROQR",     "HIBC_128",       "HIBC_39",        /*95-99*/
+        "",            "",            "HIBC_DM",     "",               "HIBC_QR",        /*100-104*/
+        "",            "HIBC_PDF",    "",            "HIBC_MICPDF",    "",               /*105-109*/
+        "HIBC_BLOCKF", "",            "HIBC_AZTEC",  "",               "",               /*110-114*/
+        "DOTCODE",     "HANXIN",      "",            "",               "MAILMARK_2D",    /*115-119*/
+        "UPU_S10",     "MAILMARK_4S", "",            "",               "",               /*120-124*/
+        "",            "",            "",            "AZRUNE",         "CODE32",         /*125-129*/
+        "EANX_CC",     "GS1_128_CC",  "DBAR_OMN_CC", "DBAR_LTD_CC",    "DBAR_EXP_CC",    /*130-134*/
+        "UPCA_CC",     "UPCE_CC",     "DBAR_STK_CC", "DBAR_OMNSTK_CC", "DBAR_EXPSTK_CC", /*135-139*/
+        "CHANNEL",     "CODEONE",     "GRIDMATRIX",  "UPNQR",          "ULTRA",          /*140-144*/
+        "RMQR",        "BC412",                                                          /*145-146*/
     };
 
     name[0] = '\0';
@@ -1790,15 +1638,10 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
     if (!ZBarcode_ValidID(symbol_id)) {
         return 1;
     }
-    assert(symbol_id >= 0 && symbol_id < ARRAY_SIZE(data) && data[symbol_id].name[0]);
+    assert(symbol_id >= 0 && symbol_id < ARRAY_SIZE(names) && names[symbol_id][0]);
 
-    /* Self-check, shouldn't happen */
-    if (data[symbol_id].val != symbol_id || (data[symbol_id].define != -1 && data[symbol_id].define != symbol_id)) {
-        assert(0); /* Not reached */
-        return -1;
-    }
-
-    strcpy(name, data[symbol_id].name);
+    memcpy(name, "BARCODE_", 8);
+    strcpy(name + 8, names[symbol_id]);
 
     return 0;
 }
@@ -2210,11 +2053,11 @@ int ZBarcode_NoPng(void) {
 
 /* Return the version of Zint linked to */
 int ZBarcode_Version(void) {
-    if (ZINT_VERSION_BUILD) {
-        return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10
-                + ZINT_VERSION_BUILD;
-    }
+#if ZINT_VERSION_BUILD
+    return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE * 10 + ZINT_VERSION_BUILD;
+#else
     return (ZINT_VERSION_MAJOR * 10000) + (ZINT_VERSION_MINOR * 100) + ZINT_VERSION_RELEASE;
+#endif
 }
 
 /* vim: set ts=4 sw=4 et : */

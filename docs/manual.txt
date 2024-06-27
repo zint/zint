@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-May 2024
+June 2024
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -4082,7 +4082,7 @@ Slovenia). The size, error correction level and ECI are set by Zint and do not
 need to be specified. UPNQR is unusual in that it uses Latin-2 (ISO/IEC 8859-2
 plus ASCII) formatted data. Zint will accept UTF-8 data and convert it to
 Latin-2, or if your data is already Latin-2 formatted use the --binary switch
-(API input_mode = DATA MODE).
+(API input_mode = DATA_MODE).
 
 The following example creates a symbol from data saved as a Latin-2 file:
 
@@ -4814,7 +4814,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % May 2024
+% ZINT(1) Version 2.13.0.9 % % June 2024
 
 NAME
 

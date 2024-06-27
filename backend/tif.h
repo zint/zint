@@ -37,7 +37,7 @@
 extern "C" {
 #endif
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack(1)
 #endif
 
@@ -60,7 +60,7 @@ extern "C" {
         uint16_t blue;
     } OUT_PACK tiff_color_t;
 
-#ifdef _MSC_VER
+#ifdef OUT_USE_PRAGMA_PACK
 #pragma pack()
 #endif
 

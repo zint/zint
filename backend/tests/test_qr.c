@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -406,21 +406,21 @@ static void test_qr_input(const testCtx *const p_ctx) {
         /*126*/ { UNICODE_MODE, 16384, 4, 8 << 8, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", 1, 1, "ECI-16384 B2 (no conversion)" },
         /*127*/ { UNICODE_MODE, 3, 4, -1, "product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97", 0, 3, "(86) 70 34 39 70 72 6F 64 75 63 74 3A 47 6F 6F 67 6C 65 20 50 69 78 65 6C 20 34 61 20 2D", 0, 1, "ECI-3 B57 A8; BWIPP different encodation (B65)" },
         /*128*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\176", 0, 0, "80 10 1F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x817E)" },
-        /*129*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\177", 0, 0, "40 28 17 F0 EC 11 EC 11 EC", 0, 1, "B2 (0x817F previously used Kanji mode, now excludes trailing 0x7F); BWIPP TODO: exclude also" },
+        /*129*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\177", 0, 0, "40 28 17 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x817F previously used Kanji mode, now excludes trailing 0x7F)" },
         /*130*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\200", 0, 0, "80 10 20 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x8180)" },
         /*131*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\176", 0, 0, "80 1B 5F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x9F7E)" },
-        /*132*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\177", 0, 0, "40 29 F7 F0 EC 11 EC 11 EC", 0, 1, "B2 (0x9F7F previously used Kanji mode, now excludes trailing 0x7F); BWIPP TODO: exclude also" },
+        /*132*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (1 << 8), "\237\177", 0, 0, "40 29 F7 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x9F7F previously used Kanji mode, now excludes trailing 0x7F)" },
         /*133*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (5 << 8), "\340\176", 0, 0, "80 1B BF 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xE07E)" },
-        /*134*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\177", 0, 0, "40 2E 07 F0 EC 11 EC 11 EC", 0, 1, "B2 (0xE07F previously used Kanji mode, now excludes trailing 0x7F); BWIPP TODO: exclude also" },
+        /*134*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\177", 0, 0, "40 2E 07 F0 EC 11 EC 11 EC", 1, 1, "B2 (0xE07F previously used Kanji mode, now excludes trailing 0x7F)" },
         /*135*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\352\244", 0, 0, "80 1F 92 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xEAA4, last valid codepoint)" },
-        /*136*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\277", 0, 0, "80 1F FF 80 EC 11 EC 11 EC", 0, 1, "K1 (0xEBBF undefined in Shift JIS but not checked and uses Kanji mode); BWIPP TODO: exclude also" },
+        /*136*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\353\277", 0, 0, "80 1F FF 80 EC 11 EC 11 EC", 1, 1, "K1 (0xEBBF undefined in Shift JIS but not checked and uses Kanji mode)" },
         /*137*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\300", 0, 0, "40 2E BC 00 EC 11 EC 11 EC", 1, 1, "B2 (0xEBC0 was always excluded)" },
         /*138*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\300", 0, 0, "80 10 40 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81C0)" },
         /*139*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (2 << 8), "\201\374", 0, 0, "80 10 5E 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81FC)" },
-        /*140*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\375", 0, 0, "40 28 1F D0 EC 11 EC 11 EC", 0, 1, "B2 (0x81FD previously used Kanji mode, now excludes trailing 0xFD); BWIPP TODO: exclude also" },
-        /*141*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\376", 0, 0, "40 28 1F E0 EC 11 EC 11 EC", 0, 1, "B2 (0x81FE previously used Kanji mode, now excludes trailing 0xFE); BWIPP TODO: exclude also" },
-        /*142*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 0, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF); BWIPP TODO: exclude also" },
-        /*143*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 0, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF); BWIPP TODO: exclude also" },
+        /*140*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (8 << 8), "\201\375", 0, 0, "40 28 1F D0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FD previously used Kanji mode, now excludes trailing 0xFD)" },
+        /*141*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\201\376", 0, 0, "40 28 1F E0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FE previously used Kanji mode, now excludes trailing 0xFE)" },
+        /*142*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
+        /*143*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
         /*144*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (7 << 8), "\201\255", 0, 0, "80 10 36 80 EC 11 EC 11 EC", 1, 1, "K1 (0x81AD undefined in Shift JIS but not checked and uses Kanji mode)" },
     };
     int data_size = ARRAY_SIZE(data);
@@ -4250,6 +4250,29 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "101110101000100101100"
                     "100000100100010011101"
                     "111111100011110001100"
+                },
+        /*128*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, 1 << 8, { 0, 0, "" }, "202404110011看看16", -1, ZINT_WARN_NONCOMPLIANT, 21, 21, 1, "Shift-JIS range (BWIPP via bwip-js issue #335)",
+                    "111111100000101111111"
+                    "100000101111101000001"
+                    "101110100111001011101"
+                    "101110100100001011101"
+                    "101110101110101011101"
+                    "100000100100101000001"
+                    "111111101010101111111"
+                    "000000000111100000000"
+                    "101010100001000010010"
+                    "110111010011011110011"
+                    "000000111000101100000"
+                    "010100000001011100010"
+                    "111100101000100001110"
+                    "000000001101000101010"
+                    "111111100110010010101"
+                    "100000100001000100001"
+                    "101110101010001010001"
+                    "101110100011000110110"
+                    "101110101100111100001"
+                    "100000100011010111000"
+                    "111111101110111010101"
                 },
     };
     int data_size = ARRAY_SIZE(data);

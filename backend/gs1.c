@@ -40,7 +40,7 @@
 static int numeric(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -78,7 +78,7 @@ static const char c82[] = {
 static int cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -105,7 +105,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
 static int cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -133,7 +133,7 @@ static int cset39(const unsigned char *data, int data_len, int offset, int min, 
 static int cset64(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -166,7 +166,7 @@ static int cset64(const unsigned char *data, int data_len, int offset, int min, 
 static int csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -201,7 +201,7 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
 static int csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -249,7 +249,7 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -284,7 +284,7 @@ static int yyyymmd0(const unsigned char *data, int data_len, int offset, int min
 
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 8)) {
         return 0;
@@ -331,7 +331,7 @@ static int yyyymmdd(const unsigned char *data, int data_len, int offset, int min
         return 0;
     }
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (!length_only && data_len) {
         const int day = to_int(data + offset + 6, 2);
@@ -350,7 +350,7 @@ static int yyyymmdd(const unsigned char *data, int data_len, int offset, int min
 static int yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 6)) {
         return 0;
@@ -379,7 +379,7 @@ static int yymmdd(const unsigned char *data, int data_len, int offset, int min, 
         return 0;
     }
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (!length_only && data_len) {
         const int day = to_int(data + offset + 4, 2);
@@ -406,7 +406,7 @@ static int yymmddhh(const unsigned char *data, int data_len, int offset, int min
         return 0;
     }
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (!length_only && data_len) {
         const int hour = to_int(data + offset + 6, 2);
@@ -426,7 +426,7 @@ static int hhmm(const unsigned char *data, int data_len, int offset, int min, in
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 4)) {
         return 0;
@@ -459,7 +459,7 @@ static int mmoptss(const unsigned char *data, int data_len, int offset, int min,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 2)
             || (data_len > 2 && data_len < 4)) {
@@ -496,9 +496,13 @@ static int iso3166(const unsigned char *data, int data_len, int offset, int min,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 3)) {
+        if (offset) {
+            /* For backward compatibility only warn if not first */
+            *p_err_no = 4;
+        }
         return 0;
     }
 
@@ -514,42 +518,12 @@ static int iso3166(const unsigned char *data, int data_len, int offset, int min,
     return 1;
 }
 
-/* Check for a list of ISO 3166-1 numeric country codes */
-static int iso3166list(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
-            int *p_err_posn, char err_msg[50], const int length_only) {
-
-    int data_len_max;
-
-    data_len -= offset;
-    data_len_max = data_len > max ? max : data_len;
-
-    if (data_len < min || (data_len && data_len < 3)) {
-        return 0;
-    }
-    /* Do this check separately for backward compatibility */
-    if (data_len && data_len_max % 3) {
-        *p_err_no = 4;
-        return 0;
-    }
-
-    if (!length_only && data_len) {
-        int i;
-        for (i = 0; i < data_len_max; i += 3) {
-            if (!iso3166(data, offset + data_len, offset + i, 3, 3, p_err_no, p_err_posn, err_msg, length_only)) {
-                return 0;
-            }
-        }
-    }
-
-    return 1;
-}
-
 /* Check for an ISO 3166-1 numeric country code allowing "999" */
 static int iso3166999(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 3)) {
         return 0;
@@ -573,7 +547,7 @@ static int iso3166alpha2(const unsigned char *data, int data_len, int offset, in
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 2)) {
         return 0;
@@ -599,7 +573,7 @@ static int iso4217(const unsigned char *data, int data_len, int offset, int min,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 3)) {
         return 0;
@@ -623,7 +597,7 @@ static int pcenc(const unsigned char *data, int data_len, int offset, int min, i
 
     static const char hex_chars[] = "0123456789ABCDEFabcdef";
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -659,7 +633,7 @@ static int yesno(const unsigned char *data, int data_len, int offset, int min, i
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -682,7 +656,7 @@ static int importeridx(const unsigned char *data, int data_len, int offset, int 
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -707,7 +681,7 @@ static int importeridx(const unsigned char *data, int data_len, int offset, int 
 static int nonzero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -732,7 +706,7 @@ static int winding(const unsigned char *data, int data_len, int offset, int min,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -755,7 +729,7 @@ static int zero(const unsigned char *data, int data_len, int offset, int min, in
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -778,7 +752,7 @@ static int pieceoftotal(const unsigned char *data, int data_len, int offset, int
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 4)) {
         return 0;
@@ -816,7 +790,7 @@ static int pieceoftotal(const unsigned char *data, int data_len, int offset, int
 static int iban(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -897,7 +871,7 @@ static int nozeroprefix(const unsigned char *data, int data_len, int offset, int
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -1004,7 +978,7 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -1222,7 +1196,7 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
 
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -1274,7 +1248,7 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
 static int latitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 10)) {
         return 0;
@@ -1304,7 +1278,7 @@ static int latitude(const unsigned char *data, int data_len, int offset, int min
 static int longitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 10)) {
         return 0;
@@ -1334,7 +1308,7 @@ static int longitude(const unsigned char *data, int data_len, int offset, int mi
 static int mediatype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min || (data_len && data_len < 2)) {
         return 0;
@@ -1364,7 +1338,7 @@ static int mediatype(const unsigned char *data, int data_len, int offset, int mi
 static int hyphen(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -1392,7 +1366,7 @@ static int iso5218(const unsigned char *data, int data_len, int offset, int min,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;
@@ -1415,7 +1389,7 @@ static int iso5218(const unsigned char *data, int data_len, int offset, int min,
 static int posinseqslash(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    data_len -= offset;
+    data_len = data_len < offset ? 0 : data_len - offset;
 
     if (data_len < min) {
         return 0;

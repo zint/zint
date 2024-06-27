@@ -383,7 +383,7 @@ static int qr_cci_bits(const int version, const int mode) {
         {  5,  4,  4,  3, },
         {  6,  5,  5,  4, }
     };
-    static const unsigned char *rmqr_ccis[QR_NUM_MODES] = {
+    static const unsigned char *const rmqr_ccis[QR_NUM_MODES] = {
         rmqr_numeric_cci, rmqr_alphanum_cci, rmqr_byte_cci, rmqr_kanji_cci,
     };
     int mode_index = posn(qr_mode_types, (const char) mode);

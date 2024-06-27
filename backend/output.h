@@ -113,11 +113,13 @@ INTERNAL FILE *out_win_fopen(const char *filename, const char *mode);
         bp[3] = (unsigned char) ((*p_u32 >> 24) & 0xFF); \
     } while (0)
 
-/* For more portability, use `#pragma pack()` pair for MSCV, per-type packed attribute otherwise */
-#ifdef _MSC_VER
-#  define OUT_PACK
+/* If `#pragma pack()` not supported, try per-type packed attribute */
+#ifdef __COMPCERT__
+/* Can't use `__attribute__` as may be defined to be no-op by libc if not GNU C or Clang (e.g. glibc does this) */
+#  define OUT_PACK __attribute((__packed__)) /* CompCert C workaround extension `__attribute` */
 #else
-#  define OUT_PACK __attribute__((__packed__))
+#  define OUT_USE_PRAGMA_PACK
+#  define OUT_PACK
 #endif
 
 #ifdef __cplusplus

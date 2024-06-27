@@ -294,22 +294,21 @@ foreach ($spec_parts as $spec => $spec_part) {
         $comment = ' (Used by';
         foreach ($spec_comments[$spec] as $i => $spec_comment) {
             if ($i) {
-                if ($i > 3) {
-                    $comment .= '...';
-                    break;
-                }
                 $comment .= ', ';
             } else {
                 $comment .= ' ';
             }
             $comment .= $spec_comment;
         }
+        if (strlen($comment) > 118 - 3 /*start comment*/ - 4 /*)end comment*/ - strlen($spec)) {
+            $comment = substr($comment, 0, 118 - 3 - 4 - strlen($spec) - 3) . '...';
+        }
         $comment .= ')';
     }
     print <<<EOD
 /* $spec$comment */
-static int $spec_func(const unsigned char *data, const int data_len,
-$tab$tab{$tab}int *p_err_no, int *p_err_posn, char err_msg[50]) {
+static int $spec_func(const unsigned char *data,
+$tab$tab{$tab}const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
 {$tab}return 
 EOD;
 

@@ -185,32 +185,25 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     i = 0;
     j = 0;
     while (i < src_len) {
+        reduced_encode_mode[j] = encode_mode[i];
         if (i + 1 < src_len) {
             if ((source[i] == 13) && (source[i + 1] == 10)) { /* CR LF */
                 reduced_source[j] = 'a';
-                reduced_encode_mode[j] = encode_mode[i];
                 i += 2;
             } else if ((source[i] == '.') && (source[i + 1] == ' ') && (encode_mode[i] == 'P')) {
                 reduced_source[j] = 'b';
-                reduced_encode_mode[j] = encode_mode[i];
                 i += 2;
             } else if ((source[i] == ',') && (source[i + 1] == ' ') && (encode_mode[i] == 'P')) {
                 reduced_source[j] = 'c';
-                reduced_encode_mode[j] = encode_mode[i];
                 i += 2;
             } else if ((source[i] == ':') && (source[i + 1] == ' ')) {
                 reduced_source[j] = 'd';
-                reduced_encode_mode[j] = encode_mode[i];
                 i += 2;
             } else {
-                reduced_source[j] = source[i];
-                reduced_encode_mode[j] = encode_mode[i];
-                i++;
+                reduced_source[j] = source[i++];
             }
         } else {
-            reduced_source[j] = source[i];
-            reduced_encode_mode[j] = encode_mode[i];
-            i++;
+            reduced_source[j] = source[i++];
         }
         j++;
     }
@@ -950,10 +943,10 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     data_maxsize = 0; /* Keep compiler happy! */
     adjustment_size = 0;
     if (symbol->option_2 == 0) { /* The size of the symbol can be determined by Zint */
-        static const short *full_sizes[5] = {
+        static const short *const full_sizes[5] = {
             NULL, Aztec10DataSizes, Aztec23DataSizes, Aztec36DataSizes, Aztec50DataSizes
         };
-        static const short *comp_sizes[5] = {
+        static const short *const comp_sizes[5] = {
             NULL, AztecCompact10DataSizes, AztecCompact23DataSizes, AztecCompact36DataSizes, AztecCompact50DataSizes
         };
         int ecc_level = symbol->option_1;
@@ -1230,15 +1223,13 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     /* Plot all of the data into the symbol in pre-defined spiral pattern */
     if (compact) {
-        int offset = AztecCompactOffset[layers - 1];
-        int end_offset = 27 - offset;
+        const int offset = AztecCompactOffset[layers - 1];
+        const int end_offset = 27 - offset;
         for (y = offset; y < end_offset; y++) {
-            int y_map = y * 27;
+            const int y_map = y * 27;
             for (x = offset; x < end_offset; x++) {
-                int map = AztecCompactMap[y_map + x];
-                if (map == 1) {
-                    set_module(symbol, y - offset, x - offset);
-                } else if (map >= 2 && bit_pattern[map - 2] == '1') {
+                const int map = AztecCompactMap[y_map + x];
+                if (map == 1 || (map >= 2 && bit_pattern[map - 2] == '1')) {
                     set_module(symbol, y - offset, x - offset);
                 }
             }
@@ -1248,16 +1239,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         symbol->rows = 27 - (2 * offset);
         symbol->width = 27 - (2 * offset);
     } else {
-        int offset = AztecOffset[layers - 1];
-        int end_offset = 151 - offset;
+        const int offset = AztecOffset[layers - 1];
+        const int end_offset = 151 - offset;
         az_populate_map(AztecMap, layers);
         for (y = offset; y < end_offset; y++) {
-            int y_map = y * 151;
+            const int y_map = y * 151;
             for (x = offset; x < end_offset; x++) {
-                int map = AztecMap[y_map + x];
-                if (map == 1) {
-                    set_module(symbol, y - offset, x - offset);
-                } else if (map >= 2 && bit_pattern[map - 2] == '1') {
+                const int map = AztecMap[y_map + x];
+                if (map == 1 || (map >= 2 && bit_pattern[map - 2] == '1')) {
                     set_module(symbol, y - offset, x - offset);
                 }
             }
