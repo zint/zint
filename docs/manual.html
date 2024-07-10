@@ -4027,7 +4027,10 @@ usage is given in section <a href="#gs1-128">6.1.10.3 GS1-128</a>.</p>
 data that does not conform to the current GS1 standard. Printable ASCII
 input is still checked for, as is the validity of GS1 data specified
 without AIs (e.g. linear data for GS1 DataBar
-Omnidirectional/Limited/etc.).</p>
+Omnidirectional/Limited/etc.). Also checked is GS1 DataBar Expanded and
+GS1 Composite input that is not in the GS1 encodable character set 82
+(see GS1 General Specifications Figure 7.11.1 ‘GS1 AI encodable
+character set 82’), otherwise encodation would fail.</p>
 <p>For <code>HEIGHTPERROW_MODE</code>, see <code>--heightperrow</code>
 in section <a href="#adjusting-height">4.4 Adjusting Height</a>. The
 <code>height</code> member should be set to the desired per-row value on

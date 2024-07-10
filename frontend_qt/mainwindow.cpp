@@ -802,7 +802,7 @@ void MainWindow::about()
             "<p>Copyright &copy; 2006-2024 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
-            "<p>Qt version %2 (QSettings:<br>%3)</p>"
+            "<p>Qt version %2<br>%3</p>"
             "<p>\"Mailmark\" is a Registered Trademark of Royal Mail.<br>"
             "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
             "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"

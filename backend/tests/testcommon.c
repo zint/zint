@@ -2429,7 +2429,7 @@ int testUtilCanBwipp(int index, const struct zint_symbol *symbol, int option_1, 
 }
 
 /* Convert Zint GS1 and add-on format to BWIPP's */
-static void testUtilBwippCvtGS1Data(char *bwipp_data, int upcean, int *addon_posn) {
+static void testUtilBwippCvtGS1Data(char *bwipp_data, const int upcean, const int parens_mode, int *addon_posn) {
     char *b;
     int pipe = 0;
 
@@ -2438,9 +2438,9 @@ static void testUtilBwippCvtGS1Data(char *bwipp_data, int upcean, int *addon_pos
         if (upcean && *b == '|') {
             pipe = 1;
         }
-        if (*b == '[') {
+        if (!parens_mode && *b == '[') {
             *b = '(';
-        } else if (*b == ']') {
+        } else if (!parens_mode && *b == ']') {
             *b = ')';
         } else if (*b == '+' && upcean && !pipe) {
             *b = ' ';
@@ -2664,8 +2664,9 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
 
     const int upcean = (ZBarcode_Cap(symbology, ZINT_CAP_EANUPC) & ZINT_CAP_EANUPC) == ZINT_CAP_EANUPC;
     const int upca = symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK || symbology == BARCODE_UPCA_CC;
-    const char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
-    const char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
+    const int parens_mode = symbol->input_mode & GS1PARENS_MODE;
+    const char obracket = parens_mode ? '(' : '[';
+    const char cbracket = parens_mode ? ')' : ']';
     int addon_posn;
     int eci;
     int i, j, len;
@@ -2712,7 +2713,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         strcat(bwipp_data, primary);
         strcat(bwipp_data, "|");
         strcat(bwipp_data, data);
-        testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
+        testUtilBwippCvtGS1Data(bwipp_data, upcean, parens_mode, &addon_posn);
 
         /* Always set dontlint for now (until support for exclusive AIs check) */
         sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
@@ -2747,7 +2748,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 strcat(bwipp_data, symbology == BARCODE_NVE18 ? "(00)" : "(01)");
             }
             strcat(bwipp_data, data);
-            testUtilBwippCvtGS1Data(bwipp_data, upcean, &addon_posn);
+            testUtilBwippCvtGS1Data(bwipp_data, upcean, parens_mode, &addon_posn);
 
             /* Always set dontlint for now (until support for exclusive AIs check) */
             sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : "");
@@ -2984,7 +2985,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     for (i = 0, j = 0, len = (int) strlen(bwipp_data); i <= len; i++) {
                         if (bwipp_data[i] == obracket) {
                             if (ai_latch == 0) {
-                                bwipp_data[j++] = '[';
+                                bwipp_data[j++] = '\x1D';
                             }
                             last_ai = to_int((unsigned char *) (bwipp_data + i + 1), 2);
                             if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20) || last_ai == 23
@@ -2997,7 +2998,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                     /* Replace square brackets with ^FNC1 */
                     for (len = (int) strlen(bwipp_data), i = len - 1; i >= 0; i--) {
-                        if (bwipp_data[i] == '[') {
+                        if (bwipp_data[i] == '\x1D') {
                             memmove(bwipp_data + i + 5, bwipp_data + i + 1, len - i);
                             memcpy(bwipp_data + i, "^FNC1", 5);
                             len += 4;
@@ -3982,11 +3983,6 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             return 4;
         }
         expected_len = (int) strlen(reduced);
-        for (i = 0; i < expected_len; i++) {
-            if (reduced[i] == '[') {
-                reduced[i] = 29;
-            }
-        }
         expected = reduced;
         if (primary) {
             /* TODO: */

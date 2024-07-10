@@ -943,7 +943,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             do {
                 ninety[i] = source[i + 2];
                 i++;
-            } while ((length > i + 2) && ('[' != source[i + 2]));
+            } while (i + 2 < length && source[i + 2] != '\x1D');
         }
         ninety[i] = '\0';
         ninety_len = i;
@@ -1013,7 +1013,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
             next_ai_posn = 2 + ninety_len;
 
-            if (next_ai_posn < length && source[next_ai_posn] == '[') {
+            if (next_ai_posn < length && source[next_ai_posn] == '\x1D') {
                 /* There are more AIs afterwards */
                 if (next_ai_posn + 2 < length
                         && (source[next_ai_posn + 1] == '2') && (source[next_ai_posn + 2] == '1')) {
@@ -1074,12 +1074,12 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
                     } else if (z_isdigit(source[read_posn])) {
                         bp = bin_append_posn(source[read_posn] + 4, 6, binary_string, bp);
 
-                    } else if (source[read_posn] == '[') {
+                    } else if (source[read_posn] == '\x1D') {
                         bp = bin_append_posn(31, 5, binary_string, bp);
                     }
 
                     read_posn++;
-                } while ((source[read_posn - 1] != '[') && (source[read_posn - 1] != '\0'));
+                } while (source[read_posn - 1] != '\x1D' && source[read_posn - 1] != '\0');
                 alpha_pad = 1; /* This is overwritten if a general field is encoded */
             }
 
@@ -1102,7 +1102,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     if (fnc1_latch == 1) {
         /* Encodation method "10" has been used but it is not followed by
            AI 10, so a FNC1 character needs to be added */
-        general_field[j] = '[';
+        general_field[j] = '\x1D';
         j++;
     }
 
@@ -1128,7 +1128,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
             /* Invalid character in input data */
-            strcpy(symbol->errtxt, "441: Invalid character in input data");
+            strcpy(symbol->errtxt, "441: Invalid character in 2D component input data");
             return ZINT_ERROR_INVALID_DATA;
         }
     }

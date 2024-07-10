@@ -246,7 +246,7 @@ static int c1_look_ahead_test(const unsigned char source[], const int length, co
         }
 
         /* Step P */
-        if (gs1 && (c == '[')) {
+        if (gs1 && c == '\x1D') {
             byte_count += C1_MULT_3; /* Step P1 */
         } else {
             byte_count += C1_MULT_1; /* Step P2 */
@@ -453,7 +453,7 @@ static int c1_codewords_remaining(struct zint_symbol *symbol, const int tp) {
 static int c1_c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
     int cnt;
 
-    if (gs1 && input == '[') {
+    if (gs1 && input == '\x1D') {
         return 2;
     }
     cnt = 1;
@@ -616,7 +616,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     if (debug_print) printf("ASCDD(%.2s) ", source + sp);
                     sp += 2;
                 } else {
-                    if ((gs1) && (source[sp] == '[')) {
+                    if (gs1 && source[sp] == '\x1D') {
                         if (length - (sp + 1) >= 15 && num_digits[sp + 1] >= 15) {
                             /* Step B4 */
                             target[tp++] = 236; /* FNC1 and change to Decimal */
@@ -648,7 +648,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                                 target[tp++] = 235; /* FNC4 (Upper Shift) */
                                 target[tp++] = (source[sp] - 128) + 1;
                                 if (debug_print) printf("UpSh(%d) ", source[sp]);
-                            } else if ((gs1) && (source[sp] == '[')) {
+                            } else if (gs1 && source[sp] == '\x1D') {
                                 /* Step B8 */
                                 target[tp++] = 232; /* FNC1 */
                                 if (debug_print) fputs("FNC1 ", stdout);
@@ -704,7 +704,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                         cte_buffer[cte_p++] = ct_shift[source[sp] - 128] - 1;
                     }
                     cte_buffer[cte_p++] = ct_value[source[sp] - 128];
-                } else if (gs1 && (source[sp] == '[')) {
+                } else if (gs1 && source[sp] == '\x1D') {
                     cte_buffer[cte_p++] = 1; /* Shift 2 */
                     cte_buffer[cte_p++] = 27; /* FNC1 */
                 } else {
@@ -826,7 +826,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
         } else if (current_mode == C1_BYTE) {
             next_mode = C1_BYTE;
 
-            if (gs1 && (source[sp] == '[')) {
+            if (gs1 && source[sp] == '\x1D') {
                 next_mode = C1_ASCII;
             } else {
                 if (source[sp] <= 127) {
@@ -901,7 +901,7 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
                     } else if (source[sp] & 0x80) {
                         target[tp++] = 235; /* FNC4 (Upper Shift) */
                         target[tp++] = (source[sp] - 128) + 1;
-                    } else if ((gs1) && (source[sp] == '[')) {
+                    } else if (gs1 && source[sp] == '\x1D') {
                         target[tp++] = 232; /* FNC1 */
                     } else {
                         target[tp++] = source[sp] + 1;

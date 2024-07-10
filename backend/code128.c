@@ -306,7 +306,7 @@ INTERNAL void c128_put_in_set(int list[2][C128_MAX], const int indexliste, char 
         int c_count = 0;
         for (i = 0; i < read; i++) {
             if (set[i] == 'C') {
-                if (source[i] == '[') {
+                if (source[i] == '\x1D') {
                     if (c_count & 1) {
                         if ((i - c_count) != 0) {
                             set[i - c_count] = 'B';
@@ -799,7 +799,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
                 break;
             }
             mode = c128_parunmodd(reduced[indexchaine]);
-            if (reduced[indexchaine] == '[') {
+            if (reduced[indexchaine] == '\x1D') {
                 mode = C128_ABORC;
             }
         }
@@ -829,7 +829,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
             glyph_count += 2; /* Not reached */
         }
 
-        if ((set[i] == 'C') && (reduced[i] != '[')) {
+       if ((set[i] == 'C') && (reduced[i] != '\x1D')) {
             glyph_count += 1; /* Half a codeword */
         } else {
             glyph_count += 2;
@@ -878,7 +878,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
             values[bar_characters++] = 98; /* Not reached */
         }
 
-        if (reduced[read] != '[') {
+        if (reduced[read] != '\x1D') {
             switch (set[read]) { /* Encode data characters */
                 case 'A':
                 case 'a':
@@ -1012,13 +1012,21 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         }
     }
 
-    for (i = 0; i < length && i < (int) sizeof(symbol->text); i++) {
-        if (source[i] == '[') {
-            symbol->text[i] = '(';
-        } else if (source[i] == ']') {
-            symbol->text[i] = ')';
-        } else {
-            symbol->text[i] = source[i];
+    if (symbol->input_mode & GS1PARENS_MODE) {
+        i = length < (int) sizeof(symbol->text) ? length : (int) sizeof(symbol->text);
+        memcpy(symbol->text, source, i);
+    } else {
+        int bracket_level = 0; /* Non-compliant closing square brackets may be in text */
+        for (i = 0; i < length && i < (int) sizeof(symbol->text); i++) {
+            if (source[i] == '[') {
+                symbol->text[i] = '(';
+                bracket_level++;
+            } else if (source[i] == ']' && bracket_level) {
+                symbol->text[i] = ')';
+                bracket_level--;
+            } else {
+                symbol->text[i] = source[i];
+            }
         }
     }
     if (i == sizeof(symbol->text)) {

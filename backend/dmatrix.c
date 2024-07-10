@@ -224,8 +224,8 @@ static int dm_isX12(const unsigned char input) {
 }
 
 /* Return true (1) if a character is valid in EDIFACT set */
-static int dm_isedifact(const unsigned char input, const int gs1) {
-    return (input >= ' ' && input <= '^') && (!gs1 || input != '['); /* Can't encode GS1 FNC1/GS in EDIFACT */
+static int dm_isedifact(const unsigned char input) {
+    return input >= ' ' && input <= '^';
 }
 
 /* Does Annex J section (r)(6)(ii)(I) apply? */
@@ -367,7 +367,7 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
         }
 
         /* edifact ... step (p) */
-        if (dm_isedifact(c, gs1)) {
+        if (dm_isedifact(c)) {
             edf_count += DM_MULT_3_DIV_4; /* (p)(1) */
         } else {
             if (is_extended) {
@@ -378,7 +378,7 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
         }
 
         /* base 256 ... step (q) */
-        if ((gs1 == 1) && (c == '[')) {
+        if (gs1 == 1 && c == '\x1D') {
             /* FNC1 separator */
             b256_count += DM_MULT_4; /* (q)(1) */
         } else {
@@ -617,7 +617,7 @@ static int dm_codewords_remaining(struct zint_symbol *symbol, const int tp, cons
 static int dm_c40text_cnt(const int current_mode, const int gs1, unsigned char input) {
     int cnt;
 
-    if (gs1 && input == '[') {
+    if (gs1 && input == '\x1D') {
         return 2;
     }
     cnt = 1;
@@ -954,15 +954,15 @@ static void dm_addEdges(struct zint_symbol *symbol, const unsigned char source[]
             dm_addEdge(symbol, source, length, edges, DM_X12, from, 3, previous, 0);
         }
 
-        if (gs1 != 1 || source[from] != '[') {
+        if (gs1 != 1 || source[from] != '\x1D') {
             dm_addEdge(symbol, source, length, edges, DM_BASE256, from, 1, previous, 0);
         }
     }
 
-    if (dm_isedifact(source[from], gs1)) {
+    if (dm_isedifact(source[from])) {
         /* We create 3 EDF edges, 2, 3 or 4 characters length. The 4-char normally doesn't have a latch to ASCII
            unless it is 2 characters away from the end of the input. */
-        for (i = 1, pos = from + i; i < 4 && pos < length && dm_isedifact(source[pos], gs1); i++, pos++) {
+        for (i = 1, pos = from + i; i < 4 && pos < length && dm_isedifact(source[pos]); i++, pos++) {
             dm_addEdge(symbol, source, length, edges, DM_EDIFACT, from, i + 1, previous, 0);
         }
     }
@@ -1116,7 +1116,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
                     target[tp++] = (source[sp] - 128) + 1;
                     if (debug_print) printf("FN4 A%02X ", target[tp - 1] - 1);
                 } else {
-                    if (gs1 && (source[sp] == '[')) {
+                    if (gs1 && source[sp] == '\x1D') {
                         if (gs1 == 2) {
                             target[tp++] = 29 + 1; /* GS */
                             if (debug_print) fputs("GS ", stdout);
@@ -1151,7 +1151,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
                 shift_set = ct_shift[source[sp] - 128];
                 value = ct_value[source[sp] - 128];
             } else {
-                if (gs1 && (source[sp] == '[')) {
+                if (gs1 && source[sp] == '\x1D') {
                     if (gs1 == 2) {
                         shift_set = ct_shift[29];
                         value = ct_value[29]; /* GS */
@@ -1212,12 +1212,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
 
         } else if (current_mode == DM_BASE256) {
 
-            if (gs1 == 2 && source[sp] == '[') {
-                target[tp++] = 29; /* GS */
-            } else {
-                target[tp++] = source[sp];
-            }
-            sp++;
+            target[tp++] = source[sp++];
             if (debug_print) printf("B%02X ", target[tp - 1]);
         }
 
@@ -1292,7 +1287,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                         target[tp++] = (source[sp] - 128) + 1;
                         if (debug_print) printf("FN4 A%02X ", target[tp - 1] - 1);
                     } else {
-                        if (gs1 && (source[sp] == '[')) {
+                        if (gs1 && source[sp] == '\x1D') {
                             if (gs1 == 2) {
                                 target[tp++] = 29 + 1; /* GS */
                                 if (debug_print) fputs("GS ", stdout);
@@ -1339,7 +1334,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                     shift_set = ct_shift[source[sp] - 128];
                     value = ct_value[source[sp] - 128];
                 } else {
-                    if (gs1 && (source[sp] == '[')) {
+                    if (gs1 && source[sp] == '\x1D') {
                         if (gs1 == 2) {
                             shift_set = ct_shift[29];
                             value = ct_value[29]; /* GS */
@@ -1407,7 +1402,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
         /* step (f) EDIFACT encodation */
         } else if (current_mode == DM_EDIFACT) {
 
-            if (!dm_isedifact(source[sp], gs1)) {
+            if (!dm_isedifact(source[sp])) {
                 next_mode = DM_ASCII;
             } else {
                 next_mode = DM_EDIFACT;
@@ -1443,7 +1438,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
         /* step (g) Base 256 encodation */
         } else if (current_mode == DM_BASE256) {
 
-            if (gs1 == 1 && source[sp] == '[') {
+            if (gs1 == 1 && source[sp] == '\x1D') {
                 next_mode = DM_ASCII;
             } else {
                 next_mode = DM_BASE256;
@@ -1464,7 +1459,7 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
                 tp = dm_switch_mode(next_mode, target, tp, p_b256_start, debug_print);
                 not_first = 0;
             } else {
-                if (gs1 == 2 && source[sp] == '[') {
+                if (gs1 == 2 && source[sp] == '\x1D') {
                     target[tp++] = 29; /* GS */
                 } else {
                     target[tp++] = source[sp];
@@ -1587,7 +1582,7 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
                         target[tp++] = 235; /* FNC4 */
                         target[tp++] = (source[sp] - 128) + 1;
                         if (debug_print) printf("FN4 A%02X ", target[tp - 1] - 1);
-                    } else if (gs1 && source[sp] == '[') {
+                    } else if (gs1 && source[sp] == '\x1D') {
                         if (gs1 == 2) {
                             target[tp++] = 29 + 1; /* GS */
                             if (debug_print) fputs("GS ", stdout);

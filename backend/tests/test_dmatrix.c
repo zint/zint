@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -6917,10 +6917,10 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         /*998*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AAAAAAAAAAAA*+*0**AAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 2, "" },
         /*999*/ { BARCODE_DATAMATRIX, -1, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 0, "" },
         /*1000*/ { BARCODE_DATAMATRIX, -1, -1, -1, "\000\001\002\003\004\005\006\007\010\011\012\013\014\015\016\017\020\021\022\023\024\025\026\027\030\031\032\033\034\035\036\037 !\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~\177", 128, 0, 0, "" },
-        /*1001*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200[\200\200[\200\200", -1, 0, 1, "Can't have extended ASCII in GS1 mode so these will never happen" },
-        /*1002*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200[\200\200[\200\200", -1, 0, 0, "" },
-        /*1003*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200\200[\200\200\200[\200\200", -1, 0, 1, "Stays in ASC after 1st FNC1" },
-        /*1004*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200\200[\200\200\200[\200\200", -1, 0, 0, "" },
+        /*1001*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200\035\200\200\035\200\200", -1, 0, 1, "Can't have extended ASCII in GS1 mode so these will never happen" },
+        /*1002*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200\035\200\200\035\200\200", -1, 0, 0, "" },
+        /*1003*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, "\200\200\200\200\035\200\200\200\035\200\200", -1, 0, 1, "Stays in ASC after 1st FNC1" },
+        /*1004*/ { BARCODE_DATAMATRIX, GS1_MODE, GS1_GS_SEPARATOR, -1, "\200\200\200\200\035\200\200\200\035\200\200", -1, 0, 0, "" },
         /*1005*/ { BARCODE_DATAMATRIX, -1, -1, -1, "https://example.com/01/09506000134369", -1, 0, 0, "" },
         /*1006*/ { BARCODE_DATAMATRIX, -1, -1, -1, "abcdefghi1234FGHIJKLMNabc@@@@@@@@@é", -1, 0, 0, "" },
         /*1007*/ { BARCODE_DATAMATRIX, -1, -1, -1, "ABCDEF", -1, 0, 0, "" },

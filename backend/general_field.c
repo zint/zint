@@ -1,7 +1,7 @@
 /* general_field.c - Handles general field compaction (GS1 DataBar and composites) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -39,7 +39,7 @@ static const char isoiec_puncs[] = "!\"%&'()*+,-./:;<=>?_ "; /* Note contains sp
 
 /* Returns type of char at `i`. FNC1 counted as NUMERIC. Returns 0 if invalid char */
 static int general_field_type(const char *general_field, const int i) {
-    if (general_field[i] == '[' || z_isdigit(general_field[i])) {
+    if (general_field[i] == '\x1D' || z_isdigit(general_field[i])) {
         return NUMERIC;
     }
     if (z_isupper(general_field[i]) || posn(alphanum_puncs, general_field[i]) != -1) {
@@ -113,8 +113,8 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
                         bp = bin_append_posn(0, 4, binary_string, bp); /* Alphanumeric latch "0000" */
                         mode = ALPHANUMERIC;
                     } else {
-                        d1 = general_field[i] == '[' ? 10 : ctoi(general_field[i]);
-                        d2 = general_field[i + 1] == '[' ? 10 : ctoi(general_field[i + 1]);
+                        d1 = general_field[i] == '\x1D' ? 10 : ctoi(general_field[i]);
+                        d2 = general_field[i + 1] == '\x1D' ? 10 : ctoi(general_field[i + 1]);
                         bp = bin_append_posn((11 * d1) + d2 + 8, 7, binary_string, bp);
                         i += 2;
                     }
@@ -132,7 +132,7 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
                 }
                 break;
             case ALPHANUMERIC:
-                if (general_field[i] == '[') {
+                if (general_field[i] == '\x1D') {
                     /* 7.2.5.5.2/5.4.2 a) */
                     bp = bin_append_posn(15, 5, binary_string, bp); /* "01111" */
                     mode = NUMERIC;
@@ -162,7 +162,7 @@ INTERNAL int general_field_encode(const char *general_field, const int general_f
                 }
                 break;
             case ISOIEC:
-                if (general_field[i] == '[') {
+                if (general_field[i] == '\x1D') {
                     /* 7.2.5.5.3/5.4.3 a) */
                     bp = bin_append_posn(15, 5, binary_string, bp); /* "01111" */
                     mode = NUMERIC;

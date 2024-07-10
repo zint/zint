@@ -966,7 +966,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
        before carrying out compression */
     for (i = 0; i < read_posn; i++) {
         if (!z_isdigit(source[i])) {
-            if (source[i] != '[') {
+            if (source[i] != '\x1D') {
                 /* Something is wrong */
                 strcpy(symbol->errtxt, "385: Invalid character in Compressed Field data (digits only)");
                 return ZINT_ERROR_INVALID_DATA;
@@ -1062,8 +1062,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     if (debug_print) printf("General field data = %s\n", general_field);
 
     if (j != 0) { /* If general field not empty */
-        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) { /* Should not happen */
-            /* Not reachable */
+        if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
+            /* Will happen if character not in CSET 82 + space */
             strcpy(symbol->errtxt, "386: Invalid character in General Field data");
             return ZINT_ERROR_INVALID_DATA;
         }
@@ -1250,15 +1250,21 @@ static void dbar_exp_separator(struct zint_symbol *symbol, int width, const int 
 
 /* Set HRT for DataBar Expanded */
 static void dbar_exp_hrt(struct zint_symbol *symbol, unsigned char source[], const int length) {
-    int i;
 
-    for (i = 0; i <= length; i++) { /* Include terminating NUL */
-        if (source[i] == '[') {
-            symbol->text[i] = '(';
-        } else if (source[i] == ']') {
-            symbol->text[i] = ')';
-        } else {
-            symbol->text[i] = source[i];
+    /* Max possible length is 77 digits so will fit */
+    if (symbol->input_mode & GS1PARENS_MODE) {
+        memcpy(symbol->text, source, length + 1); /* Include terminating NUL */
+    } else {
+        int i;
+        /* Can't have square brackets in content so bracket level not required */
+        for (i = 0; i <= length /* Include terminating NUL */; i++) {
+            if (source[i] == '[') {
+                symbol->text[i] = '(';
+            } else if (source[i] == ']') {
+                symbol->text[i] = ')';
+            } else {
+                symbol->text[i] = source[i];
+            }
         }
     }
 }

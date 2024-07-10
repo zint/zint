@@ -1,7 +1,7 @@
 /* dotcode.c - Handles DotCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2017-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -658,8 +658,8 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
                 continue;
             }
 
-            if (dc_datum_c(source, length, position) || (source[position] == '[' && gs1)) {
-                if (source[position] == '[') {
+            if (dc_datum_c(source, length, position) || (gs1 && source[position] == '\x1D')) {
+                if (source[position] == '\x1D') {
                     codeword_array[ap++] = 107; /* FNC1 */
                     position++;
                 } else {
@@ -747,7 +747,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             }
 
             /* Step D2 */
-            if ((source[position] == '[') && gs1) {
+            if (gs1 && source[position] == '\x1D') {
                 codeword_array[ap++] = 107; /* FNC1 */
                 position++;
                 if (debug_print) fputs("D2/1 ", stdout);
@@ -841,7 +841,7 @@ static int dc_encode_message(struct zint_symbol *symbol, const unsigned char sou
             }
 
             /* Step E2 */
-            if ((source[position] == '[') && gs1) {
+            if (gs1 && source[position] == '\x1D') {
                 /* Note: this branch probably never reached as no reason to be in Code Set A for GS1 data */
                 codeword_array[ap++] = 107; /* FNC1 */
                 position++;

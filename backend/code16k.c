@@ -101,7 +101,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             }
             mode = c128_parunmodd(source[indexchaine]);
-            if ((gs1) && (source[indexchaine] == '[')) {
+            if (gs1 && source[indexchaine] == '\x1D') {
                 mode = C128_ABORC;
             } /* FNC1 */
         }
@@ -206,7 +206,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             values[bar_characters++] = 98;
         }
 
-        if (!((gs1) && (source[read] == '['))) {
+        if (!gs1 || source[read] != '\x1D') {
             switch (set[read]) { /* Encode data characters */
                 case 'A':
                 case 'a': c128_set_a(source[read], values, &bar_characters);

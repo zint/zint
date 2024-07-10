@@ -1609,7 +1609,8 @@ as delimiters for GS1 Application Identifiers
              <item>
               <widget class="QCheckBox" name="chkGS1NoCheck">
                <property name="toolTip">
-                <string>Do not check GS1 data for validity
+                <string>Do not check GS1 data for validity (note that certain
+checks necessary for encodation are still performed)
 (ignored if disabled)</string>
                </property>
                <property name="text">

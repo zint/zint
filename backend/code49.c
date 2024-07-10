@@ -1,7 +1,7 @@
 /* code49.c - Handles Code 49 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -68,7 +68,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
             strcpy(symbol->errtxt, "431: Invalid character in input data, extended ASCII not allowed");
             return ZINT_ERROR_INVALID_DATA;
         }
-        if (gs1 && (source[i] == '[')) {
+        if (gs1 && source[i] == '\x1D') {
             *d++ = '*'; /* FNC1 */
         } else {
             const char *const entry = c49_table7[source[i]];

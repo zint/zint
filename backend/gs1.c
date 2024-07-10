@@ -1513,7 +1513,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 max_bracket_level = bracket_level;
             }
             ai_latch = 1;
-        } else if (source[i] == cbracket) {
+        } else if (source[i] == cbracket && bracket_level) {
             bracket_level--;
             if (ai_length > max_ai_length) {
                 max_ai_length = ai_length;
@@ -1629,13 +1629,11 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     j = 0;
     ai_latch = 1;
     for (i = 0; i < length; i++) {
-        if ((source[i] != obracket) && (source[i] != cbracket)) {
-            reduced[j++] = source[i];
-        }
         if (source[i] == obracket) {
+            bracket_level++;
             /* Start of an AI string */
             if (ai_latch == 0) {
-                reduced[j++] = '[';
+                reduced[j++] = '\x1D';
             }
             if (i + 1 != length) {
                 last_ai = to_int(source + i + 1, 2);
@@ -1654,12 +1652,16 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                     ai_latch = 1;
                 }
             }
+        } else if (source[i] == cbracket && bracket_level) {
+            /* The closing bracket is simply dropped from the input */
+            bracket_level--;
+        } else {
+            reduced[j++] = source[i];
         }
-        /* The ']' character is simply dropped from the input */
     }
     reduced[j] = '\0';
 
-    /* the character '[' in the reduced string refers to the FNC1 character */
+    /* The character '\x1D' (GS) in the reduced string refers to the FNC1 character */
     return error_value;
 }
 

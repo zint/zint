@@ -174,6 +174,9 @@ Bugs
 - QRCODE: fix out-of-bounds crash due to incorrect mode costings for GS1
   percents in `qr_in_alpha()`; fix incorrect numeric costings (out-by-1) in
   `qr_in_numeric()`; ticket #300 (#14, #15; #16), props Andre Maute
+- GS1: fix square brackets treated as FNC1 in GS1PARENS_MODE by changing
+  internal FNC1 marker '[' -> '\x1D' (GS), ticket #319, props Moli Sojet;
+  also fix non-AI square brackets -> round brackets in GS1_128 HRT
 
 
 Version 2.12.0 (2022-12-12)

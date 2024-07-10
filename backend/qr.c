@@ -57,7 +57,7 @@ static int qr_is_alpha(const unsigned int glyph, const int gs1) {
     if (is_chr(QR_ALPHA, glyph)) {
         return 1;
     }
-    if (gs1 && glyph == '[') {
+    if (gs1 && glyph == '\x1D') {
         return 1;
     }
     return 0;
@@ -505,10 +505,6 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                 for (i = 0; i < short_data_block_length; i++) {
                     unsigned int byte = ddata[position + i];
 
-                    if (gs1 && (byte == '[')) {
-                        byte = 0x1d; /* FNC1 */
-                    }
-
                     bp = bin_append_posn(byte, byte > 0xFF ? 16 : 8, binary, bp);
 
                     if (debug_print) {
@@ -555,7 +551,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                             prod = (first * 45) + second;
                             i++;
                         } else {
-                            if (gs1 && (ddata[position + i] == '[')) {
+                            if (gs1 && ddata[position + i] == '\x1D') {
                                 first = QR_PERCENT; /* FNC1 */
                             } else {
                                 first = qr_alphanumeric[ddata[position + i] - 32];
@@ -571,7 +567,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                                     prod = (first * 45) + second;
                                     percent = 1;
                                 } else {
-                                    if (gs1 && (ddata[position + i] == '[')) {
+                                    if (gs1 && ddata[position + i] == '\x1D') {
                                         second = QR_PERCENT; /* FNC1 */
                                     } else {
                                         second = qr_alphanumeric[ddata[position + i] - 32];
@@ -596,7 +592,7 @@ static int qr_binary(char binary[], int bp, const int version, const char mode[]
                                 prod = (first * 45) + second;
                                 percent = 1;
                             } else {
-                                if (gs1 && (ddata[position + i] == '[')) {
+                                if (gs1 && ddata[position + i] == '\x1D') {
                                     second = QR_PERCENT; /* FNC1 */
                                 } else {
                                     second = qr_alphanumeric[ddata[position + i] - 32];

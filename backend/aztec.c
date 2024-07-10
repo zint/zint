@@ -117,6 +117,8 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
     for (i = 0; i < src_len; i++) {
         if (source[i] >= 128) {
             encode_mode[i] = 'B';
+        } else if (gs1 && source[i] == '\x1D') {
+            encode_mode[i] = 'P'; /* For FLG(n) & FLG(0) = FNC1 */
         } else {
             encode_mode[i] = AztecModes[source[i]];
         }
@@ -634,7 +636,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
                 if (!(bp = az_bin_append_posn(AztecSymbolChar[reduced_source[i]], 5, binary_string, bp))) return 0;
             }
         } else if ((reduced_encode_mode[i] == 'P') || (reduced_encode_mode[i] == 'p')) {
-            if (gs1 && (reduced_source[i] == '[')) {
+            if (gs1 && reduced_source[i] == '\x1D') {
                 if (!(bp = az_bin_append_posn(0, 5, binary_string, bp))) return 0; /* FLG(n) */
                 if (!(bp = az_bin_append_posn(0, 3, binary_string, bp))) return 0; /* FLG(0) = FNC1 */
             } else if (reduced_source[i] == 13) {
