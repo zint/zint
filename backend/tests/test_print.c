@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -30,6 +30,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
+#include <zlib.h> /* For ZLIBNG_VERSION define (if any) */
 #include <sys/stat.h>
 
 #define TEST_PRINT_OVERWRITE_EXPECTED   "bmp,emf,eps,gif,pcx,png,svg,tif,txt"
@@ -191,8 +192,10 @@ static void test_print(const testCtx *const p_ctx) {
                 } else if (strcmp(exts[j], "png") == 0) {
                     ret = testUtilCmpPngs(symbol->outfile, expected_file);
                     assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+                    #ifndef ZLIBNG_VERSION /* zlib-ng (used by e.g. Fedora 40) may produce non-binary compat output */
                     ret = testUtilCmpBins(symbol->outfile, expected_file);
                     assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+                    #endif
                 } else if (strcmp(exts[j], "svg") == 0) {
                     ret = testUtilCmpSvgs(symbol->outfile, expected_file);
                     assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);

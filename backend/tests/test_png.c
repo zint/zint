@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -31,6 +31,7 @@
 
 #include "testcommon.h"
 #include <errno.h>
+#include <zlib.h> /* For ZLIBNG_VERSION define (if any) */
 #include <sys/stat.h>
 
 INTERNAL int png_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
@@ -330,8 +331,10 @@ static void test_print(const testCtx *const p_ctx) {
 
             ret = testUtilCmpPngs(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            #ifndef ZLIBNG_VERSION /* zlib-ng (used by e.g. Fedora 40) may produce non-binary compat output */
             ret = testUtilCmpBins(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            #endif
 
             ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size); /* For BARCODE_MEMORY_FILE */
             assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
