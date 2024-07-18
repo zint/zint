@@ -30,7 +30,9 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include "testcommon.h"
+#ifndef ZINT_NO_PNG
 #include <zlib.h> /* For ZLIBNG_VERSION define (if any) */
+#endif
 #include <sys/stat.h>
 
 #define TEST_PRINT_OVERWRITE_EXPECTED   "bmp,emf,eps,gif,pcx,png,svg,tif,txt"
