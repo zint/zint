@@ -2869,7 +2869,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 const int row_height = symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF ? 2 : 3;
                 for (r = 0; r < symbol->rows; r++) bwipp_row_height[r] = row_height;
                 if (option_1 >= 0) {
-                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%d",
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%d fixedeclevel",
                             strlen(bwipp_opts_buf) ? " " : "", option_1);
                     bwipp_opts = bwipp_opts_buf;
                 }
@@ -3176,7 +3176,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 || symbology == BARCODE_RMQR) {
             if (option_1 >= 1 && option_1 <= 4) {
                 static const char eccs[4] = { 'L', 'M', 'Q', 'H' };
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%c",
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%seclevel=%c fixedeclevel",
                         strlen(bwipp_opts_buf) ? " " : "", eccs[option_1 - 1]);
                 bwipp_opts = bwipp_opts_buf;
             }
