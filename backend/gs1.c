@@ -394,33 +394,6 @@ static int yymmdd(const unsigned char *data, int data_len, int offset, int min, 
     return 1;
 }
 
-/* Check for a date and hours YYMMDDHH */
-static int yymmddhh(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
-            int *p_err_posn, char err_msg[50], const int length_only) {
-
-    if (data_len < min || (data_len && data_len < 8)) {
-        return 0;
-    }
-
-    if (!yymmdd(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
-        return 0;
-    }
-
-    data_len = data_len < offset ? 0 : data_len - offset;
-
-    if (!length_only && data_len) {
-        const int hour = to_int(data + offset + 6, 2);
-        if (hour > 23) {
-            *p_err_no = 3;
-            *p_err_posn = offset + 6 + 1;
-            sprintf(err_msg, "Invalid hour of day '%.2s'", data + offset + 6);
-            return 0;
-        }
-    }
-
-    return 1;
-}
-
 /* Check for a time HHMM */
 static int hhmm(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
@@ -454,15 +427,38 @@ static int hhmm(const unsigned char *data, int data_len, int offset, int min, in
     return 1;
 }
 
-/* Check for a time MMSS with seconds optional */
-static int mmoptss(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+/* Check for a time HH (hours) */
+static int hh(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
     data_len = data_len < offset ? 0 : data_len - offset;
 
-    if (data_len < min || (data_len && data_len < 2)
-            || (data_len > 2 && data_len < 4)) {
+    if (data_len < min || (data_len && data_len < 2)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const int hour = to_int(data + offset, 2);
+        if (hour > 23) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid hour of day '%.2s'", data + offset);
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a time MM (minutes) */
+static int mm(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len = data_len < offset ? 0 : data_len - offset;
+
+    if (data_len < min || (data_len && data_len < 2)) {
         return 0;
     }
 
@@ -474,14 +470,29 @@ static int mmoptss(const unsigned char *data, int data_len, int offset, int min,
             sprintf(err_msg, "Invalid minutes in the hour '%.2s'", data + offset);
             return 0;
         }
-        if (data_len > 2) {
-            const int secs = to_int(data + offset + 2, 2);
-            if (secs > 59) {
-                *p_err_no = 3;
-                *p_err_posn = offset + 2 + 1;
-                sprintf(err_msg, "Invalid seconds in the minute '%.2s'", data + offset + 2);
-                return 0;
-            }
+    }
+
+    return 1;
+}
+
+/* Check for a time SS (seconds) */
+static int ss(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len = data_len < offset ? 0 : data_len - offset;
+
+    if (data_len < min || (data_len && data_len < 2)) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const int secs = to_int(data + offset, 2);
+        if (secs > 59) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid seconds in the minute '%.2s'", data + offset);
+            return 0;
         }
     }
 
@@ -1448,6 +1459,34 @@ static int posinseqslash(const unsigned char *data, int data_len, int offset, in
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             strcpy(err_msg, "Sequence position greater than total");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check that input contains non-digit (GSCN 21-283) */
+static int hasnondigit(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+    (void)max;
+
+    data_len = data_len < offset ? 0 : data_len - offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        const unsigned char *d = data + offset;
+        const unsigned char *const de = d + (data_len > max ? max : data_len);
+
+        for (; d < de && z_isdigit(*d); d++);
+
+        if (d == de) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            strcpy(err_msg, "A non-digit character is required");
             return 0;
         }
     }

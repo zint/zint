@@ -47,7 +47,7 @@ static int n18_csum_key(const unsigned char *data,
             && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N14,csum,key (Used by GTIN, CONTENT) */
+/* N14,csum,key (Used by GTIN, CONTENT, MTO GTIN) */
 static int n14_csum_key(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 14
@@ -550,16 +550,22 @@ static int x__34_iban(const unsigned char *data,
             && iban(data, data_len, 0, 1, 34, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N8,yymmddhh [N..4],mmoptss (Used by PROD TIME) */
-static int n8_yymmddhh__n__4__mmoptss(const unsigned char *data,
+/* N6,yymmdd N2,hh [N2],mm [N2],ss (Used by PROD TIME) */
+static int n6_yymmdd_n2_hh__n2__mm__n2__ss(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 8 && data_len <= 12
-            && yymmddhh(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && mmoptss(data, data_len, 8, 0, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && numeric(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg)
-            && yymmddhh(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 0)
-            && numeric(data, data_len, 8, 0, 4, p_err_no, p_err_posn, err_msg)
-            && mmoptss(data, data_len, 8, 0, 4, p_err_no, p_err_posn, err_msg, 0);
+            && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hh(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && mm(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && ss(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
+            && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg)
+            && hh(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg)
+            && mm(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 0)
+            && numeric(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg)
+            && ss(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* X..50 (Used by OPTSEN) */
@@ -596,6 +602,19 @@ static int x__25_csumalpha_key(const unsigned char *data,
             && cset82(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg)
             && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0)
             && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0);
+}
+
+/* X..25,csumalpha,key,hasnondigit (Used by MUDI) */
+static int x__25_csumalpha_key_hasnondigit(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 1 && data_len <= 25
+            && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hasnondigit(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg)
+            && csumalpha(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0)
+            && key(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0)
+            && hasnondigit(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N..10 (Used by SRIN) */
@@ -656,7 +675,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         if (ai == 0) {
             return n18_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
-        if (ai == 1 || ai == 2) {
+        if (ai >= 1 && ai <= 3) {
             return n14_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 10 || ai == 21 || ai == 22) {
@@ -942,7 +961,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return x__34_iban(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8008) {
-            return n8_yymmddhh__n__4__mmoptss(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_yymmdd_n2_hh__n2__mm__n2__ss(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8009) {
             return x__50(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -955,6 +974,9 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 8013) {
             return x__25_csumalpha_key(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 8014) {
+            return x__25_csumalpha_key_hasnondigit(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8017 || ai == 8018) {
             return n18_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
