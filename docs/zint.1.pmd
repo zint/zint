@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.13.0.9
 %
-% June 2024
+% September 2024
 
 # NAME
 
@@ -174,8 +174,9 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--extraesc`
 
-:   Process the special escape sequences `\^A`, `\^B` and `\^C` that allow manual switching of Code Sets (Code 128
-    only). The sequence `\^^` can be used to encode data that contains special escape sequences.
+:   For Code 128 only, process the special escape sequences `\^A`, `\^B` and `\^C` that allow manual switching of Code
+    Sets, and the special escape sequence `\^1` that inserts an `FNC1` character. The sequence `\^^` can be used to
+    encode data that contains special escape sequences.
 
 `--fast`
 

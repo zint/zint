@@ -68,7 +68,7 @@ static void *raster_malloc(size_t size, size_t size2) {
     /* Check for large image `malloc`s, which produce very large files most systems can't handle anyway */
     /* Also `malloc()` on Linux will (usually) succeed regardless of request, and then get untrappably killed on
        access by OOM killer if too much, so this is a crude mitigation */
-    if (size + size2 > 0x40000000) { /* 1GB */
+    if (size + size2 < size /*Overflow check*/ || size + size2 > 0x40000000 /*1GB*/) {
         return NULL;
     }
     return malloc(size);
@@ -112,7 +112,7 @@ static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf
         symbol->alphamap = NULL;
     }
 
-    symbol->bitmap = (unsigned char *) raster_malloc(bm_bitmap_size, 0);
+    symbol->bitmap = (unsigned char *) raster_malloc(bm_bitmap_size, 0 /*size2*/);
     if (symbol->bitmap == NULL) {
         strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
         return ZINT_ERROR_MEMORY;
@@ -783,7 +783,7 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, const int rotate_ang
     assert(image_width && image_height);
     image_size = (size_t) image_width * image_height;
 
-    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*size*/))) {
+    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*size2*/))) {
         strcpy(symbol->errtxt, "655: Insufficient memory for pixel buffer");
         return ZINT_ERROR_MEMORY;
     }

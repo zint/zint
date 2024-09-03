@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-June 2024
+September 2024
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -720,7 +720,8 @@ sequences are shown in the table below.
   Table : Escape Sequences
 
 (Special escape sequences are available for Code 128 only to manually switch
-Code Sets - see 6.1.10.1 Standard Code 128 (ISO 15417) for details.)
+Code Sets and/or insert special FNC1 characters - see 6.1.10.1 Standard Code 128
+(ISO 15417) for details.)
 
 Input data can be read directly from file using the -i or --input switch as
 shown below. The input file is assumed to be UTF-8 formatted unless an
@@ -3029,6 +3030,11 @@ sequence, it can be escaped by doubling the caret (^). For instance
 
 will encode the data "ABC\^BDEF" in Code Set A.
 
+There is also the extra escape \^1, which will encode a special Function Code 1
+character (FNC1) anywhere you chose in the data, for instance
+
+    zint -b CODE128 -d "A\^1BC\^1DEF" --extraesc
+
 Code 128 is the default barcode symbology used by Zint. In addition Zint
 supports the encoding of ISO/IEC 8859-1 (non-English) characters in Code 128
 symbols. The ISO/IEC 8859-1 character set is shown in Annex A.2 Latin Alphabet
@@ -3045,8 +3051,8 @@ It is sometimes advantageous to stop Code 128 from using Code Set C which
 compresses numerical data. The BARCODE_CODE128AB[14] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
-Note that the special escapes to manually switch Code Sets mentioned above are
-not available for this variant (nor for any other).
+Note that the special extra escapes mentioned above are not available for this
+variant (nor for any other).
 
 6.1.10.3 GS1-128
 
@@ -4817,7 +4823,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % June 2024
+% ZINT(1) Version 2.13.0.9 % % September 2024
 
 NAME
 
@@ -5011,9 +5017,10 @@ OPTIONS
 
 --extraesc
 
-    Process the special escape sequences \^A, \^B and \^C that allow manual
-    switching of Code Sets (Code 128 only). The sequence \^^ can be used to
-    encode data that contains special escape sequences.
+    For Code 128 only, process the special escape sequences \^A, \^B and \^C
+    that allow manual switching of Code Sets, and the special escape sequence
+    \^1 that inserts an FNC1 character. The sequence \^^ can be used to encode
+    data that contains special escape sequences.
 
 --fast
 

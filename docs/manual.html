@@ -332,7 +332,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.13.0.9</p>
-<p class="date">June 2024</p>
+<p class="date">September 2024</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -1436,8 +1436,9 @@ is hexadecimal (000000-10FFFF)</td>
 </table>
 </div>
 <p>(Special escape sequences are available for Code 128 only to manually
-switch Code Sets - see <a href="#standard-code-128-iso-15417">6.1.10.1
-Standard Code 128 (ISO 15417)</a> for details.)</p>
+switch Code Sets and/or insert special FNC1 characters - see <a
+href="#standard-code-128-iso-15417">6.1.10.1 Standard Code 128 (ISO
+15417)</a> for details.)</p>
 <p>Input data can be read directly from file using the <code>-i</code>
 or <code>--input</code> switch as shown below. The input file is assumed
 to be UTF-8 formatted unless an alternative mode is selected. This
@@ -4831,6 +4832,11 @@ special code sequence, it can be escaped by doubling the caret
 <div class="sourceCode" id="cb100"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb100-1"><a href="#cb100-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> CODE128 <span class="at">-d</span> <span class="st">&quot;\^AABC\^^BDEF&quot;</span> <span class="at">--extraesc</span></span></code></pre></div>
 <p>will encode the data <code>"ABC\^BDEF"</code> in Code Set A.</p>
+<p>There is also the extra escape <code>\^1</code>, which will encode a
+special Function Code 1 character (FNC1) anywhere you chose in the data,
+for instance</p>
+<div class="sourceCode" id="cb101"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> CODE128 <span class="at">-d</span> <span class="st">&quot;A\^1BC\^1DEF&quot;</span> <span class="at">--extraesc</span></span></code></pre></div>
 <p>Code 128 is the default barcode symbology used by Zint. In addition
 Zint supports the encoding of ISO/IEC 8859-1 (non-English) characters in
 Code 128 symbols. The ISO/IEC 8859-1 character set is shown in Annex <a
@@ -4851,8 +4857,8 @@ which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
 href="#fn14" class="footnote-ref" id="fnref14"
 role="doc-noteref"><sup>14</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
-<p>Note that the special escapes to manually switch Code Sets mentioned
-above are not available for this variant (nor for any other).</p>
+<p>Note that the special extra escapes mentioned above are not available
+for this variant (nor for any other).</p>
 <h4 id="gs1-128">6.1.10.3 GS1-128</h4>
 <figure>
 <img src="images/gs1_128.svg" title="fig:" class="lin"
@@ -4875,11 +4881,11 @@ correct encoding. GS1-128 does not support extended ASCII (ISO/IEC
 8859-1) characters. Check digits for GTIN data AI (01) are not generated
 and need to be included in the input data. The following is an example
 of a valid GS1-128 input:</p>
-<div class="sourceCode" id="cb101"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb101-1"><a href="#cb101-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 16 <span class="at">-d</span> <span class="st">&quot;[01]98898765432106[3202]012345[15]991231&quot;</span></span></code></pre></div>
-<p>or using the <code>--gs1parens</code> option:</p>
 <div class="sourceCode" id="cb102"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 16 <span class="at">--gs1parens</span> <span class="at">-d</span> <span class="st">&quot;(01)98898765432106(3202)012345(15)991231&quot;</span></span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb102-1"><a href="#cb102-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 16 <span class="at">-d</span> <span class="st">&quot;[01]98898765432106[3202]012345[15]991231&quot;</span></span></code></pre></div>
+<p>or using the <code>--gs1parens</code> option:</p>
+<div class="sourceCode" id="cb103"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 16 <span class="at">--gs1parens</span> <span class="at">-d</span> <span class="st">&quot;(01)98898765432106(3202)012345(15)991231&quot;</span></span></code></pre></div>
 <h4 id="ean-14">6.1.10.4 EAN-14</h4>
 <figure>
 <img src="images/ean14.svg" title="fig:" class="lin"
@@ -5050,8 +5056,8 @@ href="#gs1-128">6.1.10.3 GS1-128</a>.</p>
 not calculated by Zint when this symbology is encoded. Fixed length data
 should be entered at the appropriate length for correct encoding. The
 following is an example of a valid GS1 DataBar Expanded input:</p>
-<div class="sourceCode" id="cb103"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb103-1"><a href="#cb103-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 31 <span class="at">-d</span> <span class="st">&quot;[01]98898765432106[3202]012345[15]991231&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb104"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 31 <span class="at">-d</span> <span class="st">&quot;[01]98898765432106[3202]012345[15]991231&quot;</span></span></code></pre></div>
 <h3 id="korea-post-barcode">6.1.12 Korea Post Barcode</h3>
 <figure>
 <img src="images/koreapost.svg" title="fig:" class="lin"
@@ -5140,20 +5146,20 @@ position. Lowercase input is automatically made uppercase.</p>
 primarily in the vehicle industry, is to simply stack one-dimensional
 codes on top of each other. This can be achieved at the command prompt
 by giving more than one set of input data. For example</p>
-<div class="sourceCode" id="cb104"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb104-1"><a href="#cb104-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-d</span> <span class="st">&quot;This&quot;</span> <span class="at">-d</span> <span class="st">&quot;That&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb105"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-d</span> <span class="st">&quot;This&quot;</span> <span class="at">-d</span> <span class="st">&quot;That&quot;</span></span></code></pre></div>
 <p>will draw two Code 128 symbols, one on top of the other. The same
 result can be achieved using the API by executing the
 <code>ZBarcode_Encode()</code> function more than once on a symbol. For
 example:</p>
-<div class="sourceCode" id="cb105"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_CODE128<span class="op">;</span></span>
-<span id="cb105-2"><a href="#cb105-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-3"><a href="#cb105-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;This&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb105-4"><a href="#cb105-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-5"><a href="#cb105-5" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;That&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
-<span id="cb105-6"><a href="#cb105-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb105-7"><a href="#cb105-7" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Print<span class="op">(</span>my_symbol<span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb106"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_CODE128<span class="op">;</span></span>
+<span id="cb106-2"><a href="#cb106-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-3"><a href="#cb106-3" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;This&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb106-4"><a href="#cb106-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-5"><a href="#cb106-5" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Encode<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;That&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb106-6"><a href="#cb106-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb106-7"><a href="#cb106-7" aria-hidden="true" tabindex="-1"></a>error <span class="op">=</span> ZBarcode_Print<span class="op">(</span>my_symbol<span class="op">);</span></span></code></pre></div>
 <figure>
 <img src="images/code128_stacked.svg" title="fig:" class="lin"
 alt="zint -d &quot;This&quot; -d &quot;That&quot;" />
@@ -5169,8 +5175,8 @@ specifying <code>--bind</code> (API
 separator bars in integral multiples of the X-dimension (minimum and
 default 1, maximum 4) can be set by <code>--separator</code> (API
 <code>option_3</code>):</p>
-<div class="sourceCode" id="cb106"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb106-1"><a href="#cb106-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">--bind</span> <span class="at">--notext</span> <span class="at">--separator</span><span class="op">=</span>2 <span class="at">-d</span> <span class="st">&quot;This&quot;</span> <span class="at">-d</span> <span class="st">&quot;That&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb107"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">--bind</span> <span class="at">--notext</span> <span class="at">--separator</span><span class="op">=</span>2 <span class="at">-d</span> <span class="st">&quot;This&quot;</span> <span class="at">-d</span> <span class="st">&quot;That&quot;</span></span></code></pre></div>
 <figure>
 <img src="images/code128_stacked_sep2.svg" title="fig:" class="lin"
 alt="zint --notext --bind --separator=2 -d &quot;This&quot; -d &quot;That&quot;" />
@@ -5445,21 +5451,21 @@ should be entered into a primary string with the data for the 2D
 component being entered in the normal way. To do this at the command
 prompt use the <code>--primary</code> switch (API <code>primary</code>).
 For example:</p>
-<div class="sourceCode" id="cb107"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb107-1"><a href="#cb107-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EANX_CC <span class="at">--mode</span><span class="op">=</span>1 <span class="at">--primary</span><span class="op">=</span>331234567890 <span class="at">-d</span> <span class="st">&quot;[99]1234-abcd&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb108"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EANX_CC <span class="at">--mode</span><span class="op">=</span>1 <span class="at">--primary</span><span class="op">=</span>331234567890 <span class="at">-d</span> <span class="st">&quot;[99]1234-abcd&quot;</span></span></code></pre></div>
 <p>This creates an EAN-13 linear component with the data
 <code>"331234567890"</code> and a 2D CC-A (see <a
 href="#cc-a">below</a>) component with the data
 <code>"(99)1234-abcd"</code>. The same results can be achieved using the
 API as shown below:</p>
-<div class="sourceCode" id="cb108"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb108-1"><a href="#cb108-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EANX_CC<span class="op">;</span></span>
-<span id="cb108-2"><a href="#cb108-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-3"><a href="#cb108-3" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>option_1 <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb108-4"><a href="#cb108-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-5"><a href="#cb108-5" aria-hidden="true" tabindex="-1"></a>strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>primary<span class="op">,</span> <span class="st">&quot;331234567890&quot;</span><span class="op">);</span></span>
-<span id="cb108-6"><a href="#cb108-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb108-7"><a href="#cb108-7" aria-hidden="true" tabindex="-1"></a>ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;[99]1234-abcd&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb109"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>symbology <span class="op">=</span> BARCODE_EANX_CC<span class="op">;</span></span>
+<span id="cb109-2"><a href="#cb109-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-3"><a href="#cb109-3" aria-hidden="true" tabindex="-1"></a>my_symbol<span class="op">-&gt;</span>option_1 <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb109-4"><a href="#cb109-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-5"><a href="#cb109-5" aria-hidden="true" tabindex="-1"></a>strcpy<span class="op">(</span>my_symbol<span class="op">-&gt;</span>primary<span class="op">,</span> <span class="st">&quot;331234567890&quot;</span><span class="op">);</span></span>
+<span id="cb109-6"><a href="#cb109-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb109-7"><a href="#cb109-7" aria-hidden="true" tabindex="-1"></a>ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;[99]1234-abcd&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <p>EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols
 using the + symbol as described in sections <a
 href="#upc-universal-product-code-iso-15420">6.1.3 UPC (Universal
@@ -5819,13 +5825,13 @@ size to full height can be given in thousandths (permille) using the
 <code>--vers</code> option (API <code>option_2</code>). The default
 value is 250 (25%).</p>
 <p>For example the following</p>
-<div class="sourceCode" id="cb109"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb109-1"><a href="#cb109-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> DAFT <span class="at">-d</span> AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF <span class="at">--height</span><span class="op">=</span>8.494 <span class="at">--vers</span><span class="op">=</span>256</span></code></pre></div>
+<div class="sourceCode" id="cb110"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> DAFT <span class="at">-d</span> AAFDTTDAFADTFTTFFFDATFTADTTFFTDAFAFDTF <span class="at">--height</span><span class="op">=</span>8.494 <span class="at">--vers</span><span class="op">=</span>256</span></code></pre></div>
 <p>produces the same barcode (see <a
 href="#royal-mail-4-state-customer-code-rm4scc">6.5.3 Royal Mail 4-State
 Customer Code (RM4SCC)</a>) as</p>
-<div class="sourceCode" id="cb110"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb110-1"><a href="#cb110-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> RM4SCC <span class="at">--compliantheight</span> <span class="at">-d</span> <span class="st">&quot;W1J0TR01&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb111"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> RM4SCC <span class="at">--compliantheight</span> <span class="at">-d</span> <span class="st">&quot;W1J0TR01&quot;</span></span></code></pre></div>
 <h2 id="matrix-symbols">6.6 Matrix Symbols</h2>
 <h3 id="data-matrix-iso-16022">6.6.1 Data Matrix (ISO 16022)</h3>
 <figure>
@@ -6465,8 +6471,8 @@ be manually specified by using the <code>--mask</code> switch with
 values 0-7, or in the API by setting
 <code>option_3 = (N + 1) &lt;&lt; 8</code> where N is 0-7. To use with
 <code>ZINT_FULL_MULTIBYTE</code> set</p>
-<div class="sourceCode" id="cb111"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb111-1"><a href="#cb111-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
+<div class="sourceCode" id="cb112"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
 <p>The <code>--fast</code> option (API
 <code>input_mode |= FAST_MODE</code>) may be used when leaving Zint to
 automatically select a mask to reduce the number of masks to try to four
@@ -6602,8 +6608,8 @@ be manually specified by using the <code>--mask</code> switch with
 values 0-3, or in the API by setting
 <code>option_3 = (N + 1) &lt;&lt; 8</code> where N is 0-3. To use with
 <code>ZINT_FULL_MULTIBYTE</code> set</p>
-<div class="sourceCode" id="cb112"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb112-1"><a href="#cb112-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
+<div class="sourceCode" id="cb113"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
 <h3 id="rectangular-micro-qr-code-rmqr-iso-23941">6.6.5 Rectangular
 Micro QR Code (rMQR) (ISO 23941)</h3>
 <figure>
@@ -6870,8 +6876,8 @@ Latin-2 formatted use the <code>--binary</code> switch (API
 <code>input_mode = DATA_MODE</code>).</p>
 <p>The following example creates a symbol from data saved as a Latin-2
 file:</p>
-<div class="sourceCode" id="cb113"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb113-1"><a href="#cb113-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> upnqr.png <span class="at">-b</span> 143 <span class="at">--scale</span><span class="op">=</span>3 <span class="at">--binary</span> <span class="at">-i</span> upn.txt</span></code></pre></div>
+<div class="sourceCode" id="cb114"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> upnqr.png <span class="at">-b</span> 143 <span class="at">--scale</span><span class="op">=</span>3 <span class="at">--binary</span> <span class="at">-i</span> upn.txt</span></code></pre></div>
 <p>A mask may be manually specified or the <code>--fast</code> option
 used as with QRCODE.</p>
 <h3 id="maxicode-iso-16023">6.6.7 MaxiCode (ISO 16023)</h3>
@@ -6946,9 +6952,9 @@ your parcel courier.</td>
 <p>The primary message can be set at the command prompt using the
 <code>--primary</code> switch (API <code>primary</code>). The secondary
 message uses the normal data entry method. For example:</p>
-<div class="sourceCode" id="cb114"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb114-1"><a href="#cb114-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> test.eps <span class="at">-b</span> 57 <span class="at">--primary</span><span class="op">=</span><span class="st">&quot;999999999840012&quot;</span> <span class="dt">\</span></span>
-<span id="cb114-2"><a href="#cb114-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">-d</span> <span class="st">&quot;Secondary Message Here&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb115"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> test.eps <span class="at">-b</span> 57 <span class="at">--primary</span><span class="op">=</span><span class="st">&quot;999999999840012&quot;</span> <span class="dt">\</span></span>
+<span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a>    <span class="at">-d</span> <span class="st">&quot;Secondary Message Here&quot;</span></span></code></pre></div>
 <p>When using the API the primary message must be placed in the
 <code>primary</code> string. The secondary is entered in the same way as
 described in <a href="#encoding-and-saving-to-file">5.2 Encoding and
@@ -6961,9 +6967,9 @@ to be prefixed by the ISO/IEC 15434 Format <code>"01"</code>
 <code>vv</code> is a 2-digit version, by using the <code>--scmvv</code>
 switch (API <code>option_2 = vv + 1</code>). For example to use the
 common version <code>"96"</code> (ASC MH10/SC 8):</p>
-<div class="sourceCode" id="cb115"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb115-1"><a href="#cb115-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 57 <span class="at">--primary</span><span class="op">=</span><span class="st">&quot;152382802840001&quot;</span> <span class="at">--scmvv</span><span class="op">=</span>96 <span class="at">--esc</span> <span class="at">-d</span> <span class="dt">\</span></span>
-<span id="cb115-2"><a href="#cb115-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G1 MAIN ST\GNY\GNY\R\E&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb116"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 57 <span class="at">--primary</span><span class="op">=</span><span class="st">&quot;152382802840001&quot;</span> <span class="at">--scmvv</span><span class="op">=</span>96 <span class="at">--esc</span> <span class="at">-d</span> <span class="dt">\</span></span>
+<span id="cb116-2"><a href="#cb116-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;1Z00004951\GUPSN\G06X610\G159\G1234567\G1/1\G\GY\G1 MAIN ST\GNY\GNY\R\E&quot;</span></span></code></pre></div>
 <p>will prefix <code>"[)&gt;\R01\G96"</code> to the secondary message.
 (<code>\R</code>, <code>\G</code> and <code>\E</code> are the escape
 sequences for Record Separator, Group Separator and End of Transmission
@@ -6972,8 +6978,8 @@ Sequences</a>.)</p>
 <p>Modes 4 to 6 can be accessed using the <code>--mode</code> switch
 (API <code>option_1</code>). Modes 4 to 6 do not have a primary message.
 For example:</p>
-<div class="sourceCode" id="cb116"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb116-1"><a href="#cb116-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> test.eps <span class="at">-b</span> 57 <span class="at">--mode</span><span class="op">=</span>4 <span class="at">-d</span> <span class="st">&quot;A MaxiCode Message in Mode 4&quot;</span></span></code></pre></div>
+<div class="sourceCode" id="cb117"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-o</span> test.eps <span class="at">-b</span> 57 <span class="at">--mode</span><span class="op">=</span>4 <span class="at">-d</span> <span class="st">&quot;A MaxiCode Message in Mode 4&quot;</span></span></code></pre></div>
 <p>Mode 6 is reserved for the maintenance of scanner hardware and should
 not be used to encode user data.</p>
 <p>This symbology uses Latin-1 character encoding by default but also
@@ -7898,8 +7904,8 @@ be manually specified by using the <code>--mask</code> switch with
 values 0-3, or in the API by setting
 <code>option_3 = (N + 1) &lt;&lt; 8</code> where N is 0-3. To use with
 <code>ZINT_FULL_MULTIBYTE</code> set</p>
-<div class="sourceCode" id="cb117"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb117-1"><a href="#cb117-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
+<div class="sourceCode" id="cb118"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>option_3 <span class="op">=</span> ZINT_FULL_MULTIBYTE <span class="op">|</span> <span class="op">(</span>N <span class="op">+</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">8</span></span></code></pre></div>
 <h3 id="ultracode">6.6.14 Ultracode</h3>
 <figure>
 <img src="images/ultra.svg" title="fig:" class="ultra"
@@ -7959,8 +7965,8 @@ data-tag=": Ultracode Error Correction Values">
 </div>
 <p>Zint does not currently implement data compression by default, but
 this can be initiated through the API by setting</p>
-<div class="sourceCode" id="cb118"><pre
-class="sourceCode c"><code class="sourceCode c"><span id="cb118-1"><a href="#cb118-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>option_3 <span class="op">=</span> ULTRA_COMPRESSION<span class="op">;</span></span></code></pre></div>
+<div class="sourceCode" id="cb119"><pre
+class="sourceCode c"><code class="sourceCode c"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a>symbol<span class="op">-&gt;</span>option_3 <span class="op">=</span> ULTRA_COMPRESSION<span class="op">;</span></span></code></pre></div>
 <p>With compression, up to 504 digits, 375 alphanumerics or 252 bytes
 can be encoded.</p>
 <p>Revision 2 of Ultracode (2023) may be specified using
@@ -8613,28 +8619,28 @@ properties that correspond to the <code>zint_symbol</code> structure
 method <code>render()</code> which takes a Qt <code>QPainter</code> to
 paint with, and a <code>QRectF</code> rectangular area specifying where
 to paint into:</p>
-<div class="sourceCode" id="cb119"><pre
-class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb119-1"><a href="#cb119-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Encode and display barcode in `paintRect` using `painter`.</span></span>
-<span id="cb119-2"><a href="#cb119-2" aria-hidden="true" tabindex="-1"></a><span class="co">   Note: legacy argument `mode` is not used */</span></span>
-<span id="cb119-3"><a href="#cb119-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> render<span class="op">(</span><span class="ex">QPainter</span><span class="op">&amp;</span> painter<span class="op">,</span> <span class="at">const</span> <span class="ex">QRectF</span><span class="op">&amp;</span> paintRect<span class="op">,</span></span>
-<span id="cb119-4"><a href="#cb119-4" aria-hidden="true" tabindex="-1"></a>            AspectRatioMode mode <span class="op">=</span> IgnoreAspectRatio<span class="op">);</span></span></code></pre></div>
+<div class="sourceCode" id="cb120"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Encode and display barcode in `paintRect` using `painter`.</span></span>
+<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a><span class="co">   Note: legacy argument `mode` is not used */</span></span>
+<span id="cb120-3"><a href="#cb120-3" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> render<span class="op">(</span><span class="ex">QPainter</span><span class="op">&amp;</span> painter<span class="op">,</span> <span class="at">const</span> <span class="ex">QRectF</span><span class="op">&amp;</span> paintRect<span class="op">,</span></span>
+<span id="cb120-4"><a href="#cb120-4" aria-hidden="true" tabindex="-1"></a>            AspectRatioMode mode <span class="op">=</span> IgnoreAspectRatio<span class="op">);</span></span></code></pre></div>
 <p><code>render()</code> will emit one of two Qt signals -
 <code>encoded</code> on successful encoding and drawing, or
 <code>errored</code> on failure. The client can connect and act
 appropriately, for instance:</p>
-<div class="sourceCode" id="cb120"><pre
-class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb120-1"><a href="#cb120-1" aria-hidden="true" tabindex="-1"></a><span class="fu">connect</span><span class="op">(</span>qzint<span class="op">,</span> <span class="ex">SIGNAL</span><span class="op">(</span>encoded<span class="op">()),</span> <span class="ex">SLOT</span><span class="op">(</span>on_encoded<span class="op">()));</span></span>
-<span id="cb120-2"><a href="#cb120-2" aria-hidden="true" tabindex="-1"></a><span class="fu">connect</span><span class="op">(</span>qzint<span class="op">,</span> <span class="ex">SIGNAL</span><span class="op">(</span>errored<span class="op">()),</span> <span class="ex">SLOT</span><span class="op">(</span>on_errored<span class="op">()));</span></span></code></pre></div>
+<div class="sourceCode" id="cb121"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="fu">connect</span><span class="op">(</span>qzint<span class="op">,</span> <span class="ex">SIGNAL</span><span class="op">(</span>encoded<span class="op">()),</span> <span class="ex">SLOT</span><span class="op">(</span>on_encoded<span class="op">()));</span></span>
+<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a><span class="fu">connect</span><span class="op">(</span>qzint<span class="op">,</span> <span class="ex">SIGNAL</span><span class="op">(</span>errored<span class="op">()),</span> <span class="ex">SLOT</span><span class="op">(</span>on_errored<span class="op">()));</span></span></code></pre></div>
 <p>where <code>qzint</code> is an instance of <code>Zint::QZint</code>
 and <code>on_encoded()</code> and <code>on_error()</code> are Qt slot
 methods provided by the caller. On error, the error value and message
 can be retrieved by the methods <code>getError()</code> and
 <code>lastError()</code> respectively.</p>
 <p>The other main method is <code>save_to_file()</code>:</p>
-<div class="sourceCode" id="cb121"><pre
-class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb121-1"><a href="#cb121-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Encode and print barcode to file `filename`.</span></span>
-<span id="cb121-2"><a href="#cb121-2" aria-hidden="true" tabindex="-1"></a><span class="co">   Only sets `getError()` on error, not on warning */</span></span>
-<span id="cb121-3"><a href="#cb121-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> save_to_file<span class="op">(</span><span class="at">const</span> <span class="ex">QString</span><span class="op">&amp;</span> filename<span class="op">);</span> <span class="co">// `ZBarcode_Print()`</span></span></code></pre></div>
+<div class="sourceCode" id="cb122"><pre
+class="sourceCode cpp"><code class="sourceCode cpp"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="co">/* Encode and print barcode to file `filename`.</span></span>
+<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a><span class="co">   Only sets `getError()` on error, not on warning */</span></span>
+<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a><span class="dt">bool</span> save_to_file<span class="op">(</span><span class="at">const</span> <span class="ex">QString</span><span class="op">&amp;</span> filename<span class="op">);</span> <span class="co">// `ZBarcode_Print()`</span></span></code></pre></div>
 <p>which takes a <code>filename</code> to output to. It too will emit an
 <code>errored</code> signal on failure, returning <code>false</code>
 (but nothing on success, which just returns <code>true</code>). Note
@@ -8649,33 +8655,33 @@ symbology capabilities, and utility methods such as
 <h1 id="annex-c.-tcl-backend-binding">Annex C. Tcl Backend Binding</h1>
 <p>A Tcl binding is available in the <code>"backend_tcl</code>”
 sub-directory. To make on Unix:</p>
-<div class="sourceCode" id="cb122"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb122-1"><a href="#cb122-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> backend_tcl</span>
-<span id="cb122-2"><a href="#cb122-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoconf</span></span>
-<span id="cb122-3"><a href="#cb122-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./configure</span></span>
-<span id="cb122-4"><a href="#cb122-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
-<span id="cb122-5"><a href="#cb122-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
+<div class="sourceCode" id="cb123"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="bu">cd</span> backend_tcl</span>
+<span id="cb123-2"><a href="#cb123-2" aria-hidden="true" tabindex="-1"></a><span class="fu">autoconf</span></span>
+<span id="cb123-3"><a href="#cb123-3" aria-hidden="true" tabindex="-1"></a><span class="ex">./configure</span></span>
+<span id="cb123-4"><a href="#cb123-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
+<span id="cb123-5"><a href="#cb123-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
 <p>For Windows, a Visual Studio 6.0 project file is available at
 <code>"backend_tcl\zint_tcl.dsp"</code>. This can also be opened (and
 converted) by more modern Visual Studio versions, though some fixing up
 of the project configuration will likely be required.</p>
 <p>Once built and installed, invoke the Tcl/Tk CLI
 <code>"wish"</code>:</p>
-<div class="sourceCode" id="cb123"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb123-1"><a href="#cb123-1" aria-hidden="true" tabindex="-1"></a><span class="ex">wish</span></span></code></pre></div>
+<div class="sourceCode" id="cb124"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a><span class="ex">wish</span></span></code></pre></div>
 <p>and ignoring the Tk window click back to the command prompt
 <code>"%"</code> and type:</p>
-<div class="sourceCode" id="cb124"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb124-1"><a href="#cb124-1" aria-hidden="true" tabindex="-1"></a><span class="ex">require</span> package zint</span>
-<span id="cb124-2"><a href="#cb124-2" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> help</span></code></pre></div>
+<div class="sourceCode" id="cb125"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="ex">require</span> package zint</span>
+<span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> help</span></code></pre></div>
 <p>which will show the usage message, with options very similiar to the
 Zint CLI. (One notable difference is that boolean options such as
 <code>-bold</code> take a <code>1</code> or <code>0</code> as an
 argument.)</p>
 <p>A demonstration Tcl/Tk program which is also useful in itself is
 available at <code>"backend_tcl/demo/demo.tcl"</code>. To run type:</p>
-<div class="sourceCode" id="cb125"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="ex">wish</span> demo/demo.tcl</span></code></pre></div>
+<div class="sourceCode" id="cb126"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb126-1"><a href="#cb126-1" aria-hidden="true" tabindex="-1"></a><span class="ex">wish</span> demo/demo.tcl</span></code></pre></div>
 <p>which will display the following window.</p>
 <figure>
 <img src="images/tcl_demo.png" title="fig:" class="pop"
@@ -8889,10 +8895,12 @@ are:</p>
 </dd>
 <dt><code>--extraesc</code></dt>
 <dd>
-<p>Process the special escape sequences <code>\^A</code>,
-<code>\^B</code> and <code>\^C</code> that allow manual switching of
-Code Sets (Code 128 only). The sequence <code>\^^</code> can be used to
-encode data that contains special escape sequences.</p>
+<p>For Code 128 only, process the special escape sequences
+<code>\^A</code>, <code>\^B</code> and <code>\^C</code> that allow
+manual switching of Code Sets, and the special escape sequence
+<code>\^1</code> that inserts an <code>FNC1</code> character. The
+sequence <code>\^^</code> can be used to encode data that contains
+special escape sequences.</p>
 </dd>
 <dt><code>--fast</code></dt>
 <dd>
@@ -9379,17 +9387,17 @@ Error counterpart of warning if <code>--werror</code> given
 <h2 id="examples">EXAMPLES</h2>
 <p>Create “out.png” (or “out.gif” if zint built without PNG support) in
 the current directory, as a Code 128 symbol.</p>
-<div class="sourceCode" id="cb134"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb134-1"><a href="#cb134-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-d</span> <span class="st">&#39;This Text&#39;</span></span></code></pre></div>
-<p>Create “qr.svg” in the current directory, as a QR Code symbol.</p>
 <div class="sourceCode" id="cb135"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> QRCode <span class="at">-d</span> <span class="st">&#39;This Text&#39;</span> <span class="at">-o</span> <span class="st">&#39;qr.svg&#39;</span></span></code></pre></div>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb135-1"><a href="#cb135-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-d</span> <span class="st">&#39;This Text&#39;</span></span></code></pre></div>
+<p>Create “qr.svg” in the current directory, as a QR Code symbol.</p>
+<div class="sourceCode" id="cb136"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> QRCode <span class="at">-d</span> <span class="st">&#39;This Text&#39;</span> <span class="at">-o</span> <span class="st">&#39;qr.svg&#39;</span></span></code></pre></div>
 <p>Use batch mode to read from an input file “ean13nos.txt” containing
 13-digit GTINs, to create a series of EAN-13 barcodes, formatting the
 output filenames to “ean001.gif”, “ean002.gif” etc. using the special
 character “~”.</p>
-<div class="sourceCode" id="cb136"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb136-1"><a href="#cb136-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EANX <span class="at">--batch</span> <span class="at">-i</span> <span class="st">&#39;ean13nos.txt&#39;</span> <span class="at">-o</span> <span class="st">&#39;ean~~~.gif&#39;</span></span></code></pre></div>
+<div class="sourceCode" id="cb137"><pre
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb137-1"><a href="#cb137-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> EANX <span class="at">--batch</span> <span class="at">-i</span> <span class="st">&#39;ean13nos.txt&#39;</span> <span class="at">-o</span> <span class="st">&#39;ean~~~.gif&#39;</span></span></code></pre></div>
 <h2 id="bugs">BUGS</h2>
 <p>Please send bug reports to
 https://sourceforge.net/p/zint/tickets/.</p>

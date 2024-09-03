@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -49,7 +49,7 @@ extern "C" {
 
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length);
 
-INTERNAL int c128_parunmodd(const unsigned char llyth);
+INTERNAL int c128_parunmodd(const unsigned char llyth, const int check_fnc1);
 INTERNAL void c128_dxsmooth(int list[2][C128_MAX], int *indexliste, const char *manual_set);
 INTERNAL void c128_set_a(const unsigned char source, int values[], int *bar_chars);
 INTERNAL int c128_set_b(const unsigned char source, int values[], int *bar_chars);

@@ -6,6 +6,7 @@ Version 2.13.0.9 (dev) not released yet
 - New `memfile` & `memfile_size` fields in `symbol` for use with new output
   option `BARCODE_MEMORY_FILE`
 - Invalid `input_mode` now returns warning
+- New CODE128-only special extra escape `\^1` for manually inserting FNC1s
 
 Changes
 -------
@@ -21,6 +22,8 @@ Changes
   iso4217: new ISO 4217 currency code 924
 - AZTEC: workaround MSVC 2022 optimizer bug in `az_populate_map()` loops,
   ticket #317, props Andre Maute
+- CODE128: Add new extra escape `\^1` for manual insertion of FNC1s, ticket
+  #324, props Jim Shank
 
 Bugs
 ----

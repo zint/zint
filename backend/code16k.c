@@ -90,7 +90,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     indexliste = 0;
     indexchaine = 0;
 
-    mode = c128_parunmodd(source[indexchaine]);
+    mode = c128_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
 
     do {
         list[1][indexliste] = mode;
@@ -100,10 +100,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             if (indexchaine == length) {
                 break;
             }
-            mode = c128_parunmodd(source[indexchaine]);
-            if (gs1 && source[indexchaine] == '\x1D') {
-                mode = C128_ABORC;
-            } /* FNC1 */
+            mode = c128_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
         }
         indexliste++;
     } while (indexchaine < length);

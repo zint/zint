@@ -1,7 +1,7 @@
 /*  vector.c - Creates vector image objects */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2018-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,8 +42,7 @@ static int vector_add_rect(struct zint_symbol *symbol, const float x, const floa
             const float height, struct zint_vector_rect **last_rect) {
     struct zint_vector_rect *rect;
 
-    rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect));
-    if (!rect) {
+    if (!(rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect)))) {
         strcpy(symbol->errtxt, "691: Insufficient memory for vector rectangle");
         return 0;
     }
@@ -69,8 +68,7 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
             const float diameter, struct zint_vector_hexagon **last_hexagon) {
     struct zint_vector_hexagon *hexagon;
 
-    hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon));
-    if (!hexagon) {
+    if (!(hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon)))) {
         strcpy(symbol->errtxt, "692: Insufficient memory for vector hexagon");
         return 0;
     }
@@ -94,8 +92,7 @@ static int vector_add_circle(struct zint_symbol *symbol, const float x, const fl
             const float width, const int colour, struct zint_vector_circle **last_circle) {
     struct zint_vector_circle *circle;
 
-    circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle));
-    if (!circle) {
+    if (!(circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle)))) {
         strcpy(symbol->errtxt, "693: Insufficient memory for vector circle");
         return 0;
     }
@@ -121,8 +118,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
             struct zint_vector_string **last_string) {
     struct zint_vector_string *string;
 
-    string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string));
-    if (!string) {
+    if (!(string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string)))) {
         strcpy(symbol->errtxt, "694: Insufficient memory for vector string");
         return 0;
     }
@@ -134,8 +130,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     string->length = length == -1 ? (int) ustrlen(text) : length;
     string->rotation = 0;
     string->halign = halign;
-    string->text = (unsigned char *) malloc(string->length + 1);
-    if (!string->text) {
+    if (!(string->text = (unsigned char *) malloc(string->length + 1))) {
         free(string);
         strcpy(symbol->errtxt, "695: Insufficient memory for vector string text");
         return 0;
@@ -449,8 +444,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     /* Allocate memory */
-    vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector));
-    if (!vector) {
+    if (!(vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector)))) {
         strcpy(symbol->errtxt, "696: Insufficient memory for vector header");
         return ZINT_ERROR_MEMORY;
     }

@@ -2505,8 +2505,17 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 sprintf(b, "^%03d", val);
                 b += 4;
             } else {
-                if (d + 1 < de && *(d + 1) >= 'A' && *(d + 1) <= 'C') {
+                if (d + 1 < de && ((*(d + 1) >= 'A' && *(d + 1) <= 'C') || *(d + 1) == '1')) {
                     d++;
+                    if (*d == '1') {
+                        if (b + 5 >= be) {
+                            fprintf(stderr, "testUtilBwippEscape: FNC1 bwipp_data buffer full (%d)\n", bwipp_data_size);
+                            return NULL;
+                        }
+                        strcpy(b, "^FNC1");
+                        b += 5;
+                        *parsefnc = 1;
+                    }
                 } else {
                     if (b + 8 >= be) {
                         fprintf(stderr, "testUtilBwippEscape: loop bwipp_data buffer full (%d)\n", bwipp_data_size);
@@ -3960,9 +3969,18 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             int j = 0;
             for (i = 0; i < expected_len; i++) {
                 if (escaped[i] == '\\' && i + 2 < expected_len && escaped[i + 1] == '^'
-                        && ((escaped[i + 2] >= 'A' && escaped[i + 2] <= 'C') || escaped[i + 2] == '^')) {
+                        && ((escaped[i + 2] >= 'A' && escaped[i + 2] <= 'C') || escaped[i + 2] == '1'
+                            || escaped[i + 2] == '^')) {
                     if (escaped[i + 2] != '^') {
                         i += 2;
+                        if (escaped[i] == '1') {
+                            /* FNC1 in 1st position treated as GS1 and in 2nd position AIM, neither transmitted */
+                            if (j > 2 || (j == 1 && !(z_isupper(escaped[0]) || z_islower(escaped[0])))
+                                    /* TODO: following exception only valid if in Code Set C */
+                                    || (j == 2 && !(z_isdigit(escaped[0]) && z_isdigit(escaped[1])))) {
+                                escaped[j++] = 29; /* GS */
+                            }
+                        }
                     } else {
                         escaped[j++] = escaped[i++];
                         escaped[j++] = escaped[i++];
