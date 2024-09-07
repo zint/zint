@@ -304,17 +304,17 @@ static void test_dump_args(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ {              -1, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B" },
-        /*  1*/ { BARCODE_CODE128, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B" },
-        /*  2*/ { BARCODE_CODE128, "123", "456", NULL, NULL,      -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B\nD2 19 3B 72 67 4E 4D 8E B" },
-        /*  3*/ { BARCODE_CODE128, "123", NULL, NULL, NULL,       -1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "Warning 141: Can't use batch mode if data given, ignoring\nD2 13 9B 39 65 C8 C9 8E B" },
-        /*  4*/ { BARCODE_CODE128, NULL, NULL, "123\n45\n", NULL, -1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B\nD3 97 62 3B 63 AC" },
-        /*  5*/ { BARCODE_CODE128, NULL, NULL, "123\n45\n", "7\n",-1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "Warning 144: Processing first input file 'test_dump_args1.txt' only\nD2 13 9B 39 65 C8 C9 8E B\nD3 97 62 3B 63 AC" },
+        /*  0*/ {              -1, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D3 96 72 F7 65 C9 61 8E B" },
+        /*  1*/ { BARCODE_CODE128, "123", NULL, NULL, NULL,       -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D3 96 72 F7 65 C9 61 8E B" },
+        /*  2*/ { BARCODE_CODE128, "123", "456", NULL, NULL,      -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D3 96 72 F7 65 C9 61 8E B\nD3 97 62 F7 67 49 19 8E B" },
+        /*  3*/ { BARCODE_CODE128, "123", NULL, NULL, NULL,       -1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "Warning 141: Can't use batch mode if data given, ignoring\nD3 96 72 F7 65 C9 61 8E B" },
+        /*  4*/ { BARCODE_CODE128, NULL, NULL, "123\n45\n", NULL, -1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D3 96 72 F7 65 C9 61 8E B\nD3 97 62 3B 63 AC" },
+        /*  5*/ { BARCODE_CODE128, NULL, NULL, "123\n45\n", "7\n",-1, -1, 1, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "Warning 144: Processing first input file 'test_dump_args1.txt' only\nD3 96 72 F7 65 C9 61 8E B\nD3 97 62 3B 63 AC" },
         /*  6*/ { BARCODE_CODE128, "\t", NULL, NULL, NULL,        -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 90 D2 1A 63 AC" },
         /*  7*/ { BARCODE_CODE128, "\\t", NULL, NULL, NULL, ESCAPE_MODE, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 90 D2 1A 63 AC" },
-        /*  8*/ { BARCODE_CODE128, "\\^Ab\011", NULL, NULL, NULL, EXTRA_ESCAPE_MODE, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 12 1B AF 43 4C A1 8E B" },
-        /*  9*/ { BARCODE_CODE128, "\\^Ab\\t", NULL, NULL, NULL, ESCAPE_MODE | EXTRA_ESCAPE_MODE, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 12 1B AF 43 4C A1 8E B" },
-        /* 10*/ { BARCODE_CODE128, "123", NULL, NULL, NULL, -1, BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP | SMALL_TEXT | BOLD_TEXT | CMYK_COLOUR, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D2 13 9B 39 65 C8 C9 8E B" },
+        /*  8*/ { BARCODE_CODE128, "\\^Ab\011", NULL, NULL, NULL, EXTRA_ESCAPE_MODE, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 9E 8A 43 43 48 D1 8E B" },
+        /*  9*/ { BARCODE_CODE128, "\\^Ab\\t", NULL, NULL, NULL, ESCAPE_MODE | EXTRA_ESCAPE_MODE, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 9E 8A 43 43 48 D1 8E B" },
+        /* 10*/ { BARCODE_CODE128, "123", NULL, NULL, NULL, -1, BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP | SMALL_TEXT | BOLD_TEXT | CMYK_COLOUR, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D3 96 72 F7 65 C9 61 8E B" },
         /* 11*/ { BARCODE_CODE128, "123", NULL, NULL, NULL, -1, BARCODE_DOTTY_MODE, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "Error 224: Selected symbology cannot be rendered as dots" },
         /* 12*/ { BARCODE_CODABLOCKF, "ABCDEF", NULL, NULL, NULL, -1, -1, 0, -1, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 97 BA 86 51 88 B1 11 AC 46 D8 C7 58\nD0 97 BB 12 46 88 C5 1A 3C 55 CC C7 58" },
         /* 13*/ { BARCODE_CODABLOCKF, "ABCDEF", NULL, NULL, NULL, -1, -1, 0, 10, 0, -1, 0, -1, -1, NULL, -1, -1, 0, -1, "D0 97 BA 86 51 88 B1 11 AC 44 68 BC 98 EB\nD0 97 BB 12 46 2B BD 7B A3 47 8A 8D 18 EB" },
@@ -424,7 +424,7 @@ static void test_dump_segs(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
-        /*  0*/ {              -1, "123", NULL, NULL, -1, -1, -1, "D2 13 9B 39 65 C8 C9 8E B" },
+        /*  0*/ {              -1, "123", NULL, NULL, -1, -1, -1, "D3 96 72 F7 65 C9 61 8E B" },
         /*  1*/ {              -1, "123", NULL, NULL, -1, 3, -1, "Error 166: Invalid segment argument, expect \"ECI,DATA\"" },
         /*  2*/ {              -1, "123", "456", NULL, -1, -1, -1, "Error 167: Invalid segment ECI (digits only)" },
         /*  3*/ {              -1, "123", "456", NULL, -1, 1000000, -1, "Error 168: Segment ECI code out of range (0 to 999999)" },
@@ -665,8 +665,8 @@ static void test_batch_input(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "123", NULL, NULL, "Warning 122: Can't define data in batch mode, ignoring '123'\nWarning 124: No data received, no symbol generated" },
-        /*  1*/ { BARCODE_CODE128, "123", "123\n456\n", NULL, "Warning 122: Can't define data in batch mode, ignoring '123'\nD2 13 9B 39 65 C8 C9 8E B\nD2 19 3B 72 67 4E 4D 8E B" },
-        /*  3*/ { BARCODE_CODE128, NULL, "123\n456\n", "789\n", "Warning 143: Can only define one input file in batch mode, ignoring 'test_batch_input2.txt'\nD2 13 9B 39 65 C8 C9 8E B\nD2 19 3B 72 67 4E 4D 8E B" },
+        /*  1*/ { BARCODE_CODE128, "123", "123\n456\n", NULL, "Warning 122: Can't define data in batch mode, ignoring '123'\nD3 96 72 F7 65 C9 61 8E B\nD3 97 62 F7 67 49 19 8E B" },
+        /*  2*/ { BARCODE_CODE128, NULL, "123\n456\n", "789\n", "Warning 143: Can only define one input file in batch mode, ignoring 'test_batch_input2.txt'\nD3 96 72 F7 65 C9 61 8E B\nD3 97 62 F7 67 49 19 8E B" },
     };
     int data_size = ARRAY_SIZE(data);
     int i;

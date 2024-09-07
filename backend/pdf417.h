@@ -36,6 +36,10 @@
 #ifndef Z_PDF417_H
 #define Z_PDF417_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 /* PDF417 error correction coefficients from Grand Zebu */
 INTERNAL_DATA_EXTERN const unsigned short pdf_coefrs[1022];
 
@@ -58,6 +62,10 @@ INTERNAL_DATA_EXTERN const unsigned short pdf_rap_centre[52];
 
 INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned char chaine[], int start,
                 const int length, const int lastmode);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_PDF417_H */

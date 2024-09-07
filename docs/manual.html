@@ -4894,8 +4894,8 @@ alt="zint -b EAN14 --compliantheight -d &quot;9889876543210&quot;" />
 aria-hidden="true"><code>zint -b EAN14 --compliantheight -d "9889876543210"</code></figcaption>
 </figure>
 <p>A shorter version of GS1-128 which encodes GTIN data only. A 13-digit
-number is required. The GTIN check digit and AI (01) are added by
-Zint.</p>
+number is required. The GTIN check digit and HRT-only AI “(01)” are
+added by Zint.</p>
 <h4 id="nve-18-sscc-18">6.1.10.5 NVE-18 (SSCC-18)</h4>
 <figure>
 <img src="images/nve18.svg" title="fig:" class="lin"
@@ -4906,8 +4906,8 @@ aria-hidden="true"><code>zint -b NVE18 --compliantheight -d "37612345000001003"<
 <p>A variation of Code 128 the ‘Nummer der Versandeinheit’ standard,
 also known as SSCC-18 (Serial Shipping Container Code), includes both a
 visible modulo-10 and a hidden modulo-103 check digit. NVE-18 requires a
-17-digit numerical input. Check digits and AI (00) are added by
-Zint.</p>
+17-digit numerical input. Check digits and HRT-only AI “(00)” are added
+by Zint.</p>
 <h4 id="hibc-code-128">6.1.10.6 HIBC Code 128</h4>
 <figure>
 <img src="images/hibc_128.svg" title="fig:" class="lin"
@@ -5009,9 +5009,9 @@ alt="zint -b DBAR_OMN --compliantheight -d &quot;0950110153001&quot;" />
 aria-hidden="true"><code>zint -b DBAR_OMN --compliantheight -d "0950110153001"</code></figcaption>
 </figure>
 <p>Previously known as RSS-14 this standard encodes a 13-digit item
-code. A check digit and Application Identifier of (01) are added by
-Zint. (A 14-digit code that appends the check digit may be given, in
-which case the check digit will be verified.)</p>
+code. A check digit and HRT-only Application Identifier of “(01)” are
+added by Zint. (A 14-digit code that appends the check digit may be
+given, in which case the check digit will be verified.)</p>
 <p>GS1 DataBar Omnidirectional symbols should have a height of 33 or
 greater. To produce a GS1 DataBar Truncated symbol set the symbol height
 to a value between 13 and 32. Truncated symbols may not be scannable by
@@ -5033,9 +5033,9 @@ aria-hidden="true"><code>zint -b DBAR_LTD --compliantheight -d "0950110153001"</
 code and can be used in the same way as GS1 DataBar Omnidirectional
 above. GS1 DataBar Limited, however, is limited to data starting with
 digits 0 and 1 (i.e. numbers in the range 0 to 1999999999999). As with
-GS1 DataBar Omnidirectional a check digit and Application Identifier of
-(01) are added by Zint, and a 14-digit code may be given in which case
-the check digit will be verified.</p>
+GS1 DataBar Omnidirectional a check digit and HRT-only Application
+Identifier of “(01)” are added by Zint, and a 14-digit code may be given
+in which case the check digit will be verified.</p>
 <h4 id="gs1-databar-expanded">6.1.11.3 GS1 DataBar Expanded</h4>
 <figure>
 <img src="images/dbar_exp.svg" title="fig:" class="lin"
@@ -8771,7 +8771,7 @@ the boundary bar is specified by the <code>--border</code> option.</p>
 </dd>
 <dt><code>--bold</code></dt>
 <dd>
-<p>Use bold text for the Human Readable Text (HRT).</p>
+<p>Use a bold font for the Human Readable Text (HRT).</p>
 </dd>
 <dt><code>--border=INTEGER</code></dt>
 <dd>
@@ -9116,7 +9116,7 @@ default is zero.</p>
 </dd>
 <dt><code>--small</code></dt>
 <dd>
-<p>Use small text for Human Readable Text (HRT).</p>
+<p>Use a smaller font for Human Readable Text (HRT).</p>
 </dd>
 <dt><code>--square</code></dt>
 <dd>
@@ -9420,7 +9420,7 @@ ISO/IEC 16390:2007, ISO/IEC 16023:2000, ISO/IEC 24728:2006, ISO/IEC
 15438:2015, ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023
 (2022)</p>
 <h2 id="copyright">COPYRIGHT</h2>
-<p>Copyright © 2023 Robin Stuart. Released under GNU GPL 3.0 or
+<p>Copyright © 2024 Robin Stuart. Released under GNU GPL 3.0 or
 later.</p>
 <h2 id="author">AUTHOR</h2>
 <p>Robin Stuart <a href="mailto:robin@zint.org.uk"

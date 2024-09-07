@@ -71,7 +71,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--bold`
 
-:   Use bold text for the Human Readable Text (HRT).
+:   Use a bold font for the Human Readable Text (HRT).
 
 `--border=INTEGER`
 
@@ -365,7 +365,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--small`
 
-:   Use small text for Human Readable Text (HRT).
+:   Use a smaller font for Human Readable Text (HRT).
 
 `--square`
 
@@ -655,7 +655,7 @@ ISO/IEC 18004:2015, ISO/IEC 23941:2022, AIM ITS/04-023 (2022)
 
 # COPYRIGHT
 
-Copyright © 2023 Robin Stuart. Released under GNU GPL 3.0 or later.
+Copyright © 2024 Robin Stuart. Released under GNU GPL 3.0 or later.
 
 # AUTHOR
 

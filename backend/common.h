@@ -53,6 +53,7 @@ typedef unsigned __int64 uint64_t;
 #endif
 
 /* Note if change following must also change "frontend/main.c" copy */
+
 #define ARRAY_SIZE(x) ((int) (sizeof(x) / sizeof((x)[0])))
 
 #ifdef _MSC_VER
@@ -67,6 +68,7 @@ typedef unsigned __int64 uint64_t;
 #  endif
 #  define z_alloca(nmemb) alloca(nmemb)
 #endif
+
 /* End of "frontend/main.c" copy */
 
 #ifdef _MSC_VER
@@ -198,12 +200,15 @@ INTERNAL int bin_append_posn(const int arg, const int length, char *binary, cons
 #define Z_COMMON_INLINE   1
 
 #ifdef Z_COMMON_INLINE
+
 #  define module_is_set(s, y, x) (((s)->encoded_data[y][(x) >> 3] >> ((x) & 0x07)) & 1)
 #  define set_module(s, y, x) do { (s)->encoded_data[y][(x) >> 3] |= 1 << ((x) & 0x07); } while (0)
 #  define module_colour_is_set(s, y, x) ((s)->encoded_data[y][x])
 #  define set_module_colour(s, y, x, c) do { (s)->encoded_data[y][x] = (c); } while (0)
 #  define unset_module(s, y, x) do { (s)->encoded_data[y][(x) >> 3] &= ~(1 << ((x) & 0x07)); } while (0)
-#else
+
+#else /* Z_COMMON_INLINE */
+
 /* Returns true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord);
 
@@ -219,7 +224,9 @@ INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, c
 
 /* Sets a dark/black module to white (i.e. unsets) */
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord);
+
 #endif /* Z_COMMON_INLINE */
+
 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length);
@@ -282,6 +289,7 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
                 struct zint_seg local_segs[]);
 
 
+/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in angle brackets */
 INTERNAL char *debug_print_escape(const unsigned char *source, const int first_len, char *buf);
 
 #ifdef ZINT_TEST

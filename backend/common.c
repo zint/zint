@@ -185,6 +185,7 @@ INTERNAL int bin_append_posn(const int arg, const int length, char *binary, cons
 }
 
 #ifndef Z_COMMON_INLINE
+
 /* Returns true (1) if a module is dark/black, otherwise false (0) */
 INTERNAL int module_is_set(const struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     return (symbol->encoded_data[y_coord][x_coord >> 3] >> (x_coord & 0x07)) & 1;
@@ -209,7 +210,8 @@ INTERNAL void set_module_colour(struct zint_symbol *symbol, const int y_coord, c
 INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const int x_coord) {
     symbol->encoded_data[y_coord][x_coord >> 3] &= ~(1 << (x_coord & 0x07));
 }
-#endif
+
+#endif /* Z_COMMON_INLINE */
 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length) {
@@ -662,6 +664,6 @@ INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
 #pragma GCC diagnostic pop
 #endif
-#endif /*ZINT_TEST*/
+#endif /* ZINT_TEST */
 
 /* vim: set ts=4 sw=4 et : */

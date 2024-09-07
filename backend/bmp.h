@@ -35,7 +35,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 #ifdef OUT_USE_PRAGMA_PACK
 #pragma pack(1)
@@ -75,7 +75,7 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_BMP_H */

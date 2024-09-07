@@ -39,6 +39,15 @@
 #include "common.h"
 #include "code128.h"
 
+/* Note these previously defined in "code128.h" - keeping `C128_` prefix for now */
+#define C128_LATCHA 'A'
+#define C128_LATCHB 'B'
+#define C128_LATCHC 'C'
+#define C128_SHIFTA 'a'
+#define C128_SHIFTB 'b'
+#define C128_ABORC  '9'
+#define C128_AORB   'Z'
+
 /* Note using C128Table with extra entry at 106 (Triple Shift) for C16KTable */
 
 /* EN 12323 Table 3 and Table 4 - Start patterns and stop patterns */
@@ -56,6 +65,214 @@ static const unsigned char C16KStopValues[16] = {
     0, 1, 2, 3, 4, 5, 6, 7, 4, 5, 6, 7, 0, 1, 2, 3
 };
 
+/* Determine appropriate mode for a given character (was `c128_parunmodd()`) */
+static int c16k_parunmodd(const unsigned char llyth, const int check_fnc1) {
+    int modd;
+
+    if (llyth <= 31) {
+        modd = check_fnc1 && llyth == '\x1D' ? C128_ABORC : C128_SHIFTA;
+    } else if ((llyth >= 48) && (llyth <= 57)) {
+        modd = C128_ABORC;
+    } else if (llyth <= 95) {
+        modd = C128_AORB;
+    } else if (llyth <= 127) {
+        modd = C128_SHIFTB;
+    } else if (llyth <= 159) {
+        modd = C128_SHIFTA;
+    } else if (llyth <= 223) {
+        modd = C128_AORB;
+    } else {
+        modd = C128_SHIFTB;
+    }
+
+    return modd;
+}
+
+/* Bring together same type blocks (was `c128_grwp()`) */
+static void c16k_grwp(int list[2][C128_MAX], int *p_indexliste) {
+
+    if (*p_indexliste > 1) {
+        int i = 1;
+        while (i < *p_indexliste) {
+            if (list[1][i - 1] == list[1][i]) {
+                int j;
+                /* Bring together */
+                list[0][i - 1] = list[0][i - 1] + list[0][i];
+                j = i + 1;
+
+                /* Decrease the list */
+                while (j < *p_indexliste) {
+                    list[0][j - 1] = list[0][j];
+                    list[1][j - 1] = list[1][j];
+                    j++;
+                }
+                *p_indexliste = *p_indexliste - 1;
+                i--;
+            }
+            i++;
+        }
+    }
+}
+
+/* Implements rules from ISO/IEC 15417:2007 Annex E (was `c128_dxsmooth()`) */
+static void c16k_dxsmooth(int list[2][C128_MAX], int *p_indexliste) {
+    int i, j, nextshift = 0 /*Suppresses gcc -Wmaybe-uninitialized false positive*/, nextshift_i = 0;
+    const int indexliste = *p_indexliste;
+
+    for (i = 0; i < indexliste; i++) {
+        int current = list[1][i]; /* Either C128_ABORC, C128_AORB, C128_SHIFTA or C128_SHIFTB */
+        int length = list[0][i];
+        if (i == nextshift_i) {
+            nextshift = 0;
+            /* Set next shift to aid deciding between latching to A or B - taken from Okapi, props Daniel Gredler */
+            for (j = i + 1; j < indexliste; j++) {
+                if (list[1][j] == C128_SHIFTA || list[1][j] == C128_SHIFTB) {
+                    nextshift = list[1][j];
+                    nextshift_i = j;
+                    break;
+                }
+            }
+        }
+
+        if (i == 0) { /* first block */
+            if (current == C128_ABORC) {
+                if ((indexliste == 1) && (length == 2)) {
+                    /* Rule 1a */
+                    list[1][i] = C128_LATCHC;
+                    current = C128_LATCHC;
+                } else if (length >= 4) {
+                    /* Rule 1b */
+                    list[1][i] = C128_LATCHC;
+                    current = C128_LATCHC;
+                } else {
+                    current = C128_AORB; /* Determine below */
+                }
+            }
+            if (current == C128_AORB) {
+                if (nextshift == C128_SHIFTA) {
+                    /* Rule 1c */
+                    list[1][i] = C128_LATCHA;
+                } else {
+                    /* Rule 1d */
+                    list[1][i] = C128_LATCHB;
+                }
+            } else if (current == C128_SHIFTA) {
+                /* Rule 1c */
+                list[1][i] = C128_LATCHA;
+            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHX set above, can only be C128_SHIFTB */
+                /* Rule 1d */
+                list[1][i] = C128_LATCHB;
+            }
+        } else {
+            int last = list[1][i - 1];
+            if (current == C128_ABORC) {
+                if (length >= 4) {
+                    /* Rule 3 - note Rule 3b (odd C blocks) dealt with later */
+                    list[1][i] = C128_LATCHC;
+                    current = C128_LATCHC;
+                } else {
+                    current = C128_AORB; /* Determine below */
+                }
+            }
+            if (current == C128_AORB) {
+                if (last == C128_LATCHA || last == C128_SHIFTB) { /* Maintain state */
+                    list[1][i] = C128_LATCHA;
+                } else if (last == C128_LATCHB || last == C128_SHIFTA) { /* Maintain state */
+                    list[1][i] = C128_LATCHB;
+                } else if (nextshift == C128_SHIFTA) {
+                    list[1][i] = C128_LATCHA;
+                } else {
+                    list[1][i] = C128_LATCHB;
+                }
+            } else if (current == C128_SHIFTA) {
+                if (length > 1) {
+                    /* Rule 4 */
+                    list[1][i] = C128_LATCHA;
+                } else if (last == C128_LATCHA || last == C128_SHIFTB) { /* Maintain state */
+                    list[1][i] = C128_LATCHA;
+                } else if (last == C128_LATCHC) {
+                    list[1][i] = C128_LATCHA;
+                }
+            } else if (current == C128_SHIFTB) { /* Unless C128_LATCHX set above, can only be C128_SHIFTB */
+                if (length > 1) {
+                    /* Rule 5 */
+                    list[1][i] = C128_LATCHB;
+                } else if (last == C128_LATCHB || last == C128_SHIFTA) { /* Maintain state */
+                    list[1][i] = C128_LATCHB;
+                } else if (last == C128_LATCHC) {
+                    list[1][i] = C128_LATCHB;
+                }
+            }
+        } /* Rule 2 is implemented elsewhere, Rule 6 is implied */
+    }
+
+    c16k_grwp(list, p_indexliste);
+}
+
+/* Put set data into set[]. Resolves odd C blocks (was  `c128_put_in_set()`) */
+static void c16k_put_in_set(int list[2][C128_MAX], const int indexliste, char set[C128_MAX],
+                const unsigned char *source) {
+    int read = 0;
+    int i, j;
+    int c_count = 0, have_nonc = 0;
+
+    for (i = 0; i < indexliste; i++) {
+        for (j = 0; j < list[0][i]; j++) {
+            set[read++] = list[1][i];
+        }
+    }
+    /* Watch out for odd-length Mode C blocks */
+    for (i = 0; i < read; i++) {
+        if (set[i] == 'C') {
+            if (source[i] == '\x1D') {
+                if (c_count & 1) {
+                    have_nonc = 1;
+                    if (i > c_count) {
+                        set[i - c_count] = 'B';
+                    } else {
+                        set[i - 1] = 'B';
+                    }
+                }
+                c_count = 0;
+            } else {
+                c_count++;
+            }
+        } else {
+            have_nonc = 1;
+            if (c_count & 1) {
+                if (i > c_count) {
+                    set[i - c_count] = 'B';
+                } else {
+                    set[i - 1] = 'B';
+                }
+            }
+            c_count = 0;
+        }
+    }
+    if (c_count & 1) {
+        if (i > c_count && have_nonc) {
+            set[i - c_count] = 'B';
+            if (c_count < 4) {
+                /* Rule 1b */
+                for (j = i - c_count + 1; j < i; j++) {
+                    set[j] = 'B';
+                }
+            }
+        } else {
+            set[i - 1] = 'B';
+        }
+    }
+    for (i = 1; i < read - 1; i++) {
+        if (set[i] == 'C' && set[i - 1] != 'C' && set[i + 1] != 'C') {
+            set[i] = set[i + 1];
+        }
+    }
+    if (read > 1 && set[read - 1] == 'C' && set[read - 2] != 'C') {
+        set[read - 1] = set[read - 2];
+    }
+}
+
+/* Code 16k EN 12323:2005 */
 INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int length) {
     char width_pattern[40]; /* 4 (start) + 1 (guard) + 5*6 (chars) + 4 (stop) + 1 */
     int current_row, rows, looper, first_check, second_check;
@@ -90,7 +307,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     indexliste = 0;
     indexchaine = 0;
 
-    mode = c128_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
+    mode = c16k_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
 
     do {
         list[1][indexliste] = mode;
@@ -100,15 +317,15 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
             if (indexchaine == length) {
                 break;
             }
-            mode = c128_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
+            mode = c16k_parunmodd(source[indexchaine], gs1 /*check_fnc1*/);
         }
         indexliste++;
     } while (indexchaine < length);
 
-    c128_dxsmooth(list, &indexliste, NULL /*manual_set*/);
+    c16k_dxsmooth(list, &indexliste);
 
     /* Put set data into set[], resolving odd C blocks */
-    c128_put_in_set(list, indexliste, set, source);
+    c16k_put_in_set(list, indexliste, set, source);
 
     if (debug_print) {
         printf("Data: %.*s\n", length, source);

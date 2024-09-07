@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations to Unicode tables */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif /* __cplusplus */
 
 INTERNAL int is_eci_convertible(const int eci);
 INTERNAL int is_eci_convertible_segs(const struct zint_seg segs[], const int seg_count, int convertible[]);
@@ -75,7 +75,7 @@ INTERNAL int gb18030_utf8_to_eci(const int eci, const unsigned char source[], in
 
 #ifdef __cplusplus
 }
-#endif
+#endif /* __cplusplus */
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_ECI_H */

@@ -33,6 +33,10 @@
 #ifndef Z_FILEMEM_H
 #define Z_FILEMEM_H
 
+#ifdef __cplusplus
+extern "C" {
+#endif /* __cplusplus */
+
 #include <stdio.h>
 #include "common.h"
 
@@ -90,6 +94,10 @@ INTERNAL int fm_error(struct filemem *restrict const fmp);
 /* `fflush()` if file, no-op if memory, returning 1 on success, 0 on failure
    NOTE: don't use, included only for libpng compatibility */
 INTERNAL int fm_flush(struct filemem *restrict const fmp);
+
+#ifdef __cplusplus
+}
+#endif /* __cplusplus */
 
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_FILEMEM_H */
