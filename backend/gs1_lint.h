@@ -414,6 +414,15 @@ static int n1_x1_x1_x1_importeridx(const unsigned char *data,
             && importeridx(data, data_len, 3, 1, 1, p_err_no, p_err_posn, err_msg, 0);
 }
 
+/* X..4,packagetype (Used by UFRGT UNIT TYPE) */
+static int x__4_packagetype(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len >= 1 && data_len <= 4
+            && packagetype(data, data_len, 0, 1, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && cset82(data, data_len, 0, 1, 4, p_err_no, p_err_posn, err_msg)
+            && packagetype(data, data_len, 0, 1, 4, p_err_no, p_err_posn, err_msg, 0);
+}
+
 /* X2 X..28 (Used by CERT # 1, CERT # 2, CERT # 3, CERT # 4, CERT # 5, CERT # 6, CERT # 7, CERT # 8, CERT # 9, ...) */
 static int x2_x__28(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -750,7 +759,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
 
     } else if (ai < 800) {
 
-        if (ai >= 710 && ai <= 715) {
+        if (ai >= 710 && ai <= 716) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
@@ -896,6 +905,9 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
         }
         if (ai == 7040) {
             return n1_x1_x1_x1_importeridx(data, data_len, p_err_no, p_err_posn, err_msg);
+        }
+        if (ai == 7041) {
+            return x__4_packagetype(data, data_len, p_err_no, p_err_posn, err_msg);
         }
 
     } else if (ai < 7300) {

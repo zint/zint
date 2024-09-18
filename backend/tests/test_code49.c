@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -126,6 +126,8 @@ static void test_input(const testCtx *const p_ctx) {
         /* 22*/ { UNICODE_MODE, 6, "1234567890123456789012345678901234567890", -1, 0, 6, 70, "(48) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
         /* 23*/ { UNICODE_MODE, 7, "1234567890123456789012345678901234567890", -1, 0, 7, 70, "(56) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
         /* 24*/ { UNICODE_MODE, 8, "1234567890123456789012345678901234567890", -1, 0, 8, 70, "(64) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
+        /* 25*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW", -1, 0, 8, 70, "(64) 10 11 12 13 14 15 16 42 17 18 19 20 21 22 23 42 24 25 26 27 28 29 30 42 31 32 33 34 35", "" },
+        /* 26*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX", -1, ZINT_ERROR_TOO_LONG, 0, 0, "Error 432: Input too long (49 symbol character maximum)", "" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

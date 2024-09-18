@@ -619,8 +619,9 @@ Create "qr.svg" in the current directory, as a QR Code symbol.
 zint -b QRCode -d 'This Text' -o 'qr.svg'
 ```
 
-Use batch mode to read from an input file "ean13nos.txt" containing 13-digit GTINs, to create a series of EAN-13
-barcodes, formatting the output filenames to "ean001.gif", "ean002.gif" etc. using the special character "~".
+Use batch mode to read from an input file "ean13nos.txt" containing a list of 13-digit GTINs, each on a separate line,
+to create a series of EAN-13 barcodes, formatting the output filenames to "ean001.gif", "ean002.gif" etc. using the
+special character "~".
 
 ```bash
 zint -b EANX --batch -i 'ean13nos.txt' -o 'ean~~~.gif'

@@ -63,12 +63,12 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
 static const char ultra_colour[] = "0CBMRYGKW";
 
-/* Wrapper to pre-check `size` on `malloc()` isn't too big (`size2` given if doing X `malloc()`s in a row) */
-static void *raster_malloc(size_t size, size_t size2) {
+/* Wrapper to pre-check `size` on `malloc()` isn't too big (`prev_size` given if doing 2nd `malloc()` in a row) */
+static void *raster_malloc(size_t size, size_t prev_size) {
     /* Check for large image `malloc`s, which produce very large files most systems can't handle anyway */
     /* Also `malloc()` on Linux will (usually) succeed regardless of request, and then get untrappably killed on
        access by OOM killer if too much, so this is a crude mitigation */
-    if (size + size2 < size /*Overflow check*/ || size + size2 > 0x40000000 /*1GB*/) {
+    if (size + prev_size < size /*Overflow check*/ || size + prev_size > 0x40000000 /*1GB*/) {
         return NULL;
     }
     return malloc(size);
@@ -112,16 +112,14 @@ static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf
         symbol->alphamap = NULL;
     }
 
-    symbol->bitmap = (unsigned char *) raster_malloc(bm_bitmap_size, 0 /*size2*/);
-    if (symbol->bitmap == NULL) {
+    if (!(symbol->bitmap = (unsigned char *) raster_malloc(bm_bitmap_size, 0 /*prev_size*/))) {
         strcpy(symbol->errtxt, "661: Insufficient memory for bitmap buffer");
         return ZINT_ERROR_MEMORY;
     }
 
     if (plot_alpha) {
         const size_t alpha_size = (size_t) symbol->bitmap_width * symbol->bitmap_height;
-        symbol->alphamap = (unsigned char *) raster_malloc(alpha_size, bm_bitmap_size);
-        if (symbol->alphamap == NULL) {
+        if (!(symbol->alphamap = (unsigned char *) raster_malloc(alpha_size, bm_bitmap_size))) {
             strcpy(symbol->errtxt, "662: Insufficient memory for alphamap buffer");
             return ZINT_ERROR_MEMORY;
         }
@@ -182,7 +180,8 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
     }
 
     if (rotate_angle) {
-        if (!(rotated_pixbuf = (unsigned char *) raster_malloc((size_t) image_width * image_height, 0 /*size2*/))) {
+        if (!(rotated_pixbuf = (unsigned char *) raster_malloc((size_t) image_width * image_height,
+                                                                0 /*prev_size*/))) {
             strcpy(symbol->errtxt, "650: Insufficient memory for pixel buffer");
             return ZINT_ERROR_MEMORY;
         }
@@ -783,7 +782,7 @@ static int plot_raster_maxicode(struct zint_symbol *symbol, const int rotate_ang
     assert(image_width && image_height);
     image_size = (size_t) image_width * image_height;
 
-    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*size2*/))) {
+    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*prev_size*/))) {
         strcpy(symbol->errtxt, "655: Insufficient memory for pixel buffer");
         return ZINT_ERROR_MEMORY;
     }
@@ -879,7 +878,7 @@ static int plot_raster_dotty(struct zint_symbol *symbol, const int rotate_angle,
     scale_size = (size_t) scale_width * scale_height;
 
     /* Apply scale options by creating pixel buffer */
-    if (!(scaled_pixelbuf = (unsigned char *) raster_malloc(scale_size, 0 /*size2*/))) {
+    if (!(scaled_pixelbuf = (unsigned char *) raster_malloc(scale_size, 0 /*prev_size*/))) {
         strcpy(symbol->errtxt, "657: Insufficient memory for pixel buffer");
         return ZINT_ERROR_MEMORY;
     }
@@ -1045,7 +1044,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     assert(image_width && image_height);
     image_size = (size_t) image_width * image_height;
 
-    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*size2*/))) {
+    if (!(pixelbuf = (unsigned char *) raster_malloc(image_size, 0 /*prev_size*/))) {
         strcpy(symbol->errtxt, "658: Insufficient memory for pixel buffer");
         return ZINT_ERROR_MEMORY;
     }

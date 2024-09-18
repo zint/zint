@@ -720,12 +720,12 @@ sequences are shown in the table below.
   Table : Escape Sequences
 
 (Special escape sequences are available for Code 128 only to manually switch
-Code Sets and/or insert special FNC1 characters - see 6.1.10.1 Standard Code 128
+Code Sets and insert special FNC1 characters - see 6.1.10.1 Standard Code 128
 (ISO 15417) for details.)
 
 Input data can be read directly from file using the -i or --input switch as
 shown below. The input file is assumed to be UTF-8 formatted unless an
-alternative mode is selected. This command replaces the use of the -d switch.
+alternative mode is selected. This option replaces the use of the -d switch.
 
     zint -i somefile.txt
 
@@ -1011,13 +1011,13 @@ adjusted using the --height switch. For example:
 
 This specifies a symbol height of 100 times the X-dimension of the symbol.
 
-The default height of most linear barcodes is 50X, but this can be changed for
+The default height of most linear barcodes is 50.0X, but this can be changed for
 barcodes whose specifications give a standard height by using the switch
 --compliantheight. For instance
 
     zint -b LOGMARS -d "This Text" --compliantheight
 
-will produce a barcode of height 45.455X instead of the normal default of 50X.
+will produce a barcode of height 45.455X instead of the normal default of 50.0X.
 The flag also causes Zint to return a warning if a non-compliant height is
 given:
 
@@ -1166,7 +1166,7 @@ followed by the angle of rotation as shown below.
 4.9 Adjusting Image Size (X-dimension)
 
 The size of the image can be altered using the --scale option, which sets the
-X-dimension. The default scale is 1.
+X-dimension. The default scale is 1.0.
 
 The scale is multiplied by 2 (with the exception of MaxiCode) before being
 applied to the X-dimension. For MaxiCode, it is multiplied by 10 for raster
@@ -1278,8 +1278,8 @@ together if required, but only for vector output.
 
 The gap between the barcode and the text can be adjusted using the --textgap
 option, where the gap is given in X-dimensions, and may be negative (minimum
--5X, maximum 10X). The default gap is 1X. Note that a very small gap may cause
-accented texts to overlap with the barcode:
+-5.0X, maximum 10.0X). The default gap is 1X. Note that a very small gap may
+cause accented texts to overlap with the barcode:
 
 [zint -d "Áccent" --textgap=0.1]
 
@@ -2747,7 +2747,7 @@ You can adjust the gap between the main symbol and an add-on in integral
 multiples of the X-dimension by setting --addongap (API option_2) to a value
 between 9 (default) and 12. The height in X-dimensions that the guard bars
 descend below the main bars can be adjusted by setting --guarddescent (API
-guard_descent) to a value between 0 and 20 (default 5).
+guard_descent) to a value between 0.0 and 20.0 (default 5.0).
 
 6.1.3.2 UPC Version E
 
@@ -2781,7 +2781,7 @@ You can adjust the gap between the main symbol and an add-on in integral
 multiples of the X-dimension by setting --addongap (API option_2) to a value
 between 7 (default) and 12. The height in X-dimensions that the guard bars
 descend below the main bars can be adjusted by setting --guarddescent (API
-guard_descent) to a value between 0 and 20 (default 5).
+guard_descent) to a value between 0.0 and 20.0 (default 5.0).
 
 6.1.4 EAN (European Article Number) (ISO 15420)
 
@@ -5484,9 +5484,10 @@ Create “qr.svg” in the current directory, as a QR Code symbol.
 
     zint -b QRCode -d 'This Text' -o 'qr.svg'
 
-Use batch mode to read from an input file “ean13nos.txt” containing 13-digit
-GTINs, to create a series of EAN-13 barcodes, formatting the output filenames to
-“ean001.gif”, “ean002.gif” etc. using the special character “~”.
+Use batch mode to read from an input file “ean13nos.txt” containing a list of
+13-digit GTINs, each on a separate line, to create a series of EAN-13 barcodes,
+formatting the output filenames to “ean001.gif”, “ean002.gif” etc. using the
+special character “~”.
 
     zint -b EANX --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
 

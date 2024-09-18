@@ -30,6 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "gs1.h"
@@ -1487,6 +1488,129 @@ static int hasnondigit(const unsigned char *data, int data_len, int offset, int 
             *p_err_no = 3;
             *p_err_posn = offset + 1;
             strcpy(err_msg, "A non-digit character is required");
+            return 0;
+        }
+    }
+
+    return 1;
+}
+
+/* Check for package type (GSCN 23-272) */
+static int packagetype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    /* Package type codes https://navigator.gs1.org/edi/codelist-details?name=PackageTypeCode */
+    static const char packagetypes2[381][2] = {
+        {'1','A'}, {'1','B'}, {'1','D'}, {'1','F'}, {'1','G'}, {'1','W'}, {'2','C'}, {'3','A'}, {'3','H'}, {'4','3'},
+        {'4','4'}, {'4','A'}, {'4','B'}, {'4','C'}, {'4','D'}, {'4','F'}, {'4','G'}, {'4','H'}, {'5','H'}, {'5','L'},
+        {'5','M'}, {'6','H'}, {'6','P'}, {'7','A'}, {'7','B'}, {'8','A'}, {'8','B'}, {'8','C'}, {'A','A'}, {'A','B'},
+        {'A','C'}, {'A','D'}, {'A','F'}, {'A','G'}, {'A','H'}, {'A','I'}, {'A','J'}, {'A','L'}, {'A','M'}, {'A','P'},
+        {'A','T'}, {'A','V'}, {'B','4'}, {'B','B'}, {'B','C'}, {'B','D'}, {'B','E'}, {'B','F'}, {'B','G'}, {'B','H'},
+        {'B','I'}, {'B','J'}, {'B','K'}, {'B','L'}, {'B','M'}, {'B','N'}, {'B','O'}, {'B','P'}, {'B','Q'}, {'B','R'},
+        {'B','S'}, {'B','T'}, {'B','U'}, {'B','V'}, {'B','W'}, {'B','X'}, {'B','Y'}, {'B','Z'}, {'C','A'}, {'C','B'},
+        {'C','C'}, {'C','D'}, {'C','E'}, {'C','F'}, {'C','G'}, {'C','H'}, {'C','I'}, {'C','J'}, {'C','K'}, {'C','L'},
+        {'C','M'}, {'C','N'}, {'C','O'}, {'C','P'}, {'C','Q'}, {'C','R'}, {'C','S'}, {'C','T'}, {'C','U'}, {'C','V'},
+        {'C','W'}, {'C','X'}, {'C','Y'}, {'C','Z'}, {'D','A'}, {'D','B'}, {'D','C'}, {'D','G'}, {'D','H'}, {'D','I'},
+        {'D','J'}, {'D','K'}, {'D','L'}, {'D','M'}, {'D','N'}, {'D','P'}, {'D','R'}, {'D','S'}, {'D','T'}, {'D','U'},
+        {'D','V'}, {'D','W'}, {'D','X'}, {'D','Y'}, {'E','1'}, {'E','2'}, {'E','3'}, {'E','C'}, {'E','D'}, {'E','E'},
+        {'E','F'}, {'E','G'}, {'E','H'}, {'E','I'}, {'E','N'}, {'F','B'}, {'F','C'}, {'F','D'}, {'F','E'}, {'F','I'},
+        {'F','L'}, {'F','O'}, {'F','P'}, {'F','R'}, {'F','T'}, {'F','W'}, {'F','X'}, {'G','B'}, {'G','I'}, {'G','L'},
+        {'G','R'}, {'G','U'}, {'G','Y'}, {'G','Z'}, {'H','A'}, {'H','B'}, {'H','C'}, {'H','G'}, {'H','N'}, {'H','R'},
+        {'I','A'}, {'I','B'}, {'I','C'}, {'I','D'}, {'I','E'}, {'I','F'}, {'I','G'}, {'I','H'}, {'I','K'}, {'I','L'},
+        {'I','N'}, {'I','Z'}, {'J','B'}, {'J','C'}, {'J','G'}, {'J','R'}, {'J','T'}, {'J','Y'}, {'K','G'}, {'K','I'},
+        {'L','E'}, {'L','G'}, {'L','T'}, {'L','U'}, {'L','V'}, {'L','Z'}, {'M','A'}, {'M','B'}, {'M','C'}, {'M','E'},
+        {'M','R'}, {'M','S'}, {'M','T'}, {'M','W'}, {'M','X'}, {'N','A'}, {'N','E'}, {'N','F'}, {'N','G'}, {'N','S'},
+        {'N','T'}, {'N','U'}, {'N','V'}, {'O','A'}, {'O','B'}, {'O','C'}, {'O','D'}, {'O','E'}, {'O','F'}, {'O','K'},
+        {'O','T'}, {'O','U'}, {'P','2'}, {'P','A'}, {'P','B'}, {'P','C'}, {'P','D'}, {'P','E'}, {'P','F'}, {'P','G'},
+        {'P','H'}, {'P','I'}, {'P','J'}, {'P','K'}, {'P','L'}, {'P','N'}, {'P','O'}, {'P','P'}, {'P','R'}, {'P','T'},
+        {'P','U'}, {'P','V'}, {'P','X'}, {'P','Y'}, {'P','Z'}, {'Q','A'}, {'Q','B'}, {'Q','C'}, {'Q','D'}, {'Q','F'},
+        {'Q','G'}, {'Q','H'}, {'Q','J'}, {'Q','K'}, {'Q','L'}, {'Q','M'}, {'Q','N'}, {'Q','P'}, {'Q','Q'}, {'Q','R'},
+        {'Q','S'}, {'R','D'}, {'R','G'}, {'R','J'}, {'R','K'}, {'R','L'}, {'R','O'}, {'R','T'}, {'R','Z'}, {'S','1'},
+        {'S','A'}, {'S','B'}, {'S','C'}, {'S','D'}, {'S','E'}, {'S','H'}, {'S','I'}, {'S','K'}, {'S','L'}, {'S','M'},
+        {'S','O'}, {'S','P'}, {'S','S'}, {'S','T'}, {'S','U'}, {'S','V'}, {'S','W'}, {'S','X'}, {'S','Y'}, {'S','Z'},
+        {'T','1'}, {'T','B'}, {'T','C'}, {'T','D'}, {'T','E'}, {'T','G'}, {'T','I'}, {'T','K'}, {'T','L'}, {'T','N'},
+        {'T','O'}, {'T','R'}, {'T','S'}, {'T','T'}, {'T','U'}, {'T','V'}, {'T','W'}, {'T','Y'}, {'T','Z'}, {'U','C'},
+        {'U','N'}, {'V','A'}, {'V','G'}, {'V','I'}, {'V','K'}, {'V','L'}, {'V','N'}, {'V','O'}, {'V','P'}, {'V','Q'},
+        {'V','R'}, {'V','S'}, {'V','Y'}, {'W','A'}, {'W','B'}, {'W','C'}, {'W','D'}, {'W','F'}, {'W','G'}, {'W','H'},
+        {'W','J'}, {'W','K'}, {'W','L'}, {'W','M'}, {'W','N'}, {'W','P'}, {'W','Q'}, {'W','R'}, {'W','S'}, {'W','T'},
+        {'W','U'}, {'W','V'}, {'W','W'}, {'W','X'}, {'W','Y'}, {'W','Z'}, {'X','3'}, {'X','A'}, {'X','B'}, {'X','C'},
+        {'X','D'}, {'X','F'}, {'X','G'}, {'X','H'}, {'X','J'}, {'X','K'}, {'Y','A'}, {'Y','B'}, {'Y','C'}, {'Y','D'},
+        {'Y','F'}, {'Y','G'}, {'Y','H'}, {'Y','J'}, {'Y','K'}, {'Y','L'}, {'Y','M'}, {'Y','N'}, {'Y','P'}, {'Y','Q'},
+        {'Y','R'}, {'Y','S'}, {'Y','T'}, {'Y','V'}, {'Y','W'}, {'Y','X'}, {'Y','Y'}, {'Y','Z'}, {'Z','A'}, {'Z','B'},
+        {'Z','C'}, {'Z','D'}, {'Z','F'}, {'Z','G'}, {'Z','H'}, {'Z','J'}, {'Z','K'}, {'Z','L'}, {'Z','M'}, {'Z','N'},
+        {'Z','P'}, {'Z','Q'}, {'Z','R'}, {'Z','S'}, {'Z','T'}, {'Z','U'}, {'Z','V'}, {'Z','W'}, {'Z','X'}, {'Z','Y'},
+        {'Z','Z'},
+    };
+    static const char packagetypes3[48][3] = {
+        {'2','0','0'}, {'2','0','1'}, {'2','0','2'}, {'2','0','3'}, {'2','0','4'},
+        {'2','0','5'}, {'2','0','6'}, {'2','1','0'}, {'2','1','1'}, {'2','1','2'},
+        {'A','P','E'}, {'B','G','E'}, {'B','M','E'}, {'B','R','I'}, {'C','B','L'},
+        {'C','C','E'}, {'D','P','E'}, {'F','O','B'}, {'F','P','E'}, {'L','A','B'},
+        {'M','P','E'}, {'O','P','E'}, {'P','A','E'}, {'P','L','P'}, {'P','O','P'},
+        {'P','P','E'}, {'P','U','E'}, {'R','B','1'}, {'R','B','2'}, {'R','B','3'},
+        {'R','C','B'}, {'S','E','C'}, {'S','T','L'}, {'T','E','V'}, {'T','H','E'},
+        {'T','R','E'}, {'T','T','E'}, {'T','W','E'}, {'U','U','E'}, {'W','R','P'},
+        {'X','1','1'}, {'X','1','2'}, {'X','1','5'}, {'X','1','6'}, {'X','1','7'},
+        {'X','1','8'}, {'X','1','9'}, {'X','2','0'},
+    };
+
+    (void)max;
+
+    data_len = data_len < offset ? 0 : data_len - offset;
+
+    if (data_len < min) {
+        return 0;
+    }
+
+    if (!length_only && data_len) {
+        /* Adapted from GS1 Syntax Dictionary and Linters
+           https://github.com/gs1/gs1-syntax-dictionary/blob/main/src/lint_packagetype.c */
+        /* SPDX-License-Identifier: Apache-2.0 */
+        const char *const d = (const char *const) (data + offset);
+        int valid = 0;
+
+        assert(2 /*single 8/9*/ + ARRAY_SIZE(packagetypes2) + ARRAY_SIZE(packagetypes3) == 431);
+
+        if (data_len == 1) {
+            valid = *d == '8' || *d == '9';
+        } else if (data_len == 2) {
+            int s = 0;
+            int e = ARRAY_SIZE(packagetypes2);
+
+            while (s < e) {
+                const int m = s + (e - s) / 2;
+                const int cmp = memcmp(packagetypes2[m], d, 2);
+                if (cmp < 0) {
+                    s = m + 1;
+                } else if (cmp > 0) {
+                    e = m;
+                } else {
+                    valid = 1;
+                    break;
+                }
+            }
+        } else if (data_len == 3) {
+            int s = 0;
+            int e = ARRAY_SIZE(packagetypes3);
+
+            while (s < e) {
+                const int m = s + (e - s) / 2;
+                const int cmp = memcmp(packagetypes3[m], d, 3);
+                if (cmp < 0) {
+                    s = m + 1;
+                } else if (cmp > 0) {
+                    e = m;
+                } else {
+                    valid = 1;
+                    break;
+                }
+            }
+        }
+
+        if (!valid) {
+            *p_err_no = 3;
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "Invalid package type '%.*s'", data_len, d);
             return 0;
         }
     }

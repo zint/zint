@@ -34,6 +34,7 @@
 #include "common.h"
 #include "gs1.h"
 
+/* First 5 of each entry Interleaved also */
 static const char C25MatrixTable[10][6] = {
     {'1','1','3','3','1','1'}, {'3','1','1','1','3','1'}, {'1','3','1','1','3','1'}, {'3','3','1','1','1','1'},
     {'1','1','3','1','3','1'}, {'3','1','3','1','1','1'}, {'1','3','3','1','1','1'}, {'1','1','1','3','3','1'},
@@ -52,15 +53,6 @@ static const char C25IndustTable[10][10] = {
 static const char C25MatrixStartStop[2][6] =    { {'4', '1', '1', '1', '1', '1'}, {'4', '1', '1', '1', '1'} };
 static const char C25IndustStartStop[2][6] =    { {'3', '1', '3', '1', '1', '1'}, {'3', '1', '1', '1', '3'} };
 static const char C25IataLogicStartStop[2][6] = { {'1', '1', '1', '1'},           {'3', '1', '1'} };
-
-static const char C25InterTable[10][5] = {
-    {'1','1','3','3','1'}, {'3','1','1','1','3'}, {'1','3','1','1','3'}, {'3','3','1','1','1'}, {'1','1','3','1','3'},
-    {'3','1','3','1','1'}, {'1','3','3','1','1'}, {'1','1','1','3','3'}, {'3','1','1','3','1'}, {'1','3','1','3','1'}
-};
-
-static char c25_check_digit(const unsigned int count) {
-    return itoc((10 - (count % 10)) % 10);
-}
 
 /* Common to Standard (Matrix), Industrial, IATA, and Data Logic */
 static int c25_common(struct zint_symbol *symbol, const unsigned char source[], int length, const int max,
@@ -163,15 +155,16 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
         return ZINT_ERROR_INVALID_DATA;
     }
 
-    temp[0] = '\0';
     /* Input must be an even number of characters for Interlaced 2 of 5 to work:
        if an odd number of characters has been entered and no check digit or an even number and have check digit
        then add a leading zero */
-    if (((length & 1) && !have_checkdigit) || (!(length & 1) && have_checkdigit)) {
-        ustrcpy(temp, "0");
-        length++;
+    if (have_checkdigit == !(length & 1)) {
+        temp[0] = '0';
+        memcpy(temp + 1, source, length++);
+    } else {
+        memcpy(temp, source, length);
     }
-    ustrncat(temp, source, length);
+    temp[length] = '\0';
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
@@ -179,16 +172,16 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
         temp[++length] = '\0';
     }
 
-    /* start character */
+    /* Start character */
     memcpy(d, "1111", 4);
     d += 4;
 
     for (i = 0; i < length; i += 2) {
-        /* look up the bars and the spaces */
-        const char *const bars = C25InterTable[temp[i] - '0'];
-        const char *const spaces = C25InterTable[temp[i + 1] - '0'];
+        /* Look up the bars and the spaces */
+        const char *const bars = C25MatrixTable[temp[i] - '0'];
+        const char *const spaces = C25MatrixTable[temp[i + 1] - '0'];
 
-        /* then merge (interlace) the strings together */
+        /* Then merge (interlace) the strings together */
         for (j = 0; j < 5; j++) {
             *d++ = bars[j];
             *d++ = spaces[j];
@@ -287,6 +280,11 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     return error_number;
 }
 
+/* Deutsche Post check digit */
+static char c25_dp_check_digit(const unsigned int count) {
+    return itoc((10 - (count % 10)) % 10);
+}
+
 /* Deutsche Post Leitcode */
 /* Documentation (of a very incomplete and non-technical type):
 https://www.deutschepost.de/content/dam/dpag/images/D_d/dialogpost-schwer/dp-dialogpost-schwer-broschuere-072021.pdf
@@ -318,7 +316,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
         count += factor * ctoi(localstr[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[13] = c25_check_digit(count);
+    localstr[13] = c25_dp_check_digit(count);
     localstr[14] = '\0';
     error_number = c25_inter_common(symbol, localstr, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
@@ -366,7 +364,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
         count += factor * ctoi(localstr[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[11] = c25_check_digit(count);
+    localstr[11] = c25_dp_check_digit(count);
     localstr[12] = '\0';
     error_number = c25_inter_common(symbol, localstr, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 

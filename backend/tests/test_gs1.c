@@ -1141,261 +1141,265 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
         /*764*/ { "[7040]1abc", 0, "70401abc", "" },
         /*765*/ { "[7040]1ab", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7040)" },
         /*766*/ { "[7040]1abcd", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7040)" },
-        /*767*/ { "[7041]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7041)" },
-        /*768*/ { "[7042]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7042)" },
-        /*769*/ { "[7050]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7050)" },
-        /*770*/ { "[7090]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7090)" },
-        /*771*/ { "[7099]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7099)" },
-        /*772*/ { "[71]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (71)" },
-        /*773*/ { "[710]abcdefghijklmnopqrst", 0, "710abcdefghijklmnopqrst", "" },
-        /*774*/ { "[710]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (710)" },
-        /*775*/ { "[7100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7100)" },
-        /*776*/ { "[711]abcdefghijklmnopqrst", 0, "711abcdefghijklmnopqrst", "" },
-        /*777*/ { "[711]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (711)" },
-        /*778*/ { "[712]abcdefghijklmnopqrst", 0, "712abcdefghijklmnopqrst", "" },
-        /*779*/ { "[712]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (712)" },
-        /*780*/ { "[713]abcdefghijklmnopqrst", 0, "713abcdefghijklmnopqrst", "" },
-        /*781*/ { "[713]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (713)" },
-        /*782*/ { "[714]abcdefghijklmnopqrst", 0, "714abcdefghijklmnopqrst", "" },
-        /*783*/ { "[714]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (714)" },
-        /*784*/ { "[715]abcdefghijklmnopqrst", 0, "715abcdefghijklmnopqrst", "" },
-        /*785*/ { "[715]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (715)" },
-        /*786*/ { "[716]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (716)" },
-        /*787*/ { "[719]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (719)" },
-        /*788*/ { "[72]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (72)" },
-        /*789*/ { "[720]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (720)" },
-        /*790*/ { "[7200]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7200)" },
-        /*791*/ { "[721]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (721)" },
-        /*792*/ { "[7210]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7210)" },
-        /*793*/ { "[7220]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7220)" },
-        /*794*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzab", 0, "7230EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*795*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7230)" },
-        /*796*/ { "[7230]EM", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7230)" },
-        /*797*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzab", 0, "7231EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*798*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7231)" },
-        /*799*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzab", 0, "7232EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*800*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7232)" },
-        /*801*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzab", 0, "7233EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*802*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7233)" },
-        /*803*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzab", 0, "7234EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*804*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7234)" },
-        /*805*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzab", 0, "7235EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*806*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7235)" },
-        /*807*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzab", 0, "7236EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*808*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7236)" },
-        /*809*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzab", 0, "7237EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*810*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7237)" },
-        /*811*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzab", 0, "7238EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*812*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7238)" },
-        /*813*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzab", 0, "7239EMabcdefghijklmnopqrstuvwxyzab", "" },
-        /*814*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7239)" },
-        /*815*/ { "[7239]E", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7239)" },
-        /*816*/ { "[7240]abcdefghijklmnopqrst", 0, "7240abcdefghijklmnopqrst", "" },
-        /*817*/ { "[7240]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7240)" },
-        /*818*/ { "[7241]99", 0, "724199", "" },
-        /*819*/ { "[7241]100", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7241)" },
-        /*820*/ { "[7242]abcdefghijklmnopqrstuvwxy", 0, "7242abcdefghijklmnopqrstuvwxy", "" },
-        /*821*/ { "[7242]abcdefghijklmnopqrstuvwxyz", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7242)" },
-        /*822*/ { "[7243]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7243)" },
-        /*823*/ { "[7249]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7249)" },
-        /*824*/ { "[7250]12341201", 0, "725012341201", "" },
-        /*825*/ { "[7250]123412012", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7250)" },
-        /*826*/ { "[7251]123412011359", 0, "7251123412011359", "" },
-        /*827*/ { "[7251]1234120113591", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7251)" },
-        /*828*/ { "[7252]2", 0, "72522", "" },
-        /*829*/ { "[7252]20", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7252)" },
-        /*830*/ { "[7253]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7253abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
-        /*831*/ { "[7253]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7253)" },
-        /*832*/ { "[7254]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7254abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
-        /*833*/ { "[7254]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7254)" },
-        /*834*/ { "[7255]abcdefghij", 0, "7255abcdefghij", "" },
-        /*835*/ { "[7255]abcdefghijk", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7255)" },
-        /*836*/ { "[7256]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl", 0, "7256abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl", "" },
-        /*837*/ { "[7256]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklm", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7256)" },
-        /*838*/ { "[7257]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr", 0, "7257abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr", "" },
-        /*839*/ { "[7257]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrs", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7257)" },
-        /*840*/ { "[7258]1/1", 0, "72581/1", "" },
-        /*841*/ { "[7258]1/01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7258)" },
-        /*842*/ { "[7259]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7259abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
-        /*843*/ { "[7259]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7259)" },
-        /*844*/ { "[7260]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7260)" },
-        /*845*/ { "[7299]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7299)" },
-        /*846*/ { "[73]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (73)" },
-        /*847*/ { "[7300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7300)" },
-        /*848*/ { "[74]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (74)" },
-        /*849*/ { "[7400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7400)" },
-        /*850*/ { "[79]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (79)" },
-        /*851*/ { "[7900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7900)" },
-        /*852*/ { "[7999]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7999)" },
-        /*853*/ { "[80]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (80)" },
-        /*854*/ { "[800]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (800)" },
-        /*855*/ { "[8000]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8000)" },
-        /*856*/ { "[8001]12345678901234", ZINT_WARN_NONCOMPLIANT, "800112345678901234", "261: AI (8001) position 13: Invalid winding direction '3'" },
-        /*857*/ { "[8001]12345678901204", 0, "800112345678901204", "" },
-        /*858*/ { "[8001]1234123456789012345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8001)" },
-        /*859*/ { "[8002]abcdefghijklmnopqrst", 0, "8002abcdefghijklmnopqrst", "" },
-        /*860*/ { "[8002]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8002)" },
-        /*861*/ { "[8003]01234567890123abcdefghijklmnop", ZINT_WARN_NONCOMPLIANT, "800301234567890123abcdefghijklmnop", "261: AI (8003) position 14: Bad checksum '3', expected '8'" },
-        /*862*/ { "[8003]01234567890128abcdefghijklmnop", 0, "800301234567890128abcdefghijklmnop", "" },
-        /*863*/ { "[8003]01234567890128abcdefghijklmnopq", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8003)" },
-        /*864*/ { "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_WARN_NONCOMPLIANT, "8004abcdefghijklmnopqrstuvwxyz1234", "261: AI (8004) position 1: Non-numeric company prefix 'a'" },
-        /*865*/ { "[8004]12cdefghijklmnopqrstuvwxyz1234", 0, "800412cdefghijklmnopqrstuvwxyz1234", "" },
-        /*866*/ { "[8004]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8004)" },
-        /*867*/ { "[8005]123456", 0, "8005123456", "" },
-        /*868*/ { "[8005]12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8005)" },
-        /*869*/ { "[8005]1234567", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8005)" },
-        /*870*/ { "[8006]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8006123456789012341212", "261: AI (8006) position 14: Bad checksum '4', expected '1'" },
-        /*871*/ { "[8006]123456789012311212", 0, "8006123456789012311212", "" },
-        /*872*/ { "[8006]12345678901234121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8006)" },
-        /*873*/ { "[8006]1234567890123412123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8006)" },
-        /*874*/ { "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_WARN_NONCOMPLIANT, "8007abcdefghijklmnopqrstuvwxyz12345678", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'ab'" },
-        /*875*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", "" },
-        /*876*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ123456789", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8007)" },
-        /*877*/ { "[8008]123456121212", ZINT_WARN_NONCOMPLIANT, "8008123456121212", "261: AI (8008) position 3: Invalid month '34'" },
-        /*878*/ { "[8008]121256121212", ZINT_WARN_NONCOMPLIANT, "8008121256121212", "261: AI (8008) position 5: Invalid day '56'" },
-        /*879*/ { "[8008]121231121212", 0, "8008121231121212", "" },
-        /*880*/ { "[8008]1234561212", ZINT_WARN_NONCOMPLIANT, "80081234561212", "261: AI (8008) position 3: Invalid month '34'" },
-        /*881*/ { "[8008]1212311212", 0, "80081212311212", "" },
-        /*882*/ { "[8008]12345612", ZINT_WARN_NONCOMPLIANT, "800812345612", "261: AI (8008) position 3: Invalid month '34'" },
-        /*883*/ { "[8008]12010112", 0, "800812010112", "" },
-        /*884*/ { "[8008]1234561", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
-        /*885*/ { "[8008]123456121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
-        /*886*/ { "[8008]12345612121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
-        /*887*/ { "[8008]1234561212123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
-        /*888*/ { "[8009]12345678901234567890123456789012345678901234567890", 0, "800912345678901234567890123456789012345678901234567890", "" },
-        /*889*/ { "[8009]123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8009)" },
-        /*890*/ { "[8010]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8010)" },
-        /*891*/ { "[8011]123456789012", 0, "8011123456789012", "" },
-        /*892*/ { "[8011]1234567890123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8011)" },
-        /*893*/ { "[8012]abcdefghijklmnopqrst", 0, "8012abcdefghijklmnopqrst", "" },
-        /*894*/ { "[8012]abcdefghijklmnopqrstuv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8012)" },
-        /*895*/ { "[8013]1234abcdefghijklmnopqrsQP", 0, "80131234abcdefghijklmnopqrsQP", "" },
-        /*896*/ { "[8013]1234abcdefghijklmnopqrsQPv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" },
-        /*897*/ { "[8014]1234abcdefghijklmnopqrsQP", 0, "80141234abcdefghijklmnopqrsQP", "" },
-        /*898*/ { "[8014]1234abcdefghijklmnopqrsQPv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8014)" },
-        /*899*/ { "[8015]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8015)" },
-        /*900*/ { "[8016]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8016)" },
-        /*901*/ { "[8017]313131313131313139", ZINT_WARN_NONCOMPLIANT, "8017313131313131313139", "261: AI (8017) position 18: Bad checksum '9', expected '1'" },
-        /*902*/ { "[8017]313131313131313131", 0, "8017313131313131313131", "" },
-        /*903*/ { "[8017]31313131313131313", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8017)" },
-        /*904*/ { "[8017]3131313131313131390", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8017)" },
-        /*905*/ { "[8018]313131313131313139", ZINT_WARN_NONCOMPLIANT, "8018313131313131313139", "261: AI (8018) position 18: Bad checksum '9', expected '1'" },
-        /*906*/ { "[8018]313131313131313131", 0, "8018313131313131313131", "" },
-        /*907*/ { "[8018]31313131313131313", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8018)" },
-        /*908*/ { "[8018]3131313131313131390", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8018)" },
-        /*909*/ { "[8019]1234567890", 0, "80191234567890", "" },
-        /*910*/ { "[8019]12345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8019)" },
-        /*911*/ { "[8020]abcdefghijklmnopqrstuvwxy", 0, "8020abcdefghijklmnopqrstuvwxy", "" },
-        /*912*/ { "[8020]abcdefghijklmnopqrstuvwxyz", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8020)" },
-        /*913*/ { "[8021]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8021)" },
-        /*914*/ { "[8025]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8025)" },
-        /*915*/ { "[8026]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8026123456789012341212", "261: AI (8026) position 14: Bad checksum '4', expected '1'" },
-        /*916*/ { "[8026]123456789012311212", 0, "8026123456789012311212", "" },
-        /*917*/ { "[8026]1234567890123451212", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8026)" },
-        /*918*/ { "[8026]12345678901234512", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8026)" },
-        /*919*/ { "[8027]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8027)" },
-        /*920*/ { "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "8030-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" },
-        /*921*/ { "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ1", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8030)" },
-        /*922*/ { "[8031]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8031)" },
-        /*923*/ { "[8040]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8040)" },
-        /*924*/ { "[8050]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8050)" },
-        /*925*/ { "[8060]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8060)" },
-        /*926*/ { "[8070]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8070)" },
-        /*927*/ { "[8080]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8080)" },
-        /*928*/ { "[8090]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8090)" },
-        /*929*/ { "[8099]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8099)" },
-        /*930*/ { "[81]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (81)" },
-        /*931*/ { "[8100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8100)" },
-        /*932*/ { "[8109]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8109)" },
-        /*933*/ { "[8110]5123456789011234565123455123450123105123450123512345678901320123190000", 0, "81105123456789011234565123455123450123105123450123512345678901320123190000", "" },
-        /*934*/ { "[8110]51234567890112345651234551234501231051234501235123456789013201231900001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" },
-        /*935*/ { "[8111]1234", 0, "81111234", "" },
-        /*936*/ { "[8111]12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8111)" },
-        /*937*/ { "[8111]123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8111)" },
-        /*938*/ { "[8112]1234567890123456789012345678901234567890123456789012345678901234567890", ZINT_WARN_NONCOMPLIANT, "81121234567890123456789012345678901234567890123456789012345678901234567890", "259: Invalid data length for AI (8112)" },
-        /*939*/ { "[8112]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8112)" },
-        /*940*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" },
-        /*941*/ { "[8113]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8113)" },
-        /*942*/ { "[8120]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8120)" },
-        /*943*/ { "[8130]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8130)" },
-        /*944*/ { "[8140]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8140)" },
-        /*945*/ { "[8150]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8150)" },
-        /*946*/ { "[8190]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8190)" },
-        /*947*/ { "[8199]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8199)" },
-        /*948*/ { "[82]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (82)" },
-        /*949*/ { "[8200]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "82001234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*950*/ { "[8201]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8201)" },
-        /*951*/ { "[8210]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8210)" },
-        /*952*/ { "[8220]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8220)" },
-        /*953*/ { "[8230]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8230)" },
-        /*954*/ { "[8240]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8240)" },
-        /*955*/ { "[8250]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8250)" },
-        /*956*/ { "[8290]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8290)" },
-        /*957*/ { "[8299]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8299)" },
-        /*958*/ { "[83]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (83)" },
-        /*959*/ { "[830]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (830)" },
-        /*960*/ { "[8300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8300)" },
-        /*961*/ { "[84]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (84)" },
-        /*962*/ { "[840]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (840)" },
-        /*963*/ { "[8400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8400)" },
-        /*964*/ { "[85]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (85)" },
-        /*965*/ { "[850]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (850)" },
-        /*966*/ { "[8500]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8500)" },
-        /*967*/ { "[89]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (89)" },
-        /*968*/ { "[890]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (890)" },
-        /*969*/ { "[8900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8900)" },
-        /*970*/ { "[90]abcdefghijklmnopqrstuvwxyz1234", 0, "90abcdefghijklmnopqrstuvwxyz1234", "" },
-        /*971*/ { "[90]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (90)" },
-        /*972*/ { "[900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (900)" },
-        /*973*/ { "[9000]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9000)" },
-        /*974*/ { "[91]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "91123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*975*/ { "[91]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (91)" },
-        /*976*/ { "[910]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (910)" },
-        /*977*/ { "[9100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9100)" },
-        /*978*/ { "[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "92123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*979*/ { "[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (92)" },
-        /*980*/ { "[920]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (920)" },
-        /*981*/ { "[9200]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9200)" },
-        /*982*/ { "[93]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "93123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*983*/ { "[93]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (93)" },
-        /*984*/ { "[930]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (930)" },
-        /*985*/ { "[9300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9300)" },
-        /*986*/ { "[94]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "94123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*987*/ { "[94]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (94)" },
-        /*988*/ { "[940]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (940)" },
-        /*989*/ { "[9400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9400)" },
-        /*990*/ { "[95]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "95123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*991*/ { "[95]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (95)" },
-        /*992*/ { "[950]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (950)" },
-        /*993*/ { "[9500]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9500)" },
-        /*994*/ { "[96]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "96123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*995*/ { "[96]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (96)" },
-        /*996*/ { "[960]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (960)" },
-        /*997*/ { "[9600]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9600)" },
-        /*998*/ { "[97]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "97123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*999*/ { "[97]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (97)" },
-        /*1000*/ { "[970]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (970)" },
-        /*1001*/ { "[9700]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9700)" },
-        /*1002*/ { "[98]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "98123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*1003*/ { "[98]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (98)" },
-        /*1004*/ { "[980]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (980)" },
-        /*1005*/ { "[9800]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9800)" },
-        /*1006*/ { "[99]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "99123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
-        /*1007*/ { "[99]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (99)" },
-        /*1008*/ { "[990]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (990)" },
-        /*1009*/ { "[9900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9900)" },
-        /*1010*/ { "[9999]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9999)" },
-        /*1011*/ { "[01]12345678901234[7006]200101", ZINT_WARN_NONCOMPLIANT, "01123456789012347006200101", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
-        /*1012*/ { "[01]12345678901231[7006]200101", 0, "01123456789012317006200101", "" },
-        /*1013*/ { "[3900]1234567890[01]12345678901234", ZINT_WARN_NONCOMPLIANT, "39001234567890\0350112345678901234", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
-        /*1014*/ { "[3900]1234567890[01]12345678901231", 0, "39001234567890\0350112345678901231", "" },
-        /*1015*/ { "[253]12345678901234[3901]12345678901234[20]12", ZINT_WARN_NONCOMPLIANT, "25312345678901234\035390112345678901234\0352012", "261: AI (253) position 13: Bad checksum '3', expected '8'" },
-        /*1016*/ { "[253]12345678901284[3901]12345678901234[20]12", 0, "25312345678901284\035390112345678901234\0352012", "" },
-        /*1017*/ { "[253]12345678901234[01]12345678901234[3901]12345678901234[20]12", ZINT_WARN_NONCOMPLIANT, "25312345678901234\0350112345678901234390112345678901234\0352012", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
-        /*1018*/ { "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12", 0, "25312345678901284\0350112345678901231390112345678901234\0352012", "" },
-        /*1019*/ { "[01]12345678901231[0A]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "257: Invalid AI in input data (non-numeric characters in AI)" },
-        /*1020*/ { "[01]12345678901231[0]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "256: Invalid AI in input data (AI too short)" },
-        /*1021*/ { "[01]12345678901231[]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "256: Invalid AI in input data (AI too short)" },
+        /*767*/ { "[7041]BGE", 0, "7041BGE", "" },
+        /*768*/ { "[7041]12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7041)" },
+        /*769*/ { "[7042]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7042)" },
+        /*770*/ { "[7050]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7050)" },
+        /*771*/ { "[7090]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7090)" },
+        /*772*/ { "[7099]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7099)" },
+        /*773*/ { "[71]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (71)" },
+        /*774*/ { "[710]abcdefghijklmnopqrst", 0, "710abcdefghijklmnopqrst", "" },
+        /*775*/ { "[710]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (710)" },
+        /*776*/ { "[7100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7100)" },
+        /*777*/ { "[711]abcdefghijklmnopqrst", 0, "711abcdefghijklmnopqrst", "" },
+        /*778*/ { "[711]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (711)" },
+        /*779*/ { "[712]abcdefghijklmnopqrst", 0, "712abcdefghijklmnopqrst", "" },
+        /*780*/ { "[712]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (712)" },
+        /*781*/ { "[713]abcdefghijklmnopqrst", 0, "713abcdefghijklmnopqrst", "" },
+        /*782*/ { "[713]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (713)" },
+        /*783*/ { "[714]abcdefghijklmnopqrst", 0, "714abcdefghijklmnopqrst", "" },
+        /*784*/ { "[714]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (714)" },
+        /*785*/ { "[715]abcdefghijklmnopqrst", 0, "715abcdefghijklmnopqrst", "" },
+        /*786*/ { "[715]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (715)" },
+        /*787*/ { "[716]abcdefghijklmnopqrst", 0, "716abcdefghijklmnopqrst", "" },
+        /*788*/ { "[716]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (716)" },
+        /*789*/ { "[717]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (717)" },
+        /*790*/ { "[718]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (718)" },
+        /*791*/ { "[719]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (719)" },
+        /*792*/ { "[72]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (72)" },
+        /*793*/ { "[720]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (720)" },
+        /*794*/ { "[7200]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7200)" },
+        /*795*/ { "[721]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (721)" },
+        /*796*/ { "[7210]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7210)" },
+        /*797*/ { "[7220]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7220)" },
+        /*798*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzab", 0, "7230EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*799*/ { "[7230]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7230)" },
+        /*800*/ { "[7230]EM", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7230)" },
+        /*801*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzab", 0, "7231EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*802*/ { "[7231]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7231)" },
+        /*803*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzab", 0, "7232EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*804*/ { "[7232]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7232)" },
+        /*805*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzab", 0, "7233EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*806*/ { "[7233]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7233)" },
+        /*807*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzab", 0, "7234EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*808*/ { "[7234]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7234)" },
+        /*809*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzab", 0, "7235EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*810*/ { "[7235]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7235)" },
+        /*811*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzab", 0, "7236EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*812*/ { "[7236]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7236)" },
+        /*813*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzab", 0, "7237EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*814*/ { "[7237]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7237)" },
+        /*815*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzab", 0, "7238EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*816*/ { "[7238]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7238)" },
+        /*817*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzab", 0, "7239EMabcdefghijklmnopqrstuvwxyzab", "" },
+        /*818*/ { "[7239]EMabcdefghijklmnopqrstuvwxyzabc", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7239)" },
+        /*819*/ { "[7239]E", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7239)" },
+        /*820*/ { "[7240]abcdefghijklmnopqrst", 0, "7240abcdefghijklmnopqrst", "" },
+        /*821*/ { "[7240]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7240)" },
+        /*822*/ { "[7241]99", 0, "724199", "" },
+        /*823*/ { "[7241]100", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7241)" },
+        /*824*/ { "[7242]abcdefghijklmnopqrstuvwxy", 0, "7242abcdefghijklmnopqrstuvwxy", "" },
+        /*825*/ { "[7242]abcdefghijklmnopqrstuvwxyz", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7242)" },
+        /*826*/ { "[7243]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7243)" },
+        /*827*/ { "[7249]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7249)" },
+        /*828*/ { "[7250]12341201", 0, "725012341201", "" },
+        /*829*/ { "[7250]123412012", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7250)" },
+        /*830*/ { "[7251]123412011359", 0, "7251123412011359", "" },
+        /*831*/ { "[7251]1234120113591", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7251)" },
+        /*832*/ { "[7252]2", 0, "72522", "" },
+        /*833*/ { "[7252]20", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7252)" },
+        /*834*/ { "[7253]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7253abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
+        /*835*/ { "[7253]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7253)" },
+        /*836*/ { "[7254]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7254abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
+        /*837*/ { "[7254]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7254)" },
+        /*838*/ { "[7255]abcdefghij", 0, "7255abcdefghij", "" },
+        /*839*/ { "[7255]abcdefghijk", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7255)" },
+        /*840*/ { "[7256]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl", 0, "7256abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijkl", "" },
+        /*841*/ { "[7256]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklm", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7256)" },
+        /*842*/ { "[7257]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr", 0, "7257abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqr", "" },
+        /*843*/ { "[7257]abcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrstuvwxyzabcdefghijklmnopqrs", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7257)" },
+        /*844*/ { "[7258]1/1", 0, "72581/1", "" },
+        /*845*/ { "[7258]1/01", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7258)" },
+        /*846*/ { "[7259]abcdefghijklmnopqrstuvwxyzabcdefghijklmn", 0, "7259abcdefghijklmnopqrstuvwxyzabcdefghijklmn", "" },
+        /*847*/ { "[7259]abcdefghijklmnopqrstuvwxyzabcdefghijklmno", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (7259)" },
+        /*848*/ { "[7260]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7260)" },
+        /*849*/ { "[7299]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7299)" },
+        /*850*/ { "[73]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (73)" },
+        /*851*/ { "[7300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7300)" },
+        /*852*/ { "[74]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (74)" },
+        /*853*/ { "[7400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7400)" },
+        /*854*/ { "[79]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (79)" },
+        /*855*/ { "[7900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7900)" },
+        /*856*/ { "[7999]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (7999)" },
+        /*857*/ { "[80]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (80)" },
+        /*858*/ { "[800]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (800)" },
+        /*859*/ { "[8000]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8000)" },
+        /*860*/ { "[8001]12345678901234", ZINT_WARN_NONCOMPLIANT, "800112345678901234", "261: AI (8001) position 13: Invalid winding direction '3'" },
+        /*861*/ { "[8001]12345678901204", 0, "800112345678901204", "" },
+        /*862*/ { "[8001]1234123456789012345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8001)" },
+        /*863*/ { "[8002]abcdefghijklmnopqrst", 0, "8002abcdefghijklmnopqrst", "" },
+        /*864*/ { "[8002]abcdefghijklmnopqrstu", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8002)" },
+        /*865*/ { "[8003]01234567890123abcdefghijklmnop", ZINT_WARN_NONCOMPLIANT, "800301234567890123abcdefghijklmnop", "261: AI (8003) position 14: Bad checksum '3', expected '8'" },
+        /*866*/ { "[8003]01234567890128abcdefghijklmnop", 0, "800301234567890128abcdefghijklmnop", "" },
+        /*867*/ { "[8003]01234567890128abcdefghijklmnopq", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8003)" },
+        /*868*/ { "[8004]abcdefghijklmnopqrstuvwxyz1234", ZINT_WARN_NONCOMPLIANT, "8004abcdefghijklmnopqrstuvwxyz1234", "261: AI (8004) position 1: Non-numeric company prefix 'a'" },
+        /*869*/ { "[8004]12cdefghijklmnopqrstuvwxyz1234", 0, "800412cdefghijklmnopqrstuvwxyz1234", "" },
+        /*870*/ { "[8004]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8004)" },
+        /*871*/ { "[8005]123456", 0, "8005123456", "" },
+        /*872*/ { "[8005]12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8005)" },
+        /*873*/ { "[8005]1234567", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8005)" },
+        /*874*/ { "[8006]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8006123456789012341212", "261: AI (8006) position 14: Bad checksum '4', expected '1'" },
+        /*875*/ { "[8006]123456789012311212", 0, "8006123456789012311212", "" },
+        /*876*/ { "[8006]12345678901234121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8006)" },
+        /*877*/ { "[8006]1234567890123412123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8006)" },
+        /*878*/ { "[8007]abcdefghijklmnopqrstuvwxyz12345678", ZINT_WARN_NONCOMPLIANT, "8007abcdefghijklmnopqrstuvwxyz12345678", "261: AI (8007) position 1: Non-alphabetic IBAN country code 'ab'" },
+        /*879*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", 0, "8007AD95EFGHIJKLMNOPQRSTUVWXYZ12345678", "" },
+        /*880*/ { "[8007]AD95EFGHIJKLMNOPQRSTUVWXYZ123456789", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8007)" },
+        /*881*/ { "[8008]123456121212", ZINT_WARN_NONCOMPLIANT, "8008123456121212", "261: AI (8008) position 3: Invalid month '34'" },
+        /*882*/ { "[8008]121256121212", ZINT_WARN_NONCOMPLIANT, "8008121256121212", "261: AI (8008) position 5: Invalid day '56'" },
+        /*883*/ { "[8008]121231121212", 0, "8008121231121212", "" },
+        /*884*/ { "[8008]1234561212", ZINT_WARN_NONCOMPLIANT, "80081234561212", "261: AI (8008) position 3: Invalid month '34'" },
+        /*885*/ { "[8008]1212311212", 0, "80081212311212", "" },
+        /*886*/ { "[8008]12345612", ZINT_WARN_NONCOMPLIANT, "800812345612", "261: AI (8008) position 3: Invalid month '34'" },
+        /*887*/ { "[8008]12010112", 0, "800812010112", "" },
+        /*888*/ { "[8008]1234561", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
+        /*889*/ { "[8008]123456121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
+        /*890*/ { "[8008]12345612121", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
+        /*891*/ { "[8008]1234561212123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8008)" },
+        /*892*/ { "[8009]12345678901234567890123456789012345678901234567890", 0, "800912345678901234567890123456789012345678901234567890", "" },
+        /*893*/ { "[8009]123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8009)" },
+        /*894*/ { "[8010]1234abcdefghijklmnopqrstuvwxyz1", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8010)" },
+        /*895*/ { "[8011]123456789012", 0, "8011123456789012", "" },
+        /*896*/ { "[8011]1234567890123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8011)" },
+        /*897*/ { "[8012]abcdefghijklmnopqrst", 0, "8012abcdefghijklmnopqrst", "" },
+        /*898*/ { "[8012]abcdefghijklmnopqrstuv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8012)" },
+        /*899*/ { "[8013]1234abcdefghijklmnopqrsQP", 0, "80131234abcdefghijklmnopqrsQP", "" },
+        /*900*/ { "[8013]1234abcdefghijklmnopqrsQPv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8013)" },
+        /*901*/ { "[8014]1234abcdefghijklmnopqrsQP", 0, "80141234abcdefghijklmnopqrsQP", "" },
+        /*902*/ { "[8014]1234abcdefghijklmnopqrsQPv", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8014)" },
+        /*903*/ { "[8015]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8015)" },
+        /*904*/ { "[8016]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8016)" },
+        /*905*/ { "[8017]313131313131313139", ZINT_WARN_NONCOMPLIANT, "8017313131313131313139", "261: AI (8017) position 18: Bad checksum '9', expected '1'" },
+        /*906*/ { "[8017]313131313131313131", 0, "8017313131313131313131", "" },
+        /*907*/ { "[8017]31313131313131313", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8017)" },
+        /*908*/ { "[8017]3131313131313131390", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8017)" },
+        /*909*/ { "[8018]313131313131313139", ZINT_WARN_NONCOMPLIANT, "8018313131313131313139", "261: AI (8018) position 18: Bad checksum '9', expected '1'" },
+        /*910*/ { "[8018]313131313131313131", 0, "8018313131313131313131", "" },
+        /*911*/ { "[8018]31313131313131313", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8018)" },
+        /*912*/ { "[8018]3131313131313131390", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8018)" },
+        /*913*/ { "[8019]1234567890", 0, "80191234567890", "" },
+        /*914*/ { "[8019]12345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8019)" },
+        /*915*/ { "[8020]abcdefghijklmnopqrstuvwxy", 0, "8020abcdefghijklmnopqrstuvwxy", "" },
+        /*916*/ { "[8020]abcdefghijklmnopqrstuvwxyz", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8020)" },
+        /*917*/ { "[8021]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8021)" },
+        /*918*/ { "[8025]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8025)" },
+        /*919*/ { "[8026]123456789012341212", ZINT_WARN_NONCOMPLIANT, "8026123456789012341212", "261: AI (8026) position 14: Bad checksum '4', expected '1'" },
+        /*920*/ { "[8026]123456789012311212", 0, "8026123456789012311212", "" },
+        /*921*/ { "[8026]1234567890123451212", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8026)" },
+        /*922*/ { "[8026]12345678901234512", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8026)" },
+        /*923*/ { "[8027]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8027)" },
+        /*924*/ { "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, "8030-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ", "" },
+        /*925*/ { "[8030]-1234567890ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz_ABCDEFGHIJKLMNOPQRSTUVWXYZ1", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8030)" },
+        /*926*/ { "[8031]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8031)" },
+        /*927*/ { "[8040]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8040)" },
+        /*928*/ { "[8050]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8050)" },
+        /*929*/ { "[8060]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8060)" },
+        /*930*/ { "[8070]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8070)" },
+        /*931*/ { "[8080]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8080)" },
+        /*932*/ { "[8090]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8090)" },
+        /*933*/ { "[8099]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8099)" },
+        /*934*/ { "[81]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (81)" },
+        /*935*/ { "[8100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8100)" },
+        /*936*/ { "[8109]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8109)" },
+        /*937*/ { "[8110]5123456789011234565123455123450123105123450123512345678901320123190000", 0, "81105123456789011234565123455123450123105123450123512345678901320123190000", "" },
+        /*938*/ { "[8110]51234567890112345651234551234501231051234501235123456789013201231900001", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8110)" },
+        /*939*/ { "[8111]1234", 0, "81111234", "" },
+        /*940*/ { "[8111]12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8111)" },
+        /*941*/ { "[8111]123", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8111)" },
+        /*942*/ { "[8112]1234567890123456789012345678901234567890123456789012345678901234567890", ZINT_WARN_NONCOMPLIANT, "81121234567890123456789012345678901234567890123456789012345678901234567890", "259: Invalid data length for AI (8112)" },
+        /*943*/ { "[8112]12345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (8112)" },
+        /*944*/ { "[8112]061234567890121234569123456789012345", 0, "8112061234567890121234569123456789012345", "" },
+        /*945*/ { "[8113]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8113)" },
+        /*946*/ { "[8120]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8120)" },
+        /*947*/ { "[8130]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8130)" },
+        /*948*/ { "[8140]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8140)" },
+        /*949*/ { "[8150]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8150)" },
+        /*950*/ { "[8190]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8190)" },
+        /*951*/ { "[8199]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8199)" },
+        /*952*/ { "[82]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (82)" },
+        /*953*/ { "[8200]1234567890123456789012345678901234567890123456789012345678901234567890", 0, "82001234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*954*/ { "[8201]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8201)" },
+        /*955*/ { "[8210]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8210)" },
+        /*956*/ { "[8220]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8220)" },
+        /*957*/ { "[8230]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8230)" },
+        /*958*/ { "[8240]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8240)" },
+        /*959*/ { "[8250]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8250)" },
+        /*960*/ { "[8290]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8290)" },
+        /*961*/ { "[8299]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8299)" },
+        /*962*/ { "[83]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (83)" },
+        /*963*/ { "[830]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (830)" },
+        /*964*/ { "[8300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8300)" },
+        /*965*/ { "[84]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (84)" },
+        /*966*/ { "[840]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (840)" },
+        /*967*/ { "[8400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8400)" },
+        /*968*/ { "[85]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (85)" },
+        /*969*/ { "[850]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (850)" },
+        /*970*/ { "[8500]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8500)" },
+        /*971*/ { "[89]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (89)" },
+        /*972*/ { "[890]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (890)" },
+        /*973*/ { "[8900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (8900)" },
+        /*974*/ { "[90]abcdefghijklmnopqrstuvwxyz1234", 0, "90abcdefghijklmnopqrstuvwxyz1234", "" },
+        /*975*/ { "[90]abcdefghijklmnopqrstuvwxyz12345", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (90)" },
+        /*976*/ { "[900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (900)" },
+        /*977*/ { "[9000]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9000)" },
+        /*978*/ { "[91]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "91123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*979*/ { "[91]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (91)" },
+        /*980*/ { "[910]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (910)" },
+        /*981*/ { "[9100]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9100)" },
+        /*982*/ { "[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "92123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*983*/ { "[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (92)" },
+        /*984*/ { "[920]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (920)" },
+        /*985*/ { "[9200]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9200)" },
+        /*986*/ { "[93]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "93123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*987*/ { "[93]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (93)" },
+        /*988*/ { "[930]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (930)" },
+        /*989*/ { "[9300]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9300)" },
+        /*990*/ { "[94]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "94123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*991*/ { "[94]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (94)" },
+        /*992*/ { "[940]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (940)" },
+        /*993*/ { "[9400]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9400)" },
+        /*994*/ { "[95]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "95123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*995*/ { "[95]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (95)" },
+        /*996*/ { "[950]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (950)" },
+        /*997*/ { "[9500]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9500)" },
+        /*998*/ { "[96]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "96123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*999*/ { "[96]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (96)" },
+        /*1000*/ { "[960]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (960)" },
+        /*1001*/ { "[9600]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9600)" },
+        /*1002*/ { "[97]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "97123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*1003*/ { "[97]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (97)" },
+        /*1004*/ { "[970]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (970)" },
+        /*1005*/ { "[9700]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9700)" },
+        /*1006*/ { "[98]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "98123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*1007*/ { "[98]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (98)" },
+        /*1008*/ { "[980]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (980)" },
+        /*1009*/ { "[9800]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9800)" },
+        /*1010*/ { "[99]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, "99123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", "" },
+        /*1011*/ { "[99]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_INVALID_DATA, "", "259: Invalid data length for AI (99)" },
+        /*1012*/ { "[990]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (990)" },
+        /*1013*/ { "[9900]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9900)" },
+        /*1014*/ { "[9999]1234", ZINT_ERROR_INVALID_DATA, "", "260: Invalid AI (9999)" },
+        /*1015*/ { "[01]12345678901234[7006]200101", ZINT_WARN_NONCOMPLIANT, "01123456789012347006200101", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
+        /*1016*/ { "[01]12345678901231[7006]200101", 0, "01123456789012317006200101", "" },
+        /*1017*/ { "[3900]1234567890[01]12345678901234", ZINT_WARN_NONCOMPLIANT, "39001234567890\0350112345678901234", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
+        /*1018*/ { "[3900]1234567890[01]12345678901231", 0, "39001234567890\0350112345678901231", "" },
+        /*1019*/ { "[253]12345678901234[3901]12345678901234[20]12", ZINT_WARN_NONCOMPLIANT, "25312345678901234\035390112345678901234\0352012", "261: AI (253) position 13: Bad checksum '3', expected '8'" },
+        /*1020*/ { "[253]12345678901284[3901]12345678901234[20]12", 0, "25312345678901284\035390112345678901234\0352012", "" },
+        /*1021*/ { "[253]12345678901234[01]12345678901234[3901]12345678901234[20]12", ZINT_WARN_NONCOMPLIANT, "25312345678901234\0350112345678901234390112345678901234\0352012", "261: AI (01) position 14: Bad checksum '4', expected '1'" },
+        /*1022*/ { "[253]12345678901284[01]12345678901231[3901]12345678901234[20]12", 0, "25312345678901284\0350112345678901231390112345678901234\0352012", "" },
+        /*1023*/ { "[01]12345678901231[0A]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "257: Invalid AI in input data (non-numeric characters in AI)" },
+        /*1024*/ { "[01]12345678901231[0]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "256: Invalid AI in input data (AI too short)" },
+        /*1025*/ { "[01]12345678901231[]12345678901231[20]12", ZINT_ERROR_INVALID_DATA, "", "256: Invalid AI in input data (AI too short)" },
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1880,6 +1884,224 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
         /*428*/ { "[7258]1/A", ZINT_WARN_NONCOMPLIANT, "72581/A", "261: AI (7258) position 3: Invalid character 'A' in sequence" }, /* posinseqslash */
         /*429*/ { "[8014]990000A35", 0, "8014990000A35", "" }, /* hasnondigit */
         /*430*/ { "[8014]990000025", ZINT_WARN_NONCOMPLIANT, "8014990000025", "261: AI (8014) position 1: A non-digit character is required" }, /* hasnondigit */
+        /*431*/ { "[7041]8", 0, "70418", "" }, /* packagetype */
+        /*432*/ { "[7041]9", 0, "70419", "" }, /* packagetype */
+        /*433*/ { "[7041]9[00]123456789012345675", 0, "70419\03500123456789012345675", "" }, /* packagetype */
+        /*434*/ { "[7041]20", ZINT_WARN_NONCOMPLIANT, "704120", "261: AI (7041) position 1: Invalid package type '20'" }, /* packagetype */
+        /*435*/ { "[7041]20[00]123456789012345675", ZINT_WARN_NONCOMPLIANT, "704120\03500123456789012345675", "261: AI (7041) position 1: Invalid package type '20'" }, /* packagetype */
+        /*436*/ { "[7041]200", 0, "7041200", "" }, /* packagetype */
+        /*437*/ { "[7041]200[00]123456789012345675", 0, "7041200\03500123456789012345675", "" }, /* packagetype */
+        /*438*/ { "[7041]2000", ZINT_WARN_NONCOMPLIANT, "70412000", "261: AI (7041) position 1: Invalid package type '2000'" }, /* packagetype */
+        /*439*/ { "[7041]200_", ZINT_WARN_NONCOMPLIANT, "7041200_", "261: AI (7041) position 1: Invalid package type '200_'" }, /* packagetype */
+        /*440*/ { "[7041]_", ZINT_WARN_NONCOMPLIANT, "7041_", "261: AI (7041) position 1: Invalid package type '_'" }, /* packagetype */
+        /*441*/ { "[7041]_9", ZINT_WARN_NONCOMPLIANT, "7041_9", "261: AI (7041) position 1: Invalid package type '_9'" }, /* packagetype */
+        /*442*/ { "[7041]9_", ZINT_WARN_NONCOMPLIANT, "70419_", "261: AI (7041) position 1: Invalid package type '9_'" }, /* packagetype */
+        /*443*/ { "[7041]/", ZINT_WARN_NONCOMPLIANT, "7041/", "261: AI (7041) position 1: Invalid package type '/'" }, /* packagetype */
+        /*444*/ { "[7041]/9", ZINT_WARN_NONCOMPLIANT, "7041/9", "261: AI (7041) position 1: Invalid package type '/9'" }, /* packagetype */
+        /*445*/ { "[7041]9/", ZINT_WARN_NONCOMPLIANT, "70419/", "261: AI (7041) position 1: Invalid package type '9/'" }, /* packagetype */
+        /*446*/ { "[7041]0", ZINT_WARN_NONCOMPLIANT, "70410", "261: AI (7041) position 1: Invalid package type '0'" }, /* packagetype */
+        /*447*/ { "[7041]00", ZINT_WARN_NONCOMPLIANT, "704100", "261: AI (7041) position 1: Invalid package type '00'" }, /* packagetype */
+        /*448*/ { "[7041]000", ZINT_WARN_NONCOMPLIANT, "7041000", "261: AI (7041) position 1: Invalid package type '000'" }, /* packagetype */
+        /*449*/ { "[7041]0000", ZINT_WARN_NONCOMPLIANT, "70410000", "261: AI (7041) position 1: Invalid package type '0000'" }, /* packagetype */
+        /*450*/ { "[7041]1", ZINT_WARN_NONCOMPLIANT, "70411", "261: AI (7041) position 1: Invalid package type '1'" }, /* packagetype */
+        /*451*/ { "[7041]//", ZINT_WARN_NONCOMPLIANT, "7041//", "261: AI (7041) position 1: Invalid package type '//'" }, /* packagetype */
+        /*452*/ { "[7041]11", ZINT_WARN_NONCOMPLIANT, "704111", "261: AI (7041) position 1: Invalid package type '11'" }, /* packagetype */
+        /*453*/ { "[7041]1A", 0, "70411A", "" }, /* packagetype */
+        /*454*/ { "[7041]1A1", ZINT_WARN_NONCOMPLIANT, "70411A1", "261: AI (7041) position 1: Invalid package type '1A1'" }, /* packagetype */
+        /*455*/ { "[7041]1_A1", ZINT_WARN_NONCOMPLIANT, "70411_A1", "261: AI (7041) position 1: Invalid package type '1_A1'" }, /* packagetype */
+        /*456*/ { "[7041]1A1_", ZINT_WARN_NONCOMPLIANT, "70411A1_", "261: AI (7041) position 1: Invalid package type '1A1_'" }, /* packagetype */
+        /*457*/ { "[7041]1B", 0, "70411B", "" }, /* packagetype */
+        /*458*/ { "[7041]1W", 0, "70411W", "" }, /* packagetype */
+        /*459*/ { "[7041]1X", ZINT_WARN_NONCOMPLIANT, "70411X", "261: AI (7041) position 1: Invalid package type '1X'" }, /* packagetype */
+        /*460*/ { "[7041]2A", ZINT_WARN_NONCOMPLIANT, "70412A", "261: AI (7041) position 1: Invalid package type '2A'" }, /* packagetype */
+        /*461*/ { "[7041]2B", ZINT_WARN_NONCOMPLIANT, "70412B", "261: AI (7041) position 1: Invalid package type '2B'" }, /* packagetype */
+        /*462*/ { "[7041]2C", 0, "70412C", "" }, /* packagetype */
+        /*463*/ { "[7041]2D", ZINT_WARN_NONCOMPLIANT, "70412D", "261: AI (7041) position 1: Invalid package type '2D'" }, /* packagetype */
+        /*464*/ { "[7041]3A", 0, "70413A", "" }, /* packagetype */
+        /*465*/ { "[7041]3H", 0, "70413H", "" }, /* packagetype */
+        /*466*/ { "[7041]42", ZINT_WARN_NONCOMPLIANT, "704142", "261: AI (7041) position 1: Invalid package type '42'" }, /* packagetype */
+        /*467*/ { "[7041]43", 0, "704143", "" }, /* packagetype */
+        /*468*/ { "[7041]44", 0, "704144", "" }, /* packagetype */
+        /*469*/ { "[7041]45", ZINT_WARN_NONCOMPLIANT, "704145", "261: AI (7041) position 1: Invalid package type '45'" }, /* packagetype */
+        /*470*/ { "[7041]4A", 0, "70414A", "" }, /* packagetype */
+        /*471*/ { "[7041]4H", 0, "70414H", "" }, /* packagetype */
+        /*472*/ { "[7041]4I", ZINT_WARN_NONCOMPLIANT, "70414I", "261: AI (7041) position 1: Invalid package type '4I'" }, /* packagetype */
+        /*473*/ { "[7041]5H", 0, "70415H", "" }, /* packagetype */
+        /*474*/ { "[7041]5K", ZINT_WARN_NONCOMPLIANT, "70415K", "261: AI (7041) position 1: Invalid package type '5K'" }, /* packagetype */
+        /*475*/ { "[7041]5M", 0, "70415M", "" }, /* packagetype */
+        /*476*/ { "[7041]6H", 0, "70416H", "" }, /* packagetype */
+        /*477*/ { "[7041]6I", ZINT_WARN_NONCOMPLIANT, "70416I", "261: AI (7041) position 1: Invalid package type '6I'" }, /* packagetype */
+        /*478*/ { "[7041]7B", 0, "70417B", "" }, /* packagetype */
+        /*479*/ { "[7041]7C", ZINT_WARN_NONCOMPLIANT, "70417C", "261: AI (7041) position 1: Invalid package type '7C'" }, /* packagetype */
+        /*480*/ { "[7041]81", ZINT_WARN_NONCOMPLIANT, "704181", "261: AI (7041) position 1: Invalid package type '81'" }, /* packagetype */
+        /*481*/ { "[7041]8A", 0, "70418A", "" }, /* packagetype */
+        /*482*/ { "[7041]8C", 0, "70418C", "" }, /* packagetype */
+        /*483*/ { "[7041]90", ZINT_WARN_NONCOMPLIANT, "704190", "261: AI (7041) position 1: Invalid package type '90'" }, /* packagetype */
+        /*484*/ { "[7041]AA", 0, "7041AA", "" }, /* packagetype */
+        /*485*/ { "[7041]AB", 0, "7041AB", "" }, /* packagetype */
+        /*486*/ { "[7041]AJ", 0, "7041AJ", "" }, /* packagetype */
+        /*487*/ { "[7041]AK", ZINT_WARN_NONCOMPLIANT, "7041AK", "261: AI (7041) position 1: Invalid package type 'AK'" }, /* packagetype */
+        /*488*/ { "[7041]AM", 0, "7041AM", "" }, /* packagetype */
+        /*489*/ { "[7041]AP", 0, "7041AP", "" }, /* packagetype */
+        /*490*/ { "[7041]AV", 0, "7041AV", "" }, /* packagetype */
+        /*491*/ { "[7041]B3", ZINT_WARN_NONCOMPLIANT, "7041B3", "261: AI (7041) position 1: Invalid package type 'B3'" }, /* packagetype */
+        /*492*/ { "[7041]B4", 0, "7041B4", "" }, /* packagetype */
+        /*493*/ { "[7041]BA", ZINT_WARN_NONCOMPLIANT, "7041BA", "261: AI (7041) position 1: Invalid package type 'BA'" }, /* packagetype */
+        /*494*/ { "[7041]BB", 0, "7041BB", "" }, /* packagetype */
+        /*495*/ { "[7041]BG", 0, "7041BG", "" }, /* packagetype */
+        /*496*/ { "[7041]BM", 0, "7041BM", "" }, /* packagetype */
+        /*497*/ { "[7041]BN", 0, "7041BN", "" }, /* packagetype */
+        /*498*/ { "[7041]BR", 0, "7041BR", "" }, /* packagetype */
+        /*499*/ { "[7041]BZ", 0, "7041BZ", "" }, /* packagetype */
+        /*500*/ { "[7041]C?", ZINT_WARN_NONCOMPLIANT, "7041C?", "261: AI (7041) position 1: Invalid package type 'C?'" }, /* packagetype */
+        /*501*/ { "[7041]CA", 0, "7041CA", "" }, /* packagetype */
+        /*502*/ { "[7041]CB", 0, "7041CB", "" }, /* packagetype */
+        /*503*/ { "[7041]CC", 0, "7041CC", "" }, /* packagetype */
+        /*504*/ { "[7041]DA", 0, "7041DA", "" }, /* packagetype */
+        /*505*/ { "[7041]DD", ZINT_WARN_NONCOMPLIANT, "7041DD", "261: AI (7041) position 1: Invalid package type 'DD'" }, /* packagetype */
+        /*506*/ { "[7041]DF", ZINT_WARN_NONCOMPLIANT, "7041DF", "261: AI (7041) position 1: Invalid package type 'DF'" }, /* packagetype */
+        /*507*/ { "[7041]DG", 0, "7041DG", "" }, /* packagetype */
+        /*508*/ { "[7041]DP", 0, "7041DP", "" }, /* packagetype */
+        /*509*/ { "[7041]DQ", ZINT_WARN_NONCOMPLIANT, "7041DQ", "261: AI (7041) position 1: Invalid package type 'DQ'" }, /* packagetype */
+        /*510*/ { "[7041]E0", ZINT_WARN_NONCOMPLIANT, "7041E0", "261: AI (7041) position 1: Invalid package type 'E0'" }, /* packagetype */
+        /*511*/ { "[7041]E1", 0, "7041E1", "" }, /* packagetype */
+        /*512*/ { "[7041]E3", 0, "7041E3", "" }, /* packagetype */
+        /*513*/ { "[7041]EB", ZINT_WARN_NONCOMPLIANT, "7041EB", "261: AI (7041) position 1: Invalid package type 'EB'" }, /* packagetype */
+        /*514*/ { "[7041]EC", 0, "7041EC", "" }, /* packagetype */
+        /*515*/ { "[7041]FA", ZINT_WARN_NONCOMPLIANT, "7041FA", "261: AI (7041) position 1: Invalid package type 'FA'" }, /* packagetype */
+        /*516*/ { "[7041]FO", 0, "7041FO", "" }, /* packagetype */
+        /*517*/ { "[7041]FP", 0, "7041FP", "" }, /* packagetype */
+        /*518*/ { "[7041]GA", ZINT_WARN_NONCOMPLIANT, "7041GA", "261: AI (7041) position 1: Invalid package type 'GA'" }, /* packagetype */
+        /*519*/ { "[7041]GB", 0, "7041GB", "" }, /* packagetype */
+        /*520*/ { "[7041]HR", 0, "7041HR", "" }, /* packagetype */
+        /*521*/ { "[7041]HT", ZINT_WARN_NONCOMPLIANT, "7041HT", "261: AI (7041) position 1: Invalid package type 'HT'" }, /* packagetype */
+        /*522*/ { "[7041]IJ", ZINT_WARN_NONCOMPLIANT, "7041IJ", "261: AI (7041) position 1: Invalid package type 'IJ'" }, /* packagetype */
+        /*523*/ { "[7041]IL", 0, "7041IL", "" }, /* packagetype */
+        /*524*/ { "[7041]IZ", 0, "7041IZ", "" }, /* packagetype */
+        /*525*/ { "[7041]JB", 0, "7041JB", "" }, /* packagetype */
+        /*526*/ { "[7041]JD", ZINT_WARN_NONCOMPLIANT, "7041JD", "261: AI (7041) position 1: Invalid package type 'JD'" }, /* packagetype */
+        /*527*/ { "[7041]KG", 0, "7041KG", "" }, /* packagetype */
+        /*528*/ { "[7041]KH", ZINT_WARN_NONCOMPLIANT, "7041KH", "261: AI (7041) position 1: Invalid package type 'KH'" }, /* packagetype */
+        /*529*/ { "[7041]LA", ZINT_WARN_NONCOMPLIANT, "7041LA", "261: AI (7041) position 1: Invalid package type 'LA'" }, /* packagetype */
+        /*530*/ { "[7041]LE", 0, "7041LE", "" }, /* packagetype */
+        /*531*/ { "[7041]ME", 0, "7041ME", "" }, /* packagetype */
+        /*532*/ { "[7041]MP", ZINT_WARN_NONCOMPLIANT, "7041MP", "261: AI (7041) position 1: Invalid package type 'MP'" }, /* packagetype */
+        /*533*/ { "[7041]NA", 0, "7041NA", "" }, /* packagetype */
+        /*534*/ { "[7041]NB", ZINT_WARN_NONCOMPLIANT, "7041NB", "261: AI (7041) position 1: Invalid package type 'NB'" }, /* packagetype */
+        /*535*/ { "[7041]OK", 0, "7041OK", "" }, /* packagetype */
+        /*536*/ { "[7041]OP", ZINT_WARN_NONCOMPLIANT, "7041OP", "261: AI (7041) position 1: Invalid package type 'OP'" }, /* packagetype */
+        /*537*/ { "[7041]P1", ZINT_WARN_NONCOMPLIANT, "7041P1", "261: AI (7041) position 1: Invalid package type 'P1'" }, /* packagetype */
+        /*538*/ { "[7041]P2", 0, "7041P2", "" }, /* packagetype */
+        /*539*/ { "[7041]P3", ZINT_WARN_NONCOMPLIANT, "7041P3", "261: AI (7041) position 1: Invalid package type 'P3'" }, /* packagetype */
+        /*540*/ { "[7041]PA", 0, "7041PA", "" }, /* packagetype */
+        /*541*/ { "[7041]PL", 0, "7041PL", "" }, /* packagetype */
+        /*542*/ { "[7041]PO", 0, "7041PO", "" }, /* packagetype */
+        /*543*/ { "[7041]PQ", ZINT_WARN_NONCOMPLIANT, "7041PQ", "261: AI (7041) position 1: Invalid package type 'PQ'" }, /* packagetype */
+        /*544*/ { "[7041]PP", 0, "7041PP", "" }, /* packagetype */
+        /*545*/ { "[7041]PU", 0, "7041PU", "" }, /* packagetype */
+        /*546*/ { "[7041]QO", ZINT_WARN_NONCOMPLIANT, "7041QO", "261: AI (7041) position 1: Invalid package type 'QO'" }, /* packagetype */
+        /*547*/ { "[7041]QS", 0, "7041QS", "" }, /* packagetype */
+        /*548*/ { "[7041]RB", ZINT_WARN_NONCOMPLIANT, "7041RB", "261: AI (7041) position 1: Invalid package type 'RB'" }, /* packagetype */
+        /*549*/ { "[7041]RC", ZINT_WARN_NONCOMPLIANT, "7041RC", "261: AI (7041) position 1: Invalid package type 'RC'" }, /* packagetype */
+        /*550*/ { "[7041]RD", 0, "7041RD", "" }, /* packagetype */
+        /*551*/ { "[7041]S1", 0, "7041S1", "" }, /* packagetype */
+        /*552*/ { "[7041]S2", ZINT_WARN_NONCOMPLIANT, "7041S2", "261: AI (7041) position 1: Invalid package type 'S2'" }, /* packagetype */
+        /*553*/ { "[7041]SE", 0, "7041SE", "" }, /* packagetype */
+        /*554*/ { "[7041]ST", 0, "7041ST", "" }, /* packagetype */
+        /*555*/ { "[7041]T0", ZINT_WARN_NONCOMPLIANT, "7041T0", "261: AI (7041) position 1: Invalid package type 'T0'" }, /* packagetype */
+        /*556*/ { "[7041]T1", 0, "7041T1", "" }, /* packagetype */
+        /*557*/ { "[7041]TE", 0, "7041TE", "" }, /* packagetype */
+        /*558*/ { "[7041]TR", 0, "7041TR", "" }, /* packagetype */
+        /*559*/ { "[7041]TT", 0, "7041TT", "" }, /* packagetype */
+        /*560*/ { "[7041]TW", 0, "7041TW", "" }, /* packagetype */
+        /*561*/ { "[7041]UA", ZINT_WARN_NONCOMPLIANT, "7041UA", "261: AI (7041) position 1: Invalid package type 'UA'" }, /* packagetype */
+        /*562*/ { "[7041]UN", 0, "7041UN", "" }, /* packagetype */
+        /*563*/ { "[7041]UU", ZINT_WARN_NONCOMPLIANT, "7041UU", "261: AI (7041) position 1: Invalid package type 'UU'" }, /* packagetype */
+        /*564*/ { "[7041]VK", 0, "7041VK", "" }, /* packagetype */
+        /*565*/ { "[7041]WA", 0, "7041WA", "" }, /* packagetype */
+        /*566*/ { "[7041]WI", ZINT_WARN_NONCOMPLIANT, "7041WI", "261: AI (7041) position 1: Invalid package type 'WI'" }, /* packagetype */
+        /*567*/ { "[7041]WR", 0, "7041WR", "" }, /* packagetype */
+        /*568*/ { "[7041]X1", ZINT_WARN_NONCOMPLIANT, "7041X1", "261: AI (7041) position 1: Invalid package type 'X1'" }, /* packagetype */
+        /*569*/ { "[7041]X2", ZINT_WARN_NONCOMPLIANT, "7041X2", "261: AI (7041) position 1: Invalid package type 'X2'" }, /* packagetype */
+        /*570*/ { "[7041]X3", 0, "7041X3", "" }, /* packagetype */
+        /*571*/ { "[7041]XA", 0, "7041XA", "" }, /* packagetype */
+        /*572*/ { "[7041]XL", ZINT_WARN_NONCOMPLIANT, "7041XL", "261: AI (7041) position 1: Invalid package type 'XL'" }, /* packagetype */
+        /*573*/ { "[7041]YA", 0, "7041YA", "" }, /* packagetype */
+        /*574*/ { "[7041]YE", ZINT_WARN_NONCOMPLIANT, "7041YE", "261: AI (7041) position 1: Invalid package type 'YE'" }, /* packagetype */
+        /*575*/ { "[7041]YZ", 0, "7041YZ", "" }, /* packagetype */
+        /*576*/ { "[7041]ZA", 0, "7041ZA", "" }, /* packagetype */
+        /*577*/ { "[7041]ZE", ZINT_WARN_NONCOMPLIANT, "7041ZE", "261: AI (7041) position 1: Invalid package type 'ZE'" }, /* packagetype */
+        /*578*/ { "[7041]ZY", 0, "7041ZY", "" }, /* packagetype */
+        /*579*/ { "[7041]ZZ", 0, "7041ZZ", "" }, /* packagetype */
+        /*580*/ { "[7041]Z_", ZINT_WARN_NONCOMPLIANT, "7041Z_", "261: AI (7041) position 1: Invalid package type 'Z_'" }, /* packagetype */
+        /*581*/ { "[7041]__", ZINT_WARN_NONCOMPLIANT, "7041__", "261: AI (7041) position 1: Invalid package type '__'" }, /* packagetype */
+        /*582*/ { "[7041]///", ZINT_WARN_NONCOMPLIANT, "7041///", "261: AI (7041) position 1: Invalid package type '///'" }, /* packagetype */
+        /*583*/ { "[7041]100", ZINT_WARN_NONCOMPLIANT, "7041100", "261: AI (7041) position 1: Invalid package type '100'" }, /* packagetype */
+        /*584*/ { "[7041]201", 0, "7041201", "" }, /* packagetype */
+        /*585*/ { "[7041]202", 0, "7041202", "" }, /* packagetype */
+        /*586*/ { "[7041]206", 0, "7041206", "" }, /* packagetype */
+        /*587*/ { "[7041]207", ZINT_WARN_NONCOMPLIANT, "7041207", "261: AI (7041) position 1: Invalid package type '207'" }, /* packagetype */
+        /*588*/ { "[7041]210", 0, "7041210", "" }, /* packagetype */
+        /*589*/ { "[7041]212", 0, "7041212", "" }, /* packagetype */
+        /*590*/ { "[7041]800", ZINT_WARN_NONCOMPLIANT, "7041800", "261: AI (7041) position 1: Invalid package type '800'" }, /* packagetype */
+        /*591*/ { "[7041]900", ZINT_WARN_NONCOMPLIANT, "7041900", "261: AI (7041) position 1: Invalid package type '900'" }, /* packagetype */
+        /*592*/ { "[7041]AAE", ZINT_WARN_NONCOMPLIANT, "7041AAE", "261: AI (7041) position 1: Invalid package type 'AAE'" }, /* packagetype */
+        /*593*/ { "[7041]APE", 0, "7041APE", "" }, /* packagetype */
+        /*594*/ { "[7041]APF", ZINT_WARN_NONCOMPLIANT, "7041APF", "261: AI (7041) position 1: Invalid package type 'APF'" }, /* packagetype */
+        /*595*/ { "[7041]BBC", ZINT_WARN_NONCOMPLIANT, "7041BBC", "261: AI (7041) position 1: Invalid package type 'BBC'" }, /* packagetype */
+        /*596*/ { "[7041]BGE", 0, "7041BGE", "" }, /* packagetype */
+        /*597*/ { "[7041]BME", 0, "7041BME", "" }, /* packagetype */
+        /*598*/ { "[7041]BRI", 0, "7041BRI", "" }, /* packagetype */
+        /*599*/ { "[7041]BSI", ZINT_WARN_NONCOMPLIANT, "7041BSI", "261: AI (7041) position 1: Invalid package type 'BSI'" }, /* packagetype */
+        /*600*/ { "[7041]CAL", ZINT_WARN_NONCOMPLIANT, "7041CAL", "261: AI (7041) position 1: Invalid package type 'CAL'" }, /* packagetype */
+        /*601*/ { "[7041]CBL", 0, "7041CBL", "" }, /* packagetype */
+        /*602*/ { "[7041]CCE", 0, "7041CCE", "" }, /* packagetype */
+        /*603*/ { "[7041]DPE", 0, "7041DPE", "" }, /* packagetype */
+        /*604*/ { "[7041]DPF", ZINT_WARN_NONCOMPLIANT, "7041DPF", "261: AI (7041) position 1: Invalid package type 'DPF'" }, /* packagetype */
+        /*605*/ { "[7041]EPE", ZINT_WARN_NONCOMPLIANT, "7041EPE", "261: AI (7041) position 1: Invalid package type 'EPE'" }, /* packagetype */
+        /*606*/ { "[7041]FOB", 0, "7041FOB", "" }, /* packagetype */
+        /*607*/ { "[7041]FOC", ZINT_WARN_NONCOMPLIANT, "7041FOC", "261: AI (7041) position 1: Invalid package type 'FOC'" }, /* packagetype */
+        /*608*/ { "[7041]FPE", 0, "7041FPE", "" }, /* packagetype */
+        /*609*/ { "[7041]GPE", ZINT_WARN_NONCOMPLIANT, "7041GPE", "261: AI (7041) position 1: Invalid package type 'GPE'" }, /* packagetype */
+        /*610*/ { "[7041]HPE", ZINT_WARN_NONCOMPLIANT, "7041HPE", "261: AI (7041) position 1: Invalid package type 'HPE'" }, /* packagetype */
+        /*611*/ { "[7041]IPE", ZINT_WARN_NONCOMPLIANT, "7041IPE", "261: AI (7041) position 1: Invalid package type 'IPE'" }, /* packagetype */
+        /*612*/ { "[7041]JAB", ZINT_WARN_NONCOMPLIANT, "7041JAB", "261: AI (7041) position 1: Invalid package type 'JAB'" }, /* packagetype */
+        /*613*/ { "[7041]KAB", ZINT_WARN_NONCOMPLIANT, "7041KAB", "261: AI (7041) position 1: Invalid package type 'KAB'" }, /* packagetype */
+        /*614*/ { "[7041]LAA", ZINT_WARN_NONCOMPLIANT, "7041LAA", "261: AI (7041) position 1: Invalid package type 'LAA'" }, /* packagetype */
+        /*615*/ { "[7041]LAB", 0, "7041LAB", "" }, /* packagetype */
+        /*616*/ { "[7041]MPE", 0, "7041MPE", "" }, /* packagetype */
+        /*617*/ { "[7041]MPF", ZINT_WARN_NONCOMPLIANT, "7041MPF", "261: AI (7041) position 1: Invalid package type 'MPF'" }, /* packagetype */
+        /*618*/ { "[7041]OPE", 0, "7041OPE", "" }, /* packagetype */
+        /*619*/ { "[7041]QAE", ZINT_WARN_NONCOMPLIANT, "7041QAE", "261: AI (7041) position 1: Invalid package type 'QAE'" }, /* packagetype */
+        /*620*/ { "[7041]PAD", ZINT_WARN_NONCOMPLIANT, "7041PAD", "261: AI (7041) position 1: Invalid package type 'PAD'" }, /* packagetype */
+        /*621*/ { "[7041]PAE", 0, "7041PAE", "" }, /* packagetype */
+        /*622*/ { "[7041]PLP", 0, "7041PLP", "" }, /* packagetype */
+        /*623*/ { "[7041]POP", 0, "7041POP", "" }, /* packagetype */
+        /*624*/ { "[7041]PPE", 0, "7041PPE", "" }, /* packagetype */
+        /*625*/ { "[7041]PUE", 0, "7041PUE", "" }, /* packagetype */
+        /*626*/ { "[7041]QUE", ZINT_WARN_NONCOMPLIANT, "7041QUE", "261: AI (7041) position 1: Invalid package type 'QUE'" }, /* packagetype */
+        /*627*/ { "[7041]RB0", ZINT_WARN_NONCOMPLIANT, "7041RB0", "261: AI (7041) position 1: Invalid package type 'RB0'" }, /* packagetype */
+        /*628*/ { "[7041]RB1", 0, "7041RB1", "" }, /* packagetype */
+        /*629*/ { "[7041]RB3", 0, "7041RB3", "" }, /* packagetype */
+        /*630*/ { "[7041]RB4", ZINT_WARN_NONCOMPLIANT, "7041RB4", "261: AI (7041) position 1: Invalid package type 'RB4'" }, /* packagetype */
+        /*631*/ { "[7041]RBA", ZINT_WARN_NONCOMPLIANT, "7041RBA", "261: AI (7041) position 1: Invalid package type 'RBA'" }, /* packagetype */
+        /*632*/ { "[7041]RCB", 0, "7041RCB", "" }, /* packagetype */
+        /*633*/ { "[7041]SEC", 0, "7041SEC", "" }, /* packagetype */
+        /*634*/ { "[7041]STL", 0, "7041STL", "" }, /* packagetype */
+        /*635*/ { "[7041]STM", ZINT_WARN_NONCOMPLIANT, "7041STM", "261: AI (7041) position 1: Invalid package type 'STM'" }, /* packagetype */
+        /*636*/ { "[7041]TEV", 0, "7041TEV", "" }, /* packagetype */
+        /*637*/ { "[7041]TTE", 0, "7041TTE", "" }, /* packagetype */
+        /*638*/ { "[7041]TTF", ZINT_WARN_NONCOMPLIANT, "7041TTF", "261: AI (7041) position 1: Invalid package type 'TTF'" }, /* packagetype */
+        /*639*/ { "[7041]TWE", 0, "7041TWE", "" }, /* packagetype */
+        /*640*/ { "[7041]X10", ZINT_WARN_NONCOMPLIANT, "7041X10", "261: AI (7041) position 1: Invalid package type 'X10'" }, /* packagetype */
+        /*641*/ { "[7041]X11", 0, "7041X11", "" }, /* packagetype */
+        /*642*/ { "[7041]X13", ZINT_WARN_NONCOMPLIANT, "7041X13", "261: AI (7041) position 1: Invalid package type 'X13'" }, /* packagetype */
+        /*643*/ { "[7041]X14", ZINT_WARN_NONCOMPLIANT, "7041X14", "261: AI (7041) position 1: Invalid package type 'X14'" }, /* packagetype */
+        /*644*/ { "[7041]X15", 0, "7041X15", "" }, /* packagetype */
+        /*645*/ { "[7041]X19", 0, "7041X19", "" }, /* packagetype */
+        /*646*/ { "[7041]X20", 0, "7041X20", "" }, /* packagetype */
+        /*647*/ { "[7041]X21", ZINT_WARN_NONCOMPLIANT, "7041X21", "261: AI (7041) position 1: Invalid package type 'X21'" }, /* packagetype */
+        /*648*/ { "[7041]___", ZINT_WARN_NONCOMPLIANT, "7041___", "261: AI (7041) position 1: Invalid package type '___'" }, /* packagetype */
     };
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1,7 +1,7 @@
 /* pdf417_tabs.h - PDF417 tables and coefficients */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
 
     Redistribution and use in source and binary forms, with or without

@@ -325,7 +325,7 @@ static void c128_expand(struct zint_symbol *symbol, int values[C128_MAX], int ba
 static int c128_glyph_count(const unsigned char source[], const int length, const char set[C128_MAX],
             const char fset[C128_MAX]) {
     int glyph_count = 0;
-    char current_set = ' ';
+    char current_set = 0;
     int f_state = 0;
     int i;
 
@@ -402,7 +402,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned char *src = source;
     char manual_set[C128_MAX] = {0};
     unsigned char fncs[C128_MAX] = {0}; /* Manual FNC1 positions */
-    char set[C128_MAX] = {0}, fset[C128_MAX], current_set = ' ';
+    char set[C128_MAX] = {0}, fset[C128_MAX], current_set = 0;
     int f_state = 0;
     int have_fnc1 = 0; /* Whether have at least 1 manual FNC1 */
     char manual_ch = 0;
@@ -468,19 +468,18 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         fset[i] = src[i] >= 128 ? 'f' : ' ';
     }
 
-    /* Decide when to latch to extended mode - Annex E note 3 */
+    /* Decide when to latch to extended mode - ISO/IEC 15417:2007 Annex E note 3 */
     j = 0;
     for (i = 0; i < length; i++) {
         if (fset[i] == 'f') {
             j++;
+            if (j >= 5) {
+                for (k = i; k > (i - 5); k--) {
+                    fset[k] = 'F';
+                }
+            }
         } else {
             j = 0;
-        }
-
-        if (j >= 5) {
-            for (k = i; k > (i - 5); k--) {
-                fset[k] = 'F';
-            }
         }
     }
     if (j >= 3) {
@@ -504,7 +503,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
             }
             if (j - c < 3 || (j - c < 5 && k > 2)) {
                 /* Change to shifting back rather than latching back */
-                /* Inverts the same figures recommended by Annex E note 3 */
+                /* Inverts the same figures recommended by ISO/IEC 15417:2007 Annex E note 3 */
                 for (k = 0; k < j; k++) {
                     fset[i + k] = 'n';
                 }

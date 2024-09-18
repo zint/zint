@@ -219,7 +219,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (codeword_count > 49) {
-        strcpy(symbol->errtxt, "432: Input too long");
+        strcpy(symbol->errtxt, "432: Input too long (49 symbol character maximum)");
         return ZINT_ERROR_TOO_LONG;
     }
 
