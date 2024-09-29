@@ -44,7 +44,7 @@ CLIWindow::CLIWindow(BarcodeItem *bc, const bool autoHeight, const double height
     QByteArray geometry = settings.value(QSL("studio/cli/window_geometry")).toByteArray();
     restoreGeometry(geometry);
 
-#if _WIN32
+#ifdef _WIN32
     const int index = settings.value(QSL("studio/cli/rad_unix_win"), 1).toInt();
 #else
     const int index = settings.value(QSL("studio/cli/rad_unix_win"), 0).toInt();

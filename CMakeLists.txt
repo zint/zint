@@ -57,6 +57,11 @@ if(NOT MSVC) # Use default warnings if MSVC otherwise inundated
     if(C_COMPILER_FLAG_WPEDANTIC)
         add_compile_options("-Wpedantic")
     endif()
+
+    check_c_compiler_flag("-Wundef" C_COMPILER_FLAG_WUNDEF)
+    if(C_COMPILER_FLAG_WUNDEF)
+        add_compile_options("-Wundef")
+    endif()
 endif()
 
 if(ZINT_DEBUG)

@@ -711,6 +711,7 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
             const int in_posn, const unsigned char base) {
     int c1, c2, c3;
     int min_len = base == 'x' ? 2 : 3;
+    int val = -1;
 
     if (in_posn + min_len > length) {
         sprintf(symbol->errtxt, "232: Incomplete '\\%c' escape sequence in input data", base);
@@ -721,22 +722,33 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
     if (base == 'd') {
         c3 = ctoi(input_string[in_posn + 2]);
         if ((c1 >= 0 && c1 <= 9) && (c2 >= 0 && c2 <= 9) && (c3 >= 0 && c3 <= 9)) {
-            return c1 * 100 + c2 * 10 + c3;
+            val = c1 * 100 + c2 * 10 + c3;
         }
     } else if (base == 'o') {
         c3 = ctoi(input_string[in_posn + 2]);
         if ((c1 >= 0 && c1 <= 7) && (c2 >= 0 && c2 <= 7) && (c3 >= 0 && c3 <= 7)) {
-            return (c1 << 6) | (c2 << 3) | c3;
+            val = (c1 << 6) | (c2 << 3) | c3;
         }
     } else {
         if ((c1 >= 0) && (c2 >= 0)) {
-            return (c1 << 4) | c2;
+            val = (c1 << 4) | c2;
         }
     }
 
-    sprintf(symbol->errtxt, "233: Invalid character for '\\%c' escape sequence in input data (%s only)",
-            base, base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal" );
-    return -1;
+    if (val == -1) {
+        sprintf(symbol->errtxt, "233: Invalid character in escape sequence '\\%c%.*s' in input data (%s only)",
+                base, base == 'x' ? 2 : 3, input_string + in_posn,
+                base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal");
+        return -1;
+    }
+    if (val > 255) {
+        assert(base != 'x');
+        sprintf(symbol->errtxt, "237: Value of escape sequence '\\%c%.3s' in input data out of range (000-%s)",
+                base, input_string + in_posn, base == 'd' ? "255" : "377");
+        return -1;
+    }
+
+    return val;
 }
 
 /* Helper to parse escape sequences. If `escaped_string` NULL, calculates length only */
@@ -830,7 +842,8 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                     }
                     /* Exclude reversed BOM and surrogates and out-of-range */
                     if (unicode == 0xfffe || (unicode >= 0xd800 && unicode < 0xe000) || unicode > 0x10ffff) {
-                        sprintf(symbol->errtxt, "246: Invalid value for '\\%c' escape sequence in input data", ch);
+                        sprintf(symbol->errtxt, "246: Value of escape sequence '%.*s' in input data out of range",
+                                ch == 'u' ? 6 : 8, input_string + in_posn);
                         return ZINT_ERROR_INVALID_DATA;
                     }
                     if (unicode < 0x80) {

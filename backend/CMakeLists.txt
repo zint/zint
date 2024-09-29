@@ -54,6 +54,15 @@ function(zint_target_compile_definitions scope definition)
     endif()
 endfunction()
 
+function(zint_target_compile_options scope option)
+    if(ZINT_SHARED)
+        target_compile_options(zint ${scope} ${option})
+    endif()
+    if(ZINT_STATIC)
+        target_compile_options(zint-static ${scope} ${option})
+    endif()
+endfunction()
+
 function(zint_target_include_directories)
     if(ZINT_SHARED)
         target_include_directories(zint ${ARGN})
@@ -78,6 +87,11 @@ endif()
 
 if(ZINT_TEST)
     zint_target_compile_definitions(PUBLIC ZINT_TEST)
+endif()
+
+check_c_compiler_flag("-Wc90-c99-compat" C_COMPILER_FLAG_WC90_C99_COMPAT)
+if(C_COMPILER_FLAG_WC90_C99_COMPAT)
+    zint_target_compile_options(PRIVATE "-Wc90-c99-compat")
 endif()
 
 if(NOT MSVC)
