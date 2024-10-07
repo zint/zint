@@ -1,5 +1,6 @@
-% README.linux 2024-09-29
-% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS and Fedora Linux 40 (Workstation Edition)
+% README.linux 2024-10-04
+% Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
+% Fedora Linux 40 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -45,6 +46,9 @@ or Fedora
 
     sudo dnf install mesa-libGL mesa-libGL-devel
 
+zint-qt has issues running on Wayland so sets X11 as the Qt platform (via the environment variable
+"QT_QPA_PLATFORM=xcb") on startup unless already set.
+
 2.1. Using Qt packages
 ----------------------
 
@@ -53,7 +57,7 @@ what their ever-changing names and contents are isn't. A complication is that zi
 components beyond the basic setup: Qt UI Tools (for dynamically loading the symbology-specific
 tabs), and Qt SVG (for rendering icons).
 
-E.g. on Ubuntu 22.04
+E.g. on Ubuntu 22.04 or 24.04
 
     sudo apt install qtbase5-dev qttools5-dev qttools5-dev-tools libqt5svg5-dev
 
@@ -84,7 +88,7 @@ On Ubuntu/Debian you may need to install xinerama to run the tool:
     sudo apt install libxcb-xinerama0
 
 Launch the tool and install the "Desktop gcc 64-bit" component for either Qt 5.15.2 (preferred)
-or Qt 6 (>= 6.1, 6.2.4 preferably, and not >= 6.3 which are incompatible).
+or Qt 6 (>= 6.1).
 
 Once Qt is installed you may need to tell CMake where it is:
 

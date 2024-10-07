@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2022 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2024 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -20,6 +20,13 @@
 int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resources);
+
+#if defined(__linux__) && QT_VERSION > 0x50F02
+    /* Not compatible with Wayland for some reason(s) so use X11 unless overridden */
+    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM")) {
+        qputenv("QT_QPA_PLATFORM", QByteArrayLiteral("xcb"));
+    }
+#endif
 
 #if QT_VERSION >= 0x50600 && QT_VERSION < 0x60100
     QGuiApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
