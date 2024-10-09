@@ -1,7 +1,7 @@
 /* maxicode.c - Handles MaxiCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -612,6 +612,12 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                     strcpy(symbol->errtxt, "555: Non-numeric postcode in Primary Message");
                     return ZINT_ERROR_INVALID_DATA;
                 }
+            }
+            if (countrycode == 840 && postcode_len == 5) {
+                /* Annex B, section B.1, paragraph 4.a, "In the case of country code 840, if the "+4" is unknown,
+                   then fill with zeroes" (adapted from OkaiBarcode, stricter interpretation, props Daniel Gredler) */
+                memcpy(postcode + 5, "0000", 5); /* Include NUL char */
+                postcode_len = 9;
             }
             maxi_do_primary_2(maxi_codeword, postcode, postcode_len, countrycode, service);
         } else {

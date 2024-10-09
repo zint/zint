@@ -395,8 +395,8 @@ static int yymmdd(const unsigned char *data, int data_len, int offset, int min, 
     return 1;
 }
 
-/* Check for a time HHMM */
-static int hhmm(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+/* Check for a time HHMI */
+static int hhmi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -452,8 +452,8 @@ static int hh(const unsigned char *data, int data_len, int offset, int min, int 
     return 1;
 }
 
-/* Check for a time MM (minutes) */
-static int mm(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+/* Check for a time MI (minutes) */
+static int mi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 

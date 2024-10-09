@@ -3933,7 +3933,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     char *escaped = is_escaped ? (char *) z_alloca(expected_len + 1) : NULL;
     char *hibc = is_hibc ? (char *) z_alloca(expected_len + 2 + 1) : NULL;
     char *maxi = symbology == BARCODE_MAXICODE && primary
-                    ? (char *) z_alloca(expected_len + strlen(primary) + 6 + 9 + 1) : NULL;
+                    ? (char *) z_alloca(expected_len + strlen(primary) + 4 + 6 + 9 + 1) : NULL;
     char *vin = is_vin_international ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *c25inter = have_c25inter ? (char *) z_alloca(expected_len + 13 + 1 + 1) : NULL;
     char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
@@ -4045,8 +4045,13 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                 sprintf(maxi + maxi_len, "%-6.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
                         3, primary + primary_len - 6, 3, primary + primary_len - 3);
             } else {
-                sprintf(maxi + maxi_len, "%.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
-                        3, primary + primary_len - 6, 3, primary + primary_len - 3);
+                if (primary_len == 11 && primary[5] == '8' && primary[6] == '4' && primary[7] == '0') {
+                    sprintf(maxi + maxi_len, "%.*s0000\035%.*s\035%.*s\035", primary_len - 6, primary,
+                            3, primary + primary_len - 6, 3, primary + primary_len - 3);
+                } else {
+                    sprintf(maxi + maxi_len, "%.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
+                            3, primary + primary_len - 6, 3, primary + primary_len - 3);
+                }
             }
             #else
             sprintf(maxi + maxi_len, "%.*s\035%.*s\035%.*s\035", primary_len - 6, primary,

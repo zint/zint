@@ -290,16 +290,16 @@ static int n1_yesno(const unsigned char *data,
             && yesno(data, data_len, 0, 1, 1, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N6,yymmd0 N4,hhmm (Used by NOT BEF DEL DT, NOT AFT DEL DT) */
-static int n6_yymmd0_n4_hhmm(const unsigned char *data,
+/* N6,yymmd0 N4,hhmi (Used by NOT BEF DEL DT, NOT AFT DEL DT) */
+static int n6_yymmd0_n4_hhmi(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 10
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hhmi(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
             && yymmd0(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg)
-            && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 0);
+            && hhmi(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N6,yymmdd (Used by REL DATE, FIRST FREEZE DATE) */
@@ -328,16 +328,16 @@ static int n13(const unsigned char *data,
             && numeric(data, data_len, 0, 13, 13, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6,yymmdd N4,hhmm (Used by EXPIRY TIME) */
-static int n6_yymmdd_n4_hhmm(const unsigned char *data,
+/* N6,yymmdd N4,hhmi (Used by EXPIRY TIME) */
+static int n6_yymmdd_n4_hhmi(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 10
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hhmi(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg)
-            && hhmm(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 0);
+            && hhmi(data, data_len, 6, 4, 4, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N..4 (Used by ACTIVE POTENCY) */
@@ -380,16 +380,16 @@ static int x__2(const unsigned char *data,
             && cset82(data, data_len, 0, 1, 2, p_err_no, p_err_posn, err_msg);
 }
 
-/* N6,yymmdd [N4],hhmm (Used by TEST BY DATE) */
-static int n6_yymmdd__n4__hhmm(const unsigned char *data,
+/* N6,yymmdd [N4],hhmi (Used by TEST BY DATE) */
+static int n6_yymmdd__n4__hhmi(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 6 && data_len <= 10
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && hhmm(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hhmi(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg)
-            && hhmm(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 0);
+            && hhmi(data, data_len, 6, 0, 4, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N3,iso3166999 X..27 (Used by PROCESSOR # 0, PROCESSOR # 1, PROCESSOR # 2, PROCESSOR # 3, PROCESSOR # 4, PROC...) */
@@ -456,16 +456,16 @@ static int n8_yyyymmdd(const unsigned char *data,
             && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N8,yyyymmdd N4,hhmm (Used by DOB TIME) */
-static int n8_yyyymmdd_n4_hhmm(const unsigned char *data,
+/* N8,yyyymmdd N4,hhmi (Used by DOB TIME) */
+static int n8_yyyymmdd_n4_hhmi(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 12
             && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && hhmm(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && hhmi(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg)
             && yyyymmdd(data, data_len, 0, 8, 8, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg)
-            && hhmm(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 0);
+            && hhmi(data, data_len, 8, 4, 4, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* N1,iso5218 (Used by BIO SEX) */
@@ -559,20 +559,20 @@ static int x__34_iban(const unsigned char *data,
             && iban(data, data_len, 0, 1, 34, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N6,yymmdd N2,hh [N2],mm [N2],ss (Used by PROD TIME) */
-static int n6_yymmdd_n2_hh__n2__mm__n2__ss(const unsigned char *data,
+/* N6,yymmdd N2,hh [N2],mi [N2],ss (Used by PROD TIME) */
+static int n6_yymmdd_n2_hh__n2__mi__n2__ss(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len >= 8 && data_len <= 12
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && hh(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && mm(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && mi(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && ss(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg)
             && yymmdd(data, data_len, 0, 6, 6, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg)
             && hh(data, data_len, 6, 2, 2, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg)
-            && mm(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 0)
+            && mi(data, data_len, 8, 0, 2, p_err_no, p_err_posn, err_msg, 0)
             && numeric(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg)
             && ss(data, data_len, 10, 0, 2, p_err_no, p_err_posn, err_msg, 0);
 }
@@ -850,7 +850,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return n1_yesno(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 4324 || ai == 4325) {
-            return n6_yymmd0_n4_hhmm(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_yymmd0_n4_hhmi(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 4326) {
             return n6_yymmdd(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -868,7 +868,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return x__30(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 7003) {
-            return n6_yymmdd_n4_hhmm(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_yymmdd_n4_hhmi(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 7004) {
             return n__4(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -892,7 +892,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return x__2(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 7011) {
-            return n6_yymmdd__n4__hhmm(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_yymmdd__n4__hhmi(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai >= 7020 && ai <= 7022) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -928,7 +928,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return n8_yyyymmdd(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 7251) {
-            return n8_yyyymmdd_n4_hhmm(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n8_yyyymmdd_n4_hhmi(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 7252) {
             return n1_iso5218(data, data_len, p_err_no, p_err_posn, err_msg);
@@ -973,7 +973,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return x__34_iban(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8008) {
-            return n6_yymmdd_n2_hh__n2__mm__n2__ss(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n6_yymmdd_n2_hh__n2__mi__n2__ss(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8009) {
             return x__50(data, data_len, p_err_no, p_err_posn, err_msg);
