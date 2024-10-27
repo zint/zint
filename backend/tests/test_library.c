@@ -1041,12 +1041,12 @@ static void test_encode_file_too_large(const testCtx *const p_ctx) {
 static void test_encode_file_unreadable(const testCtx *const p_ctx) {
 #ifndef _WIN32
     int ret;
-    struct zint_symbol *symbol = NULL;
     char filename[] = "in.bin";
 
     char buf[ZINT_MAX_DATA_LEN + 1] = {0};
     int fd;
 #endif
+    struct zint_symbol *symbol = NULL;
 
     (void)p_ctx;
 
@@ -1227,7 +1227,7 @@ static void test_bad_args(const testCtx *const p_ctx) {
         "Error 200: Input segments NULL",
         "Error 239: Filename NULL",
         "Error 778: No input data",
-        "Error 229: Unable to read input file (2: No such file or directory)",
+        "Error 229: Unable to read input file (", /* Excluding OS-dependent `errno` stuff */
         "Error 771: Too many input segments (maximum 256)",
         "Error 205: No input data",
         "Error 777: Input too long",
@@ -1331,16 +1331,16 @@ static void test_bad_args(const testCtx *const p_ctx) {
     assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_Segs_and_Buffer_Vector(symbol, &seg_empty, 1, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_File(symbol, empty), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File(symbol, empty) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[4], symbol->errtxt), "ZBarcode_Encode_File(symbol, empty) strcmp(%s, %s) != 0\n", expected[4], symbol->errtxt);
+    assert_zero(strncmp(expected[4], symbol->errtxt, strlen(expected[4])), "ZBarcode_Encode_File(symbol, empty) strncmp(%s, %s, %d) != 0\n", expected[4], symbol->errtxt, (int) strlen(expected[4]));
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_File_and_Print(symbol, empty, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Print(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[4], symbol->errtxt), "ZBarcode_Encode_File_and_Print(symbol, empty, 0) strcmp(%s, %s) != 0\n", expected[4], symbol->errtxt);
+    assert_zero(strncmp(expected[4], symbol->errtxt, strlen(expected[4])), "ZBarcode_Encode_File(symbol, empty) strncmp(%s, %s, %d) != 0\n", expected[4], symbol->errtxt, (int) strlen(expected[4]));
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_File_and_Buffer(symbol, empty, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[4], symbol->errtxt), "ZBarcode_Encode_File_and_Buffer(symbol, empty, 0) strcmp(%s, %s) != 0\n", expected[4], symbol->errtxt);
+    assert_zero(strncmp(expected[4], symbol->errtxt, strlen(expected[4])), "ZBarcode_Encode_File(symbol, empty) strncmp(%s, %s, %d) != 0\n", expected[4], symbol->errtxt, (int) strlen(expected[4]));
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[4], symbol->errtxt), "ZBarcode_Encode_File_and_Buffer_Vector(symbol, empty, 0) strcmp(%s, %s) != 0\n", expected[4], symbol->errtxt);
+    assert_zero(strncmp(expected[4], symbol->errtxt, strlen(expected[4])), "ZBarcode_Encode_File(symbol, empty) strncmp(%s, %s, %d) != 0\n", expected[4], symbol->errtxt, (int) strlen(expected[4]));
 
     /* Bad seg_count */
     symbol->errtxt[0] = '\0';

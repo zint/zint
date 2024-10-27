@@ -385,12 +385,12 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
                 if (arg == -1) {
                     if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
                     return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                                        "Internal error: invalid numbered format specifer");
+                                    "Internal error: invalid numbered format specifer");
                 }
                 if (i >= 9) {
                     if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
                     return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                                        "Internal error: too many format specifiers (9 maximum)");
+                                    "Internal error: too many format specifiers (9 maximum)");
                 }
                 f += inc;
                 have_num_arg = 1;
@@ -399,7 +399,7 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
                 if (i >= 9) {
                     if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
                     return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                                        "Internal error: too many format specifiers (9 maximum)");
+                                    "Internal error: too many format specifiers (9 maximum)");
                 }
                 have_unnum_arg = 1;
                 idxs[i] = i;
@@ -421,7 +421,7 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
             if (*f != 'c' && *f != 'd' && *f != 'f' && *f != 'g' && *f != 's') {
                 if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
                 return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                                    "Internal error: unknown format specifier ('%c','%d','%f','%g','%s' only)");
+                                "Internal error: unknown format specifier ('%c','%d','%f','%g','%s' only)");
             }
             specs[idxs[i++]] = *f;
             arg_cnt++;
@@ -430,7 +430,7 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
     if (have_num_arg && have_unnum_arg) {
         if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
         return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
-                            "Internal error: mixed numbered and unnumbered format specifiers");
+                        "Internal error: mixed numbered and unnumbered format specifiers");
     }
 
     /* Get arguments */
@@ -440,7 +440,7 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
             cs[i] = va_arg(ap, int);
         } else if (specs[i] == 'd') {
             if (dpads[i][0]) {
-                char dpad_fmt[30]; /* Make 30 to suppress GNU c "-Wformat-overflow=" false positive */
+                char dpad_fmt[30]; /* Make 30 to suppress gcc 14 "-Wformat-overflow=" false positive */
                 sprintf(dpad_fmt, "%%0%sd", dpads[i]); /* TODO: keep `dpads` separate else last mentioned trumps */
                 sprintf(dfgs[i], dpad_fmt, va_arg(ap, int));
             } else {
