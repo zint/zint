@@ -73,9 +73,11 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     char *d = dest;
     int error_number = 0;
 
-    if ((length < 7) || (length > 18)) {
-        strcpy(symbol->errtxt, "790: Input wrong length (should be between 7 and 18 characters)");
-        return ZINT_ERROR_TOO_LONG;
+    if (length > 18) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 790, "Input length %d too long (maximum 18)", length);
+    }
+    if (length < 7) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 792, "Input length %d too short (minimum 7)", length);
     }
     to_upper(source, length);
 
@@ -87,9 +89,9 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     }
     padded_source[length + 1] = 0;
 
-    if (!is_sane_lookup(BROMINE, 35, padded_source, length + 1, posns)) {
-        strcpy(symbol->errtxt, "791: Invalid character in data (alphanumerics only, excluding the letter \"O\")");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(BROMINE, 35, padded_source, length + 1, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 791,
+                        "Invalid character at position %d in input (alphanumerics only, excluding \"O\")", i - 1);
     }
 
     for (i = 0; i <= length; i++) {

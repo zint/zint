@@ -239,8 +239,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     const int ih_ultra_offset = symbol->symbology == BARCODE_ULTRA ? 8 : 0;
 
     if (symbol->vector == NULL) {
-        strcpy(symbol->errtxt, "643: Vector header NULL");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 643, "Vector header NULL");
     }
 
     (void) out_colour_get_rgb(symbol->fgcolour, &fgred, &fggrn, &fgblu, NULL /*alpha*/);
@@ -640,8 +639,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
                 for (i = 0; i < this_text; i++) {
                     free(this_string[i]);
                 }
-                strcpy(symbol->errtxt, "641: Insufficient memory for EMF string buffer");
-                return ZINT_ERROR_MEMORY;
+                return errtxt(ZINT_ERROR_MEMORY, symbol, 641, "Insufficient memory for EMF string buffer");
             }
             memset(this_string[this_text], 0, text_bumped_lens[this_text]);
             out_le_u32(text[this_text].type, 0x00000054); /* EMR_EXTTEXTOUTW */
@@ -703,8 +701,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Send EMF data to file */
     if (!fm_open(fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "640: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_ACCESS;
+        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 640, "Could not open EMF output file (%1$d: %2$s)", fmp->err,
+                        strerror(fmp->err));
     }
 
     fm_write(&emr_header, sizeof(emr_header_t), 1, fmp);
@@ -822,14 +820,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     fm_write(&emr_eof, sizeof(emr_eof_t), 1, fmp);
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "644: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 644, "Incomplete write of EMF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "941: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 941, "Failure on closing EMF output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
     return error_number;
 }

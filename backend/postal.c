@@ -125,7 +125,7 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
         if (symbol->height < 4.6f || symbol->height > 9.0f) {
             error_number = ZINT_WARN_NONCOMPLIANT;
             if (!no_errtxt) {
-                strcpy(symbol->errtxt, "498: Height not compliant with standards");
+                errtxt(0, symbol, 498, "Height not compliant with standards");
             }
         }
     }
@@ -143,24 +143,23 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     int error_number = 0;
 
     if (length > 38) {
-        strcpy(symbol->errtxt, "480: Input too long (38 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 480, "Input length %d too long (maximum 38)", length);
     }
 
     if (symbol->symbology == BARCODE_CEPNET) {
         if (length != 8) {
-            strcpy(symbol->errtxt, "780: Input is wrong length (should be 8 digits)");
-            error_number = ZINT_WARN_NONCOMPLIANT;
+            error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 780, "Input length %d wrong (should be 8 digits)",
+                                    length);
         }
     } else {
         if (length != 5 && length != 9 && length != 11) {
-            strcpy(symbol->errtxt, "479: Input length is not standard (5, 9 or 11 characters)");
-            error_number = ZINT_WARN_NONCOMPLIANT;
+            error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 479,
+                                    "Input length %d is not standard (5, 9 or 11)", length);
         }
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "481: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 481,
+                        "Invalid character at position %d in input (digits only)", i);
     }
     sum = 0;
 
@@ -187,7 +186,8 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
 
 /* Puts POSTNET barcodes into the pattern matrix */
 INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
+    /* Suppress clang-tidy-20 garbage value false positive by initializing (see "vector.c" `vection_add_rect()`) */
+    char height_pattern[256] = {0}; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
     int error_number, warn_number;
@@ -219,16 +219,15 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
     int error_number = 0;
 
     if (length > 38) {
-        strcpy(symbol->errtxt, "482: Input too long (38 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 482, "Input length %d too long (maximum 38)", length);
     }
     if (length != 11 && length != 13) {
-        strcpy(symbol->errtxt, "478: Input length is not standard (11 or 13 characters)");
-        error_number = ZINT_WARN_NONCOMPLIANT;
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 478, "Input length %d is not standard (11 or 13)",
+                                length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "483: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 483,
+                        "Invalid character at position %d in input (digits only)", i);
     }
     sum = 0;
 
@@ -255,7 +254,8 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
 
 /* Puts PLANET barcodes into the pattern matrix */
 INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int length) {
-    char height_pattern[256]; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
+    /* Suppress clang-tidy-20 garbage value false positive by initializing (see "vector.c" `vection_add_rect()`) */
+    char height_pattern[256] = {0}; /* 5 + 38 * 5 + 5 + 5 + 1 = 206 */
     unsigned int loopey, h;
     int writer;
     int error_number, warn_number;
@@ -283,27 +283,26 @@ INTERNAL int planet(struct zint_symbol *symbol, unsigned char source[], int leng
 
 /* Korean Postal Authority */
 INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int total, loop, check, zeroes, error_number = 0;
+    int total, i, check, zeroes, error_number = 0;
     char localstr[8], dest[80];
     char *d = dest;
     int posns[6];
 
     if (length > 6) {
-        strcpy(symbol->errtxt, "484: Input too long (6 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 484, "Input length %d too long (maximum 6)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "485: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 485,
+                        "Invalid character at position %d in input (digits only)", i);
     }
     zeroes = 6 - length;
     memset(localstr, '0', zeroes);
     ustrcpy(localstr + zeroes, source);
 
     total = 0;
-    for (loop = 0; loop < 6; loop++) {
-        posns[loop] = ctoi(localstr[loop]);
-        total += posns[loop];
+    for (i = 0; i < 6; i++) {
+        posns[i] = ctoi(localstr[i]);
+        total += posns[i];
     }
     check = 10 - (total % 10);
     if (check == 10) {
@@ -312,8 +311,8 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
     localstr[6] = itoc(check);
     localstr[7] = '\0';
 
-    for (loop = 5; loop >= 0; loop--) {
-        const char *const entry = KoreaTable[posns[loop]];
+    for (i = 5; i >= 0; i--) {
+        const char *const entry = KoreaTable[posns[i]];
         memcpy(d, entry, 10);
         d += entry[8] ? 10 : 8;
     }
@@ -335,8 +334,7 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
     int error_number = 0;
 
     if (length > 1) {
-        strcpy(symbol->errtxt, "486: Input too long (1 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 486, "Input length %d too long (maximum 1)", length);
     }
 
     switch ((char) source[0]) {
@@ -361,8 +359,8 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
             expand(symbol, "1317131", 7);
             break;
         default:
-            strcpy(symbol->errtxt, "487: Invalid character in data (\"A\", \"B\", \"C\", \"D\" or \"E\" only)");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 487,
+                            "Invalid character in input (\"A\", \"B\", \"C\", \"D\" or \"E\" only)");
             break;
     }
 
@@ -406,8 +404,7 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height,
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if ((min_height && symbol->height < min_height) || (max_height && symbol->height > max_height)) {
-            error_number = ZINT_WARN_NONCOMPLIANT;
-            strcpy(symbol->errtxt, "499: Height not compliant with standards");
+            error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 499, "Height not compliant with standards");
         }
     }
 
@@ -453,6 +450,7 @@ static void rm4scc_enc(const struct zint_symbol *symbol, const int *posns, char 
 
 /* Puts RM4SCC into the data matrix */
 INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i;
     char height_pattern[210];
     int posns[50];
     int loopey, h;
@@ -460,13 +458,12 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
     int error_number = 0;
 
     if (length > 50) {
-        strcpy(symbol->errtxt, "488: Input too long (50 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 488, "Input length %d too long (maximum 50)", length);
     }
     to_upper(source, length);
-    if (!is_sane_lookup(KRSET, 36, source, length, posns)) {
-        strcpy(symbol->errtxt, "489: Invalid character in data (alphanumerics only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(KRSET, 36, source, length, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 489,
+                        "Invalid character at position %d in input (alphanumerics only)", i);
     }
     rm4scc_enc(symbol, posns, height_pattern, length);
 
@@ -519,13 +516,12 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
     int error_number = 0;
 
     if (length > 18) {
-        strcpy(symbol->errtxt, "490: Input too long (18 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 490, "Input length %d too long (maximum 18)", length);
     }
     to_upper(source, length);
-    if (!is_sane_lookup(KRSET, 36, source, length, posns)) {
-        strcpy(symbol->errtxt, "491: Invalid character in data (alphanumerics only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(KRSET, 36, source, length, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 491,
+                        "Invalid character at position %d in input (alphanumerics only)", i);
     }
 
     /* Encode data */
@@ -567,19 +563,19 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
 
 /* Handles DAFT Code symbols */
 INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i;
     int posns[576];
     int loopey;
     int writer;
 
     if (length > 576) { /* 576 * 2 = 1152 */
-        strcpy(symbol->errtxt, "492: Input too long (576 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 492, "Input length %d too long (maximum 576)", length);
     }
     to_upper(source, length);
 
-    if (!is_sane_lookup(DAFTSET, 4, source, length, posns)) {
-        strcpy(symbol->errtxt, "493: Invalid character in data (\"D\", \"A\", \"F\" and \"T\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(DAFTSET, 4, source, length, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 493,
+                        "Invalid character at position %d in input (\"D\", \"A\", \"F\" and \"T\" only)", i);
     }
 
     writer = 0;
@@ -617,21 +613,20 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
 
 /* Flattermarken - Not really a barcode symbology! */
 INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int loop, error_number = 0;
+    int i, error_number = 0;
     char dest[512]; /* 128 * 4 = 512 */
     char *d = dest;
 
     if (length > 128) { /* 128 * 9 = 1152 */
-        strcpy(symbol->errtxt, "494: Input too long (128 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 494, "Input length %d too long (maximum 128)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "495: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 495,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
-    for (loop = 0; loop < length; loop++) {
-        const char *const entry = FlatTable[source[loop] - '0'];
+    for (i = 0; i < length; i++) {
+        const char *const entry = FlatTable[source[i] - '0'];
         memcpy(d, entry, 4);
         d += entry[2] ? 4 : 2;
     }
@@ -653,15 +648,14 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     char inter[20 + 1];
 
     if (length > 20) {
-        strcpy(symbol->errtxt, "496: Input too long (20 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 496, "Input length %d too long (maximum 20)", length);
     }
 
     to_upper(source, length);
 
-    if (!is_sane(SHKASUTSET_F, source, length)) {
-        strcpy(symbol->errtxt, "497: Invalid character in data (alphanumerics and \"-\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(SHKASUTSET_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 497,
+                        "Invalid character at position %d in input (alphanumerics and \"-\" only)", i);
     }
     memset(inter, 'd', 20); /* Pad character CC4 */
     inter[20] = '\0';
@@ -689,8 +683,8 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     } while ((i < length) && (inter_posn < 20));
 
     if (i != length || inter[20] != '\0') {
-        strcpy(symbol->errtxt, "477: Input too long (20 symbol character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 477,
+                        "Input too long, requires too many symbol characters (maximum 20)");
     }
 
     memcpy(d, "13", 2); /* Start */

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -40,21 +40,23 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { "A", 77, 0, 16, 70 }, /* BS EN 12323:2005 4.1 (l) */
-        /*  1*/ { "A", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { "0", 154, 0, 16, 70 }, /* BS EN 12323:2005 4.1 (l) */
-        /*  3*/ { "0", 155, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { "0", 153, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Fails due to odd length */
-        /*  5*/ { "0", 161, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { "\001", 77, 0, 16, 70 },
-        /*  7*/ { "\001", 78, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { "\377", 38, 0, 16, 70 }, /* FNC4 + char for each so half 77 as not using double latch */
-        /*  9*/ { "\377", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { "A", 77, 0, 16, 70, "" }, /* BS EN 12323:2005 4.1 (l) */
+        /*  1*/ { "A", 78, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 79 symbol characters (maximum 78)" },
+        /*  2*/ { "A", 257, ZINT_ERROR_TOO_LONG, -1, -1, "Error 420: Input length 257 too long (maximum 256)" },
+        /*  3*/ { "0", 154, 0, 16, 70, "" }, /* BS EN 12323:2005 4.1 (l) */
+        /*  4*/ { "0", 155, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 80 symbol characters (maximum 78)" },
+        /*  5*/ { "0", 153, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 79 symbol characters (maximum 78)" }, /* Fails due to odd length */
+        /*  6*/ { "0", 161, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 79 symbol characters (maximum 78)" },
+        /*  7*/ { "\001", 77, 0, 16, 70, "" },
+        /*  8*/ { "\001", 78, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 79 symbol characters (maximum 78)" },
+        /*  9*/ { "\377", 38, 0, 16, 70, "" }, /* FNC4 + char for each so half 77 as not using double latch */
+        /* 10*/ { "\377", 39, ZINT_ERROR_TOO_LONG, -1, -1, "Error 421: Input too long, requires 79 symbol characters (maximum 78)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -76,6 +78,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -101,13 +105,13 @@ static void test_reader_init(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, READER_INIT, "A", 0, 2, 70, "(10) 1 96 33 103 103 103 103 103 68 35", "ModeB FNC3 A Pad (5)" },
         /*  1*/ { UNICODE_MODE, READER_INIT, "12", 0, 2, 70, "(10) 5 96 12 103 103 103 103 103 99 41", "ModeC1SB FNC3 12 Pad (5)" },
         /*  2*/ { UNICODE_MODE, READER_INIT, "A1234", 0, 2, 70, "(10) 6 96 33 12 34 103 103 103 65 53", "ModeC2SB FNC3 A 12 34 Pad (3)" },
         /*  3*/ { GS1_MODE, READER_INIT, "[90]1", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 422: Cannot use both GS1 mode and Reader Initialisation", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -135,10 +139,10 @@ static void test_reader_init(const testCtx *const p_ctx) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             }
         }
 
@@ -172,7 +176,7 @@ static void test_input(const testCtx *const p_ctx) {
        ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
        é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "\037", -1, 0, 2, 70, 1, "(10) 0 95 103 103 103 103 103 103 22 42", "ModeA US Pad (6)" },
         /*  1*/ { UNICODE_MODE, -1, "A", -1, 0, 2, 70, 1, "(10) 1 33 103 103 103 103 103 103 52 82", "ModeB A Pad (6)" },
         /*  2*/ { UNICODE_MODE, -1, "12", -1, 0, 2, 70, 1, "(10) 2 12 103 103 103 103 103 103 98 27", "ModeC 12 Pad (6)" },
@@ -202,8 +206,8 @@ static void test_input(const testCtx *const p_ctx) {
         /* 26*/ { UNICODE_MODE, 4, "123456789012345678901234", -1, 0, 4, 70, 1, "(20) 16 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 66 96", "Min 4 rows" },
         /* 27*/ { UNICODE_MODE, 5, "123456789012345678901234", -1, 0, 5, 70, 1, "(25) 23 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 103 103 103 103 103 68 61", "Min 5 rows" },
         /* 28*/ { UNICODE_MODE, 16, "123456789012345678901234", -1, 0, 16, 70, 1, "(80) 100 12 34 56 78 90 12 34 56 78 90 12 34 103 103 103 103 103 103 103 103 103 103 103", "Min 16 rows" },
-        /* 29*/ { UNICODE_MODE, 1, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, "Error 424: Minimum number of rows out of range (2 to 16)", "" },
-        /* 30*/ { UNICODE_MODE, 17, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, "Error 424: Minimum number of rows out of range (2 to 16)", "" },
+        /* 29*/ { UNICODE_MODE, 1, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, "Error 424: Minimum number of rows '1' out of range (2 to 16)", "" },
+        /* 30*/ { UNICODE_MODE, 17, "123456789012345678901234", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, 1, "Error 424: Minimum number of rows '17' out of range (2 to 16)", "" },
         /* 31*/ { UNICODE_MODE, -1, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 6, 70, 0, "(30) 29 100 33 100 33 100 33 100 33 100 33 100 33 99 99 99 99 99 99 99 99 100 100 33 103", "BWIPP different encodation, uses double FNC4 latch" },
         /* 32*/ { UNICODE_MODE, -1, "ÿ\012àa\0121\012àAà", -1, 0, 4, 70, 0, "(20) 15 100 95 98 74 100 64 65 98 74 17 98 74 100 64 33 100 64 47 35", "BWIPP different encodation, uses CodeA instead of 1SA" },
         /* 33*/ { UNICODE_MODE, -1, "ÿ\012àa\0121\012àAà\012à", -1, 0, 5, 70, 0, "(25) 22 100 95 98 74 100 64 65 98 74 17 98 74 100 64 33 100 64 98 74 100 64 103 89 18", "BWIPP different encodation, uses CodeA instead of 1SA" },
@@ -218,7 +222,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 42*/ { UNICODE_MODE, -1, "ÿ123456\012à123456abcd\0121\01223456\012\0127890àAàBCDEà\012\012à", -1, 0, 11, 70, 0, "(55) 69 100 95 12 34 56 101 74 101 98 64 99 12 34 56 100 65 66 67 68 98 74 17 98 74 18 99", "BWIPP different encodation, uses Sh3C + other differences" },
         /* 43*/ { UNICODE_MODE, -1, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 12, 70, 0, "(60) 76 100 95 12 34 56 78 101 74 101 98 64 99 12 34 56 78 100 65 66 67 68 69 70 98 74 17", "BWIPP different encodation, uses Sh2C + other differences" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -251,7 +255,7 @@ static void test_input(const testCtx *const p_ctx) {
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, symbol->errtxt, data[i].comment);
         } else {
-            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
@@ -304,7 +308,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "ab0123456789", 0, 2, 70, "BS EN 12323:2005 Figure 3",
                     "1110010101100110111011010011110110111100100110010011000100100010001101"
                     "1100110101000100111011110100110010010000100110100011010010001110011001"
@@ -347,7 +351,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110100100101111011001011110110010111101100101110001001110010010111101"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 

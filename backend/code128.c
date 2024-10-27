@@ -37,7 +37,8 @@
 #include "code128.h"
 #include "gs1.h"
 
-#define C128_SYMBOL_MAX 99
+#define C128_SYMBOL_MAX     99
+#define C128_SYMBOL_MAX_S   "99" /* String version of above */
 
 static const char KRSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 #define KRSET_F (IS_NUM_F | IS_UPR_F)
@@ -209,21 +210,20 @@ static void c128_define_mode(char set[C128_MAX], const unsigned char source[], c
 
     for (i = 0; i < length; i++) {
         const int latch = modes[i][charset];
-        if (latch >= 1 && latch <= 3) {
-            charset = latch;
-            set[i] = '@' + latch; /* A, B or C */
-        } else if (latch >= 4 && latch <= 5) {
+        if (latch >= 4 && latch <= 5) {
             /* Shift A/B */
             charset = latch - 3;
             set[i] = charset == 1 ? 'b' : 'a';
         } else {
-            /* Continue in same `charset` */
+            if (latch >= 1 && latch <= 3) {
+                charset = latch;
+            } /* Else continue in same `charset` */
             assert(charset);
             set[i] = '@' + charset; /* A, B or C */
-        }
-        if (charset == 3 && source[i] != '\x1D') {
-            assert(i + 1 < length); /* Guaranteed by algorithm */
-            set[++i] = 'C';
+            if (charset == 3 && source[i] != '\x1D') {
+                assert(i + 1 < length); /* Guaranteed by algorithm */
+                set[++i] = 'C';
+            }
         }
     }
 }
@@ -413,8 +413,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
-        sprintf(symbol->errtxt, "340: Input too long (%d character maximum)", C128_MAX);
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 340, "Input length %d too long (maximum " C128_MAX_S ")", length);
     }
 
     /* Detect special Code Set escapes for Code 128 in extra escape mode only */
@@ -447,8 +446,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         if (j != length) {
             length = j;
             if (length == 0) {
-                strcpy(symbol->errtxt, "842: No input data");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 842, "No input data");
             }
             src = src_buf;
             src[length] = '\0';
@@ -470,37 +468,36 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Decide when to latch to extended mode - ISO/IEC 15417:2007 Annex E note 3 */
     j = 0;
+    k = 0;
     for (i = 0; i < length; i++) {
         if (fset[i] == 'f') {
             j++;
-            if (j >= 5) {
-                for (k = i; k > (i - 5); k--) {
-                    fset[k] = 'F';
+            if (j >= 4) {
+                fset[i] = 'F';
+                if (!k) {
+                    fset[i - 1] = fset[i - 2] = fset[i - 3] = 'F';
+                    k = i;
                 }
             }
         } else {
             j = 0;
+            k = 0;
         }
     }
-    if (j >= 3) {
-        for (k = length - 1; k > length - 1 - j; k--) {
-            fset[k] = 'F';
-        }
+    if (j >= 3 && !k) {
+        fset[length - 1] = fset[length - 2] = fset[length - 3] = 'F';
     }
 
-    /* Decide if it is worth reverting to 646 encodation for a few characters as described in 4.3.4.2 (d) */
+    /* Decide if it is worth reverting to ASCII encodation for a few characters as described in 4.3.4.2 (d) */
     for (i = 1; i < length; i++) {
         if ((fset[i - 1] == 'F') && (fset[i] == ' ')) {
-            int c = 0;
-            /* Detected a change from 8859-1 to 646 - count how long for */
-            for (j = 0; ((i + j) < length) && (fset[i + j] == ' '); j++) {
-                c += set[i + j] == 'C'; /* Count code set C so can subtract when deciding below */
+            int c = set[i] == 'C'; /* Count code set C so can subtract when deciding below */
+            /* Detected a change from extended to ASCII - count how long for */
+            for (j = 1; i + j < length && fset[i + j] == ' '; j++) {
+                c += set[i + j] == 'C';
             }
-            /* Count how many 8859-1 beyond */
-            k = 0;
-            if (i + j < length) {
-                for (k = 1; ((i + j + k) < length) && (fset[i + j + k] != ' '); k++);
-            }
+            /* Count how many extended beyond */
+            for (k = i + j < length; i + j + k < length && fset[i + j + k] != ' '; k++);
             if (j - c < 3 || (j - c < 5 && k > 2)) {
                 /* Change to shifting back rather than latching back */
                 /* Inverts the same figures recommended by ISO/IEC 15417:2007 Annex E note 3 */
@@ -519,9 +516,9 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
-    if (c128_glyph_count(source, length, set, fset) > C128_SYMBOL_MAX) {
-        sprintf(symbol->errtxt, "341: Input too long (%d symbol character maximum)", C128_SYMBOL_MAX);
-        return ZINT_ERROR_TOO_LONG;
+    if ((i = c128_glyph_count(source, length, set, fset)) > C128_SYMBOL_MAX) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 341,
+                        "Input too long, requires %d symbol characters (maximum " C128_SYMBOL_MAX_S ")", i);
     }
 
     /* So now we know what start character to use - we can get on with it! */
@@ -679,9 +676,8 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
-        resulting barcode depends on the type of data, so this is trapped later */
-        sprintf(symbol->errtxt, "342: Input too long (%d character maximum)", C128_MAX);
-        return ZINT_ERROR_TOO_LONG;
+           resulting barcode depends on the type of data, so this is trapped later */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 342, "Input length %d too long (maximum " C128_MAX_S ")", length);
     }
 
     /* if part of a composite symbol make room for the separator pattern */
@@ -707,9 +703,9 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* Now we can calculate how long the barcode is going to be - and stop it from
        being too long */
-    if (c128_glyph_count(reduced, reduced_length, set, NULL /*fset*/) > C128_SYMBOL_MAX) {
-        sprintf(symbol->errtxt, "344: Input too long (%d symbol character maximum)", C128_SYMBOL_MAX);
-        return ZINT_ERROR_TOO_LONG;
+    if ((i = c128_glyph_count(reduced, reduced_length, set, NULL /*fset*/)) > C128_SYMBOL_MAX) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 344,
+                        "Input too long, requires %d symbol characters (maximum " C128_SYMBOL_MAX_S ")", i);
     }
 
     /* So now we know what start character to use - we can get on with it! */
@@ -800,8 +796,8 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (reduced_length > 48) { /* GS1 General Specifications 5.4.4.3 */
         if (error_number == 0) { /* Don't overwrite any `gs1_verify()` warning */
-            strcpy(symbol->errtxt, "843: GS1-128 input too long (48 character maximum)");
-            error_number = ZINT_WARN_NONCOMPLIANT;
+            error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 843,
+                                    "Input too long, requires %d characters (maximum 48)", reduced_length);
         }
     }
 
@@ -849,8 +845,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     }
     if (i == sizeof(symbol->text)) {
         /* Trumps all other warnings */
-        strcpy(symbol->errtxt, "844: Human Readable Text truncated");
-        error_number = ZINT_WARN_HRT_TRUNCATED;
+        error_number = errtxt(ZINT_WARN_HRT_TRUNCATED, symbol, 844, "Human Readable Text truncated");
         i--;
     }
     symbol->text[i] = '\0';
@@ -865,17 +860,18 @@ INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int len
 
 /* Add check digit if encoding an NVE18 symbol */
 INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i;
     int error_number, zeroes;
     unsigned char ean128_equiv[23];
 
     if (length > 17) {
-        strcpy(symbol->errtxt, "345: Input too long (17 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %d too long (maximum 17)", length);
     }
 
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "346: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        /* Note: for all "at position" error messages, escape sequences not accounted for */
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 346,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     zeroes = 17 - length;
@@ -893,17 +889,17 @@ INTERNAL int nve18(struct zint_symbol *symbol, unsigned char source[], int lengt
 
 /* EAN-14 - A version of EAN-128 */
 INTERNAL int ean14(struct zint_symbol *symbol, unsigned char source[], int length) {
+    int i;
     int error_number, zeroes;
     unsigned char ean128_equiv[19];
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "347: Input too long (13 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 347, "Input length %d too long (maximum 13)", length);
     }
 
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "348: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 348,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     zeroes = 13 - length;
@@ -934,11 +930,9 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     if ((length != 27 && length != 28) || (length == 28 && relabel)) {
         if (relabel) {
-            strcpy(symbol->errtxt, "830: DPD relabel input wrong length (27 characters required)");
-        } else {
-            strcpy(symbol->errtxt, "349: DPD input wrong length (27 or 28 characters required)");
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 830, "DPD relabel input length %d wrong (27 only)", length);
         }
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 349, "DPD input length %d wrong (27 or 28 only)", length);
     }
 
     if (length == 27 && !relabel) {
@@ -953,18 +947,18 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     ident_tag = local_source[0];
 
     to_upper(local_source + !relabel, length - !relabel);
-    if (!is_sane(KRSET_F, local_source + !relabel, length - !relabel)) {
+    if ((i = not_sane(KRSET_F, local_source + !relabel, length - !relabel))) {
         if (local_source == local_source_buf || relabel) {
-            strcpy(symbol->errtxt, "300: Invalid character in data (alphanumerics only)");
-        } else {
-            strcpy(symbol->errtxt, "299: Invalid character in data (alphanumerics only after first character)");
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 300,
+                        "Invalid character at position %d in input (alphanumerics only)", i);
         }
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 299,
+                        "Invalid character at position %d in input (alphanumerics only after first)", i);
     }
 
     if ((ident_tag < 32) || (ident_tag > 127)) {
-        strcpy(symbol->errtxt, "343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 343,
+                        "Invalid DPD identification tag (first character), ASCII values 32 to 127 only");
     }
 
     (void) code128(symbol, local_source, length); /* Only error returned is for large text which can't happen */
@@ -1030,14 +1024,14 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     symbol->text[p] = '\0';
 
     /* Some compliance checks */
-    if (!is_sane(NEON_F, local_source + length - 16, 16)) {
-        if (!is_sane(NEON_F, local_source + length - 3, 3)) { /* 3-digit Country Code (ISO 3166-1) */
-            strcpy(symbol->errtxt, "831: Destination Country Code (last 3 characters) should be numeric");
-        } else if (!is_sane(NEON_F, local_source + length - 6, 3)) { /* 3-digit Service Code */
-            strcpy(symbol->errtxt, "832: Service Code (characters 6-4 from end) should be numeric");
+    if (not_sane(NEON_F, local_source + length - 16, 16)) {
+        if (not_sane(NEON_F, local_source + length - 3, 3)) { /* 3-digit Country Code (ISO 3166-1) */
+            errtxt(0, symbol, 831, "Destination Country Code (last 3 characters) should be numeric");
+        } else if (not_sane(NEON_F, local_source + length - 6, 3)) { /* 3-digit Service Code */
+            errtxt(0, symbol, 832, "Service Code (characters 6-4 from end) should be numeric");
         } else { /* Last 10 characters of Tracking No. */
-            strcpy(symbol->errtxt,
-                "833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
+            errtxt(0, symbol, 833,
+                    "Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric");
         }
         error_number = ZINT_WARN_NONCOMPLIANT;
     }
@@ -1056,8 +1050,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number = 0;
 
     if (length != 12 && length != 13) {
-        strcpy(symbol->errtxt, "834: Input must be 12 or 13 characters long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 only)", length);
     }
     if (length == 13) { /* Includes check digit - remove for now */
         have_check_digit = source[10];
@@ -1069,17 +1062,17 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     to_upper(local_source, length);
 
     if (!z_isupper(local_source[0]) || !z_isupper(local_source[1])) {
-        strcpy(symbol->errtxt, "835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 835,
+                        "Invalid character in Service Indictor (first 2 characters) (alphabetic only)");
     }
-    if (!is_sane(NEON_F, local_source + 2, 12 - 4) || (have_check_digit && !z_isdigit(have_check_digit))) {
-        sprintf(symbol->errtxt, "836: Invalid character in Serial Number (middle %d characters) (digits only)",
-                have_check_digit ? 9 : 8);
-        return ZINT_ERROR_INVALID_DATA;
+    if (not_sane(NEON_F, local_source + 2, 12 - 4) || (have_check_digit && !z_isdigit(have_check_digit))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 836,
+                        "Invalid character in Serial Number (middle %d characters) (digits only)",
+                        have_check_digit ? 9 : 8);
     }
     if (!z_isupper(local_source[10]) || !z_isupper(local_source[11])) {
-        strcpy(symbol->errtxt, "837: Invalid character in Country Code (last 2 characters) (alphabetic only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 837,
+                        "Invalid character in Country Code (last 2 characters) (alphabetic only)");
     }
 
     check_digit = 0;
@@ -1094,8 +1087,8 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
         check_digit = 5;
     }
     if (have_check_digit && ctoi(have_check_digit) != check_digit) {
-        sprintf(symbol->errtxt, "838: Invalid check digit '%c', expecting '%c'", have_check_digit, itoc(check_digit));
-        return ZINT_ERROR_INVALID_CHECK;
+        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 838, "Invalid check digit '%1$c', expecting '%2$c'",
+                        have_check_digit, itoc(check_digit));
     }
     /* Add in (back) check digit */
     local_source[12] = local_source[11];
@@ -1105,14 +1098,14 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Do some checks on the Service Indicator (first char only) and Country Code */
     if (strchr("JKSTW", local_source[0]) != NULL) { /* These are reserved & cannot be assigned */
-        strcpy(symbol->errtxt, "839: Invalid Service Indicator (first character should not be any of \"JKSTW\")");
-        error_number = ZINT_WARN_NONCOMPLIANT;
+        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 839,
+                                "Invalid Service Indicator (first character should not be any of \"JKSTW\")");
     } else if (strchr("FHIOXY", local_source[0]) != NULL) { /* These aren't allocated as of spec Oct 2017 */
-        strcpy(symbol->errtxt, "840: Non-standard Service Indicator (first 2 characters)");
-        error_number = ZINT_WARN_NONCOMPLIANT;
+        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 840,
+                                "Non-standard Service Indicator (first 2 characters)");
     } else if (!gs1_iso3166_alpha2(local_source + 11)) {
-        strcpy(symbol->errtxt, "841: Country code (last two characters) is not ISO 3166-1");
-        error_number = ZINT_WARN_NONCOMPLIANT;
+        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 841,
+                                "Country code (last two characters) is not ISO 3166-1");
     }
 
     (void) code128(symbol, local_source, 13); /* Only error returned is for large text which can't happen */

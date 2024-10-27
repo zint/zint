@@ -834,8 +834,7 @@ INTERNAL int sjis_utf8(struct zint_symbol *symbol, const unsigned char source[],
 
     for (i = 0, length = *p_length; i < length; i++) {
         if (!u_sjis_int(utfdata[i], ddata + i)) {
-            strcpy(symbol->errtxt, "800: Invalid character in input data");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 800, "Invalid character in input");
         }
     }
 
@@ -929,8 +928,7 @@ INTERNAL int gb2312_utf8(struct zint_symbol *symbol, const unsigned char source[
             ddata[i] = utfdata[i];
         } else {
             if (!u_gb2312_int(utfdata[i], ddata + i)) {
-                strcpy(symbol->errtxt, "810: Invalid character in input data");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 810, "Invalid character in input");
             }
         }
     }
@@ -1033,8 +1031,7 @@ INTERNAL int gb18030_utf8(struct zint_symbol *symbol, const unsigned char source
         } else {
             ret = u_gb18030_int(utfdata[i], ddata + j, ddata + j + 1);
             if (ret == 0) { /* Should never happen, as GB 18030 is a UTF i.e. maps all Unicode codepoints */
-                strcpy(symbol->errtxt, "820: Invalid character in input data"); /* Not reached */
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 820, "Invalid character in input"); /* Not reached */
             }
             if (ret == 4) {
                 j++;

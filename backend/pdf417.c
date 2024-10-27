@@ -146,10 +146,12 @@ static const char pdf_MicroAutosize[56] = {
 /* ISO/IEC 15438:2015 5.1.1 c) 3) Max possible number of characters at error correction level 0
    (Numeric Compaction mode) */
 #define PDF_MAX_LEN         2710
+#define PDF_MAX_LEN_S       "2710" /* String version of above */
 #define PDF_MAX_STREAM_LEN  (PDF_MAX_LEN * 3) /* Allow for tripling up due to shifts/latches (ticket #300 (#7)) */
 
 /* ISO/IEC 24728:2006 5.1.1 c) 3) Max possible number of characters (Numeric Compaction mode) */
 #define MICRO_PDF_MAX_LEN   366
+#define MICRO_PDF_MAX_LEN_S "366" /* String version of above */
 
 /* 866 */
 /* Initial non-compressed categorization of input */
@@ -1024,8 +1026,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
         pdf_appendix_d_encode(chaine, liste, &indexliste);
      } else {
         if (!pdf_define_mode(liste, &indexliste, chaine, length, *p_lastmode, debug_print)) {
-            strcpy(symbol->errtxt, "749: Insufficient memory for mode buffers");
-            return ZINT_ERROR_MEMORY;
+            return errtxt(ZINT_ERROR_MEMORY, symbol, 749, "Insufficient memory for mode buffers");
         }
     }
 
@@ -1051,8 +1052,8 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
 
     if (eci != 0) {
         if (eci > 811799) {
-            strcpy(symbol->errtxt, "472: Invalid ECI");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 472, "ECI code '%d' out of range (0 to 811799)",
+                            symbol->eci);
         }
         /* Encoding ECI assignment number, according to Table 8 */
         if (eci <= 899) {
@@ -1125,12 +1126,13 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
         int id_cnt = 0, ids[10];
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 99999) {
-            strcpy(symbol->errtxt, "740: Structured Append count out of range (2-99999)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 740,
+                            "Structured Append count '%d' out of range (2 to 99999)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "741: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 741,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id_len;
@@ -1138,21 +1140,21 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
             for (id_len = 1; id_len < 31 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 30) { /* 10 triplets */
-                strcpy(symbol->errtxt, "742: Structured Append ID too long (30 digit maximum)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 742,
+                                "Structured Append ID length %d too long (30 digit maximum)", id_len);
             }
 
             for (i = 0; i < id_len; i += 3, id_cnt++) {
                 const int triplet_len = i + 3 < id_len ? 3 : id_len - i;
                 ids[id_cnt] = to_int((const unsigned char *) (symbol->structapp.id + i), triplet_len);
                 if (ids[id_cnt] == -1) {
-                    strcpy(symbol->errtxt, "743: Invalid Structured Append ID (digits only)");
-                    return ZINT_ERROR_INVALID_OPTION;
+                    return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 743,
+                                    "Invalid Structured Append ID (digits only)");
                 }
                 if (ids[id_cnt] > 899) {
-                    sprintf(symbol->errtxt, "744: Structured Append ID triplet %d '%03d' out of range (000-899)",
-                            id_cnt + 1, ids[id_cnt]);
-                    return ZINT_ERROR_INVALID_OPTION;
+                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 744,
+                                    "Structured Append ID triplet %1$d value '%2$03d' out of range (000 to 899)",
+                                    id_cnt + 1, ids[id_cnt]);
                 }
             }
         }
@@ -1204,9 +1206,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     static const short ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
-    if (segs_length(segs, seg_count) > PDF_MAX_LEN) {
-        strcpy(symbol->errtxt, "463: Input string too long");
-        return ZINT_ERROR_TOO_LONG;
+    if ((i = segs_length(segs, seg_count)) > PDF_MAX_LEN) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 463, "Input length %d too long (maximum " PDF_MAX_LEN_S ")", i);
     }
 
     error_number = pdf_initial_segs(symbol, segs, seg_count, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
@@ -1250,8 +1251,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (longueur > 928) {
         /* Enforce maximum codeword limit */
-        strcpy(symbol->errtxt, "464: Input string too long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 464, "Input too long, requires too many codewords (maximum 928)");
     }
 
     cols = symbol->option_2;
@@ -1268,21 +1268,20 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
                 /* Increase rows if multiple too big */
                 for (; cols >= 1 && rows < 90 && rows * cols > 928; rows++, cols = (longueur + rows - 1) / rows);
                 if (rows * cols > 928) {
-                    strcpy(symbol->errtxt, "465: Data too long for specified number of rows");
-                    return ZINT_ERROR_TOO_LONG;
+                    return errtxt(ZINT_ERROR_TOO_LONG, symbol, 465,
+                                    "Input too long, requires too many codewords (maximum 928)");
                 }
             }
         } else { /* Cols given */
             /* Increase rows if multiple too big */
             for (; rows <= 90 && rows * cols < longueur; rows++);
             if (rows > 90 || rows * cols > 928) {
-                strcpy(symbol->errtxt, "745: Data too long for specified number of columns");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 745, "Input too long for number of columns '%d'", cols);
             }
         }
         if (rows != symbol->option_3) {
-            sprintf(symbol->errtxt, "746: Rows increased from %d to %d", symbol->option_3, rows);
-            error_number = ZINT_WARN_INVALID_OPTION;
+            error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 746,
+                                    "Number of rows increased from %1$d to %2$d", symbol->option_3, rows);
         }
     } else { /* Rows automatic, cols automatic or given */
         if (cols < 1) { /* Cols automatic */
@@ -1299,12 +1298,12 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
             /* Increase cols if multiple too big */
             for (; rows >= 3 && cols < 30 && rows * cols > 928; cols++, rows = (longueur + cols - 1) / cols);
             if (rows * cols > 928) {
-                strcpy(symbol->errtxt, "747: Data too long for specified number of columns");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxt(ZINT_ERROR_TOO_LONG, symbol, 747,
+                                "Input too long, requires too many codewords (maximum 928)");
             }
             if (symbol->option_2 && cols != symbol->option_2) { /* Note previously did not warn if cols auto-upped */
-                sprintf(symbol->errtxt, "748: Columns increased from %d to %d", symbol->option_2, cols);
-                error_number = ZINT_WARN_INVALID_OPTION;
+                error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 748,
+                                        "Number of columns increased from %1$d to %2$d", symbol->option_2, cols);
             }
         }
     }
@@ -1450,30 +1449,28 @@ INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const in
     error_number = 0;
 
     if ((symbol->option_1 < -1) || (symbol->option_1 > 8)) {
+        errtxtf(0, symbol, 460, "Error correction level '%d' out of range (0 to 8)", symbol->option_1);
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            strcpy(symbol->errtxt, "462: Security value out of range (0 to 8)");
             return ZINT_ERROR_INVALID_OPTION;
         }
-        strcpy(symbol->errtxt, "460: Security value out of range (0 to 8), ignored");
+        error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_1 = -1;
-        error_number = ZINT_WARN_INVALID_OPTION;
     }
     if ((symbol->option_2 < 0) || (symbol->option_2 > 30)) {
+        errtxtf(0, symbol, 461, "Number of columns '%d' out of range (1 to 30)", symbol->option_2);
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            strcpy(symbol->errtxt, "473: Number of columns out of range (1 to 30)");
             return ZINT_ERROR_INVALID_OPTION;
         }
-        strcpy(symbol->errtxt, "461: Number of columns out of range (1 to 30), ignored");
+        error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
     }
     if (symbol->option_3 && (symbol->option_3 < 3 || symbol->option_3 > 90)) {
-        strcpy(symbol->errtxt, "466: Number of rows out of range (3 to 90)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 466, "Number of rows '%d' out of range (3 to 90)",
+                        symbol->option_3);
     }
     if (symbol->option_2 && symbol->option_3 && symbol->option_2 * symbol->option_3 > 928) {
-        strcpy(symbol->errtxt, "475: Columns x rows out of range (1 to 928)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 475, "Columns x rows value '%d' out of range (1 to 928)",
+                        symbol->option_2 * symbol->option_3);
     }
 
     /* 349 */
@@ -1500,14 +1497,15 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     int variant;
     int LeftRAP, CentreRAP, RightRAP, Cluster, loop;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
+    /* From ISO/IEC 24728:2006 Table 1 — MicroPDF417 version characteristics */
+    static char col_max_codewords[5] = { 0, 20, 37, 82, 126 };
 
-    if (segs_length(segs, seg_count) > MICRO_PDF_MAX_LEN) {
-        strcpy(symbol->errtxt, "474: Input data too long");
-        return ZINT_ERROR_TOO_LONG;
+    if ((i = segs_length(segs, seg_count)) > MICRO_PDF_MAX_LEN) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 474, "Input length %d too long (maximum " MICRO_PDF_MAX_LEN_S ")",
+                        i);
     }
     if (symbol->option_3) {
-        strcpy(symbol->errtxt, "476: Cannot specify rows for MicroPDF417");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 476, "Cannot specify rows for MicroPDF417");
     }
 
     /* Encoding starts out the same as PDF417, so use the same code */
@@ -1521,16 +1519,17 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     /* This is where it all changes! */
 
     if (mclength + structapp_cp > 126) {
-        strcpy(symbol->errtxt, "467: Input data too long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 467, "Input too long, requires %d codewords (maximum 126)",
+                        mclength + structapp_cp);
     }
     if (symbol->option_2 > 4) {
-        strcpy(symbol->errtxt, "468: Specified width out of range");
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 471, "Number of columns '%d' out of range (1 to 4)",
+                            symbol->option_2);
         }
+        error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 468,
+                                "Number of columns '%d' out of range (1 to 4), ignoring", symbol->option_2);
         symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if (debug_print) {
@@ -1545,34 +1544,16 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     variant = 0;
 
-    if ((symbol->option_2 == 1) && (mclength + structapp_cp > 20)) {
-        /* the user specified 1 column but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "469: Specified symbol size too small for data");
+    if (symbol->option_2 >= 1 && mclength + structapp_cp > col_max_codewords[symbol->option_2]) {
+        /* The user specified the column but the data doesn't fit - go to automatic */
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 469,
+                            "Input too long for number of columns '%1$d', requires %2$d codewords (maximum %3$d)",
+                            symbol->option_2, mclength + structapp_cp, col_max_codewords[symbol->option_2]);
         }
+        error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 470,
+                                "Input too long for number of columns '%d', ignoring", symbol->option_2);
         symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
-    }
-
-    if ((symbol->option_2 == 2) && (mclength + structapp_cp > 37)) {
-        /* the user specified 2 columns but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "470: Specified symbol size too small for data");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
-    }
-
-    if ((symbol->option_2 == 3) && (mclength + structapp_cp > 82)) {
-        /* the user specified 3 columns but the data doesn't fit - go to automatic */
-        strcpy(symbol->errtxt, "471: Specified symbol size too small for data");
-        if (symbol->warn_level == WARN_FAIL_ALL) {
-            return ZINT_ERROR_INVALID_OPTION;
-        }
-        symbol->option_2 = 0;
-        error_number = ZINT_WARN_INVALID_OPTION;
     }
 
     if (symbol->option_2 == 1) {

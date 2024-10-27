@@ -1050,8 +1050,8 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
                 if (error_number == 0) {
                     done = 1;
                 } else {
-                    sprintf(symbol->errtxt, "535: Invalid character in input data for ECI %d", local_segs[i].eci);
-                    return error_number;
+                    return errtxtf(error_number, symbol, 535, "Invalid character in input for ECI '%d'",
+                                    local_segs[i].eci);
                 }
             }
             if (!done) {
@@ -1069,12 +1069,13 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
 
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
-            strcpy(symbol->errtxt, "536: Structured Append count out of range (2-16)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 536,
+                            "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "537: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 537,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len;
@@ -1082,32 +1083,30 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
             for (id_len = 1; id_len < 4 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 3) { /* 255 (8 bits) */
-                strcpy(symbol->errtxt, "538: Structured Append ID too long (3 digit maximum)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 538,
+                                "Structured Append ID length %d too long (3 digit maximum)", id_len);
             }
 
             id = to_int((const unsigned char *) symbol->structapp.id, id_len);
             if (id == -1) {
-                strcpy(symbol->errtxt, "539: Invalid Structured Append ID (digits only)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 539, "Invalid Structured Append ID (digits only)");
             }
             if (id > 255) {
-                sprintf(symbol->errtxt, "530: Structured Append ID '%d' out of range (0-255)", id);
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 530,
+                                "Structured Append ID value '%d' out of range (0 to 255)", id);
             }
         }
         p_structapp = &symbol->structapp;
     }
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "533: Invalid ECI");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 533, "ECI code '%d' out of range (0 to 811799)",
+                        symbol->eci);
     }
 
     error_number = gm_encode_segs(ddata, local_segs, seg_count, binary, reader, p_structapp, &bin_len, debug_print);
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "531: Input data too long");
-        return error_number;
+        return errtxt(error_number, symbol, 531, "Input too long, requires too many codewords (maximum 1313)");
     }
 
     /* Determine the size of the symbol */
@@ -1132,8 +1131,9 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
         if (symbol->option_2 >= min_layers) {
             layers = symbol->option_2;
         } else {
-            strcpy(symbol->errtxt, "534: Input data too long for selected symbol size");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 534,
+                        "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                        symbol->option_2, data_cw, gm_max_cw[symbol->option_2 - 1]);
         }
     }
 
@@ -1189,8 +1189,12 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     }
 
     if (data_cw > data_max) {
-        strcpy(symbol->errtxt, "532: Input data too long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 532,
+                        "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)",
+                        ecc_level, data_cw, data_max);
+    }
+    if (debug_print) {
+        printf("Layers: %d, ECC level: %d, Data Codewords: %d\n", layers, ecc_level, data_cw);
     }
 
     gm_add_ecc(binary, data_cw, layers, ecc_level, word);

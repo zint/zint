@@ -39,17 +39,18 @@ static void test_large(const testCtx *const p_ctx) {
         char datum;
         int length;
         int ret;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { 200, '0', 2940, 0 }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
-        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION },
-        /*  2*/ { 200, '9', 200, 0 }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
-        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION },
-        /*  4*/ { 201, '0', 2974, ZINT_ERROR_INVALID_OPTION }, /* Height > 200 also */
-        /*  5*/ { 30, '\001', 71, 0 }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
+    static const struct item data[] = {
+        /*  0*/ { 200, '0', 2940, 0, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
+        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 528: Symbol height '201' is too large" },
+        /*  2*/ { 200, '9', 200, 0, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
+        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION, "Error 528: Symbol width '201' is too large" },
+        /*  4*/ { 201, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 526: Symbol size '201x202' (WxH) is too large" }, /* Height > 200 also */
+        /*  5*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -70,6 +71,7 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }
@@ -95,29 +97,29 @@ static void test_options(const testCtx *const p_ctx) {
         const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "" },
         /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
         /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
         /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "" },
         /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "" },
-        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol width 4 is too small" }, /* Cols < 5 */
-        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol height 3 is too small" }, /* Not enough data - height 3 too small */
+        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol width '4' is too small" }, /* Cols < 5 */
+        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol height '3' is too small" }, /* Not enough data - height 3 too small */
         /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "" }, /* Cols 200 max */
         /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "" },
-        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Symbol width 201 is too large" },
+        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Symbol width '201' is too large" },
         /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "" }, /* Mask > 8 + 1 ignored */
         /* 11*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "" },
         /* 12*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "" },
-        /* 13*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
-        /* 14*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count out of range (2-35)" },
-        /* 15*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index out of range (1-2)" },
+        /* 13*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '1' out of range (2 to 35)" },
+        /* 14*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '36' out of range (2 to 35)" },
+        /* 15*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index '3' out of range (1 to count 2)" },
         /* 16*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode" },
         /* 17*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" },
         /* 18*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards" },
         /* 19*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -166,7 +168,7 @@ static void test_input(const testCtx *const p_ctx) {
         int bwipp_cmp;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "A", -1, 0, "66 21 6A", 1, "" },
         /*  1*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "A", -1, 0, "6C 03 66 21", 1, "" },
         /*  2*/ { UNICODE_MODE, 40, 18, -1, { 0, 0, "" }, "A", -1, 0, "6C 28 00 00 66 21", 1, "" },
@@ -174,7 +176,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*  4*/ { UNICODE_MODE, 899, 18, -1, { 0, 0, "" }, "A", -1, 0, "6C 28 07 44 66 21", 1, "" },
         /*  5*/ { UNICODE_MODE, 12769, 18, 8 << 8, { 0, 0, "" }, "A", -1, 0, "6C 28 70 49 66 21", 1, "" },
         /*  6*/ { UNICODE_MODE, 811799, 18, -1, { 0, 0, "" }, "A", -1, 0, "6C 67 40 50 66 21", 1, "" },
-        /*  7*/ { UNICODE_MODE, 811800, -1, -1, { 0, 0, "" }, "A", -1, ZINT_ERROR_INVALID_OPTION, "Error 525: Invalid ECI", 1, "" },
+        /*  7*/ { UNICODE_MODE, 811800, -1, -1, { 0, 0, "" }, "A", -1, ZINT_ERROR_INVALID_OPTION, "Error 525: ECI code '811800' out of range (0 to 811799)", 1, "" },
         /*  8*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "\000", 1, 0, "65 40 6A", 1, "LatchA (0x65) NUL PAD" },
         /*  9*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "\010", -1, 0, "65 48 6A", 1, "LatchA (0x65) BS PAD" },
         /* 10*/ { UNICODE_MODE, -1, 13, -1, { 0, 0, "" }, "\011", -1, 0, "65 49 6A", 1, "Lead special; LatchA (0x65) HT PAD" },
@@ -210,7 +212,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 40*/ { UNICODE_MODE, -1, -1, -1, { 2, 3, "" }, "\001\002\003\004", -1, 0, "65 41 42 43 44 6A 12 13 6C", 1, "LatchA (0x65) <SOH> <STX> <ETX> <EOT> PAD 2 3 FNC2" },
         /* 41*/ { DATA_MODE, -1, -1, -1, { 1, 34, "" }, "\200\201\202\203", -1, 0, "70 13 56 0A 59 2C 6D 11 39 6C", 1, "BinaryLatch (0x70) (...) TermA (0x6D) 1 Y FNC2" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -306,7 +308,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *expected;
     };
     /* ISS DotCode, Rev 4.0, DRAFT 0.15, TSC Pre-PR #5, MAY 28, 2019 */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { GS1_MODE, 64, -1, { 0, 0, "" }, "[01]00012345678905[17]201231[10]ABC123456", -1, 0, 9, 64, 1, 1, "ISS DotCode Rev 4.0 Figure 1 (left), same",
                     "1010000000101000101010000010000010001010100010101000101000001010"
                     "0100010001010001010001000001010100010100010001000100010101000001"
@@ -1077,7 +1079,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10100010000010101010000010"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -1179,7 +1181,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         char *expected;
     };
     /* ISS DotCode, Rev 4.0, DRAFT 0.15, TSC Pre-PR #5, MAY 28, 2019 */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, 18, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 13, 18, 1, 1, "ISS DotCode Rev 4.0 13.5 example **NOT SAME** different encodation",
                     "100000001010101010"
                     "000100000100010101"
@@ -1457,7 +1459,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "01000101000001010100000100010"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -1567,7 +1569,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { DATA_MODE, "(\207'", -1, 0 }, /* 0x28,0x87,0x27 Note: should but doesn't trigger sanitize error if no length check, for some reason; UPDATE: use up-to-date gcc (9)! */
         /*  1*/ { DATA_MODE,
                     "\133\061\106\133\061\106\070\161\116\133\116\116\067\040\116\016\000\116\125\111\125\125\316\125\125\116\116\116\116\117\116\125"
@@ -1591,7 +1593,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /*  5*/ { DATA_MODE, "\237\032", -1, 0 }, /* As above L904 */
         /*  6*/ { DATA_MODE, "\237", -1, 0 }, /* As above L1090 */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -1692,7 +1694,7 @@ static void test_perf(const testCtx *const p_ctx) {
         int expected_width;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DOTCODE, -1, -1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
                     "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK"
@@ -1702,7 +1704,7 @@ static void test_perf(const testCtx *const p_ctx) {
                     "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
                     0, 124, 185, "960 chars, text/numeric" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;

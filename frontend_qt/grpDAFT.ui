@@ -109,15 +109,13 @@
      </property>
      <property name="text">
       <string>Examples of tracker ratios:
-Australia Post 26%,
-Dutch Post &amp; Royal Mail 25.6%,
-Japan Post 33%,
-PLANET &amp; POSTNET &lt;i&gt;25% (Tracker and Ascender only)&lt;/i&gt;,
+Australia Post 26%, Dutch Post and Royal Mail 25.6%, Japan Post 33%,
+PLANET and POSTNET 25% (Tracker and Ascender only),
 USPS Intelligent Mail 33.1%
 </string>
      </property>
      <property name="textFormat">
-      <enum>Qt::RichText</enum>
+      <enum>Qt::PlainText</enum>
      </property>
      <property name="alignment">
       <set>Qt::AlignLeft</set>

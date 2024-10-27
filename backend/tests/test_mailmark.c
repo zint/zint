@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,7 +41,7 @@ static void test_4s_input(const testCtx *const p_ctx) {
         int expected_width;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "41038422416563762XY11     ", 0, 3, 155 },
         /*  1*/ { "41038422416563762XY11      ", ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { "4103842241656", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Too short (< 14) */
@@ -100,11 +100,11 @@ static void test_4s_input(const testCtx *const p_ctx) {
         /* 55*/ { "01000000000000000C 23JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad 1st N (non-alpha otherwise matches 2nd pattern) */
         /* 56*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_4s_input");
+    testStartSymbol("test_4s_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -146,7 +146,7 @@ static void test_4s_encode_vector(const testCtx *const p_ctx) {
         char *expected_daft;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "1100000000000XY11     ", 0, 100, 30, 0, "TTDTTATTDTAATTDTAATTDTAATTDTTDDAATAADDATAATDDFAFTDDTAADDDTAAFDFAFF" }, /* Example 1 from RMMBCED */
         /*  1*/ { "21B2254800659JW5O9QA6Y", 0, 100, 30, 0, "DAATATTTADTAATTFADDDDTTFTFDDDDFFDFDAFTADDTFFTDDATADTTFATTDAFDTFDDA" }, /* Example 2 from RMMBCED */
         /*  2*/ { "11000000000000000XY11    ", 0, 100, 30, 0, "TTDTTATDDTTATTDTAATTDTAATDDTTATTDTTDATFTAATDDTAATDDTATATFAADDAATAATDDTAADFTFTA" }, /* Example 1 from RMMBLED */
@@ -168,13 +168,13 @@ static void test_4s_encode_vector(const testCtx *const p_ctx) {
         /* 18*/ { "31833333333333333C12JQ3U  ", 0, 100, 30, 0, "DTTAFFDATATFAADAFDFATFFTFFTTTADTTTDTAAATDDTFFDDFTAADTTDTFFFDAFTFAADFDDAFDFTAFF" }, /* F N N L L N L S S */
         /* 19*/ { "22799999999999999C123JQ4U ", 0, 100, 30, 0, "DDATTDDATATTTAFDTAADATDDFFTFFDFFDTFAADDFAADFDFFTFFTFFDFDFTATATFDDFTFFFTFFTDDTF" }, /* F N N N L L N L S */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char actual_daft[80];
 
-    testStart("test_4s_encode_vector");
+    testStartSymbol("test_4s_encode_vector", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -215,20 +215,20 @@ static void test_4s_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "1100000000000XY11     ", 0, 3, 131, "Verified manually against TEC-IT",
                     "00000000001000000000101000000000101000000000101000000000000000101000101000001000101000000010101000000000101000000000101010001010101"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
                     "00001000000000001000000000001000000000001000000000001000001010000000000010100000000000101010001000101000000010101000000010101000101"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
 
-    testStart("test_4s_encode");
+    testStartSymbol("test_4s_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -278,23 +278,23 @@ static void test_2d_input(const testCtx *const p_ctx) {
         char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, "012100123412345678AB19XY1A 0", 0, 24, 24, "" },
         /*  1*/ { -1, "012100123412345678ab19xy1a 0", 0, 24, 24, "" }, /* Converts to upper */
         /*  2*/ { -1, "jgb 012100123412345678ab19xy1a 0", 0, 24, 24, "" },
-        /*  3*/ { -1, "012100123412345678AB19XY1A 0901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input too long (90 character maximum)" },
-        /*  4*/ { -1, "012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 860: Input too short (28 character minimum)" },
-        /*  5*/ { -1, "012100123412345678AB19XY1A 090123456789012345678901234567890123456789012345678901234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 861: Input too long (86 character maximum)" },
-        /*  6*/ { -1, "JGB 012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 862: Input too short (32 character minimum)" },
-        /*  7*/ { 9, "JGB 012100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 863: Invalid symbol size selected (8, 10, 30 only)" },
+        /*  3*/ { -1, "012100123412345678AB19XY1A 0901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)" },
+        /*  4*/ { -1, "012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 860: Input length 27 too short (minimum 28)" },
+        /*  5*/ { -1, "012100123412345678AB19XY1A 090123456789012345678901234567890123456789012345678901234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 861: Input length 87 too long (maximum 86)" },
+        /*  6*/ { -1, "JGB 012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 862: Input length 31 too short (minimum 32)" },
+        /*  7*/ { 9, "JGB 012100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 863: Invalid Version '9' (8, 10 or 30 only)" },
         /*  8*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456", 0, 24, 24, "" },
-        /*  9*/ { 8, "JGB 012100123412345678AB19XY1A 0             1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 864: Input too long for selected size (51 character maximum)" },
+        /*  9*/ { 8, "JGB 012100123412345678AB19XY1A 0             1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 864: Input length 52 too long for Version 8 (maximum 51)" },
         /* 10*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345", 0, 16, 48, "" },
-        /* 11*/ { 30, "JGB 012100123412345678AB19XY1A 0             12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 865: Input too long for selected size (70 character maximum)" },
+        /* 11*/ { 30, "JGB 012100123412345678AB19XY1A 0             12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 865: Input length 71 too long for Version 30 (maximum 70)" },
         /* 12*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456789012345678901234567890123456789012345", 0, 32, 32, "" },
-        /* 13*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input too long (90 character maximum)" },
+        /* 13*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)" },
         /* 14*/ { -1, "JGB 012100123412345678AB19XY1A 0             .23456", 0, 24, 24, "" },
-        /* 15*/ { -1, "JGB 012100123412345678AB19XY1A 0            . 23456", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 866: Invalid character in data (alphanumerics and space only in first 45 characters)" },
+        /* 15*/ { -1, "JGB 012100123412345678AB19XY1A 0            . 23456", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 866: Invalid character at position 45 in input (alphanumerics and space only in first 45)" },
         /* 16*/ { -1, "JGB  12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)" },
         /* 17*/ { -1, " 12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)" },
         /* 18*/ { -1, "JGB 022100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 868: Invalid Version ID (\"1\" only)" },
@@ -314,11 +314,11 @@ static void test_2d_input(const testCtx *const p_ctx) {
         /* 31*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY     ", 0, 24, 24, "" },
         /* 32*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XYA    ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 875: Invalid Reserved field (must be spaces only)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_2d_input");
+    testStartSymbol("test_2d_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -362,7 +362,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
        https://www.royalmailtechnical.com/rmt_docs/User_Guides_2020/Mailmark_Letters_and_Large_Letters_20200723.pdf */
     /* Mailmark Barcode Definition Document 15th Feb 2021 (MBDD)
        https://www.royalmailtechnical.com/rmt_docs/User_Guides_2021/Mailmark_Barcode_definition_document_20210215.pdf */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 8, "JGB 01Z999999900000001EC1A1AA1A0SN35TQ       ", 0, 24, 24, 1, "MMRLLL Section 2.4 Code Type Format 7 figure **NOT SAME**, figure switches from C40 to ASC to C40 to ASC contrary to spec",
                     "101010101010101010101010"
                     "110000010100011001100001"
@@ -528,9 +528,9 @@ static void test_2d_encode(const testCtx *const p_ctx) {
                     "11111111111111111111111111111111"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
     char cmp_buf[32768];
@@ -539,7 +539,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_2d_encode");
+    testStartSymbol("test_2d_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

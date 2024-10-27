@@ -557,8 +557,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         lp = (int) strlen(symbol->primary);
         if (lp == 0) {
             if (mode == 0) { /* Require primary message to auto-determine between 2 and 3 */
-                strcpy(symbol->errtxt, "554: Primary Message empty");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 554, "Primary Message empty");
             }
             mode = 4;
         } else {
@@ -573,8 +572,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     }
 
     if ((mode < 2) || (mode > 6)) { /* Only codes 2 to 6 supported */
-        strcpy(symbol->errtxt, "550: Invalid MaxiCode Mode");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 550, "Mode '%d' out of range (2 to 6)", mode);
     }
 
     if ((mode == 2) || (mode == 3)) { /* Modes 2 and 3 need data in symbol->primary */
@@ -586,8 +584,11 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
             lp = (int) strlen(symbol->primary);
         }
         if (lp < 7 || lp > 15) { /* 1 to 9 character postcode + 3 digit country code + 3 digit service class */
-            strcpy(symbol->errtxt, "551: Invalid length for Primary Message");
-            return ZINT_ERROR_INVALID_DATA;
+            if (lp == 0) {
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary Message empty");
+            }
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551, "Primary Message length %d wrong (7 to 15 only)",
+                            lp);
         }
         postcode_len = lp - 6;
 
@@ -595,8 +596,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         service = to_int((const unsigned char *) (symbol->primary + postcode_len + 3), 3);
 
         if (countrycode == -1 || service == -1) { /* check that country code and service are numeric */
-            strcpy(symbol->errtxt, "552: Non-numeric country code or service class in Primary Message");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 552,
+                            "Non-numeric country code or service class in Primary Message");
         }
 
         memcpy(postcode, symbol->primary, postcode_len);
@@ -609,8 +610,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                     postcode_len = i;
                     break;
                 } else if (!z_isdigit(postcode[i])) {
-                    strcpy(symbol->errtxt, "555: Non-numeric postcode in Primary Message");
-                    return ZINT_ERROR_INVALID_DATA;
+                    return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555, "Non-numeric postcode in Primary Message");
                 }
             }
             if (countrycode == 840 && postcode_len == 5) {
@@ -631,8 +631,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
             for (i = 0; i < 6; i++) {
                 /* Don't allow Code Set A control characters CR, RS, GS and RS */
                 if (postcode[i] < ' ' || maxiCodeSet[postcode[i]] > 1) {
-                    strcpy(symbol->errtxt, "556: Invalid character in postcode in Primary Message");
-                    return ZINT_ERROR_INVALID_DATA;
+                    return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 556,
+                                    "Invalid character in postcode in Primary Message");
                 }
             }
             maxi_do_primary_3(maxi_codeword, postcode, countrycode, service);
@@ -640,8 +640,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
 
         if (symbol->option_2) { /* Check for option_2 = vv + 1, where vv is version of SCM prefix "[)>\R01\Gvv" */
             if (symbol->option_2 < 0 || symbol->option_2 > 100) {
-                strcpy(symbol->errtxt, "557: Invalid SCM prefix version");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 557,
+                                "SCM prefix version '%d' out of range (1 to 100)", symbol->option_2);
             }
             scm_vv = symbol->option_2 - 1;
         }
@@ -659,24 +659,23 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
 
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
-            strcpy(symbol->errtxt, "558: Structured Append count out of range (2-8)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 558,
+                            "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "559: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 559,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
-            strcpy(symbol->errtxt, "549: Structured Append ID not available for MaxiCode");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 549, "Structured Append ID not available for MaxiCode");
         }
         structapp_cw = (symbol->structapp.count - 1) | ((symbol->structapp.index - 1) << 3);
     }
 
     error_number = maxi_text_process_segs(maxi_codeword, mode, segs, seg_count, structapp_cw, scm_vv, debug_print);
     if (error_number == ZINT_ERROR_TOO_LONG) {
-        strcpy(symbol->errtxt, "553: Input data too long");
-        return error_number;
+        return errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
     }
 
     /* All the data is sorted - now do error correction */

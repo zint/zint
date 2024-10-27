@@ -40,21 +40,22 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { "A", 49, 0, 8, 70 }, /* ANSI/AIM BC6-2000 Table 1 */
-        /*  1*/ { "A", 50, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { "0", 81, 0, 8, 70 }, /* ANSI/AIM BC6-2000 Table 1 */
-        /*  3*/ { "0", 82, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { "A", 49, 0, 8, 70, "" }, /* ANSI/AIM BC6-2000 Table 1 */
+        /*  1*/ { "A", 50, ZINT_ERROR_TOO_LONG, -1, -1, "Error 432: Input too long, requires 50 codewords (maximum 49)" },
+        /*  2*/ { "0", 81, 0, 8, 70, "" }, /* ANSI/AIM BC6-2000 Table 1 */
+        /*  3*/ { "0", 82, ZINT_ERROR_TOO_LONG, -1, -1, "Error 430: Input length 82 too long (maximum 81)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[4096];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -70,6 +71,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -100,8 +103,8 @@ static void test_input(const testCtx *const p_ctx) {
        NUL U+0000, S1 SP (39)
        US U+001F (\037, 31), S1 5
     */
-    struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character in input data, extended ASCII not allowed", "ASCII only" },
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character at position 1 in input, extended ASCII not allowed", "ASCII only" },
         /*  1*/ { UNICODE_MODE, -1, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", "2.3.7 Symbol Example" },
         /*  2*/ { UNICODE_MODE, -1, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
         /*  3*/ { UNICODE_MODE, -1, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", "2.3 Example 1: Numeric Encodation" },
@@ -127,11 +130,11 @@ static void test_input(const testCtx *const p_ctx) {
         /* 23*/ { UNICODE_MODE, 7, "1234567890123456789012345678901234567890", -1, 0, 7, 70, "(56) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
         /* 24*/ { UNICODE_MODE, 8, "1234567890123456789012345678901234567890", -1, 0, 8, 70, "(64) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
         /* 25*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW", -1, 0, 8, 70, "(64) 10 11 12 13 14 15 16 42 17 18 19 20 21 22 23 42 24 25 26 27 28 29 30 42 31 32 33 34 35", "" },
-        /* 26*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX", -1, ZINT_ERROR_TOO_LONG, 0, 0, "Error 432: Input too long (49 symbol character maximum)", "" },
+        /* 26*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX", -1, ZINT_ERROR_TOO_LONG, 0, 0, "Error 432: Input too long, requires 50 codewords (maximum 49)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char cmp_buf[8192];
@@ -139,7 +142,7 @@ static void test_input(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -199,7 +202,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "MULTIPLE ROWS IN CODE 49", 0, 5, 70, "ANSI/AIM BC6-2000 Figure 1",
                     "1011111011001011101011100110000110111101011011111010111101000100001111"
                     "1010100001000010001001111000101110100110001111010010001011100011001111"
@@ -227,9 +230,9 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011110110100100001010000100010000111010010011111011001000111011001111"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char bwipp_buf[8192];
@@ -237,7 +240,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

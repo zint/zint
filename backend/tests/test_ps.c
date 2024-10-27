@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -52,7 +52,7 @@ static void test_print(const testCtx *const p_ctx) {
         char *data;
         char *expected_file;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 0, "Égjpqy", "code128_egrave_bold.eps" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 90, "Égjpqy", "code128_egrave_bold_rotate_90.eps" },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, 0, 0, "", "", 180, "Égjpqy", "code128_egrave_bold_rotate_180.eps" },
@@ -113,7 +113,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 57*/ { BARCODE_MAXICODE, -1, -1, -1, 3, -1, -1, -1, 0, 0, "", "0000FF00", 180, "12", "maxicode_no_bg_hwsp3_rotate_180.eps" },
         /* 58*/ { BARCODE_MAXICODE, -1, -1, -1, -1, -1, -1, -1, 2.4, 0, "", "", 90, "12", "maxicode_2.4_rotate_90.eps" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -229,10 +229,10 @@ static void test_ps_convert(const testCtx *const p_ctx) {
         char *data;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "1\\(é)2€3¿", "1\\\\\\(\351\\)23\277" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i;
 
     unsigned char converted[256];
@@ -270,12 +270,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "645: Could not open EPS output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "ps_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = ps_plot(&symbol, 0);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "ps_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "ps_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

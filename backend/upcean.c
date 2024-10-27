@@ -34,6 +34,7 @@
 #define ISBNX_SANE_F        (IS_NUM_F | IS_UX__F) /* ISBNX_SANE "0123456789X" */
 #define ISBNX_ADDON_SANE_F  (IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F) /* ISBNX_ADDON_SANE "0123456789Xx+" */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "gs1.h"
@@ -120,9 +121,8 @@ static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 11)) {
-            sprintf(symbol->errtxt, "270: Invalid check digit '%c', expecting '%c'",
-                    source[length - 1], gs1_check_digit(gtin, 11));
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 270, "Invalid check digit '%1$c', expecting '%2$c'",
+                            source[length - 1], gs1_check_digit(gtin, 11));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -177,13 +177,16 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     hrt[0] = '\0';
     if (length == 7) {
         switch (source[0]) {
-            case '0': num_system = 0;
+            case '0':
+                num_system = 0;
                 ustrncat(hrt, source, length);
                 break;
-            case '1': num_system = 1;
+            case '1':
+                num_system = 1;
                 ustrncat(hrt, source, length);
                 break;
-            default: num_system = 0;
+            default:
+                num_system = 0;
                 /* First source char ignored */
                 ustrncat(hrt, source, length);
                 hrt[0] = '0'; /* Overwrite HRT first char with '0' to correct TODO: error/warn in future */
@@ -228,10 +231,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (((source[2] == '0') || (source[2] == '1')) || (source[2] == '2')) {
                 /* Note 1 - "X3 shall not be equal to 0, 1 or 2" */
-                sprintf(symbol->errtxt,
-                        "271: For this UPC-E zero suppression, 3rd character cannot be \"0\", \"1\" or \"2\" (%.*s)",
-                        length, source);
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 271,
+                            "For this UPC-E zero suppression, 3rd character cannot be \"0\", \"1\" or \"2\" (%.*s)",
+                            length, source);
             }
             break;
         case '4':
@@ -240,9 +242,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = source[4];
             if (source[3] == '0') {
                 /* Note 2 - "X4 shall not be equal to 0" */
-                sprintf(symbol->errtxt, "272: For this UPC-E zero suppression, 4th character cannot be \"0\" (%.*s)",
-                        length, source);
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 272,
+                                "For this UPC-E zero suppression, 4th character cannot be \"0\" (%.*s)",
+                                length, source);
             }
             break;
         case '5':
@@ -256,9 +258,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
             equivalent[10] = emode;
             if (source[4] == '0') {
                 /* Note 3 - "X5 shall not be equal to 0" */
-                sprintf(symbol->errtxt, "273: For this UPC-E zero suppression, 5th character cannot be \"0\" (%.*s)",
-                        length, source);
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 273,
+                                "For this UPC-E zero suppression, 5th character cannot be \"0\" (%.*s)",
+                                length, source);
             }
             break;
     }
@@ -268,8 +270,8 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     check_digit = gs1_check_digit(equivalent, 11);
 
     if (src_check_digit && src_check_digit != check_digit) {
-        sprintf(symbol->errtxt, "274: Invalid check digit '%c', expecting '%c'", src_check_digit, check_digit);
-        return ZINT_ERROR_INVALID_CHECK;
+        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 274, "Invalid check digit '%1$c', expecting '%2$c'",
+                        src_check_digit, check_digit);
     }
 
     /* Use the number system and check digit information to choose a parity scheme */
@@ -287,9 +289,11 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     for (i = 0; i < length; i++, d += 4) {
         switch (parity[i]) {
-            case 'A': memcpy(d, EANsetA[source[i] - '0'], 4);
+            case 'A':
+                memcpy(d, EANsetA[source[i] - '0'], 4);
                 break;
-            case 'B': memcpy(d, EANsetB[source[i] - '0'], 4);
+            case 'B':
+                memcpy(d, EANsetB[source[i] - '0'], 4);
                 break;
         }
     }
@@ -368,10 +372,12 @@ static void ean_add_on(const unsigned char source[], const int length, char dest
 
     for (i = 0; i < length; i++) {
         switch (parity[i]) {
-            case 'A': memcpy(d, EANsetA[source[i] - '0'], 4);
+            case 'A':
+                memcpy(d, EANsetA[source[i] - '0'], 4);
                 d += 4;
                 break;
-            case 'B': memcpy(d, EANsetB[source[i] - '0'], 4);
+            case 'B':
+                memcpy(d, EANsetB[source[i] - '0'], 4);
                 d += 4;
                 break;
         }
@@ -403,9 +409,8 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 12)) {
-            sprintf(symbol->errtxt, "275: Invalid check digit '%c', expecting '%c'",
-                    source[length - 1], gs1_check_digit(gtin, 12));
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 275, "Invalid check digit '%1$c', expecting '%2$c'",
+                            source[length - 1], gs1_check_digit(gtin, 12));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -477,9 +482,8 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 7)) {
-            sprintf(symbol->errtxt, "276: Invalid check digit '%c', expecting '%c'",
-                    source[length - 1], gs1_check_digit(gtin, 7));
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 276, "Invalid check digit '%1$c', expecting '%2$c'",
+                            source[length - 1], gs1_check_digit(gtin, 7));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -537,44 +541,41 @@ static char isbnx_check(const unsigned char source[], const int length) {
 }
 
 /* Make an EAN-13 barcode from an SBN or ISBN */
-static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int src_len, char dest[]) {
+static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int length, char dest[]) {
     int i;
     char check_digit;
 
-    to_upper(source, src_len);
-    if (!is_sane(ISBNX_SANE_F, source, src_len)) {
-        strcpy(symbol->errtxt, "277: Invalid character in data (digits and \"X\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    to_upper(source, length);
+    if (not_sane(ISBNX_SANE_F, source, length)) { /* As source has been zero-padded, don't report position */
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 277, "Invalid character in input (digits and \"X\" only)");
     }
 
     /* Input must be 9, 10 or 13 characters */
-    if (src_len != 9 && src_len != 10 && src_len != 13) {
-        strcpy(symbol->errtxt, "278: Input wrong length (9, 10, or 13 characters only)");
-        return ZINT_ERROR_TOO_LONG;
+    if (length != 9 && length != 10 && length != 13) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 278, "Input length %d wrong (9, 10, or 13 only)", length);
     }
 
-    if (src_len == 13) /* Using 13 character ISBN */ {
+    if (length == 13) /* Using 13 character ISBN */ {
         if (!(((source[0] == '9') && (source[1] == '7')) &&
                 ((source[2] == '8') || (source[2] == '9')))) {
-            strcpy(symbol->errtxt, "279: Invalid ISBN (must begin with \"978\" or \"979\")");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 279, "Invalid ISBN (must begin with \"978\" or \"979\")");
         }
 
         /* "X" cannot occur */
-        if (!is_sane(NEON_F, source, 13)) {
-            strcpy(symbol->errtxt, "282: Invalid character in data, \"X\" not allowed in ISBN-13");
-            return ZINT_ERROR_INVALID_DATA;
+        if (not_sane(NEON_F, source, 13)) {
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 282,
+                            "Invalid character in input, \"X\" not allowed in ISBN-13");
         }
 
         check_digit = gs1_check_digit(source, 12);
         if (source[12] != check_digit) {
-            sprintf(symbol->errtxt, "280: Invalid ISBN check digit '%c', expecting '%c'", source[12], check_digit);
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 280, "Invalid ISBN check digit '%1$c', expecting '%2$c'",
+                            source[12], check_digit);
         }
         source[12] = '\0';
 
     } else { /* Using 10 digit ISBN or 9 digit SBN padded with leading zero */
-        if (src_len == 9) /* Using 9 digit SBN */ {
+        if (length == 9) /* Using 9 digit SBN */ {
             /* Add leading zero */
             for (i = 10; i > 0; i--) {
                 source[i] = source[i - 1];
@@ -583,16 +584,16 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int s
         }
 
         /* "X" can only occur in last position */
-        if (!is_sane(NEON_F, source, 9)) {
-            strcpy(symbol->errtxt, "296: Invalid character in data, \"X\" allowed in last position only");
-            return ZINT_ERROR_INVALID_DATA;
+        if (not_sane(NEON_F, source, 9)) {
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 296,
+                            "Invalid character in input, \"X\" allowed in last position only");
         }
 
         check_digit = isbnx_check(source, 9);
         if (check_digit != source[9]) {
-            sprintf(symbol->errtxt, "281: Invalid %s check digit '%c', expecting '%c'", src_len == 9 ? "SBN" : "ISBN",
-                    source[9], check_digit);
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 281,
+                            "Invalid %1$s check digit '%2$c', expecting '%3$c'", length == 9 ? "SBN" : "ISBN",
+                            source[9], check_digit);
         }
         for (i = 11; i > 2; i--) { /* This drops the check digit */
             source[i] = source[i - 3];
@@ -627,8 +628,17 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
         }
     }
     if (first_len > 13 || second_len > 5) {
+        if (first_len > 13) {
+            if (!second_len) {
+                errtxtf(0, symbol, 294, "Input length %d too long (maximum 13)", first_len);
+            } else {
+                errtxtf(0, symbol, 298, "Input EAN length %d too long (maximum 13)", first_len);
+            }
+        } else {
+            errtxtf(0, symbol, 297, "Input add-on length %d too long (maximum 5)", second_len);
+        }
         if (p_with_addon) {
-            *p_with_addon = second_len > 5 ? with_addon : 0;
+            *p_with_addon = with_addon;
         }
         return 0;
     }
@@ -751,7 +761,7 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
     return 1; /* Success */
 }
 
-INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src_len, int cc_rows) {
+INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, int cc_rows) {
     unsigned char first_part[14], second_part[6];
     unsigned char local_source[20]; /* Allow 13 + "+" + 5 + 1 */
     char dest[1000] = {0};
@@ -760,41 +770,37 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     int addon_gap = 0;
     int first_part_len, second_part_len;
 
-    if (src_len > 19) {
-        strcpy(symbol->errtxt, "283: Input too long (19 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+    if (length > 19) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 283, "Input length %d too long (maximum 19)", length);
     }
     if (symbol->symbology != BARCODE_ISBNX) {
         /* ISBN has its own sanity routine */
-        if (!is_sane(SODIUM_PLS_F, source, src_len)) {
-            strcpy(symbol->errtxt, "284: Invalid character in data (digits and \"+\" only)");
-            return ZINT_ERROR_INVALID_DATA;
+        if ((i = not_sane(SODIUM_PLS_F, source, length))) {
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 284,
+                            "Invalid character at position %d in input (digits and \"+\" only)", i);
         }
     } else {
-        if (!is_sane(ISBNX_ADDON_SANE_F, source, src_len)) {
-            strcpy(symbol->errtxt, "285: Invalid character in data (digits, \"X\" and \"+\" only)");
-            return ZINT_ERROR_INVALID_DATA;
+        if ((i = not_sane(ISBNX_ADDON_SANE_F, source, length))) {
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 285,
+                            "Invalid character at position %d in input (digits, \"X\" and \"+\" only)", i);
         }
         /* Add-on will be checked separately to be numeric only below */
     }
 
     /* Check for multiple '+' characters */
     plus_count = 0;
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if (source[i] == '+') {
             plus_count++;
             if (plus_count > 1) {
-                strcpy(symbol->errtxt, "293: Invalid add-on data (one \"+\" only)");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 293, "Invalid add-on data (one \"+\" only)");
             }
         }
     }
 
     /* Add leading zeroes, checking max lengths of parts */
     if (!ean_leading_zeroes(symbol, source, local_source, &with_addon, first_part, second_part)) {
-        sprintf(symbol->errtxt, "294: Input too long (%s)",
-                with_addon ? "5 character maximum for add-on" : "13 character maximum");
-        return ZINT_ERROR_TOO_LONG;
+        return ZINT_ERROR_TOO_LONG; /* `ean_leading_zeroes()` sets `errtxt` */
     }
 
     if (with_addon) {
@@ -813,7 +819,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
         case BARCODE_EANX_CHK:
             switch (first_part_len) {
                 case 2:
-                case 5: ean_add_on(first_part, first_part_len, dest, 0);
+                case 5:
+                    ean_add_on(first_part, first_part_len, dest, 0);
                     ustrcpy(symbol->text, first_part);
                     if (symbol->output_options & COMPLIANT_HEIGHT) {
                         /* 21.9mm from GS1 General Specifications 5.2.6.6, Figure 5.2.6.6-6 */
@@ -824,18 +831,23 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     }
                     break;
                 case 7:
-                case 8: error_number = ean8(symbol, first_part, first_part_len, dest);
+                case 8:
+                    error_number = ean8(symbol, first_part, first_part_len, dest);
                     break;
                 case 12:
-                case 13: error_number = ean13(symbol, first_part, first_part_len, dest);
+                case 13:
+                    error_number = ean13(symbol, first_part, first_part_len, dest);
                     break;
-                default: strcpy(symbol->errtxt, "286: Input wrong length (2, 5, 7, 8, 12 or 13 characters only)");
-                    return ZINT_ERROR_TOO_LONG;
+                default:
+                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 286,
+                                    "Input length %d wrong (2, 5, 7, 8, 12 or 13 only)", first_part_len);
+                    break;
             }
             break;
         case BARCODE_EANX_CC:
             switch (first_part_len) { /* Adds vertical separator bars according to ISO/IEC 24723 section 11.4 */
-                case 7: set_module(symbol, symbol->rows, 1);
+                case 7:
+                    set_module(symbol, symbol->rows, 1);
                     set_module(symbol, symbol->rows, 67);
                     set_module(symbol, symbol->rows + 1, 0);
                     set_module(symbol, symbol->rows + 1, 68);
@@ -848,7 +860,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     error_number = ean8_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
                 case 12:
-                case 13:set_module(symbol, symbol->rows, 1);
+                case 13:
+                    set_module(symbol, symbol->rows, 1);
                     set_module(symbol, symbol->rows, 95);
                     set_module(symbol, symbol->rows + 1, 0);
                     set_module(symbol, symbol->rows + 1, 96);
@@ -860,8 +873,10 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                     symbol->rows += 3;
                     error_number = ean13_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
-                default: strcpy(symbol->errtxt, "287: Input wrong length (7, 12 or 13 characters only)");
-                    return ZINT_ERROR_TOO_LONG;
+                default:
+                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 287, "Input length %d wrong (7, 12 or 13 only)",
+                                    first_part_len);
+                    break;
             }
             break;
         case BARCODE_UPCA:
@@ -869,8 +884,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             if ((first_part_len == 11) || (first_part_len == 12)) {
                 error_number = upca(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "288: Input wrong length (12 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 288, "Input length %d wrong (11 or 12 only)",
+                                first_part_len);
             }
             break;
         case BARCODE_UPCA_CC:
@@ -887,8 +902,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upca_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "289: Input wrong length (12 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 289, "Input length %d wrong (11 or 12 only)",
+                                first_part_len);
             }
             break;
         case BARCODE_UPCE:
@@ -896,8 +911,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
             if ((first_part_len >= 6) && (first_part_len <= 8)) {
                 error_number = upce(symbol, first_part, first_part_len, dest);
             } else {
-                strcpy(symbol->errtxt, "290: Input wrong length (8 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 290, "Input length %d wrong (6, 7 or 8 only)",
+                                first_part_len);
             }
             break;
         case BARCODE_UPCE_CC:
@@ -914,8 +929,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
                 symbol->rows += 3;
                 error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                strcpy(symbol->errtxt, "291: Input wrong length (8 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 291, "Input length %d wrong (6, 7 or 8 only)",
+                                first_part_len);
             }
             break;
         case BARCODE_ISBNX:
@@ -930,27 +945,15 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
     second_part_len = (int) ustrlen(second_part);
 
     if (symbol->symbology == BARCODE_ISBNX) { /* Need to further check that add-on numeric only */
-        if (!is_sane(NEON_F, second_part, second_part_len)) {
-            strcpy(symbol->errtxt, "295: Invalid add-on data (digits only)");
-            return ZINT_ERROR_INVALID_DATA;
+        if (not_sane(NEON_F, second_part, second_part_len)) {
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 295, "Invalid add-on data (digits only)");
         }
     }
 
-    switch (second_part_len) {
-        case 0: break;
-        case 2:
-            ean_add_on(second_part, second_part_len, dest, addon_gap);
-            ustrcat(symbol->text, "+");
-            ustrcat(symbol->text, second_part);
-            break;
-        case 5:
-            ean_add_on(second_part, second_part_len, dest, addon_gap);
-            ustrcat(symbol->text, "+");
-            ustrcat(symbol->text, second_part);
-            break;
-        default:
-            strcpy(symbol->errtxt, "292: Add-on data wrong length (2 or 5 characters only)");
-            return ZINT_ERROR_TOO_LONG;
+    if (second_part_len) {
+        ean_add_on(second_part, second_part_len, dest, addon_gap);
+        ustrcat(symbol->text, "+");
+        ustrcat(symbol->text, second_part);
     }
 
     expand(symbol, dest, (int) strlen(dest));
@@ -976,8 +979,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int src
 }
 
 /* Handle UPC, EAN, ISBN */
-INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int src_len) {
-    return eanx_cc(symbol, source, src_len, 0 /*cc_rows*/);
+INTERNAL int eanx(struct zint_symbol *symbol, unsigned char source[], int length) {
+    return eanx_cc(symbol, source, length, 0 /*cc_rows*/);
 }
 
 /* vim: set ts=4 sw=4 et : */

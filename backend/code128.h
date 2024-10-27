@@ -38,6 +38,7 @@ extern "C" {
 
 /* Allow for a reasonable number of special Code Set escapes and for GS1 AI delimiters */
 #define C128_MAX    256
+#define C128_MAX_S  "256" /* String version of above */
 
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length);
 

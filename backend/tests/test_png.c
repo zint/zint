@@ -47,7 +47,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0 },
         /*  2*/ { 2, 2, "10", 1, 0 },
@@ -56,7 +56,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         /*  5*/ { 3, 3, "101010101", 0, 0 },
         /*  6*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -144,7 +144,7 @@ static void test_print(const testCtx *const p_ctx) {
         char *expected_file;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, -1, 10.0, 0, { 0, 0, "" }, "", "", 1, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", "", 0, "code128_latin1_1.png", "" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, -1, 10.0, 0, { 0, 0, "" }, "", "", 1, "¡¢£¤¥¦§¨©ª«¬®¯°±²³´µ¶·¸¹º»¼½¾¿ÀÁÂÃÄÅÆÇÈÉÊËÌÍÎÏÐÑÒÓÔÕÖ×ØÙÚÛÜÝÞßàáâãäåæçèéêëìíîïðñòóôõö÷øùúûüýþÿ", "", 0, "code128_latin1_2.png", "" },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, -1, 10.0, 0, { 0, 0, "" }, "", "", 1, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", "", 0, "code128_latin1_1_bold.png", "" },
@@ -238,7 +238,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 90*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "008182709980000020028101276", "", 0, "dpd_compliant.png", "Now with bind top 3X default" },
         /* 91*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "100,85,0,20", "FFFFFF00", 1, "123", "", 0, "channel_cmyk_nobg.png", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -386,12 +386,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "632: Could not open PNG output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "png_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = png_pixel_plot(&symbol, data);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "png_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "png_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

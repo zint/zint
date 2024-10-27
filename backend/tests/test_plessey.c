@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,31 +42,32 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 92, 0, 1, 1111 },
-        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 92, 0, 1, 1123 }, /* 1 mod-10 check digit */
-        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 92, 0, 1, 1135 }, /* 2 mod-10 check digits */
-        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 92, 0, 1, 1123 }, /* 1 mod-11 check digit */
-        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "4", 92, 0, 1, 1135 }, /* 1 mod-11 double check digit "10" */
-        /*  9*/ { BARCODE_MSI_PLESSEY, 3, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 92, 0, 1, 1135 }, /* 1 mod-11 and 1 mod-10 check digit */
-        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "4", 92, 0, 1, 1147 }, /* 1 mod-11 double check digit "10" and 1 mod-10 check digit */
-        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 92, 0, 1, 1123 }, /* 1 NCR mod-11 check digit */
-        /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 92, 0, 1, 1135 }, /* 1 NCR mod-11 and 1 mod-10 check digit */
-        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_PLESSEY, -1, "A", 67, 0, 1, 1139 },
-        /* 19*/ { BARCODE_PLESSEY, -1, "A", 68, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "9", 92, 0, 1, 1111, "" },
+        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "9", 92, 0, 1, 1123, "" }, /* 1 mod-10 check digit */
+        /*  3*/ { BARCODE_MSI_PLESSEY, 1, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /*  4*/ { BARCODE_MSI_PLESSEY, 2, "9", 92, 0, 1, 1135, "" }, /* 2 mod-10 check digits */
+        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 3, "9", 92, 0, 1, 1123, "" }, /* 1 mod-11 check digit */
+        /*  7*/ { BARCODE_MSI_PLESSEY, 3, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "4", 92, 0, 1, 1135, "" }, /* 1 mod-11 double check digit "10" */
+        /*  9*/ { BARCODE_MSI_PLESSEY, 3, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /* 10*/ { BARCODE_MSI_PLESSEY, 4, "9", 92, 0, 1, 1135, "" }, /* 1 mod-11 and 1 mod-10 check digit */
+        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /* 12*/ { BARCODE_MSI_PLESSEY, 4, "4", 92, 0, 1, 1147, "" }, /* 1 mod-11 double check digit "10" and 1 mod-10 check digit */
+        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "4", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "9", 92, 0, 1, 1123, "" }, /* 1 NCR mod-11 check digit */
+        /* 15*/ { BARCODE_MSI_PLESSEY, 5, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /* 16*/ { BARCODE_MSI_PLESSEY, 6, "9", 92, 0, 1, 1135, "" }, /* 1 NCR mod-11 and 1 mod-10 check digit */
+        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "9", 93, ZINT_ERROR_TOO_LONG, -1, -1, "Error 372: Input length 93 too long (maximum 92)" },
+        /* 18*/ { BARCODE_PLESSEY, -1, "A", 67, 0, 1, 1139, "" },
+        /* 19*/ { BARCODE_PLESSEY, -1, "A", 68, ZINT_ERROR_TOO_LONG, -1, -1, "Error 370: Input length 68 too long (maximum 67)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -88,6 +89,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -111,7 +114,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567", "1234567" },
         /*  1*/ { BARCODE_MSI_PLESSEY, 0, "1234567", "1234567" },
         /*  2*/ { BARCODE_MSI_PLESSEY, 1, "1234567", "12345674" },
@@ -142,7 +145,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 27*/ { BARCODE_MSI_PLESSEY, 4 + 10, "2211", "2211" },
         /* 28*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -178,17 +181,18 @@ static void test_input(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1", 0, 1, 19 },
-        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  2*/ { BARCODE_MSI_PLESSEY, -2, "1", 0, 1, 19 }, /* < 0 ignored */
-        /*  3*/ { BARCODE_MSI_PLESSEY, 7, "1", 0, 1, 19 }, /* > 6 ignored */
-        /*  4*/ { BARCODE_PLESSEY, -1, "A", 0, 1, 83 },
-        /*  5*/ { BARCODE_PLESSEY, -1, "G", ZINT_ERROR_INVALID_DATA, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1", 0, 1, 19, "" },
+        /*  1*/ { BARCODE_MSI_PLESSEY, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 377: Invalid character at position 1 in input (digits only)" },
+        /*  2*/ { BARCODE_MSI_PLESSEY, -2, "1", 0, 1, 19, "" }, /* < 0 ignored */
+        /*  3*/ { BARCODE_MSI_PLESSEY, 7, "1", 0, 1, 19, "" }, /* > 6 ignored */
+        /*  4*/ { BARCODE_PLESSEY, -1, "A", 0, 1, 83, "" },
+        /*  5*/ { BARCODE_PLESSEY, -1, "G", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 371: Invalid character at position 1 in input (digits and \"ABCDEF\" only)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -205,6 +209,8 @@ static void test_input(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -231,7 +237,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567890", 0, 1, 127, "Verified manually against tec-it",
                     "1101001001001101001001101001001001101101001101001001001101001101001101101001001101101101101001001001101001001101001001001001001"
                 },
@@ -266,7 +272,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001101101001001001001001001101001"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -343,13 +349,13 @@ static void test_perf(const testCtx *const p_ctx) {
         int expected_width;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_PLESSEY, -1, "1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1234567890ABCDEF1", 0, 1, 1107, "PLESSEY 65" },
         /*  1*/ { BARCODE_PLESSEY, -1, "123456ABCD", 0, 1, 227, "PLESSEY 10" },
         /*  2*/ { BARCODE_MSI_PLESSEY, -1, "12345678901234567890123456789012345678901234567890123456789012345", 0, 1, 787, "MSI_PLESSEY 65" },
         /*  3*/ { BARCODE_MSI_PLESSEY, -1, "1234567890", 0, 1, 127, "MSI_PLESSEY 10" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 

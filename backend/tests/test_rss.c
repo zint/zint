@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -44,7 +44,7 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
         int expected_width;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, "1234567890123", 100, 30, 1, 96, "010111010010000001001110000000010100001011111010110100011001100101111111110001011011000111000101" },
         /*  1*/ { BARCODE_DBAR_OMN, "0000004537076", 100, 30, 1, 96, "010101001000000001000100000000010111111100101010111101111101010101111111110111010100100000000101" },
         /*  2*/ { BARCODE_DBAR_OMN, "0000004537077", 100, 30, 1, 96, "010101001000000001000111000000010111111101001010101010110000000101111100000111011111111011010101" },
@@ -117,9 +117,9 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
         /* 69*/ { BARCODE_DBAR_LTD, "1651257071912", 100, 30, 1, 79, "0100000111100011110101010101010111010100100101010101010101111110111111110100000" },
         /* 70*/ { BARCODE_DBAR_LTD_CC, "0987144605916", 100, 30, 6, 79, "0101010101010011111000011111011010110100100101010101010100111110000111110100000" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char *text;
 
@@ -130,7 +130,7 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_binary_div_modulo_divisor");
+    testStartSymbol("test_binary_div_modulo_divisor", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -212,7 +212,7 @@ static void test_examples(const testCtx *const p_ctx) {
         char *expected;
     };
     /* Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, -1, -1, "0950110153001", 0, 1, 96, 1, "GGS Figure 5.5.2.1.1-1. GS1 DataBar Omnidirectional",
                      "010000010100000101000111110000010111101101011100100011011101000101100000000111001110110111001101"
                 },
@@ -861,9 +861,9 @@ static void test_examples(const testCtx *const p_ctx) {
                      "101110001111011010010111111000011100001011011100011000011110110010110001100000000101100000001010010011101101001100000101111100000011000010101111101110001110110011001100110000000001011100111000110100111101100101111101011111111100110100000000000000000"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
     char cmp_buf[16384];
@@ -872,7 +872,7 @@ static void test_examples(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_examples");
+    testStartSymbol("test_examples", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -947,7 +947,7 @@ static void test_general_field(const testCtx *const p_ctx) {
         char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP and manually against tec-it.com (some separators differ from tec-it.com where noted) */
-    struct item data[] = {
+    static const struct item data[] = {
         /* 0*/ { BARCODE_DBAR_EXP, "[91]1", 1, 102, "Single numeric",
                     "010100000001000101101111111100001011001000010000010110111110101100001011110000000010101111100001011101"
                },
@@ -1195,11 +1195,11 @@ static void test_general_field(const testCtx *const p_ctx) {
                     "101110011100010010011100111111110100111101001000011000010010001011110100001111110001100010100000100010"
                },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_general_field");
+    testStartSymbol("test_general_field", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1244,26 +1244,28 @@ static void test_binary_buffer_size(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { -1, "[91]1", 0, 1, 102, "Minimum digit" },
-        /*  1*/ { -1, "[91]+", 0, 1, 102, "Minimum ISO-646" },
-        /*  2*/ { -1, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]12345678", 0, 1, 543, "70 == any AIs max" },
-        /*  3*/ { -1, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]123456789", ZINT_ERROR_TOO_LONG, 0, 0, "71 > any AIs max" },
-        /*  4*/ { GS1NOCHECK_MODE, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]123456789", ZINT_ERROR_TOO_LONG, 0, 0, "No check doesn't affect limit" },
-        /*  5*/ { -1, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]1234567890123456", 0, 1, 543, "74 == 01 + other AIs max" },
-        /*  6*/ { -1, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]12345678901234567", ZINT_ERROR_TOO_LONG, 0, 0, "75 > 01 + other AIs max" },
-        /*  7*/ { GS1NOCHECK_MODE, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]12345678901234567", ZINT_ERROR_TOO_LONG, 0, 0, "No check doesn't affect limit" },
-        /*  8*/ { -1, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]1234567890123456789", 0, 1, 543, "77 (incl. FNC1 after 3920) == 01 + 392x + other AIs max" },
-        /*  9*/ { -1, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]12345678901234567890", ZINT_ERROR_TOO_LONG, 0, 0, "78 > 01 + 392x + other AIs max" },
-        /* 10*/ { GS1NOCHECK_MODE, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]12345678901234567890", ZINT_ERROR_TOO_LONG, 0, 0, "No check doesn't affect limit" },
+    static const struct item data[] = {
+        /*  0*/ { -1, "[91]1", 0, 1, 102, "", "Minimum digit" },
+        /*  1*/ { -1, "[91]+", 0, 1, 102, "", "Minimum ISO-646" },
+        /*  2*/ { -1, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]12345678", 0, 1, 543, "", "70 == any AIs max" },
+        /*  3*/ { -1, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]1234567890", ZINT_ERROR_TOO_LONG, 0, 0, "Error 387: Input too long, requires 22 symbol characters (maximum 21)", "71 > any AIs max" },
+        /*  4*/ { GS1NOCHECK_MODE, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]123456789", ZINT_ERROR_TOO_LONG, 0, 0, "Error 387: Input too long, requires 22 symbol characters (maximum 21)", "No check doesn't affect limit" },
+        /*  5*/ { -1, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]1234567890123456", 0, 1, 543, "", "74 == 01 + other AIs max" },
+        /*  6*/ { -1, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]12345678901234567", ZINT_ERROR_TOO_LONG, 0, 0, "Error 387: Input too long, requires 22 symbol characters (maximum 21)", "75 > 01 + other AIs max" },
+        /*  7*/ { GS1NOCHECK_MODE, "[01]12345678901231[00]123456789012345675[00]123456789012345675[91]12345678901234567", ZINT_ERROR_TOO_LONG, 0, 0, "Error 387: Input too long, requires 22 symbol characters (maximum 21)", "No check doesn't affect limit" },
+        /*  8*/ { -1, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]1234567890123456789", 0, 1, 543, "", "77 (incl. FNC1 after 3920) == 01 + 392x + other AIs max" },
+        /*  9*/ { -1, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]12345678901234567890", ZINT_ERROR_TOO_LONG, 0, 0, "Error 378: Processed input length 78 too long (maximum 77)", "78 > 01 + 392x + other AIs max" },
+        /* 10*/ { GS1NOCHECK_MODE, "[01]92345678901237[3920]123456789012345[00]123456789012345675[91]12345678901234567890", ZINT_ERROR_TOO_LONG, 0, 0, "Error 378: Processed input length 78 too long (maximum 77)", "No check doesn't affect limit" },
+        /* 11*/ { -1, "[00]123456789012345675[00]123456789012345675[00]123456789012345675[91]123456789012345", ZINT_ERROR_TOO_LONG, 0, 0, "Error 387: Input too long, requires 23 symbol characters (maximum 21)", "Reduced length 77" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_binary_buffer_size");
+    testStartSymbol("test_binary_buffer_size", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1276,11 +1278,14 @@ static void test_binary_buffer_size(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].data, testUtilErrorName(ret), symbol->rows, symbol->width, data[i].comment);
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].data, testUtilErrorName(ret), symbol->rows,
+                    symbol->width, symbol->errtxt, data[i].comment);
         } else {
+            assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
         }
@@ -1303,7 +1308,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, "1234567890123", 0, "(01)12345678901231" },
         /*  1*/ { BARCODE_DBAR_OMN, -1, "12345678901231", 0, "(01)12345678901231" },
         /*  4*/ { BARCODE_DBAR_OMN, -1, "1000000000009", 0, "(01)10000000000090" },
@@ -1314,11 +1319,11 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 11*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "" },
         /* 12*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1355,25 +1360,25 @@ static void test_input(const testCtx *const p_ctx) {
         char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, -1, -1, "1234567890123", 0, 1, 96, "" },
-        /*  1*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
-        /*  2*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
+        /*  1*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
+        /*  2*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
         /*  3*/ { BARCODE_DBAR_OMN, -1, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'" },
         /*  4*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'" }, /* Still checked */
-        /*  5*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
-        /*  6*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
+        /*  5*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
+        /*  6*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
         /*  7*/ { BARCODE_DBAR_LTD, -1, -1, -1, "1234567890123", 0, 1, 79, "" },
-        /*  8*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character in data (digits only)" },
-        /*  9*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character in data (digits only)" },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)" },
+        /*  9*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)" },
         /* 10*/ { BARCODE_DBAR_LTD, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'" },
         /* 11*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'" }, /* Still checked */
-        /* 12*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input too long (14 character maximum)" },
-        /* 13*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input too long (14 character maximum)" },
-        /* 14*/ { BARCODE_DBAR_LTD, -1, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input out of range (0 to 1999999999999)" },
-        /* 15*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input out of range (0 to 1999999999999)" },
-        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input out of range (0 to 1999999999999)" },
-        /* 17*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input out of range (0 to 1999999999999)" },
+        /* 12*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)" },
+        /* 13*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)" },
+        /* 14*/ { BARCODE_DBAR_LTD, -1, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)" },
+        /* 15*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)" },
+        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)" },
+        /* 17*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)" },
         /* 18*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'" },
         /* 19*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "" },
         /* 20*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231", 0, 1, 134, "" },
@@ -1388,20 +1393,20 @@ static void test_input(const testCtx *const p_ctx) {
         /* 29*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "" }, /* ISOIEC punc less space */
         /* 30*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "" },
         /* 31*/ { BARCODE_DBAR_STK, -1, -1, -1, "1234567890123", 0, 3, 50, "" },
-        /* 32*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
-        /* 33*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
-        /* 34*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
+        /* 32*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
+        /* 33*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
+        /* 34*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
         /* 35*/ { BARCODE_DBAR_STK, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'" },
         /* 36*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'" }, /* Still checked */
-        /* 37*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
-        /* 38*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
+        /* 37*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
+        /* 38*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
         /* 39*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "1234567890123", 0, 5, 50, "" },
-        /* 40*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
-        /* 41*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character in data (digits only)" },
+        /* 40*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
+        /* 41*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)" },
         /* 42*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'" },
         /* 43*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'" }, /* Still checked */
-        /* 44*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
-        /* 45*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input too long (14 character maximum)" },
+        /* 44*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
+        /* 45*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)" },
         /* 46*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'" },
         /* 47*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 5, 102, "" },
         /* 48*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901231", 0, 5, 102, "" },
@@ -1468,11 +1473,11 @@ static void test_input(const testCtx *const p_ctx) {
         /*109*/ { BARCODE_DBAR_EXPSTK, -1, -1, 6, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "" },
         /*110*/ { BARCODE_DBAR_EXPSTK, -1, -1, 7, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

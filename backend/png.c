@@ -1,7 +1,7 @@
 /* png.c - Handles output to PNG file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -61,7 +61,7 @@ static void wpng_error_handler(png_structp png_ptr, png_const_charp msg) {
         fflush(stderr);
         return; /* libpng will call abort() */
     }
-    sprintf(wpng_error_ptr->symbol->errtxt, "635: libpng error: %.60s", msg ? msg : "<NULL>");
+    errtxtf(0, wpng_error_ptr->symbol, 635, "libpng error: %s", msg ? msg : "<NULL>");
     longjmp(wpng_error_ptr->jmpbuf, 1);
 }
 
@@ -212,24 +212,22 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "632: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_ACCESS;
+        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 632, "Could not open PNG output file (%1$d: %2$s)", fmp->err,
+                        strerror(fmp->err));
     }
 
     /* Set up error handling routine as proc() above */
     png_ptr = png_create_write_struct(PNG_LIBPNG_VER_STRING, &wpng_error, wpng_error_handler, NULL);
     if (!png_ptr) {
-        strcpy(symbol->errtxt, "633: Insufficient memory for PNG write structure buffer");
         (void) fm_close(fmp, symbol);
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 633, "Insufficient memory for PNG write structure buffer");
     }
 
     info_ptr = png_create_info_struct(png_ptr);
     if (!info_ptr) {
         png_destroy_write_struct(&png_ptr, NULL);
-        strcpy(symbol->errtxt, "634: Insufficient memory for PNG info structure buffer");
         (void) fm_close(fmp, symbol);
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 634, "Insufficient memory for PNG info structure buffer");
     }
 
     /* catch jumping here */
@@ -314,14 +312,14 @@ INTERNAL int png_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     png_destroy_write_struct(&png_ptr, &info_ptr);
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "638: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 638, "Incomplete write of PNG output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "960: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 960, "Failure on closing PNG output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
 
     return 0;

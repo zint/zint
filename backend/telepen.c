@@ -1,7 +1,7 @@
 /* telepen.c - Handles Telepen and Telepen numeric */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -86,7 +86,7 @@ static const char TeleLens[128] = {
     12, 10,  8, 14, 10, 12, 12, 12, 10, 14, 12, 12, 14, 12, 12, 16
 };
 
-INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, count, check_digit;
     int error_number;
     char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
@@ -96,19 +96,18 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
 
     count = 0;
 
-    if (src_len > 69) { /* 16 (Start) + 69 * 16 + 16 (Check) + 16 (Stop) = 1152 */
-        strcpy(symbol->errtxt, "390: Input too long (69 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+    if (length > 69) { /* 16 (Start) + 69 * 16 + 16 (Check) + 16 (Stop) = 1152 */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 390, "Input length %d too long (maximum 69)", length);
     }
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
     d += 12;
 
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "391: Invalid character in input data, extended ASCII not allowed");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 391,
+                            "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(d, TeleTable[source[i]], TeleLens[source[i]]);
         d += TeleLens[source[i]];
@@ -138,18 +137,18 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int src
         (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
     }
 
-    for (i = 0; i < src_len; i++) {
+    for (i = 0; i < length; i++) {
         if (source[i] == '\0') {
             symbol->text[i] = ' ';
         } else {
             symbol->text[i] = source[i];
         }
     }
-    symbol->text[src_len] = '\0';
+    symbol->text[length] = '\0';
     return error_number;
 }
 
-INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int src_len) {
+INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int length) {
     int count, check_digit, glyph;
     int error_number = 0;
     int i;
@@ -159,33 +158,32 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
 
     count = 0;
 
-    if (src_len > 136) { /* 68*2 */
-        strcpy(symbol->errtxt, "392: Input too long (136 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+    if (length > 136) { /* 68*2 */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 392, "Input length %d too long (maximum 136)", length);
     }
-    if (!is_sane(SODIUM_X_F, source, src_len)) {
-        strcpy(symbol->errtxt, "393: Invalid character in data (digits and \"X\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(SODIUM_X_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 393,
+                        "Invalid character at position %d in input (digits and \"X\" only)", i);
     }
 
     /* Add a leading zero if required */
-    if (src_len & 1) {
-        memcpy(temp + 1, source, src_len++);
+    if (length & 1) {
+        memcpy(temp + 1, source, length++);
         temp[0] = '0';
     } else {
-        memcpy(temp, source, src_len);
+        memcpy(temp, source, length);
     }
-    temp[src_len] = '\0';
-    to_upper(temp, src_len);
+    temp[length] = '\0';
+    to_upper(temp, length);
 
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
     d += 12;
 
-    for (i = 0; i < src_len; i += 2) {
+    for (i = 0; i < length; i += 2) {
         if (temp[i] == 'X') {
-            strcpy(symbol->errtxt, "394: Invalid position of X in Telepen data");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 394, "Invalid odd position %d of \"X\" in Telepen data",
+                            i + 1);
         }
 
         if (temp[i + 1] == 'X') {

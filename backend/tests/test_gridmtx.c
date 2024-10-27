@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,36 +42,58 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { -1, -1, "1", 2751, 0, 162, 162 },
-        /*  1*/ { -1, -1, "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, -1, "1", 2755, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Triggers buffer > 9191 */
-        /*  3*/ { -1, -1, "A", 1836, 0, 162, 162 },
-        /*  4*/ { -1, -1, "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  5*/ { -1, -1, "A1", 1529, 0, 162, 162 },
-        /*  6*/ { -1, -1, "A1", 1530, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { -1, -1, "\200", 1143, 0, 162, 162 },
-        /*  8*/ { -1, -1, "\200", 1144, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { -1, ZINT_FULL_MULTIBYTE, "\241", 1410, 0, 162, 162 },
-        /* 10*/ { -1, ZINT_FULL_MULTIBYTE, "\241", 1412, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { 1, -1, "1", 18, 0, 18, 18 },
-        /* 12*/ { 1, -1, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 13*/ { 1, -1, "A", 13, 0, 18, 18 },
-        /* 14*/ { 1, -1, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { 1, -1, "\200", 7, 0, 18, 18 },
-        /* 16*/ { 1, -1, "\200", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 17*/ { 1, ZINT_FULL_MULTIBYTE, "\241", 8, 0, 18, 18 },
-        /* 18*/ { 1, ZINT_FULL_MULTIBYTE, "\241", 10, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 19*/ { 11, -1, "1", 1995, 0, 138, 138 },
-        /* 20*/ { 11, -1, "1", 1996, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { -1, -1, "1", 2751, 0, 162, 162, "" },
+        /*  1*/ { -1, -1, "1", 2752, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" },
+        /*  2*/ { -1, -1, "1", 2755, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" }, /* Triggers buffer > 9191 */
+        /*  3*/ { -1, -1, "A", 1836, 0, 162, 162, "" },
+        /*  4*/ { -1, -1, "A", 1837, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" },
+        /*  5*/ { -1, -1, "A1", 1529, 0, 162, 162, "" },
+        /*  6*/ { -1, -1, "A1", 1530, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" },
+        /*  7*/ { -1, -1, "\200", 1143, 0, 162, 162, "" },
+        /*  8*/ { -1, -1, "\200", 1144, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" },
+        /*  9*/ { -1, ZINT_FULL_MULTIBYTE, "\241", 1410, 0, 162, 162, "" },
+        /* 10*/ { -1, ZINT_FULL_MULTIBYTE, "\241", 1412, ZINT_ERROR_TOO_LONG, -1, -1, "Error 531: Input too long, requires too many codewords (maximum 1313)" },
+        /* 11*/ { 1, -1, "1", 18, 0, 18, 18, "" },
+        /* 12*/ { 1, -1, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 13 codewords (maximum 11)" },
+        /* 13*/ { 1, -1, "A", 13, 0, 18, 18, "" },
+        /* 14*/ { 1, -1, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 12 codewords (maximum 11)" },
+        /* 15*/ { 1, -1, "\200", 7, 0, 18, 18, "" },
+        /* 16*/ { 1, -1, "\200", 8, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 12 codewords (maximum 11)" },
+        /* 17*/ { 1, ZINT_FULL_MULTIBYTE, "\241", 8, 0, 18, 18, "" },
+        /* 18*/ { 1, ZINT_FULL_MULTIBYTE, "\241", 10, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 12 codewords (maximum 11)" },
+        /* 19*/ { 2, ZINT_FULL_MULTIBYTE, "\241", 40, 0, 30, 30, "" },
+        /* 20*/ { 2, ZINT_FULL_MULTIBYTE, "\241", 41, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 2, requires 42 codewords (maximum 40)" },
+        /* 21*/ { 3, -1, "A", 108, 0, 42, 42, "" },
+        /* 22*/ { 3, -1, "A", 109, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 3, requires 80 codewords (maximum 79)" },
+        /* 23*/ { 4, -1, "A", 202, 0, 54, 54, "" },
+        /* 24*/ { 4, -1, "A", 203, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 4, requires 147 codewords (maximum 146)" },
+        /* 25*/ { 5, -1, "1", 453, 0, 66, 66, "" },
+        /* 26*/ { 5, -1, "1", 454, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 5, requires 220 codewords (maximum 218)" },
+        /* 27*/ { 6, -1, "1", 633, 0, 78, 78, "" },
+        /* 28*/ { 6, -1, "1", 634, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 6, requires 306 codewords (maximum 305)" },
+        /* 29*/ { 7, -1, "\200", 352, 0, 90, 90, "" },
+        /* 30*/ { 7, -1, "\200", 353, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 7, requires 406 codewords (maximum 405)" },
+        /* 31*/ { 8, -1, "A", 727, 0, 102, 102, "" },
+        /* 32*/ { 8, -1, "A", 728, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 8, requires 522 codewords (maximum 521)" },
+        /* 33*/ { 9, -1, "A", 908, 0, 114, 114, "" },
+        /* 34*/ { 9, -1, "A", 909, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 9, requires 651 codewords (maximum 650)" },
+        /* 35*/ { 10, -1, "1", 1662, 0, 126, 126, "" },
+        /* 36*/ { 10, -1, "1", 1663, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 10, requires 796 codewords (maximum 794)" },
+        /* 37*/ { 11, -1, "1", 1995, 0, 138, 138, "" },
+        /* 38*/ { 11, -1, "1", 1996, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 11, requires 954 codewords (maximum 953)" },
+        /* 39*/ { 11, -1, "1", 2748, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 11, requires 1311 codewords (maximum 953)" },
+        /* 40*/ { 12, -1, "1", 2355, 0, 150, 150, "" },
+        /* 41*/ { 12, -1, "1", 2356, ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 12, requires 1126 codewords (maximum 1125)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char data_buf[2755 + 1];
+    char data_buf[2800 + 1];
 
     testStartSymbol("test_large", &symbol);
 
@@ -89,6 +111,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -115,13 +139,13 @@ static void test_options(const testCtx *const p_ctx) {
         const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 0, 0, { 0, 0, "" }, "12345", 0, 0, 18, "" },
         /*  1*/ { 0, 1, { 0, 0, "" }, "12345", 0, 0, 18, "" },
         /*  2*/ { 0, 2, { 0, 0, "" }, "12345", 0, 0, 30, "" },
         /*  3*/ { 0, 14, { 0, 0, "" }, "12345", 0, 0, 18, "" }, /* Version > max version 13 so ignored */
         /*  4*/ { 0, 13, { 0, 0, "" }, "12345", 0, 0, 162, "" },
-        /*  5*/ { 0, 1, { 0, 0, "" }, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input data too long for selected symbol size" },
+        /*  5*/ { 0, 1, { 0, 0, "" }, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 13 codewords (maximum 11)" },
         /*  6*/ { 0, 2, { 0, 0, "" }, "1234567890123456789", 0, 0, 30, "" },
         /*  7*/ { 0, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* Version auto-set to 2 */
         /*  8*/ { 0, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
@@ -131,16 +155,16 @@ static void test_options(const testCtx *const p_ctx) {
         /* 12*/ { 1, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* ECC < min ECC 2, ECC 2 used */
         /* 13*/ { 4, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
         /* 14*/ { 0, 0, { 1, 2, "" }, "12345", 0, 0, 18, "" },
-        /* 15*/ { 0, 0, { 1, 1, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count out of range (2-16)" },
-        /* 16*/ { 0, 0, { 1, 17, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count out of range (2-16)" },
-        /* 17*/ { 0, 0, { 0, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index out of range (1-2)" },
-        /* 18*/ { 0, 0, { 3, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index out of range (1-2)" },
+        /* 15*/ { 0, 0, { 1, 1, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '1' out of range (2 to 16)" },
+        /* 16*/ { 0, 0, { 1, 17, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '17' out of range (2 to 16)" },
+        /* 17*/ { 0, 0, { 0, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '0' out of range (1 to count 2)" },
+        /* 18*/ { 0, 0, { 3, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '3' out of range (1 to count 2)" },
         /* 19*/ { 0, 0, { 1, 2, "255" }, "12345", 0, 0, 18, "" },
-        /* 20*/ { 0, 0, { 1, 2, "1234" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 538: Structured Append ID too long (3 digit maximum)" },
+        /* 20*/ { 0, 0, { 1, 2, "1234" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 538: Structured Append ID length 4 too long (3 digit maximum)" },
         /* 21*/ { 0, 0, { 1, 2, "A" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 539: Invalid Structured Append ID (digits only)" },
-        /* 22*/ { 0, 0, { 1, 2, "256" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 530: Structured Append ID '256' out of range (0-255)" },
+        /* 22*/ { 0, 0, { 1, 2, "256" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 530: Structured Append ID value '256' out of range (0 to 255)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -199,7 +223,7 @@ static void test_input(const testCtx *const p_ctx) {
        ㈩ U+3229 in GB 2312 0x226E
        一 U+4E00 in GB 2312 0x523B
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, 0, -1, -1, { 0, 0, "" }, "é", 0, 0, "08 54 6F 78 00", "H1 (GB 2312) Note: Grid Matrix default is GB 2312, not ISO 8859-1" },
         /*  1*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "é", 0, 3, "60 01 58 00 74 40", "ECI-3 B1 (ISO 8859-1)" },
         /*  2*/ { UNICODE_MODE, 29, -1, -1, { 0, 0, "" }, "é", 0, 29, "60 0E 44 2A 37 7C 00", "ECI-29 H1 (GB 2312)" },
@@ -308,8 +332,8 @@ static void test_input(const testCtx *const p_ctx) {
         /*105*/ { UNICODE_MODE, 900, -1, -1, { 0, 0, "" }, "é", 0, 900, "63 42 18 01 61 6A 20", "ECI-900 B2 (no conversion)" },
         /*106*/ { UNICODE_MODE, 1024, -1, -1, { 0, 0, "" }, "é", 0, 1024, "64 08 00 30 03 43 54 40", "ECI-1024 B2 (no conversion)" },
         /*107*/ { UNICODE_MODE, 32768, -1, -1, { 0, 0, "" }, "é", 0, 32768, "66 08 00 01 40 0E 0E 52 00", "ECI-32768 B2 (no conversion)" },
-        /*108*/ { UNICODE_MODE, 811800, -1, -1, { 0, 0, "" }, "é", ZINT_ERROR_INVALID_OPTION, 811800, "Error 533: Invalid ECI", "" },
-        /*109*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "β", ZINT_ERROR_INVALID_DATA, 3, "Error 535: Invalid character in input data for ECI 3", "" },
+        /*108*/ { UNICODE_MODE, 811800, -1, -1, { 0, 0, "" }, "é", ZINT_ERROR_INVALID_OPTION, 811800, "Error 533: ECI code '811800' out of range (0 to 811799)", "" },
+        /*109*/ { UNICODE_MODE, 3, -1, -1, { 0, 0, "" }, "β", ZINT_ERROR_INVALID_DATA, 3, "Error 535: Invalid character in input for ECI '3'", "" },
         /*110*/ { UNICODE_MODE, 0, READER_INIT, -1, { 0, 0, "" }, "12", 0, 0, "51 11 71 7E 40", "" },
         /*111*/ { UNICODE_MODE, 0, -1, -1, { 1, 16, "" }, "12", 0, 0, "48 03 60 24 3C 3F 50", "FNC2 ID0 Cnt15 Ind0 N2" },
         /*112*/ { UNICODE_MODE, 0, READER_INIT, -1, { 1, 16, "" }, "12", 0, 0, "54 40 1E 02 23 63 7D 00", "FNC3 FNC2 ID0 Cnt15 Ind0 N2" },
@@ -317,7 +341,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*114*/ { UNICODE_MODE, 0, READER_INIT, -1, { 2, 16, "" }, "12", 0, 0, "48 03 62 24 3C 3F 50", "FNC2 ID0 Cnt15 Ind1 N2 (FNC3 omitted)" },
         /*115*/ { UNICODE_MODE, 0, -1, -1, { 3, 3, "255" }, "12", 0, 0, "4F 7C 44 24 3C 3F 50", "FNC2 ID256 Cnt2 Ind2 N2" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -377,7 +401,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "1234", UNICODE_MODE, -1, -1, 0, 18, 18, "",
                     "111111000000111111"
                     "101111001100101001"
@@ -475,7 +499,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111111000000111111000000111111000000111111"
                },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -536,7 +560,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
        ¶ not in GB 2312 (in ISO/IEC 8869-1)
        Ж in GB 2312 (and ISO/IEC 8859-5)
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, "Standard example (adds ECI 3 for ¶)",
                     "111111000000111111000000111111"
                     "111111011110111111011110111111"
@@ -810,7 +834,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "111111000000111111000000111111"
                },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -886,7 +910,7 @@ static void test_perf(const testCtx *const p_ctx) {
         int expected_width;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_GRIDMATRIX, UNICODE_MODE, -1, -1,
                     "AAT2556 电池充电器+降压转换器 200mA至2A tel:86 019 82512738 AAT2556 电池充电器+降压转换器 200mA至2A tel:86 019 82512738",
                     0, 66, 66, "97 chars, mixed modes" },
@@ -903,7 +927,7 @@ static void test_perf(const testCtx *const p_ctx) {
                     "AAT2556 电池充电器+降压转换器 200mA至2A tel:86 019 82512738 AAT2556 电池充电器+降压转换器 200mA至2A tel:86 019 82512738",
                     0, 162, 162, "970 chars, mixed modes" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 

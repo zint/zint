@@ -6,6 +6,8 @@ Version 2.13.0.9 (dev) not released yet
 - New `memfile` & `memfile_size` fields in `symbol` for use with new output
   option `BARCODE_MEMORY_FILE`
 - Invalid `input_mode` now returns warning
+- Aztec Code symbols that due to input length & user-requested version have less
+  than recommended 5% error correction codewords now return warning
 - New CODE128-only special extra escape `\^1` for manually inserting FNC1s
 
 Changes
@@ -15,15 +17,30 @@ Changes
 - Add `BARCODE_MEMORY_FILE` to `symbol->output_options` to allow outputting to
   in-memory buffer `symbol->memfile` instead of to file `symbol->outfile`,
   ticket #301
-- CODE128: improve encodation on A/B shifting, props Daniel Gredler (Okapi)
+- CODE16K (was for CODE128): improve encodation on A/B shifting, props Daniel
+  Gredler (Okapi)
+- CODE128: add new extra escape `\^1` for manual insertion of FNC1s, ticket
+  #324, props Jim Shank;
+  add minimal encodation algorithm (non-extended ASCII only), props Alex Geller
+  (ZXing);
+  reduce extended latch cut-off from 5 to 4 for better encodation in certain
+  cases, props lyngklip (BWIPP)
 - library: return warning on invalid `input_mode` reset
-- GS1: new AIs 7250-7259 (GSCN 22-246), new linters `yyyymmdd()`, `iso5218()`,
-  `posinseqslash()`; remove old linter `iso3166list`;
-  iso4217: new ISO 4217 currency code 924
+- library/CLI: expanded error messages
+- GS1: new AIs 7250-7259 (GSCN 22-246);
+  iso4217: new ISO 4217 currency code 924;
+  new AIs 7041 (GSCN 23-272) (packagetype) and 716 (GSCN-24-157)
 - AZTEC: workaround MSVC 2022 optimizer bug in `az_populate_map()` loops,
-  ticket #317, props Andre Maute
-- CODE128: Add new extra escape `\^1` for manual insertion of FNC1s, ticket
-  #324, props Jim Shank
+  ticket #317, props Andre Maute;
+  return warning if ECC < 5% (due to bit-stuffing when version given)
+- MAXICODE: zero-pad US postcodes that lack "+4" (Annex B.1.4a), from
+  OkapiBarcode, props Daniel Gredler
+- GUI: use X11 (xcb) as platform instead of Wayland on Linux to avoid various
+  weird behaviours;
+  in "grpDATF.ui" use "PlainText" rather than "RichText" for tracker ratio
+  examples as height of text messing up sometimes
+- manual: make explicit that AI "(00)" and "(01)" prefixes added by Zint are
+  HRT-only; clarify Codablock-F length maximum & add examples
 
 Bugs
 ----
@@ -37,8 +54,10 @@ Bugs
 - ITF14/DPLEIT/DPIDENT: ignore `option_2` (check digit options)
 - GUI: scalewindow: fix cropping of initial resolution and bound X-dim <= 10
 - GUI: factory reset: reset preview background colour also
+- GUI: cliwindow: `#if _WIN32` -> `#ifdef _WIN32`
 - QZint: fix legacy width and security level getters/setters, MR #158, props
   Philip Ye
+- CODE128: fix extended char latching when exactly 3 extended chars at end
 
 
 Version 2.13.0 (2023-12-18)

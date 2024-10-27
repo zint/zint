@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -49,14 +49,14 @@ static void test_print(const testCtx *const p_ctx) {
         char *expected_file;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_GRIDMATRIX, -1, -1, -1, -1, -1, -1, "C3C3C3", "", 0.75, "Grid Matrix", "gridmatrix_fg_0.75.pcx" },
         /*  1*/ { BARCODE_CODABLOCKF, -1, -1, -1, -1, -1, 20, "FFFFFF", "000000", 0, "1234567890123456789012345678901234567890", "codeblockf_reverse.pcx" },
         /*  2*/ { BARCODE_QRCODE, -1, -1, -1, -1, 2, 1, "", "D2E3F4", 0, "1234567890", "qr_bg.pcx" },
         /*  3*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, "FF0000", "0000FF", 0, "ULTRACODE_123456789!", "ultra_fg_bg_hvwsp1_box1.pcx" },
         /*  4*/ { BARCODE_CODE11, -1, -1, -1, -1, -1, -1, "12345678", "FEDCBA98", 0, "123", "code11_fgbgtrans.pcx" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
@@ -182,12 +182,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "621: Could not open PCX output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "pcx_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = pcx_pixel_plot(&symbol, data);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "pcx_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "pcx_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

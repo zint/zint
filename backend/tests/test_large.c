@@ -42,8 +42,10 @@
 #  endif
 #  if defined(__clang__)
 #    pragma GCC diagnostic ignored "-Wformat-non-iso"
-#  elif defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 2))
-#    pragma GCC diagnostic ignored "-Wformat" /* Doesn't seem to be way to only avoid non-ISO warnings */
+#  elif defined(__GNUC__) && (__GNUC__ >= 5 || (__GNUC__ == 4 && __GNUC_MINOR__ >= 4))
+#    pragma GCC diagnostic ignored "-Wno-pedantic-ms-format"
+#  elif defined(__GNUC__) && __GNUC__ >= 2
+#    pragma GCC diagnostic ignored "-Wformat"
 #  endif
 #elif (defined(__WORDSIZE) && __WORDSIZE == 32) || (defined(ULONG_MAX) && ULONG_MAX <= 0xFFFFFFFF) \
         || defined(__APPLE__) || defined(__OpenBSD__)

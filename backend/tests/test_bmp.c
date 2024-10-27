@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,7 +45,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0 },
         /*  2*/ { 2, 2, "10", 1, 0 },
@@ -57,7 +57,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         /*  8*/ { 5, 1, "10101", 0, 0 },
         /*  9*/ { 8, 2, "CBMWKRYGGYRKWMBC", 0, 0 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
     struct zint_symbol *symbol;
 
@@ -140,13 +140,13 @@ static void test_print(const testCtx *const p_ctx) {
         char *data;
         char *expected_file;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", "123", "pdf417_fg_bg.bmp" },
         /*  1*/ { BARCODE_ULTRA, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg.bmp" },
         /*  2*/ { BARCODE_ULTRA, 1, BARCODE_BOX, 1, 1, -1, -1, "147AD0", "FC9630", "123", "ultracode_fg_bg_hvwsp1_box1.bmp" },
         /*  3*/ { BARCODE_PDF417COMP, -1, -1, 2, 2, -1, -1, "", "", "123", "pdf417comp_hvwsp2.bmp" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
@@ -266,12 +266,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "601: Could not open BMP output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "bmp_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = bmp_pixel_plot(&symbol, data);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "bmp_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "bmp_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

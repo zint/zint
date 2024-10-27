@@ -144,17 +144,16 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     assert(length > 0);
 
     if (length > 140) { /* 8 (Start) + 140 * 8 + 2 * 8 (Check) + 7 (Stop) = 1151 */
-        strcpy(symbol->errtxt, "320: Input too long (140 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 320, "Input length %d too long (maximum 140)", length);
     }
-    if (!is_sane(SODIUM_MNS_F, source, length)) {
-        strcpy(symbol->errtxt, "321: Invalid character in data (digits and \"-\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(SODIUM_MNS_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 321,
+                        "Invalid character at position %d in input (digits and \"-\" only)", i);
     }
 
     if (symbol->option_2 < 0 || symbol->option_2 > 2) {
-        strcpy(symbol->errtxt, "339: Invalid check digit version (1, 2 only)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 339, "Invalid check digit version '%d' (1 or 2 only)",
+                        symbol->option_2);
     }
     if (symbol->option_2 == 2) {
         num_check_digits = 0;
@@ -255,22 +254,19 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* LOGMARS MIL-STD-1189 Rev. B https://apps.dtic.mil/dtic/tr/fulltext/u2/a473534.pdf */
     if ((symbol->symbology == BARCODE_LOGMARS) && (length > 30)) { /* MIL-STD-1189 Rev. B Section 5.2.6.2 */
-        strcpy(symbol->errtxt, "322: Input too long (30 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 322, "Input length %d too long (maximum 30)", length);
     /* Prevent encoded_data out-of-bounds >= 143 for BARCODE_HIBC_39 due to wider 'wide' bars */
     } else if ((symbol->symbology == BARCODE_HIBC_39) && (length > 70)) { /* 16 (Start) + 70*16 + 15 (Stop) = 1151 */
-        /* Note use 319 (2of5 range) as 340 taken by CODE128 */
-        strcpy(symbol->errtxt, "319: Input too long (68 character maximum)"); /* 70 less '+' and check */
-        return ZINT_ERROR_TOO_LONG;
+        /* 70 less '+' and check */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 319, "Input length %d too long (maximum 68)", length - 2);
     } else if (length > 86) { /* 13 (Start) + 86*13 + 12 (Stop) = 1143 */
-        strcpy(symbol->errtxt, "323: Input too long (86 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 323, "Input length %d too long (maximum 86)", length);
     }
 
     to_upper(source, length);
-    if (!is_sane_lookup(SILVER, 43 /* Up to "%" */, source, length, posns)) {
-        strcpy(symbol->errtxt, "324: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(SILVER, 43 /* Up to "%" */, source, length, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 324,
+                        "Invalid character at position %d in input (alphanumerics, space and \"-.$/+%%\" only)", i);
     }
 
     /* Start character */
@@ -370,16 +366,16 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     const int pzn7 = symbol->option_2 == 1;
 
     if (length > 8 - pzn7) {
-        sprintf(symbol->errtxt, "325: Input wrong length (%d character maximum)", 8 - pzn7);
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 325, "Input length %1$d too long (maximum %2$d)", length,
+                        8 - pzn7);
     }
     if (length == 8 - pzn7) {
         have_check_digit = source[7 - pzn7];
         length--;
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "326: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 326,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     localstr[0] = '-';
@@ -400,12 +396,11 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     }
 
     if (check_digit == 10) {
-        strcpy(symbol->errtxt, "327: Invalid PZN, check digit is '10'");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 327, "Invalid PZN, check digit is '10'");
     }
     if (have_check_digit && ctoi(have_check_digit) != check_digit) {
-        sprintf(symbol->errtxt, "890: Invalid check digit '%c', expecting '%c'", have_check_digit, itoc(check_digit));
-        return ZINT_ERROR_INVALID_CHECK;
+        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 890, "Invalid check digit '%1$c', expecting '%2$c'",
+                        have_check_digit, itoc(check_digit));
     }
 
     localstr[8 - pzn7] = itoc(check_digit);
@@ -453,23 +448,22 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     int error_number;
 
     if (length > 86) {
-        strcpy(symbol->errtxt, "328: Input too long (86 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
     }
 
     /* Creates a buffer string and places control characters into it */
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "329: Invalid character in data, extended ASCII not allowed");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 329,
+                            "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(b, EC39Ctrl[source[i]], 2);
         b += EC39Ctrl[source[i]][1] ? 2 : 1;
     }
     if (b - buffer > 86) {
-        strcpy(symbol->errtxt, "317: Expanded input too long (86 symbol character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 317, "Input too long, requires %d symbol characters (maximum 86)",
+                        (int) (b - buffer));
     }
     *b = '\0';
 
@@ -515,16 +509,15 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     assert(length > 0);
 
     if (length > 123) { /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) = 1144 */
-        strcpy(symbol->errtxt, "330: Input too long (123 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 330, "Input length %d too long (maximum 123)", length);
     }
 
     /* Message Content */
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
             /* Cannot encode extended ASCII */
-            strcpy(symbol->errtxt, "331: Invalid character in data, extended ASCII not allowed");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 331,
+                            "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(b, C93Ctrl[source[i]], 2);
         b += C93Ctrl[source[i]][1] ? 2 : 1;
@@ -534,8 +527,8 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Now we can check the true length of the barcode */
     h = b - buffer;
     if (h > 123) {
-        strcpy(symbol->errtxt, "332: Expanded input too long (123 symbol character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 332,
+                        "Input too long, requires %d symbol characters (maximum 123)", h);
     }
 
     for (i = 0; i < h; i++) {
@@ -607,7 +600,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
 }
 
 typedef const struct s_channel_precalc {
-    long value; unsigned char B[8]; unsigned char S[8]; unsigned char bmax[7]; unsigned char smax[7];
+    int value; unsigned char B[8]; unsigned char S[8]; unsigned char bmax[7]; unsigned char smax[7];
 } channel_precalc;
 
 #if 0
@@ -617,7 +610,7 @@ typedef const struct s_channel_precalc {
 #ifdef CHANNEL_GENERATE_PRECALCS
 /* To generate precalc tables uncomment CHANNEL_GENERATE_PRECALCS define and run
    "backend/tests/test_channel -f generate -g" and place result in "channel_precalcs.h" */
-static void channel_generate_precalc(int channels, long value, int mod, int last, int B[8], int S[8], int bmax[7],
+static void channel_generate_precalc(int channels, int value, int mod, int last, int B[8], int S[8], int bmax[7],
             int smax[7]) {
     int i;
     if (value == mod) printf("static channel_precalc channel_precalcs%d[] = {\n", channels);
@@ -631,7 +624,7 @@ static void channel_generate_precalc(int channels, long value, int mod, int last
 #include "channel_precalcs.h"
 #endif
 
-static long channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[8], int bmax[7], int smax[7]) {
+static int channel_copy_precalc(channel_precalc *const precalc, int B[8], int S[8], int bmax[7], int smax[7]) {
     int i;
 
     for (i = 0; i < 7; i++) {
@@ -656,7 +649,7 @@ static long channel_copy_precalc(channel_precalc *const precalc, int B[8], int S
    specification is entirely in the public domain and free of all use restrictions,
    licenses and fees. AIM USA, its member companies, or individual officers
    assume no liability for the use of this document." */
-static void CHNCHR(int channels, long target_value, int B[8], int S[8]) {
+static void CHNCHR(int channels, int target_value, int B[8], int S[8]) {
     /* Use of initial pre-calculations taken from Barcode Writer in Pure PostScript (BWIPP)
      * Copyright (c) 2004-2020 Terry Burton (MIT/X-Consortium license) */
     static channel_precalc initial_precalcs[6] = {
@@ -674,7 +667,7 @@ static void CHNCHR(int channels, long target_value, int B[8], int S[8]) {
             { 8, 8, 8, 8, 8, 8, 8, }, },
     };
     int bmax[7], smax[7];
-    long value = 0;
+    int value = 0;
 
     channel_copy_precalc(&initial_precalcs[channels - 3], B, S, bmax, smax);
 
@@ -746,30 +739,25 @@ nb0:    if (++B[0] <= bmax[0]) goto lb0;
 INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
     int S[8] = {0}, B[8] = {0};
-    long target_value = 0;
+    int target_value;
     char dest[30];
     char *d = dest;
     int channels, i;
     int error_number = 0, zeroes;
 
     if (length > 7) {
-        strcpy(symbol->errtxt, "333: Input too long (7 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 333, "Input length %d too long (maximum 7)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "334: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 334,
+                        "Invalid character at position %d in input (digits only)", i);
     }
+    target_value = to_int(source, length);
 
     if ((symbol->option_2 < 3) || (symbol->option_2 > 8)) {
         channels = 0;
     } else {
         channels = symbol->option_2;
-    }
-
-    for (i = 0; i < length; i++) {
-        target_value *= 10;
-        target_value += ctoi((char) source[i]);
     }
 
     if (channels == 0) {
@@ -792,12 +780,12 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (target_value > max_ranges[channels]) {
         if (channels == 8) {
-            sprintf(symbol->errtxt, "318: Value out of range (0 to %d)", max_ranges[channels]);
-        } else {
-            sprintf(symbol->errtxt, "335: Value out of range (0 to %d) for %d channels",
-                    max_ranges[channels], channels);
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 318, "Input value \"%1$d\" out of range (0 to %2$d)",
+                            target_value, max_ranges[channels]);
         }
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 335,
+                        "Input value \"%1$d\" out of range (0 to %2$d for %3$d channels)",
+                        target_value, max_ranges[channels], channels);
     }
 
     CHNCHR(channels, target_value, B, S);
@@ -812,8 +800,7 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
     zeroes = channels - 1 - length;
     if (zeroes < 0) {
         zeroes = 0;
-    }
-    if (zeroes) {
+    } else if (zeroes) {
         memset(symbol->text, '0', zeroes);
     }
     ustrcpy(symbol->text + zeroes, source);
@@ -848,15 +835,13 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     /* Check length */
     if (length != 17) {
-        strcpy(symbol->errtxt, "336: Input wrong length (17 characters required)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 336, "Input length %d wrong (17 only)", length);
     }
 
     /* Check input characters, I, O and Q are not allowed */
-    if (!is_sane(ARSENIC_F, source, length)) {
-        strcpy(symbol->errtxt,
-                "337: Invalid character in data (alphanumerics only, excluding \"I\", \"O\" and \"Q\")");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(ARSENIC_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 337,
+                        "Invalid character at position %d in input (alphanumerics only, excluding \"IOQ\")", i);
     }
 
     to_upper(source, length);
@@ -893,9 +878,8 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         }
 
         if (input_check != output_check) {
-            sprintf(symbol->errtxt, "338: Invalid check digit '%c' (position 9), expecting '%c'",
-                    input_check, output_check);
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 338,
+                            "Invalid check digit '%1$c' (position 9), expecting '%2$c'", input_check, output_check);
         }
     }
 

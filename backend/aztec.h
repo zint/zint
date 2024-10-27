@@ -117,44 +117,38 @@ static const short AztecCompactSizes[4] = {
     17, 40, 51, 64 /* 64 data blocks (Mode Message max) but 76 altogether */
 };
 
-/* Data bits per symbol maximum with 10% error correction */
-static const short Aztec10DataSizes[32] = {
-      96,  246,  408,  616,  840, 1104, 1392,  1704,  2040,  2420,  2820,  3250,  3720,  4200,  4730,  5270,
-    5840, 6450, 7080, 7750, 8430, 9150, 9900, 10680, 11484, 12324, 13188, 14076, 15000, 15948, 16920, 17940
+static const short AztecDataSizes[4][32] = { {
+        /* Data bits per symbol maximum with 10% error correction */
+          96,  246,  408,  616,  840, 1104, 1392,  1704,  2040,  2420,  2820,  3250,  3720,  4200,  4730,  5270,
+        5840, 6450, 7080, 7750, 8430, 9150, 9900, 10680, 11484, 12324, 13188, 14076, 15000, 15948, 16920, 17940
+    }, {
+        /* Data bits per symbol maximum with 23% error correction */
+          84,  204,  352,  520,  720,  944, 1184,  1456,  1750,  2070,  2410,  2780,  3180,  3590,  4040,  4500,
+        5000, 5520, 6060, 6630, 7210, 7830, 8472,  9132,  9816, 10536, 11280, 12036, 12828, 13644, 14472, 15348
+    }, {
+        /* Data bits per symbol maximum with 36% error correction */
+          66,  168,  288,  432,  592,  776,  984,  1208,  1450,  1720,  2000,  2300,  2640,  2980,  3350,  3740,
+        4150, 4580, 5030, 5500, 5990, 6500, 7032,  7584,  8160,  8760,  9372,  9996, 10656, 11340, 12024, 12744
+    }, {
+        /* Data bits per symbol maximum with 50% error correction */
+          48,  126,  216,  328,  456,  600,  760,   936,  1120,  1330,  1550,  1790,  2050,  2320,  2610,  2910,
+        3230, 3570, 3920, 4290, 4670, 5070, 5484,  5916,  6360,  6828,  7308,  7800,  8316,  8844,  9384,  9948
+    }
 };
 
-/* Data bits per symbol maximum with 23% error correction */
-static const short Aztec23DataSizes[32] = {
-      84,  204,  352,  520,  720,  944, 1184, 1456, 1750,  2070,  2410,  2780,  3180,  3590,  4040,  4500,
-    5000, 5520, 6060, 6630, 7210, 7830, 8472, 9132, 9816, 10536, 11280, 12036, 12828, 13644, 14472, 15348
-};
-
-/* Data bits per symbol maximum with 36% error correction */
-static const short Aztec36DataSizes[32] = {
-      66,  168,  288,  432,  592,  776,  984, 1208, 1450, 1720, 2000, 2300,  2640,  2980,  3350,  3740,
-    4150, 4580, 5030, 5500, 5990, 6500, 7032, 7584, 8160, 8760, 9372, 9996, 10656, 11340, 12024, 12744
-};
-
-/* Data bits per symbol maximum with 50% error correction */
-static const short Aztec50DataSizes[32] = {
-      48,  126,  216,  328,  456,  600,  760,  936, 1120, 1330, 1550, 1790, 2050, 2320, 2610, 2910,
-    3230, 3570, 3920, 4290, 4670, 5070, 5484, 5916, 6360, 6828, 7308, 7800, 8316, 8844, 9384, 9948
-};
-
-static const short AztecCompact10DataSizes[4] = {
-    78, 198, 336, 512 /* Max 64 * 8 */
-};
-
-static const short AztecCompact23DataSizes[4] = {
-    66, 168, 288, 440
-};
-
-static const short AztecCompact36DataSizes[4] = {
-    48, 138, 232, 360
-};
-
-static const short AztecCompact50DataSizes[4] = {
-    36, 102, 176, 280
+static const short AztecCompactDataSizes[4][4] = { {
+        /* Data bits per symbol maximum with 10% error correction */
+        78, 198, 336, 512 /* Max 64 * 8 */
+    }, {
+        /* Data bits per symbol maximum with 23% error correction */
+        66, 168, 288, 440
+    }, {
+        /* Data bits per symbol maximum with 36% error correction */
+        48, 138, 232, 360
+    }, {
+        /* Data bits per symbol maximum with 50% error correction */
+        36, 102, 176, 280
+    }
 };
 
 /* Reference grid offsets */

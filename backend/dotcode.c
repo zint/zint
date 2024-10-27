@@ -1229,8 +1229,8 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     unsigned char *masked_codeword_array;
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "525: Invalid ECI");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
+                        symbol->eci);
     }
 
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is mask + 1, so >= 1 and <= 8 */
@@ -1240,16 +1240,16 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 35) {
-            strcpy(symbol->errtxt, "730: Structured Append count out of range (2-35)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 730,
+                            "Structured Append count '%d' out of range (2 to 35)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "731: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 731,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
-            strcpy(symbol->errtxt, "732: Structured Append ID not available for DotCode");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 732, "Structured Append ID not available for DotCode");
         }
     }
 
@@ -1258,14 +1258,14 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (gs1 && warn_number == 0) {
         for (i = 0; i < seg_count; i++) {
             if (segs[i].eci) {
-                strcpy(symbol->errtxt, "733: Using ECI in GS1 mode not supported by GS1 standards");
-                warn_number = ZINT_WARN_NONCOMPLIANT;
+                warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 733,
+                                        "Using ECI in GS1 mode not supported by GS1 standards");
                 break;
             }
         }
         if (warn_number == 0 && symbol->structapp.count) {
-            strcpy(symbol->errtxt, "734: Using Structured Append in GS1 mode not supported by GS1 standards");
-            warn_number = ZINT_WARN_NONCOMPLIANT;
+            warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 734,
+                                    "Using Structured Append in GS1 mode not supported by GS1 standards");
         }
     }
 
@@ -1337,9 +1337,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if ((height > 200) || (width > 200)) {
         if (height > 200 && width > 200) {
-            sprintf(symbol->errtxt, "526: Symbol size %dx%d (WxH) is too large", width, height);
+            errtxtf(0, symbol, 526, "Symbol size '%1$dx%2$d' (WxH) is too large", width, height);
         } else {
-            sprintf(symbol->errtxt, "528: Symbol %s %d is too large",
+            errtxtf(0, symbol, 528, "Symbol %1$s '%2$d' is too large",
                     width > 200 ? "width" : "height", width > 200 ? width : height);
         }
         return ZINT_ERROR_INVALID_OPTION;
@@ -1347,10 +1347,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if ((height < 5) || (width < 5)) {
         if (height < 5 && width < 5) { /* Won't happen as if width < 5, min height is 19 */
-            sprintf(symbol->errtxt, "527: Symbol size %dx%d (WxH) is too small", width, height); /* Not reached */
+            errtxtf(0, symbol, 527, "Symbol size '%1$dx%2$d' (WxH) is too small", width, height); /* Not reached */
         } else {
-            sprintf(symbol->errtxt, "529: Symbol %s %d is too small",
-                    width < 5 ? "width" : "height", width < 5 ? width : height);
+            errtxtf(0, symbol, 529, "Symbol %1$s '%2$d' is too small",
+                        width < 5 ? "width" : "height", width < 5 ? width : height);
         }
         return ZINT_ERROR_INVALID_OPTION;
     }

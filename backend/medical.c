@@ -63,6 +63,7 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
        the specification at http://www.laetus.com/laetus.php?request=file&id=69
        (http://www.gomaro.ch/ftproot/Laetus_PHARMA-CODE.pdf) */
 
+    int i;
     int tester;
     int counter, error_number = 0, h;
     char inter[18] = {0}; /* 131070 -> 17 bits */
@@ -71,18 +72,16 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
     char *d = dest;
 
     if (length > 6) {
-        strcpy(symbol->errtxt, "350: Input too long (6 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 350, "Input length %d too long (maximum 6)", length);
     }
-    tester = to_int(source, length);
-    if (tester == -1) {
-        strcpy(symbol->errtxt, "351: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 351,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
+    tester = to_int(source, length);
     if ((tester < 3) || (tester > 131070)) {
-        strcpy(symbol->errtxt, "352: Data out of range (3 to 131070)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 352, "Input value '%d' out of range (3 to 131070)", tester);
     }
 
     do {
@@ -152,6 +151,7 @@ static int pharma_two_calc(int tester, char *d) {
 
 INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* Draws the patterns for two track pharmacode */
+    int i;
     int tester;
     char height_pattern[200];
     unsigned int loopey, h;
@@ -159,17 +159,16 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     int error_number = 0;
 
     if (length > 8) {
-        strcpy(symbol->errtxt, "354: Input too long (8 character maximum");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 354, "Input length %d too long (maximum 8)", length);
     }
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 355,
+                        "Invalid character at position %d in input (digits only)", i);
+    }
+
     tester = to_int(source, length);
-    if (tester == -1) {
-        strcpy(symbol->errtxt, "355: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
-    }
     if ((tester < 4) || (tester > 64570080)) {
-        strcpy(symbol->errtxt, "353: Data out of range (4 to 64570080)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 353, "Input value '%d' out of range (4 to 64570080)", tester);
     }
     h = pharma_two_calc(tester, height_pattern);
 
@@ -209,36 +208,32 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     int d_chars = 0;
 
     if (length > 103) { /* No stack smashing please (103 + 1) * 11 = 1144 */
-        strcpy(symbol->errtxt, "356: Input too long (103 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 356, "Input length %d too long (maximum 103)", length);
     }
     /* BS EN 798:1995 4.2 "'Codabar' symbols shall consist of ... b) start character;
        c) one or more symbol characters representing data ... d) stop character ..." */
     if (length < 3) {
-        strcpy(symbol->errtxt, "362: Input too short (3 character minimum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 362, "Input length %d too short (minimum 3)", length);
     }
     to_upper(source, length);
 
     /* Codabar must begin and end with the characters A, B, C or D */
     if ((source[0] != 'A') && (source[0] != 'B') && (source[0] != 'C')
             && (source[0] != 'D')) {
-        strcpy(symbol->errtxt, "358: Does not begin with \"A\", \"B\", \"C\" or \"D\"");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 358, "Does not begin with \"A\", \"B\", \"C\" or \"D\"");
     }
     if ((source[length - 1] != 'A') && (source[length - 1] != 'B') &&
             (source[length - 1] != 'C') && (source[length - 1] != 'D')) {
-        strcpy(symbol->errtxt, "359: Does not end with \"A\", \"B\", \"C\" or \"D\"");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 359, "Does not end with \"A\", \"B\", \"C\" or \"D\"");
     }
-    if (!is_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns)) {
-        sprintf(symbol->errtxt, "357: Invalid character in data (\"%s\" only)", CALCIUM);
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 357,
+                        "Invalid character at position %1$d in input (\"%2$s\" only)", i, CALCIUM);
     }
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
-    if (!is_sane(CALCIUM_INNER_F, source + 1, length - 2)) {
-        strcpy(symbol->errtxt, "363: Cannot contain \"A\", \"B\", \"C\" or \"D\"");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 363,
+                        "Invalid character at position %d in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", i);
     }
 
     /* Add check character: 1 don't show to HRT, 2 do show to HRT
@@ -301,17 +296,16 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     static const char TABELLA[] = "0123456789BCDFGHJKLMNPQRSTUVWXYZ";
     int i, zeroes, error_number = 0, checksum, checkpart, checkdigit;
     char localstr[10], risultante[7];
-    long int pharmacode, devisor;
+    unsigned int pharmacode, devisor;
     int codeword[6];
 
     /* Validate the input */
     if (length > 8) {
-        strcpy(symbol->errtxt, "360: Input too long (8 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 360, "Input length %d too long (maximum 8)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "361: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 361,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     /* Add leading zeros as required */
@@ -343,7 +337,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Convert from decimal to base-32 */
     devisor = 33554432;
     for (i = 5; i >= 0; i--) {
-        long int remainder;
+        unsigned int remainder;
         codeword[i] = pharmacode / devisor;
         remainder = pharmacode % devisor;
         pharmacode = remainder;

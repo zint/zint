@@ -247,7 +247,6 @@ static void dbar_omn_separator(struct zint_symbol *symbol, int width, const int 
 
 /* Set Databar Stacked height, maintaining 5:7 ratio of the 2 main row heights */
 INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_row) {
-    int error_number = 0;
     float fixed_height = 0.0f;
     int second_row = first_row + 2; /* 2 row separator */
     int i;
@@ -274,12 +273,11 @@ INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         if (symbol->row_height[first_row] < 5.0f || symbol->row_height[second_row] < 7.0f) {
-            error_number = ZINT_WARN_NONCOMPLIANT;
-            strcpy(symbol->errtxt, "379: Height not compliant with standards");
+            return errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 379, "Height not compliant with standards");
         }
     }
 
-    return error_number;
+    return 0;
 }
 
 /* GS1 DataBar Omnidirectional/Truncated/Stacked, allowing for composite if `cc_rows` set */
@@ -296,19 +294,17 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     separator_row = 0;
 
     if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "380: Input too long (14 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 380, "Input length %d too long (maximum 14)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "381: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 381,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
-            sprintf(symbol->errtxt, "388: Invalid check digit '%c', expecting '%c'",
-                    source[13], gs1_check_digit(source, 13));
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 388, "Invalid check digit '%1$c', expecting '%2$c'",
+                            source[13], gs1_check_digit(source, 13));
         }
         length--; /* Ignore */
     }
@@ -633,27 +629,24 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     separator_row = 0;
 
     if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
-        strcpy(symbol->errtxt, "382: Input too long (14 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 382, "Input length %d too long (maximum 14)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "383: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 383,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
-            sprintf(symbol->errtxt, "389: Invalid check digit '%c', expecting '%c'",
-                    source[13], gs1_check_digit(source, 13));
-            return ZINT_ERROR_INVALID_CHECK;
+            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 389, "Invalid check digit '%1$c', expecting '%2$c'",
+                            source[13], gs1_check_digit(source, 13));
         }
         length--; /* Ignore */
     }
 
     if (length == 13) {
         if ((source[0] != '0') && (source[0] != '1')) {
-            strcpy(symbol->errtxt, "384: Input out of range (0 to 1999999999999)");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 384, "Input value out of range (0 to 1999999999999)");
         }
     }
 
@@ -842,6 +835,11 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     int remainder, d1, d2;
     int cdf_bp_start; /* Compressed data field start - debug only */
 
+    if (length > 77) { /* ISO/IEC 24724:2011 4.2.d.2 */
+        /* Caught below anyway but catch here also for better feedback */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 378, "Processed input length %d too long (maximum 77)", length);
+    }
+
     /* Decide whether a compressed data field is required and if so what
        method to use - method 2 = no compressed data field */
 
@@ -968,8 +966,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         if (!z_isdigit(source[i])) {
             if (source[i] != '\x1D') {
                 /* Something is wrong */
-                strcpy(symbol->errtxt, "385: Invalid character in Compressed Field data (digits only)");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 385,
+                                "Invalid character in Compressed Field data (digits only)");
             }
         }
     }
@@ -1064,8 +1062,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     if (j != 0) { /* If general field not empty */
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
             /* Will happen if character not in CSET 82 + space */
-            strcpy(symbol->errtxt, "386: Invalid character in General Field data");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 386, "Invalid character in General Field data");
         }
     }
 
@@ -1134,8 +1131,8 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     }
 
     if (bp > 252) { /* 252 = (21 * 12) */
-        strcpy(symbol->errtxt, "387: Input too long"); /* TODO: Better error message */
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 387, /* TODO: Better error message */
+                        "Input too long, requires %d symbol characters (maximum 21)", (bp + 11) / 12);
     }
 
     if (min_cols_per_row && min_cols_per_row > *p_cols_per_row) {

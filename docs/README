@@ -1,13 +1,20 @@
-% docs/README 2024-09-29
+% docs/README 2024-10-27
 
 For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" using a recent version of pandoc
 
-On Ubuntu/Debian (tested on Ubuntu 22.04)
+On Ubuntu/Debian (tested on Ubuntu 22.04 and Ubuntu 24.04)
 
-    wget https://github.com/jgm/pandoc/releases/download/3.4/pandoc-3.4-1-amd64.deb
-    sudo dpkg -i pandoc-3.4-1-amd64.deb
+    wget https://github.com/jgm/pandoc/releases/download/3.5/pandoc-3.5-1-amd64.deb
+    sudo dpkg -i pandoc-3.5-1-amd64.deb
+For Ubuntu 22.04 (python < 3.12)
     sudo apt install python3-pip
     pip install pandoc-tablenos --user
+Else for Ubuntu 24.04 (one way around "externally-managed-environment" error, PEP 668)
+	sudo apt install python3-full
+	python3 -m venv ~/py_envs
+	source ~/py_envs/bin/activate
+	pip install pandoc-tablenos
+Then
     export PATH=~/.local/bin:"$PATH"
 	# Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
 	python -m pip install --force-reinstall \
@@ -18,11 +25,11 @@ On Ubuntu/Debian (tested on Ubuntu 22.04)
     sudo apt install fonts-wqy-microhei
     make
 
-On Fedora (tested on Fedora Linux 38 (Workstation Edition))
+On Fedora (tested on Fedora Linux 38 (Workstation Edition) and Fedora Linux 40 (Workstation Edition))
 
-    wget https://github.com/jgm/pandoc/releases/download/3.4/pandoc-3.4-linux-amd64.tar.gz
-    tar xf pandoc-3.4-linux-amd64.tar.gz
-    sudo mv -i pandoc-3.4/bin/pandoc /usr/local/bin
+    wget https://github.com/jgm/pandoc/releases/download/3.5/pandoc-3.5-linux-amd64.tar.gz
+    tar xf pandoc-3.5-linux-amd64.tar.gz
+    sudo mv -i pandoc-3.5/bin/pandoc /usr/local/bin
     sudo dnf install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"

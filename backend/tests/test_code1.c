@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,154 +43,158 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* Reference AIM USS Code One Table 2 */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { -1, -1, { 0, 0, "" }, "1", 3550, 0, 148, 134 }, /* Auto Version H */
-        /*  1*/ { -1, -1, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { 3, -1, { 0, 0, "" }, "1", 3535, 0, 148, 134 }, /* With ECI */
-        /*  3*/ { 3, -1, { 0, 0, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { -1, -1, { 1, 2, "" }, "1", 3546, 0, 148, 134 }, /* With Structured Append (Group mode, count < 2) */
-        /*  5*/ { -1, -1, { 1, 2, "" }, "1", 3547, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { -1, -1, { 1, 16, "" }, "1", 3541, 0, 148, 134 }, /* With Structured Append (Extended Group mode, count >= 16) */
-        /*  7*/ { -1, -1, { 1, 16, "" }, "1", 3542, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { 3, -1, { 1, 2, "" }, "1", 3532, 0, 148, 134 }, /* With ECI and Structured Append (Group mode) 1st symbol */
-        /*  9*/ { 3, -1, { 1, 2, "" }, "1", 3533, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { 3, -1, { 2, 2, "" }, "1", 3537, 0, 148, 134 }, /* With ECI and Structured Append (Group mode) subsequent symbol */
-        /* 11*/ { 3, -1, { 2, 2, "" }, "1", 3538, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { 3, -1, { 1, 16, "" }, "1", 3530, 0, 148, 134 }, /* With ECI and Structured Append (Extended Group mode) 1st symbol */
-        /* 13*/ { 3, -1, { 1, 16, "" }, "1", 3531, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { 3, -1, { 2, 16, "" }, "1", 3535, 0, 148, 134 }, /* With ECI and Structured Append (Extended Group mode) subsequent symbol */
-        /* 15*/ { 3, -1, { 2, 16, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { -1, -1, { 0, 0, "" }, "A", 2218, 0, 148, 134 },
-        /* 17*/ { -1, -1, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { -1, -1, { 0, 0, "" }, "\001", 1480, 0, 148, 134 }, /* Full ASCII */
-        /* 19*/ { -1, -1, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 20*/ { -1, -1, { 0, 0, "" }, "\200", 1478, 0, 148, 134 }, /* BYTE */
-        /* 21*/ { -1, -1, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { -1, 1, { 0, 0, "" }, "1", 22, 0, 16, 18 }, /* Version A */
-        /* 23*/ { -1, 1, { 0, 0, "" }, "1", 23, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 24*/ { -1, 1, { 0, 0, "" }, "A", 13, 0, 16, 18 },
-        /* 25*/ { -1, 1, { 0, 0, "" }, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 26*/ { 3, 1, { 0, 0, "" }, "A", 4, 0, 16, 18 }, /* With ECI */
-        /* 27*/ { 3, 1, { 0, 0, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 28*/ { -1, 1, { 1, 2, "" }, "A", 10, 0, 16, 18 }, /* With Structured Append */
-        /* 29*/ { -1, 1, { 1, 2, "" }, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 30*/ { 3, 1, { 1, 2, "" }, "A", 2, 0, 16, 18 }, /* With ECI and Structured Append 1st symbol */
-        /* 31*/ { 3, 1, { 1, 2, "" }, "A", 3, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 32*/ { 3, 1, { 2, 2, "" }, "A", 4, 0, 16, 18 }, /* With ECI and Structured Append subsequent symbol */
-        /* 33*/ { 3, 1, { 2, 2, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 34*/ { -1, 1, { 0, 0, "" }, "\001", 10, 0, 16, 18 },
-        /* 35*/ { -1, 1, { 0, 0, "" }, "\001", 11, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 36*/ { -1, 1, { 0, 0, "" }, "\200", 8, 0, 16, 18 },
-        /* 37*/ { -1, 1, { 0, 0, "" }, "\200", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 38*/ { -1, 2, { 0, 0, "" }, "1", 44, 0, 22, 22 }, /* Version B */
-        /* 39*/ { -1, 2, { 0, 0, "" }, "1", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 40*/ { -1, 2, { 0, 0, "" }, "A", 27, 0, 22, 22 },
-        /* 41*/ { -1, 2, { 0, 0, "" }, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 42*/ { -1, 2, { 0, 0, "" }, "A", 26, 0, 22, 22 },
-        /* 43*/ { -1, 2, { 0, 0, "" }, "\001", 19, 0, 22, 22 },
-        /* 44*/ { -1, 2, { 0, 0, "" }, "\001", 20, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 45*/ { -1, 2, { 0, 0, "" }, "\200", 17, 0, 22, 22 },
-        /* 46*/ { -1, 2, { 0, 0, "" }, "\200", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 47*/ { -1, 3, { 0, 0, "" }, "1", 104, 0, 28, 32 }, /* Version C */
-        /* 48*/ { -1, 3, { 0, 0, "" }, "1", 105, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 49*/ { -1, 3, { 0, 0, "" }, "A", 64, 0, 28, 32 },
-        /* 50*/ { -1, 3, { 0, 0, "" }, "A", 65, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 51*/ { -1, 3, { 0, 0, "" }, "\001", 44, 0, 28, 32 },
-        /* 52*/ { -1, 3, { 0, 0, "" }, "\001", 45, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 53*/ { -1, 3, { 0, 0, "" }, "\200", 42, 0, 28, 32 },
-        /* 54*/ { -1, 3, { 0, 0, "" }, "\200", 43, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 55*/ { -1, 4, { 0, 0, "" }, "1", 217, 0, 40, 42 }, /* Version D */
-        /* 56*/ { -1, 4, { 0, 0, "" }, "1", 218, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 57*/ { -1, 4, { 0, 0, "" }, "A", 135, 0, 40, 42 },
-        /* 58*/ { -1, 4, { 0, 0, "" }, "A", 136, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 59*/ { -1, 4, { 0, 0, "" }, "\001", 91, 0, 40, 42 },
-        /* 60*/ { -1, 4, { 0, 0, "" }, "\001", 92, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 61*/ { -1, 4, { 0, 0, "" }, "\200", 89, 0, 40, 42 },
-        /* 62*/ { -1, 4, { 0, 0, "" }, "\200", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 63*/ { -1, 5, { 0, 0, "" }, "1", 435, 0, 52, 54 }, /* Version E (note 435 multiple of 3) */
-        /* 64*/ { -1, 5, { 0, 0, "" }, "1", 436, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 65*/ { -1, 5, { 0, 0, "" }, "1", 434, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /* 66*/ { -1, 5, { 0, 0, "" }, "1", 433, 0, 52, 54 },
-        /* 67*/ { -1, 5, { 0, 0, "" }, "A", 271, 0, 52, 54 },
-        /* 68*/ { -1, 5, { 0, 0, "" }, "A", 272, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 69*/ { -1, 5, { 0, 0, "" }, "\001", 182, 0, 52, 54 },
-        /* 70*/ { -1, 5, { 0, 0, "" }, "\001", 183, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 71*/ { -1, 5, { 0, 0, "" }, "\200", 180, 0, 52, 54 },
-        /* 72*/ { -1, 5, { 0, 0, "" }, "\200", 181, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 73*/ { -1, 6, { 0, 0, "" }, "1", 886, 0, 70, 76 }, /* Version F */
-        /* 74*/ { -1, 6, { 0, 0, "" }, "1", 887, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 75*/ { -1, 6, { 0, 0, "" }, "A", 553, 0, 70, 76 },
-        /* 76*/ { -1, 6, { 0, 0, "" }, "A", 554, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 77*/ { -1, 6, { 0, 0, "" }, "\001", 370, 0, 70, 76 },
-        /* 78*/ { -1, 6, { 0, 0, "" }, "\001", 371, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 79*/ { -1, 6, { 0, 0, "" }, "\200", 368, 0, 70, 76 },
-        /* 80*/ { -1, 6, { 0, 0, "" }, "\200", 369, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 81*/ { -1, 7, { 0, 0, "" }, "1", 1755, 0, 104, 98 }, /* Version G (note 1755 multiple of 3) */
-        /* 82*/ { -1, 7, { 0, 0, "" }, "1", 1756, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 83*/ { -1, 7, { 0, 0, "" }, "1", 1754, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /* 84*/ { -1, 7, { 0, 0, "" }, "1", 1753, 0, 104, 98 },
-        /* 85*/ { -1, 7, { 0, 0, "" }, "A", 1096, 0, 104, 98 },
-        /* 86*/ { -1, 7, { 0, 0, "" }, "A", 1097, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 87*/ { -1, 7, { 0, 0, "" }, "\001", 732, 0, 104, 98 },
-        /* 88*/ { -1, 7, { 0, 0, "" }, "\001", 733, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 89*/ { -1, 7, { 0, 0, "" }, "\200", 730, 0, 104, 98 },
-        /* 90*/ { -1, 7, { 0, 0, "" }, "\200", 731, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 91*/ { -1, 8, { 0, 0, "" }, "1", 3550, 0, 148, 134 }, /* Version H */
-        /* 92*/ { -1, 8, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 93*/ { -1, 8, { 0, 0, "" }, "A", 2218, 0, 148, 134 },
-        /* 94*/ { -1, 8, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 95*/ { -1, 8, { 0, 0, "" }, "\001", 1480, 0, 148, 134 },
-        /* 96*/ { -1, 8, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 97*/ { -1, 8, { 0, 0, "" }, "\200", 1478, 0, 148, 134 },
-        /* 98*/ { -1, 8, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 99*/ { -1, 9, { 0, 0, "" }, "1", 6, 0, 8, 11 }, /* Version S-10 */
-        /*100*/ { -1, 9, { 0, 0, "" }, "1", 7, 0, 8, 21 }, /* -> S-20 */
-        /*101*/ { -1, 9, { 0, 0, "" }, "1", 12, 0, 8, 21 }, /* Version S-20 */
-        /*102*/ { -1, 9, { 0, 0, "" }, "1", 13, 0, 8, 31 }, /* -> S-30 */
-        /*103*/ { -1, 9, { 0, 0, "" }, "1", 18, 0, 8, 31 }, /* Version S-30 */
-        /*104*/ { -1, 9, { 0, 0, "" }, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*105*/ { -1, 9, { 0, 0, "" }, "1", 17, 0, 8, 31 },
-        /*106*/ { -1, 10, { 0, 0, "" }, "1", 22, 0, 16, 17 }, /* Version T-16 */
-        /*107*/ { -1, 10, { 0, 0, "" }, "1", 23, 0, 16, 33 }, /* -> T-32 */
-        /*108*/ { -1, 10, { 0, 0, "" }, "A", 13, 0, 16, 17 },
-        /*109*/ { -1, 10, { 0, 0, "" }, "A", 14, 0, 16, 33 }, /* -> T-32 */
-        /*110*/ { -1, 10, { 0, 0, "" }, "\001", 10, 0, 16, 17 },
-        /*111*/ { -1, 10, { 0, 0, "" }, "\001", 11, 0, 16, 33 }, /* -> T-32 */
-        /*112*/ { -1, 10, { 0, 0, "" }, "\200", 8, 0, 16, 17 },
-        /*113*/ { -1, 10, { 0, 0, "" }, "\200", 9, 0, 16, 33 }, /* -> T-32 */
-        /*114*/ { -1, 10, { 0, 0, "" }, "1", 56, 0, 16, 33 }, /* Version T-32 */
-        /*115*/ { -1, 10, { 0, 0, "" }, "1", 57, 0, 16, 49 }, /* -> T-48 */
-        /*116*/ { -1, 10, { 0, 0, "" }, "A", 34, 0, 16, 33 },
-        /*117*/ { -1, 10, { 0, 0, "" }, "A", 35, 0, 16, 49 }, /* -> T-48 */
-        /*118*/ { -1, 10, { 0, 0, "" }, "\001", 24, 0, 16, 33 },
-        /*119*/ { -1, 10, { 0, 0, "" }, "\001", 25, 0, 16, 49 }, /* -> T-48 */
-        /*120*/ { -1, 10, { 0, 0, "" }, "\200", 22, 0, 16, 33 },
-        /*121*/ { -1, 10, { 0, 0, "" }, "\200", 23, 0, 16, 49 }, /* -> T-48 */
-        /*122*/ { -1, 10, { 0, 0, "" }, "1", 90, 0, 16, 49 }, /* Version T-48 (note 90 multiple of 3) */
-        /*123*/ { -1, 10, { 0, 0, "" }, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*124*/ { -1, 10, { 0, 0, "" }, "1", 89, ZINT_ERROR_TOO_LONG, -1, -1 }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
-        /*125*/ { -1, 10, { 0, 0, "" }, "1", 88, 0, 16, 49 },
-        /*126*/ { -1, 10, { 0, 0, "" }, "A", 55, 0, 16, 49 },
-        /*127*/ { -1, 10, { 0, 0, "" }, "A", 56, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*128*/ { -1, 10, { 0, 0, "" }, "A", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*129*/ { -1, 10, { 0, 0, "" }, "\001", 38, 0, 16, 49 },
-        /*130*/ { -1, 10, { 0, 0, "" }, "\001", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*131*/ { -1, 10, { 0, 0, "" }, "\001", 90, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*132*/ { -1, 10, { 0, 0, "" }, "\\", 38, 0, 16, 49 },
-        /*133*/ { -1, 10, { 0, 0, "" }, "\\", 39, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*134*/ { -1, 10, { 0, 0, "" }, "\200", 36, 0, 16, 49 },
-        /*135*/ { -1, 10, { 0, 0, "" }, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*136*/ { -1, 10, { 0, 0, "" }, "AAA\200", 31, 0, 16, 49 }, /* ASCII + BYTE (ASCII UpSh - worse than BYTE) */
-        /*137*/ { -1, 10, { 0, 0, "" }, "AAA\200", 32, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*138*/ { 3, 10, { 0, 0, "" }, "A", 46, 0, 16, 49 }, /* Version T-48 with ECI (9 less as PAD escape char + "\123456") */
-        /*139*/ { 3, 10, { 0, 0, "" }, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*140*/ { 3, 10, { 0, 0, "" }, "\001", 32, 0, 16, 49 },
-        /*141*/ { 3, 10, { 0, 0, "" }, "\001", 33, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { -1, -1, { 0, 0, "" }, "1", 3550, 0, 148, 134, "" }, /* Auto Version H */
+        /*  1*/ { -1, -1, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*  2*/ { 3, -1, { 0, 0, "" }, "1", 3535, 0, 148, 134, "" }, /* With ECI */
+        /*  3*/ { 3, -1, { 0, 0, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*  4*/ { -1, -1, { 1, 2, "" }, "1", 3546, 0, 148, 134, "" }, /* With Structured Append (Group mode, count < 2) */
+        /*  5*/ { -1, -1, { 1, 2, "" }, "1", 3547, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*  6*/ { -1, -1, { 1, 16, "" }, "1", 3541, 0, 148, 134, "" }, /* With Structured Append (Extended Group mode, count >= 16) */
+        /*  7*/ { -1, -1, { 1, 16, "" }, "1", 3542, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*  8*/ { 3, -1, { 1, 2, "" }, "1", 3532, 0, 148, 134, "" }, /* With ECI and Structured Append (Group mode) 1st symbol */
+        /*  9*/ { 3, -1, { 1, 2, "" }, "1", 3533, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 10*/ { 3, -1, { 2, 2, "" }, "1", 3537, 0, 148, 134, "" }, /* With ECI and Structured Append (Group mode) subsequent symbol */
+        /* 11*/ { 3, -1, { 2, 2, "" }, "1", 3538, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 12*/ { 3, -1, { 1, 16, "" }, "1", 3530, 0, 148, 134, "" }, /* With ECI and Structured Append (Extended Group mode) 1st symbol */
+        /* 13*/ { 3, -1, { 1, 16, "" }, "1", 3531, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 14*/ { 3, -1, { 2, 16, "" }, "1", 3535, 0, 148, 134, "" }, /* With ECI and Structured Append (Extended Group mode) subsequent symbol */
+        /* 15*/ { 3, -1, { 2, 16, "" }, "1", 3536, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 16*/ { -1, -1, { 0, 0, "" }, "A", 2218, 0, 148, 134, "" },
+        /* 17*/ { -1, -1, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 18*/ { -1, -1, { 0, 0, "" }, "\001", 1480, 0, 148, 134, "" }, /* Full ASCII */
+        /* 19*/ { -1, -1, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 20*/ { -1, -1, { 0, 0, "" }, "\200", 1478, 0, 148, 134, "" }, /* BYTE */
+        /* 21*/ { -1, -1, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 22*/ { -1, 1, { 0, 0, "" }, "1", 22, 0, 16, 18, "" }, /* Version A */
+        /* 23*/ { -1, 1, { 0, 0, "" }, "1", 23, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 24*/ { -1, 1, { 0, 0, "" }, "A", 13, 0, 16, 18, "" },
+        /* 25*/ { -1, 1, { 0, 0, "" }, "A", 14, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 12 codewords (maximum 10)" },
+        /* 26*/ { -1, 1, { 0, 0, "" }, "A", 2218, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 1480 codewords (maximum 10)" },
+        /* 27*/ { 3, 1, { 0, 0, "" }, "A", 4, 0, 16, 18, "" }, /* With ECI */
+        /* 28*/ { 3, 1, { 0, 0, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 29*/ { -1, 1, { 1, 2, "" }, "A", 10, 0, 16, 18, "" }, /* With Structured Append */
+        /* 30*/ { -1, 1, { 1, 2, "" }, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 12 codewords (maximum 10)" },
+        /* 31*/ { 3, 1, { 1, 2, "" }, "A", 2, 0, 16, 18, "" }, /* With ECI and Structured Append 1st symbol */
+        /* 32*/ { 3, 1, { 1, 2, "" }, "A", 3, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 33*/ { 3, 1, { 2, 2, "" }, "A", 4, 0, 16, 18, "" }, /* With ECI and Structured Append subsequent symbol */
+        /* 34*/ { 3, 1, { 2, 2, "" }, "A", 5, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 35*/ { -1, 1, { 0, 0, "" }, "\001", 10, 0, 16, 18, "" },
+        /* 36*/ { -1, 1, { 0, 0, "" }, "\001", 11, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 37*/ { -1, 1, { 0, 0, "" }, "\200", 8, 0, 16, 18, "" },
+        /* 38*/ { -1, 1, { 0, 0, "" }, "\200", 9, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 11 codewords (maximum 10)" },
+        /* 39*/ { -1, 2, { 0, 0, "" }, "1", 44, 0, 22, 22, "" }, /* Version B */
+        /* 40*/ { -1, 2, { 0, 0, "" }, "1", 45, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version B, requires 20 codewords (maximum 19)" },
+        /* 41*/ { -1, 2, { 0, 0, "" }, "A", 27, 0, 22, 22, "" },
+        /* 42*/ { -1, 2, { 0, 0, "" }, "A", 28, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version B, requires 21 codewords (maximum 19)" },
+        /* 43*/ { -1, 2, { 0, 0, "" }, "A", 26, 0, 22, 22, "" },
+        /* 44*/ { -1, 2, { 0, 0, "" }, "\001", 19, 0, 22, 22, "" },
+        /* 45*/ { -1, 2, { 0, 0, "" }, "\001", 20, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version B, requires 20 codewords (maximum 19)" },
+        /* 46*/ { -1, 2, { 0, 0, "" }, "\200", 17, 0, 22, 22, "" },
+        /* 47*/ { -1, 2, { 0, 0, "" }, "\200", 18, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version B, requires 20 codewords (maximum 19)" },
+        /* 48*/ { -1, 3, { 0, 0, "" }, "1", 104, 0, 28, 32, "" }, /* Version C */
+        /* 49*/ { -1, 3, { 0, 0, "" }, "1", 105, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version C, requires 45 codewords (maximum 44)" },
+        /* 50*/ { -1, 3, { 0, 0, "" }, "A", 64, 0, 28, 32, "" },
+        /* 51*/ { -1, 3, { 0, 0, "" }, "A", 65, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version C, requires 46 codewords (maximum 44)" },
+        /* 52*/ { -1, 3, { 0, 0, "" }, "\001", 44, 0, 28, 32, "" },
+        /* 53*/ { -1, 3, { 0, 0, "" }, "\001", 45, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version C, requires 45 codewords (maximum 44)" },
+        /* 54*/ { -1, 3, { 0, 0, "" }, "\200", 42, 0, 28, 32, "" },
+        /* 55*/ { -1, 3, { 0, 0, "" }, "\200", 43, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version C, requires 45 codewords (maximum 44)" },
+        /* 56*/ { -1, 4, { 0, 0, "" }, "1", 217, 0, 40, 42, "" }, /* Version D */
+        /* 57*/ { -1, 4, { 0, 0, "" }, "1", 218, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version D, requires 93 codewords (maximum 91)" },
+        /* 58*/ { -1, 4, { 0, 0, "" }, "A", 135, 0, 40, 42, "" },
+        /* 59*/ { -1, 4, { 0, 0, "" }, "A", 136, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version D, requires 93 codewords (maximum 91)" },
+        /* 60*/ { -1, 4, { 0, 0, "" }, "\001", 91, 0, 40, 42, "" },
+        /* 61*/ { -1, 4, { 0, 0, "" }, "\001", 92, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version D, requires 92 codewords (maximum 91)" },
+        /* 62*/ { -1, 4, { 0, 0, "" }, "\200", 89, 0, 40, 42, "" },
+        /* 63*/ { -1, 4, { 0, 0, "" }, "\200", 90, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version D, requires 92 codewords (maximum 91)" },
+        /* 64*/ { -1, 5, { 0, 0, "" }, "1", 435, 0, 52, 54, "" }, /* Version E (note 435 multiple of 3) */
+        /* 65*/ { -1, 5, { 0, 0, "" }, "1", 436, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version E, requires 183 codewords (maximum 182)" },
+        /* 66*/ { -1, 5, { 0, 0, "" }, "1", 434, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version E, requires 183 codewords (maximum 182)" }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /* 67*/ { -1, 5, { 0, 0, "" }, "1", 433, 0, 52, 54, "" },
+        /* 68*/ { -1, 5, { 0, 0, "" }, "A", 271, 0, 52, 54, "" },
+        /* 69*/ { -1, 5, { 0, 0, "" }, "A", 272, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version E, requires 184 codewords (maximum 182)" },
+        /* 70*/ { -1, 5, { 0, 0, "" }, "\001", 182, 0, 52, 54, "" },
+        /* 71*/ { -1, 5, { 0, 0, "" }, "\001", 183, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version E, requires 183 codewords (maximum 182)" },
+        /* 72*/ { -1, 5, { 0, 0, "" }, "\200", 180, 0, 52, 54, "" },
+        /* 73*/ { -1, 5, { 0, 0, "" }, "\200", 181, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version E, requires 183 codewords (maximum 182)" },
+        /* 74*/ { -1, 6, { 0, 0, "" }, "1", 886, 0, 70, 76, "" }, /* Version F */
+        /* 75*/ { -1, 6, { 0, 0, "" }, "1", 887, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version F, requires 371 codewords (maximum 370)" },
+        /* 76*/ { -1, 6, { 0, 0, "" }, "A", 553, 0, 70, 76, "" },
+        /* 77*/ { -1, 6, { 0, 0, "" }, "A", 554, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version F, requires 372 codewords (maximum 370)" },
+        /* 78*/ { -1, 6, { 0, 0, "" }, "\001", 370, 0, 70, 76, "" },
+        /* 79*/ { -1, 6, { 0, 0, "" }, "\001", 371, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version F, requires 371 codewords (maximum 370)" },
+        /* 80*/ { -1, 6, { 0, 0, "" }, "\200", 368, 0, 70, 76, "" },
+        /* 81*/ { -1, 6, { 0, 0, "" }, "\200", 369, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version F, requires 372 codewords (maximum 370)" },
+        /* 82*/ { -1, 7, { 0, 0, "" }, "1", 1755, 0, 104, 98, "" }, /* Version G (note 1755 multiple of 3) */
+        /* 83*/ { -1, 7, { 0, 0, "" }, "1", 1756, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 733 codewords (maximum 732)" },
+        /* 84*/ { -1, 7, { 0, 0, "" }, "1", 1754, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 733 codewords (maximum 732)" }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /* 85*/ { -1, 7, { 0, 0, "" }, "1", 1753, 0, 104, 98, "" },
+        /* 86*/ { -1, 7, { 0, 0, "" }, "A", 1096, 0, 104, 98, "" },
+        /* 87*/ { -1, 7, { 0, 0, "" }, "A", 1097, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 734 codewords (maximum 732)" },
+        /* 88*/ { -1, 7, { 0, 0, "" }, "\001", 732, 0, 104, 98, "" },
+        /* 89*/ { -1, 7, { 0, 0, "" }, "\001", 733, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 733 codewords (maximum 732)" },
+        /* 90*/ { -1, 7, { 0, 0, "" }, "\200", 730, 0, 104, 98, "" },
+        /* 91*/ { -1, 7, { 0, 0, "" }, "\200", 731, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 734 codewords (maximum 732)" },
+        /* 92*/ { -1, 7, { 0, 0, "" }, "\200", 732, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 735 codewords (maximum 732)" },
+        /* 93*/ { -1, 7, { 0, 0, "" }, "\200", 1478, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version G, requires 1480 codewords (maximum 732)" },
+        /* 94*/ { -1, 8, { 0, 0, "" }, "1", 3550, 0, 148, 134, "" }, /* Version H */
+        /* 95*/ { -1, 8, { 0, 0, "" }, "1", 3551, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 96*/ { -1, 8, { 0, 0, "" }, "A", 2218, 0, 148, 134, "" },
+        /* 97*/ { -1, 8, { 0, 0, "" }, "A", 2219, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /* 98*/ { -1, 8, { 0, 0, "" }, "\001", 1480, 0, 148, 134, "" },
+        /* 99*/ { -1, 8, { 0, 0, "" }, "\001", 1481, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*100*/ { -1, 8, { 0, 0, "" }, "\200", 1478, 0, 148, 134, "" },
+        /*101*/ { -1, 8, { 0, 0, "" }, "\200", 1479, ZINT_ERROR_TOO_LONG, -1, -1, "Error 517: Input too long, requires too many codewords (maximum 1480)" },
+        /*102*/ { -1, 9, { 0, 0, "" }, "1", 6, 0, 8, 11, "" }, /* Version S-10 */
+        /*103*/ { -1, 9, { 0, 0, "" }, "1", 7, 0, 8, 21, "" }, /* -> S-20 */
+        /*104*/ { -1, 9, { 0, 0, "" }, "1", 12, 0, 8, 21, "" }, /* Version S-20 */
+        /*105*/ { -1, 9, { 0, 0, "" }, "1", 13, 0, 8, 31, "" }, /* -> S-30 */
+        /*106*/ { -1, 9, { 0, 0, "" }, "1", 18, 0, 8, 31, "" }, /* Version S-30 */
+        /*107*/ { -1, 9, { 0, 0, "" }, "1", 19, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input length 19 too long for Version S (maximum 18)" },
+        /*108*/ { -1, 9, { 0, 0, "" }, "1", 17, 0, 8, 31, "" },
+        /*109*/ { -1, 10, { 0, 0, "" }, "1", 22, 0, 16, 17, "" }, /* Version T-16 */
+        /*110*/ { -1, 10, { 0, 0, "" }, "1", 23, 0, 16, 33, "" }, /* -> T-32 */
+        /*111*/ { -1, 10, { 0, 0, "" }, "A", 13, 0, 16, 17, "" },
+        /*112*/ { -1, 10, { 0, 0, "" }, "A", 14, 0, 16, 33, "" }, /* -> T-32 */
+        /*113*/ { -1, 10, { 0, 0, "" }, "\001", 10, 0, 16, 17, "" },
+        /*114*/ { -1, 10, { 0, 0, "" }, "\001", 11, 0, 16, 33, "" }, /* -> T-32 */
+        /*115*/ { -1, 10, { 0, 0, "" }, "\200", 8, 0, 16, 17, "" },
+        /*116*/ { -1, 10, { 0, 0, "" }, "\200", 9, 0, 16, 33, "" }, /* -> T-32 */
+        /*117*/ { -1, 10, { 0, 0, "" }, "1", 56, 0, 16, 33, "" }, /* Version T-32 */
+        /*118*/ { -1, 10, { 0, 0, "" }, "1", 57, 0, 16, 49, "" }, /* -> T-48 */
+        /*119*/ { -1, 10, { 0, 0, "" }, "A", 34, 0, 16, 33, "" },
+        /*120*/ { -1, 10, { 0, 0, "" }, "A", 35, 0, 16, 49, "" }, /* -> T-48 */
+        /*121*/ { -1, 10, { 0, 0, "" }, "\001", 24, 0, 16, 33, "" },
+        /*122*/ { -1, 10, { 0, 0, "" }, "\001", 25, 0, 16, 49, "" }, /* -> T-48 */
+        /*123*/ { -1, 10, { 0, 0, "" }, "\200", 22, 0, 16, 33, "" },
+        /*124*/ { -1, 10, { 0, 0, "" }, "\200", 23, 0, 16, 49, "" }, /* -> T-48 */
+        /*125*/ { -1, 10, { 0, 0, "" }, "1", 90, 0, 16, 49, "" }, /* Version T-48 (note 90 multiple of 3) */
+        /*126*/ { -1, 10, { 0, 0, "" }, "1", 91, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)" },
+        /*127*/ { -1, 10, { 0, 0, "" }, "1", 89, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)" }, /* NOTE: a quirk of decimal end-of-data processing is existence of "lower maxs" if digits are not a multiple of 3 */
+        /*128*/ { -1, 10, { 0, 0, "" }, "1", 88, 0, 16, 49, "" },
+        /*129*/ { -1, 10, { 0, 0, "" }, "A", 55, 0, 16, 49, "" },
+        /*130*/ { -1, 10, { 0, 0, "" }, "A", 56, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 40 codewords (maximum 38)" },
+        /*131*/ { -1, 10, { 0, 0, "" }, "A", 90, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 61 codewords (maximum 38)" },
+        /*132*/ { -1, 10, { 0, 0, "" }, "\001", 38, 0, 16, 49, "" },
+        /*133*/ { -1, 10, { 0, 0, "" }, "\001", 39, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)" },
+        /*134*/ { -1, 10, { 0, 0, "" }, "\001", 90, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 90 codewords (maximum 38)" },
+        /*135*/ { -1, 10, { 0, 0, "" }, "\\", 38, 0, 16, 49, "" },
+        /*136*/ { -1, 10, { 0, 0, "" }, "\\", 39, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)" },
+        /*137*/ { -1, 10, { 0, 0, "" }, "\200", 36, 0, 16, 49, "" },
+        /*138*/ { -1, 10, { 0, 0, "" }, "\200", 37, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)" },
+        /*139*/ { -1, 10, { 0, 0, "" }, "AAA\200", 31, 0, 16, 49, "" }, /* ASCII + BYTE (ASCII UpSh - worse than BYTE) */
+        /*140*/ { -1, 10, { 0, 0, "" }, "AAA\200", 32, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 40 codewords (maximum 38)" },
+        /*141*/ { 3, 10, { 0, 0, "" }, "A", 46, 0, 16, 49, "" }, /* Version T-48 with ECI (9 less as PAD escape char + "\123456") */
+        /*142*/ { 3, 10, { 0, 0, "" }, "A", 47, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 40 codewords (maximum 38)" },
+        /*143*/ { 3, 10, { 0, 0, "" }, "\001", 32, 0, 16, 49, "" },
+        /*144*/ { 3, 10, { 0, 0, "" }, "\001", 33, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -215,6 +219,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -243,46 +249,47 @@ static void test_input(const testCtx *const p_ctx) {
         const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", },
         /*  1*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", },
         /*  2*/ { -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
         /*  3*/ { -1, -1, 0, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
         /*  4*/ { -1, -1, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
-        /*  5*/ { -1, -1, 1, { 0, 0, "" }, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for selected symbol size", },
+        /*  5*/ { -1, -1, 1, { 0, 0, "" }, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 12 codewords (maximum 10)", },
         /*  6*/ { GS1_MODE, -1, 1, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 18, "", },
         /*  7*/ { GS1_MODE | GS1PARENS_MODE, -1, 1, { 0, 0, "" }, "(01)12345678901231", -1, 0, 16, 18, "", },
         /*  8*/ { -1, 3, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
         /*  9*/ { UNICODE_MODE, 3, 1, { 0, 0, "" }, "é", -1, 0, 16, 18, "", },
         /* 10*/ { GS1_MODE, 3, 1, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 18, "Warning 512: ECI ignored for GS1 mode", },
         /* 11*/ { -1, -1, 9, { 0, 0, "" }, "123456789012345678", -1, 0, 8, 31, "", },
-        /* 12*/ { -1, -1, 9, { 0, 0, "" }, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid input data (Version S encodes numeric input only)", },
-        /* 13*/ { -1, -1, 9, { 0, 0, "" }, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input data too long for Version S", },
+        /* 12*/ { -1, -1, 9, { 0, 0, "" }, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid character at position 18 in input (Version S encodes digits only)", },
+        /* 13*/ { -1, -1, 9, { 0, 0, "" }, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input length 19 too long for Version S (maximum 18)", },
         /* 14*/ { GS1_MODE, -1, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: GS1 mode ignored for Version S", },
         /* 15*/ { -1, 3, 9, { 0, 0, "" }, "1", -1, ZINT_WARN_INVALID_OPTION, 8, 11, "Warning 511: ECI ignored for Version S", },
         /* 16*/ { GS1_MODE, 3, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: ECI and GS1 mode ignored for Version S", },
         /* 17*/ { -1, -1, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, "", },
-        /* 18*/ { -1, -1, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
+        /* 18*/ { -1, -1, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", },
         /* 19*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 16, 49, "", },
-        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
+        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 55 codewords (maximum 38)", },
         /* 21*/ { -1, -1, 10, { 0, 0, "" }, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 38, 0, 16, 49, "", },
         /* 22*/ { -1, 3, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456", -1, 0, 16, 49, "", },
-        /* 23*/ { -1, 3, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input data too long for Version T", },
-        /* 24*/ { -1, 3, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input data too long for Version T", },
+        /* 23*/ { -1, 3, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)", },
+        /* 24*/ { -1, 3, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", },
         /* 25*/ { GS1_MODE, -1, 10, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 17, "", },
         /* 26*/ { GS1_MODE, 3, 10, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 17, "Warning 512: ECI ignored for GS1 mode", },
-        /* 27*/ { -1, -1, 11, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Invalid symbol size", },
-        /* 28*/ { GS1_MODE, -1, -1, { 1, 2, "" }, "[01]12345678901231", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 710: Cannot have Structured Append and GS1 mode at the same time", },
-        /* 29*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
-        /* 30*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
-        /* 31*/ { -1, -1, -1, { 1, 129, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count out of range (2-128)", },
-        /* 32*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
-        /* 33*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index out of range (1-2)", },
-        /* 34*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
-        /* 35*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", },
-        /* 36*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, /* Trumps other checking */
+        /* 27*/ { -1, -1, 11, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '11' out of range (1 to 10)", },
+        /* 28*/ { -1, -1, -2, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '-2' out of range (1 to 10)", },
+        /* 29*/ { GS1_MODE, -1, -1, { 1, 2, "" }, "[01]12345678901231", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 710: Cannot have Structured Append and GS1 mode at the same time", },
+        /* 30*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '1' out of range (2 to 128)", },
+        /* 31*/ { -1, -1, -1, { 1, -1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '-1' out of range (2 to 128)", },
+        /* 32*/ { -1, -1, -1, { 1, 129, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '129' out of range (2 to 128)", },
+        /* 33*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '0' out of range (1 to count 2)", },
+        /* 34*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '3' out of range (1 to count 2)", },
+        /* 35*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
+        /* 36*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", },
+        /* 37*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, /* Trumps other checking */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -334,7 +341,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *expected;
     };
     /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, -1, -1, { 0, 0, "" }, "1234567890123456789012", -1, 0, 16, 18, 1, "USSCO Figure 1 (Version A, no padding), same",
                     "111111111111001100"
                     "000110000110010101"
@@ -2879,7 +2886,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110100001010111101"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -2969,7 +2976,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         char *expected;
     };
     /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 16, 18, 1, "Standard example",
                     "100011010111100011"
                     "000110110110110111"
@@ -3268,7 +3275,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     ""
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -3363,7 +3370,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, "3333P33B\035333V3333333333333\0363", -1, 0, 1, "" }, /* #181 Nico Gunkel, OSS-Fuzz */
         /*  1*/ { -1, "{{-06\024755712162106130000000829203983\377", -1, 0, 1, "" }, /* #232 Jan Schrewe, CI-Fuzz, out-of-bounds in is_last_single_ascii() sp + 1 */
         /*  2*/ { -1, "\000\000\000\367\000\000\000\000\000\103\040\000\000\244\137\140\140\000\000\000\000\000\000\000\000\000\005\000\000\000\000\000\165\060\060\060\060\061\060\060\114\114\060\010\102\102\102\102\102\102\102\102\057\102\100\102\057\233\100\102", 60, 0, 1, "" }, /* #300 (#4) Andre Maute (`c1_c40text_cnt()` not accounting for extended ASCII shifts) */
@@ -3371,7 +3378,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /*  4*/ { 10, "\015\015\353\362\015\015\015\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\110\015\015\015\015\015\015\015\015\015\015\015\015\015\015\015\362\362\000", 39, 0, 1, "" }, /* #300 (#8 shortened) Andre Maute */
         /*  5*/ { 10, "\153\153\153\153\153\060\001\000\000\134\153\153\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\153\153\153\153\153\153\043\000\000\307\000\147\000\000\000\043\113\153\162\162\215\220", 90, ZINT_ERROR_TOO_LONG, 1, "" }, /* #300 (#12) Andre Maute (too small buffer for Version T) */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 

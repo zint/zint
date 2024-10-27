@@ -53,9 +53,12 @@ if(NOT MSVC) # Use default warnings if MSVC otherwise inundated
         add_compile_options("-Wextra")
     endif()
 
-    check_c_compiler_flag("-Wpedantic" C_COMPILER_FLAG_WPEDANTIC)
-    if(C_COMPILER_FLAG_WPEDANTIC)
-        add_compile_options("-Wpedantic")
+    # gcc complains about "%n$" `errtxtf()` arguments if "-Wpedantic" used, so only use for clang
+    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
+        check_c_compiler_flag("-Wpedantic" C_COMPILER_FLAG_WPEDANTIC)
+        if(C_COMPILER_FLAG_WPEDANTIC)
+            add_compile_options("-Wpedantic")
+        endif()
     endif()
 
     check_c_compiler_flag("-Wundef" C_COMPILER_FLAG_WUNDEF)

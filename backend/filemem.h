@@ -72,7 +72,7 @@ INTERNAL int fm_putc(const int ch, struct filemem *restrict const fmp);
 INTERNAL int fm_puts(const char *str, struct filemem *restrict const fmp);
 
 /* `fprintf()` to file or memory, returning 1 on success, 0 on failure */
-INTERNAL int fm_printf(struct filemem *restrict const fmp, const char *format, ...);
+INTERNAL int fm_printf(struct filemem *restrict const fmp, const char *format, ...) ZINT_FORMAT_PRINTF(2, 3);
 
 /* Output float without trailing zeroes to `fmp` with decimal pts `dp` (precision), returning 1 on success, 0 on
    failure */

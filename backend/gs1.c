@@ -181,7 +181,7 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
 
         for (; d < de; d++) {
             checksum += (*d - '0') * factor;
-            factor ^= 2; /* Toggles 1 and 3 */
+            factor ^= 0x02; /* Toggles 1 and 3 */
         }
         checksum = 10 - checksum % 10;
         if (checksum == 10) {
@@ -1624,50 +1624,44 @@ static int packagetype(const unsigned char *data, int data_len, int offset, int 
 /* Verify a GS1 input string */
 INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 unsigned char reduced[]) {
-    int i, j, last_ai, ai_latch;
-    int bracket_level, max_bracket_level, ai_length, max_ai_length, min_ai_length;
-    int ai_zero_len_no_data = 0, ai_single_digit = 0, ai_nonnumeric = 0;
-    int ai_count;
+    int i, j;
     int error_value = 0;
-    char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
-    char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
-    int ai_max = chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
+    int bracket_level = 0, max_bracket_level = 0;
+    int ai_length, ai_latch;
+    int max_ai_length = 0, min_ai_length = 5;
+    int max_ai_pos = 0, min_ai_pos = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positives */
+    int ai_zero_len_no_data = 0, ai_single_digit = 0, ai_nonnumeric = 0;
+    int ai_nonnumeric_pos = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positive */
+    const char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
+    const char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
+    const int ai_max = chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
     int *ai_value = (int *) z_alloca(sizeof(int) * ai_max);
     int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_length = (int *) z_alloca(sizeof(int) * ai_max);
 
-    /* Detect extended ASCII characters */
+    /* Detect control and extended ASCII characters */
     for (i = 0; i < length; i++) {
         if (source[i] >= 128) {
-            strcpy(symbol->errtxt, "250: Extended ASCII characters are not supported by GS1");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 250, "Extended ASCII characters are not supported by GS1");
         }
         if (source[i] == '\0') {
-            strcpy(symbol->errtxt, "262: NUL characters not permitted in GS1 mode");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 262, "NUL characters not permitted in GS1 mode");
         }
         if (source[i] < 32) {
-            strcpy(symbol->errtxt, "251: Control characters are not supported by GS1");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 251, "Control characters are not supported by GS1");
         }
         if (source[i] == 127) {
-            strcpy(symbol->errtxt, "263: DEL characters are not supported by GS1");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 263, "DEL characters are not supported by GS1");
         }
     }
 
     if (source[0] != obracket) {
-        strcpy(symbol->errtxt, "252: Data does not start with an AI");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 252, "Data does not start with an AI");
     }
 
-    /* Check the position of the brackets */
-    bracket_level = 0;
-    max_bracket_level = 0;
+    /* Check the balance of the brackets & AI lengths */
     ai_length = 0;
-    max_ai_length = 0;
-    min_ai_length = 5;
     ai_latch = 0;
     for (i = 0; i < length; i++) {
         if (source[i] == obracket) {
@@ -1680,9 +1674,11 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             bracket_level--;
             if (ai_length > max_ai_length) {
                 max_ai_length = ai_length;
+                max_ai_pos = i - ai_length;
             }
             if (ai_length < min_ai_length) {
                 min_ai_length = ai_length;
+                min_ai_pos = i - ai_length;
             }
             /* Check zero-length AI has data */
             if (ai_length == 0 && (i + 1 == length || source[i + 1] == obracket)) {
@@ -1696,26 +1692,25 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             ai_length++;
             if (!z_isdigit(source[i])) {
                 ai_nonnumeric = 1;
+                ai_nonnumeric_pos = i - ai_length + 1;
             }
         }
     }
 
     if (bracket_level != 0) {
         /* Not all brackets are closed */
-        strcpy(symbol->errtxt, "253: Malformed AI in input data (brackets don\'t match)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 253, "Malformed AI in input (brackets don\'t match)");
     }
 
     if (max_bracket_level > 1) {
         /* Nested brackets */
-        strcpy(symbol->errtxt, "254: Found nested brackets in input data");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 254, "Found nested brackets in input");
     }
 
     if (max_ai_length > 4) {
         /* AI is too long */
-        strcpy(symbol->errtxt, "255: Invalid AI in input data (AI too long)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 255, "Invalid AI at position %d in input (AI too long)",
+                        max_ai_pos);
     }
 
     if (min_ai_length <= 1) {
@@ -1723,19 +1718,19 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
            - permits dummy "[]" workaround for ticket #204 data with no valid AI */
         if (!(symbol->input_mode & GS1NOCHECK_MODE) || ai_single_digit || ai_zero_len_no_data) {
             /* AI is too short */
-            strcpy(symbol->errtxt, "256: Invalid AI in input data (AI too short)");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 256, "Invalid AI at position %d in input (AI too short)",
+                            min_ai_pos);
         }
     }
 
     if (ai_nonnumeric) {
         /* Non-numeric data in AI */
-        strcpy(symbol->errtxt, "257: Invalid AI in input data (non-numeric characters in AI)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 257,
+                        "Invalid AI at position %d in input (non-numeric characters in AI)", ai_nonnumeric_pos);
     }
 
     if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
-        ai_count = 0;
+        int ai_count = 0;
         for (i = 1; i < length; i++) {
             if (source[i - 1] == obracket) {
                 ai_location[ai_count] = i;
@@ -1761,8 +1756,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             }
             if (data_length[i] == 0) {
                 /* No data for given AI */
-                strcpy(symbol->errtxt, "258: Empty data field in input data");
-                return ZINT_ERROR_INVALID_DATA;
+                return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 258, "Empty data field in input");
             }
         }
 
@@ -1773,11 +1767,11 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             char err_msg[50];
             if (!gs1_lint(ai_value[i], source + data_location[i], data_length[i], &err_no, &err_posn, err_msg)) {
                 if (err_no == 1) {
-                    sprintf(symbol->errtxt, "260: Invalid AI (%02d)", ai_value[i]);
+                    errtxtf(0, symbol, 260, "Invalid AI (%02d)", ai_value[i]);
                 } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
-                    sprintf(symbol->errtxt, "259: Invalid data length for AI (%02d)", ai_value[i]);
+                    errtxtf(0, symbol, 259, "Invalid data length for AI (%02d)", ai_value[i]);
                 } else {
-                    sprintf(symbol->errtxt, "261: AI (%02d) position %d: %s", ai_value[i], err_posn, err_msg);
+                    errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn, err_msg);
                 }
                 /* For backward compatibility only error on unknown AI or bad length */
                 if (err_no == 1 || err_no == 2) {
@@ -1799,7 +1793,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 reduced[j++] = '\x1D';
             }
             if (i + 1 != length) {
-                last_ai = to_int(source + i + 1, 2);
+                int last_ai = to_int(source + i + 1, 2);
                 ai_latch = 0;
                 /* The following values from "GS1 General Specifications Release 21.0.1"
                    Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
@@ -1836,7 +1830,7 @@ INTERNAL char gs1_check_digit(const unsigned char source[], const int length) {
 
     for (i = 0; i < length; i++) {
         count += factor * ctoi(source[i]);
-        factor ^= 2; /* Toggles 1 and 3 */
+        factor ^= 0x02; /* Toggles 1 and 3 */
     }
 
     return itoc((10 - (count % 10)) % 10);

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,7 +45,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, 1, 1, "1", 0, 0 },
         /*  1*/ { BARCODE_CODE128, 2, 1, "11", 0, 0 },
         /*  2*/ { BARCODE_CODE128, 3, 1, "101", 0, 0 },
@@ -58,7 +58,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         /*  9*/ { BARCODE_ULTRA, 19, 32, "WWCWBWMWRWYWGWKCCWCMCRCYCGCKBWBCBBMBRBYBGBKMWMCMBMMRMYMGMKRWRCRBRMRRYRGRKYWYCYBYMYRYYGYKGWGCGBGMGRGYGGKKWK", 1, 0 }, /* Two LZW blocks, last size 1 */
         /* 10*/ { BARCODE_ULTRA, 1, 1, "D", 0, 0 }, /* This used to fail, now just maps unknown codes to 0 (1st colour index) */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -143,7 +143,7 @@ static void test_print(const testCtx *const p_ctx) {
         char *expected_file;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "12", "dotcode_1.0.gif", "" },
         /*  1*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 0.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds0.1.gif", "" },
         /*  2*/ { BARCODE_DOTCODE, -1, -1, -1, -1, -1, -1, 0, 0, 1.1, { 0, 0, "" }, "", "", "12", "dotcode_1.0_ds1.1.gif", "" },
@@ -182,7 +182,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 35*/ { BARCODE_ULTRA, -1, -1, 1, -1, -1, 2, 0, 0, 0, { 0, 0, "" }, "", "", "12", "ultra_rev2.gif", "Revision 2" },
         /* 36*/ { BARCODE_DPD, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, 0, 0, 0, { 0, 0, "" }, "", "", "008182709980000020028101276", "dpd_compliant.gif", "Now with bind top 3X default" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -314,12 +314,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "611: Could not open GIF output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "gif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = gif_pixel_plot(&symbol, data);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "gif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "gif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

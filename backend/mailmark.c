@@ -194,16 +194,14 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     int error_number = 0;
 
     if (length > 26) {
-        strcpy(symbol->errtxt, "580: Input too long (26 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 580, "Input length %d too long (maximum 26)", length);
     }
 
     ustrcpy(local_source, source);
 
     if (length < 22) {
         if (length < 14) {
-            strcpy(symbol->errtxt, "588: Input too short (14 character minimum)");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 588, "Input length %d too short (minimum 14)", length);
         }
         for (i = length; i <= 22; i++) {
             strcat(local_source, " ");
@@ -222,30 +220,27 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         printf("Producing 4-state Mailmark (%d): %s<end>\n", length, local_source);
     }
 
-    if (!is_sane(RUBIDIUM_F, (unsigned char *) local_source, length)) {
-        strcpy(symbol->errtxt, "581: Invalid character in data (alphanumerics and space only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(RUBIDIUM_F, (unsigned char *) local_source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 581,
+                        "Invalid character at position %d in input (alphanumerics and space only)", i);
     }
 
     /* Format is in the range 0-4 */
     format = ctoi(local_source[0]);
     if ((format < 0) || (format > 4)) {
-        strcpy(symbol->errtxt, "582: Format (1st character) out of range (0 to 4)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 582, "Format (1st character) out of range (0 to 4)");
     }
 
     /* Version ID is in the range 1-4 */
     version_id = ctoi(local_source[1]) - 1;
     if ((version_id < 0) || (version_id > 3)) {
-        strcpy(symbol->errtxt, "583: Version ID (2nd character) out of range (1 to 4)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 583, "Version ID (2nd character) out of range (1 to 4)");
     }
 
     /* Class is in the range 0-9,A-E */
     mail_class = ctoi(local_source[2]);
     if ((mail_class < 0) || (mail_class > 14)) {
-        strcpy(symbol->errtxt, "584: Class (3rd character) out of range (0 to 9 and A to E)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 584, "Class (3rd character) out of range (0 to 9 and A to E)");
     }
 
     /* Supply Chain ID is 2 digits for barcode C and 6 digits for barcode L */
@@ -255,8 +250,8 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
             supply_chain_id *= 10;
             supply_chain_id += ctoi(local_source[i]);
         } else {
-            sprintf(symbol->errtxt, "585: Invalid Supply Chain ID at character %d (digits only)", i);
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 585,
+                            "Invalid Supply Chain ID at character %d (digits only)", i);
         }
     }
 
@@ -267,8 +262,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
             item_id *= 10;
             item_id += ctoi(local_source[i]);
         } else {
-            sprintf(symbol->errtxt, "586: Invalid Item ID at character %d (digits only)", i);
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 586, "Invalid Item ID at character %d (digits only)", i);
         }
     }
 
@@ -278,8 +272,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     }
     postcode[9] = '\0';
     if (mailmark_verify_postcode(postcode, &postcode_type) != 0) {
-        sprintf(symbol->errtxt, "587: Invalid postcode \"%s\"", postcode);
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 587, "Invalid postcode \"%s\"", postcode);
     }
 
     /* Convert postcode to internal user field */
@@ -526,13 +519,11 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     struct zint_seg segs[1];
 
     if (length > 90) {
-        strcpy(symbol->errtxt, "589: Input too long (90 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 589, "Input length %d too long (maximum 90)", length);
     }
 
     if (length < 28) { /* After adding prefix (4), blank Return to Sender Post Code (7), Reserved (6): 28 + 17 = 45 */
-        strcpy(symbol->errtxt, "860: Input too short (28 character minimum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 860, "Input length %d too short (minimum 28)", length);
     }
 
     /* Add prefix if missing */
@@ -540,8 +531,7 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     to_upper(local_source, 3);
     if (memcmp(local_source, "JGB ", 4) != 0) {
         if (length > 86) {
-            strcpy(symbol->errtxt, "861: Input too long (86 character maximum)");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 861, "Input length %d too long (maximum 86)", length);
         }
         ustrcpy(local_source, "JGB ");
         ustrcpy(local_source + 4, source);
@@ -551,8 +541,7 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     if (length < 32) {
-        strcpy(symbol->errtxt, "862: Input too short (32 character minimum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 862, "Input length %d too short (minimum 32)", length);
     }
     if (length < 39) { /* Space-pad Return to Sender Post Code */
         memset(local_source + length, ' ', 39 - length);
@@ -570,18 +559,18 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     /* 8: 24 x 24, 10: 32 x 32, 30: 16 x 48 */
     if (symbol->option_2) {
         if (symbol->option_2 != 8 && symbol->option_2 != 10 && symbol->option_2 != 30) {
-            strcpy(symbol->errtxt, "863: Invalid symbol size selected (8, 10, 30 only)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 863, "Invalid Version '%d' (8, 10 or 30 only)",
+                            symbol->option_2);
         }
         if (symbol->option_2 == 8) {
             if (length > 51) {
-                strcpy(symbol->errtxt, "864: Input too long for selected size (51 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 864,
+                                "Input length %d too long for Version 8 (maximum 51)", length);
             }
         } else if (symbol->option_2 == 30) {
             if (length > 70) {
-                strcpy(symbol->errtxt, "865: Input too long for selected size (70 character maximum)");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 865,
+                                "Input length %d too long for Version 30 (maximum 70)", length);
             }
         }
     } else {
@@ -598,38 +587,32 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         printf("Producing 2D Mailmark %d (%d): %s<end>\n", symbol->option_2, length, local_source);
     }
 
-    if (!is_sane(RUBIDIUM_F, local_source, 45)) {
-        strcpy(symbol->errtxt,
-                "866: Invalid character in data (alphanumerics and space only in first 45 characters)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(RUBIDIUM_F, local_source, 45))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 866,
+                        "Invalid character at position %d in input (alphanumerics and space only in first 45)", i);
     }
 
     /* Information Type ID */
     /* Not checking that matches values listed in Mailmark Definition Document as contradicted by Mailmark Mailing
        Requirements Section 5.7 which says 'P' for poll card is valid, which isn't listed */
     if (local_source[4] == ' ') {
-        strcpy(symbol->errtxt, "867: Invalid Information Type ID (cannot be space)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 867, "Invalid Information Type ID (cannot be space)");
     }
     /* Version ID */
     if (local_source[5] != '1') {
-        strcpy(symbol->errtxt, "868: Invalid Version ID (\"1\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 868, "Invalid Version ID (\"1\" only)");
     }
     /* Class */
     if (local_source[6] == ' ') {
-        strcpy(symbol->errtxt, "869: Invalid Class (cannot be space)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 869, "Invalid Class (cannot be space)");
     }
     /* Supply Chain ID */
     if (cnt_digits(local_source, length, 7, 7) != 7) {
-        strcpy(symbol->errtxt, "870: Invalid Supply Chain ID (7 digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 870, "Invalid Supply Chain ID (7 digits only)");
     }
     /* Item ID */
     if (cnt_digits(local_source, length, 14, 8) != 8) {
-        strcpy(symbol->errtxt, "871: Invalid Item ID (8 digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 871, "Invalid Item ID (8 digits only)");
     }
 
     /* Destination Post Code plus DPS field */
@@ -638,14 +621,12 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
     postcode[9] = '\0';
     if (mailmark_verify_postcode(postcode, NULL) != 0) {
-        strcpy(symbol->errtxt, "872: Invalid Destination Post Code plus DPS");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 872, "Invalid Destination Post Code plus DPS");
     }
 
     /* Service Type */
     if (local_source[31] < '0' || local_source[31] > '6') {
-        strcpy(symbol->errtxt, "873: Invalid Service Type (\"0\" to \"6\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 873, "Invalid Service Type (\"0\" to \"6\" only)");
     }
 
     /* Return to Sender Post Code */
@@ -663,15 +644,13 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         }
         postcode[9] = '\0';
         if (mailmark_verify_postcode(postcode, NULL) != 0) {
-            strcpy(symbol->errtxt, "874: Invalid Return to Sender Post Code");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 874, "Invalid Return to Sender Post Code");
         }
     }
 
     /* Reserved */
     if (memcmp(local_source + 39, "      ", 6) != 0) {
-        strcpy(symbol->errtxt, "875: Invalid Reserved field (must be spaces only)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 875, "Invalid Reserved field (must be spaces only)");
     }
 
     segs[0].eci = 0;

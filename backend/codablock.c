@@ -1,7 +1,7 @@
 /* codablock.c - Handles Codablock-F */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2023 Harald Oehlmann
+    Copyright (C) 2016-2024 Harald Oehlmann
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -577,14 +577,13 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         return error_number;
     }
     if (rows > 44) {
-        strcpy(symbol->errtxt, "410: Rows parameter not in 0..44");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 410, "Number of rows '%d' out of range (0 to 44)", rows);
     }
     /* option_2: (usable data) columns: <= 0: automatic, 9..67 (min 9 == 4 data, max 67 == 62 data) */
     columns = symbol->option_2;
     if (!(columns <= 0 || (columns >= 9 && columns <= 67))) {
-        strcpy(symbol->errtxt, "411: Columns parameter not in 0, 9..67");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 411, "Number of columns '%d' out of range (9 to 67)",
+                        columns);
     }
     if (columns < 0) { /* Protect against negative overflow (ticket #300 (#9) Andre Maute) */
         columns = 0;
@@ -637,8 +636,8 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         error_number = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
     }
     if (error_number != 0) {
-        strcpy(symbol->errtxt, "413: Data string too long");
-        return error_number;
+        return errtxt(error_number, symbol, 413,
+                        "Input too long, requires too many symbol characters (maximum 2726)");
     }
     /* Suppresses clang-analyzer-core.VLASize warning */
     assert(rows >= 2 && useColumns >= 4);

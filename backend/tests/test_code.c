@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,39 +42,40 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "13", 140, 0, 1, 1151 }, /* 8 (Start) + 140*8 + 2*8 (Checks) + 7 (Stop) == 1151 */
-        /*  1*/ { BARCODE_CODE11, -1, "13", 141, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { BARCODE_CODE39, -1, "1", 86, 0, 1, 1143 }, /* 13 (Start) + 86*13 + 12 (Stop) == 1143 */
-        /*  3*/ { BARCODE_CODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { BARCODE_EXCODE39, -1, "1", 86, 0, 1, 1143 },
-        /*  5*/ { BARCODE_EXCODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { BARCODE_EXCODE39, -1, "a", 43, 0, 1, 1143 }, /* Takes 2 encoding chars per char */
-        /*  7*/ { BARCODE_EXCODE39, -1, "a", 44, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { BARCODE_EXCODE39, -1, "a", 86, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { BARCODE_LOGMARS, -1, "1", 30, 0, 1, 511 }, /* 16 (Start) + 30*16 + 15 (Stop) == 511 */
-        /* 10*/ { BARCODE_LOGMARS, -1, "1", 31, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { BARCODE_CODE93, -1, "1", 123, 0, 1, 1144 }, /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) == 1144 */
-        /* 12*/ { BARCODE_CODE93, -1, "1", 124, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 13*/ { BARCODE_CODE93, -1, "a", 61, 0, 1, 1135 }, /* Takes 2 encoding chars per char */
-        /* 14*/ { BARCODE_CODE93, -1, "a", 62, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { BARCODE_CODE93, -1, "a", 124, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { BARCODE_CODE93, -1, "a1", 82, 0, 1, 1144 }, /* Takes 1.5 encoding chars (1.5*82 == 123) */
-        /* 17*/ { BARCODE_CODE93, -1, "a1", 83, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142 }, /* Takes 8 with correct check digit */
-        /* 19*/ { BARCODE_PZN, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 20*/ { BARCODE_PZN, 1, "1", 6, 0, 1, 129 }, /* PZN7 takes 7 with correct check digit */
-        /* 21*/ { BARCODE_PZN, 1, "1", 8, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { BARCODE_VIN, -1, "1", 17, 0, 1, 246 },
-        /* 23*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 24*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 25*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259 },
-        /* 26*/ { BARCODE_HIBC_39, -1, "1", 68, 0, 1, 1151 }, /* 70 - 2 ('+' and check digit) */
-        /* 27*/ { BARCODE_HIBC_39, -1, "1", 69, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE11, -1, "13", 140, 0, 1, 1151, "" }, /* 8 (Start) + 140*8 + 2*8 (Checks) + 7 (Stop) == 1151 */
+        /*  1*/ { BARCODE_CODE11, -1, "13", 141, ZINT_ERROR_TOO_LONG, -1, -1, "Error 320: Input length 141 too long (maximum 140)" },
+        /*  2*/ { BARCODE_CODE39, -1, "1", 86, 0, 1, 1143, "" }, /* 13 (Start) + 86*13 + 12 (Stop) == 1143 */
+        /*  3*/ { BARCODE_CODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1, "Error 323: Input length 87 too long (maximum 86)" },
+        /*  4*/ { BARCODE_EXCODE39, -1, "1", 86, 0, 1, 1143, "" },
+        /*  5*/ { BARCODE_EXCODE39, -1, "1", 87, ZINT_ERROR_TOO_LONG, -1, -1, "Error 328: Input length 87 too long (maximum 86)" },
+        /*  6*/ { BARCODE_EXCODE39, -1, "a", 43, 0, 1, 1143, "" }, /* Takes 2 encoding chars per char */
+        /*  7*/ { BARCODE_EXCODE39, -1, "a", 44, ZINT_ERROR_TOO_LONG, -1, -1, "Error 317: Input too long, requires 88 symbol characters (maximum 86)" },
+        /*  8*/ { BARCODE_EXCODE39, -1, "a", 86, ZINT_ERROR_TOO_LONG, -1, -1, "Error 317: Input too long, requires 172 symbol characters (maximum 86)" },
+        /*  9*/ { BARCODE_LOGMARS, -1, "1", 30, 0, 1, 511, "" }, /* 16 (Start) + 30*16 + 15 (Stop) == 511 */
+        /* 10*/ { BARCODE_LOGMARS, -1, "1", 31, ZINT_ERROR_TOO_LONG, -1, -1, "Error 322: Input length 31 too long (maximum 30)" },
+        /* 11*/ { BARCODE_CODE93, -1, "1", 123, 0, 1, 1144, "" }, /* 9 (Start) + 123*9 + 2*9 (Checks) + 10 (Stop) == 1144 */
+        /* 12*/ { BARCODE_CODE93, -1, "1", 124, ZINT_ERROR_TOO_LONG, -1, -1, "Error 330: Input length 124 too long (maximum 123)" },
+        /* 13*/ { BARCODE_CODE93, -1, "a", 61, 0, 1, 1135, "" }, /* Takes 2 encoding chars per char */
+        /* 14*/ { BARCODE_CODE93, -1, "a", 62, ZINT_ERROR_TOO_LONG, -1, -1, "Error 332: Input too long, requires 124 symbol characters (maximum 123)" },
+        /* 15*/ { BARCODE_CODE93, -1, "a", 124, ZINT_ERROR_TOO_LONG, -1, -1, "Error 330: Input length 124 too long (maximum 123)" },
+        /* 16*/ { BARCODE_CODE93, -1, "a1", 82, 0, 1, 1144, "" }, /* Takes 1.5 encoding chars (1.5*82 == 123) */
+        /* 17*/ { BARCODE_CODE93, -1, "a1", 83, ZINT_ERROR_TOO_LONG, -1, -1, "Error 332: Input too long, requires 125 symbol characters (maximum 123)" },
+        /* 18*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142, "" }, /* Takes 8 with correct check digit */
+        /* 19*/ { BARCODE_PZN, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1, "Error 325: Input length 9 too long (maximum 8)" },
+        /* 20*/ { BARCODE_PZN, 1, "1", 6, 0, 1, 129, "" }, /* PZN7 takes 7 with correct check digit */
+        /* 21*/ { BARCODE_PZN, 1, "1", 8, ZINT_ERROR_TOO_LONG, -1, -1, "Error 325: Input length 8 too long (maximum 7)" },
+        /* 22*/ { BARCODE_VIN, -1, "1", 17, 0, 1, 246, "" },
+        /* 23*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 18 wrong (17 only)" },
+        /* 24*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 16 wrong (17 only)" },
+        /* 25*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259, "" },
+        /* 26*/ { BARCODE_HIBC_39, -1, "1", 68, 0, 1, 1151, "" }, /* 70 - 2 ('+' and check digit) */
+        /* 27*/ { BARCODE_HIBC_39, -1, "1", 69, ZINT_ERROR_TOO_LONG, -1, -1, "Error 319: Input length 69 too long (maximum 68)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -96,6 +97,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -120,7 +123,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE11, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
         /*  1*/ { BARCODE_CODE11, 1, "123-45", -1, "123-455" }, /* 1 check digit */
         /*  2*/ { BARCODE_CODE11, 2, "123-45", -1, "123-45" }, /* No checksums */
@@ -164,7 +167,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 40*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, /* Converts to upper */
         /* 41*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -195,84 +198,87 @@ static void test_input(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
+        int input_mode;
         int option_2;
         char *data;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "-", -1, 0, 1, 37 },
-        /*  1*/ { BARCODE_CODE11, -1, "0123456789-", -1, 0, 1, 115 },
-        /*  2*/ { BARCODE_CODE11, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  3*/ { BARCODE_CODE11, -1, "12+", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  4*/ { BARCODE_CODE11, -1, "1.2", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  5*/ { BARCODE_CODE11, -1, "12!", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  6*/ { BARCODE_CODE11, -1, " ", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /*  7*/ { BARCODE_CODE11, 3, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1 },
-        /*  8*/ { BARCODE_CODE39, -1, "a", -1, 0, 1, 38 }, /* Converts to upper */
-        /*  9*/ { BARCODE_CODE39, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, 1, 584 },
-        /* 10*/ { BARCODE_CODE39, -1, "AB!", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 11*/ { BARCODE_CODE39, -1, "A\"B", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 12*/ { BARCODE_CODE39, -1, "#AB", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 13*/ { BARCODE_CODE39, -1, "&", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 14*/ { BARCODE_CODE39, -1, "'", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 15*/ { BARCODE_CODE39, -1, "(", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 16*/ { BARCODE_CODE39, -1, ")", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 17*/ { BARCODE_CODE39, -1, "*", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 18*/ { BARCODE_CODE39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 19*/ { BARCODE_CODE39, -1, ":", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 20*/ { BARCODE_CODE39, -1, "@", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 21*/ { BARCODE_CODE39, -1, "[", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 22*/ { BARCODE_CODE39, -1, "`", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 23*/ { BARCODE_CODE39, -1, "{", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 24*/ { BARCODE_CODE39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 25*/ { BARCODE_CODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 26*/ { BARCODE_CODE39, 0, "1", -1, 0, 1, 38 },
-        /* 27*/ { BARCODE_CODE39, 1, "1", -1, 0, 1, 51 }, /* Check digit */
-        /* 28*/ { BARCODE_CODE39, 2, "1", -1, 0, 1, 51 }, /* Hidden check digit */
-        /* 29*/ { BARCODE_CODE39, 3, "1", -1, 0, 1, 38 }, /* option_2 > 2 ignored */
-        /* 30*/ { BARCODE_EXCODE39, -1, "A", -1, 0, 1, 38 },
-        /* 31*/ { BARCODE_EXCODE39, 3, "A", -1, 0, 1, 38 }, /* option_2 > 2 ignored */
-        /* 32*/ { BARCODE_EXCODE39, -1, "a", -1, 0, 1, 51 },
-        /* 33*/ { BARCODE_EXCODE39, -1, ",", -1, 0, 1, 51 },
-        /* 34*/ { BARCODE_EXCODE39, -1, "\000", 1, 0, 1, 51 },
-        /* 35*/ { BARCODE_EXCODE39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 36*/ { BARCODE_EXCODE39, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 37*/ { BARCODE_LOGMARS, -1, "A", -1, 0, 1, 47 },
-        /* 38*/ { BARCODE_LOGMARS, -1, "a", -1, 0, 1, 47 },
-        /* 39*/ { BARCODE_LOGMARS, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 40*/ { BARCODE_LOGMARS, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 41*/ { BARCODE_LOGMARS, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, },
-        /* 42*/ { BARCODE_LOGMARS, 3, "A", -1, 0, 1, 47 }, /* option_2 > 2 ignored */
-        /* 43*/ { BARCODE_CODE93, -1, "A", -1, 0, 1, 46 },
-        /* 44*/ { BARCODE_CODE93, -1, "a", -1, 0, 1, 55 },
-        /* 45*/ { BARCODE_CODE93, -1, ",", -1, 0, 1, 55 },
-        /* 46*/ { BARCODE_CODE93, -1, "\000", 1, 0, 1, 55 },
-        /* 47*/ { BARCODE_CODE93, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 48*/ { BARCODE_CODE93, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 49*/ { BARCODE_PZN, -1, "1", -1, 0, 1, 142 },
-        /* 50*/ { BARCODE_PZN, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 51*/ { BARCODE_PZN, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
-        /* 52*/ { BARCODE_PZN, -1, "00000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 53*/ { BARCODE_PZN, 1, "100009", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Check digit == 10 so can't be used */
-        /* 54*/ { BARCODE_PZN, 1, "0000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 },
-        /* 55*/ { BARCODE_VIN, -1, "5GZCZ43D13S812715", -1, 0, 1, 246 },
-        /* 56*/ { BARCODE_VIN, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1 }, /* North American with invalid check character */
-        /* 57*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246 }, /* Not North American so no check */
-        /* 58*/ { BARCODE_VIN, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* I not allowed */
-        /* 59*/ { BARCODE_VIN, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* O not allowed */
-        /* 60*/ { BARCODE_VIN, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1 }, /* Q not allowed */
-        /* 61*/ { BARCODE_HIBC_39, -1, "a", -1, 0, 1, 79 }, /* Converts to upper */
-        /* 62*/ { BARCODE_HIBC_39, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 63*/ { BARCODE_HIBC_39, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 64*/ { BARCODE_HIBC_39, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 65*/ { BARCODE_HIBC_39, 1, "a", -1, 0, 1, 79 }, /* option_2 ignored */
-        /* 66*/ { BARCODE_HIBC_39, 2, "a", -1, 0, 1, 79 }, /* option_2 ignored */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE11, -1, -1, "-", -1, 0, 1, 37, "" },
+        /*  1*/ { BARCODE_CODE11, -1, -1, "0123456789-", -1, 0, 1, 115, "" },
+        /*  2*/ { BARCODE_CODE11, -1, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 1 in input (digits and \"-\" only)" },
+        /*  3*/ { BARCODE_CODE11, -1, -1, "12+", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 3 in input (digits and \"-\" only)" },
+        /*  4*/ { BARCODE_CODE11, -1, -1, "1.2", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 2 in input (digits and \"-\" only)" },
+        /*  5*/ { BARCODE_CODE11, -1, -1, "12!", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 3 in input (digits and \"-\" only)" },
+        /*  6*/ { BARCODE_CODE11, -1, -1, " ", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 1 in input (digits and \"-\" only)" },
+        /*  7*/ { BARCODE_CODE11, ESCAPE_MODE, -1, "\\d048 ", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 321: Invalid character at position 2 in input (digits and \"-\" only)" }, /* Note position doesn't account for escape sequences */
+        /*  8*/ { BARCODE_CODE11, -1, 3, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 339: Invalid check digit version '3' (1 or 2 only)" },
+        /*  9*/ { BARCODE_CODE39, -1, -1, "a", -1, 0, 1, 38, "" }, /* Converts to upper */
+        /* 10*/ { BARCODE_CODE39, -1, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, 1, 584, "" },
+        /* 11*/ { BARCODE_CODE39, -1, -1, "AB!", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 3 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 12*/ { BARCODE_CODE39, -1, -1, "A\"B", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 2 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 13*/ { BARCODE_CODE39, -1, -1, "#AB", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 14*/ { BARCODE_CODE39, -1, -1, "&", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 15*/ { BARCODE_CODE39, -1, -1, "'", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 16*/ { BARCODE_CODE39, -1, -1, "(", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 17*/ { BARCODE_CODE39, -1, -1, ")", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 18*/ { BARCODE_CODE39, -1, -1, "*", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 19*/ { BARCODE_CODE39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 20*/ { BARCODE_CODE39, -1, -1, ":", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 21*/ { BARCODE_CODE39, -1, -1, "@", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 22*/ { BARCODE_CODE39, -1, -1, "[", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 23*/ { BARCODE_CODE39, -1, -1, "`", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 24*/ { BARCODE_CODE39, -1, -1, "{", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 25*/ { BARCODE_CODE39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 26*/ { BARCODE_CODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 27*/ { BARCODE_CODE39, -1, 0, "1", -1, 0, 1, 38, "" },
+        /* 28*/ { BARCODE_CODE39, -1, 1, "1", -1, 0, 1, 51, "" }, /* Check digit */
+        /* 29*/ { BARCODE_CODE39, -1, 2, "1", -1, 0, 1, 51, "" }, /* Hidden check digit */
+        /* 30*/ { BARCODE_CODE39, -1, 3, "1", -1, 0, 1, 38, "" }, /* option_2 > 2 ignored */
+        /* 31*/ { BARCODE_EXCODE39, -1, -1, "A", -1, 0, 1, 38, "" },
+        /* 32*/ { BARCODE_EXCODE39, -1, 3, "A", -1, 0, 1, 38, "" }, /* option_2 > 2 ignored */
+        /* 33*/ { BARCODE_EXCODE39, -1, -1, "a", -1, 0, 1, 51, "" },
+        /* 34*/ { BARCODE_EXCODE39, -1, -1, ",", -1, 0, 1, 51, "" },
+        /* 35*/ { BARCODE_EXCODE39, -1, -1, "\000", 1, 0, 1, 51, "" },
+        /* 36*/ { BARCODE_EXCODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 1 in input, extended ASCII not allowed" },
+        /* 37*/ { BARCODE_EXCODE39, -1, -1, "ABCDé", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 5 in input, extended ASCII not allowed" },
+        /* 38*/ { BARCODE_LOGMARS, -1, -1, "A", -1, 0, 1, 47, "" },
+        /* 39*/ { BARCODE_LOGMARS, -1, -1, "a", -1, 0, 1, 47, "" },
+        /* 40*/ { BARCODE_LOGMARS, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 41*/ { BARCODE_LOGMARS, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 42*/ { BARCODE_LOGMARS, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 43*/ { BARCODE_LOGMARS, -1, 3, "A", -1, 0, 1, 47, "" }, /* option_2 > 2 ignored */
+        /* 44*/ { BARCODE_CODE93, -1, -1, "A", -1, 0, 1, 46, "" },
+        /* 45*/ { BARCODE_CODE93, -1, -1, "a", -1, 0, 1, 55, "" },
+        /* 46*/ { BARCODE_CODE93, -1, -1, ",", -1, 0, 1, 55, "" },
+        /* 47*/ { BARCODE_CODE93, -1, -1, "\000", 1, 0, 1, 55, "" },
+        /* 48*/ { BARCODE_CODE93, -1, -1, "12\3004", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 3 in input, extended ASCII not allowed" },
+        /* 49*/ { BARCODE_CODE93, -1, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 1 in input, extended ASCII not allowed" },
+        /* 50*/ { BARCODE_PZN, -1, -1, "1", -1, 0, 1, 142, "" },
+        /* 51*/ { BARCODE_PZN, -1, -1, "A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 326: Invalid character at position 1 in input (digits only)" },
+        /* 52*/ { BARCODE_PZN, -1, -1, "1000006", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 327: Invalid PZN, check digit is '10'" }, /* Check digit == 10 so can't be used */
+        /* 53*/ { BARCODE_PZN, -1, -1, "00000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 890: Invalid check digit '1', expecting '7'" },
+        /* 54*/ { BARCODE_PZN, -1, 1, "100009", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 327: Invalid PZN, check digit is '10'" }, /* Check digit == 10 so can't be used */
+        /* 55*/ { BARCODE_PZN, -1, 1, "0000011", -1, ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 890: Invalid check digit '1', expecting '7'" },
+        /* 56*/ { BARCODE_VIN, -1, -1, "5GZCZ43D13S812715", -1, 0, 1, 246, "" },
+        /* 57*/ { BARCODE_VIN, -1, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 338: Invalid check digit '2' (position 9), expecting '1'" }, /* North American with invalid check character */
+        /* 58*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246, "" }, /* Not North American so no check */
+        /* 59*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 15 in input (alphanumerics only, excluding \"IOQ\")" }, /* I not allowed */
+        /* 60*/ { BARCODE_VIN, -1, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")" }, /* O not allowed */
+        /* 61*/ { BARCODE_VIN, -1, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")" }, /* Q not allowed */
+        /* 62*/ { BARCODE_HIBC_39, -1, -1, "a", -1, 0, 1, 79, "" }, /* Converts to upper */
+        /* 63*/ { BARCODE_HIBC_39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 64*/ { BARCODE_HIBC_39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 65*/ { BARCODE_HIBC_39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /* 66*/ { BARCODE_HIBC_39, -1, 1, "a", -1, 0, 1, 79, "" }, /* option_2 ignored */
+        /* 67*/ { BARCODE_HIBC_39, -1, 2, "a", -1, 0, 1, 79, "" }, /* option_2 ignored */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -285,10 +291,12 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -316,7 +324,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE11, -1, "123-45", -1, 0, 1, 78, "2 check digits (52); verified manually against TEC-IT",
                     "101100101101011010010110110010101011010101101101101101011011010100101101011001"
                 },
@@ -447,7 +455,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000101110111010100010100010001010001000100010101000100010001010111010001110101010111000101011101010001110111010101000111011101011101000101011101110100011101010111010001010111010100011101110101000101110101110111011100010101010101000111011101010111000101110100010111011101"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -536,7 +544,7 @@ static void test_perf(const testCtx *const p_ctx) {
         int expected_width;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE39, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+", 0, 1, 1130, "CODE39 85" },
         /*  1*/ { BARCODE_CODE39, -1, "123456ABCD", 0, 1, 155, "CODE39 10" },
         /*  2*/ { BARCODE_CODE93, -1,
@@ -546,7 +554,7 @@ static void test_perf(const testCtx *const p_ctx) {
         /*  4*/ { BARCODE_CODE11, -1, "1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-1234567890-", 0, 1, 966, "CODE11 121" },
         /*  5*/ { BARCODE_CODE11, -1, "1234567890-", 0, 1, 116, "CODE11 5" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 

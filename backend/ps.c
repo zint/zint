@@ -178,7 +178,6 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     float red_paper = 0.0f, green_paper = 0.0f, blue_paper = 0.0f;
     float cyan_ink = 0.0f, magenta_ink = 0.0f, yellow_ink = 0.0f, black_ink = 0.0f;
     float cyan_paper = 0.0f, magenta_paper = 0.0f, yellow_paper = 0.0f, black_paper = 0.0f;
-    int error_number = 0;
     float previous_diameter;
     float radius;
     int colour_rect_flag;
@@ -196,12 +195,11 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     const int is_rgb = (symbol->output_options & CMYK_COLOUR) == 0;
 
     if (symbol->vector == NULL) {
-        strcpy(symbol->errtxt, "646: Vector header NULL");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 646, "Vector header NULL");
     }
     if (!fm_open(fmp, symbol, "w")) {
-        sprintf(symbol->errtxt, "645: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_ACCESS;
+        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 645, "Could not open EPS output file (%1$d: %2$s)", fmp->err,
+                        strerror(fmp->err));
     }
 
     if (is_rgb) {
@@ -509,17 +507,17 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "647: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 647, "Incomplete write of EPS output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "649: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 649, "Failure on closing EPS output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
 
-    return error_number;
+    return 0;
 }
 
 /* vim: set ts=4 sw=4 et : */

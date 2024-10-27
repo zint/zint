@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -56,7 +56,7 @@ static void test_print(const testCtx *const p_ctx) {
         char *expected_file;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "<>\"&'", "", 0, "code128_amperands.svg", "" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "Égjpqy", "", 0, "code128_egrave_bold.svg", "" },
         /*  2*/ { BARCODE_CODE128, UNICODE_MODE, -1, BOLD_TEXT | EMBED_VECTOR_FONT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "Égjpqy", "", 0, "code128_egrave_bold_embed.svg", "" },
@@ -140,7 +140,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 80*/ { BARCODE_DPD, -1, -1, BARCODE_QUIET_ZONES | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "008182709980000020028101276", "", 0, "dpd_compliant.svg", "" },
         /* 81*/ { BARCODE_CHANNEL, -1, -1, CMYK_COLOUR | COMPLIANT_HEIGHT, -1, -1, -1, -1, -1, -1, 0, "100,85,0,20", "FFFFFF00", 0, "123", "", 0, "channel_cmyk_nobg.svg", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -288,12 +288,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "680: Could not open SVG output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "svg_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = svg_plot(&symbol, 0);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "svg_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "svg_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

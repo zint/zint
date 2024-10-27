@@ -43,7 +43,9 @@ static int vector_add_rect(struct zint_symbol *symbol, const float x, const floa
     struct zint_vector_rect *rect;
 
     if (!(rect = (struct zint_vector_rect *) malloc(sizeof(struct zint_vector_rect)))) {
-        strcpy(symbol->errtxt, "691: Insufficient memory for vector rectangle");
+        /* NOTE: clang-tidy-20 gets confused about return value of function returning a function unfortunately,
+           so put on 2 lines (see also "postal.c" `postnet_enc()` & `planet_enc()`, same issue) */
+        errtxt(0, symbol, 691, "Insufficient memory for vector rectangle");
         return 0;
     }
 
@@ -69,8 +71,7 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
     struct zint_vector_hexagon *hexagon;
 
     if (!(hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon)))) {
-        strcpy(symbol->errtxt, "692: Insufficient memory for vector hexagon");
-        return 0;
+        return errtxt(0, symbol, 692, "Insufficient memory for vector hexagon");
     }
     hexagon->next = NULL;
     hexagon->x = x;
@@ -93,8 +94,7 @@ static int vector_add_circle(struct zint_symbol *symbol, const float x, const fl
     struct zint_vector_circle *circle;
 
     if (!(circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle)))) {
-        strcpy(symbol->errtxt, "693: Insufficient memory for vector circle");
-        return 0;
+        return errtxt(0, symbol, 693, "Insufficient memory for vector circle");
     }
     circle->next = NULL;
     circle->x = x;
@@ -119,8 +119,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     struct zint_vector_string *string;
 
     if (!(string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string)))) {
-        strcpy(symbol->errtxt, "694: Insufficient memory for vector string");
-        return 0;
+        return errtxt(0, symbol, 694, "Insufficient memory for vector string");
     }
     string->next = NULL;
     string->x = x;
@@ -132,8 +131,7 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     string->halign = halign;
     if (!(string->text = (unsigned char *) malloc(string->length + 1))) {
         free(string);
-        strcpy(symbol->errtxt, "695: Insufficient memory for vector string text");
-        return 0;
+        return errtxt(0, symbol, 695, "Insufficient memory for vector string text");
     }
     memcpy(string->text, text, string->length);
     string->text[string->length] = '\0';
@@ -439,14 +437,12 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         return error_number;
     }
     if (symbol->rows <= 0) {
-        strcpy(symbol->errtxt, "697: No rows");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 697, "No rows");
     }
 
     /* Allocate memory */
     if (!(vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector)))) {
-        strcpy(symbol->errtxt, "696: Insufficient memory for vector header");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 696, "Insufficient memory for vector header");
     }
     vector->rectangles = NULL;
     vector->hexagons = NULL;

@@ -110,6 +110,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
        1 = Tracker and Ascender
        2 = Tracker and Descender
        3 = Tracker only */
+    int i;
     int error_number;
     int writer;
     int loopey, reader;
@@ -123,18 +124,17 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
         if (length != 8 && length != 13 && length != 16 && length != 18 && length != 23) {
-            strcpy(symbol->errtxt, "401: Input wrong length (8, 13, 16, 18 or 23 characters only)");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 401, "Input length %d wrong (8, 13, 16, 18 or 23 only)",
+                            length);
         }
     } else if (length > 8) {
-        strcpy(symbol->errtxt, "403: Input too long (8 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 403, "Input length %d too long (maximum 8)", length);
     }
 
     /* Check input immediately to catch nuls */
-    if (!is_sane(GDSET_F, source, length)) {
-        strcpy(symbol->errtxt, "404: Invalid character in data (alphanumerics, space and \"#\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(GDSET_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 404,
+                        "Invalid character at position %d in input (alphanumerics, space and \"#\" only)", i);
     }
 
     localstr[0] = '\0';
@@ -150,9 +150,10 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 16:
                 strcpy(fcc, "59");
-                if (!is_sane(NEON_F, source, length)) {
-                    strcpy(symbol->errtxt, "402: Invalid character in data (digits only for length 16)");
-                    return ZINT_ERROR_INVALID_DATA;
+                if ((i = not_sane(NEON_F, source, length))) {
+                    return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 402,
+                                    "Invalid character at position %d in input (digits only for FCC 59 length 16)",
+                                    i);
                 }
                 break;
             case 18:
@@ -160,9 +161,10 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 23:
                 strcpy(fcc, "62");
-                if (!is_sane(NEON_F, source, length)) {
-                    strcpy(symbol->errtxt, "406: Invalid character in data (digits only for length 23)");
-                    return ZINT_ERROR_INVALID_DATA;
+                if ((i = not_sane(NEON_F, source, length))) {
+                    return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 406,
+                                    "Invalid character at position %d in input (digits only for FCC 62 length 23)",
+                                    i);
                 }
                 break;
         }
@@ -192,9 +194,9 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Verify that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
-    if (!is_sane(NEON_F, (unsigned char *) dpid, 8)) {
-        strcpy(symbol->errtxt, "405: Invalid character in DPID (first 8 characters) (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, (unsigned char *) dpid, 8))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 405,
+                        "Invalid character at position %d in DPID (first 8 characters) (digits only)", i);
     }
 
     /* Start character */

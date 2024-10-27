@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,48 +43,50 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { -1, -1, { 0, 0, "" }, "1", 252, 0, 31, 66 }, /* Default EC2 */
-        /*  1*/ { -1, -1, { 0, 0, "" }, "1", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, -1, { 0, 0, "" }, "1", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  3*/ { -1, -1, { 1, 2, "" }, "1", 251, 0, 31, 66 }, /* Structured Append no File Number 1 codeword overhead */
-        /*  4*/ { -1, -1, { 1, 2, "" }, "1", 252, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  5*/ { -1, -1, { 1, 2, "1" }, "1", 249, 0, 31, 66 }, /* Structured Append with File Number 3 codewords overhead */
-        /*  6*/ { -1, -1, { 1, 2, "1" }, "1", 250, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { -1, -1, { 0, 0, "" }, "A", 252, 0, 31, 66 },
-        /*  8*/ { -1, -1, { 0, 0, "" }, "A", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { -1, -1, { 0, 0, "" }, "\200", 252, 0, 31, 66 },
-        /* 10*/ { -1, -1, { 0, 0, "" }, "\200", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { -1, -1, { 0, 0, "" }, "\001", 252, 0, 31, 66 },
-        /* 12*/ { -1, -1, { 0, 0, "" }, "\001", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 13*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "1", 504, 0, 31, 66 },
-        /* 14*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "1", 505, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 375, 0, 31, 66 },
-        /* 16*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 376, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 17*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\200", 252, 0, 31, 66 },
-        /* 18*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\200", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 19*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\001", 252, 0, 31, 66 },
-        /* 20*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\001", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 21*/ { 1, -1, { 0, 0, "" }, "1", 276, 0, 31, 66 },
-        /* 22*/ { 1, -1, { 0, 0, "" }, "1", 277, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 23*/ { 1, -1, { 1, 2, "" }, "1", 275, 0, 31, 66 },
-        /* 24*/ { 1, -1, { 1, 2, "" }, "1", 276, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 25*/ { 1, -1, { 1, 2, "1" }, "1", 273, 0, 31, 66 },
-        /* 26*/ { 1, -1, { 1, 2, "1" }, "1", 274, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 27*/ { 2, -1, { 0, 0, "" }, "1", 263, 0, 31, 66 },
-        /* 28*/ { 2, -1, { 0, 0, "" }, "1", 264, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 29*/ { 3, -1, { 0, 0, "" }, "1", 252, 0, 31, 66 },
-        /* 30*/ { 3, -1, { 0, 0, "" }, "1", 253, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 31*/ { 4, -1, { 0, 0, "" }, "1", 234, 0, 31, 66 },
-        /* 32*/ { 4, -1, { 0, 0, "" }, "1", 235, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 33*/ { 5, -1, { 0, 0, "" }, "1", 220, 0, 31, 66 },
-        /* 34*/ { 5, -1, { 0, 0, "" }, "1", 221, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 35*/ { 6, -1, { 0, 0, "" }, "1", 202, 0, 31, 66 },
-        /* 36*/ { 6, -1, { 0, 0, "" }, "1", 203, ZINT_ERROR_TOO_LONG, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { -1, -1, { 0, 0, "" }, "1", 252, 0, 31, 66, "" }, /* Default EC2 */
+        /*  1*/ { -1, -1, { 0, 0, "" }, "1", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /*  2*/ { -1, -1, { 0, 0, "" }, "1", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 17403 codewords (maximum 255)" },
+        /*  3*/ { -1, -1, { 1, 2, "" }, "1", 251, 0, 31, 66, "" }, /* Structured Append no File Number 1 codeword overhead */
+        /*  4*/ { -1, -1, { 1, 2, "" }, "1", 252, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /*  5*/ { -1, -1, { 1, 2, "1" }, "1", 249, 0, 31, 66, "" }, /* Structured Append with File Number 3 codewords overhead */
+        /*  6*/ { -1, -1, { 1, 2, "1" }, "1", 250, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /*  7*/ { -1, -1, { 0, 0, "" }, "A", 252, 0, 31, 66, "" },
+        /*  8*/ { -1, -1, { 0, 0, "" }, "A", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /*  9*/ { -1, -1, { 0, 0, "" }, "\200", 252, 0, 31, 66, "" },
+        /* 10*/ { -1, -1, { 0, 0, "" }, "\200", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 11*/ { -1, -1, { 0, 0, "" }, "\001", 252, 0, 31, 66, "" },
+        /* 12*/ { -1, -1, { 0, 0, "" }, "\001", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 13*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "1", 504, 0, 31, 66, "" },
+        /* 14*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "1", 505, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 15*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 375, 0, 31, 66, "" },
+        /* 16*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 376, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 17*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\200", 252, 0, 31, 66, "" },
+        /* 18*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\200", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 19*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\001", 252, 0, 31, 66, "" },
+        /* 20*/ { -1, ULTRA_COMPRESSION, { 0, 0, "" }, "\001", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 21*/ { 1, -1, { 0, 0, "" }, "1", 276, 0, 31, 66, "" },
+        /* 22*/ { 1, -1, { 0, 0, "" }, "1", 277, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)" },
+        /* 23*/ { 1, -1, { 1, 2, "" }, "1", 275, 0, 31, 66, "" },
+        /* 24*/ { 1, -1, { 1, 2, "" }, "1", 276, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)" },
+        /* 25*/ { 1, -1, { 1, 2, "1" }, "1", 273, 0, 31, 66, "" },
+        /* 26*/ { 1, -1, { 1, 2, "1" }, "1", 274, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)" },
+        /* 27*/ { 2, -1, { 0, 0, "" }, "1", 263, 0, 31, 66, "" },
+        /* 28*/ { 2, -1, { 0, 0, "" }, "1", 264, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC1, requires 267 codewords (maximum 266)" },
+        /* 29*/ { 3, -1, { 0, 0, "" }, "1", 252, 0, 31, 66, "" },
+        /* 30*/ { 3, -1, { 0, 0, "" }, "1", 253, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)" },
+        /* 31*/ { 4, -1, { 0, 0, "" }, "1", 234, 0, 31, 66, "" },
+        /* 32*/ { 4, -1, { 0, 0, "" }, "1", 235, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC3, requires 238 codewords (maximum 237)" },
+        /* 33*/ { 5, -1, { 0, 0, "" }, "1", 220, 0, 31, 66, "" },
+        /* 34*/ { 5, -1, { 0, 0, "" }, "1", 221, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC4, requires 224 codewords (maximum 223)" },
+        /* 35*/ { 6, -1, { 0, 0, "" }, "1", 202, 0, 31, 66, "" },
+        /* 36*/ { 6, -1, { 0, 0, "" }, "1", 203, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC5, requires 206 codewords (maximum 205)" },
+        /* 37*/ { 6, -1, { 0, 0, "" }, "A", ZINT_MAX_DATA_LEN / 2, ZINT_ERROR_TOO_LONG, -1, -1, "Error 591: Input too long for ECC level EC5, requires 8703 codewords (maximum 205)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -109,6 +111,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -135,11 +139,11 @@ static void test_reader_init(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, READER_INIT, 0, "A", 0, 13, 14, "(3) 257 269 65", "8-bit FNC3 A" },
         /*  1*/ { UNICODE_MODE, READER_INIT, ULTRA_COMPRESSION, "A", 0, 13, 14, "(3) 272 271 65", "ASCII FNC3 A Note: draft spec inconsistent and FNC3 may be 272 in ASCII mode (and FNC1 271)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -196,7 +200,7 @@ static void test_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Default (Revision 1)" },
         /*  1*/ { UNICODE_MODE, 0, -1, 1, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Revision 1" },
         /*  2*/ { UNICODE_MODE, 0, -1, 2, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Revision 2 (no codeword changes)" },
@@ -209,9 +213,9 @@ static void test_input(const testCtx *const p_ctx) {
         /*  9*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ABC", 0, "(4) 272 65 66 67", "" },
         /* 10*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ULTRACODE_123456789!", 0, "(17) 272 85 76 84 82 65 67 79 68 69 95 140 162 184 206 57 33", "" },
         /* 11*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(253) 257 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "252 chars EC2" },
-        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Data too long for selected error correction capacity", "253 chars EC2" },
+        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)", "253 chars EC2" },
         /* 13*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(277) 257 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "276 chars EC0" },
-        /* 14*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Data too long for selected error correction capacity", "277 chars EC0" },
+        /* 14*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)", "277 chars EC0" },
         /* 15*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "é", 0, "(2) 257 233", "" },
         /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "β", ZINT_WARN_USES_ECI, "Warning (2) 263 226", "" },
         /* 17*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "β", 0, "(2) 263 226", "" },
@@ -224,7 +228,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 24*/ { DATA_MODE, 9999, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(9) 257 274 227 227 1 2 3 4 255", "" },
         /* 25*/ { DATA_MODE, 10000, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(10) 257 275 129 128 128 1 2 3 4 255", "" },
         /* 26*/ { DATA_MODE, 811799, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(10) 257 275 209 145 227 1 2 3 4 255", "" },
-        /* 27*/ { DATA_MODE, 811800, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", ZINT_ERROR_INVALID_OPTION, "Error 590: ECI value not supported by Ultracode", "" },
+        /* 27*/ { DATA_MODE, 811800, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", ZINT_ERROR_INVALID_OPTION, "Error 590: ECI code '811800' out of range (0 to 811799)", "" },
         /* 28*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "123,456,789/12,/3,4,/5//", 0, "(15) 272 140 231 173 234 206 257 140 44 262 242 44 264 47 47", "Mode: a (24)" },
         /* 29*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(32) 257 256 46 151 78 210 205 208 258 5 148 28 72 2 167 52 127 193 83 75 211 267 76 65 32", "Mode: cccccc88cccccccccc8888aaa8cccccc (32)" },
         /* 30*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(33) 257 72 69 73 77 65 83 205 208 65 32 75 69 78 78 65 82 65 72 193 83 75 211 76 65 32 205", "" },
@@ -254,18 +258,18 @@ static void test_input(const testCtx *const p_ctx) {
         /* 54*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "https://url.com", 0, "(6) 282 262 133 216 269 251", "Mode: ccccccc (7)" },
         /* 55*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "{", 0, "(2) 272 123", "Mode: a (1)" },
         /* 56*/ { UNICODE_MODE, 0, -1, -1, -1, { 2, 3, "" }, "A", 0, "(2) 257 65", "" },
-        /* 57*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 1, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count out of range (2-8)", "" },
-        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 9, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count out of range (2-8)", "" },
-        /* 59*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index out of range (1-3)", "" },
-        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, { 4, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index out of range (1-3)", "" },
+        /* 57*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 1, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '1' out of range (2 to 8)", "" },
+        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 9, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '9' out of range (2 to 8)", "" },
+        /* 59*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '0' out of range (1 to count 3)", "" },
+        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, { 4, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '4' out of range (1 to count 3)", "" },
         /* 61*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "0" }, "A", 0, "(2) 257 65", "" },
         /* 62*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80088" }, "A", 0, "(2) 257 65", "" },
-        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "123456" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 593: Structured Append ID too long (5 digit maximum)", "" },
+        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "123456" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 593: Structured Append ID length 6 too long (5 digit maximum)", "" },
         /* 64*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "A" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 594: Invalid Structured Append ID (digits only)", "" },
-        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80089" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 595: Structured Append ID '80089' out of range (1-80088)", "" },
-        /* 66*/ { UNICODE_MODE, 0, -1, 3, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 592: Revision must be 1 or 2", "" },
+        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80089" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 595: Structured Append ID value '80089' out of range (1 to 80088)", "" },
+        /* 66*/ { UNICODE_MODE, 0, -1, 3, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 592: Revision '3' out of range (1 or 2 only)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -330,7 +334,7 @@ static void test_encode(const testCtx *const p_ctx) {
     /* Based on AIMD/TSC15032-43 (v 0.99c), with values updated from BWIPP update 2021-07-14
        https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ULTRACODE_123456789!", 0, 13, 22, 1, "AIMD/TSC15032-43 Figure G.1 **NOT SAME** different compression",
                     "7777777777777777777777"
                     "7857865353533131551857"
@@ -776,7 +780,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "777777777777777777777777"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -863,7 +867,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     /* Based on AIMD/TSC15032-43 (v 0.99c), with values updated from BWIPP update 2021-07-14
        https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 13, 15, 0, "Standard example; BWIPP no ECI support for Ultracode",
                     "777777777777777"
                     "785786131155157"
@@ -1018,7 +1022,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "777777777777777777777777777"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
     struct zint_symbol *symbol = NULL;
 

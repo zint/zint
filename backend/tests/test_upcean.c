@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ static void test_upce_input(const testCtx *const p_ctx) {
         char *hrt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_UPCE, "12345", 0, "00123457" }, /* equivalent: 00123400005, Check digit: 7 */
         /*  1*/ { BARCODE_UPCE_CHK, "12345", ZINT_ERROR_INVALID_CHECK, "" },
         /*  2*/ { BARCODE_UPCE_CHK, "12344", 0, "00012344" }, /* equivalent: 00012000003, Check digit: 4 */
@@ -94,9 +94,9 @@ static void test_upce_input(const testCtx *const p_ctx) {
         /* 48*/ { BARCODE_UPCE, "000001", 0, "00000019" },
         /* 49*/ { BARCODE_UPCE, "000002", 0, "00000028" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
     char cmp_buf[4096];
@@ -105,7 +105,7 @@ static void test_upce_input(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_upce_input");
+    testStartSymbol("test_upce_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -159,14 +159,14 @@ static void test_upca_print(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_UPCA, "01234567890", 0 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_upca_print");
+    testStartSymbol("test_upca_print", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -199,90 +199,94 @@ static void test_upca_input(const testCtx *const p_ctx) {
         int symbology;
         char *data;
         int ret;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_UPCA, "12345678901", 0 },
-        /*  1*/ { BARCODE_UPCA, "1234567890", 0 },
-        /*  2*/ { BARCODE_UPCA, "123456789012", 0 }, /* UPC-A accepts CHK */
-        /*  3*/ { BARCODE_UPCA, "123456789011", ZINT_ERROR_INVALID_CHECK },
-        /*  4*/ { BARCODE_UPCA, "1234567890123", ZINT_ERROR_TOO_LONG },
-        /*  5*/ { BARCODE_UPCA, "123456789012A", ZINT_ERROR_INVALID_DATA },
-        /*  6*/ { BARCODE_UPCA, "12345678901A", ZINT_ERROR_INVALID_DATA },
-        /*  7*/ { BARCODE_UPCA, "12345678901+1", 0 },
-        /*  8*/ { BARCODE_UPCA, "123456789012+1", 0 },
-        /*  9*/ { BARCODE_UPCA, "123456789013+1", ZINT_ERROR_INVALID_CHECK },
-        /* 10*/ { BARCODE_UPCA, "12345678901+12", 0 },
-        /* 11*/ { BARCODE_UPCA, "123456789012+12", 0 },
-        /* 12*/ { BARCODE_UPCA, "123456789014+12", ZINT_ERROR_INVALID_CHECK },
-        /* 13*/ { BARCODE_UPCA, "12345678901+123", 0 },
-        /* 14*/ { BARCODE_UPCA, "123456789012+123", 0 },
-        /* 15*/ { BARCODE_UPCA, "123456789015+123", ZINT_ERROR_INVALID_CHECK },
-        /* 16*/ { BARCODE_UPCA, "123456789012+1234", 0 },
-        /* 17*/ { BARCODE_UPCA, "123456789016+1234", ZINT_ERROR_INVALID_CHECK },
-        /* 18*/ { BARCODE_UPCA, "123456789012+12345", 0 },
-        /* 19*/ { BARCODE_UPCA, "123456789017+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 20*/ { BARCODE_UPCA, "123456789012+123456", ZINT_ERROR_TOO_LONG },
-        /* 21*/ { BARCODE_UPCA, "123456789017+123456", ZINT_ERROR_TOO_LONG },
-        /* 22*/ { BARCODE_UPCA, "123456789017+12345A", ZINT_ERROR_INVALID_DATA },
-        /* 23*/ { BARCODE_UPCA_CHK, "123456789012", 0 },
-        /* 24*/ { BARCODE_UPCA_CHK, "123456789011", ZINT_ERROR_INVALID_CHECK },
-        /* 25*/ { BARCODE_UPCA_CHK, "1234567890123", ZINT_ERROR_TOO_LONG },
-        /* 26*/ { BARCODE_UPCA_CHK, "123456789012A", ZINT_ERROR_INVALID_DATA },
-        /* 27*/ { BARCODE_UPCA_CHK, "12345678901A", ZINT_ERROR_INVALID_DATA },
-        /* 28*/ { BARCODE_UPCA_CHK, "12345678901", ZINT_ERROR_INVALID_CHECK },
-        /* 29*/ { BARCODE_UPCA_CHK, "12345678905", 0 },
-        /* 30*/ { BARCODE_UPCA_CHK, "1234567890", ZINT_ERROR_INVALID_CHECK },
-        /* 31*/ { BARCODE_UPCA_CHK, "1234567895", 0 },
-        /* 32*/ { BARCODE_UPCA_CHK, "123456789", ZINT_ERROR_INVALID_CHECK },
-        /* 33*/ { BARCODE_UPCA_CHK, "123456784", 0 },
-        /* 34*/ { BARCODE_UPCA_CHK, "12345678", ZINT_ERROR_INVALID_CHECK },
-        /* 35*/ { BARCODE_UPCA_CHK, "12345670", 0 },
-        /* 36*/ { BARCODE_UPCA_CHK, "1234567", ZINT_ERROR_INVALID_CHECK },
-        /* 37*/ { BARCODE_UPCA_CHK, "1234565", 0 },
-        /* 38*/ { BARCODE_UPCA_CHK, "123456", ZINT_ERROR_INVALID_CHECK },
-        /* 39*/ { BARCODE_UPCA_CHK, "123457", 0 },
-        /* 40*/ { BARCODE_UPCA_CHK, "12345", ZINT_ERROR_INVALID_CHECK },
-        /* 41*/ { BARCODE_UPCA_CHK, "12348", 0 },
-        /* 42*/ { BARCODE_UPCA_CHK, "1234", ZINT_ERROR_INVALID_CHECK },
-        /* 43*/ { BARCODE_UPCA_CHK, "1236", 0 },
-        /* 44*/ { BARCODE_UPCA_CHK, "123", 0 }, /* Happens to be correct check digit */
-        /* 45*/ { BARCODE_UPCA_CHK, "124", ZINT_ERROR_INVALID_CHECK },
-        /* 46*/ { BARCODE_UPCA_CHK, "12", ZINT_ERROR_INVALID_CHECK },
-        /* 47*/ { BARCODE_UPCA_CHK, "17", 0 },
-        /* 48*/ { BARCODE_UPCA_CHK, "1", ZINT_ERROR_INVALID_CHECK },
-        /* 49*/ { BARCODE_UPCA_CHK, "0", 0 },
-        /* 50*/ { BARCODE_UPCA_CHK, "12345678905+12", 0 },
-        /* 51*/ { BARCODE_UPCA_CHK, "12345678905+12345", 0 },
-        /* 52*/ { BARCODE_UPCA_CHK, "12345678905+123456", ZINT_ERROR_TOO_LONG },
-        /* 53*/ { BARCODE_UPCA_CHK, "12345678905+12345A", ZINT_ERROR_INVALID_DATA },
-        /* 54*/ { BARCODE_UPCA_CHK, "12345678905+1234A", ZINT_ERROR_INVALID_DATA },
-        /* 55*/ { BARCODE_UPCA_CHK, "1234567895+12345", 0 },
-        /* 56*/ { BARCODE_UPCA_CHK, "1234567891+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 57*/ { BARCODE_UPCA_CHK, "123456784+12345", 0 },
-        /* 58*/ { BARCODE_UPCA_CHK, "123456782+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 59*/ { BARCODE_UPCA_CHK, "12345670+12345", 0 },
-        /* 60*/ { BARCODE_UPCA_CHK, "12345673+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 61*/ { BARCODE_UPCA_CHK, "1234565+12345", 0 },
-        /* 62*/ { BARCODE_UPCA_CHK, "1234564+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 63*/ { BARCODE_UPCA_CHK, "123457+12345", 0 },
-        /* 64*/ { BARCODE_UPCA_CHK, "123455+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 65*/ { BARCODE_UPCA_CHK, "12348+12345", 0 },
-        /* 66*/ { BARCODE_UPCA_CHK, "12346+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 67*/ { BARCODE_UPCA_CHK, "1236+12345", 0 },
-        /* 68*/ { BARCODE_UPCA_CHK, "1237+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 69*/ { BARCODE_UPCA_CHK, "123+12345", 0 },
-        /* 70*/ { BARCODE_UPCA_CHK, "128+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 71*/ { BARCODE_UPCA_CHK, "17+12345", 0 },
-        /* 72*/ { BARCODE_UPCA_CHK, "19+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 73*/ { BARCODE_UPCA_CHK, "1+12345", ZINT_ERROR_INVALID_CHECK },
-        /* 74*/ { BARCODE_UPCA_CHK, "0+12345", 0 },
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_UPCA, "12345678901", 0, "" },
+        /*  1*/ { BARCODE_UPCA, "1234567890", 0, "" },
+        /*  2*/ { BARCODE_UPCA, "123456789012", 0, "" }, /* UPC-A accepts CHK */
+        /*  3*/ { BARCODE_UPCA, "123456789011", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '2'" },
+        /*  4*/ { BARCODE_UPCA, "1234567890123", ZINT_ERROR_TOO_LONG, "Error 288: Input length 13 wrong (11 or 12 only)" },
+        /*  5*/ { BARCODE_UPCA, "123456789012A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 13 in input (digits and \"+\" only)" },
+        /*  6*/ { BARCODE_UPCA, "12345678901A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 12 in input (digits and \"+\" only)" },
+        /*  7*/ { BARCODE_UPCA, "12345", 0, "" },
+        /*  8*/ { BARCODE_UPCA, "1X345", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 2 in input (digits and \"+\" only)" },
+        /*  9*/ { BARCODE_UPCA, "01A345", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 3 in input (digits and \"+\" only)" },
+        /* 10*/ { BARCODE_UPCA, "12345678901+1", 0, "" },
+        /* 11*/ { BARCODE_UPCA, "123456789012+1", 0, "" },
+        /* 12*/ { BARCODE_UPCA, "123456789013+1", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '3', expecting '2'" },
+        /* 13*/ { BARCODE_UPCA, "12345678901+12", 0, "" },
+        /* 14*/ { BARCODE_UPCA, "123456789012+12", 0, "" },
+        /* 15*/ { BARCODE_UPCA, "123456789014+12", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '4', expecting '2'" },
+        /* 16*/ { BARCODE_UPCA, "12345678901+123", 0, "" },
+        /* 17*/ { BARCODE_UPCA, "123456789012+123", 0, "" },
+        /* 18*/ { BARCODE_UPCA, "123456789015+123", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '5', expecting '2'" },
+        /* 19*/ { BARCODE_UPCA, "123456789012+1234", 0, "" },
+        /* 20*/ { BARCODE_UPCA, "123456789016+1234", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '6', expecting '2'" },
+        /* 21*/ { BARCODE_UPCA, "123456789012+12345", 0, "" },
+        /* 22*/ { BARCODE_UPCA, "123456789017+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '7', expecting '2'" },
+        /* 23*/ { BARCODE_UPCA, "123456789012+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)" },
+        /* 24*/ { BARCODE_UPCA, "123456789017+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)" },
+        /* 25*/ { BARCODE_UPCA, "123456789017+12345A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 19 in input (digits and \"+\" only)" },
+        /* 26*/ { BARCODE_UPCA_CHK, "123456789012", 0, "" },
+        /* 27*/ { BARCODE_UPCA_CHK, "123456789011", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '2'" },
+        /* 28*/ { BARCODE_UPCA_CHK, "1234567890123", ZINT_ERROR_TOO_LONG, "Error 288: Input length 13 wrong (11 or 12 only)" },
+        /* 29*/ { BARCODE_UPCA_CHK, "123456789012A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 13 in input (digits and \"+\" only)" },
+        /* 30*/ { BARCODE_UPCA_CHK, "12345678901A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 12 in input (digits and \"+\" only)" },
+        /* 31*/ { BARCODE_UPCA_CHK, "12345678901", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '5'" },
+        /* 32*/ { BARCODE_UPCA_CHK, "12345678905", 0, "" },
+        /* 33*/ { BARCODE_UPCA_CHK, "1234567890", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '0', expecting '5'" },
+        /* 34*/ { BARCODE_UPCA_CHK, "1234567895", 0, "" },
+        /* 35*/ { BARCODE_UPCA_CHK, "123456789", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '9', expecting '4'" },
+        /* 36*/ { BARCODE_UPCA_CHK, "123456784", 0, "" },
+        /* 37*/ { BARCODE_UPCA_CHK, "12345678", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '8', expecting '0'" },
+        /* 38*/ { BARCODE_UPCA_CHK, "12345670", 0, "" },
+        /* 39*/ { BARCODE_UPCA_CHK, "1234567", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '7', expecting '5'" },
+        /* 40*/ { BARCODE_UPCA_CHK, "1234565", 0, "" },
+        /* 41*/ { BARCODE_UPCA_CHK, "123456", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '6', expecting '7'" },
+        /* 42*/ { BARCODE_UPCA_CHK, "123457", 0, "" },
+        /* 43*/ { BARCODE_UPCA_CHK, "12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '5', expecting '8'" },
+        /* 44*/ { BARCODE_UPCA_CHK, "12348", 0, "" },
+        /* 45*/ { BARCODE_UPCA_CHK, "1234", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '4', expecting '6'" },
+        /* 46*/ { BARCODE_UPCA_CHK, "1236", 0, "" },
+        /* 47*/ { BARCODE_UPCA_CHK, "123", 0, "" }, /* Happens to be correct check digit */
+        /* 48*/ { BARCODE_UPCA_CHK, "124", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '4', expecting '3'" },
+        /* 49*/ { BARCODE_UPCA_CHK, "12", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '2', expecting '7'" },
+        /* 50*/ { BARCODE_UPCA_CHK, "17", 0, "" },
+        /* 51*/ { BARCODE_UPCA_CHK, "1", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '0'" },
+        /* 52*/ { BARCODE_UPCA_CHK, "0", 0, "" },
+        /* 53*/ { BARCODE_UPCA_CHK, "12345678905+12", 0, "" },
+        /* 54*/ { BARCODE_UPCA_CHK, "12345678905+12345", 0, "" },
+        /* 55*/ { BARCODE_UPCA_CHK, "12345678905+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)" },
+        /* 56*/ { BARCODE_UPCA_CHK, "12345678905+12345A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 18 in input (digits and \"+\" only)" },
+        /* 57*/ { BARCODE_UPCA_CHK, "12345678905+1234A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 17 in input (digits and \"+\" only)" },
+        /* 58*/ { BARCODE_UPCA_CHK, "1234567895+12345", 0, "" },
+        /* 59*/ { BARCODE_UPCA_CHK, "1234567891+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '5'" },
+        /* 60*/ { BARCODE_UPCA_CHK, "123456784+12345", 0, "" },
+        /* 61*/ { BARCODE_UPCA_CHK, "123456782+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '2', expecting '4'" },
+        /* 62*/ { BARCODE_UPCA_CHK, "12345670+12345", 0, "" },
+        /* 63*/ { BARCODE_UPCA_CHK, "12345673+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '3', expecting '0'" },
+        /* 64*/ { BARCODE_UPCA_CHK, "1234565+12345", 0, "" },
+        /* 65*/ { BARCODE_UPCA_CHK, "1234564+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '4', expecting '5'" },
+        /* 66*/ { BARCODE_UPCA_CHK, "123457+12345", 0, "" },
+        /* 67*/ { BARCODE_UPCA_CHK, "123455+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '5', expecting '7'" },
+        /* 68*/ { BARCODE_UPCA_CHK, "12348+12345", 0, "" },
+        /* 69*/ { BARCODE_UPCA_CHK, "12346+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '6', expecting '8'" },
+        /* 70*/ { BARCODE_UPCA_CHK, "1236+12345", 0, "" },
+        /* 71*/ { BARCODE_UPCA_CHK, "1237+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '7', expecting '6'" },
+        /* 72*/ { BARCODE_UPCA_CHK, "123+12345", 0, "" },
+        /* 73*/ { BARCODE_UPCA_CHK, "128+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '8', expecting '3'" },
+        /* 74*/ { BARCODE_UPCA_CHK, "17+12345", 0, "" },
+        /* 75*/ { BARCODE_UPCA_CHK, "19+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '9', expecting '7'" },
+        /* 76*/ { BARCODE_UPCA_CHK, "1+12345", ZINT_ERROR_INVALID_CHECK, "Error 270: Invalid check digit '1', expecting '0'" },
+        /* 77*/ { BARCODE_UPCA_CHK, "0+12345", 0, "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_upca_input");
+    testStartSymbol("test_upca_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -295,6 +299,7 @@ static void test_upca_input(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }
@@ -313,145 +318,147 @@ static void test_eanx_input(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_EANX, "123456789012", 0, "", "" },
-        /*  1*/ { BARCODE_EANX, "12345678901A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /*  2*/ { BARCODE_EANX, "12345678901", 0, "", "" },
-        /*  3*/ { BARCODE_EANX, "1234567890128", 0, "", "EANX accepts CHK (treated as such if no leading zeroes required)" },
-        /*  4*/ { BARCODE_EANX, "1234567890120", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '8'", "" },
-        /*  5*/ { BARCODE_EANX, "123456789012+1", 0, "", "" },
-        /*  6*/ { BARCODE_EANX, "1234567890128+1", 0, "", "" },
-        /*  7*/ { BARCODE_EANX, "1234567890121+1", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '8'", "" },
-        /*  8*/ { BARCODE_EANX, "123456789012+12", 0, "", "" },
-        /*  9*/ { BARCODE_EANX, "1234567890128+12", 0, "", "" },
-        /* 10*/ { BARCODE_EANX, "1234567890122+12", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '2', expecting '8'", "" },
-        /* 11*/ { BARCODE_EANX, "12345678901234+12", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 12*/ { BARCODE_EANX, "123456789012345+12", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 13*/ { BARCODE_EANX, "1234567890123456+12", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 14*/ { BARCODE_EANX, "123456789012+123", 0, "", "" },
-        /* 15*/ { BARCODE_EANX, "1234567890128+123", 0, "", "" },
-        /* 16*/ { BARCODE_EANX, "1234567890123+123", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '3', expecting '8'", "" },
-        /* 17*/ { BARCODE_EANX, "12345678901234+123", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 18*/ { BARCODE_EANX, "123456789012345+123", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 19*/ { BARCODE_EANX, "123456789012+1234", 0, "", "" },
-        /* 20*/ { BARCODE_EANX, "1234567890128+1234", 0, "", "" },
-        /* 21*/ { BARCODE_EANX, "1234567890124+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '4', expecting '8'", "" },
-        /* 22*/ { BARCODE_EANX, "12345678901234+1234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 23*/ { BARCODE_EANX, "123456789012+12345", 0, "", "" },
-        /* 24*/ { BARCODE_EANX, "1234567890128+12345", 0, "", "" },
-        /* 25*/ { BARCODE_EANX, "12345678901234+12345", ZINT_ERROR_TOO_LONG, "Error 283: Input too long (19 character maximum)", "" },
-        /* 26*/ { BARCODE_EANX, "1234567890125+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '5', expecting '8'", "" },
-        /* 27*/ { BARCODE_EANX, "123456789012+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 28*/ { BARCODE_EANX, "1234567890128+123456", ZINT_ERROR_TOO_LONG, "Error 283: Input too long (19 character maximum)", "" },
-        /* 29*/ { BARCODE_EANX, "12345678901+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 30*/ { BARCODE_EANX, "12345678901+1234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 31*/ { BARCODE_EANX, "1234567890+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 32*/ { BARCODE_EANX, "1234567890+1234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 33*/ { BARCODE_EANX, "123456789+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 34*/ { BARCODE_EANX, "123456789+1234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 35*/ { BARCODE_EANX, "12345678+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 36*/ { BARCODE_EANX, "1234567+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "EAN-8" },
-        /* 37*/ { BARCODE_EANX, "123456+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 38*/ { BARCODE_EANX, "12345+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 39*/ { BARCODE_EANX, "1234+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 40*/ { BARCODE_EANX, "123+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 41*/ { BARCODE_EANX, "12+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 42*/ { BARCODE_EANX, "1+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 43*/ { BARCODE_EANX, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 44*/ { BARCODE_EANX, "1+12345", 0, "", "" },
-        /* 45*/ { BARCODE_EANX, "1+", 0, "", "EAN-2" },
-        /* 46*/ { BARCODE_EANX, "+1", 0, "", "EAN-8" },
-        /* 47*/ { BARCODE_EANX, "+", 0, "", "EAN-2" },
-        /* 48*/ { BARCODE_EANX, "1", 0, "", "EAN-2" },
-        /* 49*/ { BARCODE_EANX, "12", 0, "", "EAN-2" },
-        /* 50*/ { BARCODE_EANX, "123", 0, "", "EAN-5" },
-        /* 51*/ { BARCODE_EANX, "12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 52*/ { BARCODE_EANX, "1234567890123A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /* 53*/ { BARCODE_EANX, "123456789012345", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 54*/ { BARCODE_EANX, "12345678901234A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /* 55*/ { BARCODE_EANX, "1234567890123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 56*/ { BARCODE_EANX, "12345678901234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 57*/ { BARCODE_EANX, "123456789012345678", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 58*/ { BARCODE_EANX, "1234567890123456789", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /* 59*/ { BARCODE_EANX_CHK, "1234567890128", 0, "", "" },
-        /* 60*/ { BARCODE_EANX_CHK, "1234567890126", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '6', expecting '8'", "" },
-        /* 61*/ { BARCODE_EANX_CHK, "123456789012A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /* 62*/ { BARCODE_EANX_CHK, "123456789012", 0, "", "Note: this is '0123456789012' with '2' happening to be the correct check digit" },
-        /* 63*/ { BARCODE_EANX_CHK, "123456789013", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '3', expecting '2'", "" },
-        /* 64*/ { BARCODE_EANX_CHK, "12345678901", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '5'", "" },
-        /* 65*/ { BARCODE_EANX_CHK, "12345678905", 0, "", "" },
-        /* 66*/ { BARCODE_EANX_CHK, "1234567890", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '5'", "" },
-        /* 67*/ { BARCODE_EANX_CHK, "123456789", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '4'", "" },
-        /* 68*/ { BARCODE_EANX_CHK, "12345678", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '8', expecting '0'", "EAN-8" },
-        /* 69*/ { BARCODE_EANX_CHK, "1234567", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '7', expecting '5'", "" },
-        /* 70*/ { BARCODE_EANX_CHK, "123456", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '6', expecting '7'", "" },
-        /* 71*/ { BARCODE_EANX_CHK, "12345", 0, "", "EAN-5" },
-        /* 72*/ { BARCODE_EANX_CHK, "1234", 0, "", "" },
-        /* 73*/ { BARCODE_EANX_CHK, "123", 0, "", "" },
-        /* 74*/ { BARCODE_EANX_CHK, "12", 0, "", "EAN-2" },
-        /* 75*/ { BARCODE_EANX_CHK, "1", 0, "", "" },
-        /* 76*/ { BARCODE_EANX_CHK, "123456789012+1", 0, "", "" },
-        /* 77*/ { BARCODE_EANX_CHK, "1234567890128+1", 0, "", "" },
-        /* 78*/ { BARCODE_EANX_CHK, "1234567890127+1", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '7', expecting '8'", "" },
-        /* 79*/ { BARCODE_EANX_CHK, "123456789012+12", 0, "", "" },
-        /* 80*/ { BARCODE_EANX_CHK, "1234567890128+12", 0, "", "" },
-        /* 81*/ { BARCODE_EANX_CHK, "1234567890129+12", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '8'", "" },
-        /* 82*/ { BARCODE_EANX_CHK, "123456789012+123", 0, "", "" },
-        /* 83*/ { BARCODE_EANX_CHK, "1234567890128+123", 0, "", "" },
-        /* 84*/ { BARCODE_EANX_CHK, "1234567890120+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '8'", "" },
-        /* 85*/ { BARCODE_EANX_CHK, "123456789012+1234", 0, "", "" },
-        /* 86*/ { BARCODE_EANX_CHK, "1234567890128+1234", 0, "", "" },
-        /* 87*/ { BARCODE_EANX_CHK, "1234567890121+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '8'", "" },
-        /* 88*/ { BARCODE_EANX_CHK, "123456789012+12345", 0, "", "" },
-        /* 89*/ { BARCODE_EANX_CHK, "1234567890128+12345", 0, "", "" },
-        /* 90*/ { BARCODE_EANX_CHK, "1234567890122+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '2', expecting '8'", "" },
-        /* 91*/ { BARCODE_EANX_CHK, "1234567890122+1234A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /* 92*/ { BARCODE_EANX_CHK, "123456789012+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 93*/ { BARCODE_EANX_CHK, "123456789012+12345A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /* 94*/ { BARCODE_EANX_CHK, "1234567890128+123456", ZINT_ERROR_TOO_LONG, "Error 283: Input too long (19 character maximum)", "" },
-        /* 95*/ { BARCODE_EANX_CHK, "12345678901+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 96*/ { BARCODE_EANX_CHK, "12345678901+1234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /* 97*/ { BARCODE_EANX_CHK, "12345678901+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '5'", "" },
-        /* 98*/ { BARCODE_EANX_CHK, "1234567890+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '5'", "" },
-        /* 99*/ { BARCODE_EANX_CHK, "1234567890+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /*100*/ { BARCODE_EANX_CHK, "123456789+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '4'", "" },
-        /*101*/ { BARCODE_EANX_CHK, "12345678+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '8', expecting '0'", "EAN-8" },
-        /*102*/ { BARCODE_EANX_CHK, "12345670+12345", 0, "", "" },
-        /*103*/ { BARCODE_EANX_CHK, "1234567+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '7', expecting '5'", "" },
-        /*104*/ { BARCODE_EANX_CHK, "1234565+12345", 0, "", "" },
-        /*105*/ { BARCODE_EANX_CHK, "123456+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '6', expecting '7'", "" },
-        /*106*/ { BARCODE_EANX_CHK, "123457+12345", 0, "", "" },
-        /*107*/ { BARCODE_EANX_CHK, "12345+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '5', expecting '8'", "" },
-        /*108*/ { BARCODE_EANX_CHK, "12348+12345", 0, "", "" },
-        /*109*/ { BARCODE_EANX_CHK, "1234+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '6'", "" },
-        /*110*/ { BARCODE_EANX_CHK, "1236+12345", 0, "", "" },
-        /*111*/ { BARCODE_EANX_CHK, "123+12345", 0, "", "3 happens to be correct check digit" },
-        /*112*/ { BARCODE_EANX_CHK, "124+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '3'", "" },
-        /*113*/ { BARCODE_EANX_CHK, "12+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '2', expecting '7'", "" },
-        /*114*/ { BARCODE_EANX_CHK, "17+12345", 0, "", "" },
-        /*115*/ { BARCODE_EANX_CHK, "1+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '1', expecting '0'", "" },
-        /*116*/ { BARCODE_EANX_CHK, "0+12345", 0, "", "" },
-        /*117*/ { BARCODE_EANX_CHK, "0+123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /*118*/ { BARCODE_EANX_CHK, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /*119*/ { BARCODE_EANX_CHK, "0+12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (5 character maximum for add-on)", "" },
-        /*120*/ { BARCODE_EANX_CHK, "1+", 0, "", "EAN-2" },
-        /*121*/ { BARCODE_EANX_CHK, "+1", 0, "", "EAN-8" },
-        /*122*/ { BARCODE_EANX_CHK, "+", 0, "", "EAN-2" },
-        /*123*/ { BARCODE_EANX_CHK, "12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /*124*/ { BARCODE_EANX_CHK, "1234567890123A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character in data (digits and \"+\" only)", "" },
-        /*125*/ { BARCODE_EANX_CHK, "123456789012345", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /*126*/ { BARCODE_EANX_CHK, "1234567890123456", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /*127*/ { BARCODE_EANX_CHK, "12345678901234567", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /*128*/ { BARCODE_EANX_CHK, "123456789012345678", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
-        /*129*/ { BARCODE_EANX_CHK, "1234567890123456789", ZINT_ERROR_TOO_LONG, "Error 294: Input too long (13 character maximum)", "" },
+        /*  1*/ { BARCODE_EANX, "12345678901A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 12 in input (digits and \"+\" only)", "" },
+        /*  2*/ { BARCODE_EANX, "12345A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 6 in input (digits and \"+\" only)", "" },
+        /*  3*/ { BARCODE_EANX, "123A56", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 4 in input (digits and \"+\" only)", "" },
+        /*  4*/ { BARCODE_EANX, "12345678901", 0, "", "" },
+        /*  5*/ { BARCODE_EANX, "1234567890128", 0, "", "EANX accepts CHK (treated as such if no leading zeroes required)" },
+        /*  6*/ { BARCODE_EANX, "1234567890120", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '8'", "" },
+        /*  7*/ { BARCODE_EANX, "123456789012+1", 0, "", "" },
+        /*  8*/ { BARCODE_EANX, "1234567890128+1", 0, "", "" },
+        /*  9*/ { BARCODE_EANX, "1234567890121+1", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '8'", "" },
+        /* 10*/ { BARCODE_EANX, "123456789012+12", 0, "", "" },
+        /* 11*/ { BARCODE_EANX, "1234567890128+12", 0, "", "" },
+        /* 12*/ { BARCODE_EANX, "1234567890122+12", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '2', expecting '8'", "" },
+        /* 13*/ { BARCODE_EANX, "12345678901234+12", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 14 too long (maximum 13)", "" },
+        /* 14*/ { BARCODE_EANX, "123456789012345+12", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 15 too long (maximum 13)", "" },
+        /* 15*/ { BARCODE_EANX, "1234567890123456+12", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 16 too long (maximum 13)", "" },
+        /* 16*/ { BARCODE_EANX, "123456789012+123", 0, "", "" },
+        /* 17*/ { BARCODE_EANX, "1234567890128+123", 0, "", "" },
+        /* 18*/ { BARCODE_EANX, "1234567890123+123", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '3', expecting '8'", "" },
+        /* 19*/ { BARCODE_EANX, "12345678901234+123", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 14 too long (maximum 13)", "" },
+        /* 20*/ { BARCODE_EANX, "123456789012345+123", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 15 too long (maximum 13)", "" },
+        /* 21*/ { BARCODE_EANX, "123456789012+1234", 0, "", "" },
+        /* 22*/ { BARCODE_EANX, "1234567890128+1234", 0, "", "" },
+        /* 23*/ { BARCODE_EANX, "1234567890124+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '4', expecting '8'", "" },
+        /* 24*/ { BARCODE_EANX, "12345678901234+1234", ZINT_ERROR_TOO_LONG, "Error 298: Input EAN length 14 too long (maximum 13)", "" },
+        /* 25*/ { BARCODE_EANX, "123456789012+12345", 0, "", "" },
+        /* 26*/ { BARCODE_EANX, "1234567890128+12345", 0, "", "" },
+        /* 27*/ { BARCODE_EANX, "12345678901234+12345", ZINT_ERROR_TOO_LONG, "Error 283: Input length 20 too long (maximum 19)", "" },
+        /* 28*/ { BARCODE_EANX, "1234567890125+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '5', expecting '8'", "" },
+        /* 29*/ { BARCODE_EANX, "123456789012+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 30*/ { BARCODE_EANX, "1234567890128+123456", ZINT_ERROR_TOO_LONG, "Error 283: Input length 20 too long (maximum 19)", "" },
+        /* 31*/ { BARCODE_EANX, "12345678901+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 32*/ { BARCODE_EANX, "12345678901+1234567", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 7 too long (maximum 5)", "" },
+        /* 33*/ { BARCODE_EANX, "1234567890+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 34*/ { BARCODE_EANX, "1234567890+1234567", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 7 too long (maximum 5)", "" },
+        /* 35*/ { BARCODE_EANX, "123456789+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 36*/ { BARCODE_EANX, "123456789+1234567", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 7 too long (maximum 5)", "" },
+        /* 37*/ { BARCODE_EANX, "12345678+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 38*/ { BARCODE_EANX, "1234567+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "EAN-8" },
+        /* 39*/ { BARCODE_EANX, "123456+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 40*/ { BARCODE_EANX, "12345+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 41*/ { BARCODE_EANX, "1234+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 42*/ { BARCODE_EANX, "123+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 43*/ { BARCODE_EANX, "12+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 44*/ { BARCODE_EANX, "1+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 45*/ { BARCODE_EANX, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
+        /* 46*/ { BARCODE_EANX, "1+12345", 0, "", "" },
+        /* 47*/ { BARCODE_EANX, "1+", 0, "", "EAN-2" },
+        /* 48*/ { BARCODE_EANX, "+1", 0, "", "EAN-8" },
+        /* 49*/ { BARCODE_EANX, "+", 0, "", "EAN-2" },
+        /* 50*/ { BARCODE_EANX, "1", 0, "", "EAN-2" },
+        /* 51*/ { BARCODE_EANX, "12", 0, "", "EAN-2" },
+        /* 52*/ { BARCODE_EANX, "123", 0, "", "EAN-5" },
+        /* 53*/ { BARCODE_EANX, "12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input length 14 too long (maximum 13)", "" },
+        /* 54*/ { BARCODE_EANX, "1234567890123A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 14 in input (digits and \"+\" only)", "" },
+        /* 55*/ { BARCODE_EANX, "123456789012345", ZINT_ERROR_TOO_LONG, "Error 294: Input length 15 too long (maximum 13)", "" },
+        /* 56*/ { BARCODE_EANX, "12345678901234A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 15 in input (digits and \"+\" only)", "" },
+        /* 57*/ { BARCODE_EANX, "1234567890123456", ZINT_ERROR_TOO_LONG, "Error 294: Input length 16 too long (maximum 13)", "" },
+        /* 58*/ { BARCODE_EANX, "12345678901234567", ZINT_ERROR_TOO_LONG, "Error 294: Input length 17 too long (maximum 13)", "" },
+        /* 59*/ { BARCODE_EANX, "123456789012345678", ZINT_ERROR_TOO_LONG, "Error 294: Input length 18 too long (maximum 13)", "" },
+        /* 60*/ { BARCODE_EANX, "1234567890123456789", ZINT_ERROR_TOO_LONG, "Error 294: Input length 19 too long (maximum 13)", "" },
+        /* 61*/ { BARCODE_EANX_CHK, "1234567890128", 0, "", "" },
+        /* 62*/ { BARCODE_EANX_CHK, "1234567890126", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '6', expecting '8'", "" },
+        /* 63*/ { BARCODE_EANX_CHK, "123456789012A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 13 in input (digits and \"+\" only)", "" },
+        /* 64*/ { BARCODE_EANX_CHK, "123456789012", 0, "", "Note: this is '0123456789012' with '2' happening to be the correct check digit" },
+        /* 65*/ { BARCODE_EANX_CHK, "123456789013", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '3', expecting '2'", "" },
+        /* 66*/ { BARCODE_EANX_CHK, "12345678901", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '5'", "" },
+        /* 67*/ { BARCODE_EANX_CHK, "12345678905", 0, "", "" },
+        /* 68*/ { BARCODE_EANX_CHK, "1234567890", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '5'", "" },
+        /* 69*/ { BARCODE_EANX_CHK, "123456789", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '4'", "" },
+        /* 70*/ { BARCODE_EANX_CHK, "12345678", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '8', expecting '0'", "EAN-8" },
+        /* 71*/ { BARCODE_EANX_CHK, "1234567", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '7', expecting '5'", "" },
+        /* 72*/ { BARCODE_EANX_CHK, "123456", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '6', expecting '7'", "" },
+        /* 73*/ { BARCODE_EANX_CHK, "12345", 0, "", "EAN-5" },
+        /* 74*/ { BARCODE_EANX_CHK, "1234", 0, "", "" },
+        /* 75*/ { BARCODE_EANX_CHK, "123", 0, "", "" },
+        /* 76*/ { BARCODE_EANX_CHK, "12", 0, "", "EAN-2" },
+        /* 77*/ { BARCODE_EANX_CHK, "1", 0, "", "" },
+        /* 78*/ { BARCODE_EANX_CHK, "123456789012+1", 0, "", "" },
+        /* 79*/ { BARCODE_EANX_CHK, "1234567890128+1", 0, "", "" },
+        /* 80*/ { BARCODE_EANX_CHK, "1234567890127+1", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '7', expecting '8'", "" },
+        /* 81*/ { BARCODE_EANX_CHK, "123456789012+12", 0, "", "" },
+        /* 82*/ { BARCODE_EANX_CHK, "1234567890128+12", 0, "", "" },
+        /* 83*/ { BARCODE_EANX_CHK, "1234567890129+12", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '8'", "" },
+        /* 84*/ { BARCODE_EANX_CHK, "123456789012+123", 0, "", "" },
+        /* 85*/ { BARCODE_EANX_CHK, "1234567890128+123", 0, "", "" },
+        /* 86*/ { BARCODE_EANX_CHK, "1234567890120+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '8'", "" },
+        /* 87*/ { BARCODE_EANX_CHK, "123456789012+1234", 0, "", "" },
+        /* 88*/ { BARCODE_EANX_CHK, "1234567890128+1234", 0, "", "" },
+        /* 89*/ { BARCODE_EANX_CHK, "1234567890121+1234", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '8'", "" },
+        /* 90*/ { BARCODE_EANX_CHK, "123456789012+12345", 0, "", "" },
+        /* 91*/ { BARCODE_EANX_CHK, "1234567890128+12345", 0, "", "" },
+        /* 92*/ { BARCODE_EANX_CHK, "1234567890122+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '2', expecting '8'", "" },
+        /* 93*/ { BARCODE_EANX_CHK, "1234567890122+1234A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 19 in input (digits and \"+\" only)", "" },
+        /* 94*/ { BARCODE_EANX_CHK, "123456789012+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 95*/ { BARCODE_EANX_CHK, "123456789012+12345A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 19 in input (digits and \"+\" only)", "" },
+        /* 96*/ { BARCODE_EANX_CHK, "1234567890128+123456", ZINT_ERROR_TOO_LONG, "Error 283: Input length 20 too long (maximum 19)", "" },
+        /* 97*/ { BARCODE_EANX_CHK, "12345678901+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /* 98*/ { BARCODE_EANX_CHK, "12345678901+1234567", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 7 too long (maximum 5)", "" },
+        /* 99*/ { BARCODE_EANX_CHK, "12345678901+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '1', expecting '5'", "" },
+        /*100*/ { BARCODE_EANX_CHK, "1234567890+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '0', expecting '5'", "" },
+        /*101*/ { BARCODE_EANX_CHK, "1234567890+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /*102*/ { BARCODE_EANX_CHK, "123456789+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '4'", "" },
+        /*103*/ { BARCODE_EANX_CHK, "12345678+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '8', expecting '0'", "EAN-8" },
+        /*104*/ { BARCODE_EANX_CHK, "12345670+12345", 0, "", "" },
+        /*105*/ { BARCODE_EANX_CHK, "1234567+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '7', expecting '5'", "" },
+        /*106*/ { BARCODE_EANX_CHK, "1234565+12345", 0, "", "" },
+        /*107*/ { BARCODE_EANX_CHK, "123456+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '6', expecting '7'", "" },
+        /*108*/ { BARCODE_EANX_CHK, "123457+12345", 0, "", "" },
+        /*109*/ { BARCODE_EANX_CHK, "12345+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '5', expecting '8'", "" },
+        /*110*/ { BARCODE_EANX_CHK, "12348+12345", 0, "", "" },
+        /*111*/ { BARCODE_EANX_CHK, "1234+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '6'", "" },
+        /*112*/ { BARCODE_EANX_CHK, "1236+12345", 0, "", "" },
+        /*113*/ { BARCODE_EANX_CHK, "123+12345", 0, "", "3 happens to be correct check digit" },
+        /*114*/ { BARCODE_EANX_CHK, "124+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '3'", "" },
+        /*115*/ { BARCODE_EANX_CHK, "12+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '2', expecting '7'", "" },
+        /*116*/ { BARCODE_EANX_CHK, "17+12345", 0, "", "" },
+        /*117*/ { BARCODE_EANX_CHK, "1+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '1', expecting '0'", "" },
+        /*118*/ { BARCODE_EANX_CHK, "0+12345", 0, "", "" },
+        /*119*/ { BARCODE_EANX_CHK, "0+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
+        /*120*/ { BARCODE_EANX_CHK, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
+        /*121*/ { BARCODE_EANX_CHK, "0+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
+        /*122*/ { BARCODE_EANX_CHK, "1+", 0, "", "EAN-2" },
+        /*123*/ { BARCODE_EANX_CHK, "+1", 0, "", "EAN-8" },
+        /*124*/ { BARCODE_EANX_CHK, "+", 0, "", "EAN-2" },
+        /*125*/ { BARCODE_EANX_CHK, "12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input length 14 too long (maximum 13)", "" },
+        /*126*/ { BARCODE_EANX_CHK, "1234567890123A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 14 in input (digits and \"+\" only)", "" },
+        /*127*/ { BARCODE_EANX_CHK, "123456789012345", ZINT_ERROR_TOO_LONG, "Error 294: Input length 15 too long (maximum 13)", "" },
+        /*128*/ { BARCODE_EANX_CHK, "1234567890123456", ZINT_ERROR_TOO_LONG, "Error 294: Input length 16 too long (maximum 13)", "" },
+        /*129*/ { BARCODE_EANX_CHK, "12345678901234567", ZINT_ERROR_TOO_LONG, "Error 294: Input length 17 too long (maximum 13)", "" },
+        /*130*/ { BARCODE_EANX_CHK, "123456789012345678", ZINT_ERROR_TOO_LONG, "Error 294: Input length 18 too long (maximum 13)", "" },
+        /*131*/ { BARCODE_EANX_CHK, "1234567890123456789", ZINT_ERROR_TOO_LONG, "Error 294: Input length 19 too long (maximum 13)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char errtxt_escaped[256];
 
-    testStart("test_eanx_input");
+    testStartSymbol("test_eanx_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -491,37 +498,37 @@ static void test_isbn_input(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "0", 0, 0, "", "Left zero-padded if < 10 chars" },
         /*  1*/ { "1", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '1', expecting '0'", "" },
         /*  2*/ { "X", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit 'X', expecting '0'", "" },
         /*  3*/ { "12", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '2', expecting '9'", "" },
         /*  4*/ { "19", 0, 0, "", "" },
-        /*  5*/ { "X9", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /*  5*/ { "X9", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /*  6*/ { "123", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '3', expecting '4'", "" },
         /*  7*/ { "124", 0, 0, "", "" },
-        /*  8*/ { "1X4", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /*  8*/ { "1X4", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /*  9*/ { "1234", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '4', expecting '6'", "" },
         /* 10*/ { "1236", 0, 0, "", "" },
-        /* 11*/ { "12X6", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 11*/ { "12X6", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 12*/ { "12345", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '5', expecting '3'", "" },
         /* 13*/ { "12343", 0, 0, "", "" },
-        /* 14*/ { "123X3", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 14*/ { "123X3", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 15*/ { "123456", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '6', expecting '5'", "" },
         /* 16*/ { "123455", 0, 0, "", "" },
-        /* 17*/ { "1234X5", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 17*/ { "1234X5", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 18*/ { "1234567", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '7', expecting '0'", "" },
         /* 19*/ { "1234560", 0, 0, "", "" },
-        /* 20*/ { "12345X0", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 20*/ { "12345X0", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 21*/ { "12345678", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '8', expecting '9'", "" },
         /* 22*/ { "12345679", 0, 0, "", "9 is correct check digit" },
         /* 23*/ { "98765434", 0, 0, "", "4 is correct check digit" },
-        /* 24*/ { "123456X9", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 24*/ { "123456X9", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 25*/ { "123456789", 0, 0, "", "" },
         /* 26*/ { "340013817", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '7', expecting '8'", "" },
         /* 27*/ { "340013818", 0, 0, "", "8 is correct check digit" },
         /* 28*/ { "902888455", 0, 0, "", "5 is correct check digit" },
-        /* 29*/ { "9028884X5", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 29*/ { "9028884X5", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 30*/ { "0123456789", 0, 0, "", "" },
         /* 31*/ { "1234567890", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid ISBN check digit '0', expecting 'X'", "" },
         /* 32*/ { "123456789X", 0, 0, "", "X is correct check digit" },
@@ -532,13 +539,13 @@ static void test_isbn_input(const testCtx *const p_ctx) {
         /* 37*/ { "0140430016", 0, 0, "", "6 is correct check digit" },
         /* 38*/ { "0571086187", 0, 0, "", "7 is correct check digit" },
         /* 39*/ { "0486600882", 0, 0, "", "2 is correct check digit" },
-        /* 40*/ { "04866008X2", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
-        /* 41*/ { "123456789A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character in data (digits, \"X\" and \"+\" only)", "" },
-        /* 42*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input wrong length (9, 10, or 13 characters only)", "" },
-        /* 43*/ { "1234567890A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character in data (digits, \"X\" and \"+\" only)", "" },
-        /* 44*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input wrong length (9, 10, or 13 characters only)", "" },
-        /* 45*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input wrong length (9, 10, or 13 characters only)", "" },
-        /* 46*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input wrong length (9, 10, or 13 characters only)", "" },
+        /* 40*/ { "04866008X2", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
+        /* 41*/ { "123456789A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character at position 10 in input (digits, \"X\" and \"+\" only)", "" },
+        /* 42*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input length 11 wrong (9, 10, or 13 only)", "" },
+        /* 43*/ { "1234567890A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character at position 11 in input (digits, \"X\" and \"+\" only)", "" },
+        /* 44*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input length 12 wrong (9, 10, or 13 only)", "" },
+        /* 45*/ { "12345678901", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input length 11 wrong (9, 10, or 13 only)", "" },
+        /* 46*/ { "123456789012", ZINT_ERROR_TOO_LONG, -1, "Error 278: Input length 12 wrong (9, 10, or 13 only)", "" },
         /* 47*/ { "1234567890123", ZINT_ERROR_INVALID_DATA, -1, "Error 279: Invalid ISBN (must begin with \"978\" or \"979\")", "" },
         /* 48*/ { "9784567890123", ZINT_ERROR_INVALID_CHECK, -1, "Error 280: Invalid ISBN check digit '3', expecting '0'", "" },
         /* 49*/ { "9784567890120", 0, 0, "", "0 is correct check digit" },
@@ -547,64 +554,64 @@ static void test_isbn_input(const testCtx *const p_ctx) {
         /* 52*/ { "9781847657954", 0, 0, "", "4 is correct check digit" },
         /* 53*/ { "9781846688188", 0, 0, "", "8 is correct check digit" },
         /* 54*/ { "9781847659293", 0, 0, "", "3 is correct check digit" },
-        /* 55*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input too long (13 character maximum)", "" },
-        /* 56*/ { "978456789012012", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input too long (13 character maximum)", "" },
+        /* 55*/ { "97845678901201", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input length 14 too long (maximum 13)", "" },
+        /* 56*/ { "978456789012012", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input length 15 too long (maximum 13)", "" },
         /* 57*/ { "3954994+12", 0, 0, "", "" },
         /* 58*/ { "3954994+1X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 59*/ { "39549X4+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 59*/ { "39549X4+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 60*/ { "3954994+12345", 0, 0, "", "" },
         /* 61*/ { "3954994+1234X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 62*/ { "39549X4+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
-        /* 63*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input too long (5 character maximum for add-on)", "" },
+        /* 62*/ { "39549X4+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
+        /* 63*/ { "3954994+123456", ZINT_ERROR_TOO_LONG, -1, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
         /* 64*/ { "3954994+", 0, 0, "", "" },
-        /* 65*/ { "3954X94+", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 65*/ { "3954X94+", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 66*/ { "61954993+1", 0, 0, "", "" },
         /* 67*/ { "61954993+X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 68*/ { "619549X3+1", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 68*/ { "619549X3+1", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 69*/ { "61954992+123", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '2', expecting '3'", "" },
         /* 70*/ { "61954993+123", 0, 0, "", "" },
         /* 71*/ { "61954993+12X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 72*/ { "619549X3+123", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 72*/ { "619549X3+123", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 73*/ { "361954990+12", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid SBN check digit '0', expecting '9'", "" },
         /* 74*/ { "361954999+12", 0, 0, "", "" },
         /* 75*/ { "361954999+1X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 76*/ { "3619549X9+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 76*/ { "3619549X9+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 77*/ { "361954999+1234", 0, 0, "", "" },
         /* 78*/ { "361954999+123X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 79*/ { "3619549X9+1234", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 79*/ { "3619549X9+1234", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 80*/ { "1999000030+12", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid ISBN check digit '0', expecting 'X'", "" },
         /* 81*/ { "199900003X+12", 0, 0, "", "" },
         /* 82*/ { "199900003x+12", 0, 0, "", "" },
-        /* 83*/ { "19990000XX+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
+        /* 83*/ { "19990000XX+12", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
         /* 84*/ { "199900003X+1X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
         /* 85*/ { "1999000031+12345", ZINT_ERROR_INVALID_CHECK, -1, "Error 281: Invalid ISBN check digit '1', expecting 'X'", "" },
         /* 86*/ { "199900003X+12345", 0, 0, "", "" },
         /* 87*/ { "199900003x+12345", 0, 0, "", "" },
         /* 88*/ { "199900003X+1234X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 89*/ { "19990000XX+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in data, \"X\" allowed in last position only", "" },
-        /* 90*/ { "199900003X+1234A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character in data (digits, \"X\" and \"+\" only)", "" },
+        /* 89*/ { "19990000XX+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 296: Invalid character in input, \"X\" allowed in last position only", "" },
+        /* 90*/ { "199900003X+1234A", ZINT_ERROR_INVALID_DATA, -1, "Error 285: Invalid character at position 16 in input (digits, \"X\" and \"+\" only)", "" },
         /* 91*/ { "9791234567895+12", ZINT_ERROR_INVALID_CHECK, -1, "Error 280: Invalid ISBN check digit '5', expecting '6'", "" },
         /* 92*/ { "9791234567896+12", 0, 0, "", "" },
         /* 93*/ { "9791234567896+1X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 94*/ { "97912345678X6+12", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in data, \"X\" not allowed in ISBN-13", "" },
+        /* 94*/ { "97912345678X6+12", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in input, \"X\" not allowed in ISBN-13", "" },
         /* 95*/ { "9791234567897+12345", ZINT_ERROR_INVALID_CHECK, -1, "Error 280: Invalid ISBN check digit '7', expecting '6'", "" },
         /* 96*/ { "9791234567896+12345", 0, 0, "", "" },
         /* 97*/ { "9791234567896+1234X", ZINT_ERROR_INVALID_DATA, -1, "Error 295: Invalid add-on data (digits only)", "" },
-        /* 98*/ { "979123456X896+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in data, \"X\" not allowed in ISBN-13", "" },
+        /* 98*/ { "979123456X896+12345", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in input, \"X\" not allowed in ISBN-13", "" },
         /* 99*/ { "9791234567892+", ZINT_ERROR_INVALID_CHECK, -1, "Error 280: Invalid ISBN check digit '2', expecting '6'", "" },
         /*100*/ { "9791234567896+", 0, 0, "", "" },
-        /*101*/ { "97912345678X6+", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in data, \"X\" not allowed in ISBN-13", "" },
-        /*102*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input too long (13 character maximum)", "" },
-        /*103*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1, "Error 283: Input too long (19 character maximum)", "" },
-        /*104*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1, "Error 283: Input too long (19 character maximum)", "" },
+        /*101*/ { "97912345678X6+", ZINT_ERROR_INVALID_DATA, -1, "Error 282: Invalid character in input, \"X\" not allowed in ISBN-13", "" },
+        /*102*/ { "97912345678961+", ZINT_ERROR_TOO_LONG, -1, "Error 294: Input length 14 too long (maximum 13)", "" },
+        /*103*/ { "97912345678961+12345", ZINT_ERROR_TOO_LONG, -1, "Error 283: Input length 20 too long (maximum 19)", "" },
+        /*104*/ { "9791234567896+123456", ZINT_ERROR_TOO_LONG, -1, "Error 283: Input length 20 too long (maximum 19)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char errtxt_escaped[256];
 
-    testStart("test_isbn_input");
+    testStartSymbol("test_isbn_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -648,7 +655,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_EANX, "12345678901", 0, "0123456789012" },
         /*  1*/ { BARCODE_EANX, "123456789012", 0, "1234567890128" },
         /*  2*/ { BARCODE_EANX, "1234567890128", 0, "1234567890128" }, /* EANX accepts CHK (treated as such if no leading zeroes required) */
@@ -707,11 +714,11 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 55*/ { BARCODE_UPCE_CHK, "12345670+1", 0, "12345670+01" },
         /* 56*/ { BARCODE_UPCE_CHK, "1234565+1", 0, "01234565+01" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -742,16 +749,16 @@ static void test_vector_same(const testCtx *const p_ctx) {
         int ret_encode;
         int ret_vector;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /* 0*/ { BARCODE_UPCE, "123456", 0, 0 },
         /* 1*/ { BARCODE_UPCE_CHK, "1234565", 0, 0 }, /* 5 is correct check digit */
         /* 2*/ { BARCODE_ISBNX, "0195049969", 0, 0 }, /* 9 is correct check digit */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_vector_same");
+    testStartSymbol("test_vector_same", &symbol);
 
     for (i = 0; i < data_size; i++) {
         struct zint_vector *vectors[4];
@@ -809,7 +816,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_UPCA, -1, "01234567890", 0, 1, 95, "GGS Figure 5.1-1 UPC-A (also Figure 5.2.2.3-1., 5.2.6.6-2., 6.4.9-1. and BS EN 797:1996 Figure 3)",
                     "10100011010011001001001101111010100011011000101010101000010001001001000111010011100101001110101"
                 },
@@ -919,9 +926,9 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10101110110010111011001100100110100001010001101010100111010100001000100100100011101001010000101000000010110011001010010011"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
     char cmp_buf[4096];
@@ -930,7 +937,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -998,7 +1005,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /* 0*/ { BARCODE_EANX, "55++15", -1, ZINT_ERROR_INVALID_DATA },
         /* 1*/ { BARCODE_EANX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
         /* 2*/ { BARCODE_EANX_CHK, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
@@ -1011,11 +1018,11 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /* 9*/ { BARCODE_EANX, "+123456", -1, ZINT_ERROR_TOO_LONG },
         /*10*/ { BARCODE_EANX, "000002000000200+203", -1, ZINT_ERROR_TOO_LONG }, /* #218 Jan Schrewe CI-Fuzz */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_fuzz");
+    testStartSymbol("test_fuzz", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1056,7 +1063,7 @@ static void test_perf(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_EANX, -1, "123456789012+12345", 0, 1, 149, "EAN-13 add-on 5" },
         /*  1*/ { BARCODE_EANX, -1, "123456789012", 0, 1, 95, "EAN-13 no add-on" },
         /*  2*/ { BARCODE_UPCA, -1, "12345678901+12345", 0, 1, 151, "UPC-A add-on 5" },
@@ -1068,7 +1075,7 @@ static void test_perf(const testCtx *const p_ctx) {
         /*  8*/ { BARCODE_EANX, -1, "12345", 0, 1, 47, "EAN-5" },
         /*  9*/ { BARCODE_EANX, -1, "12", 0, 1, 20, "EAN-2" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 

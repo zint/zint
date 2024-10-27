@@ -44,7 +44,7 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "FFFFFF", "000000", 0, "" },
         /*  1*/ { "ffffff", "ffffff", 0, "" },
         /*  2*/ { "77777777", "33333333", 0, "" },
@@ -57,16 +57,16 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
         /*  9*/ { "100,,100,100", ",1,2,", 0, "" },
         /* 10*/ { "100,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "882: Malformed foreground CMYK colour (4 decimal numbers, comma-separated)" },
         /* 11*/ { "100,100,99,1001", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "883: Malformed foreground CMYK colour (3 digit maximum per number)" },
-        /* 12*/ { "101,100,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "884: Malformed foreground CMYK colour C (decimal 0-100 only)" },
-        /* 13*/ { "100,101,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "885: Malformed foreground CMYK colour M (decimal 0-100 only)" },
-        /* 14*/ { "100,100,101,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "886: Malformed foreground CMYK colour Y (decimal 0-100 only)" },
-        /* 15*/ { "100,100,100,101", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "887: Malformed foreground CMYK colour K (decimal 0-100 only)" },
+        /* 12*/ { "101,100,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "884: Malformed foreground CMYK colour C (decimal 0 to 100 only)" },
+        /* 13*/ { "100,101,100,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "885: Malformed foreground CMYK colour M (decimal 0 to 100 only)" },
+        /* 14*/ { "100,100,101,100", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "886: Malformed foreground CMYK colour Y (decimal 0 to 100 only)" },
+        /* 15*/ { "100,100,100,101", "0,1,2,3", ZINT_ERROR_INVALID_OPTION, "887: Malformed foreground CMYK colour K (decimal 0 to 100 only)" },
         /* 16*/ { "100,100,100,100", "0,1,", ZINT_ERROR_INVALID_OPTION, "882: Malformed background CMYK colour (4 decimal numbers, comma-separated)" },
         /* 17*/ { "100,100,100,100", "0,0123,3,4", ZINT_ERROR_INVALID_OPTION, "883: Malformed background CMYK colour (3 digit maximum per number)" },
-        /* 18*/ { "100,100,100,100", "0,1,2,101", ZINT_ERROR_INVALID_OPTION, "887: Malformed background CMYK colour K (decimal 0-100 only)" },
+        /* 18*/ { "100,100,100,100", "0,1,2,101", ZINT_ERROR_INVALID_OPTION, "887: Malformed background CMYK colour K (decimal 0 to 100 only)" },
         /* 19*/ { "100,100,100,100", "0,1,2,3,", ZINT_ERROR_INVALID_OPTION, "882: Malformed background CMYK colour (4 decimal numbers, comma-separated)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
     struct zint_symbol symbol;
 
@@ -99,7 +99,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
         char *expected_cmyk;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "FFFFFF", 0, 0xFF, 0xFF, 0xFF, 0xFF, "0,0,0,0" },
         /*  1*/ { "000000", 0, 0x00, 0x00, 0x00, 0xFF, "0,0,0,100" },
         /*  2*/ { "FEDCBA", 0, 0xFE, 0xDC, 0xBA, 0xFF, "0,13,27,0" },
@@ -113,7 +113,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
         /* 10*/ { "80,30,60,0", 0, 0x33, 0xB3, 0x66, 0xFF, "72,0,43,30" },
         /* 11*/ { "50,50,50,50", 0, 0x40, 0x40, 0x40, 0xFF, "0,0,0,75" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
     testStart("test_colour_get_rgb");
@@ -165,7 +165,7 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
         int ret_rgb;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "80,30,60,0", 0, 80, 30, 60, 0, 0xFF, "33B366FF", 0 },
         /*  1*/ { "50,50,50,50", 0, 50, 50, 50, 50, 0xFF, "404040FF", 0 },
         /*  2*/ { "0,0,0,100", 0, 0, 0, 0, 100, 0xFF, "000000FF", 0 },
@@ -173,7 +173,7 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
         /*  4*/ { "123456", 1, 79, 40, 0, 44, 0xFF, "123456FF", 0 },
         /*  5*/ { "12345678", 2, 79, 40, 0, 44, 0x78, "12345678", 1 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
     testStart("test_colour_get_cmyk");
@@ -249,7 +249,7 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
         float expected_qz_right;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, 1, 0, 0, 0, 0, 0, 0.0f, /*expected*/ 1.0f, 0.0f, 1.0f, 0.0f, 0.0f },
         /*  1*/ { BARCODE_CODE128, 2, 0, 0, 0, 0, 0, 1.0f, /*expected*/ 2.0f, 0.0f, 2.0f, 0.0f, 0.0f },
         /*  2*/ { BARCODE_CODE128, 2, 3, 0, 0, 0, 0, 1.0f, /*expected*/ 2.0f, 3.0f, 2.0f, 3.0f, 0.0f },
@@ -263,7 +263,7 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
         /* 10*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BIND_TOP | BARCODE_BOX | BARCODE_BIND, 0, 0, 1.0f, /*expected*/ 3.0f, 4.0f, 3.0f, 3.0f, 0.0f }, /* BIND_TOP wins */
         /* 11*/ { BARCODE_CODE128, 2, 3, 1, BARCODE_BOX | BARCODE_QUIET_ZONES, 0, 0, 1.0f, /*expected*/ 13.0f, 4.0f, 13.0f, 4.0f, 10.0f },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i;
     struct zint_symbol symbol = {0};
     float xoffset, yoffset, roffset, boffset, qz_right;
@@ -329,7 +329,7 @@ static void test_fopen(const testCtx *const p_ctx) {
         int succeed;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", "", "out.png", 1 },
         /*  1*/ { "out_test", "", "out.png", 1 },
         /*  2*/ { "out_test_with_subdir", "out_test_subdir", "out.png", 1 },
@@ -347,7 +347,7 @@ static void test_fopen(const testCtx *const p_ctx) {
         /* 14*/ { "", "", "outé.png", 1 },
         /* 15*/ { "outé_test", "", "outé.png", 1 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, len;
 
     FILE *ret;

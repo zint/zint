@@ -269,16 +269,15 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         State.OutLength = GIF_LZW_PAGE_SIZE;
     }
     if (!(State.pOut = (unsigned char *) malloc(State.OutLength))) {
-        strcpy(symbol->errtxt, "614: Insufficient memory for LZW buffer");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 614, "Insufficient memory for GIF LZW buffer");
     }
 
     State.fmp = &fm;
 
     /* Open output file in binary mode */
     if (!fm_open(State.fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "611: Could not open output file (%d: %.30s)", State.fmp->err,
-                strerror(State.fmp->err));
+        errtxtf(0, symbol, 611, "Could not open GIF output file (%1$d: %2$s)", State.fmp->err,
+                        strerror(State.fmp->err));
         free(State.pOut);
         return ZINT_ERROR_FILE_ACCESS;
     }
@@ -445,8 +444,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (!gif_lzw(&State, paletteBitSize)) {
         free(State.pOut);
         (void) fm_close(State.fmp, symbol);
-        strcpy(symbol->errtxt, "613: Insufficient memory for LZW buffer");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 613, "Insufficient memory for GIF LZW buffer");
     }
     fm_write(State.pOut, 1, State.OutPosCur, State.fmp);
     free(State.pOut);
@@ -455,16 +453,15 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     fm_putc(';', State.fmp);
 
     if (fm_error(State.fmp)) {
-        sprintf(symbol->errtxt, "615: Incomplete write to output (%d: %.30s)", State.fmp->err,
-                    strerror(State.fmp->err));
+        errtxtf(0, symbol, 615, "Incomplete write of GIF output (%1$d: %2$s)", State.fmp->err,
+                        strerror(State.fmp->err));
         (void) fm_close(State.fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(State.fmp, symbol)) {
-        sprintf(symbol->errtxt, "617: Failure on closing output file (%d: %.30s)", State.fmp->err,
-                    strerror(State.fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 617, "Failure on closing GIF output file (%1$d: %2$s)",
+                        State.fmp->err, strerror(State.fmp->err));
     }
 
     return 0;

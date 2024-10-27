@@ -86,8 +86,8 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "621: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_ACCESS;
+        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 621, "Could not open PCX output file (%1$d: %2$s)", fmp->err,
+                        strerror(fmp->err));
     }
 
     fm_write(&header, sizeof(pcx_header_t), 1, fmp);
@@ -151,14 +151,14 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "622: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 622, "Incomplete write of PCX output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "624: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 624, "Failure on closing PCX output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
 
     return 0;

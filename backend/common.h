@@ -42,6 +42,13 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
+#ifndef _MSC_VER
+#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
+#    define ZINT_IS_C89
+#  endif
+#endif
+
 #ifdef _MSC_VER
 typedef unsigned __int8 uint8_t;
 typedef unsigned __int16 uint16_t;
@@ -49,7 +56,7 @@ typedef __int32 int32_t;
 typedef unsigned __int32 uint32_t;
 typedef unsigned __int64 uint64_t;
 #else
-#include <stdint.h>
+#include <stdint.h> /* Introduced C99 */
 #endif
 
 /* Note if change following must also change "frontend/main.c" copy */
@@ -79,6 +86,12 @@ typedef unsigned __int64 uint64_t;
 #  endif
 #endif
 
+#if defined(__GNUC__) && __GNUC__ >= 3
+#  define ZINT_FORMAT_PRINTF(fmt_idx, first_idx) __attribute__((__format__(printf, fmt_idx, first_idx)))
+#else
+#  define ZINT_FORMAT_PRINTF(fmt_idx, first_idx)
+#endif
+
 #if defined(__GNUC__) && __GNUC__ >= 4 && !defined(ZINT_TEST) && !defined(__MINGW32__)
 #  define INTERNAL __attribute__((__visibility__("hidden")))
 #elif defined(ZINT_TEST)
@@ -93,13 +106,6 @@ typedef unsigned __int64 uint64_t;
 #else
 #  define INTERNAL_DATA_EXTERN extern
 #  define INTERNAL_DATA
-#endif
-
-/* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
-#ifndef _MSC_VER
-#  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L
-#    define ZINT_IS_C89
-#  endif
 #endif
 
 #ifdef _MSC_VER
@@ -154,7 +160,7 @@ INTERNAL void to_upper(unsigned char source[], const int length);
 /* Returns the number of times a character occurs in `source` */
 INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsigned char c);
 
-/* `is_chr()` & `is_sane()` flags */
+/* `is_chr()` & `not_sane()` flags */
 #define IS_SPC_F    0x0001 /* Space */
 #define IS_HSH_F    0x0002 /* Hash sign # */
 #define IS_AST_F    0x0004 /* Asterisk sign * */
@@ -181,11 +187,12 @@ INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsig
 /* Whether a character matches `flg` */
 INTERNAL int is_chr(const unsigned int flg, const unsigned int c);
 
-/* Verifies that a string only uses valid characters */
-INTERNAL int is_sane(const unsigned int flg, const unsigned char source[], const int length);
+/* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
+INTERNAL int not_sane(const unsigned int flg, const unsigned char source[], const int length);
 
-/* Verifies that a string only uses valid characters, and returns `test_string` position of each in `posns` array */
-INTERNAL int is_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
+/* Verifies if a string only uses valid characters as above, but also returns `test_string` position of each in
+   `posns` array */
+INTERNAL int not_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
                 const int length, int *posns);
 
 /* Returns the position of `data` in `set_string` */
@@ -230,6 +237,23 @@ INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const 
 
 /* Expands from a width pattern to a bit pattern */
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length);
+
+
+/* Set `symbol->errtxt` to "err_id: msg", returning `error_number`. If `err_id` is -1, the "err_id: " prefix is
+   omitted */
+INTERNAL int errtxt(const int error_number, struct zint_symbol *symbol, const int err_id, const char *msg);
+
+/* Set `symbol->errtxt` to "err_id: msg" with restricted subset of `printf()` formatting, returning `error_number`.
+   If `err_id` is -1, the "err_id: " prefix is omitted. Only the following specifiers are supported: "c", "d", "f",
+   "g" and "s", with no modifiers apart from "<n>$" numbering for l10n ("<n>" 1-9), in which case all specifiers must
+   be numbered, "%s" with length precisions: "%.*s", "%<n+1>$.*<n>$s", "%.<p>s" and "%<n>$.<p>s", and "%d" with
+   zero-padded minimum field lengths: "%0<m>d" or %<n>$0<m>d" ("<m>" 1-99) */
+INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const int err_id, const char *fmt, ...)
+    ZINT_FORMAT_PRINTF(4, 5);
+
+/* Helper to prepend/append to existing `symbol->errtxt` by calling `errtxtf(fmt)` with 2 arguments (copy of `errtxt`
+   & `msg`) if `msg` not NULL, or 1 argument (just copy of `errtxt`) if `msg` NULL, returning `error_number` */
+INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, const char *fmt, const char *msg);
 
 
 /* Whether `symbology` can have row binding */

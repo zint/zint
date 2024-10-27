@@ -31,6 +31,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 #include <assert.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include "common.h"
 
@@ -87,7 +88,7 @@ INTERNAL int chr_cnt(const unsigned char source[], const int length, const unsig
     return count;
 }
 
-/* Flag table for `is_chr()` and `is_sane()` */
+/* Flag table for `is_chr()` and `not_sane()` */
 #define IS_CLS_F    (IS_CLI_F | IS_SIL_F)
 static const unsigned short flgs[256] = {
     0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, /*00-1F*/
@@ -126,21 +127,22 @@ INTERNAL int is_chr(const unsigned int flg, const unsigned int c) {
     return c < 0x80 && (flgs[c] & flg) != 0;
 }
 
-/* Verifies that a string only uses valid characters */
-INTERNAL int is_sane(const unsigned int flg, const unsigned char source[], const int length) {
+/* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
+INTERNAL int not_sane(const unsigned int flg, const unsigned char source[], const int length) {
     int i;
 
     for (i = 0; i < length; i++) {
         if (!(flgs[source[i]] & flg)) {
-            return 0;
+            return i + 1;
         }
     }
-    return 1;
+    return 0;
 }
 
 /* Replaces huge switch statements for looking up in tables */
-/* Verifies that a string only uses valid characters, and returns `test_string` position of each in `posns` array */
-INTERNAL int is_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
+/* Verifies if a string only uses valid characters as above, but also returns `test_string` position of each in
+   `posns` array */
+INTERNAL int not_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
                 const int length, int *posns) {
     int i, j;
 
@@ -153,11 +155,11 @@ INTERNAL int is_sane_lookup(const char test_string[], const int test_length, con
             }
         }
         if (posns[i] == -1) {
-            return 0;
+            return i + 1;
         }
     }
 
-    return 1;
+    return 0;
 }
 
 /* Returns the position of `data` in `set_string` */
@@ -242,6 +244,294 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
     if (writer > symbol->width) {
         symbol->width = writer;
     }
+}
+
+/* Helper for `errtxt()` & `errtxtf()` to set "err_id: " part of error message, returning length */
+static int errtxt_id_str(char *errtxt, int num) {
+    int len = 0;
+    if (num == -1) {
+        errtxt[0] = '\0';
+        return 0;
+    }
+    if (num < 0 || num > 9999) { /* Restrict to 4 digits */
+        num = 9999;
+    }
+    if (num >= 1000) {
+        errtxt[len++] = '0' + (num / 1000);
+        num %= 1000;
+    }
+    errtxt[len++] = '0' + (num / 100);
+    num %= 100;
+    errtxt[len++] = '0' + (num / 10);
+    num %= 10;
+    errtxt[len++] = '0' + num;
+    errtxt[len++] = ':';
+    errtxt[len++] = ' ';
+    return len;
+}
+
+/* Set `symbol->errtxt` to "err_id: msg", returning `error_number`. If `err_id` is -1, the "err_id: " prefix is
+   omitted */
+INTERNAL int errtxt(const int error_number, struct zint_symbol *symbol, const int err_id, const char *msg) {
+    const int max_len = (int) sizeof(symbol->errtxt) - 1;
+    const int id_len = errtxt_id_str(symbol->errtxt, err_id);
+    int msg_len = (int) strlen(msg);
+
+    if (id_len + msg_len > max_len) {
+        if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0); /* Catch truncations */
+        msg_len = max_len - id_len;
+    }
+    memcpy(symbol->errtxt + id_len, msg, msg_len);
+
+    symbol->errtxt[id_len + msg_len] = '\0';
+
+    return error_number;
+}
+
+static int errtxtf_dpad(const char *fmt); /* Forward reference */
+
+/* Helper for `errtxtf()` to parse numbered specifier "n$" (where "n" 1-9), returning `fmt` advance increment */
+static int errtxtf_num_arg(const char *fmt, int *p_arg) {
+    int ret = 0;
+    int arg = -2;
+    if (!errtxtf_dpad(fmt) && z_isdigit(fmt[0])) {
+        arg = fmt[1] == '$' ? fmt[0] - '0' - 1 : -1;
+        ret = 2;
+    }
+    if (p_arg) {
+        *p_arg = arg;
+    }
+    return ret;
+}
+
+/* Helper for `errtxtf()` to parse length precision, returning `fmt` advance increment */
+static int errtxtf_slen(const char *fmt, const int arg, int *p_arg_cnt, int *p_len) {
+    int ret = 0;
+    int len = -1;
+    if (fmt[0] == '.') {
+        if (z_isdigit(fmt[1]) && fmt[1] != '0') {
+            len = fmt[1] - '0';
+            for (ret = 2; z_isdigit(fmt[ret]); ret++) {
+                len = len * 10 + fmt[ret] - '0';
+            }
+            if (fmt[ret] != 's') {
+                len = -1;
+            }
+        } else if (fmt[1] == '*' && fmt[2] == 's' && arg < 0) {
+            len = 0;
+            ret = 2;
+        } else if (fmt[1] == '*' && z_isdigit(fmt[2]) && fmt[3] == '$' && fmt[4] == 's') {
+            if (arg == -1 || arg == fmt[2] - '0') {
+                len = 0;
+                if (p_arg_cnt) {
+                    (*p_arg_cnt)++;
+                }
+            }
+            ret = 4;
+        } else {
+            ret = 1;
+        }
+    }
+    if (p_len) {
+        *p_len = len;
+    }
+    return ret;
+}
+
+/* Helper for `errtxtf()` to parse zero-padded minimum field length for "%d", returning `fmt` advance increment */
+static int errtxtf_dpad(const char *fmt) {
+    /* Allow one leading zero plus one or two digits only */
+    if (fmt[0] == '0' && z_isdigit(fmt[1])) {
+        if (fmt[1] != '0' && fmt[2] == 'd') {
+            return 2;
+        }
+        if (z_isdigit(fmt[1]) && fmt[1] != '0' && z_isdigit(fmt[2]) && fmt[3] == 'd') {
+            return 3;
+        }
+    }
+    return 0;
+}
+
+/* Set `symbol->errtxt` to "err_id: msg" with restricted subset of `printf()` formatting, returning `error_number`.
+   If `err_id` is -1, the "err_id: " prefix is omitted. Only the following specifiers are supported: "c", "d", "f",
+   "g" and "s", with no modifiers apart from "<n>$" numbering for l10n ("<n>" 1-9), in which case all specifiers must
+   be numbered, "%s" with length precisions: "%.*s", "%<n+1>$.*<n>$s", "%.<p>s" and "%<n>$.<p>s", and "%d" with
+   zero-padded minimum field lengths: "%0<m>d" or %<n>$0<m>d" ("<m>" 1-99) */
+INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const int err_id, const char *fmt, ...) {
+    const int max_len = (int) sizeof(symbol->errtxt) - 1;
+    int p = errtxt_id_str(symbol->errtxt, err_id);
+    const char *f;
+    int i;
+    int arg_cnt = 0;
+    int have_num_arg = 0, have_unnum_arg = 0;
+    va_list ap;
+    int idxs[9] = {0}; /* Argument order */
+    char specs[9] = {0}; /* Format specifiers */
+    const char *ss[9] = { NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL }; /* "%s" */
+    int slens[9] = {0}; /* "%s" length precisions */
+    int have_slens[9] = {0}; /* Bools for if "%s" has length precision */
+    char dpads[9][3] = {{0}}; /* 2-digit minimum field length */
+    char dfgs[9][100] = {{0}}; /* "%d", "%f" and "%g", allowing for padding up to 99 */
+    int cs[9] = {0}; /* "%c" */
+
+    /* Get argument order and specifiers */
+    for (f = fmt, i = 0; *f; f++) {
+        if (*f == '%') {
+            int inc, arg, len;
+            if (*++f == '%') {
+                continue;
+            }
+            if ((inc = errtxtf_num_arg(f, &arg))) {
+                if (arg == -1) {
+                    if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+                    return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
+                                        "Internal error: invalid numbered format specifer");
+                }
+                if (i >= 9) {
+                    if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+                    return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
+                                        "Internal error: too many format specifiers (9 maximum)");
+                }
+                f += inc;
+                have_num_arg = 1;
+                idxs[i] = arg;
+            } else {
+                if (i >= 9) {
+                    if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+                    return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
+                                        "Internal error: too many format specifiers (9 maximum)");
+                }
+                have_unnum_arg = 1;
+                idxs[i] = i;
+            }
+            if ((inc = errtxtf_slen(f, arg, &arg_cnt, &len))) {
+                if (len == -1) {
+                    if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+                    return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0, "Internal error: invalid length precision");
+                }
+                slens[idxs[i]] = len == 0 ? -1 : len; /* TODO: keep `slens` separate else last mentioned trumps */
+                have_slens[idxs[i]] = 1;
+                f += inc;
+            }
+            if ((inc = errtxtf_dpad(f))) {
+                memcpy(dpads[idxs[i]], f + 1, inc - 1); /* TODO: keep `dpads` separate else last mentioned trumps */
+                dpads[idxs[i]][inc - 1] = '\0';
+                f += inc;
+            }
+            if (*f != 'c' && *f != 'd' && *f != 'f' && *f != 'g' && *f != 's') {
+                if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+                return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
+                                    "Internal error: unknown format specifier ('%c','%d','%f','%g','%s' only)");
+            }
+            specs[idxs[i++]] = *f;
+            arg_cnt++;
+        }
+    }
+    if (have_num_arg && have_unnum_arg) {
+        if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0);
+        return errtxt(ZINT_ERROR_ENCODING_PROBLEM, symbol, 0,
+                            "Internal error: mixed numbered and unnumbered format specifiers");
+    }
+
+    /* Get arguments */
+    va_start(ap, fmt);
+    for (i = 0; i < arg_cnt; i++) {
+        if (specs[i] == 'c') {
+            cs[i] = va_arg(ap, int);
+        } else if (specs[i] == 'd') {
+            if (dpads[i][0]) {
+                char dpad_fmt[30]; /* Make 30 to suppress GNU c "-Wformat-overflow=" false positive */
+                sprintf(dpad_fmt, "%%0%sd", dpads[i]); /* TODO: keep `dpads` separate else last mentioned trumps */
+                sprintf(dfgs[i], dpad_fmt, va_arg(ap, int));
+            } else {
+                sprintf(dfgs[i], "%d", va_arg(ap, int));
+            }
+        } else if (specs[i] == 'f' || specs[i] == 'g') {
+            sprintf(dfgs[i], specs[i] == 'f' ? "%f" : "%g", va_arg(ap, double));
+        } else if (specs[i] == 's') {
+            if (have_slens[i] && slens[i] == -1) {
+                slens[i] = va_arg(ap, int); /* TODO: keep `slens` separate else last mentioned trumps */
+            }
+            ss[i] = va_arg(ap, char *);
+        }
+    }
+    va_end(ap);
+
+    /* Populate `errtxt` */
+    for (f = fmt, i = 0; *f && p < max_len; f++) {
+        if (*f == '%') {
+            int idx;
+            if (*++f == '%') {
+                symbol->errtxt[p++] = '%';
+                continue;
+            }
+            f += errtxtf_num_arg(f, NULL /*p_arg*/);
+            f += errtxtf_slen(f, -1 /*arg*/, NULL /*arg_cnt*/, NULL /*p_len*/);
+            f += errtxtf_dpad(f);
+            idx = idxs[i];
+            if (specs[idx] == 'c') {
+                symbol->errtxt[p++] = cs[idx];
+            } else {
+                int len;
+                if (specs[idx] == 's') {
+                    if (have_slens[idx]) {
+                        const char *si = ss[idx];
+                        for (len = 0; len < slens[idx] && si[len]; len++);
+                    } else {
+                        len = (int) strlen(ss[idx]);
+                    }
+                } else {
+                    len = (int) strlen(dfgs[idx]);
+                }
+                if (len) {
+                    if (p + len > max_len) {
+                        if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0); /* Catch truncations */
+                        len = max_len - p;
+                    }
+                    memcpy(symbol->errtxt + p, specs[idx] == 's' ? ss[idx] : dfgs[idx], len);
+                    p += len;
+                }
+            }
+            i++;
+        } else {
+            symbol->errtxt[p++] = *f;
+        }
+    }
+    if (*f) {
+        if (!(symbol->debug & ZINT_DEBUG_TEST)) assert(0); /* Catch truncations */
+    }
+
+    symbol->errtxt[p] = '\0';
+
+    return error_number;
+}
+
+/* Helper to prepend/append to existing `symbol->errtxt` by calling `errtxtf(fmt)` with 2 arguments (copy of `errtxt`
+   & `msg`) if `msg` not NULL, or 1 argument (just copy of `errtxt`) if `msg` NULL, returning `error_number` */
+INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, const char *fmt, const char *msg) {
+    char err_buf[sizeof(symbol->errtxt)];
+
+    err_buf[0] = '\0';
+
+/* Suppress gcc 14 warning output may be truncated */
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 14
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wstringop-truncation"
+#endif
+
+    strncat(err_buf, symbol->errtxt, sizeof(symbol->errtxt) - 1);
+
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 14
+#pragma GCC diagnostic pop
+#endif
+
+    if (msg) {
+        errtxtf(0, symbol, -1, fmt, err_buf, msg);
+    } else {
+        errtxtf(0, symbol, -1, fmt, err_buf);
+    }
+
+    return error_number;
 }
 
 /* Whether `symbology` can have row binding */
@@ -489,7 +779,7 @@ INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char s
     symbol->text[j] = '\0';
 
     if (warn_number) {
-        strcpy(symbol->errtxt, "249: Human Readable Text truncated");
+        errtxt(0, symbol, 249, "Human Readable Text truncated");
     }
     return warn_number;
 }
@@ -532,7 +822,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
             if (stripf(row_height) < stripf(min_row_height)) {
                 error_number = ZINT_WARN_NONCOMPLIANT;
                 if (!no_errtxt) {
-                    strcpy(symbol->errtxt, "247: Height not compliant with standards");
+                    errtxt(0, symbol, 247, "Height not compliant with standards");
                 }
             }
         }
@@ -544,7 +834,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
         if (stripf(symbol->height) > stripf(max_height)) {
             error_number = ZINT_WARN_NONCOMPLIANT;
             if (!no_errtxt) {
-                strcpy(symbol->errtxt, "248: Height not compliant with standards");
+                errtxt(0, symbol, 248, "Height not compliant with standards");
             }
         }
     }
@@ -554,12 +844,15 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
 
 /* Prevent inlining of `stripf()` which can optimize away its effect */
 #if defined(__GNUC__) && (__GNUC__ >= 4 || (__GNUC__ == 3 && __GNUC_MINOR__ >= 1))
-__attribute__((__noinline__))
+#define ZINT_NOINLINE __attribute__((__noinline__))
 #elif defined(_MSC_VER) && _MSC_VER >= 1310 /* MSVC 2003 (VC++ 7.1) */
-__declspec(noinline)
+#define ZINT_NOINLINE __declspec(noinline)
+#else
+#define ZINT_NOINLINE
 #endif
+
 /* Removes excess precision from floats - see https://stackoverflow.com/q/503436 */
-INTERNAL float stripf(const float arg) {
+INTERNAL ZINT_NOINLINE float stripf(const float arg) {
     return *((volatile const float *) &arg);
 }
 
@@ -615,6 +908,7 @@ INTERNAL char *debug_print_escape(const unsigned char *source, const int first_l
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {
     int i, max = length, cnt_len = 0;
+    assert(sizeof(symbol->errtxt) >= 100);
     if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
         cnt_len = (int) strlen(symbol->errtxt);
@@ -630,6 +924,7 @@ INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigne
 INTERNAL void debug_test_codeword_dump_short(struct zint_symbol *symbol, const short *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
+    assert(sizeof(symbol->errtxt) >= 100);
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
     for (i = 0, cnt_len = errtxt_len; i < length; i++) {
         cnt_len += sprintf(temp, "%d ", codewords[i]);
@@ -648,6 +943,7 @@ INTERNAL void debug_test_codeword_dump_short(struct zint_symbol *symbol, const s
 INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
+    assert(sizeof(symbol->errtxt) >= 100);
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
     for (i = 0, cnt_len = errtxt_len; i < length; i++) {
         cnt_len += sprintf(temp, "%d ", codewords[i]);

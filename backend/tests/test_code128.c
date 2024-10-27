@@ -43,41 +43,42 @@ static void test_large(const testCtx *const p_ctx) {
         int length;
         int ret;
         int expected_width;
+        char *expected_errtxt;
     };
     /*
        é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, "A", 99, 0, 1124 },
-        /*  1*/ { BARCODE_CODE128, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1 },
-        /*  2*/ { BARCODE_CODE128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1 },
-        /*  3*/ { BARCODE_CODE128, READER_INIT, "A", 99, 0, 1135 },
-        /*  4*/ { BARCODE_CODE128, READER_INIT, "A", 100, ZINT_ERROR_TOO_LONG, -1 },
-        /*  5*/ { BARCODE_CODE128, READER_INIT, "A", 257, ZINT_ERROR_TOO_LONG, -1 },
-        /*  6*/ { BARCODE_CODE128, -1, "\351A", 66, 0, 1124 },
-        /*  7*/ { BARCODE_CODE128, -1, "\351A", 67, ZINT_ERROR_TOO_LONG, -1 }, /* 67 chars (+ 34 shifts) */
-        /*  8*/ { BARCODE_CODE128, -1, "\351", 97, 0, 1124 }, /* Less 2 FNC4s for latch */
-        /*  9*/ { BARCODE_CODE128, -1, "\351", 98, ZINT_ERROR_TOO_LONG, -1 },
-        /* 10*/ { BARCODE_CODE128, -1, "0", 198, 0, 1124 },
-        /* 11*/ { BARCODE_CODE128, -1, "0", 199, ZINT_ERROR_TOO_LONG, -1 },
-        /* 12*/ { BARCODE_CODE128, -1, "0", 257, ZINT_ERROR_TOO_LONG, -1 },
-        /* 13*/ { BARCODE_CODE128AB, -1, "A", 99, 0, 1124 },
-        /* 14*/ { BARCODE_CODE128AB, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1 },
-        /* 15*/ { BARCODE_CODE128AB, -1, "0", 99, 0, 1124 },
-        /* 16*/ { BARCODE_CODE128AB, -1, "0", 100, ZINT_ERROR_TOO_LONG, -1 },
-        /* 17*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_WARN_HRT_TRUNCATED, 1135 }, /* 196 nos + 3 FNC1s */
-        /* 18*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1 }, /* 196 nos + CodeA + single no. + 3 FNC1s */
-        /* 19*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, ZINT_ERROR_TOO_LONG, -1 }, /* 198 nos + 3 FNC1s */
-        /* 20*/ { BARCODE_GS1_128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1 },
-        /* 21*/ { BARCODE_EAN14, -1, "1234567890123", -1, 0, 134 },
-        /* 22*/ { BARCODE_EAN14, -1, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1 },
-        /* 23*/ { BARCODE_NVE18, -1, "12345678901234567", -1, 0, 156 },
-        /* 24*/ { BARCODE_NVE18, -1, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1 },
-        /* 25*/ { BARCODE_HIBC_128, -1, "1", 110, 0, 684 },
-        /* 26*/ { BARCODE_HIBC_128, -1, "1", 111, ZINT_ERROR_TOO_LONG, -1 },
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, "A", 99, 0, 1124, "" },
+        /*  1*/ { BARCODE_CODE128, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /*  2*/ { BARCODE_CODE128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
+        /*  3*/ { BARCODE_CODE128, READER_INIT, "A", 99, 0, 1135, "" },
+        /*  4*/ { BARCODE_CODE128, READER_INIT, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /*  5*/ { BARCODE_CODE128, READER_INIT, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
+        /*  6*/ { BARCODE_CODE128, -1, "\351A", 66, 0, 1124, "" },
+        /*  7*/ { BARCODE_CODE128, -1, "\351A", 67, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" }, /* 67 chars (+ 34 shifts) */
+        /*  8*/ { BARCODE_CODE128, -1, "\351", 97, 0, 1124, "" }, /* Less 2 FNC4s for latch */
+        /*  9*/ { BARCODE_CODE128, -1, "\351", 98, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 10*/ { BARCODE_CODE128, -1, "0", 198, 0, 1124, "" },
+        /* 11*/ { BARCODE_CODE128, -1, "0", 199, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" },
+        /* 12*/ { BARCODE_CODE128, -1, "0", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
+        /* 13*/ { BARCODE_CODE128AB, -1, "A", 99, 0, 1124, "" },
+        /* 14*/ { BARCODE_CODE128AB, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 15*/ { BARCODE_CODE128AB, -1, "0", 99, 0, 1124, "" },
+        /* 16*/ { BARCODE_CODE128AB, -1, "0", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 17*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_WARN_HRT_TRUNCATED, 1135, "Warning 844: Human Readable Text truncated" }, /* 196 nos + 3 FNC1s */
+        /* 18*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 101 symbol characters (maximum 99)" }, /* 196 nos + CodeA + single no. + 3 FNC1s */
+        /* 19*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 100 symbol characters (maximum 99)" }, /* 198 nos + 3 FNC1s */
+        /* 20*/ { BARCODE_GS1_128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 342: Input length 257 too long (maximum 256)" },
+        /* 21*/ { BARCODE_EAN14, -1, "1234567890123", -1, 0, 134, "" },
+        /* 22*/ { BARCODE_EAN14, -1, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1, "Error 347: Input length 14 too long (maximum 13)" },
+        /* 23*/ { BARCODE_NVE18, -1, "12345678901234567", -1, 0, 156, "" },
+        /* 24*/ { BARCODE_NVE18, -1, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)" },
+        /* 25*/ { BARCODE_HIBC_128, -1, "1", 110, 0, 684, "" },
+        /* 26*/ { BARCODE_HIBC_128, -1, "1", 111, ZINT_ERROR_TOO_LONG, -1, "Error 202: Input length 111 too long for HIBC LIC (maximum 110)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -103,6 +104,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
@@ -130,7 +133,7 @@ static void test_hrt(const testCtx *const p_ctx) {
        é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, "1234567890", -1, "1234567890" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, -1, "\000ABC\000DEF\000", 9, " ABC DEF " },
         /*  2*/ { BARCODE_CODE128AB, UNICODE_MODE, -1, "12345\00067890", 11, "12345 67890" },
@@ -175,7 +178,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 41*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, "EE876543216CA", -1, "EE 876 543 216 CA" }, /* UPU S10 Annex A */
         /* BARCODE_GS1_128, BARCODE_EAN14, BARCODE_NVE18 hrt tested in test_gs1.c */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -217,7 +220,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "A", 0, 1, 57, "(5) 104 96 33 60 106", "StartA FNC3 A" },
         /*  1*/ { BARCODE_CODE128, UNICODE_MODE, READER_INIT, "12", 0, 1, 68, "(6) 104 96 99 12 22 106", "StartB FNC3 CodeC 12" },
         /*  2*/ { BARCODE_CODE128AB, UNICODE_MODE, READER_INIT, "\0371234", 0, 1, 101, "(9) 103 96 95 17 18 19 20 6 106", "StartA FNC3 US 1 2 3 4" },
@@ -226,7 +229,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_NVE18, GS1_MODE, READER_INIT, "12", 0, 1, 156, "(14) 105 102 0 0 0 0 0 0 0 0 1 23 58 106", "StartC FNC1 00 (8) 01 23 (Reader Initialise not supported by GS1 barcodes (use CODE128))" },
         /*  6*/ { BARCODE_HIBC_128, UNICODE_MODE, READER_INIT, "A", 0, 1, 79, "(7) 104 96 11 33 24 5 106", "StartA FNC3 + A 8 (check) (Not sensible, use CODE128)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -290,8 +293,8 @@ static void test_input(const testCtx *const p_ctx) {
        ß U+00DF (\337, 223), UTF-8 C39F, CodeA and CodeB extended ASCII
        é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     */
-    struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, 1, "Error 204: Invalid character in input data (ISO/IEC 8859-1 only)", "PAD not in ISO 8859-1" },
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, "\302\200", -1, ZINT_ERROR_INVALID_DATA, 0, 1, "Error 204: Invalid character in input (ISO/IEC 8859-1 only)", "PAD not in ISO 8859-1" },
         /*  1*/ { DATA_MODE, "\200", -1, 0, 57, 1, "(5) 103 101 64 23 106", "PAD ok using binary" },
         /*  2*/ { UNICODE_MODE, "AIM1234", -1, 0, 101, 1, "(9) 104 33 41 45 99 12 34 87 106", "Example from Annex A.1, check char value 87" },
         /*  3*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B12345\\^C6789", -1, 0, 123, 0, "(11) 104 17 18 19 20 21 99 67 89 11 106", "Ticket #204 ZPL example; BWIPP no manual mode" },
@@ -343,59 +346,72 @@ static void test_input(const testCtx *const p_ctx) {
         /* 49*/ { DATA_MODE, "\141\142\237", -1, 0, 90, 0, "(8) 104 65 66 101 101 95 41 106", "StartB a b CodeA FNC4 APC; BWIPP different encodation" },
         /* 50*/ { DATA_MODE, "\141\142\237\037", -1, 0, 101, 0, "(9) 104 65 66 101 101 95 95 96 106", "StartB a b CodeA FNC4 APC US; BWIPP different encodation" },
         /* 51*/ { UNICODE_MODE, "ééé", -1, 0, 90, 1, "(8) 104 100 100 73 73 73 44 106", "StartB LatchFNC4 é é é" },
-        /* 52*/ { UNICODE_MODE, "aééééb", -1, 0, 145, 1, "(13) 104 65 100 73 100 73 100 73 100 73 66 49 106", "StartB a FNC4 é (4) b" },
-        /* 53*/ { UNICODE_MODE, "aéééééb", -1, 0, 145, 1, "(13) 104 65 100 100 73 73 73 73 73 100 66 93 106", "StartB a Latch é (5) Shift b" },
-        /* 54*/ { UNICODE_MODE, "aééééébc", -1, 0, 167, 1, "(15) 104 65 100 100 73 73 73 73 73 100 66 100 67 40 106", "StartB a Latch é (5) Shift b Shift c" },
-        /* 55*/ { UNICODE_MODE, "aééééébcd", -1, 0, 178, 1, "(16) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 66 106", "StartB a Latch é (5) Unlatch b c d" },
-        /* 56*/ { UNICODE_MODE, "aééééébcde", -1, 0, 189, 1, "(17) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 2 106", "StartB a Latch é (5) Unlatch b c d e" },
-        /* 57*/ { UNICODE_MODE, "aééééébcdeé", -1, 0, 211, 0, "(19) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 95 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é; BWIPP different encodation" },
-        /* 58*/ { UNICODE_MODE, "aééééébcdeéé", -1, 0, 233, 0, "(21) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 100 73 19 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é (2); BWIPP different encodation" },
-        /* 59*/ { UNICODE_MODE, "aééééébcdeééé", -1, 0, 244, 1, "(22) 104 65 100 100 73 73 73 73 73 100 66 100 67 100 68 100 69 73 73 73 83 106", "StartB a Latch é (5) Shift b Shift c Shift d Shift e é (3)" },
-        /* 60*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, 1, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
-        /* 61*/ { DATA_MODE, "\200\200\200\200\200\101\060\060\060\060\101\200", -1, 0, 211, 0, "(19) 103 101 101 64 64 64 64 64 101 33 99 0 0 101 101 33 64 4 106", "StartA FNC4 FNC4 PAD (5) FNC4 A CodeC 00 00 CodeA FNC4 A PAD; BWIPP different encodation (BWIPP 1 longer)" },
-        /* 62*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code128/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
-        /* 63*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 233, 0, "(21) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 100 33 91 106", "Above with trailing non-shifted (as still latched) extended; BWIPP different encodation" },
-        /* 64*/ { DATA_MODE, "@g(\202\202\202\202\2025555\202\202\202\202\202\202\202\202", -1, 0, 288, 0, "(26) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 101 66 66 66 66 66 66 66 66 10 106", "Okapi code128/extended-mode-with-short-embedded-code-set-c.png (chose different solution); BWIPP different encodation" },
-        /* 65*/ { DATA_MODE, "@g(\202\202\202\202\20255555\202\202\202\202\202\202\202", -1, 0, 299, 0, "(27) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 101 101 21 66 66 66 66 66 66 66 50 106", "Above with extra 5; BWIPP different encodation" },
-        /* 66*/ { DATA_MODE, "@g(\202\202\202\202\202555555\202\202\202\202\202\202\202", -1, 0, 288, 0, "(26) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 55 101 66 66 66 66 66 66 66 86 106", "Above with extra 55, one less \x82; BWIPP different encodation" },
-        /* 67*/ { DATA_MODE, "@g(\202\202\202\202\202555\202\202\202\202\202\202\202\202", -1, 0, 310, 0, "(28) 104 32 71 8 101 101 101 66 66 66 66 66 101 21 101 21 101 21 66 66 66 66 66 66 66 66 5", "Above less one 5; BWIPP different encodation" },
-        /* 68*/ { UNICODE_MODE, "ÁÁèÁÁFç7Z", -1, 0, 189, 0, "(17) 104 100 100 33 33 72 33 33 100 38 71 100 100 23 58 95 106", "Okapi code128/extended-mode-shift.png; BWIPP different encodation" },
-        /* 69*/ { UNICODE_MODE, "m\nm\nm", -1, 0, 112, 1, "(10) 104 77 98 74 77 98 74 77 11 106", "Okapi code128/code-set-b-a-b-a-b.png" },
-        /* 70*/ { UNICODE_MODE, "c\naDEF", -1, 0, 112, 1, "(10) 104 67 98 74 65 36 37 38 75 106", "Okapi bug-36-1.png" },
-        /* 71*/ { UNICODE_MODE, "\na\nDEF", -1, 0, 112, 1, "(10) 103 74 98 65 74 36 37 38 90 106", "Okapi bug-36-2.png" },
-        /* 72*/ { UNICODE_MODE, "ÿ\012àa\0121\012àAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 101 74 17 74 100 100 64 33 100 64 30 106", "BWIPP different encodation, ShA instead of CodeA" },
-        /* 73*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ\012àa\\^A\0121\012\\^BàAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 101 74 17 74 100 100 64 33 100 64 30 106", "BWIPP different encodation, FNC4 before CodeB" },
-        /* 74*/ { UNICODE_MODE, "ÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 376, 0, "(34) 104 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64 36", "BWIPP different encodation, CodeA instead of ShA, same width" },
-        /* 75*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ1234\012à\\^Aa\0121\012\\^C7890\\^BàAàDà\012à", -1, 0, 376, 0, "(34) 104 100 95 99 12 34 101 74 101 98 64 98 65 74 17 74 99 78 90 100 100 64 33 100 64 36", "BWIPP different encodation, FNC4 before CodeB, same width" },
-        /* 76*/ { UNICODE_MODE, "yÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 89 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, same width" },
-        /* 77*/ { UNICODE_MODE, "ÿy1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 100 95 89 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, same width" },
-        /* 78*/ { UNICODE_MODE, "ÿÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 100 95 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33", "BWIPP different encodation, CodeA instead of ShA, same width" },
-        /* 79*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 662, 0, "(60) 104 100 95 99 12 34 56 78 101 74 100 100 64 99 12 34 56 78 100 65 66 67 68 69 70 101", "BWIPP different encodation, CodeA instead of ShA, same width" },
-        /* 80*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^A12\\^C34\\^A\\^B5\\^C67\\^A\\^B\\^CA\\^B\\^A", -1, 0, 145, 0, "(13) 103 17 18 99 34 100 21 99 67 100 33 69 106", "BWIPP no manual mode" },
-        /* 81*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 100 33 34 35 99 12 101 74 36 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA <LF>; BWIPP no manual mode" },
-        /* 82*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF" },
-        /* 83*/ { UNICODE_MODE, "A\0121234A12\012", -1, 0, 145, 1, "(13) 103 33 74 99 12 34 101 33 17 18 74 99 106", "StartA A <LF> CodeC 12 34 CodeA A 1 2 <LF>; Okapi c128/improved-lookahead-mode-a.png" },
-        /* 84*/ { UNICODE_MODE, "21*\015\012M0", -1, 0, 112, 0, "(10) 105 21 101 10 77 74 45 16 79 106", "StartC 21 CodeA * <CR> <LF> M 0; Okapi c128/improved-lookahead-rule-1c.png; BWIPP different encodation, same width" },
-        /* 85*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^112345\\^11234\\^112345", -1, 0, 178, 0, "(16) 104 102 17 99 23 45 102 12 34 102 12 34 100 21 72 106", "Okapi code128/fnc1-mode-c-fnc1-in-middle.png; BWIPP different encodation (BWIPP 2 longer)" },
-        /* 86*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^1SN123456789012", -1, 0, 145, 1, "(13) 104 102 51 46 99 12 34 56 78 90 12 65 106", "StartB FNC1 S N CodeC 12 34 56 78 90 12" },
-        /* 87*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^1SN123456789012", -1, 0, 200, 0, "(18) 104 102 51 46 17 18 19 20 21 22 23 24 25 16 17 18 56 106", "StartB FNC1 S N 1 2 3 4 5 6 7 8 9 0 1 2; BWIPP no manual mode" },
-        /* 88*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^1BC\\^1DEF\\^1", -1, 0, 134, 1, "(12) 104 33 102 34 35 102 36 37 38 102 9 106", "StartB A FNC1 B C FNC1 D E F FNC1" },
-        /* 89*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C12\\^1", -1, 0, 57, 0, "(5) 105 12 102 12 106", "StartC 12 FNC1; BWIPP no manual mode" },
-        /* 90*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^13", -1, 0, 79, 1, "(7) 105 12 102 100 19 79 106", "StartC 12 FNC1 CodeB 3" },
-        /* 91*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^13\\^1", -1, 0, 90, 1, "(8) 105 12 102 100 19 102 74 106", "StartC 12 FNC1 CodeB 3 FNC1" },
-        /* 92*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1\\^123", -1, 0, 79, 0, "(7) 104 17 99 102 23 99 106", "StartB 1 CodeC FNC1 23; BWIPP different encodation (same codeword count)" },
-        /* 93*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^134", -1, 0, 68, 1, "(6) 105 12 102 34 11 106", "StartC 12 FNC1 34" },
-        /* 94*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^134\\^1", -1, 0, 79, 1, "(7) 105 12 102 34 102 7 106", "StartC 12 FNC1 34 FNC1" },
-        /* 95*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "123\\^145\\^1", -1, 0, 101, 1, "(9) 104 17 99 23 102 45 102 88 106", "StartB 1 CodeC 23 FNC1 45 FNC1" },
-        /* 96*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^1345\\^1", -1, 0, 101, 1, "(9) 105 12 102 34 100 21 102 98 106", "StartC 12 FNC1 34 CodeB 5 FNC1" },
-        /* 97*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\\^156\\^1", -1, 0, 90, 1, "(8) 105 12 34 102 56 102 92 106", "StartC 12 34 FNC1 56 FNC1" },
-        /* 98*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\\^156789\\^101\\^11\\^1", -1, 0, 178, 1, "(16) 105 12 34 102 56 78 100 25 102 16 17 102 17 102 100 106", "StartC 12 34 FNC1 56 78 CodeB 9 FNC1 0 1 FNC1 1 FNC1" },
-        /* 99*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^Aaa\\^B\012\012", -1, 0, 134, 0, "(12) 103 98 65 98 65 100 98 74 98 74 27 106", "StartA ShB a ShB a CodeB ShA <LF> ShA <LF>; BWIPP no manual mode" },
-        /*100*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\\^B\202\202", -1, 0, 156, 0, "(14) 103 101 101 98 66 98 66 100 98 66 98 66 72 106", "StartA FNC4 FNC4 ShB 226(E2) ShB 226(E2) CodeB ShA 130(82) ShA 130(82); BWIPP no manual mode" },
-        /*101*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\342\342\342\\^Baaaaa", -1, 0, 255, 0, "(23) 103 101 101 98 66 98 66 98 66 98 66 98 66 100 100 100 65 65 65 65 65 46 106", "BWIPP no manual mode" },
-        /*102*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\012\342\342\342\\^B\202\342\012\012", -1, 0, 277, 0, "(25) 103 101 98 66 74 101 101 98 66 98 66 98 66 100 98 66 66 100 98 74 100 98 74 69 106", "BWIPP no manual mode" },
+        /* 52*/ { UNICODE_MODE, "aéééb", -1, 0, 123, 1, "(11) 104 65 100 73 100 73 100 73 66 5 106", "StartB a FNC4 é (4) b" },
+        /* 53*/ { UNICODE_MODE, "aééééb", -1, 0, 134, 0, "(12) 104 65 100 100 73 73 73 73 100 66 64 106", "StartB a Latch é (4) Shift b; BWIPP different encodation" },
+        /* 54*/ { UNICODE_MODE, "aéééééb", -1, 0, 145, 1, "(13) 104 65 100 100 73 73 73 73 73 100 66 93 106", "StartB a Latch é (5) Shift b" },
+        /* 55*/ { UNICODE_MODE, "aééééébc", -1, 0, 167, 1, "(15) 104 65 100 100 73 73 73 73 73 100 66 100 67 40 106", "StartB a Latch é (5) Shift b Shift c" },
+        /* 56*/ { UNICODE_MODE, "aééééébcd", -1, 0, 178, 1, "(16) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 66 106", "StartB a Latch é (5) Unlatch b c d" },
+        /* 57*/ { UNICODE_MODE, "aééééébcde", -1, 0, 189, 1, "(17) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 2 106", "StartB a Latch é (5) Unlatch b c d e" },
+        /* 58*/ { UNICODE_MODE, "aééééébcdeé", -1, 0, 211, 0, "(19) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 95 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é; BWIPP different encodation" },
+        /* 59*/ { UNICODE_MODE, "aééééébcdeéé", -1, 0, 233, 0, "(21) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 100 73 100 73 19 106", "StartB a Latch é (5) Unlatch b c d e FNC4 é (2); BWIPP different encodation" },
+        /* 60*/ { UNICODE_MODE, "aééééébcdeééé", -1, 0, 244, 1, "(22) 104 65 100 100 73 73 73 73 73 100 66 100 67 100 68 100 69 73 73 73 83 106", "StartB a Latch é (5) Shift b Shift c Shift d Shift e é (3)" },
+        /* 61*/ { UNICODE_MODE, "aééééébcdefééé", -1, 0, 255, 1, "(23) 104 65 100 100 73 73 73 73 73 100 100 66 67 68 69 70 100 100 73 73 73 67 106", "StartB a Latch é (5) Unlatch b c d e f Latch é (3)" },
+        /* 62*/ { DATA_MODE, "\200\200\200\200\200\101\060\060\060\060\101\200", -1, 0, 211, 0, "(19) 103 101 101 64 64 64 64 64 101 33 99 0 0 101 101 33 64 4 106", "StartA FNC4 FNC4 PAD (5) FNC4 A CodeC 00 00 CodeA FNC4 A PAD; BWIPP different encodation (BWIPP 1 longer)" },
+        /* 63*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999", -1, 0, 211, 0, "(19) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 63 106", "Okapi code128/extended-mode-exit-before-code-set-c.png (chose different solution); BWIPP different encodation" },
+        /* 64*/ { UNICODE_MODE, "ÁÁÁÁÁÁ99999999999999Á", -1, 0, 233, 0, "(21) 104 100 100 33 33 33 33 33 33 99 99 99 99 99 99 99 99 100 33 91 106", "Above with trailing non-shifted (as still latched) extended; BWIPP different encodation" },
+        /* 65*/ { DATA_MODE, "@g(\202\202\202\202\2025555\202\202\202\202\202\202\202\202", -1, 0, 288, 0, "(26) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 101 66 66 66 66 66 66 66 66 10 106", "Okapi code128/extended-mode-with-short-embedded-code-set-c.png (chose different solution); BWIPP different encodation" },
+        /* 66*/ { DATA_MODE, "@g(\202\202\202\202\20255555\202\202\202\202\202\202\202", -1, 0, 299, 0, "(27) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 101 101 21 66 66 66 66 66 66 66 50 106", "Above with extra 5; BWIPP different encodation" },
+        /* 67*/ { DATA_MODE, "@g(\202\202\202\202\202555555\202\202\202\202\202\202\202", -1, 0, 288, 0, "(26) 104 32 71 8 101 101 101 66 66 66 66 66 99 55 55 55 101 66 66 66 66 66 66 66 86 106", "Above with extra 55, one less \\202; BWIPP different encodation" },
+        /* 68*/ { DATA_MODE, "@g(\202\202\202\202\202555\202\202\202\202\202\202\202\202", -1, 0, 310, 0, "(28) 104 32 71 8 101 101 101 66 66 66 66 66 101 21 101 21 101 21 66 66 66 66 66 66 66 66 5", "Above less one 5; BWIPP different encodation" },
+        /* 69*/ { UNICODE_MODE, "±±±±1234AA", -1, 0, 189, 0, "(17) 104 100 100 17 17 17 17 99 12 34 100 100 33 100 33 89 106", "BWIPP PR #275 (extended ASCII treated as digits)" },
+        /* 70*/ { UNICODE_MODE, "ÁÁèÁÁFç7Z", -1, 0, 189, 0, "(17) 104 100 100 33 33 72 33 33 100 38 71 100 100 23 58 95 106", "Okapi code128/extended-mode-shift.png; BWIPP different encodation" },
+        /* 71*/ { UNICODE_MODE, "m\nm\nm", -1, 0, 112, 1, "(10) 104 77 98 74 77 98 74 77 11 106", "Okapi code128/code-set-b-a-b-a-b.png" },
+        /* 72*/ { UNICODE_MODE, "c\naDEF", -1, 0, 112, 1, "(10) 104 67 98 74 65 36 37 38 75 106", "Okapi bug-36-1.png" },
+        /* 73*/ { UNICODE_MODE, "\na\nDEF", -1, 0, 112, 1, "(10) 103 74 98 65 74 36 37 38 90 106", "Okapi bug-36-2.png" },
+        /* 74*/ { UNICODE_MODE, "ÿ\012àa\0121\012àAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 101 74 17 74 100 100 64 33 100 64 30 106", "BWIPP different encodation, ShA instead of CodeA" },
+        /* 75*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ\012àa\\^A\0121\012\\^BàAà", -1, 0, 222, 0, "(20) 104 100 95 98 74 100 64 65 101 74 17 74 100 100 64 33 100 64 30 106", "BWIPP different encodation, FNC4 before CodeB" },
+        /* 76*/ { UNICODE_MODE, "ÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 376, 0, "(34) 104 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64 36", "BWIPP different encodation, CodeA instead of ShA, same width" },
+        /* 77*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "ÿ1234\012à\\^Aa\0121\012\\^C7890\\^BàAàDà\012à", -1, 0, 376, 0, "(34) 104 100 95 99 12 34 101 74 101 98 64 98 65 74 17 74 99 78 90 100 100 64 33 100 64 36", "BWIPP no manual mode" },
+        /* 78*/ { UNICODE_MODE, "yÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 89 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, same width" },
+        /* 79*/ { UNICODE_MODE, "ÿy1234\012àa\0121\0127890àAàDà\012à", -1, 0, 387, 0, "(35) 104 100 95 89 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33 100 64", "BWIPP different encodation, CodeA instead of ShA, same width" },
+        /* 80*/ { UNICODE_MODE, "ÿÿ1234\012àa\0121\0127890àAàDà\012à", -1, 0, 398, 0, "(36) 104 100 95 100 95 99 12 34 101 74 100 100 64 65 101 74 17 74 99 78 90 100 100 64 33", "BWIPP different encodation, CodeA instead of ShA, same width" },
+        /* 81*/ { UNICODE_MODE, "ÿ12345678\012à12345678abcdef\0121\01223456\012\0127890àAàBCDEFà\012\012à", -1, 0, 662, 0, "(60) 104 100 95 99 12 34 56 78 101 74 100 100 64 99 12 34 56 78 100 65 66 67 68 69 70 101", "BWIPP different encodation, CodeA instead of ShA, same width" },
+        /* 82*/ { UNICODE_MODE, " ¡¡¡¡ ¡¡¡¡ ", -1, 0, 200, 0, "(18) 104 0 100 100 1 1 1 1 100 0 1 1 1 1 100 0 91 106", "StartB <SP> Latch <A0> (4) FNC4 <SP> <A0> (4) FNC4 <SP>, adapted from BWIPP PR #272; BWIPP pending PR #275" },
+        /* 83*/ { UNICODE_MODE, " ¡¡¡¡  ¡¡¡¡ ", -1, 0, 222, 0, "(20) 104 0 100 100 1 1 1 1 100 0 100 0 1 1 1 1 100 0 63 106", "2 middle spaces; BWIPP pending PR #275" },
+        /* 84*/ { UNICODE_MODE, " ¡¡¡¡   ¡¡¡¡ ", -1, 0, 244, 0, "(22) 104 0 100 100 1 1 1 1 100 0 100 0 100 0 1 1 1 1 100 0 29 106", "3 middle spaces; BWIPP pending PR #275" },
+        /* 85*/ { UNICODE_MODE, " ¡¡¡¡    ¡¡¡¡ ", -1, 0, 266, 0, "(24) 104 0 100 100 1 1 1 1 100 0 100 0 100 0 100 0 1 1 1 1 100 0 92 106", "4 middle spaces (no unlatch); BWIPP pending PR #275" },
+        /* 86*/ { UNICODE_MODE, " ¡¡¡¡     ¡¡¡¡ ", -1, 0, 277, 0, "(25) 104 0 100 100 1 1 1 1 100 100 0 0 0 0 0 100 100 1 1 1 1 100 0 81 106", "5 middle spaces (unlatch); BWIPP pending PR #275" },
+        /* 87*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, " 12\\^1 ", -1, 0, 90, 0, "(8) 104 0 17 18 102 0 85 106", "BWIPP PR #272" },
+        /* 88*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, " 1234\\^1567", -1, 0, 123, 0, "(11) 104 0 99 12 34 102 56 100 23 41 106", "BWIPP PR #272" },
+        /* 89*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "123\\^14567", -1, 0, 101, 0, "(9) 104 17 99 23 102 45 67 84 106", "BWIPP PR #272" },
+        /* 90*/ { DATA_MODE | ESCAPE_MODE | EXTRA_ESCAPE_MODE, "\\d031\\d031_\\d127\\d159\\d031\\d159\\d159\\d159\\d15912345``\\d255\\d000\\d127\\d255\\d224\\d224\\d159`", -1, 0, 442, 0, "(40) 103 95 95 63 98 95 101 95 95 101 101 95 95 95 95 99 12 34 100 100 100 21 64 64 100 95", "Code set limit chars; BWIPP different encodation" },
+        /* 91*/ { DATA_MODE, "\200\200\200\200\200A0000A\200", -1, 0, 211, 0, "(19) 103 101 101 64 64 64 64 64 101 33 99 0 0 101 101 33 64 4 106", "BWIPP different encodation" },
+        /* 92*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^1345\\^167\\^18", -1, 0, 145, 1, "(13) 105 12 102 34 100 21 102 22 23 102 24 49 106", "" },
+        /* 93*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^A12\\^C34\\^A\\^B5\\^C67\\^A\\^B\\^CA\\^B\\^A", -1, 0, 145, 0, "(13) 103 17 18 99 34 100 21 99 67 100 33 69 106", "BWIPP no manual mode" },
+        /* 94*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1234ABC12\012", -1, 0, 145, 0, "(13) 105 12 34 100 33 34 35 99 12 101 74 36 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA <LF>; BWIPP no manual mode" },
+        /* 95*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^", -1, 0, 68, 1, "(6) 104 33 60 62 31 106", "StartC 12 34 CodeB A B C CodeC 12 CodeA LF" },
+        /* 96*/ { UNICODE_MODE, "A\0121234A12\012", -1, 0, 145, 1, "(13) 103 33 74 99 12 34 101 33 17 18 74 99 106", "StartA A <LF> CodeC 12 34 CodeA A 1 2 <LF>; Okapi c128/improved-lookahead-mode-a.png" },
+        /* 97*/ { UNICODE_MODE, "21*\015\012M0", -1, 0, 112, 0, "(10) 105 21 101 10 77 74 45 16 79 106", "StartC 21 CodeA * <CR> <LF> M 0; Okapi c128/improved-lookahead-rule-1c.png; BWIPP different encodation, same width" },
+        /* 98*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^112345\\^11234\\^112345", -1, 0, 178, 0, "(16) 104 102 17 99 23 45 102 12 34 102 12 34 100 21 72 106", "Okapi code128/fnc1-mode-c-fnc1-in-middle.png; BWIPP different encodation (BWIPP 2 longer)" },
+        /* 99*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^1SN123456789012", -1, 0, 145, 1, "(13) 104 102 51 46 99 12 34 56 78 90 12 65 106", "StartB FNC1 S N CodeC 12 34 56 78 90 12" },
+        /*100*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^B\\^1SN123456789012", -1, 0, 200, 0, "(18) 104 102 51 46 17 18 19 20 21 22 23 24 25 16 17 18 56 106", "StartB FNC1 S N 1 2 3 4 5 6 7 8 9 0 1 2; BWIPP no manual mode" },
+        /*101*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "A\\^1BC\\^1DEF\\^1", -1, 0, 134, 1, "(12) 104 33 102 34 35 102 36 37 38 102 9 106", "StartB A FNC1 B C FNC1 D E F FNC1" },
+        /*102*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C12\\^1", -1, 0, 57, 0, "(5) 105 12 102 12 106", "StartC 12 FNC1; BWIPP no manual mode" },
+        /*103*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^13", -1, 0, 79, 1, "(7) 105 12 102 100 19 79 106", "StartC 12 FNC1 CodeB 3" },
+        /*104*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^13\\^1", -1, 0, 90, 1, "(8) 105 12 102 100 19 102 74 106", "StartC 12 FNC1 CodeB 3 FNC1" },
+        /*105*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1\\^123", -1, 0, 79, 0, "(7) 104 17 99 102 23 99 106", "StartB 1 CodeC FNC1 23; BWIPP different encodation (same codeword count)" },
+        /*106*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^134", -1, 0, 68, 1, "(6) 105 12 102 34 11 106", "StartC 12 FNC1 34" },
+        /*107*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^134\\^1", -1, 0, 79, 1, "(7) 105 12 102 34 102 7 106", "StartC 12 FNC1 34 FNC1" },
+        /*108*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "123\\^145\\^1", -1, 0, 101, 1, "(9) 104 17 99 23 102 45 102 88 106", "StartB 1 CodeC 23 FNC1 45 FNC1" },
+        /*109*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "12\\^1345\\^1", -1, 0, 101, 1, "(9) 105 12 102 34 100 21 102 98 106", "StartC 12 FNC1 34 CodeB 5 FNC1" },
+        /*110*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\\^156\\^1", -1, 0, 90, 1, "(8) 105 12 34 102 56 102 92 106", "StartC 12 34 FNC1 56 FNC1" },
+        /*111*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "1234\\^156789\\^101\\^11\\^1", -1, 0, 178, 1, "(16) 105 12 34 102 56 78 100 25 102 16 17 102 17 102 100 106", "StartC 12 34 FNC1 56 78 CodeB 9 FNC1 0 1 FNC1 1 FNC1" },
+        /*112*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^Aaa\\^B\012\012", -1, 0, 134, 0, "(12) 103 98 65 98 65 100 98 74 98 74 27 106", "StartA ShB a ShB a CodeB ShA <LF> ShA <LF>; BWIPP no manual mode" },
+        /*113*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\\^B\202\202", -1, 0, 156, 0, "(14) 103 101 101 98 66 98 66 100 98 66 98 66 72 106", "StartA FNC4 FNC4 ShB 226(E2) ShB 226(E2) CodeB ShA 130(82) ShA 130(82); BWIPP no manual mode" },
+        /*114*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\342\342\342\\^Baaaaa", -1, 0, 255, 0, "(23) 103 101 101 98 66 98 66 98 66 98 66 98 66 100 100 100 65 65 65 65 65 46 106", "BWIPP no manual mode" },
+        /*115*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\012\342\342\342\\^B\202\342\012\012", -1, 0, 277, 0, "(25) 103 101 98 66 74 101 101 98 66 98 66 98 66 100 98 66 66 100 98 74 100 98 74 69 106", "BWIPP no manual mode" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -477,38 +493,38 @@ static void test_gs1_128_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { GS1_MODE, "[90]1[90]1", 0, 123, 0, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01; BWIPP different encodation (same codeword count)" },
-        /*  1*/ { GS1_MODE | GS1PARENS_MODE, "(90)1(90)1", 0, 123, 0, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01; BWIPP different encodation (same codeword count)" },
+    static const struct item data[] = {
+        /*  0*/ { GS1_MODE, "[90]1[90]1", 0, 123, 0, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01; BWIPP different encodation (same width)" },
+        /*  1*/ { GS1_MODE | GS1PARENS_MODE, "(90)1(90)1", 0, 123, 0, "(11) 105 102 90 100 17 102 25 99 1 56 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01; BWIPP different encodation (same width)" },
         /*  2*/ { GS1_MODE, "[90]1[90]12", 0, 112, 0, "(10) 104 102 25 99 1 102 90 12 43 106", "StartB FNC1 9 CodeC 01 FNC1 90 12; BWIPP different encodation (BWIPP 1 longer)" },
         /*  3*/ { GS1_MODE, "[90]1[90]123", 0, 134, 1, "(12) 105 102 90 100 17 102 25 99 1 23 57 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23" },
         /*  4*/ { GS1_MODE, "[90]12[90]1", 0, 112, 1, "(10) 105 102 90 12 102 90 100 17 43 106", "StartC FNC1 90 12 FNC1 90 CodeB 1" },
         /*  5*/ { GS1_MODE, "[90]12[90]12", 0, 101, 1, "(9) 105 102 90 12 102 90 12 14 106", "StartC FNC1 90 12 FNC1 90 12" },
         /*  6*/ { GS1_MODE, "[90]12[90]123", 0, 123, 1, "(11) 105 102 90 12 102 90 12 100 19 42 106", "StartC FNC1 90 12 FNC1 CodeB 9 CodeC 01 23" },
-        /*  7*/ { GS1_MODE, "[90]123[90]1", 0, 134, 0, "(12) 105 102 90 12 100 19 102 25 99 1 34 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01; BWIPP different encodation (same codeword count)" },
-        /*  8*/ { GS1_MODE, "[90]123[90]1234", 0, 134, 0, "(12) 104 102 25 99 1 23 102 90 12 34 50 106", "StartB FNC1 9 CodeC 01 23 FNC1 90 12 34; BWIPP different encodation (BWIPP 1 longer)" },
-        /*  9*/ { GS1_MODE, "[90]1[90]1[90]1", 0, 167, 0, "(15) 105 102 90 100 17 102 25 99 1 102 90 100 17 88 106", "StartC FNC1(GS1) 90 CodeB 1 FNC1(29) 9 CodeC 01 FNC1(29) 90 CodeB 1; BWIPP different encodation (same codeword count)" },
+        /*  7*/ { GS1_MODE, "[90]123[90]1", 0, 134, 0, "(12) 105 102 90 12 100 19 102 25 99 1 34 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01; BWIPP different encodation (same width)" },
+        /*  8*/ { GS1_MODE, "[90]123[90]1234", 0, 134, 0, "(12) 104 102 25 99 1 23 102 90 12 34 50 106", "StartB FNC1 9 CodeC 01 23 FNC1 90 12 34" },
+        /*  9*/ { GS1_MODE, "[90]1[90]1[90]1", 0, 167, 0, "(15) 105 102 90 100 17 102 25 99 1 102 90 100 17 88 106", "StartC FNC1(GS1) 90 CodeB 1 FNC1(29) 9 CodeC 01 FNC1(29) 90 CodeB 1; BWIPP different encodation (same width)" },
         /* 10*/ { GS1_MODE, "[90]1[90]12[90]1", 0, 156, 0, "(14) 104 102 25 99 1 102 90 12 102 90 100 17 75 106", "StartB FNC1 9 CodeC 01 FNC1 90 12 FNC1 90 CodeB 1; BWIPP different encodation (BWIPP 2 longer)" },
         /* 11*/ { GS1_MODE, "[90]1[90]123[90]1", 0, 178, 1, "(16) 105 102 90 100 17 102 25 99 1 23 102 90 100 17 89 106", "StartC FNC1 90 CodeB 1 FNC1 9 CodeC 01 23 FNC1 90 CodeB 1" },
-        /* 12*/ { GS1_MODE, "[90]12[90]123[90]1", 0, 167, 0, "(15) 105 102 90 12 102 90 12 100 19 102 25 99 1 45 106", "StartC FNC1 90 12 FNC1 90 12 CodeB 3 FNC1 9 CodeC 01; BWIPP different encodation (same codeword count)" },
-        /* 13*/ { GS1_MODE, "[90]12[90]123[90]12", 0, 167, 0, "(15) 105 102 90 12 102 90 12 100 19 99 102 90 12 100 106", "StartC FNC1 90 12 FNC1 90 12 CodeB 3 CodeC FNC1 90 12; BWIPP different encodation (same codeword count)" },
-        /* 14*/ { GS1_MODE, "[90]123[90]1[90]1", 0, 178, 0, "(16) 105 102 90 12 100 19 102 25 99 1 102 90 100 17 66 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 FNC1 90 CodeB 1; BWIPP different encodation (same codeword count)" },
+        /* 12*/ { GS1_MODE, "[90]12[90]123[90]1", 0, 167, 0, "(15) 105 102 90 12 102 90 12 100 19 102 25 99 1 45 106", "StartC FNC1 90 12 FNC1 90 12 CodeB 3 FNC1 9 CodeC 01; BWIPP different encodation (same width)" },
+        /* 13*/ { GS1_MODE, "[90]12[90]123[90]12", 0, 167, 0, "(15) 105 102 90 12 102 90 12 100 19 99 102 90 12 100 106", "StartC FNC1 90 12 FNC1 90 12 CodeB 3 CodeC FNC1 90 12; BWIPP different encodation (same width)" },
+        /* 14*/ { GS1_MODE, "[90]123[90]1[90]1", 0, 178, 0, "(16) 105 102 90 12 100 19 102 25 99 1 102 90 100 17 66 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 FNC1 90 CodeB 1; BWIPP different encodation (same width)" },
         /* 15*/ { GS1_MODE, "[90]123[90]12[90]1", 0, 167, 0, "(15) 104 102 25 99 1 23 102 90 12 102 90 100 17 85 106", "StartB FNC1 9 CodeC 01 23 FNC1 90 12 FNC1 90 CodeB 1; BWIPP different encodation (BWIPP 2 longer)" },
         /* 16*/ { GS1_MODE, "[90]123[90]123[90]12", 0, 178, 1, "(16) 105 102 90 12 100 19 102 25 99 1 23 102 90 12 47 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 CodeC 01 23 FNC1 90 12" },
         /* 17*/ { GS1_MODE, "[90]123[90]1234[90]1", 0, 178, 0, "(16) 104 102 25 99 1 23 102 90 12 34 102 90 100 17 82 106", "StartB FNC1 9 CodeC 01 23 FNC1 90 12 34 FNC1 90 CodeB 1; BWIPP different encodation (BWIPP 3 longer)" },
         /* 18*/ { GS1_MODE, "[90]123[90]1234[90]123", 0, 189, 0, "(17) 104 102 25 99 1 23 102 90 12 34 102 90 12 100 19 62 106", "StartB FNC1 9 CodeC 01 23 FNC1 90 12 34 FNC1 90 12 CodeB 3; BWIPP different encodation (BWIPP 3 longer)" },
         /* 19*/ { GS1_MODE, "[90]12345[90]1234[90]1", 0, 189, 0, "(17) 104 102 25 99 1 23 45 102 90 12 34 102 90 100 17 75 106", "StartB FNC1 9 CodeC 01 23 45 FNC1 90 12 34 FNC1 90 CodeB 1; BWIPP different encodation (BWIPP 3 longer)" },
-        /* 20*/ { GS1_MODE, "[90]1A[90]1", 0, 134, 0, "(12) 105 102 90 100 17 33 102 25 99 1 36 106", "StartC FNC1 90 CodeB 1 A FNC1 9 CodeC 01; BWIPP different encodation (same codeword count)" },
+        /* 20*/ { GS1_MODE, "[90]1A[90]1", 0, 134, 0, "(12) 105 102 90 100 17 33 102 25 99 1 36 106", "StartC FNC1 90 CodeB 1 A FNC1 9 CodeC 01; BWIPP different encodation (same width)" },
         /* 21*/ { GS1_MODE, "[90]12A[90]123", 0, 145, 1, "(13) 105 102 90 12 100 33 102 25 99 1 23 25 106", "StartC FNC1 90 12 CodeB A FNC1 9 CodeC 01 23" },
-        /* 22*/ { GS1_MODE, "[90]123[90]A234[90]123", 0, 222, 0, "(20) 105 102 90 12 100 19 102 25 16 33 18 99 34 102 90 12 100 19 50 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 0 A 2 CodeC 34 FNC1 90 12 CodeB 3; BWIPP different encodation (same codeword count)" },
-        /* 23*/ { GS1_MODE, "[90]12345A12345A", 0, 178, 0, "(16) 105 102 90 12 34 100 21 33 99 12 34 100 21 33 8 106", "StartC FNC1 90 12 34 CodeB 5 A CodeC 12 34 CodeB 5 A; BWIPP different encodation (same codeword count)" },
+        /* 22*/ { GS1_MODE, "[90]123[90]A234[90]123", 0, 222, 0, "(20) 105 102 90 12 100 19 102 25 16 33 18 99 34 102 90 12 100 19 50 106", "StartC FNC1 90 12 CodeB 3 FNC1 9 0 A 2 CodeC 34 FNC1 90 12 CodeB 3; BWIPP different encodation (same width)" },
+        /* 23*/ { GS1_MODE, "[90]12345A12345A", 0, 178, 0, "(16) 105 102 90 12 34 100 21 33 99 12 34 100 21 33 8 106", "StartC FNC1 90 12 34 CodeB 5 A CodeC 12 34 CodeB 5 A; BWIPP different encodation (same width)" },
         /* 24*/ { GS1_MODE, "[01]12345678901231[90]12345678901234567890123456789", 0, 321, 1, "(29) 105 102 1 12 34 56 78 90 12 31 90 12 34 56 78 90 12 34 56 78 90 12 34 56 78 100 25 59", "Max length" },
-        /* 25*/ { GS1_MODE, "[01]12345678901231[90]123456789012345678901234567890[91]1", ZINT_WARN_NONCOMPLIANT, 354, 1, "Warning 843: GS1-128 input too long (48 character maximum)", "Over length" },
+        /* 25*/ { GS1_MODE, "[01]12345678901231[90]123456789012345678901234567890[91]1", ZINT_WARN_NONCOMPLIANT, 354, 1, "Warning 843: Input too long, requires 52 characters (maximum 48)", "Over length" },
         /* 26*/ { GS1_MODE, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890[93]1234", ZINT_WARN_HRT_TRUNCATED, 1135, 1, "Warning 844: Human Readable Text truncated", "Max input" },
         /* 27*/ { GS1_MODE, "[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[00]345678901234567890[3100]567890[20]34[20]78", ZINT_WARN_HRT_TRUNCATED, 1135, 1, "Warning 844: Human Readable Text truncated", "HRT truncation warning trumps non-compliant (3100) warning" },
-        /* 28*/ { GS1_MODE, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890[93]12345", ZINT_ERROR_TOO_LONG, 0, 1, "Error 344: Input too long (99 symbol character maximum)", "" },
+        /* 28*/ { GS1_MODE, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890[93]12345", ZINT_ERROR_TOO_LONG, 0, 1, "Error 344: Input too long, requires 101 symbol characters (maximum 99)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -598,17 +614,17 @@ static void test_hibc_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { ",", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 203: Invalid character in data (alphanumerics, space and \"-.$/+%\" only)", "" },
+    static const struct item data[] = {
+        /*  0*/ { ",", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", "" },
         /*  1*/ { "A99912345/$$52001510X3", 0, 255, 0, "(23) 104 11 33 99 99 91 23 45 100 15 4 4 99 52 0 15 10 100 56 99 33 102 106", "Check digit 3; BWIPP different encodation, same width" },
         /*  2*/ { "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", 0, 497, 1, "(45) 104 11 99 1 23 45 67 89 100 33 34 35 36 37 38 39 40 41 42 43 44 45 46 47 48 49 50 51", "Check digit +" },
         /*  3*/ { "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", 0, 695, 1, "(63) 104 11 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5", "Check digit Q" },
         /*  4*/ { "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", 0, 1124, 1, "(102) 104 11 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5 5", "" },
-        /*  5*/ { "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", ZINT_ERROR_TOO_LONG, -1, 0, "Error 341: Input too long (99 symbol character maximum)", "" },
+        /*  5*/ { "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%", ZINT_ERROR_TOO_LONG, -1, 0, "Error 341: Input too long, requires 100 symbol characters (maximum 99)", "" },
         /*  6*/ { "10000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000", 0, 684, 1, "(62) 104 11 99 10 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0", "Check digit %" },
         /*  7*/ { "09AZ-.19AZ-.29AZ-.39AZ-.49AZ-.59AZ-.69AZ-.79AZ-.89AZ-.99AZ", 0, 695, 1, "(63) 104 11 16 25 33 58 13 14 17 25 33 58 13 14 18 25 33 58 13 14 19 25 33 58 13 14 20 25", "Check digit -" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -678,6 +694,62 @@ static void test_hibc_input(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_nve18_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        char *data;
+        int ret;
+        int expected_width;
+        char *expected;
+        char *comment;
+    };
+    static const struct item data[] = {
+        /*  0*/ { -1, "123456789012345678", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)", "" },
+        /*  1*/ { -1, "1234A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "" },
+        /*  2*/ { ESCAPE_MODE, "\\d049\\d050\\d051\\d052A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "Position does not account for escape sequences" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    char escaped[1024];
+
+    testStartSymbol("test_nve18_input", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
+
+        length = testUtilSetSymbol(symbol, BARCODE_NVE18, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+
+        if (p_ctx->generate) {
+            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
+        } else {
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            if (ret < ZINT_ERROR) {
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_ean14_input(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -688,11 +760,11 @@ static void test_ean14_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { "12345678901234", ZINT_ERROR_TOO_LONG, -1, "Error 347: Input too long (13 character maximum)", "" },
-        /*  1*/ { "A", ZINT_ERROR_INVALID_DATA, -1, "Error 348: Invalid character in data (digits only)", "" },
+    static const struct item data[] = {
+        /*  0*/ { "12345678901234", ZINT_ERROR_TOO_LONG, -1, "Error 347: Input length 14 too long (maximum 13)", "" },
+        /*  1*/ { "123456789012A", ZINT_ERROR_INVALID_DATA, -1, "Error 348: Invalid character at position 13 in input (digits only)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -744,16 +816,16 @@ static void test_dpd_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { -1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
-        /*  1*/ { 1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
+    static const struct item data[] = {
+        /*  0*/ { -1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input length 26 wrong (27 or 28 only)", "" },
+        /*  1*/ { 1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input length 26 wrong (27 only)", "" },
         /*  2*/ { -1, -1, "123456789012345678901234567", 0, 211, 50, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "27 chars ok now, ident tag prefixed" },
         /*  3*/ { -1, -1, "%123456789012345678901234567", 0, 211, 50, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "" },
         /*  4*/ { 1, -1, "123456789012345678901234567", 0, 200, 25, "(18) 105 12 34 56 78 90 12 34 56 78 90 12 34 56 100 23 102 106", "27 chars also ok (and necessary) for relabel" },
-        /*  5*/ { -1, -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input wrong length (27 or 28 characters required)", "" },
-        /*  6*/ { 1, -1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input wrong length (27 characters required)", "" },
-        /*  7*/ { -1, -1, "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 299: Invalid character in data (alphanumerics only after first character)", "Alphanumerics only in body" },
-        /*  8*/ { -1, -1, "12345678901234567890123456,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 300: Invalid character in data (alphanumerics only)", "Alphanumerics only in body" },
+        /*  5*/ { -1, -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, 0, "Error 349: DPD input length 29 wrong (27 or 28 only)", "" },
+        /*  6*/ { 1, -1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, 0, "Error 830: DPD relabel input length 28 wrong (27 only)", "" },
+        /*  7*/ { -1, -1, "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 299: Invalid character at position 27 in input (alphanumerics only after first)", "Alphanumerics only in body" },
+        /*  8*/ { -1, -1, "12345678901234567890123456,", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 300: Invalid character at position 27 in input (alphanumerics only)", "Alphanumerics only" },
         /*  9*/ { -1, -1, ",234567890123456789012345678", 0, 211, 50, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD ident tag (Barcode ID) allowed" },
         /* 10*/ { -1, -1, "\037234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Control char <US> as DPD ident tag" },
         /* 11*/ { -1, -1, "é234567890123456789012345678", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 343: Invalid DPD identification tag (first character), ASCII values 32 to 127 only", "Extended ASCII as DPD ident tag" },
@@ -777,7 +849,7 @@ static void test_dpd_input(const testCtx *const p_ctx) {
         /* 29*/ { 1, -1, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 222, 25, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
         /* 30*/ { 1, COMPLIANT_HEIGHT, "12345678901A345678901234567", ZINT_WARN_NONCOMPLIANT, 222, 33.333332, "Warning 833: Last 10 characters of Tracking Number (characters 16-7 from end) should be numeric", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -828,9 +900,9 @@ static void test_upu_s10_input(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
-        /*  0*/ { "AB123456789ABC", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input must be 12 or 13 characters long", "" },
-        /*  1*/ { "AB1234567AB", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input must be 12 or 13 characters long", "" },
+    static const struct item data[] = {
+        /*  0*/ { "AB123456789ABC", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 14 wrong (12 or 13 only)", "" },
+        /*  1*/ { "AB1234567AB", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 11 wrong (12 or 13 only)", "" },
         /*  2*/ { "1B123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
         /*  3*/ { "1B12345678AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
         /*  4*/ { "A2123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
@@ -850,7 +922,7 @@ static void test_upu_s10_input(const testCtx *const p_ctx) {
         /* 18*/ { "AB123100000IE", 0, 156, "", "Check digit 10 -> 0" },
         /* 19*/ { "AB000000005IE", 0, 156, "", "Check digit 11 -> 5" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -908,7 +980,7 @@ static void test_encode(const testCtx *const p_ctx) {
     /* BARCODE_GS1_128 examples verified manually against GS1 General Specifications 21.0.1 (GGS) */
     /* BARCODE_DPD examples Specification DPD and primetime Parcel Despatch (DPDAPPD) Version 4.0.2, also
        DPD Parcel Label Specification (DPDPLS) Version 2.4.1 (19.01.2021) */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, "AIM", 0, 1, 68, 1, "ISO/IEC 15417:2007 Figure 1",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
@@ -933,10 +1005,10 @@ static void test_encode(const testCtx *const p_ctx) {
         /*  7*/ { BARCODE_GS1_128, GS1_MODE, -1, "[415]5412345678908[3911]710125", 0, 1, 189, 1, "GGS Figure 2.6.6-1 top",
                     "110100111001111010111011000100010111010001101100010001011101101110101110110001000010110011011011110100011001001101000100011000100100100110100001100110110011100101100100001001101100011101011"
                 },
-        /*  8*/ { BARCODE_GS1_128, GS1_MODE, -1, "[12]010425[8020]ABC123", 0, 1, 189, 0, "GGS Figure 2.6.6-1 bottom **NOT SAME**, different encodation, same codeword count; BWIPP as standard",
+        /*  8*/ { BARCODE_GS1_128, GS1_MODE, -1, "[12]010425[8020]ABC123", 0, 1, 189, 0, "GGS Figure 2.6.6-1 bottom **NOT SAME**, different encodation, same width; BWIPP as standard",
                     "110100111001111010111010110011100110011011001001000110011100101100101001111001100100111010111101110101000110001000101100010001000110100111001101011101111011101101110111101000101100011101011"
                 },
-        /*  9*/ { BARCODE_GS1_128, GS1_MODE, -1, "[253]950110153005812345678901", 0, 1, 211, 0, "GGS Figure 2.6.9-1 **NOT SAME**, different encodation, same codeword count; BWIPP as standard",
+        /*  9*/ { BARCODE_GS1_128, GS1_MODE, -1, "[253]950110153005812345678901", 0, 1, 211, 0, "GGS Figure 2.6.9-1 **NOT SAME**, different encodation, same width; BWIPP as standard",
                     "1101001110011110101110111001011001101000100011000101110110001001001100110110011011101110110110011001110110001010110011100100010110001110001011011000010100110111101101011110111010011100110101110110001100011101011"
                 },
         /* 10*/ { BARCODE_GS1_128, GS1_MODE, -1, "[253]950110153006567890543210987", 0, 1, 211, 1, "GGS Figure 2.6.9-2",
@@ -960,7 +1032,7 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 16*/ { BARCODE_GS1_128, GS1_MODE, -1, "[00]006141411234567890", 0, 1, 156, 1, "GGS Figure 6.6.5-1. (and Figures 6.6.5-3 bottom, 6.6.5-4 bottom)",
                     "110100111001111010111011011001100110110011001100100001011000100010110001000101011001110010001011000111000101101100001010011011110110110110110001100011101011"
                 },
-        /* 17*/ { BARCODE_GS1_128, GS1_MODE, -1, "[403]402621[401]950110153B01001", 0, 1, 255, 0, "GGS Figure 6.6.5-2 top, same; BWIPP different encodation, same codeword count",
+        /* 17*/ { BARCODE_GS1_128, GS1_MODE, -1, "[403]402621[401]950110153B01001", 0, 1, 255, 0, "GGS Figure 6.6.5-2 top, same; BWIPP different encodation, same width",
                     "110100100001111010111011001001110101110111101001001100011000101000111001001101101110010011110101110110001010001100101110011000101110110001001001100110110011011101110101111011101000101100010011101100101110111101100100010011001101100110001101101100011101011"
                 },
         /* 18*/ { BARCODE_GS1_128, GS1_MODE, -1, "[00]395011015300000011", 0, 1, 156, 1, "GGS Figure 6.6.5-2 bottom",
@@ -1032,7 +1104,7 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 40*/ { BARCODE_NVE18, GS1_MODE, -1, "40700000071967072", 0, 1, 156, 1, "",
                     "110100111001111010111011011001100110001010001011000010011011001100110110011001001100010011001011100100001011001001100010011001001110110111011101100011101011"
                 },
-        /* 41*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "83278F8G9H0J2G", 0, 1, 211, 0, "ANSI/HIBC 2.6 - 2016 Section 4.1, same; BWIPP different encodation, same codeword count",
+        /* 41*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "83278F8G9H0J2G", 0, 1, 211, 0, "ANSI/HIBC 2.6 - 2016 Section 4.1, same; BWIPP different encodation, same width",
                     "1101001000011000100100101110111101011110010011101100100101111011101110100110010001100010111010011001101000100011100101100110001010001001110110010110111000110011100101101000100010001001100110100010001100011101011"
                 },
         /* 42*/ { BARCODE_HIBC_128, UNICODE_MODE, -1, "A123BJC5D6E71", 0, 1, 200, 1, "ANSI/HIBC 2.6 - 2016 Figure 1, same",
@@ -1065,11 +1137,11 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 51*/ { BARCODE_DPD, UNICODE_MODE, 1, "006376209980000020044118276", 0, 1, 200, 1, "DPDPLS Section 8.7.2 relabel, **NOT SAME**, figure begins StartB then immediate CodeC, zint begins StartC (shorter)",
                     "11010011100110110011001010011000011001010000110010011101011101111010100111100110110011001101100110011001001110100100011001100010001011001110010111011001001011110111011001110100110111011101100011101011"
                 },
-        /* 52*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, "EE876543216CA", 0, 1, 156, 0, "BWIPP different encodation, same codeword count",
+        /* 52*/ { BARCODE_UPU_S10, UNICODE_MODE, -1, "EE876543216CA", 0, 1, 156, 0, "BWIPP different encodation, same width",
                     "110100100001000110100010001101000101110111101111001010010010110000101100011101101110010010111101110110011101001000100011010100011000100010011001100011101011"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -1162,12 +1234,12 @@ static void test_perf(const testCtx *const p_ctx) {
         int expected_width;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, "123456ABCD123456ABCD123456ABCD123456ABCD123456ABCD123456ABCD", 0, 1, 618, "CODE128 60" },
         /*  1*/ { BARCODE_CODE128, "123456ABCD", 0, 1, 123, "CODE128 10" },
         /*  2*/ { BARCODE_GS1_128, "[01]09501101530003", 0, 1, 134, "GS1_128 (01)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 
@@ -1258,6 +1330,7 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input },
         { "test_gs1_128_input", test_gs1_128_input },
         { "test_hibc_input", test_hibc_input },
+        { "test_nve18_input", test_nve18_input },
         { "test_ean14_input", test_ean14_input },
         { "test_dpd_input", test_dpd_input },
         { "test_upu_s10_input", test_upu_s10_input },

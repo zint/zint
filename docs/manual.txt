@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-September 2024
+October 2024
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -3298,11 +3298,14 @@ demonstrated by the symbologies below.
 [zint -b CODABLOCKF -d "CODABLOCK F Symbology" --rows=3]
 
 This is a stacked symbology based on Code 128 which can encode Latin-1 data up
-to a maximum length of 2725 characters. The width of the Codablock-F symbol can
-be set using the --cols option (API option_2), to a value between 9 and 67. The
-height (number of rows) can be set using the --rows option (API option_1), with
-a maximum of 44. Zint does not currently support encoding of GS1 data in
-Codablock-F symbols.
+to a maximum length of 2726 symbol characters, meaning for instance up to 2726
+all ASCII characters, or 5452 all numeric, or up to 1363 all extended ASCII
+(ISO/IEC 8859-1).
+
+The width of the Codablock-F symbol can be set using the --cols option (API
+option_2), to a value between 9 and 67. The height (number of rows) can be set
+using the --rows option (API option_1), with a maximum of 44. Zint does not
+currently support encoding of GS1 data in Codablock-F symbols.
 
 A separate symbology ID (BARCODE_HIBC_BLOCKF) can be used to encode Health
 Industry Barcode (HIBC) data which adds a leading '+' character and a modulo-49
@@ -4823,7 +4826,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % September 2024
+% ZINT(1) Version 2.13.0.9 % % October 2024
 
 NAME
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,48 +42,51 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /*
        é U+00E9 (\351, 233), UTF-8 C3A9, CodeB-only extended ASCII
     */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { -1, -1, "A", 2666, 0, 44, 728 },
-        /*  1*/ { -1, -1, "A", 2725, 0, 44, 739 },
-        /*  2*/ { -1, -1, "A", 2726, 0, 44, 739 }, /* 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1 */
-        /*  3*/ { -1, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  4*/ { -1, -1, "A", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  5*/ { -1, -1, "12", 2726 * 2, 0, 44, 739 },
-        /*  6*/ { -1, -1, "12", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { -1, -1, "\351", 2726 / 2, 0, 44, 739 },
-        /*  8*/ { -1, -1, "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  9*/ { 1, -1, "A", 99, 0, 1, 1124 }, /* CODE128 99 max */
-        /* 10*/ { 1, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 11*/ { 2, -1, "A", 122, 0, 2, 739 },
-        /* 12*/ { 2, 10, "A", 122, 0, 2, 739 }, /* Cols 10 -> 67 */
-        /* 13*/ { 2, 67, "A", 122, 0, 2, 739 },
-        /* 14*/ { 2, -1, "A", 123, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 15*/ { 2, -1, "A", 63 * 2, ZINT_ERROR_TOO_LONG, -1, -1 }, /* Triggers initial testColumns > 62 */
-        /* 16*/ { 2, -1, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 17*/ { 2, 9, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 18*/ { 3, -1, "A", 184, 0, 3, 739 },
-        /* 19*/ { 3, -1, "A", 185, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 20*/ { 10, -1, "A", 618, 0, 10, 739 },
-        /* 21*/ { 10, -1, "A", 619, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 22*/ { 20, -1, "A", 1238, 0, 20, 739 },
-        /* 23*/ { 20, -1, "A", 1239, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 24*/ { 30, -1, "A", 1858, 0, 30, 739 },
-        /* 25*/ { 30, -1, "A", 1859, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 26*/ { 40, -1, "A", 2478, 0, 40, 739 },
-        /* 27*/ { 40, -1, "A", 2479, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 28*/ { 43, -1, "A", 2664, 0, 43, 739 },
-        /* 29*/ { 43, -1, "A", 2665, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 30*/ { 44, -1, "A", 2726, 0, 44, 739 },
-        /* 31*/ { 44, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 32*/ { 44, 60, "A", 2726, 0, 44, 739 }, /* Cols 60 -> 67 */
-        /* 33*/ { 44, 67, "A", 2726, 0, 44, 739 },
+    static const struct item data[] = {
+        /*  0*/ { -1, -1, "A", 2666, 0, 44, 728, "" },
+        /*  1*/ { -1, -1, "A", 2725, 0, 44, 739, "" },
+        /*  2*/ { -1, -1, "A", 2726, 0, 44, 739, "" }, /* 4.2.1 c.3 says max 2725 but actually 44 * 62 - 2 == 2726 as mentioned later in 4.8.1 */
+        /*  3*/ { -1, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /*  4*/ { -1, -1, "A", ZINT_MAX_DATA_LEN, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /*  5*/ { -1, -1, "12", 2726 * 2, 0, 44, 739, "" },
+        /*  6*/ { -1, -1, "12", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /*  7*/ { -1, -1, "\351", 2726 / 2, 0, 44, 739, "" },
+        /*  8*/ { -1, -1, "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /*  9*/ { -1, -1, "\001", 2726, 0, 44, 739, "" },
+        /* 10*/ { -1, -1, "\001", 2727, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 11*/ { 1, -1, "A", 99, 0, 1, 1124, "" }, /* CODE128 99 max */
+        /* 12*/ { 1, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 13*/ { 2, -1, "A", 122, 0, 2, 739, "" },
+        /* 14*/ { 2, 10, "A", 122, 0, 2, 739, "" }, /* Cols 10 -> 67 */
+        /* 15*/ { 2, 67, "A", 122, 0, 2, 739, "" },
+        /* 16*/ { 2, -1, "A", 123, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 17*/ { 2, -1, "A", 63 * 2, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" }, /* Triggers initial testColumns > 62 */
+        /* 18*/ { 2, -1, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 19*/ { 2, 9, "A", 2726 * 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 20*/ { 3, -1, "A", 184, 0, 3, 739, "" },
+        /* 21*/ { 3, -1, "A", 185, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 22*/ { 10, -1, "A", 618, 0, 10, 739, "" },
+        /* 23*/ { 10, -1, "A", 619, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 24*/ { 20, -1, "A", 1238, 0, 20, 739, "" },
+        /* 25*/ { 20, -1, "A", 1239, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 26*/ { 30, -1, "A", 1858, 0, 30, 739, "" },
+        /* 27*/ { 30, -1, "A", 1859, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 28*/ { 40, -1, "A", 2478, 0, 40, 739, "" },
+        /* 29*/ { 40, -1, "A", 2479, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 30*/ { 43, -1, "A", 2664, 0, 43, 739, "" },
+        /* 31*/ { 43, -1, "A", 2665, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 32*/ { 44, -1, "A", 2726, 0, 44, 739, "" },
+        /* 33*/ { 44, -1, "A", 2727, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
+        /* 34*/ { 44, 60, "A", 2726, 0, 44, 739, "" }, /* Cols 60 -> 67 */
+        /* 35*/ { 44, 67, "A", 2726, 0, 44, 739, "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -105,6 +108,8 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -128,36 +133,37 @@ static void test_options(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 1, -1, "é", 0, 1, 57, "CODE128" },
-        /*  1*/ { UNICODE_MODE, -1, -1, "A", 0, 2, 101, "Defaults" },
-        /*  2*/ { UNICODE_MODE, 0, -1, "A", 0, 2, 101, "0 rows same as -1" },
-        /*  3*/ { UNICODE_MODE, 2, -1, "A", 0, 2, 101, "Rows 2, columns default" },
-        /*  4*/ { UNICODE_MODE, 3, -1, "A", 0, 3, 101, "Rows 3" },
-        /*  5*/ { UNICODE_MODE, 43, -1, "A", 0, 43, 101, "Rows 43" },
-        /*  6*/ { UNICODE_MODE, 44, -1, "A", 0, 44, 101, "Max rows" },
-        /*  7*/ { UNICODE_MODE, 45, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "" },
-        /*  8*/ { UNICODE_MODE, -1, -1, "abcdefg", 0, 3, 101, "" },
-        /*  9*/ { UNICODE_MODE, 2, -1, "abcdefg", 0, 2, 112, "Rows given so columns expanded" },
-        /* 10*/ { UNICODE_MODE, 3, -1, "abcdefg", 0, 3, 101, "" },
-        /* 11*/ { UNICODE_MODE, -1, 8, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Min columns 9 (4 data)" },
-        /* 12*/ { UNICODE_MODE, -1, 9, "A", 0, 2, 101, "Min columns 9 (4 data)" },
-        /* 13*/ { UNICODE_MODE, -1, 10, "A", 0, 2, 112, "Columns 10" },
-        /* 14*/ { UNICODE_MODE, -1, 66, "A", 0, 2, 728, "Columns 66" },
-        /* 15*/ { UNICODE_MODE, -1, 67, "A", 0, 2, 739, "Max columns 67 (62 data)" },
-        /* 16*/ { UNICODE_MODE, -1, 68, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "" },
-        /* 17*/ { UNICODE_MODE, 2, 9, "A", 0, 2, 101, "Rows and columns defaults given" },
-        /* 18*/ { UNICODE_MODE, 2, 10, "A", 0, 2, 112, "Rows and columns given" },
-        /* 19*/ { UNICODE_MODE, 3, 11, "A", 0, 3, 123, "" },
-        /* 20*/ { UNICODE_MODE, 43, 66, "A", 0, 43, 728, "" },
-        /* 21*/ { UNICODE_MODE, 44, 67, "A", 0, 44, 739, "Max rows, max columns" },
-        /* 22*/ { GS1_MODE, -1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "GS1 not supported" },
-        /* 23*/ { GS1_MODE, 1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Check for CODE128" },
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, 1, -1, "é", 0, 1, 57, "", "CODE128" },
+        /*  1*/ { UNICODE_MODE, -1, -1, "A", 0, 2, 101, "", "Defaults" },
+        /*  2*/ { UNICODE_MODE, 0, -1, "A", 0, 2, 101, "", "0 rows same as -1" },
+        /*  3*/ { UNICODE_MODE, 2, -1, "A", 0, 2, 101, "", "Rows 2, columns default" },
+        /*  4*/ { UNICODE_MODE, 3, -1, "A", 0, 3, 101, "", "Rows 3" },
+        /*  5*/ { UNICODE_MODE, 43, -1, "A", 0, 43, 101, "", "Rows 43" },
+        /*  6*/ { UNICODE_MODE, 44, -1, "A", 0, 44, 101, "", "Max rows" },
+        /*  7*/ { UNICODE_MODE, 45, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 410: Number of rows '45' out of range (0 to 44)", "" },
+        /*  8*/ { UNICODE_MODE, -1, -1, "abcdefg", 0, 3, 101, "", "" },
+        /*  9*/ { UNICODE_MODE, 2, -1, "abcdefg", 0, 2, 112, "", "Rows given so columns expanded" },
+        /* 10*/ { UNICODE_MODE, 3, -1, "abcdefg", 0, 3, 101, "", "" },
+        /* 11*/ { UNICODE_MODE, -1, 8, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '8' out of range (9 to 67)", "Min columns 9 (4 data)" },
+        /* 12*/ { UNICODE_MODE, -1, 9, "A", 0, 2, 101, "", "Min columns 9 (4 data)" },
+        /* 13*/ { UNICODE_MODE, -1, 10, "A", 0, 2, 112, "", "Columns 10" },
+        /* 14*/ { UNICODE_MODE, -1, 66, "A", 0, 2, 728, "", "Columns 66" },
+        /* 15*/ { UNICODE_MODE, -1, 67, "A", 0, 2, 739, "", "Max columns 67 (62 data)" },
+        /* 16*/ { UNICODE_MODE, -1, 68, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '68' out of range (9 to 67)", "" },
+        /* 17*/ { UNICODE_MODE, 2, 9, "A", 0, 2, 101, "", "Rows and columns defaults given" },
+        /* 18*/ { UNICODE_MODE, 2, 10, "A", 0, 2, 112, "", "Rows and columns given" },
+        /* 19*/ { UNICODE_MODE, 3, 11, "A", 0, 3, 123, "", "" },
+        /* 20*/ { UNICODE_MODE, 43, 66, "A", 0, 43, 728, "", "" },
+        /* 21*/ { UNICODE_MODE, 44, 67, "A", 0, 44, 739, "", "Max rows, max columns" },
+        /* 22*/ { GS1_MODE, -1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", "" },
+        /* 23*/ { GS1_MODE, 1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", "Check for CODE128" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -174,6 +180,8 @@ static void test_options(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
@@ -200,12 +208,12 @@ static void test_reader_init(const testCtx *const p_ctx) {
         char *expected;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, READER_INIT, "1234", 0, 2, 101, "67 64 40 60 63 0C 22 2B 6A 67 64 0B 63 64 3A 1C 29 6A", "CodeB FNC3 CodeC 12 34 / CodeB Pads" },
         /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, READER_INIT, "\001\002", 0, 2, 101, "67 62 40 60 41 42 63 32 6A 67 64 0B 63 64 45 42 0F 6A", "FNC3 SOH STX / CodeB Pads" },
         /*  2*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, READER_INIT, "123456", 0, 3, 101, "67 64 41 60 0B 11 12 22 6A 67 63 2B 22 38 64 2A 1B 6A 67 64 0C 63 64 2B 2F 52 6A", "CodeB FNC3 + 1 2 / CodeC 34 56 CodeB J" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -278,7 +286,7 @@ static void test_input(const testCtx *const p_ctx) {
        ñ U+00F1 (\361, 241), UTF-8 C3B1, CodeB-only extended ASCII
        ÿ U+00FF (\377, 255), UTF-8 C3BF, CodeB-only extended ASCII
     */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "A", -1, 0, 2, 101, 1, "67 64 40 21 63 64 63 42 6A 67 64 0B 63 64 2B 40 4F 6A", "Fillings 5" },
         /*  1*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 63 55 6A 67 64 0B 63 64 0E 57 48 6A", "Fillings 3" },
         /*  2*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "AAAA", -1, 0, 2, 101, 1, "67 64 40 21 21 21 21 65 6A 67 64 0B 63 64 1A 0E 03 6A", "Fillings 2" },
@@ -325,8 +333,9 @@ static void test_input(const testCtx *const p_ctx) {
         /* 43*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé12345123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2" "B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé6789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890àààààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\012123456à\012à\012à\0123Ä4Ä5Ä6AÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécéÄÄÄÄÄÄ2ÄÄÄÄÄÄÄÄ4ÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécéÄÄÄAÄÄÄÄÄÄaÄÄÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé", -1, 0, 44, 739, 0, "(2948) 67 63 2A 0C 22 38 4E 5A 0C 22 65 15 21 22 23 24 25 26 27 28 29 4A 63 0C 22 38 64", "BWIPP gs command too long" },
         /* 44*/ { BARCODE_CODABLOCKF, UNICODE_MODE, -1, -1, "ÿ12345678\012à12345678abcdef\012\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890ààààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄÄÄÄÄ2ÄÄÄÄÄÄ4ÄÄÄÄÄÄaÄÄÄÄé1é2é34é56Ä78é9éAéBéCéééééaébécé123456789012345ABCDEFGHI\012123456ÿ12345678\012à12345678abcdef\012123456\012\0127890àABCDEFà\012\012ààGHIJKàLMNOPQabc\012defà1234567ghijk\012\012à901234\0122567890àààààABCDEFGààà\012\012\012HIJK\012\012\0122à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2B3C4a5b6c7d8e9\0120\0121\0122\0123Ä4Ä5Ä6A7a8A9a0\012Ä12345678ÄÄ2Ä4ÄaÄé1é2é34é56Ä78é9éAéBéCééaébécé123456789012345ABCDEF\012123456ÿ123456\012à12345678abcdef\012\0121234\012\0127890àABCDà\012\012ààGHIJKàLMabc\012defà1234567ghijk\012\012à901234\012\012\012\012567890ààABCDEFGààà\012\012\012HIJK\012\012\012\012à\012à\012à\01212345à\012à\012à67890ààÄ9012ÄÄ56789Ä12Ä3\0124\0125\0126A\012a\012A\012A\012a\012a\012BCD1A2", -1, 0, 33, 387, 0, "(1155) 67 64 5F 64 5F 63 0C 22 38 4E 65 4A 64 64 40 63 0C 22 38 4E 64 41 42 43 44 45 46", "BWIPP different encodation" },
         /* 45*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, 1, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
+        /* 46*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$520:1510X3", -1, ZINT_ERROR_INVALID_DATA, -1, -1, 1, "Error 203: Invalid character at position 16 in input (alphanumerics, space and \"-.$/+%\" only)", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -414,7 +423,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, 1, "Same as CODE128 (not supported by BWIPP or ZXing-C++)",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
@@ -502,7 +511,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11010000100101111011101001101110010110001000101110111101101000111011000110110100011010001100011101011"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -588,7 +597,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int bwipp_cmp;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, -1, "\034\034I", 3, 0, 1, "" },
         /*  1*/ { 6, -2147483647 - 1 /*Suppress MSVC warning C4146*/,
                     "\134\000\377\153\143\163\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061\061"
@@ -600,7 +609,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     238, 0, 0, "BWIPP different (better) encodation"
                 }, /* #300 (#9) Andre Maute */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 

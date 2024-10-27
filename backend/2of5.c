@@ -66,13 +66,14 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
-        sprintf(symbol->errtxt, "%d: Input too long (%d character maximum)", error_base, max);
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, error_base, "Input length %1$d too long (maximum %2$d)", length,
+                        max);
     }
-    if (!is_sane(NEON_F, source, length)) {
+    if ((i = not_sane(NEON_F, source, length))) {
+        /* Note: for all "at position" error messages, escape sequences not accounted for */
         /* errtxt 302: 304: 306: 308: */
-        sprintf(symbol->errtxt, "%d: Invalid character in data (digits only)", error_base + 1);
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, error_base + 1,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     ustrcpy(temp, source);
@@ -147,12 +148,11 @@ static int c25_inter_common(struct zint_symbol *symbol, unsigned char source[], 
     const int have_checkdigit = checkdigit_option == 1 || checkdigit_option == 2;
 
     if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
-        strcpy(symbol->errtxt, "309: Input too long (125 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 309, "Input length %d too long (maximum 125)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "310: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 310,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     /* Input must be an even number of characters for Interlaced 2 of 5 to work:
@@ -233,13 +233,12 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned char localstr[16] = {0};
 
     if (length > 13) {
-        strcpy(symbol->errtxt, "311: Input too long (13 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 13)", length);
     }
 
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "312: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 312,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     /* Add leading zeros as required */
@@ -298,12 +297,11 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     count = 0;
     if (length > 13) {
-        strcpy(symbol->errtxt, "313: Input wrong length (13 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 313, "Input length %d too long (maximum 13)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "314: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 314,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     zeroes = 13 - length;
@@ -346,12 +344,11 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     count = 0;
     if (length > 11) {
-        strcpy(symbol->errtxt, "315: Input wrong length (11 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 315, "Input length %d too long (maximum 11)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "316: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 316,
+                        "Invalid character at position %d in input (digits only)", i);
     }
 
     zeroes = 11 - length;

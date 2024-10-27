@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -43,7 +43,7 @@ static void test_large(const testCtx *const p_ctx) {
         int expected_width;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "1", 23, 0, 3, 133 },
         /*  1*/ { BARCODE_AUSPOST, "1", 24, ZINT_ERROR_TOO_LONG, -1, -1 },
         /*  2*/ { BARCODE_AUSPOST, "1", 18, 0, 3, 133 },
@@ -61,13 +61,13 @@ static void test_large(const testCtx *const p_ctx) {
         /* 14*/ { BARCODE_AUSREDIRECT, "1", 8, 0, 3, 73 },
         /* 15*/ { BARCODE_AUSREDIRECT, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char data_buf[64];
 
-    testStart("test_large");
+    testStartSymbol("test_large", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -105,14 +105,14 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "12345678901234567890123", "" }, /* None */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -146,39 +146,39 @@ static void test_input(const testCtx *const p_ctx) {
         char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "12345678", 0, 3, 73, "" },
-        /*  1*/ { BARCODE_AUSPOST, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 405: Invalid character in DPID (first 8 characters) (digits only)" },
+        /*  1*/ { BARCODE_AUSPOST, "1234567A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 405: Invalid character at position 8 in DPID (first 8 characters) (digits only)" },
         /*  2*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
-        /*  3*/ { BARCODE_AUSPOST, "12345678ABcd!", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 404: Invalid character in data (alphanumerics, space and \"#\" only)" },
+        /*  3*/ { BARCODE_AUSPOST, "12345678ABcd!", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 404: Invalid character at position 13 in input (alphanumerics, space and \"#\" only)" },
         /*  4*/ { BARCODE_AUSPOST, "12345678ABcd#", 0, 3, 103, "" },
         /*  5*/ { BARCODE_AUSPOST, "1234567890123456", 0, 3, 103, "" },
-        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character in data (digits only for length 16)" },
+        /*  6*/ { BARCODE_AUSPOST, "123456789012345A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 402: Invalid character at position 16 in input (digits only for FCC 59 length 16)" },
         /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, /* Length 18 */
         /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133, "" },
-        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 406: Invalid character in data (digits only for length 23)" },
-        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input wrong length (8, 13, 16, 18 or 23 characters only)" }, /* No leading zeroes added */
+        /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 406: Invalid character at position 23 in input (digits only for FCC 62 length 23)" },
+        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input length 7 wrong (8, 13, 16, 18 or 23 only)" }, /* No leading zeroes added */
         /* 11*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "" },
         /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, /* Leading zeroes added */
-        /* 13*/ { BARCODE_AUSREPLY, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input too long (8 character maximum)" },
+        /* 13*/ { BARCODE_AUSREPLY, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input length 9 too long (maximum 8)" },
         /* 14*/ { BARCODE_AUSROUTE, "123456", 0, 3, 73, "" },
         /* 15*/ { BARCODE_AUSROUTE, "12345", 0, 3, 73, "" },
-        /* 16*/ { BARCODE_AUSROUTE, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input too long (8 character maximum)" },
+        /* 16*/ { BARCODE_AUSROUTE, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input length 9 too long (maximum 8)" },
         /* 17*/ { BARCODE_AUSREDIRECT, "1234", 0, 3, 73, "" },
         /* 18*/ { BARCODE_AUSREDIRECT, "123", 0, 3, 73, "" },
         /* 19*/ { BARCODE_AUSREDIRECT, "0", 0, 3, 73, "" },
-        /* 20*/ { BARCODE_AUSREDIRECT, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input too long (8 character maximum)" },
+        /* 20*/ { BARCODE_AUSREDIRECT, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input length 9 too long (maximum 8)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char cmp_buf[8192];
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -191,6 +191,8 @@ static void test_input(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -207,7 +209,6 @@ static void test_input(const testCtx *const p_ctx) {
                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
             }
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }
@@ -233,7 +234,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_AUSPOST, "96184209", 0, 3, 73, "AusPost Tech Specs Diagram 1; verified manually against TEC-IT",
                     "1000101010100010001010100000101010001010001000001010000010001000001000100"
                     "1010101010101010101010101010101010101010101010101010101010101010101010101"
@@ -310,9 +311,9 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0000001010100010101010001010001000000010101000000000001010101000001010000"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char bwipp_buf[8192];
@@ -320,7 +321,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -378,7 +379,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /* 0*/ { BARCODE_AUSROUTE, "A\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
         /* 1*/ { BARCODE_AUSROUTE, "1\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
         /* 2*/ { BARCODE_AUSREPLY, "A\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
@@ -386,11 +387,11 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /* 4*/ { BARCODE_AUSREDIRECT, "A\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
         /* 5*/ { BARCODE_AUSREDIRECT, "1\000\000\000", 4, ZINT_ERROR_INVALID_DATA },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_fuzz");
+    testStartSymbol("test_fuzz", &symbol);
 
     for (i = 0; i < data_size; i++) {
 

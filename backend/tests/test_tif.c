@@ -47,7 +47,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 1, 1, "1", 0, 0, 0 },
         /*  1*/ { 2, 1, "11", 0, 0, 0 },
         /*  2*/ { 1, 2, "11", 0, 0, 0 },
@@ -87,7 +87,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         /* 36*/ { ZINT_MAX_DATA_LEN, 2, "10", 1, 1, 0 }, /* Strip Count 2, Rows Per Strip 1 */
         /* 37*/ { 2, ZINT_MAX_DATA_LEN, "10", 1, 1 /*NOTE: disabled due to failing on github CI, works locally*/, 0 }, /* Strip Count 17, Rows Per Strip 1024 */
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -179,7 +179,7 @@ static void test_print(const testCtx *const p_ctx) {
         char *expected_file;
         char *comment;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "code128_fgbg.tif", "" },
         /*  1*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "FFFFFF", "000000", "A", "", "code128_reverse.tif", "" },
         /*  2*/ { BARCODE_CODE128, -1, -1, CMYK_COLOUR, 1, -1, -1, -1, -1, 0, 0, "112233", "CCDDEE", "A", "", "code128_cmyk_fgbg.tif", "" },
@@ -205,7 +205,7 @@ static void test_print(const testCtx *const p_ctx) {
         /* 22*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, "", "", "9501234", "", "ean8_gss_5.2.2.2-1.tif", "" },
         /* 23*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, "", "", "9501234", "", "ean8_gss_5.2.2.2-1_gws.tif", "" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
@@ -347,12 +347,15 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
+        static char expected_errtxt[] = "672: Could not open TIF output file ("; /* Excluding OS-dependent `errno` stuff */
+
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
         assert_nonzero(testUtilCreateROFile(symbol.outfile), "tif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
 
         ret = tif_pixel_plot(&symbol, data);
         assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "tif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
         assert_zero(testUtilRmROFile(symbol.outfile), "tif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

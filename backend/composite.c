@@ -1128,8 +1128,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
         if (!general_field_encode(general_field, j, &mode, &last_digit, binary_string, &bp)) {
             /* Invalid character in input data */
-            strcpy(symbol->errtxt, "441: Invalid character in 2D component input data");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 441, "Invalid character in input (2D component)");
         }
     }
 
@@ -1146,8 +1145,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "442: Input too long for selected 2D component");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 442, "Input too long (2D component)");
     }
 
     remainder = target_bitsize - bp;
@@ -1183,8 +1181,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     }
 
     if (target_bitsize == 0) {
-        strcpy(symbol->errtxt, "444: Input too long for selected 2D component");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 444, "Input too long (2D component)");
     }
 
     if (bp < target_bitsize) {
@@ -1236,7 +1233,6 @@ static int cc_linear_dummy_run(int input_mode, unsigned char *source, const int 
 }
 
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
-    static const char in_linear_comp[] = " in linear component";
     int error_number, cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
@@ -1254,31 +1250,28 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     error_number = 0;
     pri_len = (int) strlen(symbol->primary);
     if (pri_len == 0) {
-        strcpy(symbol->errtxt, "445: No primary (linear) message");
-        return ZINT_ERROR_INVALID_OPTION; /* TODO: change to more appropiate ZINT_ERROR_INVALID_DATA */
+        /* TODO: change to more appropiate ZINT_ERROR_INVALID_DATA */
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 445, "No primary (linear) message");
     }
 
     if (length > 2990) {
-        strcpy(symbol->errtxt, "446: 2D component input data too long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 446,
+                        "2D component input too long, requires %d characters (maximum 2990)", length);
     }
 
     cc_mode = symbol->option_1;
     if ((cc_mode == 3) && (symbol->symbology != BARCODE_GS1_128_CC)) {
         /* CC-C can only be used with a GS1-128 linear part */
-        strcpy(symbol->errtxt, "447: Invalid mode (CC-C only valid with GS1-128 linear component)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 447,
+                        "Invalid mode (CC-C only valid with GS1-128 linear component)");
     }
 
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
         linear_width = cc_linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
-                                        symbol->debug, symbol->errtxt);
+                                            symbol->debug, symbol->errtxt);
         if (linear_width == 0) {
-            if (strlen(symbol->errtxt) + sizeof(in_linear_comp) <= sizeof(symbol->errtxt)) {
-                strcat(symbol->errtxt, in_linear_comp);
-            }
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
         }
         if (debug_print) {
             printf("GS1-128 linear width: %d\n", linear_width);
@@ -1293,10 +1286,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int with_addon;
                 unsigned char padded_pri[21];
                 if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon, NULL,
-                        NULL)) {
-                    sprintf(symbol->errtxt, "448: Input too long (%s) in linear component",
-                            with_addon ? "5 character maximum for add-on" : "13 character maximum");
-                    return ZINT_ERROR_TOO_LONG;
+                                        NULL)) {
+                    return errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
                 padded_pri_len = (int) ustrlen(padded_pri);
                 if (padded_pri_len <= 7) { /* EAN-8 */
@@ -1320,8 +1311,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 }
             }
             if (cc_width == 0) {
-                strcpy(symbol->errtxt, "449: Input wrong length in linear component");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 449, "Input length %d wrong (linear component)", pri_len);
             }
             break;
         case BARCODE_GS1_128_CC: cc_width = 4;
@@ -1443,10 +1433,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     if (error_number) {
-        strcpy(symbol->errtxt, linear->errtxt);
-        if (strlen(symbol->errtxt) + sizeof(in_linear_comp) <= sizeof(symbol->errtxt)) {
-            strcat(symbol->errtxt, in_linear_comp);
-        }
+        errtxtf(0, symbol, -1, "%1$s%2$s", linear->errtxt, " (linear component)");
         if (error_number >= ZINT_ERROR) {
             ZBarcode_Delete(linear);
             return error_number;

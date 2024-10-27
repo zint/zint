@@ -53,8 +53,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     int error_number = 0;
 
     if (length > 81) {
-        strcpy(symbol->errtxt, "430: Input too long (81 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 430, "Input length %d too long (maximum 81)", length);
     }
     if ((symbol->input_mode & 0x07) == GS1_MODE) {
         gs1 = 1;
@@ -65,8 +64,8 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
 
     for (i = 0; i < length; i++) {
         if (source[i] > 127) {
-            strcpy(symbol->errtxt, "431: Invalid character in input data, extended ASCII not allowed");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 431,
+                            "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         if (gs1 && source[i] == '\x1D') {
             *d++ = '*'; /* FNC1 */
@@ -219,8 +218,8 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (codeword_count > 49) {
-        strcpy(symbol->errtxt, "432: Input too long (49 symbol character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 432, "Input too long, requires %d codewords (maximum 49)",
+                        codeword_count);
     }
 
     /* Place codewords in code character array (c grid) */

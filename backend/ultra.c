@@ -937,20 +937,21 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     (void)seg_count;
 
     if (symbol->eci > 811799) {
-        strcpy(symbol->errtxt, "590: ECI value not supported by Ultracode");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 590, "ECI code '%d' out of range (0 to 811799)",
+                        symbol->eci);
     }
 
     if (symbol->structapp.count) {
         int link2 = 2; /* Draft Table 7, Structured Append Group (SAG) with no File Number */
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
-            strcpy(symbol->errtxt, "596: Structured Append count out of range (2-8)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 596,
+                            "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "597: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 597,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         scr_cw_count = 1;
 
@@ -960,18 +961,17 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
             for (id_len = 1; id_len < 6 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 5) { /* 282 * 283 + 282 = 80088 */
-                strcpy(symbol->errtxt, "593: Structured Append ID too long (5 digit maximum)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 593,
+                                "Structured Append ID length %d too long (5 digit maximum)", id_len);
             }
 
             id = to_int((const unsigned char *) symbol->structapp.id, id_len);
             if (id == -1) {
-                strcpy(symbol->errtxt, "594: Invalid Structured Append ID (digits only)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 594, "Invalid Structured Append ID (digits only)");
             }
             if (id > 80088) {
-                sprintf(symbol->errtxt, "595: Structured Append ID '%d' out of range (1-80088)", id);
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 595,
+                                "Structured Append ID value '%d' out of range (1 to 80088)", id);
             }
             if (id) {
                 link2 = 3; /* Missing from draft Table 7 but mentioned 7.4.3 - SAG with File Number */
@@ -1010,8 +1010,8 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     if (symbol->option_2 > 0) {
         if (symbol->option_2 > 2) {
-            strcpy(symbol->errtxt, "592: Revision must be 1 or 2");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 592, "Revision '%d' out of range (1 or 2 only)",
+                            symbol->option_2);
         }
         if (symbol->option_2 == 2) { /* Revision 2, swop and inversion of DCCU/DCCL tiles */
             revision_idx = 1;
@@ -1030,9 +1030,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         qcc = 3;
     } else {
         if ((data_cw_count % 25) == 0) {
-            qcc = (ult_kec[ecc_level] * (data_cw_count / 25)) + 3 + 2;
+            qcc = ult_kec[ecc_level] * (data_cw_count / 25) + 3 + 2;
         } else {
-            qcc = (ult_kec[ecc_level] * ((data_cw_count / 25) + 1)) + 3 + 2;
+            qcc = ult_kec[ecc_level] * ((data_cw_count / 25) + 1) + 3 + 2;
         }
 
     }
@@ -1058,8 +1058,10 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     /* Maximum capacity is 282 codewords */
     total_cws = data_cw_count + qcc + 3; /* 3 == TCC pattern + RSEC pattern + QCC pattern */
     if (total_cws - 3 > 282) {
-        strcpy(symbol->errtxt, "591: Data too long for selected error correction capacity");
-        return ZINT_ERROR_TOO_LONG;
+        static const int max_data_cws_by_ecc[6] = { 279, 266, 255, 237, 223, 205 };
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 591,
+                        "Input too long for ECC level EC%1$d, requires %2$d codewords (maximum %3$d)",
+                        ecc_level, data_cw_count, max_data_cws_by_ecc[ecc_level]);
     }
 
     rows = 5;

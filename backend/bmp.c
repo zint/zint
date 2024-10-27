@@ -88,13 +88,11 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Must fit in `uint32_t` field in header */
     if (file_size != (uint32_t) file_size) {
-        strcpy(symbol->errtxt, "606: Output file size too large for BMP header");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 606, "Output size too large for file size field of BMP header");
     }
 
     if (!(rowbuf = (unsigned char *) malloc(row_size))) {
-        strcpy(symbol->errtxt, "602: Insufficient memory for BMP row buffer");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 602, "Insufficient memory for BMP row buffer");
     }
 
     out_le_u16(file_header.header_field, 0x4d42); /* "BM" */
@@ -117,7 +115,7 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "601: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 601, "Could not open BMP output file (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         free(rowbuf);
         return ZINT_ERROR_FILE_ACCESS;
     }
@@ -160,14 +158,14 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     free(rowbuf);
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "603: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 603, "Incomplete write of BMP output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "605: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 605, "Failure on closing BMP output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
 
     return 0;

@@ -1059,8 +1059,7 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
     assert(length <= 10921); /* Can only handle (10921 + 1) * 6 = 65532 < 65536 (2*16) due to sizeof(previous) */
 
     if (!dm_define_mode(symbol, modes, source, length, gs1, debug_print)) {
-        strcpy(symbol->errtxt, "728: Insufficient memory for mode buffers");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 728, "Insufficient memory for mode buffers");
     }
 
     while (sp < length) {
@@ -1217,8 +1216,8 @@ static int dm_minimalenc(struct zint_symbol *symbol, const unsigned char source[
         }
 
         if (tp > 1558) {
-            strcpy(symbol->errtxt, "729: Data too long to fit in symbol");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxt(ZINT_ERROR_TOO_LONG, symbol, 729,
+                            "Input too long, requires too many codewords (maximum 1558)");
         }
 
     } /* while */
@@ -1471,8 +1470,8 @@ static int dm_isoenc(struct zint_symbol *symbol, const unsigned char source[], c
         }
 
         if (tp > 1558) {
-            strcpy(symbol->errtxt, "520: Data too long to fit in symbol");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxt(ZINT_ERROR_TOO_LONG, symbol, 520,
+                            "Input too long, requires too many codewords (maximum 1558)");
         }
 
     } /* while */
@@ -1682,21 +1681,21 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     const struct zint_seg *last_seg = &segs[seg_count - 1];
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
-    if (segs_length(segs, seg_count) > 3116) { /* Max is 3166 digits */
-        strcpy(symbol->errtxt, "719: Data too long to fit in symbol");
-        return ZINT_ERROR_TOO_LONG;
+    if ((i = segs_length(segs, seg_count)) > 3116) { /* Max is 3166 digits */
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 719, "Input length %d too long (maximum 3116)", i);
     }
 
     if (symbol->structapp.count) {
         int id1, id2;
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 16) {
-            strcpy(symbol->errtxt, "720: Structured Append count out of range (2-16)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 720,
+                            "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "721: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 721,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len, id1_err, id2_err;
@@ -1704,14 +1703,13 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             for (id_len = 1; id_len < 7 && symbol->structapp.id[id_len]; id_len++);
 
             if (id_len > 6) { /* ID1 * 1000 + ID2 */
-                strcpy(symbol->errtxt, "722: Structured Append ID too long (6 digit maximum)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 722,
+                                "Structured Append ID length %d too long (6 digit maximum)", id_len);
             }
 
             id = to_int((const unsigned char *) symbol->structapp.id, id_len);
             if (id == -1) {
-                strcpy(symbol->errtxt, "723: Invalid Structured Append ID (digits only)");
-                return ZINT_ERROR_INVALID_OPTION;
+                return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 723, "Invalid Structured Append ID (digits only)");
             }
             id1 = id / 1000;
             id2 = id % 1000;
@@ -1719,19 +1717,19 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             id2_err = id2 < 1 || id2 > 254;
             if (id1_err || id2_err) {
                 if (id1_err && id2_err) {
-                    sprintf(symbol->errtxt,
-                            "724: Structured Append ID1 '%03d' and ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id1, id2, id1, id2);
-                } else if (id1_err) {
-                    sprintf(symbol->errtxt,
-                            "725: Structured Append ID1 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id1, id1, id2);
-                } else {
-                    sprintf(symbol->errtxt,
-                            "726: Structured Append ID2 '%03d' out of range (001-254) (ID '%03d%03d')",
-                            id2, id1, id2);
+                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 724,
+                                    "Structured Append ID1 '%1$03d' and ID2 '%2$03d' out of range (001 to 254)"
+                                    " (ID \"%3$03d%4$03d\")",
+                                    id1, id2, id1, id2);
                 }
-                return ZINT_ERROR_INVALID_OPTION;
+                if (id1_err) {
+                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 725,
+                                    "Structured Append ID1 '%1$03d' out of range (001 to 254) (ID \"%2$03d%3$03d\")",
+                                    id1, id1, id2);
+                }
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 726,
+                                "Structured Append ID2 '%1$03d' out of range (001 to 254) (ID \"%2$03d%3$03d\")",
+                                id2, id1, id2);
             }
         } else {
             id1 = id2 = 1;
@@ -1761,12 +1759,12 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "521: Cannot encode in GS1 mode and Reader Initialisation at the same time");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 521,
+                            "Cannot encode in GS1 mode and Reader Initialisation at the same time");
         }
         if (symbol->structapp.count) {
-            strcpy(symbol->errtxt, "727: Cannot have Structured Append and Reader Initialisation at the same time");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 727,
+                            "Cannot have Structured Append and Reader Initialisation at the same time");
         }
         target[tp++] = 234; /* Reader Programming */
         if (debug_print) fputs("RP ", stdout);
@@ -1837,7 +1835,7 @@ static void dm_add_tail(unsigned char target[], int tp, const int tail_length) {
 static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, skew = 0;
     unsigned char binary[2200];
-    int binlen;
+    int binlen = 0; /* Suppress clang-tidy-20 uninitialized value false positive */
     int symbolsize;
     int taillength, error_number;
     int H, W, FH, FW, datablock, bytes, rsblock;
@@ -1854,11 +1852,12 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (binlen > dm_matrixbytes[symbolsize]) {
         if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
             /* The symbol size was given by --ver (option_2) */
-            strcpy(symbol->errtxt, "522: Input too long for selected symbol size");
-        } else {
-            strcpy(symbol->errtxt, "523: Data too long to fit in symbol");
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 522,
+                        "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                        symbol->option_2, binlen, dm_matrixbytes[symbolsize]);
         }
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 523, "Input too long, requires %d codewords (maximum 1558)",
+                        binlen);
     }
 
     H = dm_matrixH[symbolsize];
@@ -1901,8 +1900,7 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
         const int NR = H - 2 * (H / FH);
         int x, y, *places;
         if (!(places = (int *) calloc(NC * NR, sizeof(int)))) {
-            strcpy(symbol->errtxt, "718: Insufficient memory for placement array");
-            return ZINT_ERROR_MEMORY;
+            return errtxt(ZINT_ERROR_MEMORY, symbol, 718, "Insufficient memory for placement array");
         }
         dm_placement(places, NR, NC);
         for (y = 0; y < H; y += FH) {
@@ -1950,18 +1948,13 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
 }
 
 INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
-    int error_number;
 
     if (symbol->option_1 <= 1) {
         /* ECC 200 */
-        error_number = dm_ecc200(symbol, segs, seg_count);
-    } else {
-        /* ECC 000 - 140 */
-        strcpy(symbol->errtxt, "524: Older Data Matrix standards are no longer supported");
-        error_number = ZINT_ERROR_INVALID_OPTION;
+        return dm_ecc200(symbol, segs, seg_count);
     }
-
-    return error_number;
+    /* ECC 000 - 140 */
+    return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 524, "Older Data Matrix standards are no longer supported");
 }
 
 /* vim: set ts=4 sw=4 et : */

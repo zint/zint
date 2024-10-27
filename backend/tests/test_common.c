@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -59,7 +59,7 @@ static void test_to_int(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 0 },
         /*  1*/ { "1234", -1, 1234 },
         /*  2*/ { "-1234", -1, -1 },
@@ -67,7 +67,7 @@ static void test_to_int(const testCtx *const p_ctx) {
         /*  4*/ { " ", -1, -1 },
         /*  5*/ { "999999999", -1, 999999999 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     testStart("test_to_int");
@@ -93,13 +93,13 @@ static void test_to_upper(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, "" },
         /*  1*/ { "abcefghijklmnopqrstuvwxyz", -1, "ABCEFGHIJKLMNOPQRSTUVWXYZ" },
         /*  2*/ { ".a[b`cA~B\177C;\200", -1, ".A[B`CA~B\177C;\200" },
         /*  3*/ { "é", -1, "é" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length;
 
     unsigned char buf[512];
@@ -117,7 +117,7 @@ static void test_to_upper(const testCtx *const p_ctx) {
         buf[length] = '\0';
 
         to_upper(buf, length);
-        assert_zero(strcmp((const char *) buf, data[i].expected), "i:%d strcmp(%s,%s) != 0\n", i, buf, data[i].expected);
+        assert_zero(strcmp((const char *) buf, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, buf, data[i].expected);
     }
 
     testFinish();
@@ -132,12 +132,12 @@ static void test_chr_cnt(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 'a', 0 },
         /*  1*/ { "BDAaED", -1, 'a', 1 },
         /*  1*/ { "aBDAaaaEaDa", -1, 'a', 6 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     testStart("test_chr_cnt");
@@ -155,7 +155,7 @@ static void test_chr_cnt(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_is_sane(const testCtx *const p_ctx) {
+static void test_not_sane(const testCtx *const p_ctx) {
 
     struct item {
         unsigned int flg;
@@ -166,97 +166,97 @@ static void test_is_sane(const testCtx *const p_ctx) {
         char *orig_test;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { IS_SPC_F, " ", -1, 1, " " },
-        /*  1*/ { IS_SPC_F, "\000", 1, 0, " " },
-        /*  2*/ { IS_HSH_F, "#", -1, 1, "#" },
-        /*  3*/ { IS_HSH_F, " ", -1, 0, "#" },
-        /*  4*/ { IS_AST_F, "*", -1, 1, "*" },
-        /*  5*/ { IS_AST_F, " ", -1, 0, "*" },
-        /*  6*/ { IS_PLS_F, "+", -1, 1, "+" },
-        /*  7*/ { IS_PLS_F, " ", -1, 0, "+" },
-        /*  8*/ { IS_MNS_F, "-", -1, 1, "-" },
-        /*  9*/ { IS_MNS_F, " ", -1, 0, "-" },
-        /* 10*/ { IS_NUM_F, "0123456789", -1, 1, "0123456789" }, /* NEON */
-        /* 11*/ { IS_NUM_F, "0123456789 ", -1, 0, "0123456789" },
-        /* 12*/ { IS_NUM_F, "012345678A9", -1, 0, "0123456789" },
-        /* 13*/ { IS_UPO_F, "GHIJKLMNOPQRSTUVWYZ", -1, 1, "GHIJKLMNOPQRSTUVWYZ" },
-        /* 14*/ { IS_UPO_F, "FGHIJKLMNOPQRSTUVWYZ", -1, 0, "GHIJKLMNOPQRSTUVWYZ" },
-        /* 15*/ { IS_LWO_F, "ghijklmnopqrstuvwyz", -1, 1, "ghijklmnopqrstuvwyz" },
-        /* 16*/ { IS_LWO_F, "fghijklmnopqrstuvwyz", -1, 0, "ghijklmnopqrstuvwyz" },
-        /* 17*/ { IS_UHX_F, "ABCDEF", -1, 1, "ABCDEF" },
-        /* 18*/ { IS_UHX_F, "ABCDEf", -1, 0, "ABCDEF" },
-        /* 19*/ { IS_LHX_F, "abcdef", -1, 1, "abcdef" },
-        /* 20*/ { IS_LHX_F, "abcdeF", -1, 0, "abcdef" },
-        /* 21*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 22*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 23*/ { IS_UPR_F, "X", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 24*/ { IS_UPR_F, "x", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 25*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
-        /* 26*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz ", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
-        /* 27*/ { IS_LWR_F, "x", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
-        /* 28*/ { IS_LWR_F, "X", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
-        /* 29*/ { IS_UX__F, "X", -1, 1, "X" },
-        /* 30*/ { IS_UX__F, "x", -1, 0, "X" },
-        /* 31*/ { IS_LX__F, "x", -1, 1, "x" },
-        /* 32*/ { IS_LX__F, "X", -1, 0, "x" },
-        /* 33*/ { IS_C82_F, "!\"%&'(),./:;<=>?_", -1, 1, "!\"%&'(),./:;<=>?_" }, /* CSET82 punctuation less "*+-" */
-        /* 34*/ { IS_C82_F, "!\"%&'(),./:;<=>?_ ", -1, 0, "!\"%&'(),./:;<=>?_" },
-        /* 35*/ { IS_C82_F, "-", -1, 0, "!\"%&'(),./:;<=>?_" },
-        /* 36*/ { IS_C82_F, "$", -1, 0, "!\"%&'(),./:;<=>?_" },
-        /* 37*/ { IS_SIL_F, ".$/%", -1, 1, ".$/%" }, /* SILVER punctuation less " +-" */
-        /* 38*/ { IS_SIL_F, ".$/% " , -1, 0, ".$/%" },
-        /* 39*/ { IS_SIL_F, "-", -1, 0, ".$/%" },
-        /* 40*/ { IS_CLI_F, "$:/.", -1, 1, "$:/." }, /* CALCIUM INNER punctuation less "+-" */
-        /* 41*/ { IS_CLI_F, "$:/. ", -1, 0, "$:/." },
-        /* 42*/ { IS_CLI_F, "+", -1, 0, "$:/." },
-        /* 43*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" }, /* ARSENIC uppercase */
-        /* 44*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ ", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 45*/ { IS_ARS_F, "I", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 46*/ { IS_ARS_F, "O", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 47*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEF", -1, 1, "0123456789ABCDEF" }, /* SSET */
-        /* 48*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEf", -1, 0, "0123456789ABCDEF" },
-        /* 49*/ { IS_NUM_F | IS_PLS_F, "0123456789+", -1, 1, "0123456789+" }, /* SODIUM_PLS */
-        /* 50*/ { IS_NUM_F | IS_PLS_F, "0123456789+-", -1, 0, "0123456789+" },
-        /* 51*/ { IS_NUM_F | IS_UX__F, "0123456789X", -1, 1, "0123456789X" }, /* ISBNX_SANE */
-        /* 52*/ { IS_NUM_F | IS_UX__F, "0123456789x", -1, 0, "0123456789X" },
-        /* 53*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+", -1, 1, "0123456789Xx+" }, /* ISBNX_ADDON_SANE */
-        /* 54*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+Y", -1, 0, "0123456789Xx+" },
-        /* 55*/ { IS_NUM_F | IS_MNS_F, "0123456789-", -1, 1, "0123456789-" }, /* SODIUM_MNS */
-        /* 56*/ { IS_NUM_F | IS_MNS_F, "0123456789-+", -1, 0, "0123456789-" },
-        /* 57*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" }, /* CSET82 */
-        /* 58*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, " ", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 59*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "#", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 60*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "$", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 61*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "@", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
-        /* 62*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ ", -1, 1, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " }, /* IS_ISOIEC_F */
-        /* 63*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ #", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
-        /* 64*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "$", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
-        /* 65*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/+%", -1, 1, "" },
-        /* 66*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/!+%", -1, 0, "" },
-        /* 67*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" }, /* SILVER */
-        /* 68*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%a", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" },
-        /* 69*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" }, /* ARSENIC */
-        /* 70*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 71*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYz", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
-        /* 72*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" }, /* GDSET */
-        /* 73*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #!", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" },
-        /* 74*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+", -1, 1, "0123456789-$:/.+" }, /* CALCIUM_INNER */
-        /* 75*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+ ", -1, 0, "0123456789-$:/.+" },
-        /* 76*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+!", -1, 0, "0123456789-$:/.+" },
-        /* 77*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* KRSET */
-        /* 78*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 79*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " }, /* RUBIDIUM */
-        /* 80*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789aBCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " },
-        /* 81*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* SHKASUTSET */
-        /* 82*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
-        /* 83*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 1, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* QR_ALPHA */
-        /* 84*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 0, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+    static const struct item data[] = {
+        /*  0*/ { IS_SPC_F, " ", -1, 0, " " },
+        /*  1*/ { IS_SPC_F, "\000", 0, 0, " " },
+        /*  2*/ { IS_HSH_F, "#", -1, 0, "#" },
+        /*  3*/ { IS_HSH_F, " ", -1, 1, "#" },
+        /*  4*/ { IS_AST_F, "*", -1, 0, "*" },
+        /*  5*/ { IS_AST_F, " ", -1, 1, "*" },
+        /*  6*/ { IS_PLS_F, "+", -1, 0, "+" },
+        /*  7*/ { IS_PLS_F, " ", -1, 1, "+" },
+        /*  8*/ { IS_MNS_F, "-", -1, 0, "-" },
+        /*  9*/ { IS_MNS_F, " ", -1, 1, "-" },
+        /* 10*/ { IS_NUM_F, "0123456789", -1, 0, "0123456789" }, /* NEON */
+        /* 11*/ { IS_NUM_F, "0123456789 ", -1, 11, "0123456789" },
+        /* 12*/ { IS_NUM_F, "012345678A9", -1, 10, "0123456789" },
+        /* 13*/ { IS_UPO_F, "GHIJKLMNOPQRSTUVWYZ", -1, 0, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 14*/ { IS_UPO_F, "FGHIJKLMNOPQRSTUVWYZ", -1, 1, "GHIJKLMNOPQRSTUVWYZ" },
+        /* 15*/ { IS_LWO_F, "ghijklmnopqrstuvwyz", -1, 0, "ghijklmnopqrstuvwyz" },
+        /* 16*/ { IS_LWO_F, "fghijklmnopqrstuvwyz", -1, 1, "ghijklmnopqrstuvwyz" },
+        /* 17*/ { IS_UHX_F, "ABCDEF", -1, 0, "ABCDEF" },
+        /* 18*/ { IS_UHX_F, "ABCDEf", -1, 6, "ABCDEF" },
+        /* 19*/ { IS_LHX_F, "abcdef", -1, 0, "abcdef" },
+        /* 20*/ { IS_LHX_F, "abcdeF", -1, 6, "abcdef" },
+        /* 21*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 22*/ { IS_UPR_F, "ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 27, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 23*/ { IS_UPR_F, "X", -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 24*/ { IS_UPR_F, "x", -1, 1, "ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 25*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 26*/ { IS_LWR_F, "abcdefghijklmnopqrstuvwxyz ", -1, 27, "abcdefghijklmnopqrstuvwxyz" },
+        /* 27*/ { IS_LWR_F, "x", -1, 0, "abcdefghijklmnopqrstuvwxyz" },
+        /* 28*/ { IS_LWR_F, "X", -1, 1, "abcdefghijklmnopqrstuvwxyz" },
+        /* 29*/ { IS_UX__F, "X", -1, 0, "X" },
+        /* 30*/ { IS_UX__F, "x", -1, 1, "X" },
+        /* 31*/ { IS_LX__F, "x", -1, 0, "x" },
+        /* 32*/ { IS_LX__F, "X", -1, 1, "x" },
+        /* 33*/ { IS_C82_F, "!\"%&'(),./:;<=>?_", -1, 0, "!\"%&'(),./:;<=>?_" }, /* CSET82 punctuation less "*+-" */
+        /* 34*/ { IS_C82_F, "!\"%&'(),./:;<=>?_ ", -1, 18, "!\"%&'(),./:;<=>?_" },
+        /* 35*/ { IS_C82_F, "-", -1, 1, "!\"%&'(),./:;<=>?_" },
+        /* 36*/ { IS_C82_F, "$", -1, 1, "!\"%&'(),./:;<=>?_" },
+        /* 37*/ { IS_SIL_F, ".$/%", -1, 0, ".$/%" }, /* SILVER punctuation less " +-" */
+        /* 38*/ { IS_SIL_F, ".$/% " , -1, 5, ".$/%" },
+        /* 39*/ { IS_SIL_F, "-", -1, 1, ".$/%" },
+        /* 40*/ { IS_CLI_F, "$:/.", -1, 0, "$:/." }, /* CALCIUM INNER punctuation less "+-" */
+        /* 41*/ { IS_CLI_F, "$:/. ", -1, 5, "$:/." },
+        /* 42*/ { IS_CLI_F, "+", -1, 1, "$:/." },
+        /* 43*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ", -1, 0, "ABCDEFGHJKLMNPRSTUVWXYZ" }, /* ARSENIC uppercase */
+        /* 44*/ { IS_ARS_F, "ABCDEFGHJKLMNPRSTUVWXYZ ", -1, 24, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 45*/ { IS_ARS_F, "I", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 46*/ { IS_ARS_F, "O", -1, 1, "ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 47*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEF", -1, 0, "0123456789ABCDEF" }, /* SSET */
+        /* 48*/ { IS_NUM_F | IS_UHX_F, "0123456789ABCDEf", -1, 16, "0123456789ABCDEF" },
+        /* 49*/ { IS_NUM_F | IS_PLS_F, "0123456789+", -1, 0, "0123456789+" }, /* SODIUM_PLS */
+        /* 50*/ { IS_NUM_F | IS_PLS_F, "0123456789+-", -1, 12, "0123456789+" },
+        /* 51*/ { IS_NUM_F | IS_UX__F, "0123456789X", -1, 0, "0123456789X" }, /* ISBNX_SANE */
+        /* 52*/ { IS_NUM_F | IS_UX__F, "0123456789x", -1, 11, "0123456789X" },
+        /* 53*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+", -1, 0, "0123456789Xx+" }, /* ISBNX_ADDON_SANE */
+        /* 54*/ { IS_NUM_F | IS_UX__F | IS_LX__F | IS_PLS_F, "0123456789Xx+Y", -1, 14, "0123456789Xx+" },
+        /* 55*/ { IS_NUM_F | IS_MNS_F, "0123456789-", -1, 0, "0123456789-" }, /* SODIUM_MNS */
+        /* 56*/ { IS_NUM_F | IS_MNS_F, "0123456789-+", -1, 12, "0123456789-" },
+        /* 57*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz", -1, 0, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" }, /* CSET82 */
+        /* 58*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, " ", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 59*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "#", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 60*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "$", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 61*/ { IS_C82_F | IS_AST_F | IS_MNS_F | IS_PLS_F | IS_NUM_F | IS_UPR_F | IS_LWR_F, "@", -1, 1, "!\"%&'()*+,-./0123456789:;<=>?ABCDEFGHIJKLMNOPQRSTUVWXYZ_abcdefghijklmnopqrstuvwxyz" },
+        /* 62*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ ", -1, 0, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " }, /* IS_ISOIEC_F */
+        /* 63*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ #", -1, 48, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 64*/ { IS_LWR_F | IS_C82_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SPC_F, "$", -1, 1, "abcdefghijklmnopqrstuvwxyz!\"%&'()*+,-./:;<=>?_ " },
+        /* 65*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/+%", -1, 0, "" },
+        /* 66*/ { IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "-. $/!+%", -1, 6, "" },
+        /* 67*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" }, /* SILVER */
+        /* 68*/ { IS_NUM_F | IS_UPR_F | IS_MNS_F | IS_SIL_F | IS_SPC_F | IS_PLS_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%a", -1, 44, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%" },
+        /* 69*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" }, /* ARSENIC */
+        /* 70*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPQRSTUVWXYZ", -1, 25, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 71*/ { IS_NUM_F | IS_ARS_F, "0123456789ABCDEFGHJKLMNPRSTUVWXYz", -1, 33, "0123456789ABCDEFGHJKLMNPRSTUVWXYZ" },
+        /* 72*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" }, /* GDSET */
+        /* 73*/ { IS_NUM_F | IS_UPR_F | IS_LWR_F | IS_SPC_F | IS_HSH_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #!", -1, 65, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz #" },
+        /* 74*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+", -1, 0, "0123456789-$:/.+" }, /* CALCIUM_INNER */
+        /* 75*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+ ", -1, 17, "0123456789-$:/.+" },
+        /* 76*/ { IS_NUM_F | IS_MNS_F | IS_CLI_F | IS_PLS_F, "0123456789-$:/.+!", -1, 17, "0123456789-$:/.+" },
+        /* 77*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* KRSET */
+        /* 78*/ { IS_NUM_F | IS_UPR_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 36, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 79*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 0, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " }, /* RUBIDIUM */
+        /* 80*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F, "0123456789aBCDEFGHIJKLMNOPQRSTUVWXYZ ", -1, 11, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " },
+        /* 81*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* SHKASUTSET */
+        /* 82*/ { IS_NUM_F | IS_MNS_F | IS_UPR_F, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 37, "1234567890-ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
+        /* 83*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" }, /* QR_ALPHA */
+        /* 84*/ { IS_NUM_F | IS_UPR_F | IS_SPC_F | IS_AST_F | IS_PLS_F | IS_MNS_F | IS_SIL_F | IS_CLI_F, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYz", -1, 45, "1234567890 $%*+-./:ABCDEFGHIJKLMNOPQRSTUVWXYZ" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, j, length, ret;
 
-    testStart("test_is_sane");
+    testStart("test_not_sane");
 
     for (i = 0; i < data_size; i++) {
 
@@ -264,22 +264,22 @@ static void test_is_sane(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = is_sane(data[i].flg, (const unsigned char *) data[i].data, length);
+        ret = not_sane(data[i].flg, (const unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
 
         if (data[i].orig_test[0]) {
             int orig_ret = is_sane_orig(data[i].orig_test, (const unsigned char *) data[i].data, length);
             if (orig_ret == 0) {
-                assert_nonzero(ret, "i:%d orig_ret %d, ret %d == 0\n", i, orig_ret, ret);
-            } else {
                 assert_zero(ret, "i:%d orig_ret %d, ret %d != 0\n", i, orig_ret, ret);
+            } else {
+                assert_nonzero(ret, "i:%d orig_ret %d, ret %d == 0\n", i, orig_ret, ret);
             }
         }
 
-        ret = 1;
+        ret = 0;
         for (j = 0; j < length; j++) {
             if (!is_chr(data[i].flg, data[i].data[j])) {
-                ret = 0;
+                ret = j + 1;
                 break;
             }
         }
@@ -289,7 +289,7 @@ static void test_is_sane(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_is_sane_lookup(const testCtx *const p_ctx) {
+static void test_not_sane_lookup(const testCtx *const p_ctx) {
 
     struct item {
         char *test_string;
@@ -301,16 +301,16 @@ static void test_is_sane_lookup(const testCtx *const p_ctx) {
         int posns[32];
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { "1234567", -1, "7654321357", -1, 1, { 6, 5, 4, 3, 2, 1, 0, 2, 4, 6 } },
-        /*  1*/ { "1234567", -1, "76543213578", -1, 0, {0} },
+    static const struct item data[] = {
+        /*  0*/ { "1234567", -1, "7654321357", -1, 0, { 6, 5, 4, 3, 2, 1, 0, 2, 4, 6 } },
+        /*  1*/ { "1234567", -1, "76543213578", -1, 11, {0} },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     int test_length;
     int posns[32];
 
-    testStart("test_is_sane_lookup");
+    testStart("test_not_sane_lookup");
 
     for (i = 0; i < data_size; i++) {
 
@@ -319,15 +319,215 @@ static void test_is_sane_lookup(const testCtx *const p_ctx) {
         test_length = data[i].test_length == -1 ? (int) strlen(data[i].test_string) : data[i].test_length;
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = is_sane_lookup(data[i].test_string, test_length, (const unsigned char *) data[i].data, length, posns);
+        ret = not_sane_lookup(data[i].test_string, test_length, (const unsigned char *) data[i].data, length, posns);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
 
-        if (ret) {
+        if (ret == 0) {
             int j;
             for (j = 0; j < length; j++) {
                 assert_equal(posns[j], data[i].posns[j], "i:%d posns[%d] %d != expected posns[%d] %d\n", i, j, posns[j], j, data[i].posns[j]);
             }
         }
+    }
+
+    testFinish();
+}
+
+static void test_errtxt(const testCtx *const p_ctx) {
+
+    struct item {
+        int debug_test;
+        int error_number;
+        int err_id;
+        char *msg;
+        char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { 0, ZINT_ERROR_TOO_LONG, -1, "", "" },
+        /*  1*/ { 0, ZINT_ERROR_TOO_LONG, 123, "", "123: " },
+        /*  2*/ { 0, ZINT_ERROR_TOO_LONG, 0, "Data too long", "000: Data too long" },
+        /*  3*/ { 0, ZINT_ERROR_TOO_LONG, 9, "Data too long", "009: Data too long" },
+        /*  4*/ { 0, ZINT_ERROR_TOO_LONG, 99, "Data too long", "099: Data too long" },
+        /*  5*/ { 0, ZINT_ERROR_TOO_LONG, 100, "Data too long", "100: Data too long" },
+        /*  6*/ { 0, ZINT_ERROR_TOO_LONG, 999, "Data too long", "999: Data too long" },
+        /*  7*/ { 0, ZINT_ERROR_TOO_LONG, 1000, "Data too long", "1000: Data too long" },
+        /*  8*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Data too long", "9999: Data too long" },
+        /*  9*/ { 0, ZINT_ERROR_TOO_LONG, 10000, "Data too long", "9999: Data too long" },
+        /* 10*/ { 0, ZINT_ERROR_TOO_LONG, 99999, "Data too long", "9999: Data too long" },
+        /* 11*/ { 1, ZINT_ERROR_TOO_LONG, 10000, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234", "9999: 123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, ret;
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
+
+    testStart("test_errtxt");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        memset(symbol, 0, sizeof(*symbol));
+        if (data[i].debug_test) symbol->debug |= ZINT_DEBUG_TEST;
+
+        ret = errtxt(data[i].error_number, symbol, data[i].err_id, data[i].msg);
+        assert_equal(ret, data[i].error_number, "i:%d ret %d != %d\n", i, ret, data[i].error_number);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+    }
+
+    testFinish();
+}
+
+static void test_errtxtf(const testCtx *const p_ctx) {
+
+    struct item {
+        int debug_test;
+        int error_number;
+        int err_id;
+        char *fmt;
+        int num_args;
+        int i_arg;
+        const char *s_arg;
+        double f_arg;
+        int ret;
+        char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%0$d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  1*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%1d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  2*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%10$d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  3*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%10d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  4*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%00d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  5*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%000d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  6*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%001d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  7*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%0111d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid numbered format specifer" },
+        /*  8*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%x", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: unknown format specifier ('%c','%d','%f','%g','%s' only)" },
+        /*  9*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%1$10d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: unknown format specifier ('%c','%d','%f','%g','%s' only)" },
+        /* 10*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%.0s", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid length precision" },
+        /* 11*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%.ss", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid length precision" },
+        /* 12*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%.10d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: invalid length precision" },
+        /* 13*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%1$d %d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: mixed numbered and unnumbered format specifiers" },
+        /* 14*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%d %d %d %d %s %d %d %d %d %d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: too many format specifiers (9 maximum)" },
+        /* 15*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%1$d %2$d %3$d %4$d %5$s %6$d %7$d %8$d %9$d %9$d", 0, 0, NULL, 0, ZINT_ERROR_ENCODING_PROBLEM, "000: Internal error: too many format specifiers (9 maximum)" },
+        /* 16*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%d %d %d %d %s %d %d %d %d", 9, 4, "5max", -1, -1, "123: 2100000001 2100000002 3333 4 5max 2100000006 2100000007 2100000008 2100000009" },
+        /* 17*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%1$d %2$d %3$d %4$d %5$s %6$d %7$d %8$d %9$d", 9, 4, "5max", -1, -1, "123: 2100000001 2100000002 3333 4 5max 2100000006 2100000007 2100000008 2100000009" },
+        /* 18*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%9$d %8$d %7$d %6$d %5$s %4$d %3$d %2$d %1$d", 9, 4, "5max", -1, -1, "123: 2100000009 2100000008 2100000007 2100000006 5max 4 3333 2100000002 2100000001" },
+        /* 19*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%9$d %8$d %7$d %6$d %5$.3s %4$d %3$d %2$d %1$d", 9, 4, "5max", -1, -1, "123: 2100000009 2100000008 2100000007 2100000006 5ma 4 3333 2100000002 2100000001" },
+        /* 20*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%1$d %2$d %3$d %5$.*4$s %6$d %7$d %8$d %9$d", 9, 4, "45max", -1, -1, "123: 2100000001 2100000002 3333 45ma 2100000006 2100000007 2100000008 2100000009" },
+        /* 21*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%%%d %d %d %d %s %d %d %d %d", 9, 4, "5max", -1, -1, "123: %2100000001 2100000002 3333 4 5max 2100000006 2100000007 2100000008 2100000009" },
+        /* 22*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%%%d%%%% %%d %d%%%%%09d %d%% %%%s %d %d %%%% %d%d%%", 9, 4, "5max", -1, -1, "123: %2100000001%% %d 2100000002%%000003333 4% %5max 2100000006 2100000007 %% 21000000082100000009%" },
+        /* 23*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%%%d%%%% %%d %d%%%%%09d %d%% %%%s %d %d %%%% %d %d%%", 9, 4, "5max", -1, -1, "123: %2100000001%% %d 2100000002%%000003333 4% %5max 2100000006 2100000007 %% 2100000008 2100000009" }, /* Truncated */
+        /* 24*/ { 1, ZINT_ERROR_TOO_LONG, 123, "%%%d%%%% %%d %d%%%%%09d %d%% %%%s %d %d %%%% %d %d ", 9, 4, "5max", -1, -1, "123: %2100000001%% %d 2100000002%%000003333 4% %5max 2100000006 2100000007 %% 2100000008 2100000009" }, /* Truncated */
+        /* 25*/ { 0, ZINT_ERROR_TOO_LONG, 123, "%d %011d %05d %05d %s %d %d %d %014d", 9, 4, "5max", -1, -1, "123: 2100000001 02100000002 03333 00004 5max 2100000006 2100000007 2100000008 00002100000009" },
+        /* 26*/ { 0, ZINT_ERROR_TOO_LONG, 123, "", 0, 0, NULL, 0, -1, "123: " },
+        /* 27*/ { 0, ZINT_ERROR_TOO_LONG, -1, "Gosh '%c' wow", 1, 1, NULL, -1, -1, "Gosh '\001' wow" },
+        /* 28*/ { 0, ZINT_ERROR_TOO_LONG, 0, "Gosh '%c' wow", 1, 1, NULL, -1, -1, "000: Gosh '\001' wow" },
+        /* 29*/ { 0, ZINT_ERROR_TOO_LONG, 99, "Gosh %d wow", 1, 1, NULL, -1, -1, "099: Gosh 1 wow" },
+        /* 30*/ { 0, ZINT_ERROR_TOO_LONG, 99, "Gosh %02d wow", 1, 1, NULL, -1, -1, "099: Gosh 01 wow" },
+        /* 31*/ { 0, ZINT_ERROR_TOO_LONG, 99, "Gosh %03d wow", 1, 99, NULL, -1, -1, "099: Gosh 099 wow" },
+        /* 32*/ { 0, ZINT_ERROR_TOO_LONG, 99, "Gosh %012d wow", 1, 99, NULL, -1, -1, "099: Gosh 000000000099 wow" },
+        /* 33*/ { 0, ZINT_ERROR_TOO_LONG, -1, "%099d", 1, 99, NULL, -1, -1, "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000099" },
+        /* 34*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Gosh %d%% wow", 1, 100, NULL, -1, -1, "9999: Gosh 100% wow" },
+        /* 35*/ { 0, ZINT_ERROR_TOO_LONG, 10000, "Gosh %d%% wow", 1, 100, NULL, -1, -1, "9999: Gosh 100% wow" },
+        /* 36*/ { 0, ZINT_ERROR_TOO_LONG, 99999, "Gosh %d%% wow", 1, 100, NULL, -1, -1, "9999: Gosh 100% wow" },
+        /* 37*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "%%%d%% wow", 1, 100, NULL, -1, -1, "9999: %100% wow" },
+        /* 38*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Gosh %1$d wow", 1, 1, NULL, -1, -1, "9999: Gosh 1 wow" },
+        /* 39*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Gosh %1$d wow %1$d", 1, 1, NULL, -1, -1, "9999: Gosh 1 wow 1" },
+        /* 40*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Gosh %1$09d wow", 1, 10, NULL, -1, -1, "9999: Gosh 000000010 wow" },
+        /* 41*/ { 0, ZINT_ERROR_TOO_LONG, 9999, "Gosh %1$03d wow %1$04d", 1, 10, NULL, -1, -1, "9999: Gosh 0010 wow 0010" }, /* TODO: incompat: last min field trumps but each should be respected */
+        /* 42*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%f' wow", 1, -1, NULL, 3.1, -1, "123: Gosh '3.100000' wow" },
+        /* 43*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %g wow", 1, -1, NULL, 3.1, -1, "123: Gosh 3.1 wow" },
+        /* 44*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%s' wow", 1, -1, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 45*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.1s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '1' wow" },
+        /* 46*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.9s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '123456789' wow" },
+        /* 47*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.10s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '1234567890' wow" },
+        /* 48*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.19s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '1234567890123456789' wow" },
+        /* 49*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%1$.1s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '1' wow" },
+        /* 50*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%1$.20s' wow", 1, -1, "12345678901234567890", -1, -1, "123: Gosh '12345678901234567890' wow" },
+        /* 51*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.2s' wow", 1, -1, "gee", -1, -1, "123: Gosh 'ge' wow" },
+        /* 52*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.3s' wow", 1, -1, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 53*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.4s' wow", 1, -1, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 54*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.9s' wow", 1, -1, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 55*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 0, "gee", -1, -1, "123: Gosh '' wow" },
+        /* 56*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 1, "gee", -1, -1, "123: Gosh 'g' wow" },
+        /* 57*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 2, "gee", -1, -1, "123: Gosh 'ge' wow" },
+        /* 58*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 3, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 59*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 4, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 60*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%.*s' wow", 2, 999, "gee", -1, -1, "123: Gosh 'gee' wow" },
+        /* 61*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%2$.*1$s' wow", 2, 2, "gee", -1, -1, "123: Gosh 'ge' wow" },
+        /* 62*/ { 1, ZINT_ERROR_TOO_LONG, 123, "Gosh %s wow", 1, -1, "12345678901234567890123456789012345678901234567890123456789012345678901234567890123456", -1, -1, "123: Gosh 12345678901234567890123456789012345678901234567890123456789012345678901234567890123456 wo" },
+        /* 63*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh '%c' %g wow", 2, 'A', NULL, -12.1f, -1, "123: Gosh 'A' -12.1 wow" },
+        /* 64*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %d %s wow", 2, 123456789, "cor", -1, -1, "123: Gosh 123456789 cor wow" },
+        /* 65*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %1$d %2$s wow", 2, 123456789, "cor", -1, -1, "123: Gosh 123456789 cor wow" },
+        /* 66*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %1$d %2$.1s wow", 2, 123456789, "cor", -1, -1, "123: Gosh 123456789 c wow" },
+        /* 67*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$s %1$d wow", 2, 123456789, "cor", -1, -1, "123: Gosh cor 123456789 wow" },
+        /* 68*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$g %1$d wow", 2, 1, NULL, 2, -1, "123: Gosh 2 1 wow" },
+        /* 69*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$s %1$d wow second %2$s", 2, 123456789, "cor", -1, -1, "123: Gosh cor 123456789 wow second cor" },
+        /* 70*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$.2s %1$d wow second %2$s", 2, 123456789, "cor", -1, -1, "123: Gosh co 123456789 wow second co" }, /* TODO: incompat: last length trumps but each should be respected */
+        /* 71*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$.2s %1$d wow second %2$.1s", 2, 123456789, "cor", -1, -1, "123: Gosh c 123456789 wow second c" }, /* TODO: incompat: last length trumps */
+        /* 72*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$.1s %1$d wow second %2$.2s", 2, 123456789, "cor", -1, -1, "123: Gosh co 123456789 wow second co" }, /* TODO: incompat: last length trumps */
+        /* 73*/ { 1, ZINT_ERROR_TOO_LONG, -1, "%1$s %1$s", 1, -1, "12345678901234567890123456789012345678901234567890", -1, -1, "12345678901234567890123456789012345678901234567890 123456789012345678901234567890123456789012345678" },
+        /* 74*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %d %s %g wow", 3, 1, "cor", 3, -1, "123: Gosh 1 cor 3 wow" },
+        /* 75*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %1$d %2$s %3$g wow", 3, 1, "cor", 3, -1, "123: Gosh 1 cor 3 wow" },
+        /* 76*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %3$g %2$s %1$d wow", 3, 1, "cor", 3, -1, "123: Gosh 3 cor 1 wow" },
+        /* 77*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %3$g %1$d %2$s wow", 3, 1, "cor", 3, -1, "123: Gosh 3 1 cor wow" },
+        /* 78*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %3$g %1$d %2$s wow %2$s %1$d", 3, 1, "cor", 3, -1, "123: Gosh 3 1 cor wow cor 1" },
+        /* 79*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$.*1$s %3$g wow", 3, 1, "cor", 3, -1, "123: Gosh c 3 wow" },
+        /* 80*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %2$.*1$s %3$g wow %2$s blimey", 3, 1, "cor", 3, -1, "123: Gosh c 3 wow c blimey" },
+        /* 81*/ { 0, ZINT_ERROR_TOO_LONG, 123, "Gosh %3$g %2$.*1$s wow", 3, 1, "cor", 3, -1, "123: Gosh 3 c wow" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, ret;
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
+
+    testStart("test_errtxtf");
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        memset(symbol, 0, sizeof(*symbol));
+        if (data[i].debug_test) symbol->debug |= ZINT_DEBUG_TEST;
+
+        if (data[i].num_args == 0) {
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, NULL /*suppress -Wformat-security*/);
+        } else if (data[i].num_args == 1) {
+            if (data[i].i_arg != -1) {
+                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg);
+            } else if (data[i].s_arg != NULL) {
+                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg);
+            } else {
+                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].f_arg);
+            }
+        } else if (data[i].num_args == 2) {
+            if (data[i].i_arg != -1) {
+                if (data[i].s_arg != NULL) {
+                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg);
+                } else {
+                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].f_arg);
+                }
+            } else {
+                assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
+                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg, data[i].f_arg);
+            }
+        } else if (data[i].num_args == 3) {
+            assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg, data[i].f_arg);
+        } else if (data[i].num_args == 9) { /* Special case max, assuming 4th arg "%d", 5th arg "%s" */
+            assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, 2100000001, 2100000002, 3333, data[i].i_arg, data[i].s_arg, 2100000006, 2100000007, 2100000008, 2100000009);
+        } else {
+            assert_nonnull(NULL, "i:%d num_args:%d > 3 && != 9\n", i, data[i].num_args);
+        }
+        if (data[i].ret == -1) {
+            assert_equal(ret, data[i].error_number, "i:%d ret %d != %d (%s)\n", i, ret, data[i].error_number, symbol->errtxt);
+        } else {
+            assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        }
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
     }
 
     testFinish();
@@ -343,7 +543,7 @@ static void test_cnt_digits(const testCtx *const p_ctx) {
         int ret;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 0, -1, 0 },
         /*  1*/ { "asdf1", -1, 0, -1, 0 },
         /*  2*/ { "asdf1asdf", -1, 4, -1, 1 },
@@ -351,7 +551,7 @@ static void test_cnt_digits(const testCtx *const p_ctx) {
         /*  4*/ { "a12345asdf", -1, 1, 4, 4},
         /*  5*/ { "a1234", -1, 1, 5, 4},
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     testStart("test_cnt_digits");
@@ -378,7 +578,7 @@ static void test_is_valid_utf8(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 1, "" },
         /*  1*/ { "abcdefghijklmnopqrstuvwxyz", -1, 1, "" },
         /*  2*/ { "éa", -1, 1, "" },
@@ -390,7 +590,7 @@ static void test_is_valid_utf8(const testCtx *const p_ctx) {
         /*  7*/ { "\300\201", -1, 0, "Overlong 0xC081" },
         /*  8*/ { "\355\240\200", -1, 0, "Surrogate 0xEDA080" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     testStart("test_is_valid_utf8");
@@ -421,22 +621,23 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 1, 0, 0, {0}, "" },
         /*  1*/ { "\000a\302\200\340\240\200", 7, 1, 0, 4, { 0, 'a', 0x80, 0x800 }, "NUL a C280 E0A080" },
         /*  2*/ { "\357\277\277", -1, 1, 0, 1, { 0xFFFF }, "EFBFBF" },
         /*  3*/ { "\360\220\200\200", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Four-byte F0908080" },
         /*  4*/ { "a\200b", -1, 1, ZINT_ERROR_INVALID_DATA, -1, {0}, "Orphan continuation 0x80" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
     unsigned int vals[20];
-    struct zint_symbol symbol = {0};
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
 
     testStart("test_utf8_to_unicode");
 
-    symbol.debug = debug;
+    symbol->debug = debug;
 
     for (i = 0; i < data_size; i++) {
         int ret_length;
@@ -446,7 +647,7 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
         ret_length = length;
 
-        ret = utf8_to_unicode(&symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
+        ret = utf8_to_unicode(symbol, (unsigned char *) data[i].data, vals, &ret_length, data[i].disallow_4byte);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             int j;
@@ -477,7 +678,7 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
        é U+00E9 (\351, 233), UTF-8 C3A9
     */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { "", -1, 0, "", "" },
         /*  1*/ { "abc", -1, 0, "abc", "" },
         /*  2*/ { "\000A\001B\002\036\037C ~\177", 11, 0, " A B   C ~ ", "" },
@@ -501,14 +702,15 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
         /* 20*/ { "\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351\351", -1, 1, "ééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééééé", "101 \351 (truncated)" },
         /* 21*/ { "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 1, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", "200 A (truncated)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    struct zint_symbol symbol = {0};
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
 
     testStart("test_hrt_cpy_iso8859_1");
 
-    symbol.debug = debug;
+    symbol->debug = debug;
 
     for (i = 0; i < data_size; i++) {
         int j;
@@ -517,15 +719,15 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
 
         length = data[i].length == -1 ? (int) strlen(data[i].data) : data[i].length;
 
-        ret = hrt_cpy_iso8859_1(&symbol, (unsigned char *) data[i].data, length);
+        ret = hrt_cpy_iso8859_1(symbol, (unsigned char *) data[i].data, length);
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < ret; j++) {
-                fprintf(stderr, "symbol.text[%d] %2X\n", j, symbol.text[j]);
+                fprintf(stderr, "symbol->text[%d] %2X\n", j, symbol->text[j]);
             }
         }
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-        assert_nonzero(testUtilIsValidUTF8(symbol.text, (int) ustrlen(symbol.text)), "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol.text);
-        assert_zero(strcmp((char *) symbol.text, data[i].expected), "i:%d symbol.text (%s) != expected (%s)\n", i, symbol.text, data[i].expected);
+        assert_nonzero(testUtilIsValidUTF8(symbol->text, (int) ustrlen(symbol->text)), "i:%d testUtilIsValidUTF8(%s) != 1\n", i, symbol->text);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d symbol->text (%s) != expected (%s)\n", i, symbol->text, data[i].expected);
     }
 
     testFinish();
@@ -550,7 +752,7 @@ static void test_set_height(const testCtx *const p_ctx) {
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { 0, { 0 }, 0, 0, 0, 0, 0, 0, 0.5, "", "" },
         /*  1*/ { 2, { 1, 1 }, 2, 0, 0, 0, 0, 0, 2, "", "zero_count == 0, fixed height only" },
         /*  2*/ { 2, { 1, 1 }, 2, 0, 0, 1, 1, ZINT_WARN_NONCOMPLIANT, 2, "", "zero_count == 0, height < max height" },
@@ -562,31 +764,32 @@ static void test_set_height(const testCtx *const p_ctx) {
         /*  8*/ { 2, { 2, 0 }, 20, 0, 20, 0, 0, 0, 20, "", "zero_count != 0, height 20" },
         /*  9*/ { 2, { 2, 0 }, 0, 2, 0, 0, 0, 0, 4, "", "zero_count != 0, min_row_height 2" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    struct zint_symbol symbol;
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
 
     testStart("set_height");
 
-    symbol.debug = debug;
+    symbol->debug = debug;
 
     for (i = 0; i < data_size; i++) {
         int j;
 
         if (testContinue(p_ctx, i)) continue;
 
-        memset(&symbol, 0, sizeof(symbol));
-        symbol.rows = data[i].rows;
+        memset(symbol, 0, sizeof(*symbol));
+        symbol->rows = data[i].rows;
         for (j = 0; j < ARRAY_SIZE(data[i].row_height); j++) {
-            symbol.row_height[j] = data[i].row_height[j];
+            symbol->row_height[j] = data[i].row_height[j];
         }
-        symbol.height = data[i].height;
+        symbol->height = data[i].height;
 
-        ret = set_height(&symbol, data[i].min_row_height, data[i].default_height, data[i].max_height, data[i].no_errtxt);
+        ret = set_height(symbol, data[i].min_row_height, data[i].default_height, data[i].max_height, data[i].no_errtxt);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-        assert_equal(symbol.height, data[i].expected_height, "i:%d symbol.height %g != %g\n", i, symbol.height, data[i].expected_height);
-        assert_zero(strcmp(symbol.errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol.errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n", i, symbol->height, data[i].expected_height);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
     }
 
     testFinish();
@@ -603,26 +806,27 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 123456 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647 123456" },
         /*  1*/ { { 2147483647, -2147483646, 2147483647, 0, 2147483647, 2147483647, 2147483647, 2147483647, 1234567 }, 10, "(10) 2147483647 -2147483646 2147483647 0 2147483647 2147483647 2147483647 2147483647" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i;
 
-    struct zint_symbol symbol = {0};
+    struct zint_symbol s_symbol;
+    struct zint_symbol *symbol = &s_symbol;
 
     testStart("test_debug_test_codeword_dump_int");
 
-    symbol.debug = debug;
+    symbol->debug = debug;
 
     for (i = 0; i < data_size; i++) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        debug_test_codeword_dump_int(&symbol, data[i].codewords, data[i].length);
-        assert_nonzero(strlen(symbol.errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n", i, symbol.errtxt, (int) strlen(symbol.errtxt));
-        assert_zero(strcmp(symbol.errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n", i, symbol.errtxt, data[i].expected, (int) strlen(symbol.errtxt), (int) strlen(data[i].expected));
+        debug_test_codeword_dump_int(symbol, data[i].codewords, data[i].length);
+        assert_nonzero(strlen(symbol->errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n", i, symbol->errtxt, (int) strlen(symbol->errtxt));
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n", i, symbol->errtxt, data[i].expected, (int) strlen(symbol->errtxt), (int) strlen(data[i].expected));
     }
 
     testFinish();
@@ -634,8 +838,10 @@ int main(int argc, char *argv[]) {
         { "test_chr_cnt", test_chr_cnt },
         { "test_to_int", test_to_int },
         { "test_to_upper", test_to_upper },
-        { "test_is_sane", test_is_sane },
-        { "test_is_sane_lookup", test_is_sane_lookup },
+        { "test_not_sane", test_not_sane },
+        { "test_not_sane_lookup", test_not_sane_lookup },
+        { "test_errtxt", test_errtxt },
+        { "test_errtxtf", test_errtxtf },
         { "test_cnt_digits", test_cnt_digits },
         { "test_is_valid_utf8", test_is_valid_utf8 },
         { "test_utf8_to_unicode", test_utf8_to_unicode },

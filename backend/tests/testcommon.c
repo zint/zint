@@ -381,6 +381,7 @@ int testContinue(const testCtx *const p_ctx, const int i) {
     }
     if ((p_ctx->debug & ZINT_DEBUG_TEST_PRINT) && !(p_ctx->debug & ZINT_DEBUG_TEST_LESS_NOISY)) {
         printf("i:%d\n", i);
+        fflush(stdout); /* For assertion failures */
     }
     return 0;
 }
@@ -451,7 +452,7 @@ const char *testUtilErrorName(int error_number) {
         { "ZINT_ERROR_NONCOMPLIANT", ZINT_ERROR_NONCOMPLIANT, 14 },
         { "ZINT_ERROR_HRT_TRUNCATED", ZINT_ERROR_HRT_TRUNCATED, 15 },
     };
-    static const int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
 
     if (error_number < 0 || error_number >= data_size) {
         return "";
@@ -482,7 +483,7 @@ const char *testUtilInputModeName(int input_mode) {
         { "FAST_MODE", FAST_MODE, 0x0080 },
         { "EXTRA_ESCAPE_MODE", EXTRA_ESCAPE_MODE, 0x0100 },
     };
-    static const int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int set, i;
 
     if (input_mode < 0) {
@@ -2302,7 +2303,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "rectangularmicroqrcode", BARCODE_RMQR, 145, 1, 1, 1, 0, 0, },
         { "bc412", BARCODE_BC412, 146, 1, 1, 0, 0, 0, },
     };
-    static const int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
 
     const int symbology = symbol->symbology;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
@@ -2449,6 +2450,9 @@ static void testUtilBwippCvtGS1Data(char *bwipp_data, const int upcean, const in
     }
 }
 
+#define z_isxdigit(c) (z_isdigit(c) || ((c) >= 'A' && (c) <= 'F') || ((c) >= 'a' && (c) <= 'f'))
+#define z_isodigit(c) ((c) <= '7' && (c) >= '0')
+
 /* Convert data to Ghostscript format for passing to bwipp_dump.ps */
 static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const char *data, int length,
                 int zint_escape_mode, int eci, int *parse, int *parsefnc) {
@@ -2491,9 +2495,24 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 case 'e': val = 0x1b; /* Escape */ break;
                 case 'G': val = 0x1d; /* Group Separator */ break;
                 case 'R': val = 0x1e; /* Record Separator */ break;
-                /*case 'x': val = 0; TODO: implement break; */
+                case 'x':
+                    val = d + 1 + 2 < de && z_isxdigit(d[1]) && z_isxdigit(d[2]) ? (ctoi(d[1]) << 4) | ctoi(d[2]) : -1;
+                    if (val != -1) d+= 2;
+                    break;
+                case 'd':
+                    val = d + 1 + 3 < de ? to_int(d + 1, 3) : -1;
+                    if (val > 255) val = -1;
+                    if (val != -1) d += 3;
+                    break;
+                case 'o':
+                    val = d + 1 + 3 < de && z_isodigit(d[1]) && z_isodigit(d[2]) && z_isodigit(d[3])
+                            ? (ctoi(d[1]) << 6) | (ctoi(d[2]) << 3) | ctoi(d[3]) : -1;
+                    if (val > 255) val = -1;
+                    if (val != -1) d += 3;
+                    break;
                 case '\\': val = '\\'; break;
                 /*case 'u': val = 0; TODO: implement break; */
+                /*case 'U': val = 0; TODO: implement break; */
                 case '^': val = -1; break; /* Code 128 special escapes */
                 default: fprintf(stderr, "testUtilBwippEscape: unknown escape %c\n", *d); return NULL; break;
             }
@@ -3602,7 +3621,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 27, },
         { "", BARCODE_FLAT, 28, },
         { "DataBar", BARCODE_DBAR_OMN, 29, },
-        { "", BARCODE_DBAR_LTD, 30, },
+        { "DataBarLimited", BARCODE_DBAR_LTD, 30, },
         { "DataBarExpanded", BARCODE_DBAR_EXP, 31, },
         { "", BARCODE_TELEPEN, 32, },
         { "", -1, 33, },
@@ -3719,7 +3738,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_ULTRA, 144, },
         { "RMQRCode", BARCODE_RMQR, 145, },
     };
-    static const int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
 
     const int symbology = symbol->symbology;
 
@@ -4011,8 +4030,8 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         hibc[0] = '+';
         memcpy(hibc + 1, expected, expected_len);
         to_upper((unsigned char *) (hibc + 1), expected_len);
-        if (!is_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, (unsigned char *) (hibc + 1), expected_len, posns)) {
-            sprintf(msg, "HIBC is_sane_lookup(TECHNETIUM) failed");
+        if (not_sane_lookup(TECHNETIUM, sizeof(TECHNETIUM) - 1, (unsigned char *) (hibc + 1), expected_len, posns)) {
+            sprintf(msg, "HIBC not_sane_lookup(TECHNETIUM) failed");
             return 5;
         }
         counter = 41;
@@ -4122,9 +4141,14 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             c25inter[++expected_len] = '\0';
             expected = c25inter;
         }
-    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_OMNSTK || symbology == BARCODE_DBAR_STK) {
+    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_LTD || symbology == BARCODE_DBAR_OMNSTK
+                || symbology == BARCODE_DBAR_STK) {
         if (expected_len == 13) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
+        }
+        if (symbology == BARCODE_DBAR_LTD) {
+            cmp_buf += 2; /* Ignore prefixed "01" */
+            cmp_len -= 2;
         }
     } else if (is_upcean) {
         if (symbology == BARCODE_UPCA && (expected_len == 11 || expected_len == 14 || expected_len == 17)) {

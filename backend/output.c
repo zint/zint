@@ -52,12 +52,12 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     if ((comma1 = strchr(colour, ',')) == NULL) {
         const int len = (int) strlen(colour);
         if ((len != 6) && (len != 8)) {
-            sprintf(symbol->errtxt, "880: Malformed %s RGB colour (6 or 8 characters only)", name);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 880, "Malformed %s RGB colour (6 or 8 characters only)",
+                            name);
         }
-        if (!is_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
-            sprintf(symbol->errtxt, "881: Malformed %s RGB colour '%s' (hexadecimal only)", name, colour);
-            return ZINT_ERROR_INVALID_OPTION;
+        if (not_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
+                            "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
         }
 
         return 0;
@@ -66,29 +66,29 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
     /* CMYK comma-separated percentages */
     if ((comma2 = strchr(comma1 + 1, ',')) == NULL || (comma3 = strchr(comma2 + 1, ',')) == NULL
             || strchr(comma3 + 1, ',') != NULL) {
-        sprintf(symbol->errtxt, "882: Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 882,
+                        "Malformed %s CMYK colour (4 decimal numbers, comma-separated)", name);
     }
     if (comma1 - colour > 3 || comma2 - (comma1 + 1) > 3 || comma3 - (comma2 + 1) > 3 || strlen(comma3 + 1) > 3) {
-        sprintf(symbol->errtxt, "883: Malformed %s CMYK colour (3 digit maximum per number)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 883,
+                        "Malformed %s CMYK colour (3 digit maximum per number)", name);
     }
 
     if ((val = to_int((const unsigned char *) colour, (int) (comma1 - colour))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "884: Malformed %s CMYK colour C (decimal 0-100 only)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 884, "Malformed %s CMYK colour C (decimal 0 to 100 only)",
+                        name);
     }
     if ((val = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "885: Malformed %s CMYK colour M (decimal 0-100 only)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 885, "Malformed %s CMYK colour M (decimal 0 to 100 only)",
+                        name);
     }
     if ((val = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "886: Malformed %s CMYK colour Y (decimal 0-100 only)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 886, "Malformed %s CMYK colour Y (decimal 0 to 100 only)",
+                        name);
     }
     if ((val = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
-        sprintf(symbol->errtxt, "887: Malformed %s CMYK colour K (decimal 0-100 only)", name);
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 887, "Malformed %s CMYK colour K (decimal 0 to 100 only)",
+                        name);
     }
 
     return 0;

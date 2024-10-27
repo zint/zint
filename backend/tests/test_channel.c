@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, "1", -1, "01" },
         /*  1*/ { 3, "1", -1, "01" },
         /*  2*/ { 3, "12", -1, "12" },
@@ -65,11 +65,11 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 19*/ { 8, "12", -1, "0000012" },
         /* 20*/ { 8, "1", -1, "0000001" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_hrt");
+    testStartSymbol("test_hrt", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -100,67 +100,70 @@ static void test_input(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    struct item data[] = {
-        /*  0*/ { -1, "0", 0, 1, 19 }, /* < 3 ignored */
-        /*  1*/ { 0, "0", 0, 1, 19, },
-        /*  2*/ { 1, "0", 0, 1, 19, },
-        /*  3*/ { 2, "0", 0, 1, 19, },
-        /*  4*/ { 9, "0", 0, 1, 19, }, /* > 8 ignored */
-        /*  5*/ { -1, "00", 0, 1, 19 },
-        /*  6*/ { 3, "00", 0, 1, 19 },
-        /*  7*/ { -1, "26", 0, 1, 19, },
-        /*  8*/ { 3, "26", 0, 1, 19, },
-        /*  9*/ { 3, "27", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 10*/ { 3, "000", 0, 1, 19, },
-        /* 11*/ { 3, "001", 0, 1, 19, },
-        /* 12*/ { 3, "026", 0, 1, 19, },
-        /* 13*/ { -1, "27", 0, 1, 23 }, /* Channel 4 */
-        /* 14*/ { -1, "026", 0, 1, 23, }, /* Defaults to channel 4 due to length */
-        /* 15*/ { 3, "0026", 0, 1, 19, },
-        /* 16*/ { 3, "1234", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 17*/ { 4, "000", 0, 1, 23 },
-        /* 18*/ { -1, "000", 0, 1, 23 }, /* Defaults to channel 4 due to length */
-        /* 19*/ { 4, "026", 0, 1, 23 },
-        /* 20*/ { 4, "0000026", 0, 1, 23 },
-        /* 21*/ { 4, "0000", 0, 1, 23 },
-        /* 22*/ { 4, "292", 0, 1, 23 },
-        /* 23*/ { 4, "293", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 24*/ { -1, "293", 0, 1, 27 }, /* Channel 5 */
-        /* 25*/ { 5, "0000", 0, 1, 27 },
-        /* 26*/ { -1, "0000", 0, 1, 27 }, /* Defaults to channel 5 due to length */
-        /* 27*/ { -1, "3493", 0, 1, 27 },
-        /* 28*/ { 5, "3493", 0, 1, 27 },
-        /* 29*/ { 5, "3494", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 30*/ { -1, "3494", 0, 1, 31 }, /* Channel 6 */
-        /* 31*/ { 6, "00000", 0, 1, 31 },
-        /* 32*/ { -1, "00000", 0, 1, 31 }, /* Defaults to channel 5 due to length */
-        /* 33*/ { -1, "44072", 0, 1, 31 },
-        /* 34*/ { 6, "44072", 0, 1, 31 },
-        /* 35*/ { 6, "44073", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 36*/ { -1, "44073", 0, 1, 35 }, /* Channel 7 */
-        /* 37*/ { 7, "000000", 0, 1, 35 },
-        /* 38*/ { -1, "000000", 0, 1, 35 }, /* Defaults to channel 7 due to length */
-        /* 39*/ { 7, "576688", 0, 1, 35 },
-        /* 40*/ { 7, "576689", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 41*/ { 7, "0576688", 0, 1, 35 },
-        /* 42*/ { -1, "1234567", 0, 1, 39 },
-        /* 43*/ { -1, "576689", 0, 1, 39 }, /* Channel 8 */
-        /* 44*/ { 8, "0000000", 0, 1, 39, },
-        /* 45*/ { -1, "0000000", 0, 1, 39, }, /* Defaults to channel 8 due to length */
-        /* 46*/ { 8, "1234567", 0, 1, 39, },
-        /* 47*/ { 8, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 48*/ { 8, "01234567", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 49*/ { 8, "00000000", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 50*/ { 9, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1 },
-        /* 51*/ { -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1 },
+    static const struct item data[] = {
+        /*  0*/ { -1, "0", 0, 1, 19, "" }, /* < 3 ignored */
+        /*  1*/ { 0, "0", 0, 1, 19, "" },
+        /*  2*/ { 1, "0", 0, 1, 19, "" },
+        /*  3*/ { 2, "0", 0, 1, 19, "" },
+        /*  4*/ { 9, "0", 0, 1, 19, "" }, /* > 8 ignored */
+        /*  5*/ { -1, "00", 0, 1, 19, "" },
+        /*  6*/ { 3, "00", 0, 1, 19, "" },
+        /*  7*/ { -1, "26", 0, 1, 19, "" },
+        /*  8*/ { 3, "26", 0, 1, 19, "" },
+        /*  9*/ { 3, "27", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)" },
+        /* 10*/ { 3, "027", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)" },
+        /* 11*/ { 3, "000", 0, 1, 19, "" },
+        /* 12*/ { 3, "001", 0, 1, 19, "" },
+        /* 13*/ { 3, "026", 0, 1, 19, "" },
+        /* 14*/ { -1, "27", 0, 1, 23, "" }, /* Channel 4 */
+        /* 15*/ { -1, "026", 0, 1, 23, "" }, /* Defaults to channel 4 due to length */
+        /* 16*/ { 3, "0026", 0, 1, 19, "" },
+        /* 17*/ { 3, "1234", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"1234\" out of range (0 to 26 for 3 channels)" },
+        /* 18*/ { 4, "000", 0, 1, 23, "" },
+        /* 19*/ { -1, "000", 0, 1, 23, "" }, /* Defaults to channel 4 due to length */
+        /* 20*/ { 4, "026", 0, 1, 23, "" },
+        /* 21*/ { 4, "0000026", 0, 1, 23, "" },
+        /* 22*/ { 4, "0000", 0, 1, 23, "" },
+        /* 23*/ { 4, "292", 0, 1, 23, "" },
+        /* 24*/ { 4, "293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)" },
+        /* 25*/ { 4, "000293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)" },
+        /* 26*/ { -1, "293", 0, 1, 27, "" }, /* Channel 5 */
+        /* 27*/ { 5, "0000", 0, 1, 27, "" },
+        /* 28*/ { -1, "0000", 0, 1, 27, "" }, /* Defaults to channel 5 due to length */
+        /* 29*/ { -1, "3493", 0, 1, 27, "" },
+        /* 30*/ { 5, "3493", 0, 1, 27, "" },
+        /* 31*/ { 5, "3494", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"3494\" out of range (0 to 3493 for 5 channels)" },
+        /* 32*/ { -1, "3494", 0, 1, 31, "" }, /* Channel 6 */
+        /* 33*/ { 6, "00000", 0, 1, 31, "" },
+        /* 34*/ { -1, "00000", 0, 1, 31, "" }, /* Defaults to channel 5 due to length */
+        /* 35*/ { -1, "44072", 0, 1, 31, "" },
+        /* 36*/ { 6, "44072", 0, 1, 31, "" },
+        /* 37*/ { 6, "44073", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"44073\" out of range (0 to 44072 for 6 channels)" },
+        /* 38*/ { -1, "44073", 0, 1, 35, "" }, /* Channel 7 */
+        /* 39*/ { 7, "000000", 0, 1, 35, "" },
+        /* 40*/ { -1, "000000", 0, 1, 35, "" }, /* Defaults to channel 7 due to length */
+        /* 41*/ { 7, "576688", 0, 1, 35, "" },
+        /* 42*/ { 7, "576689", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"576689\" out of range (0 to 576688 for 7 channels)" },
+        /* 43*/ { 7, "0576688", 0, 1, 35, "" },
+        /* 44*/ { -1, "1234567", 0, 1, 39, "" },
+        /* 45*/ { -1, "576689", 0, 1, 39, "" }, /* Channel 8 */
+        /* 46*/ { 8, "0000000", 0, 1, 39, "" },
+        /* 47*/ { -1, "0000000", 0, 1, 39, "" }, /* Defaults to channel 8 due to length */
+        /* 48*/ { 8, "1234567", 0, 1, 39, "" },
+        /* 49*/ { 8, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)" },
+        /* 50*/ { 8, "01234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)" },
+        /* 51*/ { 8, "00000000", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)" },
+        /* 52*/ { 9, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)" },
+        /* 53*/ { -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 334: Invalid character at position 1 in input (digits only)" },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
-    testStart("test_input");
+    testStartSymbol("test_input", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -173,6 +176,8 @@ static void test_input(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
@@ -200,7 +205,7 @@ static void test_encode(const testCtx *const p_ctx) {
         char *comment;
         char *expected;
     };
-    struct item data[] = {
+    static const struct item data[] = {
         /*  0*/ { -1, "1234", 0, 1, 27, "ANSI/AIM BC12-1998 Figure 1",
                     "101010101001010010011110011"
                 },
@@ -412,15 +417,15 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010101000001110010101101100101110011"
                 },
     };
-    int data_size = ARRAY_SIZE(data);
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
-    struct zint_symbol *symbol;
+    struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    testStart("test_encode");
+    testStartSymbol("test_encode", &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -473,8 +478,8 @@ static void test_generate(const testCtx *const p_ctx) {
     struct item {
         char *data;
     };
-    struct item data[] = { { "576688" }, { "7742862" } };
-    int data_size = ARRAY_SIZE(data);
+    static const struct item data[] = { { "576688" }, { "7742862" } };
+    const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol;
 

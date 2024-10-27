@@ -45,7 +45,7 @@ static int general_field_type(const char *general_field, const int i) {
     if (z_isupper(general_field[i]) || posn(alphanum_puncs, general_field[i]) != -1) {
         return ALPHANUMERIC;
     }
-    if (is_sane(IS_ISOIEC_F, (const unsigned char *) general_field + i, 1)) {
+    if (!not_sane(IS_ISOIEC_F, (const unsigned char *) general_field + i, 1)) {
         return ISOIEC;
     }
     return 0;

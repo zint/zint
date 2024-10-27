@@ -1521,8 +1521,8 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
                 if (error_number == 0) {
                     done = 1;
                 } else if (local_segs[i].eci || seg_count > 1) {
-                    sprintf(symbol->errtxt, "545: Invalid character in input data for ECI %d", local_segs[i].eci);
-                    return error_number;
+                    return errtxtf(error_number, symbol, 545, "Invalid character in input for ECI '%d'",
+                                    local_segs[i].eci);
                 }
             }
             if (!done) {
@@ -1532,8 +1532,8 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
                     return error_number;
                 }
                 if (local_segs[i].eci != 32) {
-                    strcpy(symbol->errtxt, "543: Converted to GB 18030 but no ECI specified");
-                    warn_number = ZINT_WARN_NONCOMPLIANT;
+                    warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 543,
+                                            "Converted to GB 18030 but no ECI specified");
                 }
             }
             dd += local_segs[i].length;
@@ -1543,8 +1543,11 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     hx_define_mode_segs(mode, ddata, local_segs, seg_count, debug_print);
 
     est_binlen = hx_calc_binlen_segs(mode, ddata, local_segs, seg_count);
+    if (debug_print) {
+        printf("Estimated binary length: %d\n", est_binlen);
+    }
 
-    binary = (char *) z_alloca((est_binlen + 1));
+    binary = (char *) malloc(est_binlen + 1);
 
     if ((ecc_level <= 0) || (ecc_level >= 5)) {
         ecc_level = 1;
@@ -1561,40 +1564,16 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     version = 85;
     for (i = 84; i > 0; i--) {
-        switch (ecc_level) {
-            case 1:
-                if (hx_data_codewords_L1[i - 1] >= codewords) {
-                    version = i;
-                    data_codewords = hx_data_codewords_L1[i - 1];
-                }
-                break;
-            case 2:
-                if (hx_data_codewords_L2[i - 1] >= codewords) {
-                    version = i;
-                    data_codewords = hx_data_codewords_L2[i - 1];
-                }
-                break;
-            case 3:
-                if (hx_data_codewords_L3[i - 1] >= codewords) {
-                    version = i;
-                    data_codewords = hx_data_codewords_L3[i - 1];
-                }
-                break;
-            case 4:
-                if (hx_data_codewords_L4[i - 1] >= codewords) {
-                    version = i;
-                    data_codewords = hx_data_codewords_L4[i - 1];
-                }
-                break;
-            default: /* Not reached */
-                assert(0);
-                break;
+        if (hx_data_codewords[ecc_level - 1][i - 1] >= codewords) {
+            version = i;
+            data_codewords = hx_data_codewords[ecc_level - 1][i - 1];
         }
     }
 
     if (version == 85) {
-        strcpy(symbol->errtxt, "541: Input too long for selected error correction level");
-        return ZINT_ERROR_TOO_LONG;
+        free(binary);
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 541, "Input too long, requires %d codewords (maximum 3264)",
+                        codewords);
     }
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 84)) {
@@ -1606,27 +1585,35 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     }
 
     if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
-        strcpy(symbol->errtxt, "542: Input too long for selected symbol size");
-        return ZINT_ERROR_TOO_LONG;
+        free(binary);
+        if (ecc_level == 1) {
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
+                            "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                            symbol->option_2, codewords, hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
+        }
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
+                        "Input too long for Version %1$d, ECC %2$d, requires %3$d codewords (maximum %4$d)",
+                        symbol->option_2, ecc_level, codewords,
+                        hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
     }
 
     /* If there is spare capacity, increase the level of ECC */
 
     /* Unless explicitly specified (within min/max bounds) by user */
     if (symbol->option_1 == -1 || symbol->option_1 != ecc_level) {
-        if ((ecc_level == 1) && (codewords <= hx_data_codewords_L2[version - 1])) {
+        if (ecc_level == 1 && codewords <= hx_data_codewords[1][version - 1]) {
             ecc_level = 2;
-            data_codewords = hx_data_codewords_L2[version - 1];
+            data_codewords = hx_data_codewords[1][version - 1];
         }
 
-        if ((ecc_level == 2) && (codewords <= hx_data_codewords_L3[version - 1])) {
+        if (ecc_level == 2 && codewords <= hx_data_codewords[2][version - 1]) {
             ecc_level = 3;
-            data_codewords = hx_data_codewords_L3[version - 1];
+            data_codewords = hx_data_codewords[2][version - 1];
         }
 
-        if ((ecc_level == 3) && (codewords <= hx_data_codewords_L4[version - 1])) {
+        if (ecc_level == 3 && codewords <= hx_data_codewords[3][version - 1]) {
             ecc_level = 4;
-            data_codewords = hx_data_codewords_L4[version - 1];
+            data_codewords = hx_data_codewords[3][version - 1];
         }
     }
 
@@ -1645,6 +1632,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
             datastream[i >> 3] |= 0x80 >> (i & 0x07);
         }
     }
+    free(binary);
 
     if (debug_print) {
         printf("Datastream (%d):", data_codewords);

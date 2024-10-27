@@ -37,9 +37,13 @@
 #include "reedsol.h"
 
 #define AZTEC_MAX_CAPACITY  19968 /* ISO/IEC 24778:2008 5.3 Table 1 Maximum Symbol Bit Capacity */
-#define AZTEC_BIN_CAPACITY  17940 /* Above less 169 * 12 = 2028 bits (169 = 10% of 1664 + 3) */
+/* Allow up to absolute minimum 3 ECC codewords, but now warn if results in less than the 5% minimum (ISO/IEC
+   24778:2008 4.1.e) - previously could go down to 3 ECC codewords anyway if version given, due to bit-stuffing */
+#define AZTEC_BIN_CAPACITY  19932 /* AZTEC_MAX_CAPACITY less 3 * 12 = 36 */
 #define AZTEC_MAP_SIZE      22801 /* AztecMap Version 32 151 x 151 */
 #define AZTEC_MAP_POSN_MAX  20039 /* Maximum position index in AztecMap */
+
+#define AZ_BIN_CAP_CWDS_S   "1661" /* String version of (AZTEC_BIN_CAPACITY / 12) */
 
 /* Count number of consecutive (. SP) or (, SP) Punct mode doubles for comparison against Digit mode encoding */
 static int az_count_doubles(const unsigned char source[], int i, const int length) {
@@ -784,7 +788,7 @@ static void az_populate_map(short AztecMap[], const int layers) {
 
 /* Helper to insert dummy '0' or '1's into runs of same bits. See ISO/IEC 24778:2008 7.3.1.2 */
 static int az_bitrun_stuff(const char *binary_string, const int data_length, const int codeword_size,
-            char adjusted_string[AZTEC_MAX_CAPACITY]) {
+            const int data_maxsize, char adjusted_string[AZTEC_MAX_CAPACITY]) {
     int i, j = 0, count = 0;
 
     for (i = 0; i < data_length; i++) {
@@ -796,7 +800,7 @@ static int az_bitrun_stuff(const char *binary_string, const int data_length, con
 
             if (count == 0 || count == (codeword_size - 1)) {
                 /* Codeword of B-1 '0's or B-1 '1's */
-                if (j >= AZTEC_MAX_CAPACITY) {
+                if (j > data_maxsize) {
                     return 0; /* Fail */
                 }
                 adjusted_string[j++] = count == 0 ? '1' : '0';
@@ -808,7 +812,7 @@ static int az_bitrun_stuff(const char *binary_string, const int data_length, con
         } else if (binary_string[i] == '1') { /* Skip B so only counting B-1 */
             count++;
         }
-        if (j >= AZTEC_MAX_CAPACITY) {
+        if (j > data_maxsize) {
             return 0; /* Fail */
         }
         adjusted_string[j++] = binary_string[i];
@@ -864,23 +868,19 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int error_number = 0;
     int compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, adjustment_size;
-    int reader = 0;
-    int comp_loop = 4;
     int bp = 0;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
-    const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
+    const int reader_init = symbol->output_options & READER_INIT;
+    const int compact_loop_start = reader_init ? 1 : 4; /* Compact 2-4 excluded from Reader Initialisation */
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     rs_t rs;
     rs_uint_t rs_uint;
     unsigned int *data_part;
     unsigned int *ecc_part;
 
-    if (symbol->output_options & READER_INIT) {
-        reader = 1;
-        comp_loop = 1;
-    }
-    if (gs1 && reader) {
-        strcpy(symbol->errtxt, "501: Cannot encode in GS1 and Reader Initialisation mode at the same time");
-        return ZINT_ERROR_INVALID_OPTION;
+    if (gs1 && reader_init) {
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501,
+                        "Cannot encode in GS1 and Reader Initialisation mode at the same time");
     }
 
     if (symbol->structapp.count) {
@@ -890,19 +890,20 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         int id_len;
 
         if (symbol->structapp.count < 2 || symbol->structapp.count > 26) {
-            strcpy(symbol->errtxt, "701: Structured Append count out of range (2-26)");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 701,
+                            "Structured Append count '%d' out of range (2 to 26)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            sprintf(symbol->errtxt, "702: Structured Append index out of range (1-%d)", symbol->structapp.count);
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 702,
+                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                            symbol->structapp.index, symbol->structapp.count);
         }
 
         for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
 
         if (id_len && chr_cnt((const unsigned char *) symbol->structapp.id, id_len, ' ')) {
-            strcpy(symbol->errtxt, "703: Structured Append ID cannot contain spaces");
-            return ZINT_ERROR_INVALID_OPTION;
+            /* Note ID can contain any old chars apart from space so don't print in error message */
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 703, "Structured Append ID cannot contain spaces");
         }
 
         bp = bin_append_posn(29, 5, binary_string, bp); /* M/L */
@@ -919,7 +920,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         sa_src[sa_len++] = 'A' + symbol->structapp.count - 1;
         if (debug_print) {
             printf("Structured Append Count: %d, Index: %d, ID: %.32s, String: %s\n",
-                    symbol->structapp.count, symbol->structapp.count, symbol->structapp.id, sa_src);
+                    symbol->structapp.count, symbol->structapp.index, symbol->structapp.id, sa_src);
         }
 
         (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*eci*/, NULL /*p_current_mode*/,
@@ -928,32 +929,26 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
 
     if (!aztec_text_process_segs(segs, seg_count, bp, binary_string, gs1, &data_length, debug_print)) {
-        strcpy(symbol->errtxt, "502: Input too long or too many extended ASCII characters");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 502,
+                        "Input too long, requires too many codewords (maximum " AZ_BIN_CAP_CWDS_S ")");
     }
     assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 
-    if (!((symbol->option_1 >= -1) && (symbol->option_1 <= 4))) {
-        strcpy(symbol->errtxt, "503: Invalid error correction level - using default instead");
+    if (symbol->option_1 < -1 || symbol->option_1 > 4) {
+        errtxtf(0, symbol, 503, "Error correction level '%d' out of range (1 to 4)", symbol->option_1);
         if (symbol->warn_level == WARN_FAIL_ALL) {
             return ZINT_ERROR_INVALID_OPTION;
         }
-        error_number = ZINT_WARN_INVALID_OPTION;
+        error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
         symbol->option_1 = -1;
     }
 
     data_maxsize = 0; /* Keep compiler happy! */
     adjustment_size = 0;
     if (symbol->option_2 == 0) { /* The size of the symbol can be determined by Zint */
-        static const short *const full_sizes[5] = {
-            NULL, Aztec10DataSizes, Aztec23DataSizes, Aztec36DataSizes, Aztec50DataSizes
-        };
-        static const short *const comp_sizes[5] = {
-            NULL, AztecCompact10DataSizes, AztecCompact23DataSizes, AztecCompact36DataSizes, AztecCompact50DataSizes
-        };
         int ecc_level = symbol->option_1;
 
-        if ((ecc_level == -1) || (ecc_level == 0)) {
+        if (ecc_level <= 0) {
             ecc_level = 2;
         }
 
@@ -963,34 +958,43 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             layers = 0;
 
             /* For each level of error correction work out the smallest symbol which the data will fit in */
-            for (i = comp_loop; i > 0; i--) {
-                if ((data_length + adjustment_size) < comp_sizes[ecc_level][i - 1]) {
+            for (i = compact_loop_start; i > 0; i--) {
+                if ((data_length + adjustment_size) <= AztecCompactDataSizes[ecc_level - 1][i - 1]) {
                     layers = i;
                     compact = 1;
-                    data_maxsize = comp_sizes[ecc_level][i - 1];
+                    data_maxsize = AztecCompactDataSizes[ecc_level - 1][i - 1];
                 }
             }
             if (!compact) {
                 for (i = 32; i > 0; i--) {
-                    if ((data_length + adjustment_size) < full_sizes[ecc_level][i - 1]) {
+                    if ((data_length + adjustment_size) <= AztecDataSizes[ecc_level - 1][i - 1]) {
                         layers = i;
                         compact = 0;
-                        data_maxsize = full_sizes[ecc_level][i - 1];
+                        data_maxsize = AztecDataSizes[ecc_level - 1][i - 1];
                     }
                 }
             }
 
             if (layers == 0) { /* Couldn't find a symbol which fits the data */
-                strcpy(symbol->errtxt, "504: Input too long (too many bits for selected ECC)");
-                return ZINT_ERROR_TOO_LONG;
+                if (adjustment_size == 0) {
+                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 707,
+                                    "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
+                                    ecc_level, AztecDataSizes[ecc_level - 1][31] / 12);
+                }
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 504,
+                                "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)",
+                                ecc_level, (data_length + adjustment_size + 11) / 12,
+                                AztecDataSizes[ecc_level - 1][31] / 12);
             }
 
             codeword_size = az_codeword_size(layers);
 
-            adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, adjusted_string);
+            adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size,
+                                                adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY, adjusted_string);
             if (adjusted_length == 0) {
-                strcpy(symbol->errtxt, "705: Data too long for specified Aztec Code symbol size");
-                return ZINT_ERROR_TOO_LONG;
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 705,
+                                "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
+                                ecc_level, (adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY) / codeword_size);
             }
             adjustment_size = adjusted_length - data_length;
 
@@ -1003,10 +1007,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             }
             if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
-            if (adjusted_length + padbits >= AZTEC_MAX_CAPACITY) { /* Probably can't happen */
-                strcpy(symbol->errtxt, "706: Data too long for specified Aztec Code symbol size");
-                return ZINT_ERROR_TOO_LONG;
-            }
+            assert(adjusted_length <= AZTEC_BIN_CAPACITY);
 
             adjusted_length = az_add_padding(padbits, codeword_size, adjusted_string, adjusted_length);
 
@@ -1019,11 +1020,19 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     } else { /* The size of the symbol has been specified by the user */
         if ((symbol->option_2 < 0) || (symbol->option_2 > 36)) {
-            strcpy(symbol->errtxt, "510: Invalid Aztec Code size");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 510, "Version '%d' out of range (1 to 36)",
+                            symbol->option_2);
         }
-        if ((reader == 1) && ((symbol->option_2 >= 2) && (symbol->option_2 <= 4))) {
-            symbol->option_2 = 5;
+        if (reader_init) {
+            /* For back-compatibility, silently ignore compact 2-4 requests but error on layers > 22 */
+            if (symbol->option_2 >= 2 && symbol->option_2 <= 4) {
+                symbol->option_2 = 5;
+            } else if (symbol->option_2 > 26) {
+                /* Caught below anyway but catch here also for better feedback */
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 709,
+                                "Version '%d' out of range for Reader Initialisation symbols (maximum 26)",
+                                symbol->option_2);
+            }
         }
         if (symbol->option_2 <= 4) {
             compact = 1;
@@ -1034,11 +1043,17 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
 
         codeword_size = az_codeword_size(layers);
+        if (compact) {
+            data_maxsize = codeword_size * (AztecCompactSizes[layers - 1] - 3);
+        } else {
+            data_maxsize = codeword_size * (AztecSizes[layers - 1] - 3);
+        }
 
-        adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, adjusted_string);
+        adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, data_maxsize, adjusted_string);
         if (adjusted_length == 0) {
-            strcpy(symbol->errtxt, "704: Data too long for specified Aztec Code symbol size");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 704,
+                            "Input too long for Version %1$d, requires too many codewords (maximum %2$d)",
+                            symbol->option_2, data_maxsize / codeword_size);
         }
 
         /* Add padding */
@@ -1051,15 +1066,12 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         if (debug_print) printf("Remainder: %d  Pad bits: %d\n", remainder, padbits);
 
         /* Check if the data actually fits into the selected symbol size */
-        if (compact) {
-            data_maxsize = codeword_size * (AztecCompactSizes[layers - 1] - 3);
-        } else {
-            data_maxsize = codeword_size * (AztecSizes[layers - 1] - 3);
-        }
 
         if (adjusted_length + padbits > data_maxsize) {
-            strcpy(symbol->errtxt, "505: Data too long for specified Aztec Code symbol size");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 505,
+                            "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                            symbol->option_2, (adjusted_length + padbits) / codeword_size,
+                            data_maxsize / codeword_size);
         }
 
         adjusted_length = az_add_padding(padbits, codeword_size, adjusted_string, adjusted_length);
@@ -1075,9 +1087,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         fputc('\n', stdout);
     }
 
-    if (reader && (layers > 22)) {
-        strcpy(symbol->errtxt, "506: Data too long for reader initialisation symbol");
-        return ZINT_ERROR_TOO_LONG;
+    if (reader_init && (layers > 22)) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 506,
+                        "Input too long for Reader Initialisation, requires %d layers (maximum 22)", layers);
     }
 
     data_blocks = adjusted_length / codeword_size;
@@ -1089,6 +1101,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
     } else {
         ecc_blocks = AztecSizes[layers - 1] - data_blocks;
+    }
+    if (ecc_blocks < data_blocks / 20) {
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
+                                "Number of ECC codewords %1$d less than %2$d (5%% of data codewords %3$d)",
+                                ecc_blocks, data_blocks / 20, data_blocks);
     }
 
     if (debug_print) {
@@ -1126,8 +1143,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             break;
         case 10:
             if (!rs_uint_init_gf(&rs_uint, 0x409, 1023)) { /* Can fail on malloc() */
-                strcpy(symbol->errtxt, "500: Insufficient memory for Reed-Solomon log tables");
-                return ZINT_ERROR_MEMORY;
+                return errtxt(ZINT_ERROR_MEMORY, symbol, 500, "Insufficient memory for Reed-Solomon log tables");
             }
             rs_uint_init_code(&rs_uint, ecc_blocks, 1);
             rs_uint_encode(&rs_uint, data_blocks, data_part, ecc_part);
@@ -1136,8 +1152,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         case 12:
             if (!rs_uint_init_gf(&rs_uint, 0x1069, 4095)) { /* Can fail on malloc() */
                 /* Note using AUSPOST error nos range as out of 50x ones & 51x taken by CODEONE */
-                strcpy(symbol->errtxt, "700: Insufficient memory for Reed-Solomon log tables");
-                return ZINT_ERROR_MEMORY;
+                return errtxt(ZINT_ERROR_MEMORY, symbol, 700, "Insufficient memory for Reed-Solomon log tables");
             }
             rs_uint_init_code(&rs_uint, ecc_blocks, 1);
             rs_uint_encode(&rs_uint, data_blocks, data_part, ecc_part);
@@ -1168,7 +1183,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         descriptor[1] = ((layers - 1) & 0x01) ? '1' : '0';
 
         /* The next 6 bits represent the number of data blocks minus 1 */
-        descriptor[2] = reader || ((data_blocks - 1) & 0x20) ? '1' : '0';
+        descriptor[2] = reader_init || ((data_blocks - 1) & 0x20) ? '1' : '0';
         for (i = 3; i < 8; i++) {
             descriptor[i] = ((data_blocks - 1) & (0x10 >> (i - 3))) ? '1' : '0';
         }
@@ -1180,7 +1195,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
 
         /* The next 11 bits represent the number of data blocks minus 1 */
-        descriptor[5] = reader || ((data_blocks - 1) & 0x400) ? '1' : '0';
+        descriptor[5] = reader_init || ((data_blocks - 1) & 0x400) ? '1' : '0';
         for (i = 6; i < 16; i++) {
             descriptor[i] = ((data_blocks - 1) & (0x200 >> (i - 6))) ? '1' : '0';
         }
@@ -1274,12 +1289,11 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
 
     input_value = 0;
     if (length > 3) {
-        strcpy(symbol->errtxt, "507: Input too large (3 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 507, "Input length %d too long (maximum 3)", length);
     }
-    if (!is_sane(NEON_F, source, length)) {
-        strcpy(symbol->errtxt, "508: Invalid character in data (digits only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(NEON_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 508,
+                        "Invalid character at position %d in input (digits only)", i);
     }
     switch (length) {
         case 3:
@@ -1294,8 +1308,7 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (input_value > 255) {
-        strcpy(symbol->errtxt, "509: Input out of range (0 to 255)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 509, "Input value out of range (0 to 255)");
     }
 
     bp = bin_append_posn(input_value, 8, binary_string, bp);

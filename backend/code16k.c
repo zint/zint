@@ -288,13 +288,12 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > C128_MAX) {
-        strcpy(symbol->errtxt, "420: Input too long");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 420, "Input length %d too long (maximum " C128_MAX_S ")", length);
     }
 
     if (symbol->option_1 == 1 || symbol->option_1 > 16) {
-        strcpy(symbol->errtxt, "424: Minimum number of rows out of range (2 to 16)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 424, "Minimum number of rows '%d' out of range (2 to 16)",
+                        symbol->option_1);
     }
 
     /* Detect extended ASCII characters */
@@ -346,8 +345,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            strcpy(symbol->errtxt, "422: Cannot use both GS1 mode and Reader Initialisation");
-            return ZINT_ERROR_INVALID_OPTION;
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 422,
+                            "Cannot use both GS1 mode and Reader Initialisation");
         }
         if (m == 2) {
             m = 5;
@@ -440,8 +439,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         }
 
         if (bar_characters > 80 - 2) { /* Max rows 16 * 5 - 2 check chars */
-            strcpy(symbol->errtxt, "421: Input too long");
-            return ZINT_ERROR_TOO_LONG;
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 421,
+                            "Input too long, requires %d symbol characters (maximum 78)", bar_characters);
         }
     } while (read < length);
 

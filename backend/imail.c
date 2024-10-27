@@ -259,12 +259,11 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     int zip_len, len;
 
     if (length > 32) {
-        strcpy(symbol->errtxt, "450: Input too long (32 character maximum)");
-        return ZINT_ERROR_TOO_LONG;
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 450, "Input length %d too long (maximum 32)", length);
     }
-    if (!is_sane(SODIUM_MNS_F, source, length)) {
-        strcpy(symbol->errtxt, "451: Invalid character in data (digits and \"-\" only)");
-        return ZINT_ERROR_INVALID_DATA;
+    if ((i = not_sane(SODIUM_MNS_F, source, length))) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 451,
+                        "Invalid character at position %d in input (digits and \"-\" only)", i);
     }
 
     /* separate the tracking code from the routing code */
@@ -296,18 +295,18 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     if (strlen(tracker) != 20) {
-        strcpy(symbol->errtxt, "452: Invalid length for tracking code (20 characters required)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 452,
+                        "Invalid length for tracking code (20 characters required)");
     }
     if (tracker[1] > '4') {
-        strcpy(symbol->errtxt, "454: Barcode Identifier (second character) out of range (0 to 4)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 454,
+                        "Barcode Identifier (second character) out of range (0 to 4)");
     }
 
     zip_len = (int) strlen(zip);
     if (zip_len != 0 && zip_len != 5 && zip_len != 9 && zip_len != 11) {
-        strcpy(symbol->errtxt, "453: Invalid length for ZIP code (5, 9 or 11 characters required)");
-        return ZINT_ERROR_INVALID_DATA;
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 453,
+                        "Invalid length for ZIP code (5, 9 or 11 characters required)");
     }
 
     /* *** Step 1 - Conversion of Data Fields into Binary Data *** */

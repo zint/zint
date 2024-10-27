@@ -305,14 +305,13 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (free_memory > 0xffff0000) {
-        strcpy(symbol->errtxt, "670: Output file size too big");
-        return ZINT_ERROR_MEMORY;
+        return errtxt(ZINT_ERROR_MEMORY, symbol, 670, "TIF output file size too big");
     }
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
-        sprintf(symbol->errtxt, "672: Could not open output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_ACCESS;
+        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 672, "Could not open TIF output file (%1$d: %2$s)", fmp->err,
+                        strerror(fmp->err));
     }
     if (!output_to_stdout) {
         compression = TIF_LZW;
@@ -374,8 +373,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
                 if (!tif_lzw_encode(&lzw_state, fmp, strip_buf, bytes_put)) { /* Only fails if can't malloc */
                     tif_lzw_cleanup(&lzw_state);
                     (void) fm_close(fmp, symbol);
-                    strcpy(symbol->errtxt, "673: Failed to malloc LZW hash table");
-                    return ZINT_ERROR_MEMORY;
+                    return errtxt(ZINT_ERROR_MEMORY, symbol, 673, "Insufficient memory for TIF LZW hash table");
                 }
                 bytes_put = fm_tell(fmp) - file_pos;
                 if (bytes_put != strip_bytes[strip]) {
@@ -411,9 +409,8 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
         temp32 = (uint32_t) free_memory;
         /* Shouldn't happen as `free_memory` checked above to be <= 0xffff0000 & should only decrease */
         if (free_memory != temp32 || (long) free_memory != file_pos) {
-            strcpy(symbol->errtxt, "982: Output file size too big");
             (void) fm_close(fmp, symbol);
-            return ZINT_ERROR_MEMORY;
+            return errtxt(ZINT_ERROR_MEMORY, symbol, 982, "TIF output file size too big");
         }
         out_le_u32(temp32, temp32);
         fm_write(&temp32, 4, 1, fmp);
@@ -592,7 +589,7 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (fm_error(fmp)) {
-        sprintf(symbol->errtxt, "679: Incomplete write to output (%d: %.30s)", fmp->err, strerror(fmp->err));
+        errtxtf(0, symbol, 679, "Incomplete write of TIF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
@@ -600,13 +597,12 @@ INTERNAL int tif_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     if (!output_to_stdout) {
         if (fm_tell(fmp) != total_bytes_put) {
             (void) fm_close(fmp, symbol);
-            strcpy(symbol->errtxt, "674: Failed to write all output");
-            return ZINT_ERROR_FILE_WRITE;
+            return errtxt(ZINT_ERROR_FILE_WRITE, symbol, 674, "Failed to write all TIF output");
         }
     }
     if (!fm_close(fmp, symbol)) {
-        sprintf(symbol->errtxt, "981: Failure on closing output file (%d: %.30s)", fmp->err, strerror(fmp->err));
-        return ZINT_ERROR_FILE_WRITE;
+        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 981, "Failure on closing TIF output file (%1$d: %2$s)",
+                        fmp->err, strerror(fmp->err));
     }
 
     return 0;
