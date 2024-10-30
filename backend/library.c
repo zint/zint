@@ -1161,14 +1161,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         }
     }
 
-    if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
-        for (i = 0; i < seg_count; i++) {
-            if (!is_valid_utf8(local_segs[i].source, local_segs[i].length)) {
-                return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 245, "Invalid UTF-8 in input");
-            }
-        }
-    }
-
     local_sources = (unsigned char *) z_alloca(total_len + seg_count);
 
     /* Copy input, de-escaping if required */
@@ -1199,6 +1191,11 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     if ((symbol->input_mode & 0x07) == UNICODE_MODE) {
+        for (i = 0; i < seg_count; i++) {
+            if (!is_valid_utf8(local_segs[i].source, local_segs[i].length)) {
+                return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 245, "Invalid UTF-8 in input");
+            }
+        }
         /* Only strip BOM on first segment */
         strip_bom(local_segs[0].source, &local_segs[0].length);
     }

@@ -53,30 +53,31 @@ static void test_large(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODE128, -1, "A", 99, 0, 1124, "" },
         /*  1*/ { BARCODE_CODE128, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
         /*  2*/ { BARCODE_CODE128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
-        /*  3*/ { BARCODE_CODE128, READER_INIT, "A", 99, 0, 1135, "" },
-        /*  4*/ { BARCODE_CODE128, READER_INIT, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
-        /*  5*/ { BARCODE_CODE128, READER_INIT, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
-        /*  6*/ { BARCODE_CODE128, -1, "\351A", 66, 0, 1124, "" },
-        /*  7*/ { BARCODE_CODE128, -1, "\351A", 67, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" }, /* 67 chars (+ 34 shifts) */
-        /*  8*/ { BARCODE_CODE128, -1, "\351", 97, 0, 1124, "" }, /* Less 2 FNC4s for latch */
-        /*  9*/ { BARCODE_CODE128, -1, "\351", 98, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
-        /* 10*/ { BARCODE_CODE128, -1, "0", 198, 0, 1124, "" },
-        /* 11*/ { BARCODE_CODE128, -1, "0", 199, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" },
-        /* 12*/ { BARCODE_CODE128, -1, "0", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
-        /* 13*/ { BARCODE_CODE128AB, -1, "A", 99, 0, 1124, "" },
-        /* 14*/ { BARCODE_CODE128AB, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
-        /* 15*/ { BARCODE_CODE128AB, -1, "0", 99, 0, 1124, "" },
-        /* 16*/ { BARCODE_CODE128AB, -1, "0", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
-        /* 17*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_WARN_HRT_TRUNCATED, 1135, "Warning 844: Human Readable Text truncated" }, /* 196 nos + 3 FNC1s */
-        /* 18*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 101 symbol characters (maximum 99)" }, /* 196 nos + CodeA + single no. + 3 FNC1s */
-        /* 19*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 100 symbol characters (maximum 99)" }, /* 198 nos + 3 FNC1s */
-        /* 20*/ { BARCODE_GS1_128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 342: Input length 257 too long (maximum 256)" },
-        /* 21*/ { BARCODE_EAN14, -1, "1234567890123", -1, 0, 134, "" },
-        /* 22*/ { BARCODE_EAN14, -1, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1, "Error 347: Input length 14 too long (maximum 13)" },
-        /* 23*/ { BARCODE_NVE18, -1, "12345678901234567", -1, 0, 156, "" },
-        /* 24*/ { BARCODE_NVE18, -1, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)" },
-        /* 25*/ { BARCODE_HIBC_128, -1, "1", 110, 0, 684, "" },
-        /* 26*/ { BARCODE_HIBC_128, -1, "1", 111, ZINT_ERROR_TOO_LONG, -1, "Error 202: Input length 111 too long for HIBC LIC (maximum 110)" },
+        /*  3*/ { BARCODE_CODE128, -1, "abcd\201\202\203\204", 58, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /*  4*/ { BARCODE_CODE128, READER_INIT, "A", 99, 0, 1135, "" },
+        /*  5*/ { BARCODE_CODE128, READER_INIT, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /*  6*/ { BARCODE_CODE128, READER_INIT, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
+        /*  7*/ { BARCODE_CODE128, -1, "\351A", 66, 0, 1124, "" },
+        /*  8*/ { BARCODE_CODE128, -1, "\351A", 67, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" }, /* 67 chars (+ 34 shifts) */
+        /*  9*/ { BARCODE_CODE128, -1, "\351", 97, 0, 1124, "" }, /* Less 2 FNC4s for latch */
+        /* 10*/ { BARCODE_CODE128, -1, "\351", 98, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 11*/ { BARCODE_CODE128, -1, "0", 198, 0, 1124, "" },
+        /* 12*/ { BARCODE_CODE128, -1, "0", 199, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 101 symbol characters (maximum 99)" },
+        /* 13*/ { BARCODE_CODE128, -1, "0", 257, ZINT_ERROR_TOO_LONG, -1, "Error 340: Input length 257 too long (maximum 256)" },
+        /* 14*/ { BARCODE_CODE128AB, -1, "A", 99, 0, 1124, "" },
+        /* 15*/ { BARCODE_CODE128AB, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 16*/ { BARCODE_CODE128AB, -1, "0", 99, 0, 1124, "" },
+        /* 17*/ { BARCODE_CODE128AB, -1, "0", 100, ZINT_ERROR_TOO_LONG, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 18*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678", -1, ZINT_WARN_HRT_TRUNCATED, 1135, "Warning 844: Human Readable Text truncated" }, /* 196 nos + 3 FNC1s */
+        /* 19*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345678901234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 101 symbol characters (maximum 99)" }, /* 196 nos + CodeA + single no. + 3 FNC1s */
+        /* 20*/ { BARCODE_GS1_128, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 100 symbol characters (maximum 99)" }, /* 198 nos + 3 FNC1s */
+        /* 21*/ { BARCODE_GS1_128, -1, "A", 257, ZINT_ERROR_TOO_LONG, -1, "Error 342: Input length 257 too long (maximum 256)" },
+        /* 22*/ { BARCODE_EAN14, -1, "1234567890123", -1, 0, 134, "" },
+        /* 23*/ { BARCODE_EAN14, -1, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1, "Error 347: Input length 14 too long (maximum 13)" },
+        /* 24*/ { BARCODE_NVE18, -1, "12345678901234567", -1, 0, 156, "" },
+        /* 25*/ { BARCODE_NVE18, -1, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)" },
+        /* 26*/ { BARCODE_HIBC_128, -1, "1", 110, 0, 684, "" },
+        /* 27*/ { BARCODE_HIBC_128, -1, "1", 111, ZINT_ERROR_TOO_LONG, -1, "Error 202: Input length 111 too long for HIBC LIC (maximum 110)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

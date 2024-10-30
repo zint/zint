@@ -58,6 +58,7 @@ Bugs
 - QZint: fix legacy width and security level getters/setters, MR #158, props
   Philip Ye
 - CODE128: fix extended char latching when exactly 3 extended chars at end
+- library: need to check for valid UTF-8 after de-escaping
 
 
 Version 2.13.0 (2023-12-18)

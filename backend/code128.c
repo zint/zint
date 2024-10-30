@@ -346,7 +346,7 @@ static int c128_glyph_count(const unsigned char source[], const int length, cons
     for (i = 0; i < length; i++) {
         if (set[i] != current_set) {
             /* Latch different code set */
-            switch (set[0]) {
+            switch (set[i]) {
                 case 'A':
                 case 'b': /* Manual switching can cause immediate shift */
                     if (current_set != 'A') {
