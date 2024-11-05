@@ -2524,7 +2524,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 sprintf(b, "^%03d", val);
                 b += 4;
             } else {
-                if (d + 1 < de && ((*(d + 1) >= 'A' && *(d + 1) <= 'C') || *(d + 1) == '1')) {
+                if (*d == '^' && d + 1 < de && ((*(d + 1) >= 'A' && *(d + 1) <= 'C') || *(d + 1) == '1')) {
                     d++;
                     if (*d == '1') {
                         if (b + 5 >= be) {
@@ -2542,7 +2542,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                     }
                     sprintf(b, "^%03d^%03d", '\\', *d);
                     b += 8;
-                    if (*d == '^') {
+                    if (*d == '^' && d + 1 < de && *(d + 1) == '^') {
                         d++;
                     }
                 }
@@ -3363,33 +3363,38 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         return -1;
     }
 
-    for (r = 0; r < symbol->rows; r++) {
-        if (b + symbol->width > be) {
-            fprintf(stderr, "i:%d testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n",
-                    index, r, symbol->width, cmd);
-            testutil_pclose(fp);
-            return -1;
-        }
-        cnt = (int) fread(b, 1, symbol->width, fp);
-        if (cnt != symbol->width) {
-            fprintf(stderr, "i:%d testUtilBwipp: failed to read row %d of %d, symbol->width %d bytes, cnt %d (%s)\n",
-                    index, r + 1, symbol->rows, symbol->width, cnt, cmd);
-            testutil_pclose(fp);
-            return -1;
-        }
+    if (symbol->rows == 0) { /* For testing BWIPP against ZXingC++ (`ZBarcode_Encode()` not called) */
+        cnt = (int) fread(b, 1, buffer_size - 1, fp); /* Just read the whole output */
         b += cnt;
-        for (h = bwipp_row_height[r]; h > 1; h--) { /* Ignore row copies if any */
-            cnt = (int) fread(b, 1, symbol->width, fp);
-            if (cnt != symbol->width) {
-                fprintf(stderr,
-                        "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d"
-                        ", bwipp_row_height[%d] %d, symbol->row_height[%d] %g (%s)\n",
-                        index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
+    } else {
+        for (r = 0; r < symbol->rows; r++) {
+            if (b + symbol->width > be) {
+                fprintf(stderr, "i:%d testUtilBwipp: row %d, width %d, row width iteration overrun (%s)\n",
+                        index, r, symbol->width, cmd);
                 testutil_pclose(fp);
                 return -1;
             }
-            if (h * 2 == bwipp_row_height[r]) { /* Hack to use middle row (avoids add-on text offsets) */
-                memcpy(b - cnt, b, cnt);
+            cnt = (int) fread(b, 1, symbol->width, fp);
+            if (cnt != symbol->width) {
+                fprintf(stderr, "i:%d testUtilBwipp: failed to read row %d of %d, symbol->width %d bytes, cnt %d (%s)\n",
+                        index, r + 1, symbol->rows, symbol->width, cnt, cmd);
+                testutil_pclose(fp);
+                return -1;
+            }
+            b += cnt;
+            for (h = bwipp_row_height[r]; h > 1; h--) { /* Ignore row copies if any */
+                cnt = (int) fread(b, 1, symbol->width, fp);
+                if (cnt != symbol->width) {
+                    fprintf(stderr,
+                            "i:%d testUtilBwipp: failed to read/ignore symbol->width %d bytes, cnt %d, h %d"
+                            ", bwipp_row_height[%d] %d, symbol->row_height[%d] %g (%s)\n",
+                            index, symbol->width, cnt, h, r, bwipp_row_height[r], r, symbol->row_height[r], cmd);
+                    testutil_pclose(fp);
+                    return -1;
+                }
+                if (h * 2 == bwipp_row_height[r]) { /* Hack to use middle row (avoids add-on text offsets) */
+                    memcpy(b - cnt, b, cnt);
+                }
             }
         }
     }

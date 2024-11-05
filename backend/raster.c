@@ -1080,9 +1080,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                     addon_text_yposn = yposn_si;
                     yposn_si += addon_row_adj_si;
                     addon_row_height_si = row_height_si - addon_row_adj_si;
-                    if (upceanflag != 12 && upceanflag != 6) { /* UPC-A/E add-ons don't descend */
-                        addon_row_height_si += guard_descent * si;
-                    }
+                    /* Following ISO/IEC 15420:2009 Figure 5 — UPC-A bar code symbol with 2-digit add-on (contrary to
+                       GS1 General Specs v24.0 Figure 5.2.6.6-5) descends for all including UPC-A/E */
+                    addon_row_height_si += guard_descent * si;
                     if (addon_row_height_si == 0) {
                         addon_row_height_si = 1;
                     }
@@ -1210,7 +1210,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                 text_xposn = 24 * si + xoffset_comp_si;
                 draw_string(pixelbuf, symbol->text + 1, 6, text_xposn, text_yposn, textflags, image_width,
                             image_height, si);
-                text_xposn = (51 + 3) * si + xoffset_comp_si;
+                /* TODO: GS1 General Specs v24.0 5.2.5 Human readable interpretation says 3X but this could cause
+                   digit's righthand to touch any add-on, now that they descend, so use 2X, until clarified */
+                text_xposn = (51 + 2) * si + xoffset_comp_si;
                 draw_string(pixelbuf, symbol->text + 7, 1, text_xposn, text_yposn + upcea_height_adj,
                             textflags | SMALL_TEXT | ZFONT_HALIGN_LEFT, image_width, image_height, si);
                 if (addon_len) {
@@ -1262,7 +1264,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
                 text_xposn = 67 * si + xoffset_comp_si;
                 draw_string(pixelbuf, symbol->text + 6, 5, text_xposn, text_yposn, textflags, image_width,
                             image_height, si);
-                text_xposn = (95 + 5) * si + xoffset_comp_si;
+                /* TODO: GS1 General Specs v24.0 5.2.5 Human readable interpretation says 5X but this could cause
+                   digit's righthand to touch any add-on, now that they descend, so use 4X, until clarified */
+                text_xposn = (95 + 4) * si + xoffset_comp_si;
                 draw_string(pixelbuf, symbol->text + 11, 1, text_xposn, text_yposn + upcea_height_adj,
                             textflags | SMALL_TEXT | ZFONT_HALIGN_LEFT, image_width, image_height, si);
                 if (addon_len) {

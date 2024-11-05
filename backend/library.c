@@ -668,6 +668,8 @@ static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], c
         if (barcode_src_funcs[symbol->symbology]) {
             error_number = barcode_src_funcs[symbol->symbology](symbol, local_segs[0].source, local_segs[0].length);
         } else {
+            assert(symbol->symbology >= LIB_SEG_FUNCS_START); /* Suppress clang-tidy-20 warning */
+            assert(barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START]); /* Suppress clang-tidy-20 warning */
             error_number = barcode_seg_funcs[symbol->symbology - LIB_SEG_FUNCS_START](symbol, local_segs, seg_count);
         }
     } else {

@@ -612,9 +612,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                     }
                     addon_row_yposn = yposn + font_height + text_gap + antialias_fudge;
                     addon_row_height = row_height - (addon_row_yposn - yposn);
-                    if (upceanflag != 12 && upceanflag != 6) { /* UPC-A/E add-ons don't descend */
-                        addon_row_height += guard_descent;
-                    }
+                    /* Following ISO/IEC 15420:2009 Figure 5 — UPC-A bar code symbol with 2-digit add-on (contrary to
+                       GS1 General Specs v24.0 Figure 5.2.6.6-5) descends for all including UPC-A/E */
+                    addon_row_height += guard_descent;
                     if (addon_row_height < 0.5f) {
                         addon_row_height = 0.5f;
                     }
@@ -750,7 +750,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 textwidth = 6.0f * 8.5f;
                 if (!vector_add_string(symbol, symbol->text + 1, 6, text_xposn, text_yposn, font_height, textwidth,
                         0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
-                text_xposn = (51.0f - 0.35f) + 3.0f + xoffset_comp;
+                /* TODO: GS1 General Specs v24.0 5.2.5 Human readable interpretation says 3X but this could cause
+                   digit's righthand to touch any add-on, now that they descend, so use 2X, until clarified */
+                text_xposn = (51.0f - 0.35f) + 2.0f + xoffset_comp;
                 textwidth = 6.2f;
                 if (!vector_add_string(symbol, symbol->text + 7, 1, text_xposn, text_yposn, upcae_outside_font_height,
                         textwidth, 1 /*left align*/, &last_string)) return ZINT_ERROR_MEMORY;
@@ -812,7 +814,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
                 text_xposn = 67.0f + xoffset_comp;
                 if (!vector_add_string(symbol, symbol->text + 6, 5, text_xposn, text_yposn, font_height, textwidth,
                         0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;
-                text_xposn = (95.0f - 0.35f) + 5.0f + xoffset_comp;
+                /* TODO: GS1 General Specs v24.0 5.2.5 Human readable interpretation says 5X but this could cause
+                   digit's righthand to touch any add-on, now that they descend, so use 4X, until clarified */
+                text_xposn = (95.0f - 0.35f) + 4.0f + xoffset_comp;
                 textwidth = 6.2f;
                 if (!vector_add_string(symbol, symbol->text + 11, 1, text_xposn, text_yposn,
                         upcae_outside_font_height, textwidth, 1 /*left align*/, &last_string)) {
