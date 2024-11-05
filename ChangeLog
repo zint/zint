@@ -9,6 +9,9 @@ Version 2.13.0.9 (dev) not released yet
 - Aztec Code symbols that due to input length & user-requested version have less
   than recommended 5% error correction codewords now return warning
 - New CODE128-only special extra escape `\^1` for manually inserting FNC1s
+- Add-ons for UPC-A and UPC-E now descend to be level with the main symbol guard
+  bars, and the righthand outside digit is now placed 1X less from main symbol
+  to avoid touching any add-on
 
 Changes
 -------
@@ -39,6 +42,9 @@ Changes
   weird behaviours;
   in "grpDATF.ui" use "PlainText" rather than "RichText" for tracker ratio
   examples as height of text messing up sometimes
+- UPCA/UPCE: descend add-ons to same level as guards and adjust righthand
+  outside digit to be 4X/2X instead of 5X/3X away from main symbol so as not to
+  touch add-on TODO: revisit when standard clarified
 - manual: make explicit that AI "(00)" and "(01)" prefixes added by Zint are
   HRT-only; clarify Codablock-F length maximum & add examples
 
