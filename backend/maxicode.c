@@ -31,6 +31,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 /* Includes corrections thanks to Monica Swanson @ Source Technologies */
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "maxicode.h"
@@ -140,12 +141,14 @@ static int maxi_bestSurroundingSet(const int index, const int length, const unsi
 }
 
 /* Format text according to Appendix A */
-static int maxi_text_process(unsigned char set[144], unsigned char character[144], const int mode,
-            const unsigned char in_source[], int length, const int eci, const int scm_vv, int *p_sp,
-            const int debug_print) {
+static int maxi_text_process(unsigned char set[144], unsigned char character[144], const unsigned char in_source[],
+            int length, const int eci, const int scm_vv, int *p_sp, int current_set, const int debug_print) {
 
     int sp = *p_sp;
-    int i, count, current_set, padding_set;
+    int i, count;
+#ifndef NDEBUG
+    int ns_count1 = 0, ns_count2 = 0;
+#endif
 
     static const unsigned char set15[2] = { 1, 5 };
     static const unsigned char set12[2] = { 1, 2 };
@@ -155,28 +158,28 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
     unsigned char *source_buf = (unsigned char *) z_alloca(length + 9); /* For prefixing 9-character SCM sequence */
 
     if (sp + length > 144) {
-        return ZINT_ERROR_TOO_LONG;
+        return 0;
     }
 
     /* Insert ECI at the beginning of message if needed */
     /* Encode ECI assignment numbers according to table 3 */
     if (eci != 0) {
-        if (sp + 1 + length > 144) return ZINT_ERROR_TOO_LONG;
+        if (sp + 1 + length > 144) return 0;
         character[sp++] = 27; /* ECI */
         if (eci <= 31) {
-            if (sp + 1 + length > 144) return ZINT_ERROR_TOO_LONG;
+            if (sp + 1 + length > 144) return 0;
             character[sp++] = eci;
         } else if (eci <= 1023) {
-            if (sp + 2 + length > 144) return ZINT_ERROR_TOO_LONG;
+            if (sp + 2 + length > 144) return 0;
             character[sp++] = 0x20 | ((eci >> 6) & 0x0F);
             character[sp++] = eci & 0x3F;
         } else if (eci <= 32767) {
-            if (sp + 3 + length > 144) return ZINT_ERROR_TOO_LONG;
+            if (sp + 3 + length > 144) return 0;
             character[sp++] = 0x30 | ((eci >> 12) & 0x07);
             character[sp++] = (eci >> 6) & 0x3F;
             character[sp++] = eci & 0x3F;
         } else {
-            if (sp + 4 + length > 144) return ZINT_ERROR_TOO_LONG;
+            if (sp + 4 + length > 144) return 0;
             character[sp++] = 0x38 | ((eci >> 18) & 0x03);
             character[sp++] = (eci >> 12) & 0x3F;
             character[sp++] = (eci >> 6) & 0x3F;
@@ -186,7 +189,7 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
 
     if (scm_vv != -1) { /* Add SCM prefix */
         if (sp + length > 135) {
-            return ZINT_ERROR_TOO_LONG;
+            return 0;
         }
         sprintf((char *) source_buf, "[)>\03601\035%02d", scm_vv); /* [)>\R01\Gvv */
         memcpy(source_buf + 9, in_source, length);
@@ -285,18 +288,11 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
         }
     }
 
-    padding_set = set[sp + length - 1] == 2 ? 2 : 1;
-    for (i = length; sp + i < 144; i++) {
-        /* Add the padding */
-        set[sp + i] = padding_set;
-        character[sp + i] = 33;
-    }
-
     /* Find candidates for number compression */
     /* Note the prohibition on number compression in the primary message in ISO/IEC 16023:2000 B.1 (1)
        applies to modes 2 & 3 only */
     count = 0;
-    for (i = 0; sp + i < 144; i++) {
+    for (i = 0; sp + i < 144 && sp + i < length; i++) {
         if ((set[sp + i] == 1) && ((character[sp + i] >= 48) && (character[sp + i] <= 57))) {
             /* Character is a number */
             count++;
@@ -304,6 +300,9 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
                 /* Nine digits in a row can be compressed */
                 memset(set + sp + i - 8, 6, 9); /* Set set of nine digits to 6 */
                 count = 0;
+#ifndef NDEBUG
+                ns_count1++;
+#endif
             }
         } else {
             count = 0;
@@ -311,9 +310,7 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
     }
 
     /* Add shift and latch characters */
-    current_set = 1;
-    i = 0;
-    do {
+    for (i = 0; sp + i < 144 && set[sp + i] != 255; i++) {
 
         if ((set[sp + i] != current_set) && (set[sp + i] != 6)) {
             switch (set[sp + i]) {
@@ -405,14 +402,10 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
             }
             i++; /* Allow for bump */
         }
-        i++;
-    } while (sp + i < 144);
-
-    if (debug_print) fputc('\n', stdout);
+    }
 
     /* Number compression has not been forgotten! - It's handled below */
-    i = 0;
-    do {
+    for (i = 0; sp + i < 144 && sp + i <= length - 9; i++) {
         if (set[sp + i] == 6) {
             /* Number compression */
             int value = to_int(character + sp + i, 9);
@@ -424,30 +417,20 @@ static int maxi_text_process(unsigned char set[144], unsigned char character[144
             character[sp + i + 4] = (value & 0xfc0) >> 6;
             character[sp + i + 5] = (value & 0x3f);
 
-            i += 6;
-            memmove(set + sp + i, set + sp + i + 3, 141 - (sp + i));
-            memmove(character + sp + i, character + sp + i + 3, 141 - (sp + i));
+            memmove(set + sp + i + 6, set + sp + i + 9, 144 - (sp + i + 9));
+            memmove(character + sp + i + 6, character + sp + i + 9, 144 - (sp + i + 9));
+            i += 5;
             length -= 3;
-        } else {
-            i++;
+#ifndef NDEBUG
+            ns_count2++;
+#endif
         }
-    } while (sp + i <= 135); /* 144 - 9 */
-
-    if (debug_print) printf("Length: %d\n", length);
-
-    if (((mode == 2) || (mode == 3)) && (sp + length > 84)) {
-        return ZINT_ERROR_TOO_LONG;
-
-    } else if (((mode == 4) || (mode == 6)) && (sp + length > 93)) {
-        return ZINT_ERROR_TOO_LONG;
-
-    } else if ((mode == 5) && (sp + length > 77)) {
-        return ZINT_ERROR_TOO_LONG;
     }
+    assert(ns_count1 == ns_count2);
 
     *p_sp = sp + length;
 
-    return 0;
+    return current_set;
 }
 
 /* Call `maxi_text_process()` for each segment, dealing with Structured Append beforehand and populating
@@ -456,8 +439,10 @@ static int maxi_text_process_segs(unsigned char maxi_codeword[144], const int mo
             const int seg_count, const int structapp_cw, int scm_vv, const int debug_print) {
     unsigned char set[144], character[144] = {0};
     int i;
-    int error_number;
     int sp = 0;
+    int current_set = 1; /* Initial Code Set A */
+    int padding_set = 0, padding_char = 0; /* Suppress clang-tidy-20 warnings */
+    const int max_length = mode == 5 ? 77 : mode <= 3 ? 84 : 93;
 
     memset(set, 255, 144);
 
@@ -468,12 +453,45 @@ static int maxi_text_process_segs(unsigned char maxi_codeword[144], const int mo
     }
 
     for (i = 0; i < seg_count; i++) {
-        error_number = maxi_text_process(set, character, mode, segs[i].source, segs[i].length, segs[i].eci, scm_vv,
-                                        &sp, debug_print);
-        if (error_number != 0) {
-            return error_number;
+        current_set = maxi_text_process(set, character, segs[i].source, segs[i].length, segs[i].eci, scm_vv, &sp,
+                        current_set, debug_print);
+        if (current_set == 0) {
+            return ZINT_ERROR_TOO_LONG;
         }
         scm_vv = -1;
+    }
+
+    /* If end in Code Set C or D, switch to A for padding */
+    if (sp < max_length && (current_set == 3 || current_set == 4)) {
+        set[sp] = 1;
+        character[sp] = 58; /* Sets C,D Latch A */
+        sp++;
+        current_set = 1;
+        if (debug_print) fputs("LCHA ", stdout);
+    }
+
+    if (debug_print) {
+        if (sp < max_length) {
+            printf("\nPads (%d)\n", max_length - sp);
+        } else {
+            fputs("\nNo Pads\n", stdout);
+        }
+    }
+
+    if (sp < max_length) {
+        padding_set = current_set == 5 ? 5 : current_set == 2 ? 2 : 1;
+        padding_char = current_set == 5 ? 28 : 33;
+        for (; sp < max_length; sp++) {
+            /* Add the padding */
+            set[sp] = padding_set;
+            character[sp] = padding_char;
+        }
+    }
+
+    if (debug_print) printf("Length: %d\n", sp);
+
+    if (sp > max_length) {
+        return ZINT_ERROR_TOO_LONG;
     }
 
     /* Copy the encoded text into the codeword array */

@@ -21,9 +21,9 @@ int main(int argc, char *argv[])
 {
     Q_INIT_RESOURCE(resources);
 
-#if defined(__linux__) && QT_VERSION > 0x50F02
+#if defined(__linux__) && QT_VERSION >= 0x50100 /* `qEnvironmentVariableIsEmpty()` introduced Qt 5.1 */
     /* Not compatible with Wayland for some reason(s) so use X11 unless overridden */
-    if (qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM")) {
+    if (QGuiApplication::platformName() != "xcb" && qEnvironmentVariableIsEmpty("QT_QPA_PLATFORM")) {
         qputenv("QT_QPA_PLATFORM", QByteArrayLiteral("xcb"));
     }
 #endif

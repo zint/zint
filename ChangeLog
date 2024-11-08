@@ -27,7 +27,7 @@ Changes
   add minimal encodation algorithm (non-extended ASCII only), props Alex Geller
   (ZXing);
   reduce extended latch cut-off from 5 to 4 for better encodation in certain
-  cases, props lyngklip (BWIPP)
+  cases, props Bue Jensen (BWIPP)
 - library: return warning on invalid `input_mode` reset
 - library/CLI: expanded error messages
 - GS1: new AIs 7250-7259 (GSCN 22-246);
@@ -37,7 +37,9 @@ Changes
   ticket #317, props Andre Maute;
   return warning if ECC < 5% (due to bit-stuffing when version given)
 - MAXICODE: zero-pad US postcodes that lack "+4" (Annex B.1.4a), from
-  OkapiBarcode, props Daniel Gredler
+  OkapiBarcode, props Daniel Gredler;
+  use code set E for padding as well, saves codeword, props Bue Jensen (BWIPP PR
+  #279)
 - GUI: use X11 (xcb) as platform instead of Wayland on Linux to avoid various
   weird behaviours;
   in "grpDATF.ui" use "PlainText" rather than "RichText" for tracker ratio
@@ -65,6 +67,7 @@ Bugs
   Philip Ye
 - CODE128: fix extended char latching when exactly 3 extended chars at end
 - library: need to check for valid UTF-8 after de-escaping
+- MAXICODE: maintain current set between segments
 
 
 Version 2.13.0 (2023-12-18)

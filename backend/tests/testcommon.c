@@ -2472,7 +2472,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
         /* Have to escape double quote otherwise Ghostscript gives "Unterminated quote in @-file" for some reason */
         /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
         if (*d < 0x20 || *d >= 0x7F || (*d == '^' && !init_parsefnc) || *d == '"' || *d == '\''
-                || (*d == '\\' && !zint_escape_mode)) {
+                || *d == '(' || *d == ')' || (*d == '\\' && !zint_escape_mode)) {
             if (b + 4 >= be) {
                 fprintf(stderr, "testUtilBwippEscape: double quote bwipp_data buffer full (%d)\n", bwipp_data_size);
                 return NULL;
@@ -2496,16 +2496,16 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 case 'G': val = 0x1d; /* Group Separator */ break;
                 case 'R': val = 0x1e; /* Record Separator */ break;
                 case 'x':
-                    val = d + 1 + 2 < de && z_isxdigit(d[1]) && z_isxdigit(d[2]) ? (ctoi(d[1]) << 4) | ctoi(d[2]) : -1;
+                    val = d + 2 < de && z_isxdigit(d[1]) && z_isxdigit(d[2]) ? (ctoi(d[1]) << 4) | ctoi(d[2]) : -1;
                     if (val != -1) d+= 2;
                     break;
                 case 'd':
-                    val = d + 1 + 3 < de ? to_int(d + 1, 3) : -1;
+                    val = d + 3 < de ? to_int(d + 1, 3) : -1;
                     if (val > 255) val = -1;
                     if (val != -1) d += 3;
                     break;
                 case 'o':
-                    val = d + 1 + 3 < de && z_isodigit(d[1]) && z_isodigit(d[2]) && z_isodigit(d[3])
+                    val = d + 3 < de && z_isodigit(d[1]) && z_isodigit(d[2]) && z_isodigit(d[3])
                             ? (ctoi(d[1]) << 6) | (ctoi(d[2]) << 3) | ctoi(d[3]) : -1;
                     if (val > 255) val = -1;
                     if (val != -1) d += 3;
@@ -3111,10 +3111,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     }
                 }
                 if (option_2 > 0) {
-                    char scm_vv_buf[32];
-                    sprintf(scm_vv_buf, "[)>^03001^029%02d", option_2); /* [)>\R01\Gvv */
-                    memmove(bwipp_data + 15, bwipp_data, strlen(bwipp_data) + 1);
-                    memcpy(bwipp_data, scm_vv_buf, 15);
+                    char scm_vv_buf[40];
+                    sprintf(scm_vv_buf, "[^041>^03001^029%02d", option_2 - 1); /* [)>\R01\Gvv */
+                    memmove(bwipp_data + 18, bwipp_data, strlen(bwipp_data) + 1);
+                    memcpy(bwipp_data, scm_vv_buf, 18);
                     if (!parse) {
                         sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparse",
                                 strlen(bwipp_opts_buf) ? " " : "");
@@ -3128,6 +3128,8 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             itoc(symbol->structapp.count));
                     bwipp_opts = bwipp_opts_buf;
                 }
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%snewencoder", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_BC412) {
                 to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssemi", strlen(bwipp_opts_buf) ? " " : "");
