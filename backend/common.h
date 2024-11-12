@@ -313,7 +313,8 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
                 struct zint_seg local_segs[]);
 
 
-/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in angle brackets */
+/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in hex escapes. Output to `buf` if non-NULL, else
+   stdout */
 INTERNAL char *debug_print_escape(const unsigned char *source, const int first_len, char *buf);
 
 #ifdef ZINT_TEST

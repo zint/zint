@@ -879,8 +879,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     unsigned int *ecc_part;
 
     if (gs1 && reader_init) {
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501,
-                        "Cannot encode in GS1 and Reader Initialisation mode at the same time");
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501, "Cannot use Reader Initialisation in GS1 mode");
     }
 
     if (symbol->structapp.count) {

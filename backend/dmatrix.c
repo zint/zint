@@ -1759,8 +1759,7 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 521,
-                            "Cannot encode in GS1 mode and Reader Initialisation at the same time");
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 521, "Cannot use Reader Initialisation in GS1 mode");
         }
         if (symbol->structapp.count) {
             return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 727,

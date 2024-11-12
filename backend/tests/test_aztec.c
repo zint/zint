@@ -265,7 +265,7 @@ static void test_options(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "" },
         /*  6*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)" },
         /*  7*/ { BARCODE_AZTEC, -1, -1, -1, -2, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)" },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot encode in GS1 and Reader Initialisation mode at the same time" },
+        /*  8*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode" },
         /*  9*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "" },
         /* 10*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "" },
         /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "" }, /* 22 layers */

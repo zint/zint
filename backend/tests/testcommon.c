@@ -2472,7 +2472,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
         /* Have to escape double quote otherwise Ghostscript gives "Unterminated quote in @-file" for some reason */
         /* Escape single quote also to avoid having to do proper shell escaping TODO: proper shell escaping */
         if (*d < 0x20 || *d >= 0x7F || (*d == '^' && !init_parsefnc) || *d == '"' || *d == '\''
-                || *d == '(' || *d == ')' || (*d == '\\' && !zint_escape_mode)) {
+                || *d == '(' || (*d == '\\' && !zint_escape_mode)) {
             if (b + 4 >= be) {
                 fprintf(stderr, "testUtilBwippEscape: double quote bwipp_data buffer full (%d)\n", bwipp_data_size);
                 return NULL;
@@ -3128,8 +3128,6 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             itoc(symbol->structapp.count));
                     bwipp_opts = bwipp_opts_buf;
                 }
-                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%snewencoder", strlen(bwipp_opts_buf) ? " " : "");
-                bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_BC412) {
                 to_upper((unsigned char *) bwipp_data, (int) strlen(bwipp_data));
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssemi", strlen(bwipp_opts_buf) ? " " : "");
@@ -3139,6 +3137,13 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                         strlen(bwipp_opts_buf) ? " " : "", option_2 - 1);
                 bwipp_opts = bwipp_opts_buf;
             }
+        }
+
+        if (symbology == BARCODE_CODE128 || symbology == BARCODE_CODE128AB || symbology == BARCODE_HIBC_128
+                || symbology == BARCODE_GS1_128 || symbology == BARCODE_GS1_128_CC || symbology == BARCODE_NVE18
+                || symbology == BARCODE_EAN14 || symbology == BARCODE_UPU_S10 || symbology == BARCODE_MAXICODE) {
+            sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%snewencoder", strlen(bwipp_opts_buf) ? " " : "");
+            bwipp_opts = bwipp_opts_buf;
         }
 
         if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {

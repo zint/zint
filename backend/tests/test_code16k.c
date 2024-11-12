@@ -109,7 +109,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
         /*  0*/ { UNICODE_MODE, READER_INIT, "A", 0, 2, 70, "(10) 1 96 33 103 103 103 103 103 68 35", "ModeB FNC3 A Pad (5)" },
         /*  1*/ { UNICODE_MODE, READER_INIT, "12", 0, 2, 70, "(10) 5 96 12 103 103 103 103 103 99 41", "ModeC1SB FNC3 12 Pad (5)" },
         /*  2*/ { UNICODE_MODE, READER_INIT, "A1234", 0, 2, 70, "(10) 6 96 33 12 34 103 103 103 65 53", "ModeC2SB FNC3 A 12 34 Pad (3)" },
-        /*  3*/ { GS1_MODE, READER_INIT, "[90]1", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 422: Cannot use both GS1 mode and Reader Initialisation", "" },
+        /*  3*/ { GS1_MODE, READER_INIT, "[90]1", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 422: Cannot use Reader Initialisation in GS1 mode", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -645,7 +645,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, UNICODE_MODE, READER_INIT, "A", 0, 10, 10, "EA 42 81 19 A4 53 21 DF", "TODO: Check this" },
-        /*  1*/ { BARCODE_DATAMATRIX, GS1_MODE, READER_INIT, "[91]A", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 521: Cannot encode in GS1 mode and Reader Initialisation at the same time", "" },
+        /*  1*/ { BARCODE_DATAMATRIX, GS1_MODE, READER_INIT, "[91]A", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 521: Cannot use Reader Initialisation in GS1 mode", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

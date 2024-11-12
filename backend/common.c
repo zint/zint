@@ -884,18 +884,31 @@ INTERNAL void segs_cpy(const struct zint_symbol *symbol, const struct zint_seg s
     }
 }
 
-/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in angle brackets */
+/* Helper for ZINT_DEBUG_PRINT to put all but graphical ASCII in hex escapes. Output to `buf` if non-NULL, else
+   stdout */
 INTERNAL char *debug_print_escape(const unsigned char *source, const int first_len, char *buf) {
-    int i, j = 0;
-    for (i = 0; i < first_len; i++) {
-        const unsigned char ch = source[i];
-        if (ch < 32 || ch >= 127) {
-            j += sprintf(buf + j, "<%03o>", ch & 0xFF);
-        } else {
-            buf[j++] = ch;
+    int i;
+    if (buf) {
+        int j = 0;
+        for (i = 0; i < first_len; i++) {
+            const unsigned char ch = source[i];
+            if (ch < 32 || ch >= 127) {
+                j += sprintf(buf + j, "\\x%02X", ch & 0xFF);
+            } else {
+                buf[j++] = ch;
+            }
+        }
+        buf[j] = '\0';
+    } else {
+        for (i = 0; i < first_len; i++) {
+            const unsigned char ch = source[i];
+            if (ch < 32 || ch >= 127) {
+                printf("\\x%02X", ch & 0xFF);
+            } else {
+                fputc(ch, stdout);
+            }
         }
     }
-    buf[j] = '\0';
     return buf;
 }
 

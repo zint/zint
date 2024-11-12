@@ -43,44 +43,46 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        int bwipp_cmp;
+        char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, "1", 138, "", 0, 33, 30 }, /* Mode 4 (138 agrees with ISO/IEC 16023:2000) */
-        /*  1*/ { -1, -1, "1", 139, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  2*/ { -1, -1, "1", 144, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  3*/ { -1, -1, "1", 145, "", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Absolute max */
-        /*  4*/ { -1, -1, "A", 93, "", 0, 33, 30 },
-        /*  5*/ { -1, -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { -1, -1, "\001", 91, "", 0, 33, 30 },
-        /*  7*/ { -1, -1, "\001", 92, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  8*/ { -1, -1, "\200", 91, "", 0, 33, 30 },
-        /*  9*/ { -1, -1, "\200", 92, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 10*/ { 2, -1, "1", 126, "123456789123123", 0, 33, 30 },
-        /* 11*/ { 2, -1, "1", 127, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 12*/ { 2, -1, "A", 84, "123456789123123", 0, 33, 30 },
-        /* 13*/ { 2, -1, "A", 85, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 14*/ { 2, 96 + 1, "1", 109, "123456789123123", 0, 33, 30 },
-        /* 15*/ { 2, 96 + 1, "1", 110, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 16*/ { 2, 96 + 1, "1", 136, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 }, /* Absolute max with SCM vv */
-        /* 17*/ { 3, -1, "1", 126, "ABCDEF123123", 0, 33, 30 },
-        /* 18*/ { 3, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 19*/ { 3, -1, "A", 84, "ABCDEF123123", 0, 33, 30 },
-        /* 20*/ { 3, -1, "A", 85, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 21*/ { 3, 96 + 1, "1", 109, "ABCDEF123123", 0, 33, 30 },
-        /* 22*/ { 3, 96 + 1, "1", 110, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 23*/ { 0, -1, "1", 126, "123456789123123", 0, 33, 30 }, /* Mode 2 */
-        /* 24*/ { 0, -1, "1", 127, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 25*/ { 0, -1, "1", 126, "ABCDEF123123", 0, 33, 30 }, /* Mode 3 */
-        /* 26*/ { 0, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 27*/ { 5, -1, "1", 113, "", 0, 33, 30 }, /* Extra EEC */
-        /* 28*/ { 5, -1, "1", 114, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 29*/ { 5, -1, "A", 77, "", 0, 33, 30 },
-        /* 30*/ { 5, -1, "A", 78, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 31*/ { 6, -1, "1", 138, "", 0, 33, 30 },
-        /* 32*/ { 6, -1, "1", 139, "", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /* 33*/ { 6, -1, "A", 93, "", 0, 33, 30 },
-        /* 34*/ { 6, -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  0*/ { -1, -1, "1", 138, "", 0, 33, 30, 0, "Mode 4 (138 agrees with ISO/IEC 16023:2000); BWIPP different encodation (begins with ASCII digits then NSes)" },
+        /*  1*/ { -1, -1, "1", 139, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /*  2*/ { -1, -1, "1", 144, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /*  3*/ { -1, -1, "1", 145, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "Absolute max" },
+        /*  4*/ { -1, -1, "A", 93, "", 0, 33, 30, 1, "" },
+        /*  5*/ { -1, -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /*  6*/ { -1, -1, "\001", 91, "", 0, 33, 30, 1, "" },
+        /*  7*/ { -1, -1, "\001", 92, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /*  8*/ { -1, -1, "\200", 91, "", 0, 33, 30, 1, "" },
+        /*  9*/ { -1, -1, "\200", 92, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 10*/ { 2, -1, "1", 126, "123456789123123", 0, 33, 30, 1, "" },
+        /* 11*/ { 2, -1, "1", 127, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 12*/ { 2, -1, "A", 84, "123456789123123", 0, 33, 30, 1, "" },
+        /* 13*/ { 2, -1, "A", 85, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 14*/ { 2, 96 + 1, "1", 109, "123456789123123", 0, 33, 30, 0, "BWIPP different encodation (begins with ASCII digits then NSes)" },
+        /* 15*/ { 2, 96 + 1, "1", 110, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 16*/ { 2, 96 + 1, "1", 136, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "Absolute max with SCM vv" },
+        /* 17*/ { 3, -1, "1", 126, "ABCDEF123123", 0, 33, 30, 1, "" },
+        /* 18*/ { 3, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 19*/ { 3, -1, "A", 84, "ABCDEF123123", 0, 33, 30, 1, "" },
+        /* 20*/ { 3, -1, "A", 85, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 21*/ { 3, 96 + 1, "1", 109, "ABCDEF123123", 0, 33, 30, 0, "BWIPP different encodation" },
+        /* 22*/ { 3, 96 + 1, "1", 110, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 23*/ { 0, -1, "1", 126, "123456789123123", 0, 33, 30, 0, "Mode 2; BWIPP requires mode" },
+        /* 24*/ { 0, -1, "1", 127, "123456789123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 25*/ { 0, -1, "1", 126, "ABCDEF123123", 0, 33, 30, 1, "Mode 3" },
+        /* 26*/ { 0, -1, "1", 127, "ABCDEF123123", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 27*/ { 5, -1, "1", 113, "", 0, 33, 30, 0, "Extra EEC; BWIPP different encodation (begins with ASCII digits then NSes)" },
+        /* 28*/ { 5, -1, "1", 114, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 29*/ { 5, -1, "A", 77, "", 0, 33, 30, 1, "" },
+        /* 30*/ { 5, -1, "A", 78, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 31*/ { 6, -1, "1", 138, "", 0, 33, 30, 0, "BWIPP different encodation (begins with ASCII digits then NSes)" },
+        /* 32*/ { 6, -1, "1", 139, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
+        /* 33*/ { 6, -1, "A", 93, "", 0, 33, 30, 1, "" },
+        /* 34*/ { 6, -1, "A", 94, "", ZINT_ERROR_TOO_LONG, -1, -1, 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -92,6 +94,7 @@ static void test_large(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     const char expected_errtxt[] = "Error 553: Input too long, requires too many codewords (maximum 144)";
 
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStartSymbol("test_large", &symbol);
@@ -121,6 +124,20 @@ static void test_large(const testCtx *const p_ctx) {
         }
 
         if (ret < ZINT_ERROR) {
+            if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[33 * 33 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data_buf, length, symbol->primary, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[33 * 33 + 1];
@@ -212,10 +229,10 @@ static void test_input(const testCtx *const p_ctx) {
         /* 49*/ { UNICODE_MODE, -1, -1, -1, { 1, 9, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 558: Structured Append count '9' out of range (2 to 8)", 1, 1, "" },
         /* 50*/ { UNICODE_MODE, -1, -1, -1, { 3, 2, "" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 559: Structured Append index '3' out of range (1 to count 2)", 1, 1, "" },
         /* 51*/ { UNICODE_MODE, -1, -1, -1, { 1, 2, "A" }, "A", -1, "", ZINT_ERROR_INVALID_OPTION, 0, "Error 549: Structured Append ID not available for MaxiCode", 1, 1, "" },
-        /* 52*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "b..A", -1, "", 0, 30, "(144) 04 3F 02 31 38 2E 01 21 21 21 23 2F 04 2C 34 3B 28 25 2C 11 21 21 21 21 21 21 21 21", 0, 1, "BWIPP pending PR #279" },
-        /* 53*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A123456789b123456789bbbA", -1, "", 0, 30, "(144) 04 01 1F 07 16 3C 34 15 3B 02 08 28 3C 0E 06 03 34 25 3C 1E 1F 07 16 3C 34 15 3F 02", 1, 1, "BWIPP pending PR #279" },
-        /* 54*/ { ESCAPE_MODE, -1, -1, -1, { 0, 0, "" }, "\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192", -1, "", 0, 30, "(144) 04 3C 00 3D 00 3D 00 3D 00 3C 32 10 27 30 09 0B 06 16 3D 0D 00 3D 00 3D 00 3D 00 3C", 1, 1, "BWIPP pending PR #279" },
-        /* 54*/ { ESCAPE_MODE, -1, -1, -1, { 0, 0, "" }, "\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192", -1, "", 0, 30, "(144) 04 3C 00 3D 00 3D 00 3D 00 3C 32 10 27 30 09 0B 06 16 3D 0D 00 3D 00 3D 00 3D 00 3C", 1, 1, "BWIPP pending PR #279" },
+        /* 52*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "b..A", -1, "", 0, 30, "(144) 04 3F 02 31 38 2E 01 21 21 21 23 2F 04 2C 34 3B 28 25 2C 11 21 21 21 21 21 21 21 21", 0, 1, "BWIPP PR #279 (BWIPP 1 shorter)" },
+        /* 53*/ { UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, "A123456789b123456789bbbA", -1, "", 0, 30, "(144) 04 01 1F 07 16 3C 34 15 3B 02 08 28 3C 0E 06 03 34 25 3C 1E 1F 07 16 3C 34 15 3F 02", 0, 1, "BWIPP PR #279 (BWIPP 1 shorter)" },
+        /* 54*/ { ESCAPE_MODE, -1, -1, -1, { 0, 0, "" }, "\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192\\d224\\d224\\d224\\d192", -1, "", 0, 30, "(144) 04 3C 00 3D 00 3D 00 3D 00 3C 32 10 27 30 09 0B 06 16 3D 0D 00 3D 00 3D 00 3D 00 3C", 0, 1, "BWIPP PR #279 (BWIPP 1 shorter)" },
+        /* 55*/ { ESCAPE_MODE, -1, 2, -1, { 0, 0, "" }, "1Z34567890\\GUPSN\\G102562\\G034\\G\\G1/1\\G\\GY\\G2201 Second St\\GFt Myers\\GFL\\R\\E", -1, "339010000840001", 0, 30, "(144) 02 34 21 13 03 15 02 12 07 00 0C 03 00 38 24 04 0B 1F 2F 21 31 1A 33 34 35 36 37 38", 0, 1, "BWIPP different encodation" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -529,7 +546,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001011110011100001001001101100"
                     "000010111011111010110011000011"
                 },
-        /*  6*/ { -1, -1, -1, { 0, 0, "" }, "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", -1, "", 0, 33, 30, 1, "Numeric compaction, verified manually against tec-it",
+        /*  6*/ { -1, -1, -1, { 0, 0, "" }, "999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999", -1, "", 0, 33, 30, 0, "Numeric compaction, verified manually against TEC-IT; BWIPP different encodation",
                     "010111101101010111101101010111"
                     "111011110110111011110110111010"
                     "001111111101001111111101001100"
@@ -704,7 +721,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100100110011010101001011100100"
                     "001000101111010000111000010101"
                 },
-        /* 11*/ { UNICODE_MODE | ESCAPE_MODE, 4, -1, { 0, 0, "" }, "\\rABCDEFGHIJKLMNOPQRSTUVWXYZ\034\\G\\R \"#$%&'()*+,-./0123456789:", -1, "", 0, 33, 30, 1, "Mode 4 Set A",
+        /* 11*/ { UNICODE_MODE | ESCAPE_MODE, 4, -1, { 0, 0, "" }, "\\rABCDEFGHIJKLMNOPQRSTUVWXYZ\034\\G\\R \"#$%&'()*+,-./0123456789:", -1, "", 0, 33, 30, 0, "Mode 4 Set A; BWIPP different encodation",
                     "000000000000001010101010101011"
                     "010101111111110000000010101010"
                     "100111001001110010011100100101"
@@ -949,7 +966,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011100101001010011011100111100"
                     "101101110111011101011010011101"
                 },
-        /* 18*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 1, "Mode 4 mixed sets",
+        /* 18*/ { UNICODE_MODE, 4, -1, { 0, 0, "" }, "ABCDE12abcde1ÀÁÂÃ¢£¤¥1àáâãabcde123A123456789àáâã¢£¤¥abc", -1, "", 0, 33, 30, 0, "Mode 4 mixed sets; BWIPP different encodation",
                     "000000001111111100000000111111"
                     "000010100100111100000000111100"
                     "011100101110000000100111010100"
@@ -1398,7 +1415,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "010111011011100000011000101000"
                     "001111010010000100010110011110"
                 },
-        /*  6*/ { DATA_MODE, -1, -1, { 0, 0, "" }, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, "", 0, 33, 30, 1, "Standard example + extra seg, data mode",
+        /*  6*/ { DATA_MODE, -1, -1, { 0, 0, "" }, { { TU("\266"), 1, 0 }, { TU("\266"), 1, 7 }, { TU("\266"), 1, 0 } }, "", 0, 33, 30, 0, "Standard example + extra seg, data mode; BWIPP different encodation",
                     "010101010101010101010101010111"
                     "110000000000000000000000000010"
                     "111010101010101010101010101011"
@@ -1433,7 +1450,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "000111101111000100101110001100"
                     "000100001000100111100110010100"
                 },
-        /*  7*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("αβ"), -1, 0 }, { TU("ÿ"), -1, 0 }, { TU("貫やぐ禁"), -1, 20 } }, "", ZINT_WARN_USES_ECI, 33, 30, 1, "Auto-ECI",
+        /*  7*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("αβ"), -1, 0 }, { TU("ÿ"), -1, 0 }, { TU("貫やぐ禁"), -1, 20 } }, "", ZINT_WARN_USES_ECI, 33, 30, 0, "Auto-ECI; BWIPP different encodation",
                     "011010110111101111110011111111"
                     "100110111111001100110011001110"
                     "001100101100100001100100010111"
@@ -1503,7 +1520,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "101010011010110110110010010100"
                     "100101010111100011100010101000"
                 },
-        /*  9*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("ab"), -1, 3 }, { TU("ABCD"), -1, 4 }, { TU(""), 0, 0 } }, "", 0, 33, 30, 1, "Code Set B then A",
+        /*  9*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("ab"), -1, 3 }, { TU("ABCD"), -1, 4 }, { TU(""), 0, 0 } }, "", 0, 33, 30, 0, "Code Set B then A; BWIPP different encodation",
                     "000000010101010101010101010111"
                     "000010000000000000000000000010"
                     "011100101010101010101010101001"
@@ -1538,7 +1555,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "011011011101010101001101001000"
                     "001010010110100000100111101000"
                 },
-        /* 10*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("\004\004\004\004"), -1, 3 }, { TU("ABCD"), -1, 4 }, { TU("abcd"), -1, 5 } }, "", 0, 33, 30, 1, "Code Set E then A then B",
+        /* 10*/ { UNICODE_MODE, -1, -1, { 0, 0, "" }, { { TU("\004\004\004\004"), -1, 3 }, { TU("ABCD"), -1, 4 }, { TU("abcd"), -1, 5 } }, "", 0, 33, 30, 0, "Code Set E then A then B; BWIPP different encodation",
                     "001100000000100011000000000111"
                     "100100000010011011000000100000"
                     "000110011100111011100111001010"

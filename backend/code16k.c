@@ -345,8 +345,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
-            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 422,
-                            "Cannot use both GS1 mode and Reader Initialisation");
+            return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 422, "Cannot use Reader Initialisation in GS1 mode");
         }
         if (m == 2) {
             m = 5;
