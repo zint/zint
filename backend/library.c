@@ -981,6 +981,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     int error_number, warn_number = 0;
     int total_len = 0;
     int have_zero_eci = 0;
+    int escape_mode;
     int i;
     unsigned char *local_source;
     struct zint_seg *local_segs;
@@ -1012,6 +1013,9 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         }
     }
 
+    escape_mode = (symbol->input_mode & ESCAPE_MODE)
+                    || ((symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128);
+
     local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * (seg_count > 0 ? seg_count : 1));
 
     /* Check segment lengths */
@@ -1039,7 +1043,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             }
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
-        if (symbol->input_mode & ESCAPE_MODE) { /* Calculate de-escaped length for check against ZINT_MAX_DATA_LEN */
+        /* Calculate de-escaped length for check against ZINT_MAX_DATA_LEN */
+        if (escape_mode) {
             int escaped_len = local_segs[i].length;
             error_number = escape_char_process(symbol, local_segs[i].source, &escaped_len, NULL /*escaped_string*/);
             if (error_number != 0) { /* Only returns errors, not warnings */
@@ -1168,7 +1173,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     /* Copy input, de-escaping if required */
     for (i = 0, local_source = local_sources; i < seg_count; i++) {
         local_segs[i].source = local_source;
-        if (symbol->input_mode & ESCAPE_MODE) {
+        if (escape_mode) {
             /* Checked already */
             (void) escape_char_process(symbol, segs[i].source, &local_segs[i].length, local_segs[i].source);
         } else {
@@ -1178,7 +1183,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         local_source += local_segs[i].length + 1;
     }
 
-    if ((symbol->input_mode & ESCAPE_MODE) && symbol->primary[0] && strchr(symbol->primary, '\\') != NULL) {
+    if (escape_mode && symbol->primary[0] && strchr(symbol->primary, '\\') != NULL) {
         char primary[sizeof(symbol->primary)];
         int primary_len = (int) strlen(symbol->primary);
         if (primary_len >= (int) sizeof(symbol->primary)) {

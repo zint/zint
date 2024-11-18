@@ -1,4 +1,4 @@
-% backend/tests/README 2024-01-17
+% backend/tests/README 2024-11-18
 
 Zint backend test suite
 -----------------------
@@ -67,6 +67,16 @@ To run a single test function within an individual test, use '-f <func-name>':
   backend/tests/test_common -f utf8_to_unicode
   backend/tests/test_dotcode -f input
 
+To exclude a single test function, use '-n <func-name>':
+
+  backend/tests/test_common -n utf8_to_unicode
+  backend/tests/test_dotcode -n input
+
+To run all test functions that match (i.e. contain) a string, use '-m <string>':
+
+  backend/tests/test_common -m not_sane
+  backend/tests/test_dotcode -m encode
+
 To run a single dataset item in a single test function, use '-i <index>':
 
   backend/tests/test_dotcode -f input -i 2
@@ -74,6 +84,10 @@ To run a single dataset item in a single test function, use '-i <index>':
 To run a range of dataset items in a single test function, use '-i <start>-<end>':
 
   backend/tests/test_dotcode -f input -i 2-5
+
+The '<start>' or '<end>' can be left out:
+
+  backend/tests/test_dotcode -f input -i 2-
 
 To exclude a single dataset item in a single test function, use '-x <index>':
 
@@ -113,7 +127,7 @@ To run a test against ZXing-C++ (if any), use '-d 512':
 
 (see also <project-dir>/backend/tests/tools/run_zxingcpp_tests.sh)
 
-To generate test data, use '-g':
+To generate test data (if available), use '-g':
 
   backend/tests/test_dotcode -f encode -g
 

@@ -46,14 +46,6 @@ INTERNAL int ctoi(const char source) {
     return -1;
 }
 
-/* Converts an integer value to its hexadecimal character */
-INTERNAL char itoc(const int source) {
-    if ((source >= 0) && (source <= 9)) {
-        return ('0' + source);
-    }
-    return ('A' - 10 + source);
-}
-
 /* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
 INTERNAL int to_int(const unsigned char source[], const int length) {
     int val = 0;
@@ -219,17 +211,15 @@ INTERNAL void unset_module(struct zint_symbol *symbol, const int y_coord, const 
 INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int length) {
 
     int reader;
-    int writer, i;
-    int latch, num;
+    int writer = 0;
+    int latch = 1;
     const int row = symbol->rows;
 
     symbol->rows++;
 
-    writer = 0;
-    latch = 1;
-
     for (reader = 0; reader < length; reader++) {
-        num = ctoi(data[reader]);
+        int i;
+        const int num = data[reader] - '0';
         assert(num >= 0);
         for (i = 0; i < num; i++) {
             if (latch) {

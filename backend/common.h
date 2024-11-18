@@ -145,11 +145,11 @@ typedef unsigned __int64 uint64_t;
 #define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
 #define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
+/* Converts an integer value to its value + '0' (so >= 10 becomes ':', ';' etc) */
+#define itoc(i) ((i) + '0')
+
 /* Converts a character 0-9, A-F to its equivalent integer value */
 INTERNAL int ctoi(const char source);
-
-/* Converts an integer value to its hexadecimal character */
-INTERNAL char itoc(const int source);
 
 /* Converts decimal string of length <= 9 to integer value. Returns -1 if not numeric */
 INTERNAL int to_int(const unsigned char source[], const int length);

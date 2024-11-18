@@ -42,10 +42,6 @@ extern "C" {
 
 INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int length);
 
-INTERNAL void c128_set_a(const unsigned char source, int values[], int *bar_chars);
-INTERNAL int c128_set_b(const unsigned char source, int values[], int *bar_chars);
-INTERNAL void c128_set_c(const unsigned char source_a, const unsigned char source_b, int values[], int *bar_chars);
-
 INTERNAL_DATA_EXTERN const char C128Table[107][6];
 
 #ifdef __cplusplus

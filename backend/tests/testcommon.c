@@ -259,6 +259,9 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     char *optarg;
     char *func = NULL;
     char func_buf[256 + 5];
+    char *func_not = NULL;
+    char func_not_buf[256 + 5];
+    char *func_match = NULL;
     int exclude_idx = 0;
     testCtx ctx;
 
@@ -287,17 +290,19 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-d") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -d debug value missing, ignored\n");
+                fprintf(stderr, "testRun: -d debug value missing, ignoring\n");
             } else {
+                int d; /* Allow multiple debug flags, OR-ing */
                 optarg = argv[++i];
-                if (!validate_int(optarg, &ctx.debug)) {
-                    fprintf(stderr, "testRun: -d debug value invalid, ignored\n");
-                    ctx.debug = 0;
+                if (!validate_int(optarg, &d)) {
+                    fprintf(stderr, "testRun: -d debug value invalid, ignoring\n");
+                } else {
+                    ctx.debug |= d;
                 }
             }
         } else if (strcmp(argv[i], "-f") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -f func value missing, ignored\n");
+                fprintf(stderr, "testRun: -f func value missing, ignoring\n");
             } else {
                 optarg = argv[++i];
                 if (strlen(optarg) < 256) {
@@ -309,38 +314,62 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                     }
                     func = func_buf;
                 } else {
-                    fprintf(stderr, "testRun: -f func value too long, ignored\n");
+                    fprintf(stderr, "testRun: -f func value too long, ignoring\n");
                     func = NULL;
                 }
+            }
+        } else if (strcmp(argv[i], "-n") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -n func exclude value missing, ignoring\n");
+            } else {
+                optarg = argv[++i];
+                if (strlen(optarg) < 256) {
+                    if (strncmp(optarg, "test_", 5) == 0) {
+                        strcpy(func_not_buf, optarg);
+                    } else {
+                        strcpy(func_not_buf, "test_");
+                        strcat(func_not_buf, optarg);
+                    }
+                    func_not = func_not_buf;
+                } else {
+                    fprintf(stderr, "testRun: -p func exclude value too long, ignoring\n");
+                    func_not = NULL;
+                }
+            }
+        } else if (strcmp(argv[i], "-m") == 0) {
+            if (i + 1 == argc) {
+                fprintf(stderr, "testRun: -m func match value missing, ignoring\n");
+            } else {
+                func_match = argv[++i];
             }
         } else if (strcmp(argv[i], "-g") == 0) {
             ctx.generate = 1;
         } else if (strcmp(argv[i], "-i") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -i index value missing, ignored\n");
+                fprintf(stderr, "testRun: -i index value missing, ignoring\n");
             } else {
                 optarg = argv[++i];
                 if (!validate_int_range(optarg, &ctx.index, &ctx.index_end)) {
-                    fprintf(stderr, "testRun: -i index value invalid, ignored\n");
+                    fprintf(stderr, "testRun: -i index value invalid, ignoring\n");
                     ctx.index = ctx.index_end = -1;
                 }
             }
         } else if (strcmp(argv[i], "-x") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -x exclude value missing, ignored\n");
+                fprintf(stderr, "testRun: -x exclude value missing, ignoring\n");
             } else {
                 optarg = argv[++i];
                 if (exclude_idx + 1 == ZINT_TEST_CTX_EXC_MAX) {
-                    fprintf(stderr, "testRun: too many -x exclude values, ignored\n");
+                    fprintf(stderr, "testRun: too many -x exclude values, ignoring\n");
                 } else if (!validate_int_range(optarg, &ctx.exclude[exclude_idx], &ctx.exclude_end[exclude_idx])) {
-                    fprintf(stderr, "testRun: -x exclude value invalid, ignored\n");
+                    fprintf(stderr, "testRun: -x exclude value invalid, ignoring\n");
                     ctx.exclude[exclude_idx] = ctx.exclude_end[exclude_idx] = -1;
                 } else {
                     exclude_idx++;
                 }
             }
         } else {
-            fprintf(stderr, "testRun: unknown arg '%s', ignored\n", argv[i]);
+            fprintf(stderr, "testRun: unknown arg '%s', ignoring\n", argv[i]);
         }
     }
 
@@ -349,12 +378,21 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
         if (func && strcmp(func, funcs[i].name) != 0) {
             continue;
         }
+        if (func_not && strcmp(func_not, funcs[i].name) == 0) {
+            continue;
+        }
+        if (func_match && strstr(funcs[i].name, func_match) == NULL) {
+            continue;
+        }
         (*funcs[i].func)(&ctx);
         ran++;
     }
 
     if (func && !ran) {
         fprintf(stderr, "testRun: unknown -f func arg '%s'\n", func);
+    }
+    if (func_match && !ran) {
+        fprintf(stderr, "testRun: no funcs matched -m arg '%s'\n", func_match);
     }
 }
 
@@ -2215,7 +2253,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "maxicode", BARCODE_MAXICODE, 57, 1, 1, 0, 0, 0, },
         { "qrcode", BARCODE_QRCODE, 58, 1, 1, 1, 0, 0, },
         { "", -1, 59, 0, 0, 0, 0, 0, },
-        { "", BARCODE_CODE128AB, 60, 0, 0, 0, 0, 0, },
+        { "code128", BARCODE_CODE128AB, 60, 0, 0, 0, 0, 0, },
         { "", -1, 61, 0, 0, 0, 0, 0, },
         { "", -1, 62, 0, 0, 0, 0, 0, },
         { "auspost", BARCODE_AUSPOST, 63, 0, 0, 0, 0, 0, },
@@ -2524,7 +2562,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 sprintf(b, "^%03d", val);
                 b += 4;
             } else {
-                if (*d == '^' && d + 1 < de && ((*(d + 1) >= 'A' && *(d + 1) <= 'C') || *(d + 1) == '1')) {
+                if (*d == '^' && d + 1 < de && ((*(d + 1) >= '@' && *(d + 1) <= 'C') || *(d + 1) == '1')) {
                     d++;
                     if (*d == '1') {
                         if (b + 5 >= be) {
@@ -2807,8 +2845,11 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 /* sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sdontlint", strlen(bwipp_opts_buf) ? " " : ""); */
             }
         } else {
-            if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len,
-                    symbol->input_mode & (ESCAPE_MODE | EXTRA_ESCAPE_MODE), eci, &parse, &parsefnc) == NULL) {
+            const int is_extra_escaped = (symbol->input_mode & EXTRA_ESCAPE_MODE)
+                                            && symbol->symbology == BARCODE_CODE128;
+            const int is_escaped = (symbol->input_mode & ESCAPE_MODE) || is_extra_escaped;
+            if (testUtilBwippEscape(bwipp_data, bwipp_data_size, data, data_len, is_escaped, eci, &parse, &parsefnc)
+                    == NULL) {
                 return -1;
             }
             if (parse) {
@@ -2945,6 +2986,9 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     memmove(bwipp_data + 2, bwipp_data, data_len + 1);
                     memmove(bwipp_data, prefix, 2);
                 }
+            } else if (symbology == BARCODE_CODE128AB) {
+                sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssuppressc", strlen(bwipp_opts_buf) ? " " : "");
+                bwipp_opts = bwipp_opts_buf;
             } else if (symbology == BARCODE_DPD) {
                 if (data_len == 27 && option_2 != 1) {
                     memmove(bwipp_data + 1, bwipp_data, data_len + 1);
@@ -3947,8 +3991,9 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len) {
     const int symbology = symbol->symbology;
 
-    const int is_dbar_exp = symbology == BARCODE_DBAR_EXP || symbology == BARCODE_DBAR_EXPSTK;
-    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || is_dbar_exp;
+    const int is_gs1_128_dbar_exp = symbology == BARCODE_GS1_128 || symbology == BARCODE_DBAR_EXP
+                                || symbology == BARCODE_DBAR_EXPSTK;
+    const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || is_gs1_128_dbar_exp;
     const int is_extra_escaped = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
     const int is_escaped = (symbol->input_mode & ESCAPE_MODE) || is_extra_escaped;
     const int is_hibc = symbology >= BARCODE_HIBC_128 && symbology <= BARCODE_HIBC_AZTEC;
@@ -3969,7 +4014,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     char *c25inter = have_c25inter ? (char *) z_alloca(expected_len + 13 + 1 + 1) : NULL;
     char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
-                        ? (char *) z_alloca(expected_len + 3 + 1) : NULL;
+                        ? (char *) z_alloca(expected_len + 3 + 19 + 1) : NULL;
     char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
     char *pzn = symbology == BARCODE_PZN ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
 
@@ -3985,30 +4030,32 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     }
 
     if (is_escaped) {
-        if (symbol->input_mode & ESCAPE_MODE) {
-            ret = escape_char_process_test(symbol, (unsigned char *) expected, &expected_len,
-                                            (unsigned char *) escaped);
-            if (ret != 0) {
-                sprintf(msg, "escape_char_process %d != 0", ret);
-                return 3;
-            }
-        } else {
-            memcpy(escaped, expected, expected_len);
+        ret = escape_char_process_test(symbol, (unsigned char *) expected, &expected_len,
+                                        (unsigned char *) escaped);
+        if (ret != 0) {
+            sprintf(msg, "escape_char_process %d != 0", ret);
+            return 3;
         }
         if (is_extra_escaped) {
             /* Remove any Code 128 special escapes */
             int j = 0;
+            int have_manual_ab = 0;
             for (i = 0; i < expected_len; i++) {
                 if (escaped[i] == '\\' && i + 2 < expected_len && escaped[i + 1] == '^'
-                        && ((escaped[i + 2] >= 'A' && escaped[i + 2] <= 'C') || escaped[i + 2] == '1'
+                        && ((escaped[i + 2] >= '@' && escaped[i + 2] <= 'C') || escaped[i + 2] == '1'
                             || escaped[i + 2] == '^')) {
                     if (escaped[i + 2] != '^') {
                         i += 2;
-                        if (escaped[i] == '1') {
-                            /* FNC1 in 1st position treated as GS1 and in 2nd position AIM, neither transmitted */
+                        if (escaped[i] == 'A' || escaped[i] == 'B') {
+                            have_manual_ab = 1; /* Hack to help guess if in Code Set C for AIM exception below */
+                        } else if (escaped[i] == '1') {
+                            /* FNC1 in 1st position treated as GS1 and in 2nd position AIM, neither transmitted -
+                               need to skip AIM (single alphabetic or Code Set C double digit)
+                               TODO: guessing about whether in Code Set C for double digit */
                             if (j > 2 || (j == 1 && !(z_isupper(escaped[0]) || z_islower(escaped[0])))
-                                    /* TODO: following exception only valid if in Code Set C */
-                                    || (j == 2 && !(z_isdigit(escaped[0]) && z_isdigit(escaped[1])))) {
+                                    || (j == 2 && !(z_isdigit(escaped[0]) && z_isdigit(escaped[1])
+                                                    && !have_manual_ab))) {
+                                /* Probably not AIM */
                                 escaped[j++] = 29; /* GS */
                             }
                         }
@@ -4268,16 +4315,15 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         }
 
     } else if (symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18) {
+        int len = symbology == BARCODE_NVE18 ? 17 : 13;
+        int zeroes = expected_len < len ? len - expected_len: 0;
         ean14_nve18[0] = '0';
         ean14_nve18[1] = symbology == BARCODE_NVE18 ? '0' : '1';
-        memcpy(ean14_nve18 + 2, expected, expected_len);
-        if (symbology == BARCODE_NVE18) {
-            ean14_nve18[19] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), 17);
-        } else {
-            ean14_nve18[15] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), 13);
-        }
+        memset(ean14_nve18 + 2, '0', zeroes);
+        memcpy(ean14_nve18 + 2 + zeroes, expected, expected_len);
+        ean14_nve18[len + 2] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), len);
         expected = ean14_nve18;
-        expected_len += 3;
+        expected_len += zeroes + 3;
 
     } else if (need_dpd_prefix) {
         dpd[0] = '%';

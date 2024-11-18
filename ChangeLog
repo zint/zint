@@ -1,17 +1,20 @@
-Version 2.13.0.9 (dev) not released yet
-=======================================
+Version 2.13.0.9 (dev) not released yet (2024-11-18)
+====================================================
 
 **Incompatible changes**
 ------------------------
 - New `memfile` & `memfile_size` fields in `symbol` for use with new output
   option `BARCODE_MEMORY_FILE`
+- Buffer length of member `text` (HRT) in `zint_symbol` extended 200 -> 256
+  (client buffers may need checking/extending)
 - Invalid `input_mode` now returns warning
 - Aztec Code symbols that due to input length & user-requested version have less
   than recommended 5% error correction codewords now return warning
-- New CODE128-only special extra escape `\^1` for manually inserting FNC1s
+- New CODE128-only special extra escapes beginning `\^`
 - Add-ons for UPC-A and UPC-E now descend to be level with the main symbol guard
   bars, and the righthand outside digit is now placed 1X less from main symbol
   to avoid touching any add-on
+- GS1_128 now warns if READER_INIT option used
 
 Changes
 -------
@@ -24,10 +27,10 @@ Changes
   Gredler (Okapi)
 - CODE128: add new extra escape `\^1` for manual insertion of FNC1s, ticket
   #324, props Jim Shank;
-  add minimal encodation algorithm (non-extended ASCII only), props Alex Geller
-  (ZXing);
-  reduce extended latch cut-off from 5 to 4 for better encodation in certain
-  cases, props Bue Jensen (BWIPP)
+  new  extra escapes `\^A`, `\^B`, `\^C` and `\^@` for manual switching of
+  Code Sets;
+  add minimal encodation algorithm, props Alex Geller (ZXing) and Bue Jensen
+  (BWIPP);
 - library: return warning on invalid `input_mode` reset
 - library/CLI: expanded error messages
 - GS1: new AIs 7250-7259 (GSCN 22-246);

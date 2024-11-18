@@ -350,14 +350,6 @@ static int validate_float(const char source[], const int allow_neg, float *p_val
     return 1;
 }
 
-/* Converts an integer value to its hexadecimal character */
-static char itoc(const int source) {
-    if ((source >= 0) && (source <= 9)) {
-        return ('0' + source);
-    }
-    return ('A' - 10 + source);
-}
-
 /* Converts upper case characters to lower case in a string source[] */
 static void to_lower(char source[]) {
     int i;
@@ -970,7 +962,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                 memset(reversed_string, 0, sizeof(reversed_string));
                 memset(output_file, 0, sizeof(output_file));
                 do {
-                    number[inpos] = itoc(local_line_count % 10);
+                    number[inpos] = (local_line_count % 10) + '0';
                     local_line_count /= 10;
                     inpos++;
                 } while (local_line_count > 0);

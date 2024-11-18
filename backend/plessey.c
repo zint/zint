@@ -151,7 +151,7 @@ static char msi_check_digit_mod11(const unsigned char source[], const int length
         }
     }
 
-    return itoc((11 - x % 11) % 11); /* Will return 'A' for 10 */
+    return itoc((11 - x % 11) % 11); /* Will return ':' for 10 */
 }
 
 /* Plain MSI Plessey - does not calculate any check character */
@@ -241,7 +241,7 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
 
     /* Append check digit */
     check_digit = msi_check_digit_mod11(source, length, wrap);
-    if (check_digit == 'A') {
+    if (check_digit == ':') {
         memcpy(d, MSITable[1], 8);
         d += 8;
         memcpy(d, MSITable[0], 8);
@@ -254,7 +254,7 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
     symbol->text[0] = '\0';
     ustrncat(symbol->text, source, length);
     if (!no_checktext) {
-        if (check_digit == 'A') {
+        if (check_digit == ':') {
             ustrcat(symbol->text, "10");
         } else {
             symbol->text[length] = check_digit;
@@ -279,7 +279,7 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
 
     /* Append first (mod 11) digit */
     check_digit = msi_check_digit_mod11(source, length, wrap);
-    if (check_digit == 'A') {
+    if (check_digit == ':') {
         temp[temp_len++] = '1';
         temp[temp_len++] = '0';
     } else {

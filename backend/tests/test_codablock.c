@@ -60,8 +60,8 @@ static void test_large(const testCtx *const p_ctx) {
         /*  8*/ { -1, -1, "\351", 2726 / 2 + 1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
         /*  9*/ { -1, -1, "\001", 2726, 0, 44, 739, "" },
         /* 10*/ { -1, -1, "\001", 2727, ZINT_ERROR_TOO_LONG, -1, -1, "Error 413: Input too long, requires too many symbol characters (maximum 2726)" },
-        /* 11*/ { 1, -1, "A", 99, 0, 1, 1124, "" }, /* CODE128 99 max */
-        /* 12*/ { 1, -1, "A", 100, ZINT_ERROR_TOO_LONG, -1, -1, "Error 341: Input too long, requires 100 symbol characters (maximum 99)" },
+        /* 11*/ { 1, -1, "A", 101, 0, 1, 1146, "" }, /* CODE128 102 max (including start code) */
+        /* 12*/ { 1, -1, "A", 102, ZINT_ERROR_TOO_LONG, -1, -1, "Error 341: Input too long, requires 103 symbol characters (maximum 102)" },
         /* 13*/ { 2, -1, "A", 122, 0, 2, 739, "" },
         /* 14*/ { 2, 10, "A", 122, 0, 2, 739, "" }, /* Cols 10 -> 67 */
         /* 15*/ { 2, 67, "A", 122, 0, 2, 739, "" },

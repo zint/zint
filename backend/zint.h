@@ -120,7 +120,7 @@ extern "C" {
         struct zint_structapp structapp; /* Structured Append info. Default structapp.count 0 (none) */
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
-        unsigned char text[200]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
+        unsigned char text[256]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
@@ -307,7 +307,7 @@ extern "C" {
 #define HEIGHTPERROW_MODE       0x0040  /* Interpret `height` as per-row rather than as overall height */
 #define FAST_MODE               0x0080  /* Use faster if less optimal encodation or other shortcuts if available */
                                         /* Note: affects DATAMATRIX, MICROPDF417, PDF417, QRCODE & UPNQR only */
-#define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences */
+#define EXTRA_ESCAPE_MODE       0x0100  /* Process special symbology-specific escape sequences as well as others */
                                         /* Note: currently Code 128 only */
 
 /* Data Matrix specific options (`symbol->option_3`) */
