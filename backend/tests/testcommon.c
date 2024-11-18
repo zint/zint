@@ -1896,6 +1896,10 @@ int testUtilCmpBins(const char *bin1, const char *bin2) {
     do {
         len1 = fread(buf1, 1, sizeof(buf1), fp1);
         len2 = fread(buf2, 1, sizeof(buf2), fp2);
+        if (ferror(fp1) || ferror(fp2)) {
+            ret = 4;
+            break;
+        }
         if (len1 != len2) {
             ret = 6;
             break;

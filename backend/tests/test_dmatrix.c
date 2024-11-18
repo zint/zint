@@ -388,7 +388,7 @@ static void test_large(const testCtx *const p_ctx) {
                         testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)), data[i].length,
                         testUtilErrorName(ret), symbol->rows, symbol->width, errtxt);
             symbol->input_mode |= FAST_MODE;
-            ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+            (void) ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
             printf(" \"%s\", \"%s\" },\n", strcmp(errtxt, symbol->errtxt) != 0 ? symbol->errtxt : "", data[i].comment);
         } else {
             assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

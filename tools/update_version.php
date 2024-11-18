@@ -2,7 +2,7 @@
 /* Update Zint version number in various files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -49,6 +49,8 @@ $v_base_str = $v_str = "$major.$minor.$release";
 if ($build) {
     $v_str .= ".$build";
 }
+$v_str_dev = $build ? $v_str . ' (dev)' : $v_str;
+
 $rc_str1 = "$major,$minor,$release,$build";
 $rc_str2 = "$major.$minor.$release.$build";
 
@@ -202,6 +204,10 @@ if (!file_put_contents($file, implode("\n", $lines))) {
     exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
 }
 
+// README
+
+year_replace($data_dirname . 'README', $year);
+
 // README.linux
 
 version_replace(4, $data_dirname . 'README.linux', '/zint-[0-9]/', '/[0-9][0-9.]+/', $v_base_str);
@@ -217,6 +223,10 @@ version_replace(1, $data_dirname . 'zint.nsi', '/^!define +PRODUCT_VERSION/', '/
 // backend/libzint.rc
 
 rc_replace($data_dirname . 'backend/libzint.rc', $rc_str1, $rc_str2, $year);
+
+// backend/zint.h
+
+version_replace(1, $data_dirname . 'backend/zint.h', '/^ \* Version: /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str_dev);
 
 // backend/zintconfig.h
 
@@ -296,9 +306,7 @@ version_replace(1, $data_dirname . 'backend_qt/backend_qt.pro', '/^VERSION[ \t]*
 // docs/manual.pmd
 
 version_replace(1, $data_dirname . 'docs/manual.pmd', '/^% Version /', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?( \(dev\))?/', $v_str);
-if ($build !== 9) { // Don't update if marking version as dev
-    version_replace(1, $data_dirname . 'docs/manual.pmd', '/^The current stable version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_str);
-}
+version_replace(1, $data_dirname . 'docs/manual.pmd', '/^The current stable version of Zint/', '/[0-9]+\.[0-9]+\.[0-9]+(\.[0-9]+)?/', $v_base_str);
 
 // docs/zint.1.pmd
 

@@ -168,7 +168,7 @@ static int c128_cost(const unsigned char source[], const int length, const int i
         const int cset = priority[p];
         if (C128_C0C1(cset)) {
             if (can_c && (!manuals[i] || manuals[i] == C128_C0)) {
-                const int incr = is_fnc1 ? 1 : 2;
+                const int incr = 2 - is_fnc1;
                 int mode = prior_cset;
                 int cost = 1;
                 if (prior_cset != cset) {
