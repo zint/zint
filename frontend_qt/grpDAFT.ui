@@ -83,9 +83,15 @@
      </item>
      <item>
       <widget class="QPushButton" name="btnDAFTTrackerDefault">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
+         <horstretch>1</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
        <property name="maximumSize">
         <size>
-         <width>80</width>
+         <width>120</width>
          <height>16777215</height>
         </size>
        </property>
@@ -93,7 +99,7 @@
         <string>Reset tracker ratio to default 25%</string>
        </property>
        <property name="text">
-        <string>De&amp;fault</string>
+        <string>De&amp;fault (25%)</string>
        </property>
       </widget>
      </item>
@@ -109,9 +115,10 @@
      </property>
      <property name="text">
       <string>Examples of tracker ratios:
-Australia Post 26%, Dutch Post and Royal Mail 25.6%, Japan Post 33%,
-PLANET and POSTNET 25% (Tracker and Ascender only),
-USPS Intelligent Mail 33.1%
+  Australia Post 26%
+  Dutch Post and Royal Mail 25.6%, Japan Post 33%
+  PLANET and POSTNET 25% (Tracker &amp; Ascender only)
+  USPS Intelligent Mail 33.1%
 </string>
      </property>
      <property name="textFormat">

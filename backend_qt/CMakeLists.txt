@@ -4,6 +4,7 @@
 
 project(QZint)
 
+cmake_minimum_required(VERSION 3.10)
 set(${PROJECT_NAME}_SRCS qzint.cpp)
 
 if(USE_QT6)

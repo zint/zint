@@ -51,9 +51,9 @@
          <string>&amp;Manual Code Sets and FNC1s (Extra Escape Mode)</string>
         </property>
         <property name="toolTip">
-         <string>Process special escape sequences &quot;\^A&quot;, &quot;\^B&quot; and &quot;\^C&quot;
-allowing manual Code Set selection and special escape
-sequence &quot;\^1&quot; allowing manual FNC1s</string>
+         <string>Process special escape sequences &quot;\^A&quot;, &quot;\^B&quot;, &quot;\^C&quot; and
+&quot;\^@&quot; allowing manual Code Set selection and special
+escape sequence &quot;\^1&quot; allowing manual FNC1s</string>
         </property>
        </widget>
       </item>

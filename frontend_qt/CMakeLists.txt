@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 # vim: set ts=4 sw=4 et :
 
+cmake_minimum_required(VERSION 3.10)
 project(zint-qt)
 
 set(CMAKE_AUTORCC ON)

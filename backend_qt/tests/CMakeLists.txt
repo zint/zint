@@ -1,7 +1,7 @@
-# Copyright (C) 2021-23 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2021-24 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(QZint_tests LANGUAGES CXX)
 
 enable_testing()

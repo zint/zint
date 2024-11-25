@@ -2,6 +2,7 @@
 # Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
+cmake_minimum_required(VERSION 3.10)
 project(zint_frontend)
 
 add_executable(${PROJECT_NAME} main.c)

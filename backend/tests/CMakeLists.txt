@@ -1,9 +1,9 @@
-# Copyright (C) 2009-2022 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
 # Adapted from qrencode/tests/CMakeLists.txt
 # Copyright (C) 2006-2017 Kentaro Fukuchi <kentaro@fukuchi.org>
 # vim: set ts=4 sw=4 et :
 
-cmake_minimum_required(VERSION 3.5)
+cmake_minimum_required(VERSION 3.10)
 project(zint_backend_tests)
 
 enable_testing()

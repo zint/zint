@@ -145,7 +145,7 @@ descend below the main bars (default 5X)
 to default 5X</string>
          </property>
          <property name="text">
-          <string>De&amp;fault</string>
+          <string>De&amp;fault (5X)</string>
          </property>
          <property name="sizePolicy">
           <sizepolicy hsizetype="Preferred" vsizetype="Fixed">
@@ -155,7 +155,7 @@ to default 5X</string>
          </property>
          <property name="sizeHint" stdset="0">
           <size>
-           <width>40</width>
+           <width>60</width>
            <height>20</height>
           </size>
          </property>
@@ -181,7 +181,7 @@ to default 5X</string>
    <item>
     <widget class="QCheckBox" name="chkUPCEANGuardWhitespace">
      <property name="text">
-      <string>Guard Whitespace</string>
+      <string>Guard &amp;Whitespace</string>
      </property>
      <property name="checked">
       <bool>false</bool>
