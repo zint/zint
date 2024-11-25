@@ -1118,8 +1118,8 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
     unsigned char data_block[180];
     unsigned char ecc_block[36];
     int i, j, block;
-    int input_position = -1;
-    int output_position = -1;
+    int input_position = 0;
+    int output_position = 0;
     const int table_d1_pos = ((version - 1) * 36) + ((ecc_level - 1) * 9);
     rs_t rs;
 
@@ -1134,17 +1134,15 @@ static void hx_add_ecc(unsigned char fullstream[], const unsigned char datastrea
 
         for (block = 0; block < batch_size; block++) {
             for (j = 0; j < data_length; j++) {
-                input_position++;
-                output_position++;
                 data_block[j] = input_position < data_codewords ? datastream[input_position] : 0;
-                fullstream[output_position] = data_block[j];
+                fullstream[output_position++] = data_block[j];
+                input_position++;
             }
 
             rs_encode(&rs, data_length, data_block, ecc_block);
 
             for (j = 0; j < ecc_length; j++) {
-                output_position++;
-                fullstream[output_position] = ecc_block[ecc_length - j - 1];
+                fullstream[output_position++] = ecc_block[j];
             }
         }
     }
@@ -1177,7 +1175,7 @@ static void hx_set_function_info(unsigned char *grid, const int size, const int 
     rs_init_code(&rs, 4, 1);
     rs_encode(&rs, 3, fi_cw, fi_ecc);
 
-    for (i = 3; i >= 0; i--) {
+    for (i = 0; i < 4; i++) {
         bp = bin_append_posn(fi_ecc[i], 4, function_information, bp);
     }
 

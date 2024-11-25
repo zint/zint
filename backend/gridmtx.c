@@ -886,12 +886,12 @@ static void gm_add_ecc(const char binary[], const int data_posn, const int layer
         rs_init_code(&rs, ecc_size, 1);
         rs_encode(&rs, data_size, data_block, ecc_block);
 
-        /* Correct error correction data but in reverse order */
+        /* Add error correction data */
         for (j = 0; j < data_size; j++) {
             block[j] = data_block[j];
         }
         for (j = 0; j < ecc_size; j++) {
-            block[(j + data_size)] = ecc_block[ecc_size - j - 1];
+            block[j + data_size] = ecc_block[j];
         }
 
         for (j = 0; j < n2; j++) {

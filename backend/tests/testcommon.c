@@ -52,13 +52,17 @@
 #include "../eci.h"
 #include "../output.h"
 
-static int tests = 0;
-static int failed = 0;
-static int skipped = 0;
-int assertionFailed = 0;
-int assertionNum = 0;
-struct zint_symbol **assertionPPSymbol = NULL;
-const char *assertionFilename = "";
+static int testTests = 0;
+static int testFailed = 0;
+static int testSkipped = 0;
+static int testDataset = 0;
+static int testDatasetNum = 0;
+static int testDatasetTot = 0;
+int testAssertFailed = 0;
+int testAssertNum = 0;
+static int testAssertTot = 0;
+struct zint_symbol **testAssertPPSymbol = NULL;
+const char *testAssertFilename = "";
 static const char *testName = NULL;
 static const char *testFunc = NULL;
 
@@ -67,52 +71,52 @@ static const char *testFunc = NULL;
 #if (defined(_MSC_VER) && _MSC_VER <= 1200) || defined(ZINT_IS_C89) /* VC6 or C89 */
 #include <stdarg.h>
 void assert_zero(int exp, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (exp != 0) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_nonzero(int exp, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (exp == 0) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_null(const void *exp, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (exp != NULL) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_nonnull(const void *exp, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (exp == NULL) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_equal(int e1, int e2, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (e1 != e2) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (e1 != e2) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 void assert_notequal(int e1, int e2, const char *fmt, ...) {
-    assertionNum++;
+    testAssertNum++;
     if (e1 == e2) {
-        va_list args; assertionFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
-        if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; };
+        va_list args; testAssertFailed++; va_start(args, fmt); vprintf(fmt, args); va_end(args); testFinish();
+        if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; };
     }
 }
 #endif
@@ -129,66 +133,93 @@ void assert_notequal(int e1, int e2, const char *fmt, ...) {
 
 /* Begin individual test function */
 void testStartReal(const char *func, const char *name, struct zint_symbol **pp_symbol) {
-    tests++;
+    testTests++;
     if (func && *func && name && *name && strcmp(func, name) == 0) {
         testName = "";
     } else {
         testName = name;
     }
     testFunc = func ? func : "";
-    assertionFailed = 0;
-    assertionNum = 0;
-    assertionPPSymbol = pp_symbol;
-    printf("_____%d: %s: %s...\n", tests, testFunc, testName ? testName : "");
+    testDataset = 0;
+    testDatasetNum = 0;
+    testAssertFailed = 0;
+    testAssertNum = 0;
+    testAssertPPSymbol = pp_symbol;
+    printf("_____%d: %s: %s...\n", testTests, testFunc, testName ? testName : "");
 }
 
 /* End individual test function */
 void testFinish(void) {
-    fputs(assertionFailed ? "*****" : ".....", stdout);
+    testAssertTot += testAssertNum;
+    testDatasetTot += testDatasetNum;
+    fputs(testAssertFailed ? "*****" : ".....", stdout);
     if (testName && *testName) {
-        printf("%d: %s: %s ", tests, testFunc, testName);
+        printf("%d: %s: %s ", testTests, testFunc, testName);
     } else {
-        printf("%d: %s: ", tests, testFunc);
+        printf("%d: %s: ", testTests, testFunc);
     }
-    if (assertionFailed) {
-        printf("FAILED. (%d assertions failed.)\n", assertionFailed);
-        failed++;
+    if (testAssertFailed) {
+        printf("FAILED. (%d assertions failed)\n", testAssertFailed);
+        testFailed++;
+    } else if (testDataset) {
+        if (testAssertNum) {
+            printf("PASSED. (%d assertions, %d dataset items)\n", testAssertNum, testDatasetNum);
+        } else {
+            printf("EMPTY. (***No assertions executed***)\n");
+        }
     } else {
-        printf("PASSED. (%d assertions passed.)\n", assertionNum);
+        if (testAssertNum) {
+            printf("PASSED. (%d assertions)\n", testAssertNum);
+        } else {
+            printf("EMPTY. (***No assertions executed***)\n");
+        }
     }
 }
 
 /* Skip (and end) individual test function */
 void testSkip(const char *msg) {
-    skipped++;
-    fputs(assertionFailed ? "*****" : ".....", stdout);
+    testSkipped++;
+    testAssertTot += testAssertNum;
+    testDatasetTot += testDatasetNum;
+    fputs(testAssertFailed ? "*****" : ".....", stdout);
     if (testName && *testName) {
-        printf("%d: %s: %s ", tests, testFunc, testName);
+        printf("%d: %s: %s ", testTests, testFunc, testName);
     } else {
-        printf("%d: %s: ", tests, testFunc);
+        printf("%d: %s: ", testTests, testFunc);
     }
-    if (assertionFailed) {
-        printf("FAILED. (%d assertions failed.)\n", assertionFailed);
-        failed++;
+    if (testAssertFailed) {
+        printf("FAILED. (%d assertions failed)\n", testAssertFailed);
+        testFailed++;
+    } else if (testDataset) {
+        printf("SKIPPED. %s. (%d assertions, %d dataset items)\n", msg, testAssertNum, testDatasetNum);
     } else {
-        printf("SKIPPED. %s. (%d assertions passed.)\n", msg, assertionNum);
+        printf("SKIPPED. %s. (%d assertions)\n", msg, testAssertNum);
     }
 }
 
 /* End test program */
 void testReport(void) {
-    if (failed && skipped) {
-        printf("Total %d tests, %d skipped, %d **fails**.\n", tests, skipped, failed);
+    if (testFailed && testSkipped) {
+        printf("Total %d tests, %d skipped, %d **fails**.\n", testTests, testSkipped, testFailed);
         exit(-1);
     }
-    if (failed) {
-        printf("Total %d tests, %d **fails**.\n", tests, failed);
+    if (testFailed) {
+        printf("Total %d tests, %d **fails**.\n", testTests, testFailed);
         exit(-1);
     }
-    if (skipped) {
-        printf("Total %d tests, %d skipped.\n", tests, skipped);
-    } else if (tests) {
-        printf("Total %d tests, all passed.\n", tests);
+    if (testSkipped) {
+        printf("Total %d tests, %d skipped.\n", testTests, testSkipped);
+    } else if (testTests) {
+        if (testAssertTot) {
+            if (testDatasetTot) {
+                printf("Total %d tests (%d assertions, %d dataset items), all passed.\n",
+                        testTests, testAssertTot, testDatasetTot);
+            } else {
+                printf("Total %d tests (%d assertions), all passed.\n", testTests, testAssertTot);
+            }
+        } else {
+            printf("***No assertions executed in %d tests.***\n", testTests);
+        }
     } else {
         fputs("***No tests run.***\n", stdout);
     }
@@ -281,28 +312,28 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
         filename = strrchr(argv[0], '/');
 #endif
         if (filename) {
-            assertionFilename = filename + 1;
+            testAssertFilename = filename + 1;
         } else {
-            assertionFilename = argv[0];
+            testAssertFilename = argv[0];
         }
     }
 
     for (i = 1; i < argc; i++) {
         if (strcmp(argv[i], "-d") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -d debug value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -d debug value missing, ignoring***\n");
             } else {
                 int d; /* Allow multiple debug flags, OR-ing */
                 optarg = argv[++i];
                 if (!validate_int(optarg, &d)) {
-                    fprintf(stderr, "testRun: -d debug value invalid, ignoring\n");
+                    fprintf(stderr, "***testRun: -d debug value invalid, ignoring***\n");
                 } else {
                     ctx.debug |= d;
                 }
             }
         } else if (strcmp(argv[i], "-f") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -f func value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -f func value missing, ignoring***\n");
             } else {
                 optarg = argv[++i];
                 if (strlen(optarg) < 256) {
@@ -314,13 +345,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                     }
                     func = func_buf;
                 } else {
-                    fprintf(stderr, "testRun: -f func value too long, ignoring\n");
+                    fprintf(stderr, "***testRun: -f func value too long, ignoring***\n");
                     func = NULL;
                 }
             }
         } else if (strcmp(argv[i], "-n") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -n func exclude value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -n func exclude value missing, ignoring***\n");
             } else {
                 optarg = argv[++i];
                 if (strlen(optarg) < 256) {
@@ -332,13 +363,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                     }
                     func_not = func_not_buf;
                 } else {
-                    fprintf(stderr, "testRun: -p func exclude value too long, ignoring\n");
+                    fprintf(stderr, "***testRun: -p func exclude value too long, ignoring***\n");
                     func_not = NULL;
                 }
             }
         } else if (strcmp(argv[i], "-m") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -m func match value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -m func match value missing, ignoring***\n");
             } else {
                 func_match = argv[++i];
             }
@@ -346,30 +377,30 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
             ctx.generate = 1;
         } else if (strcmp(argv[i], "-i") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -i index value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -i index value missing, ignoring***\n");
             } else {
                 optarg = argv[++i];
                 if (!validate_int_range(optarg, &ctx.index, &ctx.index_end)) {
-                    fprintf(stderr, "testRun: -i index value invalid, ignoring\n");
+                    fprintf(stderr, "***testRun: -i index value invalid, ignoring***\n");
                     ctx.index = ctx.index_end = -1;
                 }
             }
         } else if (strcmp(argv[i], "-x") == 0) {
             if (i + 1 == argc) {
-                fprintf(stderr, "testRun: -x exclude value missing, ignoring\n");
+                fprintf(stderr, "***testRun: -x exclude value missing, ignoring***\n");
             } else {
                 optarg = argv[++i];
                 if (exclude_idx + 1 == ZINT_TEST_CTX_EXC_MAX) {
-                    fprintf(stderr, "testRun: too many -x exclude values, ignoring\n");
+                    fprintf(stderr, "***testRun: too many -x exclude values, ignoring***\n");
                 } else if (!validate_int_range(optarg, &ctx.exclude[exclude_idx], &ctx.exclude_end[exclude_idx])) {
-                    fprintf(stderr, "testRun: -x exclude value invalid, ignoring\n");
+                    fprintf(stderr, "***testRun: -x exclude value invalid, ignoring***\n");
                     ctx.exclude[exclude_idx] = ctx.exclude_end[exclude_idx] = -1;
                 } else {
                     exclude_idx++;
                 }
             }
         } else {
-            fprintf(stderr, "testRun: unknown arg '%s', ignoring\n", argv[i]);
+            fprintf(stderr, "***testRun: unknown arg '%s', ignoring***\n", argv[i]);
         }
     }
 
@@ -389,16 +420,17 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     }
 
     if (func && !ran) {
-        fprintf(stderr, "testRun: unknown -f func arg '%s'\n", func);
+        fprintf(stderr, "***testRun: unknown -f func arg '%s'***\n", func);
     }
     if (func_match && !ran) {
-        fprintf(stderr, "testRun: no funcs matched -m arg '%s'\n", func_match);
+        fprintf(stderr, "***testRun: no funcs matched -m arg '%s'***\n", func_match);
     }
 }
 
 /* Call in a dataset loop to determine if a datum should be tested according to -i & -x args */
 int testContinue(const testCtx *const p_ctx, const int i) {
     int j;
+    testDataset = 1;
     if (p_ctx->index != -1) {
         if (p_ctx->index_end != -1) {
             if (i < p_ctx->index || (p_ctx->index_end && i > p_ctx->index_end)) {
@@ -421,6 +453,7 @@ int testContinue(const testCtx *const p_ctx, const int i) {
         printf("i:%d\n", i);
         fflush(stdout); /* For assertion failures */
     }
+    testDatasetNum++;
     return 0;
 }
 
@@ -3102,12 +3135,18 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     bwipp_opts = bwipp_opts_buf;
                 }
             } else if (symbology == BARCODE_MAXICODE) {
-                int have_scm = memcmp(bwipp_data, "[)>^03001^02996", 15) == 0;
+                int have_eci = memcmp(bwipp_data, "^ECI", 4) == 0;
+                int have_scm = memcmp(bwipp_data + have_eci * 10, "[)>^03001^029", 13) == 0
+                                    && z_isdigit(bwipp_data[13 + have_eci * 10])
+                                    && z_isdigit(bwipp_data[14 + have_eci * 10]);
                 int mode = option_1;
+                char prefix_buf[30];
+                int prefix_len = 0;
                 if (mode <= 0) {
                     if (primary_len == 0) {
                         mode = 4;
                     } else {
+                        mode = 2;
                         for (i = 0; i < primary_len - 6; i++) {
                             if (!z_isdigit(symbol->primary[i]) && (symbol->primary[i] != ' ')) {
                                 mode = 3;
@@ -3121,9 +3160,21 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                             strlen(bwipp_opts_buf) ? " " : "", mode);
                     bwipp_opts = bwipp_opts_buf;
                 }
+                if (option_2 > 0) {
+                    char scm_vv_buf[40];
+                    sprintf(scm_vv_buf, "[)>^03001^029%02d", option_2 - 1); /* [)>\R01\Gvv */
+                    memmove(bwipp_data + 15, bwipp_data, strlen(bwipp_data) + 1);
+                    memcpy(bwipp_data, scm_vv_buf, 15);
+                    have_scm = 1;
+                    have_eci = 0;
+                    if (!parse) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparse",
+                                strlen(bwipp_opts_buf) ? " " : "");
+                        bwipp_opts = bwipp_opts_buf;
+                        parse = 1;
+                    }
+                }
                 if (primary_len >= 6) { /* Keep gcc happy */
-                    char prefix_buf[30];
-                    int prefix_len;
                     int postcode_len = primary_len - 6;
                     char postcode[10];
                     if (postcode_len >= 10) postcode_len = 9;
@@ -3144,31 +3195,27 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                     sprintf(prefix_buf, "%s^029%.3s^029%.3s^029",
                             postcode, primary + primary_len - 6, primary + primary_len - 3);
                     prefix_len = (int) strlen(prefix_buf);
-                    if (have_scm) {
-                        memmove(bwipp_data + 15 + prefix_len, bwipp_data, strlen(bwipp_data) - 15 + 1);
-                        memcpy(bwipp_data + 15, prefix_buf, prefix_len);
-                    } else {
-                        memmove(bwipp_data + prefix_len, bwipp_data, strlen(bwipp_data) + 1);
-                        memcpy(bwipp_data, prefix_buf, prefix_len);
+                }
+                if (prefix_len || have_scm) {
+                    char eci_buf[10];
+                    int offset = 15 * have_scm;
+                    if (have_eci) {
+                        memcpy(eci_buf, bwipp_data, 10);
+                        memmove(bwipp_data, bwipp_data + 10, strlen(bwipp_data) - 10 + 1);
                     }
-                    if (!parse) {
-                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparse",
-                                strlen(bwipp_opts_buf) ? " " : "");
-                        bwipp_opts = bwipp_opts_buf;
-                        parse = 1;
+                    memmove(bwipp_data + offset + prefix_len, bwipp_data + offset, strlen(bwipp_data) - offset + 1);
+                    memcpy(bwipp_data + offset, prefix_buf, prefix_len);
+                    if (have_eci) {
+                        memmove(bwipp_data + offset + prefix_len + 10, bwipp_data + offset + prefix_len,
+                                strlen(bwipp_data) - (offset + prefix_len) + 1);
+                        memcpy(bwipp_data + offset + prefix_len, eci_buf, 10);
                     }
                 }
-                if (option_2 > 0) {
-                    char scm_vv_buf[40];
-                    sprintf(scm_vv_buf, "[^041>^03001^029%02d", option_2 - 1); /* [)>\R01\Gvv */
-                    memmove(bwipp_data + 18, bwipp_data, strlen(bwipp_data) + 1);
-                    memcpy(bwipp_data, scm_vv_buf, 18);
-                    if (!parse) {
-                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparse",
-                                strlen(bwipp_opts_buf) ? " " : "");
-                        bwipp_opts = bwipp_opts_buf;
-                        parse = 1;
-                    }
+                if (!parse) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparse",
+                            strlen(bwipp_opts_buf) ? " " : "");
+                    bwipp_opts = bwipp_opts_buf;
+                    parse = 1;
                 }
                 if (symbol->structapp.count) {
                     sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%ssam=%c%c",
@@ -3759,7 +3806,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 105, },
         { "PDF417", BARCODE_HIBC_PDF, 106, },
         { "", -1, 107, },
-        { "", BARCODE_HIBC_MICPDF, 108, },
+        { "MicroPDF417", BARCODE_HIBC_MICPDF, 108, },
         { "", -1, 109, },
         { "CodablockF", BARCODE_HIBC_BLOCKF, 110, },
         { "", -1, 111, },
@@ -4110,6 +4157,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         if (primary && primary[0]) {
             int primary_len = (int) strlen(primary);
             int maxi_len = 0;
+            int have_manual_scm = 0;
             if (symbol->option_2 >= 1 && symbol->option_2 <= 100) {
 /* Suppress gcc warning null destination pointer [-Wformat-overflow=] false-positive */
 #if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 7
@@ -4121,8 +4169,10 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 #pragma GCC diagnostic pop
 #endif
                 maxi_len = (int) strlen(maxi);
+            } else if (expected_len >= 9 && strncmp(expected, "[)>\03601\035", 7) == 0
+                        && z_isdigit(expected[7]) && z_isdigit(expected[8])) {
+                have_manual_scm = 1;
             }
-            #if 1
             if (primary[0] > '9') {
                 sprintf(maxi + maxi_len, "%-6.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
                         3, primary + primary_len - 6, 3, primary + primary_len - 3);
@@ -4135,14 +4185,17 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                             3, primary + primary_len - 6, 3, primary + primary_len - 3);
                 }
             }
-            #else
-            sprintf(maxi + maxi_len, "%.*s\035%.*s\035%.*s\035", primary_len - 6, primary,
-                    3, primary + primary_len - 6, 3, primary + primary_len - 3);
-            #endif
             maxi_len = (int) strlen(maxi);
-            memcpy(maxi + maxi_len, expected, expected_len);
+            if (have_manual_scm) {
+                memmove(maxi + 9, maxi, maxi_len);
+                memcpy(maxi, expected, 9);
+                memcpy(maxi + maxi_len + 9, expected + 9, expected_len - 9);
+            } else {
+                memcpy(maxi + maxi_len, expected, expected_len);
+            }
             expected = maxi;
             expected_len += maxi_len;
+            maxi[expected_len] = '\0';
         }
     } else if (symbology == BARCODE_CODABAR) {
         /* Ignore start A/B/C/D and stop A/B/C/D chars to avoid upper/lowercase issues */

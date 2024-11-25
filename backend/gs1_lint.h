@@ -751,7 +751,8 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return n3_iso3166(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 423 || ai == 425) {
-            return n3_iso3166__n3__iso3166__n3__iso3166__n3__iso3166__n3__iso3166(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n3_iso3166__n3__iso3166__n3__iso3166__n3__iso3166__n3__iso3166(data,
+                        data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 427) {
             return x__3(data, data_len, p_err_no, p_err_posn, err_msg);

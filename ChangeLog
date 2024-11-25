@@ -1,4 +1,4 @@
-Version 2.13.0.9 (dev) not released yet (2024-11-18)
+Version 2.13.0.9 (dev) not released yet (2024-11-23)
 ====================================================
 
 **Incompatible changes**
@@ -14,7 +14,7 @@ Version 2.13.0.9 (dev) not released yet (2024-11-18)
 - Add-ons for UPC-A and UPC-E now descend to be level with the main symbol guard
   bars, and the righthand outside digit is now placed 1X less from main symbol
   to avoid touching any add-on
-- GS1_128 now warns if READER_INIT option used
+- GS1-128 symbols now warn if READER_INIT option used
 
 Changes
 -------
@@ -41,8 +41,7 @@ Changes
   return warning if ECC < 5% (due to bit-stuffing when version given)
 - MAXICODE: zero-pad US postcodes that lack "+4" (Annex B.1.4a), from
   OkapiBarcode, props Daniel Gredler;
-  use code set E for padding as well, saves codeword, props Bue Jensen (BWIPP PR
-  #279)
+  add minimal encodation algorithm, props Bue Jensen (BWIPP)
 - GUI: use X11 (xcb) as platform instead of Wayland on Linux to avoid various
   weird behaviours;
   in "grpDATF.ui" use "PlainText" rather than "RichText" for tracker ratio

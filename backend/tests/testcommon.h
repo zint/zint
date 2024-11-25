@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -71,10 +71,10 @@ extern int pclose(FILE *stream);
 #  pragma warning(disable: 4702) /* unreachable code */
 #endif
 
-extern int assertionFailed;
-extern int assertionNum;
-extern struct zint_symbol **assertionPPSymbol;
-extern const char *assertionFilename;
+extern int testAssertFailed;
+extern int testAssertNum;
+extern struct zint_symbol **testAssertPPSymbol;
+extern const char *testAssertFilename;
 
 #if defined(_MSC_VER) && _MSC_VER < 1900 /* MSVC 2015 */
 #define testStart(name) (testStartReal("", name, NULL))
@@ -114,9 +114,9 @@ void assert_equalu64(uint64_t e1, uint64_t e2, const char *fmt, ...);
 void assert_notequal(int e1, int e2, const char *fmt, ...);
 #else
 #define assert_exp(exp, ...) \
-    { assertionNum++; if (!(exp)) { assertionFailed++; printf("%s:%d ", assertionFilename, __LINE__); \
+    { testAssertNum++; if (!(exp)) { testAssertFailed++; printf("%s:%d ", testAssertFilename, __LINE__); \
       printf(__VA_ARGS__); testFinish(); \
-      if (assertionPPSymbol) { ZBarcode_Delete(*assertionPPSymbol); assertionPPSymbol = NULL; } return; } }
+      if (testAssertPPSymbol) { ZBarcode_Delete(*testAssertPPSymbol); testAssertPPSymbol = NULL; } return; } }
 
 #define assert_zero(exp, ...) assert_exp((exp) == 0, __VA_ARGS__)
 #define assert_nonzero(exp, ...) assert_exp((exp) != 0, __VA_ARGS__)

@@ -132,8 +132,7 @@ INTERNAL void rs_init_code(rs_t *rs, const int nsym, int index) {
     }
 }
 
-/* rs_encode(&rs, datalen, data, res) generates nsym Reed-Solomon codes (nsym as given in rs_init_code())
- * and places them in reverse order in res */
+/* rs_encode(&rs, datalen, data, res) generates nsym Reed-Solomon codes (nsym as given in rs_init_code()) */
 INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *data, unsigned char *res) {
     int i, k;
     const unsigned char *const logt = rs->logt;
@@ -141,6 +140,7 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
     const unsigned char *const rspoly = rs->rspoly;
     const unsigned char *const log_rspoly = rs->log_rspoly;
     const int nsym = rs->nsym;
+    const int nsym_halved = nsym >> 1;
 
     memset(res, 0, nsym);
     if (rs->zero) { /* Poly has a zero coeff so need to check in inner loop */
@@ -175,6 +175,12 @@ INTERNAL void rs_encode(const rs_t *rs, const int datalen, const unsigned char *
             }
         }
     }
+    /* Reverse the result */
+    for (i = 0; i < nsym_halved; i++) {
+        const unsigned char tmp = res[i];
+        res[i] = res[nsym - 1 - i];
+        res[nsym - 1 - i] = tmp;
+    }
 }
 
 /* The same as above but for unsigned int data and result - Aztec code compatible */
@@ -186,6 +192,7 @@ INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned i
     const unsigned char *const rspoly = rs->rspoly;
     const unsigned char *const log_rspoly = rs->log_rspoly;
     const int nsym = rs->nsym;
+    const int nsym_halved = nsym >> 1;
 
     memset(res, 0, sizeof(unsigned int) * nsym);
     if (rs->zero) { /* Poly has a zero coeff so need to check in inner loop */
@@ -219,6 +226,12 @@ INTERNAL void rs_encode_uint(const rs_t *rs, const int datalen, const unsigned i
                 res[0] = 0;
             }
         }
+    }
+    /* Reverse the result */
+    for (i = 0; i < nsym_halved; i++) {
+        const unsigned int tmp = res[i];
+        res[i] = res[nsym - 1 - i];
+        res[nsym - 1 - i] = tmp;
     }
 }
 
@@ -303,6 +316,7 @@ INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const 
     const unsigned short *const rspoly = rs_uint->rspoly;
     const unsigned int *const log_rspoly = rs_uint->log_rspoly;
     const int nsym = rs_uint->nsym;
+    const int nsym_halved = nsym >> 1;
 
     memset(res, 0, sizeof(unsigned int) * nsym);
     if (logt == NULL || alog == NULL) {
@@ -339,6 +353,12 @@ INTERNAL void rs_uint_encode(const rs_uint_t *rs_uint, const int datalen, const 
                 res[0] = 0;
             }
         }
+    }
+    /* Reverse the result */
+    for (i = 0; i < nsym_halved; i++) {
+        const unsigned int tmp = res[i];
+        res[i] = res[nsym - 1 - i];
+        res[nsym - 1 - i] = tmp;
     }
 }
 

@@ -90,8 +90,8 @@ static char *aus_rs_error(char data_pattern[], char *d) {
     rs_init_code(&rs, 4, 1);
     rs_encode(&rs, triple_writer, triple, result);
 
-    for (reader = 4; reader > 0; reader--, d += 3) {
-        memcpy(d, AusBarTable[result[reader - 1]], 3);
+    for (reader = 0; reader < 4; reader++, d += 3) {
+        memcpy(d, AusBarTable[result[reader]], 3);
     }
 
     return d;

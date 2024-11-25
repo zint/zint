@@ -179,19 +179,20 @@ static void dm_ecc(unsigned char *binary, const int bytes, const int datablock, 
         for (n = b; n < bytes; n += blocks)
             buf[p++] = binary[n];
         rs_encode(&rs, p, buf, ecc);
-        p = rsblock - 1; /* comes back reversed */
-        for (n = b; n < rsblocks; n += blocks) {
-            if (skew) {
-                /* Rotate ecc data to make 144x144 size symbols acceptable */
-                /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da
-                   or https://github.com/nu-book/zxing-cpp/issues/259 */
+        if (skew) {
+            /* Rotate ecc data to make 144x144 size symbols acceptable */
+            /* See http://groups.google.com/group/postscriptbarcode/msg/5ae8fda7757477da
+               or https://github.com/nu-book/zxing-cpp/issues/259 */
+            for (n = b, p = 0; n < rsblocks; n += blocks, p++) {
                 if (b < 8) {
-                    binary[bytes + n + 2] = ecc[p--];
+                    binary[bytes + n + 2] = ecc[p];
                 } else {
-                    binary[bytes + n - 8] = ecc[p--];
+                    binary[bytes + n - 8] = ecc[p];
                 }
-            } else {
-                binary[bytes + n] = ecc[p--];
+            }
+        } else {
+            for (n = b, p = 0; n < rsblocks; n += blocks, p++) {
+                binary[bytes + n] = ecc[p];
             }
         }
     }

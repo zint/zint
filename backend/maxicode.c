@@ -37,510 +37,498 @@
 #include "maxicode.h"
 #include "reedsol.h"
 
-/* Handles error correction of primary message */
-static void maxi_do_primary_check(unsigned char maxi_codeword[144]) {
-    unsigned char results[15];
-    int j;
-    int datalen = 10;
-    int ecclen = 10;
-    rs_t rs;
+/* Code Set states. Those with PAD (i.e. A, B and E) are first pick */
+#define MX_A      0
+#define MX_B      1
+#define MX_E      2
+#define MX_C      3
+#define MX_D      4
+#define MX_STATES 5
 
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, ecclen, 1);
+/* Prior:A        B        E        C        D        Later */
+static const char mx_latch_seq[MX_STATES][MX_STATES][2] = {
+    { {  0  }, {63   }, {58   }, {58   }, {58   } }, /* A */
+    { {63   }, {  0  }, {63   }, {63   }, {63   } }, /* B */
+    { {62,62}, {62,62}, {  0  }, {62,62}, {62,62} }, /* E */
+    { {60,60}, {60,60}, {60,60}, {  0  }, {60,60} }, /* C */
+    { {61,61}, {61,61}, {61,61}, {61,61}, {  0  } }, /* D */
 
-    rs_encode(&rs, datalen, maxi_codeword, results);
+};
+static const char mx_latch_len[MX_STATES][MX_STATES] = { /* Lengths of above */
+    {    0,       1,       1,       1,       1    }, /* A */
+    {    1,       0,       1,       1,       1    }, /* B */
+    {    2,       2,       0,       2,       2    }, /* E */
+    {    2,       2,       2,       0,       2    }, /* C */
+    {    2,       2,       2,       2,       0    }, /* D */
+};
 
-    for (j = 0; j < ecclen; j += 1)
-        maxi_codeword[ datalen + j] = results[ecclen - 1 - j];
-}
+/* Op */
+struct mx_op {
+    unsigned char op;
+    unsigned char intake; /* `output` calculated from this */
+};
 
-/* Handles error correction of odd characters in secondary */
-static void maxi_do_secondary_chk_odd(unsigned char maxi_codeword[144], const int ecclen) {
-    unsigned char data[100];
-    unsigned char results[30];
-    int j;
-    int datalen = 68;
-    rs_t rs;
+/* Op table ops */
+#define MX_OP_DGTS      0
+#define MX_OP_SETA      0x01 /* If change these, must change `maxiCodeSet` */
+#define MX_OP_SETB      0x02
+#define MX_OP_SETE      0x04
+#define MX_OP_SETC      0x08
+#define MX_OP_SETD      0x10
+#define MX_OP_SHA       (0x20 | MX_OP_SETA)
+#define MX_OP_2SHA      (0x40 | MX_OP_SETA)
+#define MX_OP_3SHA      (0x80 | MX_OP_SETA)
+#define MX_OP_SHB       (0x20 | MX_OP_SETB)
+#define MX_OP_SHE       (0x20 | MX_OP_SETE)
+#define MX_OP_SHC       (0x20 | MX_OP_SETC)
+#define MX_OP_SHD       (0x20 | MX_OP_SETD)
 
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, ecclen, 1);
+/* Op table indexes */
+#define MX_OP_DGTS_IDX  0
+#define MX_OP_SETA_IDX  1
+#define MX_OP_SETB_IDX  2
+#define MX_OP_SETE_IDX  3
+#define MX_OP_SETC_IDX  4
+#define MX_OP_SETD_IDX  5
+#define MX_OP_SHA_IDX   6
+#define MX_OP_2SHA_IDX  7
+#define MX_OP_3SHA_IDX  8
+#define MX_OP_SHB_IDX   9
+#define MX_OP_SHE_IDX   10
+#define MX_OP_SHC_IDX   11
+#define MX_OP_SHD_IDX   12
+#define MX_OP_IDXS      13
 
-    if (ecclen == 20)
-        datalen = 84;
+/* Op table (order must match indexes above) */
+static const struct mx_op mx_op_tab[MX_OP_IDXS] = {
+    /*   op     intake */
+    { MX_OP_DGTS, 9 },
+    { MX_OP_SETA, 1 },
+    { MX_OP_SETB, 1 },
+    { MX_OP_SETE, 1 },
+    { MX_OP_SETC, 1 },
+    { MX_OP_SETD, 1 },
+    { MX_OP_SHA,  1 },
+    { MX_OP_2SHA, 2 },
+    { MX_OP_3SHA, 3 },
+    { MX_OP_SHB,  1 },
+    { MX_OP_SHE,  1 },
+    { MX_OP_SHC,  1 },
+    { MX_OP_SHD,  1 },
+};
 
-    for (j = 1; j < datalen; j += 2)
-        data[(j - 1) / 2] = maxi_codeword[j + 20];
+/* Indexes of op sets relevant to each state - MX_OP_DGTS dealt with separately */
+static const signed char mx_code_set_op_idxs[MX_STATES][8] = {
+    { MX_OP_SETA_IDX, MX_OP_SHB_IDX, MX_OP_SHE_IDX, MX_OP_SHC_IDX, MX_OP_SHD_IDX, -1 }, /* MX_A */
+    { MX_OP_SETB_IDX, MX_OP_SHA_IDX, MX_OP_2SHA_IDX, MX_OP_3SHA_IDX, MX_OP_SHE_IDX, MX_OP_SHC_IDX, /* MX_B */
+        MX_OP_SHD_IDX, -1 },
+    { MX_OP_SETE_IDX, MX_OP_SHC_IDX, MX_OP_SHD_IDX, -1 }, /* MX_E */
+    { MX_OP_SETC_IDX, MX_OP_SHE_IDX, MX_OP_SHD_IDX, -1 }, /* MX_C */
+    { MX_OP_SETD_IDX, MX_OP_SHE_IDX, MX_OP_SHC_IDX, -1 }, /* MX_D */
+};
 
-    rs_encode(&rs, datalen / 2, data, results);
-
-    for (j = 0; j < (ecclen); j += 1)
-        maxi_codeword[ datalen + (2 * j) + 1 + 20 ] = results[ecclen - 1 - j];
-}
-
-/* Handles error correction of even characters in secondary */
-static void maxi_do_secondary_chk_even(unsigned char maxi_codeword[144], const int ecclen) {
-    unsigned char data[100];
-    unsigned char results[30];
-    int j;
-    int datalen = 68;
-    rs_t rs;
-
-    if (ecclen == 20)
-        datalen = 84;
-
-    rs_init_gf(&rs, 0x43);
-    rs_init_code(&rs, ecclen, 1);
-
-    for (j = 0; j < datalen + 1; j += 2)
-        data[j / 2] = maxi_codeword[j + 20];
-
-    rs_encode(&rs, datalen / 2, data, results);
-
-    for (j = 0; j < (ecclen); j += 1)
-        maxi_codeword[ datalen + (2 * j) + 20] = results[ecclen - 1 - j];
-}
-
-/* Moves everything up so that a shift or latch can be inserted */
-static void maxi_bump(unsigned char set[], unsigned char character[], const int bump_posn, int *p_length) {
-
-    if (bump_posn < 143) {
-        memmove(set + bump_posn + 1, set + bump_posn, 143 - bump_posn);
-        memmove(character + bump_posn + 1, character + bump_posn, 143 - bump_posn);
+/* Whether can encode character `ch` with `op` - MX_OP_DGTS dealt with separately */
+static int mx_can(const unsigned char op, const unsigned char ch, const int num_a) {
+    if (op == MX_OP_2SHA || op == MX_OP_3SHA) {
+        return num_a >= 2 + (op == MX_OP_3SHA);
     }
-    (*p_length)++; /* Increment length regardless to make sure too long always triggered */
+    return maxiCodeSet[ch] & op;
 }
 
-/* If the value is present in  array, return the value, else return badvalue */
-static int maxi_value_in_array(const unsigned char val, const unsigned char arr[], const int badvalue,
-            const int arrLength) {
-    int i;
-    for (i = 0; i < arrLength; i++) {
-        if (arr[i] == val) return val;
+/* Get the symbol value for `ch` in Code Set of `op`, accounting for chars in multiple Code Sets */
+static int mx_symbol_ch(const unsigned char op, const unsigned char ch) {
+    if (maxiCodeSet[ch] == (op & 0x1F) || (op & MX_OP_SETA)) { /* Non-multiple or Code Set A */
+        return maxiSymbolChar[ch];
     }
-    return badvalue;
-}
-
-/* Choose the best set from previous and next set in the range of the setval array, if no value can be found we
- * return setval[0] */
-static int maxi_bestSurroundingSet(const int index, const int length, const unsigned char set[], const int sp,
-            const unsigned char setval[], const int setLength) {
-    int badValue = -1;
-    int option1 = maxi_value_in_array(set[sp + index - 1], setval, badValue, setLength);
-    if (index + 1 < length) {
-        /* we have two options to check (previous & next) */
-        int option2 = maxi_value_in_array(set[sp + index + 1], setval, badValue, setLength);
-        if (option2 != badValue && option1 > option2) {
-            return option2;
+    if (op & MX_OP_SETB) {
+        const int p = posn(" ,./:", ch);
+        if (p >= 0) {
+            return 47 + p;
         }
     }
-
-    if (option1 != badValue) {
-        return option1;
+    if (op & MX_OP_SETE) {
+        if (ch >= 28 && ch <= 30) { /* FS GS RS */
+            return ch + 4;
+        }
     }
-    return setval[0];
+    return ch == ' ' ? 59 : ch; /* SP CR FS GS RS */
 }
 
-/* Format text according to Appendix A */
-static int maxi_text_process(unsigned char set[144], unsigned char character[144], const unsigned char in_source[],
-            int length, const int eci, const int scm_vv, int *p_sp, int current_set, const int debug_print) {
+/* Encode according to operation `op` (note done backwards) */
+static int mx_enc(unsigned char codewords[144], int ci, const unsigned char source[], const int i,
+            const unsigned char op) {
+    if (op == MX_OP_DGTS) {
+        const int value = (source[i] - '0') * 100000000 + (source[i + 1] - '0') * 10000000
+                            + (source[i + 2] - '0') * 1000000 + (source[i + 3] - '0') * 100000
+                            + (source[i + 4] - '0') * 10000 + (source[i + 5] - '0') * 1000
+                            + (source[i + 6] - '0') * 100 + (source[i + 7] - '0') * 10 + source[i + 8] - '0';
+        assert(ci >= 6);
+        codewords[--ci] = (value & 0x3F);
+        codewords[--ci] = (value & 0xFC0) >> 6;
+        codewords[--ci] = (value & 0x3F000) >> 12;
+        codewords[--ci] = (value & 0xFC0000) >> 18;
+        codewords[--ci] = (value & 0x3F000000) >> 24;
+        codewords[--ci] = 31; /* NS */
+    } else if (op == MX_OP_2SHA) {
+        assert(ci >= 3);
+        codewords[--ci] = mx_symbol_ch(op, source[i + 1]);
+        codewords[--ci] = mx_symbol_ch(op, source[i]);
+        codewords[--ci] = 56;
+    } else if (op == MX_OP_3SHA) {
+        assert(ci >= 4);
+        codewords[--ci] = mx_symbol_ch(op, source[i + 2]);
+        codewords[--ci] = mx_symbol_ch(op, source[i + 1]);
+        codewords[--ci] = mx_symbol_ch(op, source[i]);
+        codewords[--ci] = 57;
+    } else {
+        assert(ci >= 1);
+        codewords[--ci] = mx_symbol_ch(op, source[i]);
 
-    int sp = *p_sp;
-    int i, count;
-#ifndef NDEBUG
-    int ns_count1 = 0, ns_count2 = 0;
-#endif
-
-    static const unsigned char set15[2] = { 1, 5 };
-    static const unsigned char set12[2] = { 1, 2 };
-    static const unsigned char set12345[5] = { 1, 2, 3, 4, 5 };
-
-    const unsigned char *source = in_source;
-    unsigned char *source_buf = (unsigned char *) z_alloca(length + 9); /* For prefixing 9-character SCM sequence */
-
-    if (sp + length > 144) {
-        return 0;
+        if (op & 0x20) { /* Shift */
+            assert(ci >= 1);
+            codewords[--ci] = 59 + 1 * (op == MX_OP_SHC) + 2 * (op == MX_OP_SHD) + 3 * (op == MX_OP_SHE);
+        }
     }
+    return ci;
+}
 
-    /* Insert ECI at the beginning of message if needed */
-    /* Encode ECI assignment numbers according to table 3 */
-    if (eci != 0) {
-        if (sp + 1 + length > 144) return 0;
-        character[sp++] = 27; /* ECI */
-        if (eci <= 31) {
-            if (sp + 1 + length > 144) return 0;
-            character[sp++] = eci;
-        } else if (eci <= 1023) {
-            if (sp + 2 + length > 144) return 0;
-            character[sp++] = 0x20 | ((eci >> 6) & 0x0F);
-            character[sp++] = eci & 0x3F;
-        } else if (eci <= 32767) {
-            if (sp + 3 + length > 144) return 0;
-            character[sp++] = 0x30 | ((eci >> 12) & 0x07);
-            character[sp++] = (eci >> 6) & 0x3F;
-            character[sp++] = eci & 0x3F;
+/* Encoding length of ECI */
+static int mx_eci_len(const int eci) {
+    return eci == 0 ? 0 : 2 + (eci > 31) + (eci > 1023) + (eci > 32767);
+}
+
+/* Encode ECI (`eci` non-zero) */
+static int mx_enc_eci(const int eci, unsigned char codewords[144], int ci) {
+    codewords[--ci] = eci & 0x3F;
+    if (eci > 31) {
+        if (eci > 1023) {
+            codewords[--ci] = (eci & 0xFC0) >> 6;
+            if (eci > 32767) {
+                codewords[--ci] = (eci & 0x3F000) >> 12;
+                codewords[--ci] = 0x38 | ((eci & 0xC0000) >> 18);
+            } else {
+                codewords[--ci] = 0x30 | ((eci & 0x7000) >> 12);
+            }
         } else {
-            if (sp + 4 + length > 144) return 0;
-            character[sp++] = 0x38 | ((eci >> 18) & 0x03);
-            character[sp++] = (eci >> 12) & 0x3F;
-            character[sp++] = (eci >> 6) & 0x3F;
-            character[sp++] = eci & 0x3F;
+            codewords[--ci] = 0x20 | ((eci & 0x3C0) >> 6);
         }
     }
+    codewords[--ci] = 27; /* ECI */
+
+    return ci;
+}
+
+/* Get the shortest encoded length for the Code Set (state) and plot the path */
+static int mx_get_best_length(const int state, const int i, const unsigned char ch, const int digits, const int num_a,
+            const int best_lengths[16][MX_STATES], const char best_origins[16][MX_STATES],
+            unsigned char *const path_op, char *const prior_code_set) {
+    const char *const latch_length_s = mx_latch_len[state];
+    int min_len = 999999;
+    int j;
+
+    if (digits >= 9) { /* Nothing can beat digits */
+        const int m = (i - 9) & 0x0F;
+        const int org = best_origins[m][state];
+        const int len = best_lengths[m][org] + latch_length_s[org] + 6;
+        if (len < min_len) {
+            path_op[state] = MX_OP_DGTS_IDX;
+            prior_code_set[state] = org;
+            min_len = len;
+        }
+    } else {
+        const signed char *const op_idx_s = mx_code_set_op_idxs[state];
+        for (j = 0; op_idx_s[j] != -1; j++) {
+            const int op_idx = op_idx_s[j];
+            const struct mx_op *const op = &mx_op_tab[op_idx];
+            if (mx_can(op->op, ch, num_a)) {
+                const int m = (i - op->intake) & 0x0F;
+                const int org = best_origins[m][state];
+                const int len = best_lengths[m][org] + latch_length_s[org] + op->intake + (op_idx >= MX_OP_SHA_IDX);
+                if (len < min_len) {
+                    path_op[state] = op_idx;
+                    prior_code_set[state] = org;
+                    min_len = len;
+                }
+            }
+        }
+    }
+    return min_len;
+}
+
+/* Loop to get the best prior Code Set using a row of best encoded lengths */
+static int mx_get_best_origin(const int state, const int *const best_length) {
+
+    const char *const latch_length_s = mx_latch_len[state];
+    int orglen = best_length[0] + latch_length_s[0];
+    int best_org = 0;
+    int org;
+
+    for (org = 1; org < MX_STATES; org++) {
+        const int len = best_length[org] + latch_length_s[org];
+        if (len < orglen) {
+            best_org = org;
+            orglen = len;
+        }
+    }
+    return best_org;
+}
+
+/* Minimal encoding using backtracking by Bue Jensen, taken from BWIPP - see
+   https://github.com/bwipp/postscriptbarcode/pull/279 */
+static int mx_text_process_segs(unsigned char codewords[144], const int mode, struct zint_seg segs[],
+            const int seg_count, const int structapp_cw, const int scm_vv, const int debug_print) {
+
+    /* The encoder needs 10 history rows. The circular history buffers are 16 long for convenience */
+    int best_lengths[16][MX_STATES] = {0};
+    char best_origins[16][MX_STATES] = {0};
+    int *best_length = NULL; /* Suppress clang-tidy-20 warning */
+
+    int cp = 20 - 9 * (mode > 3); /* Offset the initial codewords index to minimize copying */
+    const int max_len = (mode == 5 ? 77 : 93) + 11; /* 11 added to adjust for above offset */
+    int ci, ci_top;
+
+    /* Backtracking information */
+    const int segs_len = segs_length(segs, seg_count);
+    char (*prior_code_sets)[MX_STATES] = (char (*)[MX_STATES]) z_alloca(sizeof(*prior_code_sets) * (segs_len + 9));
+    unsigned char (*path_ops)[MX_STATES]
+                                    = (unsigned char (*)[MX_STATES]) z_alloca(sizeof(*path_ops) * (segs_len + 9));
+
+    int digits = 0;
+    int num_a = 0;
+
+    int min_len = 999999;
+    int min_state = 0;
+    int state;
+
+    unsigned char *source_scm_vv; /* For SCM prefix `scm_vv` if any */
+    int have_eci_scm = 0; /* Set if have ECI and SCM prefix */
+
+    int seg;
+    int si = 0; /* Segment offset to `source` position */
+    int i, j;
 
     if (scm_vv != -1) { /* Add SCM prefix */
-        if (sp + length > 135) {
-            return 0;
-        }
-        sprintf((char *) source_buf, "[)>\03601\035%02d", scm_vv); /* [)>\R01\Gvv */
-        memcpy(source_buf + 9, in_source, length);
-        source = source_buf;
-        length += 9;
+        source_scm_vv = (unsigned char *) z_alloca(segs[0].length + 9);
+        sprintf((char *) source_scm_vv, "[)>\03601\035%02d", scm_vv); /* [)>\R01\Gvv */
+        memcpy(source_scm_vv + 9, segs[0].source, segs[0].length);
+        segs[0].source = source_scm_vv;
+        segs[0].length += 9;
+        have_eci_scm = segs[0].eci;
+    } else if (segs[0].length >= 9 && memcmp(segs[0].source, "[)>\03601\035", 7) == 0
+                && z_isdigit(segs[0].source[7]) && z_isdigit(segs[0].source[8])) {
+        have_eci_scm = segs[0].eci;
     }
-
-    for (i = 0; i < length; i++) {
-        /* Look up characters in table from Appendix A - this gives
-         value and code set for most characters */
-        set[sp + i] = maxiCodeSet[source[i]];
-        character[sp + i] = maxiSymbolChar[source[i]];
-    }
-
-    /* If a character can be represented in more than one code set,
-    pick which version to use */
-    if (set[sp + 0] == 0) {
-        if (character[sp + 0] == 13) {
-            character[sp + 0] = 0;
-        }
-        set[sp + 0] = 1;
-    }
-
-    for (i = 1; i < length; i++) {
-        if (set[sp + i] == 0) {
-            /* Special character */
-            if (character[sp + i] == 13) {
-                /* Carriage Return */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set15, 2);
-                if (set[sp + i] == 5) {
-                    character[sp + i] = 13;
-                } else {
-                    character[sp + i] = 0;
-                }
-
-            } else if (character[sp + i] == 28) {
-                /* FS */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12345, 5);
-                if (set[sp + i] == 5) {
-                    character[sp + i] = 32;
-                }
-
-            } else if (character[sp + i] == 29) {
-                /* GS */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12345, 5);
-                if (set[sp + i] == 5) {
-                    character[sp + i] = 33;
-                }
-
-            } else if (character[sp + i] == 30) {
-                /* RS */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12345, 5);
-                if (set[sp + i] == 5) {
-                    character[sp + i] = 34;
-                }
-
-            } else if (character[sp + i] == 32) {
-                /* Space */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12345, 5);
-                if (set[sp + i] == 1) {
-                    character[sp + i] = 32;
-                } else if (set[sp + i] == 2) {
-                    character[sp + i] = 47;
-                } else {
-                    character[sp + i] = 59;
-                }
-
-            } else if (character[sp + i] == 44) {
-                /* Comma */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12, 2);
-                if (set[sp + i] == 2) {
-                    character[sp + i] = 48;
-                }
-
-            } else if (character[sp + i] == 46) {
-                /* Full Stop */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12, 2);
-                if (set[sp + i] == 2) {
-                    character[sp + i] = 49;
-                }
-
-            } else if (character[sp + i] == 47) {
-                /* Slash */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12, 2);
-                if (set[sp + i] == 2) {
-                    character[sp + i] = 50;
-                }
-
-            } else if (character[sp + i] == 58) {
-                /* Colon */
-                set[sp + i] = maxi_bestSurroundingSet(i, length, set, sp, set12, 2);
-                if (set[sp + i] == 2) {
-                    character[sp + i] = 51;
-                }
-            }
-        }
-    }
-
-    /* Find candidates for number compression */
-    /* Note the prohibition on number compression in the primary message in ISO/IEC 16023:2000 B.1 (1)
-       applies to modes 2 & 3 only */
-    count = 0;
-    for (i = 0; sp + i < 144 && sp + i < length; i++) {
-        if ((set[sp + i] == 1) && ((character[sp + i] >= 48) && (character[sp + i] <= 57))) {
-            /* Character is a number */
-            count++;
-            if (count == 9) {
-                /* Nine digits in a row can be compressed */
-                memset(set + sp + i - 8, 6, 9); /* Set set of nine digits to 6 */
-                count = 0;
-#ifndef NDEBUG
-                ns_count1++;
-#endif
-            }
-        } else {
-            count = 0;
-        }
-    }
-
-    /* Add shift and latch characters */
-    for (i = 0; sp + i < 144 && set[sp + i] != 255; i++) {
-
-        if ((set[sp + i] != current_set) && (set[sp + i] != 6)) {
-            switch (set[sp + i]) {
-                case 1:
-                    if (current_set == 2) { /* Set B */
-                        if (sp + i + 1 < 144 && set[sp + i + 1] == 1) {
-                            if (sp + i + 2 < 144 && set[sp + i + 2] == 1) {
-                                if (sp + i + 3 < 144 && set[sp + i + 3] == 1) {
-                                    /* Latch A */
-                                    maxi_bump(set, character, sp + i, &length);
-                                    character[sp + i] = 63; /* Set B Latch A */
-                                    current_set = 1;
-                                    i += 3; /* Next 3 Set A so skip over */
-                                    if (debug_print) fputs("LCHA ", stdout);
-                                } else {
-                                    /* 3 Shift A */
-                                    maxi_bump(set, character, sp + i, &length);
-                                    character[sp + i] = 57; /* Set B triple shift A */
-                                    i += 2; /* Next 2 Set A so skip over */
-                                    if (debug_print) fputs("3SHA ", stdout);
-                                }
-                            } else {
-                                /* 2 Shift A */
-                                maxi_bump(set, character, sp + i, &length);
-                                character[sp + i] = 56; /* Set B double shift A */
-                                i++; /* Next Set A so skip over */
-                                if (debug_print) fputs("2SHA ", stdout);
-                            }
-                        } else {
-                            /* Shift A */
-                            maxi_bump(set, character, sp + i, &length);
-                            character[sp + i] = 59; /* Set A Shift B */
-                            if (debug_print) fputs("SHA ", stdout);
-                        }
-                    } else { /* All sets other than B only have latch */
-                        /* Latch A */
-                        maxi_bump(set, character, sp + i, &length);
-                        character[sp + i] = 58; /* Sets C,D,E Latch A */
-                        current_set = 1;
-                        if (debug_print) fputs("LCHA ", stdout);
-                    }
-                    break;
-                case 2: /* Set B */
-                    /* If not Set A or next Set B */
-                    if (current_set != 1 || (sp + i + 1 < 144 && set[sp + i + 1] == 2)) {
-                        /* Latch B */
-                        maxi_bump(set, character, sp + i, &length);
-                        character[sp + i] = 63; /* Sets A,C,D,E Latch B */
-                        current_set = 2;
-                        if (debug_print) fputs("LCHB ", stdout);
-                    } else { /* Only available from Set A */
-                        /* Shift B */
-                        maxi_bump(set, character, sp + i, &length);
-                        character[sp + i] = 59; /* Set B Shift A */
-                        if (debug_print) fputs("SHB ", stdout);
-                    }
-                    break;
-                case 3: /* Set C */
-                case 4: /* Set D */
-                case 5: /* Set E */
-                    /* If first and next 3 same set, or not first and previous and next 2 same set */
-                    if ((sp + i == 0 && sp + i + 3 < 144 && set[sp + i + 1] == set[sp + i]
-                                && set[sp + i + 2] == set[sp + i] && set[sp + i + 3] == set[sp + i])
-                            || (sp + i > 0 && set[sp + i - 1] == set[sp + i] && sp + i + 2 < 144
-                                && set[sp + i + 1] == set[sp + i] && set[sp + i + 2] == set[sp + i])) {
-                        /* Lock in C/D/E */
-                        if (sp + i == 0) {
-                            maxi_bump(set, character, sp + i, &length);
-                            character[sp + i] = 60 + set[sp + i] - 3;
-                            i++; /* Extra bump */
-                            maxi_bump(set, character, sp + i, &length);
-                            character[sp + i] = 60 + set[sp + i] - 3;
-                            i += 3; /* Next 3 same set so skip over */
-                        } else {
-                            /* Add single Shift to previous Shift */
-                            maxi_bump(set, character, sp + i - 1, &length);
-                            character[sp + i - 1] = 60 + set[sp + i] - 3;
-                            i += 2; /* Next 2 same set so skip over */
-                        }
-                        current_set = set[sp + i];
-                        if (debug_print) printf("LCK%c ", 'C' + set[sp + i] - 3);
-                    } else {
-                        /* Shift C/D/E */
-                        maxi_bump(set, character, sp + i, &length);
-                        character[sp + i] = 60 + set[sp + i] - 3;
-                        if (debug_print) printf("SH%c ", 'C' + set[sp + i] - 3);
-                    }
-                    break;
-            }
-            i++; /* Allow for bump */
-        }
-    }
-
-    /* Number compression has not been forgotten! - It's handled below */
-    for (i = 0; sp + i < 144 && sp + i <= length - 9; i++) {
-        if (set[sp + i] == 6) {
-            /* Number compression */
-            int value = to_int(character + sp + i, 9);
-
-            character[sp + i] = 31; /* NS */
-            character[sp + i + 1] = (value & 0x3f000000) >> 24;
-            character[sp + i + 2] = (value & 0xfc0000) >> 18;
-            character[sp + i + 3] = (value & 0x3f000) >> 12;
-            character[sp + i + 4] = (value & 0xfc0) >> 6;
-            character[sp + i + 5] = (value & 0x3f);
-
-            memmove(set + sp + i + 6, set + sp + i + 9, 144 - (sp + i + 9));
-            memmove(character + sp + i + 6, character + sp + i + 9, 144 - (sp + i + 9));
-            i += 5;
-            length -= 3;
-#ifndef NDEBUG
-            ns_count2++;
-#endif
-        }
-    }
-    assert(ns_count1 == ns_count2);
-
-    *p_sp = sp + length;
-
-    return current_set;
-}
-
-/* Call `maxi_text_process()` for each segment, dealing with Structured Append beforehand and populating
-   `maxi_codeword` afterwards */
-static int maxi_text_process_segs(unsigned char maxi_codeword[144], const int mode, const struct zint_seg segs[],
-            const int seg_count, const int structapp_cw, int scm_vv, const int debug_print) {
-    unsigned char set[144], character[144] = {0};
-    int i;
-    int sp = 0;
-    int current_set = 1; /* Initial Code Set A */
-    int padding_set = 0, padding_char = 0; /* Suppress clang-tidy-20 warnings */
-    const int max_length = mode == 5 ? 77 : mode <= 3 ? 84 : 93;
-
-    memset(set, 255, 144);
 
     /* Insert Structured Append at beginning if needed */
     if (structapp_cw) {
-        character[sp++] = 33; /* PAD */
-        character[sp++] = structapp_cw;
+        codewords[cp++] = 33; /* PAD */
+        codewords[cp++] = structapp_cw;
     }
 
-    for (i = 0; i < seg_count; i++) {
-        current_set = maxi_text_process(set, character, segs[i].source, segs[i].length, segs[i].eci, scm_vv, &sp,
-                        current_set, debug_print);
-        if (current_set == 0) {
-            return ZINT_ERROR_TOO_LONG;
+    /* Make a table of best path options */
+    ci = cp;
+    for (seg = 0; seg < seg_count; seg++) {
+        /* Suppress NS compaction for SCM prefix if have ECI so can place ECI after it when encoding */
+        const int no_eci_scm_check = !have_eci_scm || seg != 0;
+        const unsigned char *const source = segs[seg].source;
+        const int length = segs[seg].length;
+        const int eci_len = mx_eci_len(segs[seg].eci);
+        if (eci_len) {
+            ci += eci_len;
+            if (ci > max_len) {
+                return ZINT_ERROR_TOO_LONG;
+            }
+            digits = 0;
         }
-        scm_vv = -1;
-    }
 
-    /* If end in Code Set C or D, switch to A for padding */
-    if (sp < max_length && (current_set == 3 || current_set == 4)) {
-        set[sp] = 1;
-        character[sp] = 58; /* Sets C,D Latch A */
-        sp++;
-        current_set = 1;
-        if (debug_print) fputs("LCHA ", stdout);
-    }
+        for (i = 0; i < length; i++) {
+            const unsigned char ch = source[i];
+            const int si_i = i + si;
 
-    if (debug_print) {
-        if (sp < max_length) {
-            printf("\nPads (%d)\n", max_length - sp);
-        } else {
-            fputs("\nNo Pads\n", stdout);
+            /* Get rows of interest */
+            unsigned char *const path_op = path_ops[si_i];
+            char *const prior_code_set = prior_code_sets[si_i];
+            char *const best_origin = best_origins[(si_i) & 0x0F];
+            best_length = best_lengths[(si_i) & 0x0F];
+
+            /* Keep tabs on digits and characters in Code Set A */
+            digits = z_isdigit(ch) && (no_eci_scm_check || i >= 9) ? digits + 1 : 0;
+            num_a = maxiCodeSet[ch] & MX_OP_SETA ? num_a + 1 : 0;
+
+            /* Get best encoded lengths, then best prior Code Sets */
+            for (state = 0; state < MX_STATES; state++) {
+                best_length[state] = mx_get_best_length(state, si_i, ch, digits, num_a, best_lengths, best_origins,
+                                        path_op, prior_code_set);
+            }
+            for (state = 0; state < MX_STATES; state++) {
+                best_origin[state] = mx_get_best_origin(state, best_length);
+            }
+        }
+        si += length;
+    }
+    assert(best_length == best_lengths[(segs_len + 9 * (scm_vv != -1) - 1) & 0x0F]); /* Set to last char */
+
+    /* Get the best Code Set to end with */
+    for (state = 0; state < MX_STATES; state++) {
+        const int len = best_length[state];
+        if (len < min_len) {
+            min_state = state;
+            min_len = len;
         }
     }
-
-    if (sp < max_length) {
-        padding_set = current_set == 5 ? 5 : current_set == 2 ? 2 : 1;
-        padding_char = current_set == 5 ? 28 : 33;
-        for (; sp < max_length; sp++) {
-            /* Add the padding */
-            set[sp] = padding_set;
-            character[sp] = padding_char;
-        }
-    }
-
-    if (debug_print) printf("Length: %d\n", sp);
-
-    if (sp > max_length) {
+    if (ci + min_len > max_len) {
         return ZINT_ERROR_TOO_LONG;
     }
 
-    /* Copy the encoded text into the codeword array */
-    if ((mode == 2) || (mode == 3)) {
-        for (i = 0; i < 84; i++) { /* secondary only */
-            maxi_codeword[i + 20] = character[i];
-        }
+    /* Follow the best path back to the start of the message */
+    ci += min_len;
+    ci_top = ci;
+    state = min_state;
+    for (seg = seg_count - 1; seg >= 0; seg--) {
+        const unsigned char *const source = segs[seg].source;
+        const int length = segs[seg].length;
+        const int eci_scm_check = have_eci_scm && seg == 0;
 
-    } else if ((mode == 4) || (mode == 6)) {
-        for (i = 0; i < 9; i++) { /* primary */
-            maxi_codeword[i + 1] = character[i];
-        }
-        for (i = 0; i < 84; i++) { /* secondary */
-            maxi_codeword[i + 20] = character[i + 9];
-        }
+        si -= length;
+        assert(si >= 0);
 
-    } else { /* Mode 5 */
-        for (i = 0; i < 9; i++) { /* primary */
-            maxi_codeword[i + 1] = character[i];
+        i = length;
+        while (i > 0) {
+            const int ch_i = (i + si) - 1;
+            const int pcs = prior_code_sets[ch_i][state];
+            const int op_idx = path_ops[ch_i][state];
+            const struct mx_op *const op = &mx_op_tab[op_idx];
+
+            if (eci_scm_check && i == 9) { /* Place ECI after SCM prefix */
+                assert(ci >= cp + mx_eci_len(segs[0].eci));
+                ci = mx_enc_eci(segs[0].eci, codewords, ci);
+                segs[0].eci = 0;
+            }
+
+            i -= op->intake;
+            assert(i >= 0);
+            ci = mx_enc(codewords, ci, source, i, op->op);
+
+            if (state != pcs) {
+                const int latch_len = mx_latch_len[state][pcs];
+                assert(ci >= cp + latch_len);
+                for (j = 0; j < latch_len; j++) {
+                    codewords[--ci] = mx_latch_seq[state][pcs][j];
+                }
+                state = pcs;
+            }
         }
-        for (i = 0; i < 68; i++) { /* secondary */
-            maxi_codeword[i + 20] = character[i + 9];
+        if (segs[seg].eci) {
+            assert(ci >= cp + mx_eci_len(segs[seg].eci));
+            ci = mx_enc_eci(segs[seg].eci, codewords, ci);
         }
+    }
+    assert(ci == cp);
+
+    cp = ci_top;
+
+    /* If end in Code Set C or D, switch to A for padding */
+    if (cp < max_len && (min_state == MX_C || min_state == MX_D)) {
+        codewords[cp++] = 58; /* Latch A */
+    }
+
+    if (debug_print) {
+        if (cp < max_len) {
+            printf("Pads: %d\n", max_len - cp);
+        } else {
+            fputs("No Pads\n", stdout);
+        }
+    }
+
+    if (cp < max_len) {
+        /* Add the padding */
+        memset(codewords + cp, min_state == MX_E ? 28 : 33, max_len - cp);
+    }
+
+    if (debug_print) printf("Length: %d\n", cp);
+
+    if (cp > max_len) {
+        return ZINT_ERROR_TOO_LONG;
+    }
+
+    /* Adjust the codeword array */
+    if (mode > 3) {
+        memcpy(codewords + 1, codewords + 20 - 9, 9); /* Primary */
     }
 
     return 0;
 }
 
+/* Handles error correction of primary message */
+static void mx_do_primary_ecc(unsigned char codewords[144]) {
+    const int datalen = 10, eclen = 10;
+    unsigned char ecc[10];
+    int j;
+    rs_t rs;
+
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, eclen, 1);
+
+    rs_encode(&rs, datalen, codewords, ecc);
+
+    for (j = 0; j < eclen; j++) {
+        codewords[datalen + j] = ecc[j];
+    }
+}
+
+/* Handles error correction of characters in secondary */
+static void mx_do_secondary_ecc(unsigned char codewords[144], const int datalen, const int eclen) {
+    unsigned char data[42]; /* Half max `datalen` (84) */
+    unsigned char ecc[28]; /* Half max `eclen` (56) */
+    int j;
+    rs_t rs;
+
+    rs_init_gf(&rs, 0x43);
+    rs_init_code(&rs, eclen, 1);
+
+    /* Even */
+    for (j = 0; j < datalen; j += 2) {
+        data[j >> 1] = codewords[j + 20];
+    }
+
+    rs_encode(&rs, datalen >> 1, data, ecc);
+
+    for (j = 0; j < eclen; j++) {
+        codewords[datalen + (j << 1) + 20] = ecc[j];
+    }
+
+    /* Odd */
+    for (j = 0; j < datalen; j += 2) {
+        data[j >> 1] = codewords[j + 1 + 20];
+    }
+
+    rs_encode(&rs, datalen >> 1, data, ecc);
+
+    for (j = 0; j < eclen; j++) {
+        codewords[datalen + (j << 1) + 1 + 20] = ecc[j];
+    }
+}
+
 /* Format structured primary for Mode 2 */
-static void maxi_do_primary_2(unsigned char maxi_codeword[144], const unsigned char postcode[],
+static void mx_do_primary_2(unsigned char codewords[144], const unsigned char postcode[],
             const int postcode_length, const int country, const int service) {
-    int postcode_num;
 
-    postcode_num = to_int(postcode, postcode_length);
+    const int postcode_num = to_int(postcode, postcode_length);
 
-    maxi_codeword[0] = ((postcode_num & 0x03) << 4) | 2;
-    maxi_codeword[1] = ((postcode_num & 0xfc) >> 2);
-    maxi_codeword[2] = ((postcode_num & 0x3f00) >> 8);
-    maxi_codeword[3] = ((postcode_num & 0xfc000) >> 14);
-    maxi_codeword[4] = ((postcode_num & 0x3f00000) >> 20);
-    maxi_codeword[5] = ((postcode_num & 0x3c000000) >> 26) | ((postcode_length & 0x3) << 4);
-    maxi_codeword[6] = ((postcode_length & 0x3c) >> 2) | ((country & 0x3) << 4);
-    maxi_codeword[7] = (country & 0xfc) >> 2;
-    maxi_codeword[8] = ((country & 0x300) >> 8) | ((service & 0xf) << 2);
-    maxi_codeword[9] = ((service & 0x3f0) >> 4);
+    codewords[0] = ((postcode_num & 0x03) << 4) | 2;
+    codewords[1] = ((postcode_num & 0xFC) >> 2);
+    codewords[2] = ((postcode_num & 0x3F00) >> 8);
+    codewords[3] = ((postcode_num & 0xFC000) >> 14);
+    codewords[4] = ((postcode_num & 0x3F00000) >> 20);
+    codewords[5] = ((postcode_num & 0x3C000000) >> 26) | ((postcode_length & 0x03) << 4);
+    codewords[6] = ((postcode_length & 0x3C) >> 2) | ((country & 0x03) << 4);
+    codewords[7] = (country & 0xFC) >> 2;
+    codewords[8] = ((country & 0x300) >> 8) | ((service & 0x0F) << 2);
+    codewords[9] = ((service & 0x3F0) >> 4);
 }
 
 /* Format structured primary for Mode 3 */
-static void maxi_do_primary_3(unsigned char maxi_codeword[144], unsigned char postcode[], const int country,
+static void mx_do_primary_3(unsigned char codewords[144], unsigned char postcode[], const int country,
             const int service) {
     int i;
 
@@ -549,22 +537,22 @@ static void maxi_do_primary_3(unsigned char maxi_codeword[144], unsigned char po
         postcode[i] = maxiSymbolChar[postcode[i]];
     }
 
-    maxi_codeword[0] = ((postcode[5] & 0x03) << 4) | 3;
-    maxi_codeword[1] = ((postcode[4] & 0x03) << 4) | ((postcode[5] & 0x3c) >> 2);
-    maxi_codeword[2] = ((postcode[3] & 0x03) << 4) | ((postcode[4] & 0x3c) >> 2);
-    maxi_codeword[3] = ((postcode[2] & 0x03) << 4) | ((postcode[3] & 0x3c) >> 2);
-    maxi_codeword[4] = ((postcode[1] & 0x03) << 4) | ((postcode[2] & 0x3c) >> 2);
-    maxi_codeword[5] = ((postcode[0] & 0x03) << 4) | ((postcode[1] & 0x3c) >> 2);
-    maxi_codeword[6] = ((postcode[0] & 0x3c) >> 2) | ((country & 0x3) << 4);
-    maxi_codeword[7] = (country & 0xfc) >> 2;
-    maxi_codeword[8] = ((country & 0x300) >> 8) | ((service & 0xf) << 2);
-    maxi_codeword[9] = ((service & 0x3f0) >> 4);
+    codewords[0] = ((postcode[5] & 0x03) << 4) | 3;
+    codewords[1] = ((postcode[4] & 0x03) << 4) | ((postcode[5] & 0x3C) >> 2);
+    codewords[2] = ((postcode[3] & 0x03) << 4) | ((postcode[4] & 0x3C) >> 2);
+    codewords[3] = ((postcode[2] & 0x03) << 4) | ((postcode[3] & 0x3C) >> 2);
+    codewords[4] = ((postcode[1] & 0x03) << 4) | ((postcode[2] & 0x3C) >> 2);
+    codewords[5] = ((postcode[0] & 0x03) << 4) | ((postcode[1] & 0x3C) >> 2);
+    codewords[6] = ((postcode[0] & 0x3C) >> 2) | ((country & 0x03) << 4);
+    codewords[7] = (country & 0xFC) >> 2;
+    codewords[8] = ((country & 0x300) >> 8) | ((service & 0x0F) << 2);
+    codewords[9] = ((service & 0x3F0) >> 4);
 }
 
 INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
-    int i, j, block, shift, mode, lp = 0;
-    int error_number, eclen;
-    unsigned char maxi_codeword[144] = {0};
+    int i, j, mode, lp = 0;
+    int error_number;
+    unsigned char codewords[144];
     int scm_vv = -1;
     int structapp_cw = 0;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
@@ -589,11 +577,11 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         }
     }
 
-    if ((mode < 2) || (mode > 6)) { /* Only codes 2 to 6 supported */
+    if (mode < 2 || mode > 6) { /* Only codes 2 to 6 supported */
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 550, "Mode '%d' out of range (2 to 6)", mode);
     }
 
-    if ((mode == 2) || (mode == 3)) { /* Modes 2 and 3 need data in symbol->primary */
+    if (mode <= 3) { /* Modes 2 and 3 need data in symbol->primary */
         unsigned char postcode[10];
         int countrycode;
         int service;
@@ -613,7 +601,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         countrycode = to_int((const unsigned char *) (symbol->primary + postcode_len), 3);
         service = to_int((const unsigned char *) (symbol->primary + postcode_len + 3), 3);
 
-        if (countrycode == -1 || service == -1) { /* check that country code and service are numeric */
+        if (countrycode == -1 || service == -1) { /* Check that country code and service are numeric */
             return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 552,
                             "Non-numeric country code or service class in Primary Message");
         }
@@ -627,7 +615,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                     postcode[i] = '\0';
                     postcode_len = i;
                     break;
-                } else if (!z_isdigit(postcode[i])) {
+                }
+                if (!z_isdigit(postcode[i])) {
                     return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 555, "Non-numeric postcode in Primary Message");
                 }
             }
@@ -637,7 +626,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                 memcpy(postcode + 5, "0000", 5); /* Include NUL char */
                 postcode_len = 9;
             }
-            maxi_do_primary_2(maxi_codeword, postcode, postcode_len, countrycode, service);
+            mx_do_primary_2(codewords, postcode, postcode_len, countrycode, service);
         } else {
             /* Just truncate and space-pad */
             postcode[6] = '\0';
@@ -647,19 +636,23 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
             /* Upper-case and check for Code Set A characters only */
             to_upper(postcode, postcode_len);
             for (i = 0; i < 6; i++) {
-                /* Don't allow Code Set A control characters CR, RS, GS and RS */
-                if (postcode[i] < ' ' || maxiCodeSet[postcode[i]] > 1) {
+                /* Don't allow control chars (CR FS GS RS for Code Set A) */
+                if (postcode[i] < ' ' || !(maxiCodeSet[postcode[i]] & MX_OP_SETA)) {
                     return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 556,
                                     "Invalid character in postcode in Primary Message");
                 }
             }
-            maxi_do_primary_3(maxi_codeword, postcode, countrycode, service);
+            mx_do_primary_3(codewords, postcode, countrycode, service);
         }
 
         if (symbol->option_2) { /* Check for option_2 = vv + 1, where vv is version of SCM prefix "[)>\R01\Gvv" */
             if (symbol->option_2 < 0 || symbol->option_2 > 100) {
                 return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 557,
                                 "SCM prefix version '%d' out of range (1 to 100)", symbol->option_2);
+            }
+            if (symbol->eci == 25 || (symbol->eci >= 33 && symbol->eci <= 35)) { /* UTF-16/32 */
+                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 547,
+                                "SCM prefix can not be used with ECI %d (ECI must be ASCII compatible)", symbol->eci);
             }
             scm_vv = symbol->option_2 - 1;
         }
@@ -668,7 +661,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
             printf("Postcode: %s, Country Code: %d, Service Class: %d\n", postcode, countrycode, service);
         }
     } else {
-        maxi_codeword[0] = mode;
+        codewords[0] = mode;
     }
 
     if (debug_print) {
@@ -691,42 +684,41 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         structapp_cw = (symbol->structapp.count - 1) | ((symbol->structapp.index - 1) << 3);
     }
 
-    error_number = maxi_text_process_segs(maxi_codeword, mode, segs, seg_count, structapp_cw, scm_vv, debug_print);
+    error_number = mx_text_process_segs(codewords, mode, segs, seg_count, structapp_cw, scm_vv, debug_print);
     if (error_number == ZINT_ERROR_TOO_LONG) {
         return errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
     }
 
     /* All the data is sorted - now do error correction */
-    maxi_do_primary_check(maxi_codeword); /* always EEC */
+    mx_do_primary_ecc(codewords); /* Always Enhanced ECC (EEC) 10 data + 10 error correction */
 
-    if (mode == 5)
-        eclen = 56; /* 68 data codewords , 56 error corrections */
-    else
-        eclen = 40; /* 84 data codewords,  40 error corrections */
-
-    maxi_do_secondary_chk_even(maxi_codeword, eclen / 2); /* do error correction of even */
-    maxi_do_secondary_chk_odd(maxi_codeword, eclen / 2); /* do error correction of odd */
+    if (mode == 5) {
+        /* Enhanced ECC (EEC) 68 data + 56 error correction */
+        mx_do_secondary_ecc(codewords, 68, 28); /* ECC halved for even/odd */
+    } else {
+        /* Standard ECC (SEC) 84 data + 40 error correction */
+        mx_do_secondary_ecc(codewords, 84, 20); /* ECC halved for even/odd */
+    }
 
     if (debug_print) {
         fputs("Codewords:", stdout);
-        for (i = 0; i < 144; i++) printf(" %d", maxi_codeword[i]);
+        for (i = 0; i < 144; i++) printf(" %d", codewords[i]);
         fputc('\n', stdout);
     }
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump(symbol, maxi_codeword, 144);
+        debug_test_codeword_dump(symbol, codewords, 144);
     }
 #endif
 
     /* Copy data into symbol grid */
     for (i = 0; i < 33; i++) {
         for (j = 0; j < 30; j++) {
-            block = (MaxiGrid[(i * 30) + j] + 5) / 6;
+            const int mod_seq = maxiGrid[(i * 30) + j] + 5;
+            const int block = mod_seq / 6;
 
             if (block != 0) {
-                shift = 5 - ((MaxiGrid[(i * 30) + j] + 5) % 6);
-
-                if ((maxi_codeword[block - 1] >> shift) & 0x1) {
+                if ((codewords[block - 1] >> (5 - (mod_seq % 6))) & 1) {
                     set_module(symbol, i, j);
                 }
             }

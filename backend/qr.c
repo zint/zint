@@ -839,7 +839,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
             }
             fputs(" // ", stdout);
             for (j = 0; j < ecc_block_length; j++) {
-                printf("%2X ", ecc_block[ecc_block_length - j - 1]);
+                printf("%2X ", ecc_block[j]);
             }
             fputc('\n', stdout);
         }
@@ -855,7 +855,7 @@ static void qr_add_ecc(unsigned char fullstream[], const unsigned char datastrea
         }
 
         for (j = 0; j < ecc_block_length; j++) {
-            interleaved_ecc[(j * blocks) + i] = ecc_block[ecc_block_length - j - 1];
+            interleaved_ecc[(j * blocks) + i] = ecc_block[j];
         }
 
         in_posn += length_this_block;
@@ -1955,7 +1955,7 @@ static int microqr_end(struct zint_symbol *symbol, char binary_data[], int bp, c
 
     /* Add Reed-Solomon codewords to binary data */
     for (i = 0; i < ecc_codewords; i++) {
-        bp = bin_append_posn(ecc_blocks[ecc_codewords - i - 1], 8, binary_data, bp);
+        bp = bin_append_posn(ecc_blocks[i], 8, binary_data, bp);
     }
 
     return bp;

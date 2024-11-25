@@ -402,16 +402,15 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     /* Generation of Reed-Solomon Check Numbers */
     rs_init_gf(&rs, 0x25);
     rs_init_code(&rs, check_count, 1);
-    rs_encode(&rs, (data_top + 1), data, check);
+    data_top++;
+    rs_encode(&rs, data_top, data, check);
 
     /* Append check digits to data */
-    for (i = 1; i <= check_count; i++) {
-        data[data_top + i] = check[check_count - i];
-    }
+    memcpy(data + data_top, check, check_count);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
         fputs("Codewords:", stdout);
-        for (i = 0; i <= data_top + check_count; i++) {
+        for (i = 0; i < data_top + check_count; i++) {
             printf("  %d", (int) data[i]);
         }
         fputc('\n', stdout);
@@ -421,7 +420,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     for (i = 0; i <= data_step; i++) {
         data[i] = mailmark_data_symbol_even[data[i]];
     }
-    for (i = data_step + 1; i <= (data_top + check_count); i++) {
+    for (i = data_step + 1; i < (data_top + check_count); i++) {
         data[i] = mailmark_data_symbol_odd[data[i]];
     }
 

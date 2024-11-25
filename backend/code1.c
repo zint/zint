@@ -1106,7 +1106,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         rs_encode_uint(&rs, codewords, target, ecc);
 
         for (i = 0; i < codewords; i++) {
-            target[i + codewords] = ecc[codewords - i - 1];
+            target[i + codewords] = ecc[i];
         }
 
         if (debug_print) {
@@ -1195,7 +1195,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         rs_encode_uint(&rs, data_cw, target, ecc);
 
         for (i = 0; i < ecc_cw; i++) {
-            target[data_cw + i] = ecc[ecc_cw - i - 1];
+            target[data_cw + i] = ecc[i];
         }
 
         if (debug_print) {
@@ -1285,7 +1285,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
             }
             rs_encode_uint(&rs, data_blocks, sub_data, sub_ecc);
             for (j = 0; j < ecc_blocks; j++) {
-                target[data_cw + j * blocks + i] = sub_ecc[ecc_blocks - 1 - j];
+                target[data_cw + j * blocks + i] = sub_ecc[j];
             }
         }
 

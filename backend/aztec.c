@@ -1159,7 +1159,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             break;
     }
 
-    for (i = (ecc_blocks - 1); i >= 0; i--) {
+    for (i = 0; i < ecc_blocks; i++) {
         adjusted_length = bin_append_posn(ecc_part[i], codeword_size, adjusted_string, adjusted_length);
     }
 
@@ -1214,19 +1214,19 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         rs_init_code(&rs, 5, 1);
         rs_encode(&rs, 2, desc_data, desc_ecc);
         for (i = 0; i < 5; i++) {
-            descriptor[(i * 4) + 8] = (desc_ecc[4 - i] & 0x08) ? '1' : '0';
-            descriptor[(i * 4) + 9] = (desc_ecc[4 - i] & 0x04) ? '1' : '0';
-            descriptor[(i * 4) + 10] = (desc_ecc[4 - i] & 0x02) ? '1' : '0';
-            descriptor[(i * 4) + 11] = (desc_ecc[4 - i] & 0x01) ? '1' : '0';
+            descriptor[(i * 4) + 8] = (desc_ecc[i] & 0x08) ? '1' : '0';
+            descriptor[(i * 4) + 9] = (desc_ecc[i] & 0x04) ? '1' : '0';
+            descriptor[(i * 4) + 10] = (desc_ecc[i] & 0x02) ? '1' : '0';
+            descriptor[(i * 4) + 11] = (desc_ecc[i] & 0x01) ? '1' : '0';
         }
     } else {
         rs_init_code(&rs, 6, 1);
         rs_encode(&rs, 4, desc_data, desc_ecc);
         for (i = 0; i < 6; i++) {
-            descriptor[(i * 4) + 16] = (desc_ecc[5 - i] & 0x08) ? '1' : '0';
-            descriptor[(i * 4) + 17] = (desc_ecc[5 - i] & 0x04) ? '1' : '0';
-            descriptor[(i * 4) + 18] = (desc_ecc[5 - i] & 0x02) ? '1' : '0';
-            descriptor[(i * 4) + 19] = (desc_ecc[5 - i] & 0x01) ? '1' : '0';
+            descriptor[(i * 4) + 16] = (desc_ecc[i] & 0x08) ? '1' : '0';
+            descriptor[(i * 4) + 17] = (desc_ecc[i] & 0x04) ? '1' : '0';
+            descriptor[(i * 4) + 18] = (desc_ecc[i] & 0x02) ? '1' : '0';
+            descriptor[(i * 4) + 19] = (desc_ecc[i] & 0x01) ? '1' : '0';
         }
     }
 
@@ -1320,7 +1320,7 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     rs_encode(&rs, 2, data_codewords, ecc_codewords);
 
     for (i = 0; i < 5; i++) {
-        bp = bin_append_posn(ecc_codewords[4 - i], 4, binary_string, bp);
+        bp = bin_append_posn(ecc_codewords[i], 4, binary_string, bp);
     }
 
     for (i = 0; i < 28; i += 2) {

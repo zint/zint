@@ -452,9 +452,14 @@ foreach ($batches as $batch => $batch_specs) {
             $width += strlen($str);
         }
         $spec_func = $spec_funcs[$spec];
+        $str = "$tab$tab{$tab}return $spec_func(data, data_len, p_err_no, p_err_posn, err_msg);";
+        if (strlen($str) > 118) {
+            print ") {\n$tab$tab{$tab}return $spec_func(data,\n";
+            print "$tab$tab$tab$tab$tab{$tab}data_len, p_err_no, p_err_posn, err_msg);\n";
+        } else {
+            print ") {\n$str\n";
+        }
         print <<<EOD
-) {
-$tab$tab{$tab}return $spec_func(data, data_len, p_err_no, p_err_posn, err_msg);
 $tab$tab}
 
 EOD;

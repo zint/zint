@@ -195,7 +195,7 @@ INTERNAL int not_sane(const unsigned int flg, const unsigned char source[], cons
 INTERNAL int not_sane_lookup(const char test_string[], const int test_length, const unsigned char source[],
                 const int length, int *posns);
 
-/* Returns the position of `data` in `set_string` */
+/* Returns the position of `data` in `set_string`, or -1 if not found */
 INTERNAL int posn(const char set_string[], const char data);
 
 
