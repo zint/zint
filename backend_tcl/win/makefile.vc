@@ -1,0 +1,124 @@
+#------------------------------------------------------------- -*- makefile -*-
+#
+# makefile to build zint tcl extension
+#
+# Basic build and install
+#   nmake /f makefile.vc INSTALLDIR=c:\path\to\tcl
+#   nmake /f makefile.vc INSTALLDIR=c:\path\to\tcl install
+#
+# The options TCLDIR= and TKDIR= may be added, if the TCL/Tk installation
+# (or source) is not automatically located.
+#
+# For other build options (debug, static etc.),
+# See TIP 477 (https://core.tcl-lang.org/tips/doc/main/tip/477.md) for
+# detailed documentation.
+#
+# See the file "license.terms" for information on usage and redistribution
+# of this file, and for a DISCLAIMER OF ALL WARRANTIES.
+#
+#------------------------------------------------------------------------------
+
+# The name of the package
+PROJECT = zint
+PROJECT_REQUIRES_TK = 1
+
+# Generic source is in root build folder (1 up)
+GENERICDIR = ..
+# Access the generic backend files
+BACKEND_DIR = $(ROOT)\..\backend
+
+!include "rules-ext.vc"
+
+# Define the object files and resource file that make up the extension.
+# Note the resource file does not makes sense if doing a static library build
+# hence it is under that condition. TMP_DIR is the output directory
+# defined by rules for object files.
+PRJ_OBJS = \
+	$(TMP_DIR)\zint.obj \
+	$(TMP_DIR)\2of5.obj \
+	$(TMP_DIR)\auspost.obj \
+	$(TMP_DIR)\aztec.obj \
+	$(TMP_DIR)\bc412.obj \
+	$(TMP_DIR)\bmp.obj \
+	$(TMP_DIR)\codablock.obj \
+	$(TMP_DIR)\code128.obj \
+	$(TMP_DIR)\code16k.obj \
+	$(TMP_DIR)\code1.obj \
+	$(TMP_DIR)\code49.obj \
+	$(TMP_DIR)\code.obj \
+	$(TMP_DIR)\common.obj \
+	$(TMP_DIR)\composite.obj \
+	$(TMP_DIR)\dllversion.obj \
+	$(TMP_DIR)\dmatrix.obj \
+	$(TMP_DIR)\dotcode.obj \
+	$(TMP_DIR)\eci.obj \
+	$(TMP_DIR)\emf.obj \
+	$(TMP_DIR)\filemem.obj \
+	$(TMP_DIR)\general_field.obj \
+	$(TMP_DIR)\gif.obj \
+	$(TMP_DIR)\gridmtx.obj \
+	$(TMP_DIR)\gs1.obj \
+	$(TMP_DIR)\hanxin.obj \
+	$(TMP_DIR)\imail.obj \
+	$(TMP_DIR)\large.obj \
+	$(TMP_DIR)\library.obj \
+	$(TMP_DIR)\mailmark.obj \
+	$(TMP_DIR)\maxicode.obj \
+	$(TMP_DIR)\medical.obj \
+	$(TMP_DIR)\output.obj \
+	$(TMP_DIR)\pcx.obj \
+	$(TMP_DIR)\pdf417.obj \
+	$(TMP_DIR)\plessey.obj \
+	$(TMP_DIR)\png.obj \
+	$(TMP_DIR)\postal.obj \
+	$(TMP_DIR)\ps.obj \
+	$(TMP_DIR)\qr.obj \
+	$(TMP_DIR)\raster.obj \
+	$(TMP_DIR)\reedsol.obj \
+	$(TMP_DIR)\rss.obj \
+	$(TMP_DIR)\svg.obj \
+	$(TMP_DIR)\telepen.obj \
+	$(TMP_DIR)\tif.obj \
+	$(TMP_DIR)\ultra.obj \
+	$(TMP_DIR)\upcean.obj \
+	$(TMP_DIR)\vector.obj
+
+# Define any additional compiler flags that might be required for the project
+PRJ_DEFINES = -D_CRT_SECURE_NO_DEPRECATE
+PRJ_DEFINES = $(PRJ_DEFINES) -DZINT_NO_PNG=1
+# PRJ_DEFINES = $(PRJ_DEFINES) -DZINT_VERSION=PACKAGE_VERSION
+PRJ_DEFINES = $(PRJ_DEFINES) -I$(TMP_DIR)
+PRJ_DEFINES = $(PRJ_DEFINES) -I$(BACKEND_DIR)
+
+
+
+
+# Define the standard targets
+!include "$(_RULESDIR)\targets.vc"
+
+# We must define a pkgindex target that will create a pkgIndex.tcl
+# file in the $(OUT_DIR) directory. We can just redirect to the
+# default-pkgindex target for our sample extension.
+pkgindex: default-pkgindex
+
+$(ROOT)\manifest.uuid:
+   copy $(WIN_DIR)\gitmanifest.in $(ROOT)\manifest.uuid
+   git rev-parse HEAD >>$(ROOT)\manifest.uuid
+
+$(TMP_DIR)\zintUuid.h:	$(ROOT)\manifest.uuid
+	copy $(WIN_DIR)\zintUuid.h.in+$(ROOT)\manifest.uuid $(TMP_DIR)\zintUuid.h
+
+
+# The default install target only installs binaries and scripts so add
+# an additional target for our documentation. Note this *adds* a target
+# since no commands are listed after it. The original targets for
+# install (from targets.vc) will remain.
+# install: default-install-docs-n
+
+# Explicit dependency rules
+$(GENERICDIR)\zint.c : $(TMP_DIR)\zintUuid.h
+
+{$(BACKEND_DIR)}.c{$(TMP_DIR)}.obj::
+        $(cc32) $(pkgcflags) -Fo$(TMP_DIR)\ @<<
+$<
+<<

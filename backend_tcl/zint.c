@@ -172,6 +172,10 @@
 - Added -guardwhitespace option
 2023-10-30 GL
 - Added -dmiso144 option
+2024-12-09 HaO
+- TCL 9 compatibility
+- support TCL buildinfo
+- remove the zint command on dll unload
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -230,13 +234,13 @@ typedef int Tcl_Size;
 
 /*----------------------------------------------------------------------------*/
 /* >>>> External Prototypes (exports) */
-EXPORT int Zint_Init (Tcl_Interp *interp);
-EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags);
+DLLEXPORT int Zint_Init (Tcl_Interp *interp);
+DLLEXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags);
 /*----------------------------------------------------------------------------*/
 /* >>>> local prototypes */
 static void InterpCleanupProc(ClientData clientData, Tcl_Interp *interp);
 static int CheckForTk(Tcl_Interp *interp, int *tkFlagPtr);
-static int Zint(ClientData unused, Tcl_Interp *interp, int objc,
+static int ZintCmd(ClientData unused, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
 static int Encode(Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[]);
@@ -593,17 +597,72 @@ EXPORT BOOL WINAPI DllEntryPoint (HINSTANCE hInstance,
 #endif
 /*----------------------------------------------------------------------------*/
 /* Initialisation Procedures */
-EXPORT int Zint_Init (Tcl_Interp *interp)
+DLLEXPORT int Zint_Init (Tcl_Interp *interp)
 {
     int * tkFlagPtr;
+    Tcl_CmdInfo info;
     /*------------------------------------------------------------------------*/
-#ifdef USE_TCL_STUBS
-    if (Tcl_InitStubs(interp, "8.5-", 0) == NULL)
-#else
-    if (Tcl_PkgRequire(interp, "Tcl", "8.5-", 0) == NULL)
-#endif
-    {
+    /* If TCL_STUB is not defined, the following only does a version check    */
+    if (Tcl_InitStubs(interp, "8.5-", 0) == NULL) {
         return TCL_ERROR;
+    }
+    /*------------------------------------------------------------------------*/
+    /* Add build info                                                         */
+    if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
+	Tcl_CreateObjCommand(interp, "::zint::build-info",
+		info.objProc, (void *)(
+		    PACKAGE_VERSION "+" STRINGIFY(SAMPLE_VERSION_UUID)
+#if defined(__clang__) && defined(__clang_major__)
+			    ".clang-" STRINGIFY(__clang_major__)
+#if __clang_minor__ < 10
+			    "0"
+#endif
+			    STRINGIFY(__clang_minor__)
+#endif
+#if defined(__cplusplus) && !defined(__OBJC__)
+			    ".cplusplus"
+#endif
+#ifndef NDEBUG
+			    ".debug"
+#endif
+#if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__)
+			    ".gcc-" STRINGIFY(__GNUC__)
+#if __GNUC_MINOR__ < 10
+			    "0"
+#endif
+			    STRINGIFY(__GNUC_MINOR__)
+#endif
+#ifdef __INTEL_COMPILER
+			    ".icc-" STRINGIFY(__INTEL_COMPILER)
+#endif
+#ifdef TCL_MEM_DEBUG
+			    ".memdebug"
+#endif
+#if defined(_MSC_VER)
+			    ".msvc-" STRINGIFY(_MSC_VER)
+#endif
+#ifdef USE_NMAKE
+			    ".nmake"
+#endif
+#ifndef TCL_CFG_OPTIMIZED
+			    ".no-optimize"
+#endif
+#ifdef __OBJC__
+			    ".objective-c"
+#if defined(__cplusplus)
+			    "plusplus"
+#endif
+#endif
+#ifdef TCL_CFG_PROFILED
+			    ".profile"
+#endif
+#ifdef PURIFY
+			    ".purify"
+#endif
+#ifdef STATIC_BUILD
+			    ".static"
+#endif
+		), NULL);
     }
     /*------------------------------------------------------------------------*/
     /* This procedure is called once per thread and any thread local data     */
@@ -614,7 +673,7 @@ EXPORT int Zint_Init (Tcl_Interp *interp)
     *tkFlagPtr = 0;
     Tcl_CallWhenDeleted(interp, InterpCleanupProc, (ClientData)tkFlagPtr);
     /*------------------------------------------------------------------------*/
-    Tcl_CreateObjCommand(interp, "zint", Zint, (ClientData)tkFlagPtr,
+    Tcl_CreateObjCommand(interp, "zint", ZintCmd, (ClientData)tkFlagPtr,
             (Tcl_CmdDeleteProc *)NULL);
     Tcl_PkgProvide (interp, "zint", version_string);
     /*------------------------------------------------------------------------*/
@@ -631,8 +690,11 @@ static void InterpCleanupProc(ClientData clientData, Tcl_Interp *interp)
 /*----------------------------------------------------------------------------*/
 /* >>>> Unload Procedures */
 /*----------------------------------------------------------------------------*/
-EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
+DLLEXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
 {
+    /* Remove created commands */
+    Tcl_DeleteCommand(Interp, "::zint::build-info");
+    Tcl_DeleteCommand(Interp, "zint");
     // Allow unload
     return TCL_OK;
 }
@@ -640,7 +702,7 @@ EXPORT int Zint_Unload (Tcl_Interp *Interp, int Flags)
 /* >>>>> Called routine */
 /*----------------------------------------------------------------------------*/
 /* Decode tcl commands */
-static int Zint(ClientData tkFlagPtr, Tcl_Interp *interp, int objc,
+static int ZintCmd(ClientData tkFlagPtr, Tcl_Interp *interp, int objc,
     Tcl_Obj *CONST objv[])
 {
     /* Option list and indexes */
@@ -725,13 +787,13 @@ static int CheckForTk(Tcl_Interp *interp, int *tkFlagPtr)
         return TCL_OK;
     }
     if (*tkFlagPtr == 0) {
-        if ( ! Tcl_PkgPresent(interp, "Tk", "8.5", 0) ) {
+        if ( ! Tcl_PkgPresent(interp, "Tk", "8.5-", 0) ) {
             Tcl_SetResult(interp, "package Tk not loaded", TCL_STATIC);
             return TCL_ERROR;
         }
     }
 #ifdef USE_TK_STUBS
-    if (*tkFlagPtr < 0 || Tk_InitStubs(interp, "8.5", 0) == NULL) {
+    if (*tkFlagPtr < 0 || Tk_InitStubs(interp, "8.5-", 0) == NULL) {
         *tkFlagPtr = -1;
         Tcl_SetResult(interp, "error initializing Tk", TCL_STATIC);
         return TCL_ERROR;
