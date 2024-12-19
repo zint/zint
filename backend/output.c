@@ -360,6 +360,12 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             *left = *right = 10.0f;
             done = 1;
             break;
+        
+        case BARCODE_DXFILMEDGE:
+            /* No known standard. Add a little horizontal space to make the detection easier. Tested with Zxing-CPP. */
+            *left = *right = 1.8f;
+            done = 1;
+            break;
 
         case BARCODE_C25INTER:
             /* ISO/IEC 16390:2007 Section 4.4 10X */

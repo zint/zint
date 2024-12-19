@@ -191,8 +191,8 @@ static void test_checks(const testCtx *const p_ctx) {
         /*127*/ { 126, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
         /*128*/ { 127, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range", BARCODE_CODE128 },
         /*129*/ { 127, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
-        /*130*/ { 147, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range", BARCODE_CODE128 },
-        /*131*/ { 147, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
+        /*130*/ { 148, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range", BARCODE_CODE128 },
+        /*131*/ { 148, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
         /*132*/ { BARCODE_LAST + 1, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_WARN_INVALID_OPTION, "Warning 206: Symbology out of range", BARCODE_CODE128 },
         /*133*/ { BARCODE_LAST + 1, -1, "1", -1, -1, -1, 0, 0, 0, 0, -1, -1, 0, -1, WARN_FAIL_ALL, ZINT_ERROR_INVALID_OPTION, "Error 206: Symbology out of range", -1 },
         /*134*/ { BARCODE_CODE128, -1, "\200", -1, UNICODE_MODE, -1, 0, 0, 0, 0, -1, -1, 0, -1, -1, ZINT_ERROR_INVALID_DATA, "Error 245: Invalid UTF-8 in input", -1 },
@@ -964,6 +964,7 @@ static void test_cap_compliant_height(const testCtx *const p_ctx) {
             case BARCODE_DBAR_EXPSTK_CC:
             case BARCODE_CHANNEL:
             case BARCODE_BC412:
+            case BARCODE_DXFILMEDGE: /* TODO: what's this? */
                 assert_equal(uret, ZINT_CAP_COMPLIANT_HEIGHT, "symbol_id %d (%s) uret 0x%X != ZINT_CAP_COMPLIANT_HEIGHT\n", symbol_id, testUtilBarcodeName(symbol_id), uret);
                 break;
             default:
@@ -1549,6 +1550,7 @@ static int test_prev_ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         { "BARCODE_ULTRA", BARCODE_ULTRA, 144 },
         { "BARCODE_RMQR", BARCODE_RMQR, 145 },
         { "BARCODE_BC412", BARCODE_BC412, 146 },
+        { "BARCODE_DXFILMEDGE", BARCODE_DXFILMEDGE, 147 },
     };
 
     name[0] = '\0';

@@ -5450,6 +5450,7 @@ printf "%s\n" "$ac_cv_c_bigendian" >&6; }
 	../backend/dllversion.c
 	../backend/dmatrix.c
 	../backend/dotcode.c
+  ../backend/dxfilmedge.c
 	../backend/eci.c
 	../backend/emf.c
 	../backend/filemem.c

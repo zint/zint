@@ -235,6 +235,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
 INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count); /* rMQR */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length); /* DPD Code */
 INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int length); /* BC412 */
+INTERNAL int dxfilmedge(struct zint_symbol *symbol, unsigned char source[], int length); /* DX Film Edge Barcode */
 
 /* Output handlers */
 /* Plot to BMP/GIF/PCX/PNG/TIF */
@@ -512,6 +513,7 @@ static int has_hrt(const int symbology) {
         case BARCODE_FIM:
         case BARCODE_PHARMA:
         case BARCODE_PHARMA_TWO:
+        case BARCODE_DXFILMEDGE:
         case BARCODE_CEPNET:
         case BARCODE_PDF417:
         case BARCODE_PDF417COMP:
@@ -580,7 +582,7 @@ static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
        channel,        NULL,        NULL,       upnqr,        NULL, /*140-144*/
-          NULL,       bc412,                                        /*145-146*/
+          NULL,       bc412,  dxfilmedge,                           /*145-147*/
 };
 
 #define LIB_SEG_FUNCS_START 55
@@ -1640,7 +1642,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         "EANX_CC",     "GS1_128_CC",  "DBAR_OMN_CC", "DBAR_LTD_CC",    "DBAR_EXP_CC",    /*130-134*/
         "UPCA_CC",     "UPCE_CC",     "DBAR_STK_CC", "DBAR_OMNSTK_CC", "DBAR_EXPSTK_CC", /*135-139*/
         "CHANNEL",     "CODEONE",     "GRIDMATRIX",  "UPNQR",          "ULTRA",          /*140-144*/
-        "RMQR",        "BC412",                                                          /*145-146*/
+        "RMQR",        "BC412",       "DXFILMEDGE",                                      /*145-147*/
     };
 
     name[0] = '\0';
@@ -1867,7 +1869,9 @@ float ZBarcode_Default_Xdim(int symbol_id) {
         case BARCODE_DBAR_EXPSTK_CC:
             x_dim_mm = 0.33f; /* GS1 General Standards 22.0 Section 5.12.3 Table 1 except DBAR_LTD Table 4 */
             break;
-
+        case BARCODE_DXFILMEDGE:
+            x_dim_mm = 0.403548f; /* Measured on Kodak 35mm film, a DX Film Edge with frame number with 31 symbols is 12,51 mm long*/
+            break;
         /* Specific */
         case BARCODE_BC412:
             x_dim_mm = 0.12f; /* SEMI T1-95 Table 1 */

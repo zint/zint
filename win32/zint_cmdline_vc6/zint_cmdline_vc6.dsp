@@ -148,6 +148,10 @@ SOURCE=..\..\backend\dotcode.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\dxfilmedge.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\eci.c
 # End Source File
 # Begin Source File

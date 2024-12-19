@@ -68,6 +68,7 @@ SOURCES += ../backend/2of5.c \
            ../backend/composite.c \
            ../backend/dmatrix.c \
            ../backend/dotcode.c \
+           ../backend/dxfilmedge.c \
            ../backend/eci.c \
            ../backend/emf.c \
            ../backend/gridmtx.c \

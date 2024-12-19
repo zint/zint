@@ -116,7 +116,7 @@ static void types(void) {
           "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
           "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
           "73 VIN         Vehicle Information No. 146 BC412          BC412\n", stdout);
-    fputs("74 CODABLOCKF  Codablock-F\n", stdout);
+    fputs("74 CODABLOCKF  Codablock-F             147 DXFILMEDGE     DX Film Edge\n", stdout);
 }
 
 /* Output version information */
@@ -480,6 +480,7 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_DPD, "dpd" },
         { BARCODE_DPIDENT, "dpident" },
         { BARCODE_DPLEIT, "dpleit" },
+        { BARCODE_DXFILMEDGE, "dxfilmedge" },
         { BARCODE_EANX, "ean" }, /* Synonym */
         { BARCODE_GS1_128, "ean128" }, /* Synonym */
         { BARCODE_GS1_128_CC, "ean128cc" }, /* Synonym */

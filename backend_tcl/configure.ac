@@ -88,6 +88,7 @@ TEA_ADD_SOURCES([
 	../backend/dllversion.c
 	../backend/dmatrix.c
 	../backend/dotcode.c
+	../backend/dxfilmedge.c
 	../backend/eci.c
 	../backend/emf.c
 	../backend/filemem.c

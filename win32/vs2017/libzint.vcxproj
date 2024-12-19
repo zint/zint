@@ -137,6 +137,7 @@
     <ClCompile Include="..\..\backend\dllversion.c" />
     <ClCompile Include="..\..\backend\dmatrix.c" />
     <ClCompile Include="..\..\backend\dotcode.c" />
+    <ClCompile Include="..\..\backend\dxfilmedge.c" />
     <ClCompile Include="..\..\backend\eci.c" />
     <ClCompile Include="..\..\backend\emf.c" />
     <ClCompile Include="..\..\backend\filemem.c" />

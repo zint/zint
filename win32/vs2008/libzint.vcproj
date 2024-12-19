@@ -257,6 +257,10 @@
 				RelativePath="..\..\backend\dotcode.c"
 				>
 			</File>
+						<File
+				RelativePath="..\..\backend\dxfilmedge.c"
+				>
+			</File>
 			<File
 				RelativePath="..\..\backend\eci.c"
 				>
