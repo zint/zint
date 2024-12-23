@@ -952,8 +952,6 @@ underscores are optional.
 
   121       BARCODE_MAILMARK_4S       Royal Mail 4-State Mailmark
 
-  127       BARCODE_DXFILMEDGE        DX Film Edge Barcode
-
   128       BARCODE_AZRUNE            Aztec Runes
 
   129       BARCODE_CODE32            Code 32
@@ -1001,6 +999,8 @@ underscores are optional.
   145       BARCODE_RMQR              Rectangular Micro QR Code (rMQR)
 
   146       BARCODE_BC412             IBM BC412 (SEMI T1-95)
+
+  147       BARCODE_DXFILMEDGE        DX Film Edge Barcode
   ------------------------------------------------------------------------------
 
   Table : Barcode Types (Symbologies)

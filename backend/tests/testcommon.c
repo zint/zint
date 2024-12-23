@@ -3827,7 +3827,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 124, },
         { "", -1, 125, },
         { "", -1, 126, },
-        { "DXFilmEdge", BARCODE_DXFILMEDGE, 127, },
+        { "", -1, 127, },
         { "", BARCODE_AZRUNE, 128, },
         { "", BARCODE_CODE32, 129, }, /* Code39 based */
         { "", BARCODE_EANX_CC, 130, },
@@ -3847,6 +3847,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", BARCODE_ULTRA, 144, },
         { "RMQRCode", BARCODE_RMQR, 145, },
         { "", BARCODE_BC412, 146, },
+        { "DXFilmEdge", BARCODE_DXFILMEDGE, 147, },
     };
     const int data_size = ARRAY_SIZE(data);
 
