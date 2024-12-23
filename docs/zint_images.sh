@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2022 <rstuart114@gmail.com>
+# Copyright (C) 2022-2024 <rstuart114@gmail.com>
 #
 # Generate the barcode .svg images for manual.pdf (via manual.pmd)
 
@@ -104,6 +104,7 @@ zint -b PHARMA_TWO --compliantheight -d "29876543" --scale=$SCALE_TRACK -o image
 zint -b POSTNET --compliantheight -d "12345678901" --scale=$SCALE_TRACK -o images/postnet.svg
 zint -b PLANET --compliantheight -d "4012345235636" --scale=$SCALE_TRACK -o images/planet.svg
 zint -b CEPNET --compliantheight -d "12345678" --scale=$SCALE_TRACK -o images/cepnet.svg
+zint -b DXFILMEDGE --compliantheight -d "112-1/10A" --scale=$SCALE_TRACK -o images/dxfilmedge.svg
 zint -b AUSPOST --compliantheight -d "96184209" --scale=$SCALE_TRACK -o images/auspost.svg
 zint -b AUSROUTE --compliantheight -d "34567890" --scale=$SCALE_TRACK -o images/ausroute.svg
 zint -b AUSREPLY --compliantheight -d "12345678" --scale=$SCALE_TRACK -o images/ausreply.svg

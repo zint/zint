@@ -1,4 +1,4 @@
-Version 2.13.0.9 (dev) not released yet (2024-11-23)
+Version 2.13.0.9 (dev) not released yet (2024-12-23)
 ====================================================
 
 **Incompatible changes**
@@ -51,6 +51,7 @@ Changes
   touch add-on TODO: revisit when standard clarified
 - manual: make explicit that AI "(00)" and "(01)" prefixes added by Zint are
   HRT-only; clarify Codablock-F length maximum & add examples
+- add DXFILMEDGE (MR #159, props Antoine Mérino)
 
 Bugs
 ----

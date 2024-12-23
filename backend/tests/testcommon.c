@@ -2357,7 +2357,7 @@ static const char *testUtilBwippName(int index, const struct zint_symbol *symbol
         { "", -1, 124, 0, 0, 0, 0, 0, },
         { "", -1, 125, 0, 0, 0, 0, 0, },
         { "", -1, 126, 0, 0, 0, 0, 0, },
-        { "", -1, 127, 0, 0, 0, 0, 0, },
+        { "", BARCODE_DXFILMEDGE, 127, 0, 0, 0, 0, 0, },
         { "aztecrune", BARCODE_AZRUNE, 128, 0, 0, 0, 0, 0, },
         { "code32", BARCODE_CODE32, 129, 0, 0, 0, 0, 0, },
         { "ean13composite", BARCODE_EANX_CC, 130, 1, 1, 0, 72 /*linear_row_height*/, 1 /*gs1_cvt*/, },
@@ -3513,6 +3513,7 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
     return 0;
 }
 
+/* Append multiple segments together and then call `testUtilBwipp()` */
 int testUtilBwippSegs(int index, struct zint_symbol *symbol, int option_1, int option_2, int option_3,
             const struct zint_seg segs[], const int seg_count, const char *primary, char *buffer, int buffer_size) {
     const int symbology = symbol->symbology;
@@ -3679,6 +3680,7 @@ int testUtilHaveZXingCPPDecoder(void) {
     return system("zxingcppdecoder " DEV_NULL_STDERR) == 0;
 }
 
+/* Helper to test whether have non-ASCII */
 static int testUtilHasNonASCII(const char *source, const int length) {
     int i;
     for (i = 0; i < length; i++) {
@@ -3825,7 +3827,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 124, },
         { "", -1, 125, },
         { "", -1, 126, },
-        { "", -1, 127, },
+        { "DXFilmEdge", BARCODE_DXFILMEDGE, 127, },
         { "", BARCODE_AZRUNE, 128, },
         { "", BARCODE_CODE32, 129, }, /* Code39 based */
         { "", BARCODE_EANX_CC, 130, },
@@ -3844,6 +3846,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "QRCode", BARCODE_UPNQR, 143, },
         { "", BARCODE_ULTRA, 144, },
         { "RMQRCode", BARCODE_RMQR, 145, },
+        { "", BARCODE_BC412, 146, },
     };
     const int data_size = ARRAY_SIZE(data);
 
@@ -3906,6 +3909,7 @@ int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char 
     return testUtilZXingCPPName(index, symbol, source, length, debug) != NULL;
 }
 
+/* Run "zxingcppdecoder", returning result in `buffer` */
 int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
             char *buffer, const int buffer_size, int *p_cmp_len) {
     static const char cmd_fmt[] = "zxingcppdecoder -textonly -format %s -width %d -bits '%s'";
@@ -4038,6 +4042,37 @@ INTERNAL int escape_char_process_test(struct zint_symbol *symbol, const unsigned
 
 static const char TECHNETIUM[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%"; /* Same as SILVER (CODE39) */
 
+/* Helper to strip leading zeroes (as long as have at least one non-zero digit) */
+static const char *testUtilZXingCPPLeadingZeroes(const char *expected) {
+    const char *stripped = expected;
+    while (*stripped == '0') stripped++;
+    return z_isdigit(*stripped) ? stripped : expected;
+}
+
+/* Helper to convert DX number from "NNNN"/"NNNNNN" format to "NNN-NN" format */
+static int textUtilZXingCPPDX(const char *expected, const int expected_len, const char *cmp_buf, char *out) {
+    if (strchr(cmp_buf, '-')) {
+        const char *stripped;
+        if (strchr(expected, '-') == NULL) {
+            if (expected_len == 6) {
+                const int dx = to_int((const unsigned char *) expected + 1, expected_len - 2);
+                sprintf(out, "%d-%d", dx / 16, dx % 16);
+            } else {
+                const int dx = to_int((const unsigned char *) expected, expected_len);
+                sprintf(out, "%d-%d", dx / 16, dx % 16);
+            }
+            return 1;
+        }
+        if ((stripped = testUtilZXingCPPLeadingZeroes(expected)) != expected) {
+            memcpy(out, stripped, expected_len - (stripped - expected));
+            out[expected_len - (stripped - expected)] = '\0';
+            return 1;
+        }
+    }
+    return 0;
+}
+
+/* Massage result from "zxingcppdecoder" so as can compare to Zint input */
 int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
             const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len) {
     const int symbology = symbol->symbology;
@@ -4068,6 +4103,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                         ? (char *) z_alloca(expected_len + 3 + 19 + 1) : NULL;
     char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
     char *pzn = symbology == BARCODE_PZN ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
+    char *dxfe = symbology == BARCODE_DXFILMEDGE ? (char *) z_alloca(expected_len * 2 + 1) : NULL;
 
     int ret;
     int ret_memcmp;
@@ -4226,7 +4262,6 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                     expected_len++;
                 }
                 c25inter[expected_len] = '\0';
-                printf("c25inter %s\n", c25inter);
                 expected = c25inter;
             }
         } else if (symbology == BARCODE_DPLEIT || symbology == BARCODE_DPIDENT) {
@@ -4397,6 +4432,48 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         }
         expected = pzn;
         expected_len++;
+
+    } else if (symbology == BARCODE_DXFILMEDGE) {
+        const int dx_info_len = posn(expected, '/');
+        if (dx_info_len != -1) {
+            char frame_info[20];
+            assert(strlen(expected + dx_info_len + 1) < sizeof(frame_info));
+            strcpy(frame_info, expected + dx_info_len + 1);
+            to_upper((unsigned char *) frame_info, (int) strlen(frame_info));
+            if (!textUtilZXingCPPDX(expected, dx_info_len, cmp_buf, dxfe)) {
+                memcpy(dxfe, expected, dx_info_len);
+                dxfe[dx_info_len] = '\0';
+            }
+            if (strcmp(frame_info, "S") == 0 || strcmp(frame_info, "X") == 0) {
+                strcat(dxfe, "/62");
+            } else if (strcmp(frame_info, "SA") == 0 || strcmp(frame_info, "XA") == 0) {
+                strcat(dxfe, "/62A");
+            } else if (strcmp(frame_info, "K") == 0 || strcmp(frame_info, "00") == 0) {
+                strcat(dxfe, "/63");
+            } else if (strcmp(frame_info, "KA") == 0 || strcmp(frame_info, "00A") == 0) {
+                strcat(dxfe, "/63A");
+            } else if (strcmp(frame_info, "F") == 0) {
+                strcat(dxfe, "/0");
+            } else if (strcmp(frame_info, "FA") == 0) {
+                strcat(dxfe, "/0A");
+            } else {
+                const char *stripped;
+                if ((stripped = testUtilZXingCPPLeadingZeroes(frame_info)) != frame_info) {
+                    strcat(dxfe, "/");
+                    strcat(dxfe, stripped);
+                } else {
+                    strcat(dxfe, expected + dx_info_len);
+                }
+            }
+            expected = dxfe;
+            expected_len = (int) strlen(expected);
+            to_upper((unsigned char *) expected, expected_len);
+        } else {
+            if (textUtilZXingCPPDX(expected, expected_len, cmp_buf, dxfe)) {
+                expected = dxfe;
+                expected_len = (int) strlen(expected);
+            }
+        }
     }
 
     if (ret_buf) {

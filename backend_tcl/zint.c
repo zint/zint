@@ -1,7 +1,7 @@
 /* zint_tcl.c TCL binding for zint */
 /*
     zint - the open source tcl binding to the zint barcode library
-    Copyright (C) 2014-2023 Harald Oehlmann <oehhar@users.sourceforge.net>
+    Copyright (C) 2014-2024 Harald Oehlmann <oehhar@users.sourceforge.net>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -176,6 +176,8 @@
 - TCL 9 compatibility
 - support TCL buildinfo
 - remove the zint command on dll unload
+2024-12-23 GL
+- Added DXFILMEDGE
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -330,6 +332,7 @@ static const char *s_code_list[] = {
     "MailMark-2D",
     "UPU-S10",
     "MailMark-4S",
+    "DXFilmEdge",
     "AztecRunes",
     "Code32",
     "EAN-CC",
@@ -432,6 +435,7 @@ static const int s_code_number[] = {
     BARCODE_MAILMARK_2D,
     BARCODE_UPU_S10,
     BARCODE_MAILMARK_4S,
+    BARCODE_DXFILMEDGE,
     BARCODE_AZRUNE,
     BARCODE_CODE32,
     BARCODE_EANX_CC,

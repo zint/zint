@@ -260,8 +260,9 @@
     }
     .display.math{display: block; text-align: center; margin: 0.5rem auto;}
     /* CSS for syntax highlighting */
+    html { -webkit-text-size-adjust: 100%; }
     pre > code.sourceCode { white-space: pre; position: relative; }
-    pre > code.sourceCode > span { line-height: 1.25; }
+    pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
     pre > code.sourceCode > span:empty { height: 1.2em; }
     .sourceCode { overflow: visible; }
     code.sourceCode > span { color: inherit; text-decoration: inherit; }
@@ -272,7 +273,7 @@
     }
     @media print {
     pre > code.sourceCode { white-space: pre-wrap; }
-    pre > code.sourceCode > span { display: inline-block; text-indent: -5em; padding-left: 5em; }
+    pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
     }
     pre.numberSource code
       { counter-reset: source-line 0; }
@@ -332,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.13.0.9</p>
-<p class="date">November 2024</p>
+<p class="date">December 2024</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -655,6 +656,8 @@ Two-Track Pharmacode</a></li>
 <li><a href="#planet" id="toc-planet">6.4.3 PLANET</a></li>
 <li><a href="#brazilian-cepnet" id="toc-brazilian-cepnet">6.4.4
 Brazilian CEPNet</a></li>
+<li><a href="#dx-film-edge-barcode" id="toc-dx-film-edge-barcode">6.4.5
+DX Film Edge Barcode</a></li>
 </ul></li>
 <li><a href="#state-postal-codes" id="toc-state-postal-codes">6.5
 4-State Postal Codes</a>
@@ -1948,6 +1951,11 @@ Matrix)</td>
 <td style="text-align: left;">121</td>
 <td style="text-align: left;"><code>BARCODE_MAILMARK_4S</code></td>
 <td style="text-align: left;">Royal Mail 4-State Mailmark</td>
+</tr>
+<tr>
+<td style="text-align: left;">127</td>
+<td style="text-align: left;"><code>BARCODE_DXFILMEDGE</code></td>
+<td style="text-align: left;">DX Film Edge Barcode</td>
 </tr>
 <tr>
 <td style="text-align: left;">128</td>
@@ -5575,6 +5583,35 @@ aria-hidden="true"><code>zint -b CEPNET --compliantheight -d "12345678"</code></
 Brazilian postal service, to encode CEP (Código de Endereçamento Postal)
 numbers on mail items. Input should consist of eight digits with the
 check digit being automatically added by Zint.</p>
+<h3 id="dx-film-edge-barcode">6.4.5 DX Film Edge Barcode</h3>
+<figure>
+<img src="images/dxfilmedge.svg" title="fig:" class="trk"
+alt="zint -b DXFILMEDGE --compliantheight -d &quot;112-1/10A&quot;" />
+<figcaption
+aria-hidden="true"><code>zint -b DXFILMEDGE --compliantheight -d "112-1/10A"</code></figcaption>
+</figure>
+<p>Introduced by Kodak in the 1980s, the DX (Digital Index) barcode is
+printed on the bottom edge of 35mm film to aid in the reordering and
+post-processing of prints.</p>
+<p>The data can be in two parts. The first part (required) is the “DX
+number”, identifying the manufacturer and film type - the National
+Association of Photographic Manufacturers (NAPM) number. The second
+part, which is optional and if present is separated from the first by a
+slash (<code>/</code>), gives the frame number.</p>
+<p>The DX number is in either of two formats. The first format is a
+number of 1 to 4 digits (“DX Extract”) or 6 digits (“DX Full”), but for
+the 6-digit version the first and last digit are ignored, leaving a
+4-digit DX Extract number in any case, which must be in the range 16 to
+2047. The second format “NNN-NN” represents the DX Extract as two
+numbers separated by a dash (<code>-</code>), the first number being 1
+to 3 digits (range 1 to 127) and the second 1 to 2 digits (range 0 to
+15).<a href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a></p>
+<p>The optional frame number is a number in the range 0 to 63, and may
+have a half frame indicator “A” appended. Special character sequences
+(with or without a half frame indicator appended) may also be used: “S”
+or “X” means frame number 62, “K” or “00” means frame number 63, and “F”
+means frame number 0.</p>
 <h2 id="state-postal-codes">6.5 4-State Postal Codes</h2>
 <h3 id="australia-post-4-state-symbols">6.5.1 Australia Post 4-State
 Symbols</h3>
@@ -9497,6 +9534,9 @@ href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn14"><p><code>BARCODE_CODE128AB</code> previously used the name
 <code>BARCODE_CODE128B</code>, which is still recognised.<a
 href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>The DX Number may be looked up in The (Modified) Big
+Film Database at https://thebigfilmdatabase.merinorus.com<a
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

@@ -97,26 +97,26 @@ static void types(void) {
           "40 POSTNET     USPS POSTNET            119 MAILMARK_2D    Royal Mail 2D Mailmark\n"
           "47 MSI_PLESSEY MSI Plessey             120 UPU_S10        UPU S10\n", stdout);
     fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-State Mailmark\n"
-          "50 LOGMARS     LOGMARS Code 39         128 AZRUNE         Aztec Runes\n"
-          "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32\n"
-          "52 PZN         Pharmazentralnummer     130 EANX_CC        Composite EAN\n"
-          "53 PHARMA_TWO  Pharmacode Two-Track    131 GS1_128_CC     Composite GS1-128\n", stdout);
-    fputs("54 CEPNET      Brazilian CEPNet        132 DBAR_OMN_CC    Comp DataBar Omni\n"
-          "55 PDF417      PDF417                  133 DBAR_LTD_CC    Comp DataBar Limited\n"
-          "56 PDF417COMP  Compact PDF417          134 DBAR_EXP_CC    Comp DataBar Expanded\n"
-          "57 MAXICODE    MaxiCode                135 UPCA_CC        Composite UPC-A\n"
-          "58 QRCODE      QR Code                 136 UPCE_CC        Composite UPC-E\n", stdout);
-    fputs("60 CODE128AB   Code 128 (Suppress C)   137 DBAR_STK_CC    Comp DataBar Stacked\n"
-          "63 AUSPOST     AP Standard Customer    138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
-          "66 AUSREPLY    AP Reply Paid           139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
-          "67 AUSROUTE    AP Routing              140 CHANNEL        Channel Code\n"
-          "68 AUSREDIRECT AP Redirection          141 CODEONE        Code One\n", stdout);
-    fputs("69 ISBNX       ISBN                    142 GRIDMATRIX     Grid Matrix\n"
-          "70 RM4SCC      Royal Mail 4SCC         143 UPNQR          UPN QR Code\n"
-          "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
-          "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
-          "73 VIN         Vehicle Information No. 146 BC412          BC412\n", stdout);
-    fputs("74 CODABLOCKF  Codablock-F             147 DXFILMEDGE     DX Film Edge\n", stdout);
+          "50 LOGMARS     LOGMARS Code 39         127 DXFILMEDGE     DX Film Edge Barcode\n"
+          "51 PHARMA      Pharmacode One-Track    128 AZRUNE         Aztec Runes\n"
+          "52 PZN         Pharmazentralnummer     129 CODE32         Code 32\n"
+          "53 PHARMA_TWO  Pharmacode Two-Track    130 EANX_CC        Composite EAN\n", stdout);
+    fputs("54 CEPNET      Brazilian CEPNet        131 GS1_128_CC     Composite GS1-128\n"
+          "55 PDF417      PDF417                  132 DBAR_OMN_CC    Comp DataBar Omni\n"
+          "56 PDF417COMP  Compact PDF417          133 DBAR_LTD_CC    Comp DataBar Limited\n"
+          "57 MAXICODE    MaxiCode                134 DBAR_EXP_CC    Comp DataBar Expanded\n"
+          "58 QRCODE      QR Code                 135 UPCA_CC        Composite UPC-A\n", stdout);
+    fputs("60 CODE128AB   Code 128 (Suppress C)   136 UPCE_CC        Composite UPC-E\n"
+          "63 AUSPOST     AP Standard Customer    137 DBAR_STK_CC    Comp DataBar Stacked\n"
+          "66 AUSREPLY    AP Reply Paid           138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
+          "67 AUSROUTE    AP Routing              139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
+          "68 AUSREDIRECT AP Redirection          140 CHANNEL        Channel Code\n", stdout);
+    fputs("69 ISBNX       ISBN                    141 CODEONE        Code One\n"
+          "70 RM4SCC      Royal Mail 4SCC         142 GRIDMATRIX     Grid Matrix\n"
+          "71 DATAMATRIX  Data Matrix             143 UPNQR          UPN QR Code\n"
+          "72 EAN14       EAN-14                  144 ULTRA          Ultracode\n"
+          "73 VIN         Vehicle Information No. 145 RMQR           Rectangular Micro QR\n", stdout);
+    fputs("74 CODABLOCKF  Codablock-F             146 BC412          BC412\n", stdout);
 }
 
 /* Output version information */

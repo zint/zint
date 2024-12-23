@@ -578,11 +578,11 @@ static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
           NULL,        NULL,        NULL,        NULL,        NULL, /*110-114*/
           NULL,        NULL,        NULL,        NULL, mailmark_2d, /*115-119*/
        upu_s10, mailmark_4s,        NULL,        NULL,        NULL, /*120-124*/
-          NULL,        NULL,        NULL,      azrune,      code32, /*125-129*/
+          NULL,        NULL,  dxfilmedge,      azrune,      code32, /*125-129*/
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
        channel,        NULL,        NULL,       upnqr,        NULL, /*140-144*/
-          NULL,       bc412,  dxfilmedge,                           /*145-147*/
+          NULL,       bc412,                                        /*145-146*/
 };
 
 #define LIB_SEG_FUNCS_START 55
@@ -1638,11 +1638,11 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         "HIBC_BLOCKF", "",            "HIBC_AZTEC",  "",               "",               /*110-114*/
         "DOTCODE",     "HANXIN",      "",            "",               "MAILMARK_2D",    /*115-119*/
         "UPU_S10",     "MAILMARK_4S", "",            "",               "",               /*120-124*/
-        "",            "",            "",            "AZRUNE",         "CODE32",         /*125-129*/
+        "",            "",            "DXFILMEDGE",  "AZRUNE",         "CODE32",         /*125-129*/
         "EANX_CC",     "GS1_128_CC",  "DBAR_OMN_CC", "DBAR_LTD_CC",    "DBAR_EXP_CC",    /*130-134*/
         "UPCA_CC",     "UPCE_CC",     "DBAR_STK_CC", "DBAR_OMNSTK_CC", "DBAR_EXPSTK_CC", /*135-139*/
         "CHANNEL",     "CODEONE",     "GRIDMATRIX",  "UPNQR",          "ULTRA",          /*140-144*/
-        "RMQR",        "BC412",       "DXFILMEDGE",                                      /*145-147*/
+        "RMQR",        "BC412",                                                          /*145-146*/
     };
 
     name[0] = '\0';
@@ -1870,7 +1870,8 @@ float ZBarcode_Default_Xdim(int symbol_id) {
             x_dim_mm = 0.33f; /* GS1 General Standards 22.0 Section 5.12.3 Table 1 except DBAR_LTD Table 4 */
             break;
         case BARCODE_DXFILMEDGE:
-            x_dim_mm = 0.403548f; /* Measured on Kodak 35mm film, a DX Film Edge with frame number with 31 symbols is 12,51 mm long*/
+            /* Measured on Kodak 35mm film, a DX Film Edge with frame number with 31 symbols is 12,51 mm long */
+            x_dim_mm = 0.403548f;
             break;
         /* Specific */
         case BARCODE_BC412:

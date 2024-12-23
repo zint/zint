@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-November 2024
+December 2024
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -145,6 +145,7 @@ November 2024
         -   6.4.2 POSTNET
         -   6.4.3 PLANET
         -   6.4.4 Brazilian CEPNet
+        -   6.4.5 DX Film Edge Barcode
     -   6.5 4-State Postal Codes
         -   6.5.1 Australia Post 4-State Symbols
             -   6.5.1.1 Customer Barcodes
@@ -950,6 +951,8 @@ underscores are optional.
                                       Matrix)
 
   121       BARCODE_MAILMARK_4S       Royal Mail 4-State Mailmark
+
+  127       BARCODE_DXFILMEDGE        DX Film Edge Barcode
 
   128       BARCODE_AZRUNE            Aztec Runes
 
@@ -3583,6 +3586,32 @@ service, to encode CEP (Código de Endereçamento Postal) numbers on mail items.
 Input should consist of eight digits with the check digit being automatically
 added by Zint.
 
+6.4.5 DX Film Edge Barcode
+
+[zint -b DXFILMEDGE --compliantheight -d "112-1/10A"]
+
+Introduced by Kodak in the 1980s, the DX (Digital Index) barcode is printed on
+the bottom edge of 35mm film to aid in the reordering and post-processing of
+prints.
+
+The data can be in two parts. The first part (required) is the “DX number”,
+identifying the manufacturer and film type - the National Association of
+Photographic Manufacturers (NAPM) number. The second part, which is optional and
+if present is separated from the first by a slash (/), gives the frame number.
+
+The DX number is in either of two formats. The first format is a number of 1 to
+4 digits (“DX Extract”) or 6 digits (“DX Full”), but for the 6-digit version the
+first and last digit are ignored, leaving a 4-digit DX Extract number in any
+case, which must be in the range 16 to 2047. The second format “NNN-NN”
+represents the DX Extract as two numbers separated by a dash (-), the first
+number being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
+0 to 15).[15]
+
+The optional frame number is a number in the range 0 to 63, and may have a half
+frame indicator “A” appended. Special character sequences (with or without a
+half frame indicator appended) may also be used: “S” or “X” means frame number
+62, “K” or “00” means frame number 63, and “F” means frame number 0.
+
 6.5 4-State Postal Codes
 
 6.5.1 Australia Post 4-State Symbols
@@ -4829,7 +4858,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % November 2024
+% ZINT(1) Version 2.13.0.9 % % December 2024
 
 NAME
 
@@ -5581,3 +5610,6 @@ recognised.
 
 [14] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.
+
+[15] The DX Number may be looked up in The (Modified) Big Film Database at
+https://thebigfilmdatabase.merinorus.com

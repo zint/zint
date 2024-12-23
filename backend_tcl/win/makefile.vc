@@ -51,6 +51,7 @@ PRJ_OBJS = \
 	$(TMP_DIR)\dllversion.obj \
 	$(TMP_DIR)\dmatrix.obj \
 	$(TMP_DIR)\dotcode.obj \
+	$(TMP_DIR)\dxfilmedge.obj \
 	$(TMP_DIR)\eci.obj \
 	$(TMP_DIR)\emf.obj \
 	$(TMP_DIR)\filemem.obj \
