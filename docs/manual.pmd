@@ -3763,8 +3763,11 @@ frame indicator "A" appended. Special character sequences (with or without a
 half frame indicator appended) may also be used: "S" or "X" means frame number
 62, "K" or "00" means frame number 63, and "F" means frame number 0.
 
+A parity bit is automatically added by Zint.
+
 [^15]: The DX Number may be looked up in The (Modified) Big Film Database at
-https://thebigfilmdatabase.merinorus.com
+[https://thebigfilmdatabase.merinorus.com](
+https://thebigfilmdatabase.merinorus.com).
 
 \clearpage
 

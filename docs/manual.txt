@@ -3612,6 +3612,8 @@ frame indicator “A” appended. Special character sequences (with or without a
 half frame indicator appended) may also be used: “S” or “X” means frame number
 62, “K” or “00” means frame number 63, and “F” means frame number 0.
 
+A parity bit is automatically added by Zint.
+
 6.5 4-State Postal Codes
 
 6.5.1 Australia Post 4-State Symbols
@@ -5612,4 +5614,4 @@ recognised.
 recognised.
 
 [15] The DX Number may be looked up in The (Modified) Big Film Database at
-https://thebigfilmdatabase.merinorus.com
+https://thebigfilmdatabase.merinorus.com.
