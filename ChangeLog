@@ -1,4 +1,4 @@
-Version 2.13.0.9 (dev) not released yet (2024-12-23)
+Version 2.13.0.9 (dev) not released yet (2025-01-15)
 ====================================================
 
 **Incompatible changes**
@@ -71,6 +71,7 @@ Bugs
 - CODE128: fix extended char latching when exactly 3 extended chars at end
 - library: need to check for valid UTF-8 after de-escaping
 - MAXICODE: maintain current set between segments
+- MSYS2: fix stdout output on Windows under MSYS2 (mailing list, props Frank)
 
 
 Version 2.13.0 (2023-12-18)

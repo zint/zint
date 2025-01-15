@@ -1,7 +1,7 @@
 /* common.c - Contains functions needed for a number of barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -503,15 +503,15 @@ INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, cons
 
     err_buf[0] = '\0';
 
-/* Suppress gcc 14 warning output may be truncated */
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 14
+/* Suppress gcc 8+ warning output may be truncated */
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
 #pragma GCC diagnostic push
 #pragma GCC diagnostic ignored "-Wstringop-truncation"
 #endif
 
     strncat(err_buf, symbol->errtxt, sizeof(symbol->errtxt) - 1);
 
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 14
+#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
 #pragma GCC diagnostic pop
 #endif
 

@@ -1,7 +1,7 @@
 /* common.h - Header for all common functions in common.c */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -84,6 +84,8 @@ typedef unsigned __int64 uint64_t;
 #  if _MSC_VER > 1200 /* VC6 */
 #    pragma warning(disable: 4996) /* function or variable may be unsafe */
 #  endif
+#elif defined(__MINGW64__) && defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 3
+#  pragma GCC diagnostic ignored "-Wlong-long"
 #endif
 
 #if defined(__GNUC__) && __GNUC__ >= 3

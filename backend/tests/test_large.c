@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@
 #include "testcommon.h"
 #include "../large.h"
 
-#if defined(__MINGW32__)
+#if defined(__MINGW32__) && !defined(__MINGW64__)
 #  if __WORDSIZE == 32
 #    define LX_FMT "I32"
 #  else
