@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -601,22 +601,26 @@ const char *testUtilOption3Name(int symbology, int option_3) {
     const unsigned int high_byte = option_3 == -1 ? 0 : (option_3 >> 8) & 0xFF;
 
     if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
-        if ((option_3 & 0x7F) == DM_SQUARE) {
-            if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-                name = "DM_SQUARE | DM_ISO_144";
+        if (option_3 > 0) {
+            if ((option_3 & 0x7F) == DM_SQUARE) {
+                if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+                    name = "DM_SQUARE | DM_ISO_144";
+                } else {
+                    name = "DM_SQUARE";
+                }
+            } else if ((option_3 & 0x7F) == DM_DMRE) {
+                if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+                    name = "DM_DMRE | DM_ISO_144";
+                } else {
+                    name = "DM_DMRE";
+                }
+            } else if ((option_3 & DM_ISO_144) == DM_ISO_144) {
+                name = "DM_ISO_144";
             } else {
-                name = "DM_SQUARE";
+                name = (option_3 & 0xFF) ? "-1" : "0";
             }
-        } else if ((option_3 & 0x7F) == DM_DMRE) {
-            if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-                name = "DM_DMRE | DM_ISO_144";
-            } else {
-                name = "DM_DMRE";
-            }
-        } else if ((option_3 & DM_ISO_144) == DM_ISO_144) {
-            name = "DM_ISO_144";
         } else {
-            name = (option_3 & 0xFF) ? "-1" : "0";
+            name = option_3 ? "-1" : "0";
         }
     } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
                 || symbology == BARCODE_RMQR || symbology == BARCODE_GRIDMATRIX || symbology == BARCODE_HANXIN) {
@@ -2572,7 +2576,7 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                 case 'R': val = 0x1e; /* Record Separator */ break;
                 case 'x':
                     val = d + 2 < de && z_isxdigit(d[1]) && z_isxdigit(d[2]) ? (ctoi(d[1]) << 4) | ctoi(d[2]) : -1;
-                    if (val != -1) d+= 2;
+                    if (val != -1) d += 2;
                     break;
                 case 'd':
                     val = d + 3 < de ? to_int(d + 1, 3) : -1;
@@ -2586,7 +2590,14 @@ static char *testUtilBwippEscape(char *bwipp_data, int bwipp_data_size, const ch
                     if (val != -1) d += 3;
                     break;
                 case '\\': val = '\\'; break;
-                /*case 'u': val = 0; TODO: implement break; */
+                case 'u': /* For convenience, only handles ISO/IEC 8859-1 */
+                    val = d + 4 < de && z_isxdigit(d[1]) && z_isxdigit(d[2]) && z_isxdigit(d[3]) && z_isxdigit(d[4])
+                            ? (ctoi(d[1]) << 4) | ctoi(d[2]) : -1;
+                    if (val == 0) { /* Only handling Latin-1 so must be zero */
+                        val = (ctoi(d[3]) << 4) | ctoi(d[4]);
+                        d += 4;
+                    }
+                    break;
                 /*case 'U': val = 0; TODO: implement break; */
                 case '^': val = -1; break; /* Code 128 special escapes */
                 default: fprintf(stderr, "testUtilBwippEscape: unknown escape %c\n", *d); return NULL; break;
@@ -3274,6 +3285,16 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
             if (option_3 != -1) {
                 bwipp_opts = bwipp_opts_buf;
             }
+            if (symbol->output_options & READER_INIT) {
+                memmove(bwipp_data + 5, bwipp_data, strlen(bwipp_data) + 1);
+                memcpy(bwipp_data, "^PROG", 5);
+                if (!parsefnc) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%sparsefnc",
+                            strlen(bwipp_opts_buf) ? " " : "");
+                    bwipp_opts = bwipp_opts_buf;
+                    parse = 1;
+                }
+            }
         } else if (symbology == BARCODE_DOTCODE) {
             if (option_2 > 0) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%scolumns=%d",
@@ -3828,7 +3849,7 @@ static const char *testUtilZXingCPPName(int index, const struct zint_symbol *sym
         { "", -1, 125, },
         { "", -1, 126, },
         { "", -1, 127, },
-        { "", BARCODE_AZRUNE, 128, },
+        { "Aztec", BARCODE_AZRUNE, 128, },
         { "", BARCODE_CODE32, 129, }, /* Code39 based */
         { "", BARCODE_EANX_CC, 130, },
         { "", BARCODE_GS1_128_CC, 131, },
@@ -4105,6 +4126,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
     char *pzn = symbology == BARCODE_PZN ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *dxfe = symbology == BARCODE_DXFILMEDGE ? (char *) z_alloca(expected_len * 2 + 1) : NULL;
+    char azrune[4];
 
     int ret;
     int ret_memcmp;
@@ -4474,6 +4496,13 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                 expected = dxfe;
                 expected_len = (int) strlen(expected);
             }
+        }
+
+    } else if (symbology == BARCODE_AZRUNE) {
+        if (expected_len != 3) {
+            sprintf(azrune, "%03d", to_int((const unsigned char *) expected, expected_len));
+            expected = azrune;
+            expected_len = 3;
         }
     }
 

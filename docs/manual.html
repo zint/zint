@@ -333,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.13.0.9</p>
-<p class="date">December 2024</p>
+<p class="date">January 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -3329,11 +3329,11 @@ member <code>memfile</code> instead of to the output file
 <span id="cb64-14"><a href="#cb64-14" aria-hidden="true" tabindex="-1"></a>    ZBarcode_Delete<span class="op">(</span>my_symbol<span class="op">);</span></span>
 <span id="cb64-15"><a href="#cb64-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
 <span id="cb64-16"><a href="#cb64-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<p>will print the SVG output to <code>stdout</code> (the file “mem.svg”
-is not created). This is particularly useful for the textual formats EPS
-and SVG,<a href="#fn7" class="footnote-ref" id="fnref7"
-role="doc-noteref"><sup>7</sup></a> allowing the output to be
-manipulated and processed by the client.</p>
+<p>will print the SVG output to <code>stdout</code> (the file
+<code>"mem.svg"</code> is not created). This is particularly useful for
+the textual formats EPS and SVG,<a href="#fn7" class="footnote-ref"
+id="fnref7" role="doc-noteref"><sup>7</sup></a> allowing the output to
+be manipulated and processed by the client.</p>
 <h2 id="setting-options">5.7 Setting Options</h2>
 <p>So far our application is not very useful unless we plan to only make
 Code 128 symbols and we don’t mind that they only save to
@@ -3918,8 +3918,9 @@ use standard height (if any) as default.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>EANUPC_GUARD_WHITESPACE</code></td>
-<td style="text-align: left;">Add quiet zone indicators (“&lt;” and/or
-“&gt;”) to HRT whitespace (EAN/UPC).</td>
+<td style="text-align: left;">Add quiet zone indicators
+(<code>"&lt;"</code> and/or <code>"&gt;"</code>) to HRT whitespace
+(EAN/UPC).</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>EMBED_VECTOR_FONT</code></td>
@@ -4906,8 +4907,8 @@ alt="zint -b EAN14 --compliantheight -d &quot;9889876543210&quot;" />
 aria-hidden="true"><code>zint -b EAN14 --compliantheight -d "9889876543210"</code></figcaption>
 </figure>
 <p>A shorter version of GS1-128 which encodes GTIN data only. A 13-digit
-number is required. The GTIN check digit and HRT-only AI “(01)” are
-added by Zint.</p>
+number is required. The GTIN check digit and HRT-only AI
+<code>"(01)"</code> are added by Zint.</p>
 <h4 id="nve-18-sscc-18">6.1.10.5 NVE-18 (SSCC-18)</h4>
 <figure>
 <img src="images/nve18.svg" title="fig:" class="lin"
@@ -4918,8 +4919,8 @@ aria-hidden="true"><code>zint -b NVE18 --compliantheight -d "37612345000001003"<
 <p>A variation of Code 128 the ‘Nummer der Versandeinheit’ standard,
 also known as SSCC-18 (Serial Shipping Container Code), includes both a
 visible modulo-10 and a hidden modulo-103 check digit. NVE-18 requires a
-17-digit numerical input. Check digits and HRT-only AI “(00)” are added
-by Zint.</p>
+17-digit numerical input. Check digits and HRT-only AI
+<code>"(00)"</code> are added by Zint.</p>
 <h4 id="hibc-code-128">6.1.10.6 HIBC Code 128</h4>
 <figure>
 <img src="images/hibc_128.svg" title="fig:" class="lin"
@@ -5021,9 +5022,10 @@ alt="zint -b DBAR_OMN --compliantheight -d &quot;0950110153001&quot;" />
 aria-hidden="true"><code>zint -b DBAR_OMN --compliantheight -d "0950110153001"</code></figcaption>
 </figure>
 <p>Previously known as RSS-14 this standard encodes a 13-digit item
-code. A check digit and HRT-only Application Identifier of “(01)” are
-added by Zint. (A 14-digit code that appends the check digit may be
-given, in which case the check digit will be verified.)</p>
+code. A check digit and HRT-only Application Identifier of
+<code>"(01)"</code> are added by Zint. (A 14-digit code that appends the
+check digit may be given, in which case the check digit will be
+verified.)</p>
 <p>GS1 DataBar Omnidirectional symbols should have a height of 33 or
 greater. To produce a GS1 DataBar Truncated symbol set the symbol height
 to a value between 13 and 32. Truncated symbols may not be scannable by
@@ -5046,8 +5048,8 @@ code and can be used in the same way as GS1 DataBar Omnidirectional
 above. GS1 DataBar Limited, however, is limited to data starting with
 digits 0 and 1 (i.e. numbers in the range 0 to 1999999999999). As with
 GS1 DataBar Omnidirectional a check digit and HRT-only Application
-Identifier of “(01)” are added by Zint, and a 14-digit code may be given
-in which case the check digit will be verified.</p>
+Identifier of <code>"(01)"</code> are added by Zint, and a 14-digit code
+may be given in which case the check digit will be verified.</p>
 <h4 id="gs1-databar-expanded">6.1.11.3 GS1 DataBar Expanded</h4>
 <figure>
 <img src="images/dbar_exp.svg" title="fig:" class="lin"
@@ -5260,7 +5262,7 @@ encoded.</p>
 supports the ECI encoding mechanism. A separate symbology ID
 (<code>BARCODE_HIBC_PDF</code>) can be used to encode Health Industry
 Barcode (HIBC) data.</p>
-<p>For a faster but less optimal encoding, the <code>--fast</code>
+<p>For a faster but less optimal encodation, the <code>--fast</code>
 option (API <code>input_mode |= FAST_MODE</code>) may be used.</p>
 <p>PDF417 supports Structured Append of up to 99,999 symbols and an
 optional numeric ID of up to 30 digits, which can be set by using the
@@ -5602,16 +5604,17 @@ slash (<code>/</code>), gives the frame number.</p>
 number of 1 to 4 digits (“DX Extract”) or 6 digits (“DX Full”), but for
 the 6-digit version the first and last digit are ignored, leaving a
 4-digit DX Extract number in any case, which must be in the range 16 to
-2047. The second format “NNN-NN” represents the DX Extract as two
-numbers separated by a dash (<code>-</code>), the first number being 1
-to 3 digits (range 1 to 127) and the second 1 to 2 digits (range 0 to
-15).<a href="#fn15" class="footnote-ref" id="fnref15"
+2047. The second format <code>"NNN-NN"</code> represents the DX Extract
+as two numbers separated by a dash (<code>-</code>), the first number
+being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
+0 to 15).<a href="#fn15" class="footnote-ref" id="fnref15"
 role="doc-noteref"><sup>15</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
-have a half frame indicator “A” appended. Special character sequences
-(with or without a half frame indicator appended) may also be used: “S”
-or “X” means frame number 62, “K” or “00” means frame number 63, and “F”
-means frame number 0.</p>
+have a half frame indicator <code>"A"</code> appended. Special character
+sequences (with or without a half frame indicator appended) may also be
+used: <code>"S"</code> or <code>"X"</code> means frame number 62,
+<code>"K"</code> or <code>"00"</code> means frame number 63, and
+<code>"F"</code> means frame number 0.</p>
 <p>A parity bit is automatically added by Zint.</p>
 <h2 id="state-postal-codes">6.5 4-State Postal Codes</h2>
 <h3 id="australia-post-4-state-symbols">6.5.1 Australia Post 4-State
@@ -6110,7 +6113,7 @@ GS (API <code>output_options |= GS1_GS_SEPARATOR</code>).</p>
 size 144 x 144 (version 24). To override this and use the now clarified
 ISO/IEC standard placement, use option <code>--dmiso144</code> (API
 <code>option_3 |= DM_ISO_144</code>).</p>
-<p>For a faster but less optimal encoding, the <code>--fast</code>
+<p>For a faster but less optimal encodation, the <code>--fast</code>
 option (API <code>input_mode |= FAST_MODE</code>) may be used.</p>
 <p>Data Matrix supports Structured Append of up to 16 symbols and a
 numeric ID (file identifications), which can be set by using the
@@ -6946,6 +6949,10 @@ Zint is given in the following table.</p>
 data-tag=": MaxiCode Structured Carrier Message Format">
 <caption><span>Table : MaxiCode Structured Carrier Message
 Format:</span> </caption>
+<colgroup>
+<col style="width: 16%" />
+<col style="width: 83%" />
+</colgroup>
 <thead>
 <tr>
 <th>Characters</th>
@@ -6956,30 +6963,10 @@ Format:</span> </caption>
 <tr>
 <td>1 - 9</td>
 <td style="text-align: left;">Postcode data which can consist of up to 9
-digits (for mode 2)</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align: left;">or up to 6 alphanumeric characters (for
-mode 3). Remaining</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align: left;">unused characters for mode 3 can be filled
-with the SPACE</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align: left;">character (ASCII 32) or omitted.</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align: left;">(adjust the following character positions
-according to postcode</td>
-</tr>
-<tr>
-<td></td>
-<td style="text-align: left;">length)</td>
+digits (for mode 2) or up to 6 alphanumeric characters (for mode 3).
+Remaining unused characters for mode 3 can be filled with the SPACE
+character (ASCII 32) or omitted. (adjust the following character
+positions according to postcode length)</td>
 </tr>
 <tr>
 <td>10 - 12</td>
@@ -7330,21 +7317,20 @@ roughly square (versions A through to H) and variable-width versions
 (versions S and T). These can be selected by using <code>--vers</code>
 (API <code>option_2</code>) as shown in the table below:</p>
 <div id="tbl:codeone_sizes" class="tablenos">
-<table id="tbl:codeone_sizes" style="width:88%;"
-data-tag=": Code One Sizes">
+<table id="tbl:codeone_sizes" data-tag=": Code One Sizes">
 <caption><span>Table : Code One Sizes</span> </caption>
 <colgroup>
-<col style="width: 11%" />
+<col style="width: 10%" />
 <col style="width: 13%" />
-<col style="width: 18%" />
-<col style="width: 22%" />
-<col style="width: 22%" />
+<col style="width: 31%" />
+<col style="width: 21%" />
+<col style="width: 21%" />
 </colgroup>
 <thead>
 <tr>
 <th>Input</th>
 <th>Version</th>
-<th style="text-align: left;">Size (W x H)</th>
+<th style="text-align: left;">Size (H x W)</th>
 <th style="text-align: left;">Numeric Data Capacity</th>
 <th style="text-align: left;">Alphanumeric Data Capacity</th>
 </tr>
@@ -7367,7 +7353,7 @@ data-tag=": Code One Sizes">
 <tr>
 <td>3</td>
 <td>C</td>
-<td style="text-align: left;">28 x 28</td>
+<td style="text-align: left;">28 x 32</td>
 <td style="text-align: left;">104</td>
 <td style="text-align: left;">64</td>
 </tr>
@@ -7409,14 +7395,14 @@ data-tag=": Code One Sizes">
 <tr>
 <td>9</td>
 <td>S</td>
-<td style="text-align: left;">width x 8</td>
+<td style="text-align: left;">8 x automatic width</td>
 <td style="text-align: left;">18</td>
 <td style="text-align: left;">N/A</td>
 </tr>
 <tr>
 <td>10</td>
 <td>T</td>
-<td style="text-align: left;">width x 16</td>
+<td style="text-align: left;">16 x automatic width</td>
 <td style="text-align: left;">90</td>
 <td style="text-align: left;">55</td>
 </tr>
@@ -9209,12 +9195,12 @@ is 10 and minimum is -5. The default is 1.</p>
         11  45x45     23  95x95     35  147x147
         12  49x49     24  101x101   36  151x151
 
-Code One        1 to 10 (9 and 10 variable width) (WxH)
+Code One        1 to 10 (9 and 10 variable width) (HxW)
         1   16x18     6   70x76
         2   22x22     7   104x98
-        3   28x28     8   148x134
-        4   40x42     9   Wx8
-        5   52x54     10  Wx16
+        3   28x32     8   148x134
+        4   40x42     9   8xW
+        5   52x54     10  16xW
 
 Data Matrix     1 to 48 (31 to 48 DMRE) (HxW)
         1   10x10     17  72x72     33  8x80
@@ -9535,7 +9521,7 @@ href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn14"><p><code>BARCODE_CODE128AB</code> previously used the name
 <code>BARCODE_CODE128B</code>, which is still recognised.<a
 href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>The DX Number may be looked up in The (Modified) Big
+<li id="fn15"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
 href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>

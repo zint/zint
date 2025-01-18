@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Antoine Merino <antoine.merino.dev@gmail.com>
+    Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -223,7 +223,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_DXFILMEDGE, -1, "79-1/123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 972: Frame number part length 4 too long (maximum 3)" },
         /*  1*/ { BARCODE_DXFILMEDGE, -1, "79-1/1@A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 973: Frame number \"1@A\" is invalid (expected digits, optionally followed by a single \"A\")" },
         /*  2*/ { BARCODE_DXFILMEDGE, -1, "012312365", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 974: DX information length 9 too long (maximum 6)" },
-        /*  3*/ { BARCODE_DXFILMEDGE, -1, "12-", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 977: Wrong format for DX parts 1 and 2 (expected format: XXX-XX, digits)" },
+        /*  3*/ { BARCODE_DXFILMEDGE, -1, "12-", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 977: Wrong format for DX parts 1 and 2 (expected format: NNN-NN, digits)" },
         /*  4*/ { BARCODE_DXFILMEDGE, -1, "01234/00A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 980: DX number \"01234\" is incorrect; expected 4 digits (DX extract) or 6 digits (DX full)" },
         /*  5*/ { BARCODE_DXFILMEDGE, -1, "0123/0AA", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 983: Frame number \"0AA\" is invalid (expected digits, optionally followed by a single \"A\")" },
         /*  6*/ { BARCODE_DXFILMEDGE, -1, "128-0/24", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 978: DX part 1 \"128\" out of range (1 to 127)" },

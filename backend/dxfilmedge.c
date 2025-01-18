@@ -1,7 +1,7 @@
 /* dxfilmedge.c - Handles DX Film Edge symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Antoine Merino <antoine.merino.dev@gmail.com>
+    Copyright (C) 2024-2025 Antoine Merino <antoine.merino.dev@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,10 +45,10 @@
 #include "common.h"
 
 #define DX_DEBUG_STR_LEN    20
-/* Max length of the DX info part. Include the \0. Eg: "018500\0", "150-10\0" */
+/* Max length of the DX info part. Eg: "018500", "150-10" */
 #define DX_MAX_DX_INFO_LENGTH       6
 #define DX_MAX_DX_INFO_MAX_STR      "6" /* String version of above */
-/* Max length of the frame info part. Eg: "00A\0", "23A\0" */
+/* Max length of the frame info part. Eg: "00A", "23A" */
 #define DX_MAX_FRAME_INFO_LENGTH    3
 #define DX_MAX_FRAME_INFO_MAX_STR   "3" /* String version of above */
 
@@ -132,7 +132,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
         }
         if (sscanf(dx_info, "%d-%d", &dx_code_1, &dx_code_2) < 2) {
             return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 977,
-                            "Wrong format for DX parts 1 and 2 (expected format: XXX-XX, digits)");
+                            "Wrong format for DX parts 1 and 2 (expected format: NNN-NN, digits)");
         }
         if (dx_code_1 <= 0 || dx_code_1 > 127) {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 978, "DX part 1 \"%d\" out of range (1 to 127)",
