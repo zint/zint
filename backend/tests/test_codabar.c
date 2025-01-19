@@ -29,6 +29,8 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+/* Was in "test_medical.c */
+
 #include "testcommon.h"
 
 static void test_large(const testCtx *const p_ctx) {
@@ -42,20 +44,13 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "131070", 6, 0, 1, 78, "", },
-        /*  1*/ { BARCODE_PHARMA, -1, "1", 7, ZINT_ERROR_TOO_LONG, -1, -1, "Error 350: Input length 7 too long (maximum 6)" },
-        /*  2*/ { BARCODE_PHARMA_TWO, -1, "64570080", 8, 0, 2, 31, "", },
-        /*  3*/ { BARCODE_PHARMA_TWO, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1, "Error 354: Input length 9 too long (maximum 8)" },
-        /*  4*/ { BARCODE_CODE32, -1, "1", 8, 0, 1, 103, "", },
-        /*  5*/ { BARCODE_CODE32, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1, "Error 360: Input length 9 too long (maximum 8)" },
-        /*  6*/ { BARCODE_PZN, -1, "1", 7, 0, 1, 142, "" }, /* Takes 8 with correct check digit */
-        /*  7*/ { BARCODE_PZN, -1, "1", 9, ZINT_ERROR_TOO_LONG, -1, -1, "Error 325: Input length 9 too long (maximum 8)" },
-        /*  8*/ { BARCODE_PZN, 1, "1", 6, 0, 1, 129, "" }, /* PZN7 takes 7 with correct check digit */
-        /*  9*/ { BARCODE_PZN, 1, "1", 8, ZINT_ERROR_TOO_LONG, -1, -1, "Error 325: Input length 8 too long (maximum 7)" },
+        /*  0*/ { BARCODE_CODABAR, -1, "A+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++B", 103, 0, 1, 1133 },
+        /*  1*/ { BARCODE_CODABAR, -1, "A++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++B", 104, ZINT_ERROR_TOO_LONG, -1, -1 },
+        /*  2*/ { BARCODE_CODABAR, 1, "A+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++B", 103, 0, 1, 1143 },
+        /*  3*/ { BARCODE_CODABAR, 1, "A++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++B", 104, ZINT_ERROR_TOO_LONG, -1, -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -79,8 +74,6 @@ static void test_large(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -105,18 +98,12 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "123456", "" }, /* None */
-        /*  1*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, /* None */
-        /*  2*/ { BARCODE_CODE32, -1, "123456", "A001234564" },
-        /*  3*/ { BARCODE_CODE32, -1, "12345678", "A123456788" },
-        /*  4*/ { BARCODE_PZN, -1, "12345", "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
-        /*  5*/ { BARCODE_PZN, -1, "123456", "PZN - 01234562" },
-        /*  6*/ { BARCODE_PZN, -1, "1234567", "PZN - 12345678" },
-        /*  7*/ { BARCODE_PZN, -1, "12345678", "PZN - 12345678" },
-        /*  8*/ { BARCODE_PZN, 1, "1234", "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
-        /*  9*/ { BARCODE_PZN, 1, "12345", "PZN - 0123458" },
-        /* 10*/ { BARCODE_PZN, 1, "123456", "PZN - 1234562" },
-        /* 11*/ { BARCODE_PZN, 1, "1234562", "PZN - 1234562" },
+        /*  0*/ { BARCODE_CODABAR, -1, "A1234B", "A1234B" },
+        /*  1*/ { BARCODE_CODABAR, -1, "a1234c", "A1234C" }, /* Converts to upper */
+        /*  2*/ { BARCODE_CODABAR, 1, "A1234B", "A1234B" }, /* Check not included */
+        /*  3*/ { BARCODE_CODABAR, 2, "A1234B", "A12345B" }, /* Check included */
+        /*  4*/ { BARCODE_CODABAR, 1, "A123456A", "A123456A" }, /* Check not included */
+        /*  5*/ { BARCODE_CODABAR, 2, "A123456A", "A123456$A" }, /* Check included */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -149,7 +136,6 @@ static void test_input(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        int option_2;
         char *data;
         int ret;
         int expected_rows;
@@ -160,33 +146,16 @@ static void test_input(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "", 1, "" },
-        /*  1*/ { BARCODE_PHARMA, -1, "1310700", ZINT_ERROR_TOO_LONG, -1, -1, "Error 350: Input length 7 too long (maximum 6)", 1, "" },
-        /*  2*/ { BARCODE_PHARMA, -1, "131071", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Input value '131071' out of range (3 to 131070)", 1, "" },
-        /*  3*/ { BARCODE_PHARMA, -1, "3", 0, 1, 4, "", 1, "" },
-        /*  4*/ { BARCODE_PHARMA, -1, "2", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Input value '2' out of range (3 to 131070)", 1, "" },
-        /*  5*/ { BARCODE_PHARMA, -1, "1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 352: Input value '1' out of range (3 to 131070)", 1, "" },
-        /*  6*/ { BARCODE_PHARMA, -1, "12A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 351: Invalid character at position 3 in input (digits only)", 1, "" },
-        /*  7*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, "", 1, "" },
-        /*  8*/ { BARCODE_PHARMA_TWO, -1, "64570081", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Input value '64570081' out of range (4 to 64570080)", 1, "" },
-        /*  9*/ { BARCODE_PHARMA_TWO, -1, "064570080", ZINT_ERROR_TOO_LONG, -1, -1, "Error 354: Input length 9 too long (maximum 8)", 1, "" },
-        /* 10*/ { BARCODE_PHARMA_TWO, -1, "4", 0, 2, 3, "", 1, "" },
-        /* 11*/ { BARCODE_PHARMA_TWO, -1, "3", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Input value '3' out of range (4 to 64570080)", 1, "" },
-        /* 12*/ { BARCODE_PHARMA_TWO, -1, "2", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Input value '2' out of range (4 to 64570080)", 1, "" },
-        /* 13*/ { BARCODE_PHARMA_TWO, -1, "1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 353: Input value '1' out of range (4 to 64570080)", 1, "" },
-        /* 14*/ { BARCODE_PHARMA_TWO, -1, "123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 355: Invalid character at position 4 in input (digits only)", 1, "" },
-        /* 15*/ { BARCODE_CODE32, -1, "12345678", 0, 1, 103, "", 1, "" },
-        /* 16*/ { BARCODE_CODE32, -1, "9", 0, 1, 103, "", 0, "BWIPP requires length 8 or 9" },
-        /* 17*/ { BARCODE_CODE32, -1, "0", 0, 1, 103, "", 0, "BWIPP requires length 8 or 9" },
-        /* 18*/ { BARCODE_CODE32, -1, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 360: Input length 9 too long (maximum 8)", 1, "" },
-        /* 19*/ { BARCODE_CODE32, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 361: Invalid character at position 1 in input (digits only)", 1, "" },
-        /* 20*/ { BARCODE_CODE32, -1, "99999999", 0, 1, 103, "", 1, "" },
-        /* 21*/ { BARCODE_PZN, -1, "1", 0, 1, 142, "", 0, "BWIPP requires 7 or 8 digits" },
-        /* 22*/ { BARCODE_PZN, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 326: Invalid character at position 1 in input (digits only)", 1, "" },
-        /* 23*/ { BARCODE_PZN, -1, "1000006", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 327: Invalid PZN, check digit is '10'", 1, "" }, /* Check digit == 10 so can't be used */
-        /* 24*/ { BARCODE_PZN, -1, "00000011", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 890: Invalid check digit '1', expecting '7'", 1, "" },
-        /* 25*/ { BARCODE_PZN, 1, "100009", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 327: Invalid PZN, check digit is '10'", 1, "" }, /* Check digit == 10 so can't be used */
-        /* 26*/ { BARCODE_PZN, 1, "0000011", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 890: Invalid check digit '1', expecting '7'", 1, "" },
+        /*  0*/ { BARCODE_CODABAR, "A1234B", 0, 1, 62, "", 1, "" },
+        /*  1*/ { BARCODE_CODABAR, "1234B", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 358: Does not begin with \"A\", \"B\", \"C\" or \"D\"", 1, "" },
+        /*  2*/ { BARCODE_CODABAR, "A1234", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 359: Does not end with \"A\", \"B\", \"C\" or \"D\"", 1, "" },
+        /*  3*/ { BARCODE_CODABAR, "A1234E", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 359: Does not end with \"A\", \"B\", \"C\" or \"D\"", 1, "" },
+        /*  4*/ { BARCODE_CODABAR, "C123.D", 0, 1, 63, "", 1, "" },
+        /*  5*/ { BARCODE_CODABAR, "C123,D", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 357: Invalid character at position 5 in input (\"0123456789-$:/.+ABCD\" only)", 1, "" },
+        /*  6*/ { BARCODE_CODABAR, "D:C", 0, 1, 33, "", 1, "" },
+        /*  7*/ { BARCODE_CODABAR, "DCC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 363: Invalid character at position 1 in input (cannot contain \"A\", \"B\", \"C\" or \"D\")", 1, "" },
+        /*  8*/ { BARCODE_CODABAR, "A234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123B", ZINT_ERROR_TOO_LONG, -1, -1, "Error 356: Input length 104 too long (maximum 103)", 1, "" },
+        /*  9*/ { BARCODE_CODABAR, "AB", ZINT_ERROR_TOO_LONG, -1, -1, "Error 362: Input length 2 too short (minimum 3)", 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -206,7 +175,7 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -253,31 +222,20 @@ static void test_encode(const testCtx *const p_ctx) {
         char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "",
-                    "111001110011100111001110011100111001110011100111001110011100111001110011100111"
+        /*  0*/ { BARCODE_CODABAR, -1, "A37859B", 0, 1, 72, "BS EN 798:1995 Figure 1",
+                    "101100100101100101010100101101010011010101101010010110100101010010010110"
                 },
-        /*  1*/ { BARCODE_PHARMA, -1, "123456", 0, 1, 58, "",
-                    "1110011100111001001001001110010010011100100100100100100111"
+        /*  1*/ { BARCODE_CODABAR, -1, "A0123456789-$:/.+D", 0, 1, 186, "Verified manually against tec-it",
+                    "101100100101010100110101011001010100101101100101010101101001011010100101001010110100101101010011010101101001010101001101010110010101101011011011011010110110110110101011011011010100110010"
                 },
-        /*  2*/ { BARCODE_PHARMA_TWO, -1, "64570080", 0, 2, 31, "Verified manually against TEC-IT",
-                    "1010101010101010101010101010101"
-                    "1010101010101010101010101010101"
+        /*  2*/ { BARCODE_CODABAR, 1, "A1B", 0, 1, 43, "Verified manually against tec-it",
+                    "1011001001010101100101101101101010010010110"
                 },
-        /*  3*/ { BARCODE_PHARMA_TWO, -1, "29876543", 0, 2, 31, "Verified manually against TEC-IT",
-                    "0010100010001010001010001000101"
-                    "1000101010100000100000101010000"
+        /*  3*/ { BARCODE_CODABAR, 1, "A+B", 0, 1, 43, "Verified manually against tec-it",
+                    "1011001001010110110110101010011010010010110"
                 },
-        /*  4*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, "Verified manually against TEC-IT",
-                    "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
-                },
-        /*  5*/ { BARCODE_PZN, -1, "1234567", 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against TEC-IT",
-                    "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
-                },
-        /*  6*/ { BARCODE_PZN, -1, "2758089", 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against TEC-IT",
-                    "1001011011010100101011011010110010101101010010110110110100110101011010010110101010011011010110100101101010110010110101011001011010100101101101"
-                },
-        /*  7*/ { BARCODE_PZN, 1, "123456", 0, 1, 129, "Example from BWIPP; verified manually against TEC-IT",
-                    "100101101101010010101101101101001010110101100101011011011001010101010011010110110100110101010110011010101011001010110100101101101"
+        /*  4*/ { BARCODE_CODABAR, 1, "B0123456789-$:/.+B", 0, 1, 196, "Verified manually against tec-it",
+                    "1001001011010101001101010110010101001011011001010101011010010110101001010010101101001011010100110101011010010101010011010101100101011010110110110110101101101101101010110110110100101011010010010110"
                 },
     };
     const int data_size = ARRAY_SIZE(data);

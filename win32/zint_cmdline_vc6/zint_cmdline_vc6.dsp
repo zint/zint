@@ -92,6 +92,14 @@ SOURCE=..\..\backend\2of5.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\2of5inter.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\2of5inter_based.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\auspost.c
 # End Source File
 # Begin Source File
@@ -108,6 +116,14 @@ SOURCE=..\..\backend\bmp.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\channel.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\codabar.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\codablock.c
 # End Source File
 # Begin Source File
@@ -120,7 +136,15 @@ SOURCE=..\..\backend\code1.c
 # End Source File
 # Begin Source File
 
+SOURCE=..\..\backend\code11.c
+# End Source File
+# Begin Source File
+
 SOURCE=..\..\backend\code128.c
+# End Source File
+# Begin Source File
+
+SOURCE=..\..\backend\code128_based.c
 # End Source File
 # Begin Source File
 

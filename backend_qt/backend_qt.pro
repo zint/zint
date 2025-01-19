@@ -71,14 +71,20 @@ HEADERS +=  ../backend/aztec.h \
             qzint.h
 
 SOURCES += ../backend/2of5.c \
+           ../backend/2of5inter.c \
+           ../backend/2of5inter_based.c \
            ../backend/auspost.c \
            ../backend/aztec.c \
            ../backend/bc412.c \
            ../backend/bmp.c \
+           ../backend/channel.c \
+           ../backend/codabar.c \
            ../backend/codablock.c \
            ../backend/code.c \
            ../backend/code1.c \
+           ../backend/code11.c \
            ../backend/code128.c \
+           ../backend/code128_based.c \
            ../backend/code16k.c \
            ../backend/code49.c \
            ../backend/common.c \

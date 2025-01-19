@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.10)
@@ -9,14 +9,16 @@ if(ZINT_USE_PNG)
     find_package(PNG)
 endif()
 
-set(zint_COMMON_SRCS common.c library.c large.c reedsol.c gs1.c eci.c filemem.c general_field.c)
-set(zint_ONEDIM_SRCS bc412.c code.c code128.c 2of5.c upcean.c telepen.c medical.c plessey.c rss.c dxfilmedge.c)
-set(zint_POSTAL_SRCS postal.c auspost.c imail.c mailmark.c)
-set(zint_TWODIM_SRCS code16k.c codablock.c dmatrix.c pdf417.c qr.c maxicode.c composite.c aztec.c code49.c code1.c gridmtx.c hanxin.c dotcode.c ultra.c)
+set(zint_COMMON_SRCS common.c eci.c filemem.c general_field.c gs1.c large.c library.c reedsol.c)
+set(zint_ONEDIM_SRCS 2of5.c 2of5inter.c 2of5inter_based.c bc412.c channel.c codabar.c code.c code11.c code128.c
+                     code128_based.c dxfilmedge.c medical.c plessey.c rss.c telepen.c upcean.c)
+set(zint_POSTAL_SRCS auspost.c imail.c mailmark.c postal.c)
+set(zint_TWODIM_SRCS aztec.c codablock.c code1.c code16k.c code49.c composite.c dmatrix.c dotcode.c gridmtx.c
+                     hanxin.c maxicode.c pdf417.c qr.c ultra.c)
 if(ZINT_USE_PNG AND PNG_FOUND)
-    set(zint_OUTPUT_SRCS vector.c ps.c svg.c emf.c bmp.c pcx.c gif.c png.c tif.c raster.c output.c)
+    set(zint_OUTPUT_SRCS bmp.c emf.c gif.c output.c pcx.c png.c ps.c raster.c svg.c tif.c vector.c)
 else()
-    set(zint_OUTPUT_SRCS vector.c ps.c svg.c emf.c bmp.c pcx.c gif.c tif.c raster.c output.c)
+    set(zint_OUTPUT_SRCS bmp.c emf.c gif.c output.c pcx.c ps.c raster.c svg.c tif.c vector.c)
 endif()
 set(zint_SRCS ${zint_OUTPUT_SRCS} ${zint_COMMON_SRCS} ${zint_ONEDIM_SRCS} ${zint_POSTAL_SRCS} ${zint_TWODIM_SRCS})
 
