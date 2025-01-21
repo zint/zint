@@ -673,6 +673,8 @@ DLLEXPORT int Zint_Init (Tcl_Interp *interp)
     *tkFlagPtr = 0;
     Tcl_CallWhenDeleted(interp, InterpCleanupProc, (ClientData)tkFlagPtr);
     /*------------------------------------------------------------------------*/
+    /* FIXME: to unload even on command rename, capture the tolken, put it in */
+    */ the client data and use it to delete the command.                      */
     Tcl_CreateObjCommand(interp, "zint", ZintCmd, (ClientData)tkFlagPtr,
             (Tcl_CmdDeleteProc *)NULL);
     Tcl_PkgProvide (interp, "zint", version_string);

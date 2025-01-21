@@ -1,0 +1,335 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <SccProjectName />
+    <SccLocalPath />
+    <ProjectGuid>{441FD81C-9BEF-4EA0-A82A-C186B1F2212A}</ProjectGuid>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <PlatformToolset>v140</PlatformToolset>
+    <UseOfMfc>false</UseOfMfc>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.Cpp.UpgradeFromVC60.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>.\Debug\</OutDir>
+    <IntDir>.\Debug\</IntDir>
+    <LinkIncremental>true</LinkIncremental>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>.\Release\</OutDir>
+    <IntDir>.\Release\</IntDir>
+    <LinkIncremental>false</LinkIncremental>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <Optimization>Disabled</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <MinimalRebuild>true</MinimalRebuild>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+      <AdditionalIncludeDirectories>..\backend;C:\Tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Debug\zint_tcl.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Debug\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
+      <AdditionalOptions> /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Debug\zint_tcl.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Debug\zint_tcl.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <GenerateDebugInformation>true</GenerateDebugInformation>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>Debug/zint.dll</OutputFile>
+      <ImportLibrary>.\Debug\zint.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub85.lib;tkstub85.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <InlineFunctionExpansion>Default</InlineFunctionExpansion>
+      <StringPooling>true</StringPooling>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <Optimization>MaxSpeed</Optimization>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>..\backend;C:\Tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
+      <BrowseInformation>true</BrowseInformation>
+      <PrecompiledHeaderOutputFile>.\Release\zint_tcl.pch</PrecompiledHeaderOutputFile>
+      <ObjectFileName>.\Release\</ObjectFileName>
+      <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
+      <AdditionalOptions> /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <Midl>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <TypeLibraryName>.\Release\zint_tcl.tlb</TypeLibraryName>
+      <MkTypLibCompatible>true</MkTypLibCompatible>
+      <TargetEnvironment>Win32</TargetEnvironment>
+    </Midl>
+    <ResourceCompile>
+      <Culture>0x0407</Culture>
+      <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ResourceCompile>
+    <Bscmake>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <OutputFile>.\Release\zint_tcl.bsc</OutputFile>
+    </Bscmake>
+    <Link>
+      <SuppressStartupBanner>true</SuppressStartupBanner>
+      <LinkDLL>true</LinkDLL>
+      <SubSystem>Console</SubSystem>
+      <OutputFile>zint.dll</OutputFile>
+      <ImportLibrary>.\Release\zint.lib</ImportLibrary>
+      <AdditionalLibraryDirectories>C:\Tcl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub85.lib;tkstub85.lib;%(AdditionalDependencies)</AdditionalDependencies>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\backend\2of5.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\auspost.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\aztec.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\bc412.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\bmp.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\codablock.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\code.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\code1.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\code128.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\code16k.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\code49.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\common.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\composite.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\dmatrix.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\dotcode.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\eci.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\emf.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\filemem.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\general_field.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\gif.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\gridmtx.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\gs1.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\hanxin.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\imail.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\large.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\library.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\mailmark.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\maxicode.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\medical.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\output.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\pcx.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\pdf417.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\plessey.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\png.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\postal.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\ps.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\qr.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\raster.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\reedsol.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\rss.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\svg.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\telepen.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\tif.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\ultra.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\upcean.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="..\backend\vector.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+    <ClCompile Include="zint.c">
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+    </ClCompile>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>
