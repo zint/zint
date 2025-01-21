@@ -1,5 +1,5 @@
-% README.bsd 2024-01-17
-% Tested on FreeBSD 14.0-RELEASE (with X11 + GNOME installed), OpenBSD 7.4 (with X11) and NetBSD 9.3 (with X11)
+% README.bsd 2025-01-18
+% Tested on FreeBSD 14.2-RELEASE (with X11 + GNOME installed), OpenBSD 7.6 (with X11) and NetBSD 10.0 (with X11)
 
 1. Prerequisites for building zint
 ==================================
@@ -74,7 +74,20 @@ and on NetBSD
 instead.
 
 
-3. CMake options
+4. Run
+======
+
+On FreeBSD and OpenBSD, the CLI zint and GUI zint-qt should run without issue from the command line.
+
+On NetBSD you may have to set LD_LIBRARY_PATH if using the default ksh. For zint ("libzint.so" and "libpng16.so") and
+zint-qt (Qt5 libraries and "libGL.so"):
+
+    setenv LD_LIBRARY_PATH /usr/local/lib:/usr/pkg/lib:/usr/pkg/qt5/lib:/usr/X11R7/lib
+
+Place in "~/.cshrc" to make permanent.
+
+
+5. CMake options
 ================
 
 See "README.linux". Note for running the test suite on FreeBSD, if using the default csh, to set LD_LIBRARY_PATH use:

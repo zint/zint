@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.13.0.9
 %
-% November 2024
+% January 2025
 
 # NAME
 
@@ -408,12 +408,12 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                 11  45x45     23  95x95     35  147x147
                 12  49x49     24  101x101   36  151x151
 
-        Code One        1 to 10 (9 and 10 variable width) (WxH)
+        Code One        1 to 10 (9 and 10 variable width) (HxW)
                 1   16x18     6   70x76
                 2   22x22     7   104x98
-                3   28x28     8   148x134
-                4   40x42     9   Wx8
-                5   52x54     10  Wx16
+                3   28x32     8   148x134
+                4   40x42     9   8xW
+                5   52x54     10  16xW
 
         Data Matrix     1 to 48 (31 to 48 DMRE) (HxW)
                 1   10x10     17  72x72     33  8x80

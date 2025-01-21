@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 # SPDX-License-Identifier: BSD-3-Clause
 # vim: set ts=4 sw=4 et :
 set -e
@@ -26,9 +26,14 @@ run_zxingcpp_test "test_code" "encode"
 run_zxingcpp_test "test_code128"
 run_zxingcpp_test "test_code16k" "input"
 run_zxingcpp_test "test_code16k" "encode"
+run_zxingcpp_test "test_dmatrix" "large"
+run_zxingcpp_test "test_dmatrix" "buffer"
+run_zxingcpp_test "test_dmatrix" "options"
+run_zxingcpp_test "test_dmatrix" "reader_init"
 run_zxingcpp_test "test_dmatrix" "input"
 run_zxingcpp_test "test_dmatrix" "encode"
 run_zxingcpp_test "test_dmatrix" "encode_segs"
+run_zxingcpp_test "test_dxfilmedge" "encode"
 run_zxingcpp_test "test_dotcode" "input"
 run_zxingcpp_test "test_dotcode" "encode"
 run_zxingcpp_test "test_dotcode" "encode_segs"

@@ -101,12 +101,12 @@ variable widths</string>
        </item>
        <item>
         <property name="text">
-         <string>8X height (Version S)</string>
+         <string>8 x automatic width (Version S)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16X height (Version T)</string>
+         <string>16 x automatic width (Version T)</string>
         </property>
        </item>
       </widget>

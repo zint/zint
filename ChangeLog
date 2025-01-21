@@ -1,4 +1,4 @@
-Version 2.13.0.9 (dev) not released yet (2024-11-23)
+Version 2.13.0.9 (dev) not released yet (2025-01-18)
 ====================================================
 
 **Incompatible changes**
@@ -51,6 +51,7 @@ Changes
   touch add-on TODO: revisit when standard clarified
 - manual: make explicit that AI "(00)" and "(01)" prefixes added by Zint are
   HRT-only; clarify Codablock-F length maximum & add examples
+- add DXFILMEDGE (MR #159, props Antoine Mérino)
 
 Bugs
 ----
@@ -70,6 +71,9 @@ Bugs
 - CODE128: fix extended char latching when exactly 3 extended chars at end
 - library: need to check for valid UTF-8 after de-escaping
 - MAXICODE: maintain current set between segments
+- MSYS2: fix stdout output on Windows under MSYS2 (mailing list, props Frank)
+- DATAMATRIX: fix mis-encodation by only doing special end-of-data processing
+  on last segment
 
 
 Version 2.13.0 (2023-12-18)

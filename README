@@ -38,12 +38,13 @@ Deutsche Post Leitcode                  Telepen
 DotCode                                 Telepen Numeric
 DPD Code                                UK Plessey
 Dutch Post KIX                          Ultracode
-EAN (EAN-2, EAN-5, EAN-8 and EAN-13)    UPC-A
-EAN-14                                  UPC-E
-FIM (Facing Identification Mark)        UPNQR
-Flattermarken                           UPU S10
-Grid Matrix                             USPS Intelligent Mail (OneCode)
-GS1 Composite (EAN/UPC/DataBar/GS-128)  VIN (Vehicle Identification Number)
+DX Film Edge Barcode                    UPC-A
+EAN (EAN-2, EAN-5, EAN-8 and EAN-13)    UPC-E
+EAN-14                                  UPNQR
+FIM (Facing Identification Mark)        UPU S10
+Flattermarken                           USPS Intelligent Mail (OneCode)
+Grid Matrix                             VIN (Vehicle Identification Number)
+GS1 Composite (EAN/UPC/DataBar/GS-128)
 
 Output can be saved as BMP, EMF, EPS, GIF, PCX, PNG, SVG or TIF.
 

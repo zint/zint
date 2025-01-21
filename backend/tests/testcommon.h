@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -57,8 +57,10 @@ extern "C" {
 #define testutil_pclose(stream) _pclose(stream)
 #else
 #include <unistd.h>
+#  ifndef _WIN32
 extern FILE *popen(const char *command, const char *type);
 extern int pclose(FILE *stream);
+#  endif
 #define testutil_popen(command, mode) popen(command, mode)
 #define testutil_pclose(stream) pclose(stream)
 #endif

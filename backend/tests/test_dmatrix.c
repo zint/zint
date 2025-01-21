@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -358,7 +358,12 @@ static void test_large(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char data_buf[ZINT_MAX_DATA_LEN];
-    char escaped[64];
+
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStartSymbol("test_large", &symbol);
 
@@ -387,6 +392,7 @@ static void test_large(const testCtx *const p_ctx) {
                         data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                         testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)), data[i].length,
                         testUtilErrorName(ret), symbol->rows, symbol->width, errtxt);
+            ZBarcode_Clear(symbol);
             symbol->input_mode |= FAST_MODE;
             (void) ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
             printf(" \"%s\", \"%s\" },\n", strcmp(errtxt, symbol->errtxt) != 0 ? symbol->errtxt : "", data[i].comment);
@@ -398,8 +404,20 @@ static void test_large(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[144 * 144 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
             }
 
+            ZBarcode_Clear(symbol);
             symbol->input_mode |= FAST_MODE;
             ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
             assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -408,6 +426,17 @@ static void test_large(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[144 * 144 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
             } else {
                 if (data[i].expected_errtxt2[0]) {
                     assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt2), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt2);
@@ -433,16 +462,24 @@ static void test_buffer(const testCtx *const p_ctx) {
         int output_options;
         char *data;
         int ret;
+        int bwipp_cmp;
         char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { 16383, UNICODE_MODE, READER_INIT, "1", 0, "" },
-        /*  1*/ { 3, UNICODE_MODE, 0, "000106j 05 Galeria A NaÃ§Ã£o0000000000", 0, "From Okapi, consecutive use of upper shift; #176" },
+        /*  0*/ { 16383, UNICODE_MODE, READER_INIT, "1", 0, 1, "" },
+        /*  1*/ { 3, UNICODE_MODE, 0, "000106j 05 Galeria A NaÃ§Ã£o0000000000", 0, 0, "From Okapi, consecutive use of upper shift; #176; BWIPP different encodation" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStartSymbol("test_buffer", &symbol);
 
@@ -457,6 +494,31 @@ static void test_buffer(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
+        if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+            if (!data[i].bwipp_cmp) {
+                if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+            } else {
+                char modules_dump[144 * 144 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+            }
+        }
+        if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+            int cmp_len, ret_len;
+            char modules_dump[144 * 144 + 1];
+            assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+            ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+            assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+            ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+            assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -481,113 +543,122 @@ static void test_options(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int bwipp_cmp;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" },
-        /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 524: Older Data Matrix standards are no longer supported" },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" },
-        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, -1, { 0, 0, "" }, "1", 0, 12, 12, "" },
-        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, -1, { 0, 0, "" }, "1", 0, 26, 64, "" },
-        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "" }, /* Ignored */
-        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "" }, /* 4 data */
-        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "____", ZINT_ERROR_TOO_LONG, -1, -1, "Error 522: Input too long for Version 1, requires 4 codewords (maximum 3)" },
-        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, 25, -1, -1, { 0, 0, "" }, "____", 0, 8, 18, "" },
-        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" }, /* 10 data */
-        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" },
-        /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 8, 32, "" },
-        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________", 0, 16, 16, "" },
-        /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 16, 16, "" },
-        /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "" }, /* 15 data */
-        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "" },
-        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________", 0, 18, 18, "" },
-        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "" }, /* 18 data */
-        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "" }, /* 19 data */
-        /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "" }, /* 21 data */
-        /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "" }, /* 23 data */
-        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________", 0, 8, 64, "" },
-        /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "" },
-        /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "" }, /* 31 data */
-        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "" },
-        /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________", 0, 24, 24, "" },
-        /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "" }, /* 37 data */
-        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________", 0, 8, 96, "" },
-        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "" },
-        /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "" }, /* 39 data */
-        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________", 0, 12, 64, "" },
-        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "" },
-        /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "" }, /* 43 data */
-        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________", 0, 12, 64, "" },
-        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "" },
-        /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "" }, /* 44 data */
-        /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "" }, /* 45 data */
-        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "" },
-        /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________________", 0, 32, 32, "" },
-        /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "" }, /* 49 data */
-        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "" },
-        /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________", 0, 32, 32, "" },
-        /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "" }, /* 50 data */
-        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________", 0, 20, 44, "" },
-        /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "" },
-        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, /* 51 data */
-        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44, "" },
-        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "" }, /* Ignored */
-        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "" }, /* 61 data */
-        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "" }, /* 62 data */
-        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "" }, /* 63 data */
-        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 8, 144, "" },
-        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "" },
-        /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "" }, /* 64 data */
-        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 12, 88, "" },
-        /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "" },
-        /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "" }, /* 65 data */
-        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 26, 40, "" },
-        /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "" },
-        /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "" }, /* 70 data */
-        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 26, 40, "" },
-        /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "" },
-        /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "" }, /* 71 data */
-        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 22, 48, "" },
-        /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "" },
-        /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "" }, /* 80 data */
-        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 24, 48, "" },
-        /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "" },
-        /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "" }, /* 84 data */
-        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 20, 64, "" },
-        /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "" },
-        /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "" }, /* 90 data */
-        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 26, 48, "" },
-        /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "" },
-        /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "" }, /* 91 data */
-        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 24, 64, "" },
-        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "" },
-        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, /* 118 data */
-        /* 78*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "" }, /* 118 data */
-        /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "" }, /* 118 data */
-        /* 80*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "" },
-        /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "" },
-        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "" },
-        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "" },
-        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)" },
-        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)" },
-        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)" },
-        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)" },
-        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "" },
-        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)" },
-        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")" },
-        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")" },
-        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")" },
-        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")" },
-        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")" },
-        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")" },
-        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)" },
-        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time" },
-        /* 98*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "" }, /* Macro05/06 ignored if have Structured Append TODO: error/warning */
-        /* 99*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, "" },
+        /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 524: Older Data Matrix standards are no longer supported", 1, "" },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, "" },
+        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, -1, { 0, 0, "" }, "1", 0, 12, 12, "", 1, "" },
+        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, -1, { 0, 0, "" }, "1", 0, 26, 64, "", 1, "" },
+        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 0, "Ignored; BWIPP no options set" },
+        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "", 1, "4 data" },
+        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "____", ZINT_ERROR_TOO_LONG, -1, -1, "Error 522: Input too long for Version 1, requires 4 codewords (maximum 3)", 1, "" },
+        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, 25, -1, -1, { 0, 0, "" }, "____", 0, 8, 18, "", 1, "" },
+        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "10 data" },
+        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "" },
+        /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "" },
+        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 1, "" },
+        /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 1, "" },
+        /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 1, "15 data" },
+        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 1, "" },
+        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________", 0, 18, 18, "", 1, "" },
+        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "", 1, "18 data" },
+        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "", 1, "19 data" },
+        /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "", 1, "21 data" },
+        /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 1, "23 data" },
+        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________", 0, 8, 64, "", 1, "" },
+        /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 1, "" },
+        /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 1, "31 data" },
+        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 0, "BWIPP DMRE requires dimensions" },
+        /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________", 0, 24, 24, "", 1, "" },
+        /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 1, "37 data" },
+        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________", 0, 8, 96, "", 1, "" },
+        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 1, "" },
+        /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 1, "39 data" },
+        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________", 0, 12, 64, "", 1, "" },
+        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 1, "" },
+        /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 1, "43 data" },
+        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________", 0, 12, 64, "", 1, "" },
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 1, "" },
+        /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "", 1, "44 data" },
+        /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 1, "45 data" },
+        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 0, "BWIPP DMRE requires dimensions" },
+        /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________________", 0, 32, 32, "", 1, "" },
+        /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 1, "49 data" },
+        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 0, "BWIPP DMRE requires dimensions" },
+        /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________", 0, 32, 32, "", 1, "" },
+        /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 1, "50 data" },
+        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________", 0, 20, 44, "", 1, "" },
+        /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 1, "" },
+        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 0, "51 data; BWIPP different encodation" },
+        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44, "", 0, "BWIPP DMRE requires dimensions" },
+        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 0, "Ignored; BWIPP different encodation" },
+        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "", 1, "61 data" },
+        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "", 1, "62 data" },
+        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 1, "63 data" },
+        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 8, 144, "", 1, "" },
+        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 1, "64 data" },
+        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 12, 88, "", 1, "" },
+        /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 1, "65 data" },
+        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 26, 40, "", 1, "" },
+        /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 1, "70 data" },
+        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 26, 40, "", 1, "" },
+        /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 1, "71 data" },
+        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 22, 48, "", 1, "" },
+        /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 1, "80 data" },
+        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 24, 48, "", 1, "" },
+        /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 1, "84 data" },
+        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 20, 64, "", 1, "" },
+        /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 1, "" },
+        /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 1, "90 data" },
+        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 26, 48, "", 1, "" },
+        /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 1, "" },
+        /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 1, "91 data" },
+        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 24, 64, "", 1, "" },
+        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 1, "" },
+        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 1, "118 data" },
+        /* 78*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "", 1, "118 data" },
+        /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 1, "118 data" },
+        /* 80*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "", 1, "" },
+        /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "", 1, "" },
+        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 1, "" },
+        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 1, "" },
+        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)", 1, "" },
+        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)", 1, "" },
+        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)", 1, "" },
+        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)", 1, "" },
+        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "", 1, "" },
+        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)", 1, "" },
+        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")", 1, "" },
+        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")", 1, "" },
+        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")", 1, "" },
+        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")", 1, "" },
+        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")", 1, "" },
+        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")", 1, "" },
+        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)", 1, "" },
+        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time", 1, "" },
+        /* 98*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "", 1, "Macro05/06 ignored if have Structured Append TODO: error/warning " },
+        /* 99*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)", 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStartSymbol("test_options", &symbol);
 
@@ -608,8 +679,35 @@ static void test_options(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d) (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, symbol->width, symbol->errtxt);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, symbol->errtxt);
+            if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, debug)) {
+                if (!data[i].bwipp_cmp) {
+                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                } else {
+                    char modules_dump[144 * 144 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+            }
+            if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                int cmp_len, ret_len;
+                char modules_dump[144 * 144 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+            }
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
 
@@ -644,14 +742,19 @@ static void test_reader_init(const testCtx *const p_ctx) {
         char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, UNICODE_MODE, READER_INIT, "A", 0, 10, 10, "EA 42 81 19 A4 53 21 DF", "TODO: Check this" },
+        /*  0*/ { BARCODE_DATAMATRIX, UNICODE_MODE, READER_INIT, "A", 0, 10, 10, "EA 42 81 19 A4 53 21 DF", "" },
         /*  1*/ { BARCODE_DATAMATRIX, GS1_MODE, READER_INIT, "[91]A", ZINT_ERROR_INVALID_OPTION, 0, 0, "Error 521: Cannot use Reader Initialisation in GS1 mode", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[1024];
+    char escaped[8192];
+    char cmp_buf[32768];
+    char cmp_msg[1024];
+
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
     testStartSymbol("test_reader_init", &symbol);
 
@@ -678,6 +781,27 @@ static void test_reader_init(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
+                    char modules_dump[144 * 144 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
+                    assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                }
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
+                    int cmp_len, ret_len;
+                    char modules_dump[144 * 144 + 1];
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                }
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
         }
@@ -691,7 +815,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
 #define ZINT_TEST_ENCODING
 #ifdef ZINT_TEST_ENCODING
 INTERNAL int dm_encode_test(struct zint_symbol *symbol, const unsigned char source[], const int length, const int eci,
-            const int gs1, unsigned char target[], int *p_tp);
+                const int last_seg, const int gs1, unsigned char target[], int *p_tp);
 #endif
 
 static void test_input(const testCtx *const p_ctx) {
@@ -1044,6 +1168,7 @@ static void test_input(const testCtx *const p_ctx) {
                     int binlens[2] = {0};
                     unsigned char reduced[1000];
                     unsigned char *text;
+                    const int last_seg = 1;
 
                     assert_equal(data[i].expected_rows * data[i].expected_width <= data[i - 1].expected_rows * data[i - 1].expected_width, 1,
                         "i:%d data[i].expected_rows * data[i].expected_width %d > data[i - 1].expected_rows * data[i - 1].expected_width %d\n", i,
@@ -1060,7 +1185,7 @@ static void test_input(const testCtx *const p_ctx) {
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, text, length, symbol->eci, gs1, binary[0], &binlen);
+                    ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
@@ -1068,7 +1193,7 @@ static void test_input(const testCtx *const p_ctx) {
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, text, length, symbol->eci, gs1, binary[1], &binlen);
+                    ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
@@ -5611,6 +5736,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     int gs1;
                     int binlen;
                     int binlens[2] = {0};
+                    const int last_seg = 1;
 
                     assert_equal(data[i].expected_rows * data[i].expected_width <= data[i - 1].expected_rows * data[i - 1].expected_width, 1,
                         "i:%d data[i].expected_rows * data[i].expected_width %d > data[i - 1].expected_rows * data[i - 1].expected_width %d\n", i,
@@ -5619,7 +5745,8 @@ static void test_encode(const testCtx *const p_ctx) {
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
+                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1,
+                                        binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[0] = binlen;
@@ -5627,13 +5754,15 @@ static void test_encode(const testCtx *const p_ctx) {
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
+                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1,
+                                        binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
                     binlens[1] = binlen;
 
                     assert_equal(binlens[1] <= binlens[0], 1, "i:%d binlens[1] %d > binlens[0] %d\n", i, binlens[1], binlens[0]);
-                    assert_equal(binlens[0], binlens[1] + data[i].expected_diff, "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
+                    assert_equal(binlens[0], binlens[1] + data[i].expected_diff,
+                                "i:%d binlens[0] %d != %d binlens[1] (%d) + expected_diff (%d)\n",
                                 i, binlens[0], binlens[1] + data[i].expected_diff, binlens[1], data[i].expected_diff);
                 }
 #endif
@@ -5826,6 +5955,154 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "10000011000001110111011000"
                     "11111111111111111111111111"
                 },
+        /*  8*/ { BARCODE_DATAMATRIX, UNICODE_MODE | FAST_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("ABCDEFGHIJ"), -1, 3 }, { TU("KL"), -1, 4 }, { TU("MN"), -1, 5 } }, 0, 20, 20, 1, "",
+                    "10101010101010101010"
+                    "10011001100100001111"
+                    "10001100100011101110"
+                    "11001011110111000001"
+                    "10010011100000100100"
+                    "11101010010000010111"
+                    "10101001011101010110"
+                    "10011011001101010011"
+                    "10011101110000001000"
+                    "10111000111110110101"
+                    "10111011100000111000"
+                    "11110000010011100001"
+                    "10110010001100101000"
+                    "10011111100011011111"
+                    "11111011010011010110"
+                    "11011001001000110111"
+                    "11011111100110000110"
+                    "11100100101111100101"
+                    "11000101100101000010"
+                    "11111111111111111111"
+                },
+        /*  9*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("ABCDEFGHIJ"), -1, 3 }, { TU("KL"), -1, 4 }, { TU("MN"), -1, 5 } }, 0, 20, 20, 0, "BWIPP same as FAST_MODE",
+                    "10101010101010101010"
+                    "10001010000100001111"
+                    "10000111000011101110"
+                    "11001001110111010001"
+                    "10010001100000110000"
+                    "11010110010000000011"
+                    "11010111011100110100"
+                    "11011110001001010001"
+                    "11100101110110011000"
+                    "11000000110000110101"
+                    "10001011110001000000"
+                    "11100000110100010101"
+                    "11110011100101111100"
+                    "11011101111010001111"
+                    "11111111010110100110"
+                    "11001110001101010001"
+                    "11010010011000100110"
+                    "10101000101010011101"
+                    "10001111100101101010"
+                    "11111111111111111111"
+                },
+        /* 10*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("AB"), -1, 3 }, { TU("CD"), -1, 4 }, { TU("EF"), -1, 5 } }, 0, 16, 16, 1, "",
+                    "1010101010101010"
+                    "1000100001000101"
+                    "1000110110110010"
+                    "1100110010100101"
+                    "1000001000010010"
+                    "1100001111000111"
+                    "1110100000011110"
+                    "1000011010111001"
+                    "1000001001110100"
+                    "1111101101001001"
+                    "1110111111101010"
+                    "1001000000010011"
+                    "1010010110100000"
+                    "1101001100010101"
+                    "1000000001011010"
+                    "1111111111111111"
+                },
+        /* 11*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("ABC"), -1, 3 }, { TU("DEF"), -1, 4 }, { TU("GHI"), -1, 5 } }, 0, 12, 26, 0, "BWIPP different encodation (1st seg C40)",
+                    "10101010101010101010101010"
+                    "10001000011110001111000011"
+                    "10000101111001000011010000"
+                    "11000000100100110111100111"
+                    "10111000000100111110100110"
+                    "11110011110011010010011001"
+                    "10001000100100010000010000"
+                    "10001110000110000110000001"
+                    "10100001001011000111000110"
+                    "10110110100111010011101111"
+                    "10000100100001011001101100"
+                    "11111111111111111111111111"
+                },
+        /* 12*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("ABCDEF"), -1, 3 }, { TU("GHIJKL"), -1, 4 }, { TU("MNOPQR"), -1, 5 } }, 0, 22, 22, 1, "",
+                    "1010101010101010101010"
+                    "1001100110101101111101"
+                    "1000110010111101010100"
+                    "1100101101111111100001"
+                    "1001001000111100001000"
+                    "1110111000110001011111"
+                    "1010110000001101001100"
+                    "1000011000010101000111"
+                    "1000001111001011101110"
+                    "1111011001111000001001"
+                    "1110101101110111011100"
+                    "1001100011100000011111"
+                    "1111110101001010000010"
+                    "1001011000001100101111"
+                    "1010101010111010100000"
+                    "1111000100011100001111"
+                    "1100000111000010111110"
+                    "1110010000110010010111"
+                    "1111110010101010101010"
+                    "1110001110011001010111"
+                    "1000000100010110101000"
+                    "1111111111111111111111"
+                },
+        /* 13*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("abcdef"), -1, 3 }, { TU("\015*>\015*>"), -1, 4 }, { TU("ghijkl"), -1, 5 } }, 0, 22, 22, 0, "BWIPP different encodation",
+                    "1010101010101010101010"
+                    "1001110110000010100111"
+                    "1000110011011101100100"
+                    "1100101000111110100011"
+                    "1001001000111101111100"
+                    "1110111000110000000001"
+                    "1010110100001101010000"
+                    "1000011000010101000111"
+                    "1000001111001000001110"
+                    "1111011011111010011001"
+                    "1110101111111110100000"
+                    "1001000011101000001011"
+                    "1101000101110001010010"
+                    "1001111000110101010011"
+                    "1011101011101101011000"
+                    "1101000101100000010111"
+                    "1110000101000010110110"
+                    "1110010001101000010111"
+                    "1111110000100110110110"
+                    "1110000111110100001101"
+                    "1100010101011000000000"
+                    "1111111111111111111111"
+                },
+        /* 14*/ { BARCODE_DATAMATRIX, UNICODE_MODE, -1, -1, -1, { 0, 0, "" }, { { TU("abcdefg"), -1, 3 }, { TU("\015*>\015*>\015*"), -1, 4 }, { TU("hijklm"), -1, 5 } }, 0, 22, 22, 0, "BWIPP different encodation",
+                    "1010101010101010101010"
+                    "1000101010011000110001"
+                    "1000011111011010010010"
+                    "1100100000110000111111"
+                    "1001000001000101010000"
+                    "1101000110001000000111"
+                    "1101000010100101101110"
+                    "1101110100010101110111"
+                    "1111101101001000000110"
+                    "1110011111011010101001"
+                    "1111111100001100010000"
+                    "1110110110010010111011"
+                    "1100001111100110011000"
+                    "1100000110000111101101"
+                    "1111000000000101000000"
+                    "1011001101101100000101"
+                    "1110110011011010000000"
+                    "1110100011010111001101"
+                    "1001011100101100101010"
+                    "1000000010001111101111"
+                    "1100011100111001010010"
+                    "1111111111111111111111"
+                },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, j, seg_count, ret;
@@ -5889,7 +6166,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     if (!data[i].bwipp_cmp) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
                     } else {
-                        ret = testUtilBwippSegs(i, symbol, -1, data[i].option_2, -1, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        ret = testUtilBwippSegs(i, symbol, -1, data[i].option_2, data[i].option_3, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
                         assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
@@ -6970,6 +7247,7 @@ static void test_minimalenc(const testCtx *const p_ctx) {
     int gs1;
     int binlen;
     int binlens[2] = {0};
+    const int last_seg = 1;
 
     testStartSymbol("test_minimalenc", &symbol);
 
@@ -6985,7 +7263,7 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode |= FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[0], &binlen);
+        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1, binary[0], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() FAST_MODE ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[0] = binlen;
@@ -6993,7 +7271,7 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode &= ~FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, gs1, binary[1], &binlen);
+        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1, binary[1], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() minimal ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         binlens[1] = binlen;

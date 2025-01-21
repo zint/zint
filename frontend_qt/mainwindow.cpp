@@ -145,6 +145,7 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("DotCode"), BARCODE_DOTCODE },
     { QSL("DPD Code"), BARCODE_DPD },
     { QSL("Dutch Post KIX"), BARCODE_KIX },
+    { QSL("DX Film Edge"), BARCODE_DXFILMEDGE },
     { QSL("EAN (EAN-2, EAN-5, EAN-8 and EAN-13) (ISO 15420)"), BARCODE_EANX },
     { QSL("EAN-14"), BARCODE_EAN14 },
     { QSL("FIM (Facing Identification Mark)"), BARCODE_FIM },
@@ -295,7 +296,6 @@ MainWindow::MainWindow(QWidget *parent, Qt::WindowFlags fl)
     /* Prior to Qt 5.10 comboboxes have display issues when filtered (scrollers not accounted for), so disable */
     filter_bstyle->hide();
 #endif
-
     bstyle->setCurrentIndex(settings.value(QSL("studio/symbology"), 12).toInt());
 
     load_settings(settings);

@@ -198,6 +198,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\backend\2of5inter.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\backend\2of5inter_based.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\backend\auspost.c"
 				>
 			</File>
@@ -214,6 +222,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\backend\channel.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\backend\codabar.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\backend\codablock.c"
 				>
 			</File>
@@ -226,7 +242,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\backend\code11.c"
+				>
+			</File>
+			<File
 				RelativePath="..\..\backend\code128.c"
+				>
+			</File>
+			<File
+				RelativePath="..\..\backend\code128_based.c"
 				>
 			</File>
 			<File
@@ -255,6 +279,10 @@
 			</File>
 			<File
 				RelativePath="..\..\backend\dotcode.c"
+				>
+			</File>
+						<File
+				RelativePath="..\..\backend\dxfilmedge.c"
 				>
 			</File>
 			<File

@@ -1,7 +1,7 @@
 /*  filemem.c - write to file/memory abstraction */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -34,7 +34,7 @@
 #include <errno.h>
 #include <limits.h>
 #include <stdarg.h>
-#ifdef _MSC_VER
+#ifdef _WIN32
 #include <io.h>
 #include <fcntl.h>
 #endif
@@ -117,7 +117,7 @@ INTERNAL int fm_open(struct filemem *restrict const fmp, struct zint_symbol *sym
         return 1;
     }
     if (fmp->flags & BARCODE_STDOUT) {
-#ifdef _MSC_VER
+#ifdef _WIN32
         if (strchr(mode, 'b') != NULL && _setmode(_fileno(stdout), _O_BINARY) == -1) {
             return fm_seterr(fmp, errno);
         }

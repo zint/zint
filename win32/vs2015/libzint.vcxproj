@@ -296,14 +296,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="..\..\backend\2of5.c" />
+    <ClCompile Include="..\..\backend\2of5inter.c" />
+    <ClCompile Include="..\..\backend\2of5inter_based.c" />
     <ClCompile Include="..\..\backend\auspost.c" />
     <ClCompile Include="..\..\backend\aztec.c" />
     <ClCompile Include="..\..\backend\bc412.c" />
     <ClCompile Include="..\..\backend\bmp.c" />
+    <ClCompile Include="..\..\backend\channel.c" />
+    <ClCompile Include="..\..\backend\codabar.c" />
     <ClCompile Include="..\..\backend\codablock.c" />
     <ClCompile Include="..\..\backend\code.c" />
     <ClCompile Include="..\..\backend\code1.c" />
+    <ClCompile Include="..\..\backend\code11.c" />
     <ClCompile Include="..\..\backend\code128.c" />
+    <ClCompile Include="..\..\backend\code128_based.c" />
     <ClCompile Include="..\..\backend\code16k.c" />
     <ClCompile Include="..\..\backend\code49.c" />
     <ClCompile Include="..\..\backend\common.c" />
@@ -314,6 +320,7 @@
     </ClCompile>
     <ClCompile Include="..\..\backend\dmatrix.c" />
     <ClCompile Include="..\..\backend\dotcode.c" />
+    <ClCompile Include="..\..\backend\dxfilmedge.c" />
     <ClCompile Include="..\..\backend\eci.c" />
     <ClCompile Include="..\..\backend\emf.c" />
     <ClCompile Include="..\..\backend\filemem.c" />
