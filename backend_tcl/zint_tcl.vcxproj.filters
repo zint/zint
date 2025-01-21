@@ -156,5 +156,26 @@
     <ClCompile Include="zint.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\backend\dxfilmedge.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\codabar.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\channel.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\2of5inter.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\code11.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\code128_based.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\backend\2of5inter_based.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

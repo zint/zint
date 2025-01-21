@@ -36,12 +36,18 @@ BACKEND_DIR = $(ROOT)\..\backend
 PRJ_OBJS = \
 	$(TMP_DIR)\zint.obj \
 	$(TMP_DIR)\2of5.obj \
+	$(TMP_DIR)\2of5inter.obj \
+	$(TMP_DIR)\2of5inter_based.obj \
 	$(TMP_DIR)\auspost.obj \
 	$(TMP_DIR)\aztec.obj \
 	$(TMP_DIR)\bc412.obj \
 	$(TMP_DIR)\bmp.obj \
+	$(TMP_DIR)\channel.obj \
+	$(TMP_DIR)\codabar.obj \
 	$(TMP_DIR)\codablock.obj \
+	$(TMP_DIR)\code11.obj \
 	$(TMP_DIR)\code128.obj \
+	$(TMP_DIR)\code128_based.obj \
 	$(TMP_DIR)\code16k.obj \
 	$(TMP_DIR)\code1.obj \
 	$(TMP_DIR)\code49.obj \

@@ -15,7 +15,7 @@ There are 3 build environments available:
 - configure based build system for Linux/MacOS/MSYS/CYGWIN (Windows)
  Contributed by Christian Werner.
 - win/Makefile.vc for TCL/Tk MS-Visual Studio build environment
-- zint_tcl.vxproj for interactive VisualStudio build.
+- zint_tcl.vxproj for interactive VisualStudio 2022 build.
 
 Usage:
 

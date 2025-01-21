@@ -18,13 +18,13 @@
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
-    <PlatformToolset>v140</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <UseOfMfc>false</UseOfMfc>
     <CharacterSet>MultiByte</CharacterSet>
   </PropertyGroup>
@@ -52,22 +52,22 @@
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
-      <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <InlineFunctionExpansion>Default</InlineFunctionExpansion>
-      <FunctionLevelLinking>false</FunctionLevelLinking>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
       <Optimization>Disabled</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <MinimalRebuild>true</MinimalRebuild>
       <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
-      <AdditionalIncludeDirectories>..\backend;C:\Tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\backend;C:\myprograms\tcl9.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;PACKAGE_VERSION="2.13.0";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Debug\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Debug\zint_tcl.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Debug\</ObjectFileName>
       <ProgramDataBaseFileName>.\Debug\</ProgramDataBaseFileName>
-      <AdditionalOptions> /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
     </ClCompile>
     <Midl>
@@ -92,8 +92,8 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>Debug/zint.dll</OutputFile>
       <ImportLibrary>.\Debug\zint.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>C:\Tcl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub85.lib;tkstub85.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\myprograms\tcl9.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub.lib;tkstub.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
@@ -105,14 +105,15 @@
       <Optimization>MaxSpeed</Optimization>
       <SuppressStartupBanner>true</SuppressStartupBanner>
       <WarningLevel>Level3</WarningLevel>
-      <AdditionalIncludeDirectories>..\backend;C:\Tcl\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
-      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <AdditionalIncludeDirectories>..\backend;C:\myprograms\tcl9.0\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_WINDOWS;_USRDLL;ZINT_TCL_EXPORTS;USE_TCL_STUBS;USE_TK_STUBS;ZINT_NO_PNG;PACKAGE_VERSION="2.13.0";%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <AssemblerListingLocation>.\Release\</AssemblerListingLocation>
       <BrowseInformation>true</BrowseInformation>
       <PrecompiledHeaderOutputFile>.\Release\zint_tcl.pch</PrecompiledHeaderOutputFile>
       <ObjectFileName>.\Release\</ObjectFileName>
       <ProgramDataBaseFileName>.\Release\</ProgramDataBaseFileName>
-      <AdditionalOptions> /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
+      <AdditionalOptions>
+      </AdditionalOptions>
     </ClCompile>
     <Midl>
       <SuppressStartupBanner>true</SuppressStartupBanner>
@@ -135,8 +136,8 @@
       <SubSystem>Console</SubSystem>
       <OutputFile>zint.dll</OutputFile>
       <ImportLibrary>.\Release\zint.lib</ImportLibrary>
-      <AdditionalLibraryDirectories>C:\Tcl\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub85.lib;tkstub85.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>C:\myprograms\tcl9.0\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalDependencies>odbc32.lib;odbccp32.lib;tclstub.lib;tkstub.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -144,6 +145,8 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\backend\2of5inter.c" />
+    <ClCompile Include="..\backend\2of5inter_based.c" />
     <ClCompile Include="..\backend\auspost.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
@@ -160,6 +163,8 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\backend\channel.c" />
+    <ClCompile Include="..\backend\codabar.c" />
     <ClCompile Include="..\backend\codablock.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
@@ -172,10 +177,12 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\backend\code11.c" />
     <ClCompile Include="..\backend\code128.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\backend\code128_based.c" />
     <ClCompile Include="..\backend\code16k.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
@@ -200,6 +207,7 @@
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
     </ClCompile>
+    <ClCompile Include="..\backend\dxfilmedge.c" />
     <ClCompile Include="..\backend\eci.c">
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
       <AdditionalOptions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'"> /D ZINT_VERSION="\"2.13.0.9\""  /D ZINT_VERSION="\"2.13.0.9\""</AdditionalOptions>
