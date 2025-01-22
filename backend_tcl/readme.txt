@@ -1,21 +1,23 @@
     zint tcl binding readme
     -----------------------
-    2024-12-09
+    2025-01-22
     (C) Harald Oehlmann
     (C) Git Lost
     harald.oehlmann@users.sourceforge.net
 
-What: tcl binding for zint bar code generator library
+What: tcl binding for Zint Barcode Generator library
 
 Build:
-The header files of a TCL and Tk build are required for the build.
-They are included in a TCL/Tk source tree or in an installed TCL/Tk.
+The header files of a Tcl and Tk build are required for the build.
+They are included in a Tcl/Tk source tree or in an installed Tcl/Tk.
 
 There are 3 build environments available:
-- configure based build system for Linux/MacOS/MSYS/CYGWIN (Windows)
- Contributed by Christian Werner.
-- win/Makefile.vc for TCL/Tk MS-Visual Studio build environment
-- zint_tcl.vxproj for interactive VisualStudio 2022 build.
+
+- configure based build system for Linux/macOS and MSYS/Cygwin/MSYS2 (Windows)
+  (contributed by Christian Werner) - see "docs/manual.txt" Annex C for details
+- "win\makefile.vc" for Microsoft Visual Studio command prompt (nmake) - see
+  "win\README.txt" for details
+- "zint_tcl.vcxproj" for Microsoft Visual C++ 2022 interactive build
 
 Usage:
 

@@ -1,5 +1,5 @@
 Harald Oehlmann
-2021-06-10
+2025-01-22
 
 Why to use VC6 ?
 It avoids DLL Hell as the runtime is present on all Windows Versions since XP.
@@ -13,13 +13,13 @@ $ZR is the zint root folder (this file is in $ZR\win32\zint_cmdline_vc6)
 if not available in the Start Menu, open a Command Prompt and run
 "C:\Program Files (x86)\Microsoft Visual Studio\VC98\Bin\VCVARS32.BAT"
 
-a) zlib (current version: 1.2.13)
+a) zlib (current version: 1.3.1)
 * put zlib to $ZR\..\zlib
 cd $ZR\..\zlib
 nmake -f win32\Makefile.msc
 -> generates zlib.lib, zlib1.dll
 
-b) lpng (current version: 1.6.39)
+b) lpng (version: 1.6.44 - note 1.6.45 has non-C89 variable declaration)
 * put libpng to $ZR\..\lpng
 cd $ZR\..\lpng
 nmake -f scripts\makefile.vcwin32
