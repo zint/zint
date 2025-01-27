@@ -281,8 +281,8 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     const int pzn7 = symbol->option_2 == 1;
 
     if (length > 8 - pzn7) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 325, "Input length %1$d too long (maximum %2$d)", length,
-                        8 - pzn7);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 325, "Input length %1$d too long (maximum %2$d)", length,
+                            8 - pzn7);
     }
     if (length == 8 - pzn7) {
         have_check_digit = source[7 - pzn7];
@@ -314,8 +314,8 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 327, "Invalid PZN, check digit is '10'");
     }
     if (have_check_digit && ctoi(have_check_digit) != check_digit) {
-        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 890, "Invalid check digit '%1$c', expecting '%2$c'",
-                        have_check_digit, itoc(check_digit));
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 890, "Invalid check digit '%1$c', expecting '%2$c'",
+                            have_check_digit, itoc(check_digit));
     }
 
     localstr[8 - pzn7] = itoc(check_digit);

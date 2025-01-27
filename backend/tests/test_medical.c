@@ -37,12 +37,12 @@ static void test_large(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
-        char *pattern;
+        const char *pattern;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -77,7 +77,7 @@ static void test_large(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
@@ -99,9 +99,9 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
-        char *data;
+        const char *data;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -133,7 +133,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
@@ -150,7 +150,7 @@ static void test_input(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
-        char *data;
+        const char *data;
         int ret;
         int expected_rows;
         int expected_width;
@@ -208,7 +208,7 @@ static void test_input(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
 
@@ -244,13 +244,13 @@ static void test_encode(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_PHARMA, -1, "131070", 0, 1, 78, "",
@@ -302,7 +302,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {

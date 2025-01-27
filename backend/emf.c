@@ -1,7 +1,7 @@
 /*  emf.c - Support for Microsoft Enhanced Metafile Format */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2016-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2016-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -701,8 +701,8 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
 
     /* Send EMF data to file */
     if (!fm_open(fmp, symbol, "wb")) {
-        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 640, "Could not open EMF output file (%1$d: %2$s)", fmp->err,
-                        strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 640, "Could not open EMF output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
 
     fm_write(&emr_header, sizeof(emr_header_t), 1, fmp);
@@ -820,14 +820,14 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     fm_write(&emr_eof, sizeof(emr_eof_t), 1, fmp);
 
     if (fm_error(fmp)) {
-        errtxtf(0, symbol, 644, "Incomplete write of EMF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        ZEXT errtxtf(0, symbol, 644, "Incomplete write of EMF output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 941, "Failure on closing EMF output file (%1$d: %2$s)",
-                        fmp->err, strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 941, "Failure on closing EMF output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
     return error_number;
 }

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -47,14 +47,14 @@ static void test_print(const testCtx *const p_ctx) {
         int option_2;
         int option_3;
         float height;
-        char *fgcolour;
-        char *bgcolour;
+        const char *fgcolour;
+        const char *bgcolour;
         int rotate_angle;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
-        char *expected_file;
-        char *comment;
+        const char *expected_file;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "<>\"&'", "", 0, "code128_amperands.svg", "" },
@@ -150,7 +150,7 @@ static void test_print(const testCtx *const p_ctx) {
     char expected_file[1024];
     char escaped[1024];
     int escaped_size = 1024;
-    char *text;
+    const char *text;
 
     int have_libreoffice = 0;
     int have_vnu = 0;
@@ -209,7 +209,7 @@ static void test_print(const testCtx *const p_ctx) {
         }
         text_length = (int) strlen(text);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
+        ret = ZBarcode_Encode(symbol, TCU(text), text_length);
         assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, svg);

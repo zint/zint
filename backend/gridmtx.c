@@ -1,7 +1,7 @@
 /*  gridmtx.c - Grid Matrix */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1073,9 +1073,9 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
                             "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 537,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 537,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len;
@@ -1131,9 +1131,9 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
         if (symbol->option_2 >= min_layers) {
             layers = symbol->option_2;
         } else {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 534,
-                        "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
-                        symbol->option_2, data_cw, gm_max_cw[symbol->option_2 - 1]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 534,
+                                "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                                symbol->option_2, data_cw, gm_max_cw[symbol->option_2 - 1]);
         }
     }
 
@@ -1189,9 +1189,9 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     }
 
     if (data_cw > data_max) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 532,
-                        "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)",
-                        ecc_level, data_cw, data_max);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 532,
+                            "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)", ecc_level,
+                            data_cw, data_max);
     }
     if (debug_print) {
         printf("Layers: %d, ECC level: %d, Data Codewords: %d\n", layers, ecc_level, data_cw);

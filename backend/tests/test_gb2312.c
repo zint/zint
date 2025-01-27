@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -153,12 +153,12 @@ static void test_u_gb2312_int(const testCtx *const p_ctx) {
 static void test_gb2312_utf8(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int ret_length;
         unsigned int expected_gbdata[20];
-        char *comment;
+        const char *comment;
     };
     /*
        é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, in GB 2312 0xA8A6, UTF-8 C3A9
@@ -219,12 +219,12 @@ static void test_gb2312_utf8_to_eci(const testCtx *const p_ctx) {
     struct item {
         int eci;
         int full_multibyte;
-        char *data;
+        const char *data;
         int length;
         int ret;
         int ret_length;
         unsigned int expected_gbdata[20];
-        char *comment;
+        const char *comment;
     };
     /*
        é U+00E9 in ISO 8859-1 0xE9, Win 1250 plus other Win, in GRIDMATRIX Chinese mode first byte range 0xA1..A9, 0xB0..F7
@@ -323,12 +323,12 @@ static void test_gb2312_cpy(const testCtx *const p_ctx) {
 
     struct item {
         int full_multibyte;
-        char *data;
+        const char *data;
         int length;
         int ret;
         int ret_length;
         unsigned int expected_gbdata[20];
-        char *comment;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -377,10 +377,10 @@ static void test_perf(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int ret;
 
-        char *comment;
+        const char *comment;
     };
     struct item data[] = {
         /*  0*/ { "1234567890", 0, "10 numerics" },

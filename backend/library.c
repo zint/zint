@@ -1,7 +1,7 @@
 /*  library.c - external functions of libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -336,7 +336,7 @@ static int dump_plot(struct zint_symbol *symbol) {
     }
 
     if (ferror(f)) {
-        errtxtf(0, symbol, 795, "Incomplete write to output (%1$d: %2$s)", errno, strerror(errno));
+        ZEXT errtxtf(0, symbol, 795, "Incomplete write to output (%1$d: %2$s)", errno, strerror(errno));
         if (!output_to_stdout) {
             (void) fclose(f);
         }
@@ -345,13 +345,13 @@ static int dump_plot(struct zint_symbol *symbol) {
 
     if (output_to_stdout) {
         if (fflush(f) != 0) {
-            return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Incomplete flush to output (%1$d: %2$s)",
-                            errno, strerror(errno));
+            return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 796, "Incomplete flush to output (%1$d: %2$s)",
+                                errno, strerror(errno));
         }
     } else {
         if (fclose(f) != 0) {
-            return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing output file (%1$d: %2$s)",
-                            errno, strerror(errno));
+            return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 792, "Failure on closing output file (%1$d: %2$s)",
+                                errno, strerror(errno));
         }
     }
 
@@ -737,14 +737,16 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
     }
 
     if (val == -1) {
-        return errtxtf(-1, symbol, 238, "Invalid character in escape sequence '%2$.*1$s' in input (%3$s only)",
-                        base == 'x' ? 4 : 5, input_string + in_posn - 2,
-                        base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal");
+        return ZEXT errtxtf(-1, symbol, 238,
+                            "Invalid character in escape sequence '%2$.*1$s' in input (%3$s only)",
+                            base == 'x' ? 4 : 5, input_string + in_posn - 2,
+                            base == 'd' ? "decimal" : base == 'o' ? "octal" : "hexadecimal");
     }
     if (val > 255) {
         assert(base != 'x');
-        return errtxtf(-1, symbol, 237, "Value of escape sequence '%1$.5s' in input out of range (000 to %2$s)",
-                        input_string + in_posn - 2, base == 'd' ? "255" : "377");
+        return ZEXT errtxtf(-1, symbol, 237,
+                            "Value of escape sequence '%1$.5s' in input out of range (000 to %2$s)",
+                            input_string + in_posn - 2, base == 'd' ? "255" : "377");
     }
 
     return val;
@@ -1094,8 +1096,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     /* Reconcile symbol ECI and first segment ECI if both set */
     if (symbol->eci != local_segs[0].eci) {
         if (symbol->eci && local_segs[0].eci) {
-            errtxtf(0, symbol, 774, "Symbol ECI '%1$d' must match segment zero ECI '%2$d'",
-                    symbol->eci, local_segs[0].eci);
+            ZEXT errtxtf(0, symbol, 774, "Symbol ECI '%1$d' must match segment zero ECI '%2$d'",
+                        symbol->eci, local_segs[0].eci);
             return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, -1, NULL);
         }
         if (symbol->eci) {
@@ -1192,7 +1194,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 799, "Invalid primary string");
         }
         ustrcpy(primary, symbol->primary);
-        error_number = escape_char_process(symbol, (unsigned char *) primary, &primary_len,
+        error_number = escape_char_process(symbol, (const unsigned char *) primary, &primary_len,
                                             (unsigned char *) symbol->primary);
         if (error_number != 0) { /* Only returns errors, not warnings */
             return error_tag(error_number, symbol, -1, NULL);
@@ -1486,14 +1488,14 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         file = fopen(filename, "rb");
 #endif
         if (!file) {
-            errtxtf(0, symbol, 229, "Unable to read input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT errtxtf(0, symbol, 229, "Unable to read input file (%1$d: %2$s)", errno, strerror(errno));
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
         file_opened = 1;
 
         /* Get file length */
         if (fseek(file, 0, SEEK_END) != 0) {
-            errtxtf(0, symbol, 797, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT errtxtf(0, symbol, 797, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
             (void) fclose(file);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1511,7 +1513,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
         }
 
         if (fseek(file, 0, SEEK_SET) != 0) {
-            errtxtf(0, symbol, 793, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT errtxtf(0, symbol, 793, "Unable to seek input file (%1$d: %2$s)", errno, strerror(errno));
             (void) fclose(file);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }
@@ -1531,7 +1533,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
     do {
         n = fread(buffer + nRead, 1, fileLen - nRead, file);
         if (ferror(file)) {
-            errtxtf(0, symbol, 241, "Input file read error (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT errtxtf(0, symbol, 241, "Input file read error (%1$d: %2$s)", errno, strerror(errno));
             free(buffer);
             if (file_opened) {
                 (void) fclose(file);
@@ -1543,7 +1545,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
 
     if (file_opened) {
         if (fclose(file) != 0) {
-            errtxtf(0, symbol, 794, "Failure on closing input file (%1$d: %2$s)", errno, strerror(errno));
+            ZEXT errtxtf(0, symbol, 794, "Failure on closing input file (%1$d: %2$s)", errno, strerror(errno));
             free(buffer);
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, -1, NULL);
         }

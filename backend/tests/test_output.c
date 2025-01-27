@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -38,10 +38,10 @@
 
 static void test_check_colour_options(const testCtx *const p_ctx) {
     struct item {
-        char *fgcolour;
-        char *bgcolour;
+        const char *fgcolour;
+        const char *bgcolour;
         int ret;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -90,13 +90,13 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
 
 static void test_colour_get_rgb(const testCtx *const p_ctx) {
     struct item {
-        char *colour;
+        const char *colour;
         int ret;
         unsigned char red;
         unsigned char green;
         unsigned char blue;
         unsigned char alpha;
-        char *expected_cmyk;
+        const char *expected_cmyk;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -154,14 +154,14 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
 
 static void test_colour_get_cmyk(const testCtx *const p_ctx) {
     struct item {
-        char *colour;
+        const char *colour;
         int ret;
         int cyan;
         int magenta;
         int yellow;
         int black;
         unsigned char alpha;
-        char *expected_rgb;
+        const char *expected_rgb;
         int ret_rgb;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -323,9 +323,9 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
 
 static void test_fopen(const testCtx *const p_ctx) {
     struct item {
-        char dir[32];
-        char subdir[32];
-        char *filename;
+        const char dir[32];
+        const char subdir[32];
+        const char *filename;
         int succeed;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */

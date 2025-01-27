@@ -1,7 +1,7 @@
 /*  upcean.c - Handles UPC, EAN and ISBN */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -121,8 +121,8 @@ static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 11)) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 270, "Invalid check digit '%1$c', expecting '%2$c'",
-                            source[length - 1], gs1_check_digit(gtin, 11));
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 270, "Invalid check digit '%1$c', expecting '%2$c'",
+                                source[length - 1], gs1_check_digit(gtin, 11));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -270,8 +270,8 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
     check_digit = gs1_check_digit(equivalent, 11);
 
     if (src_check_digit && src_check_digit != check_digit) {
-        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 274, "Invalid check digit '%1$c', expecting '%2$c'",
-                        src_check_digit, check_digit);
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 274, "Invalid check digit '%1$c', expecting '%2$c'",
+                            src_check_digit, check_digit);
     }
 
     /* Use the number system and check digit information to choose a parity scheme */
@@ -409,8 +409,8 @@ static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], in
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 12)) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 275, "Invalid check digit '%1$c', expecting '%2$c'",
-                            source[length - 1], gs1_check_digit(gtin, 12));
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 275, "Invalid check digit '%1$c', expecting '%2$c'",
+                                source[length - 1], gs1_check_digit(gtin, 12));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -482,8 +482,8 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
         gtin[length] = '\0';
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 7)) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 276, "Invalid check digit '%1$c', expecting '%2$c'",
-                            source[length - 1], gs1_check_digit(gtin, 7));
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 276, "Invalid check digit '%1$c', expecting '%2$c'",
+                                source[length - 1], gs1_check_digit(gtin, 7));
         }
     }
     if (symbol->debug & ZINT_DEBUG_PRINT) {
@@ -569,8 +569,8 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int l
 
         check_digit = gs1_check_digit(source, 12);
         if (source[12] != check_digit) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 280, "Invalid ISBN check digit '%1$c', expecting '%2$c'",
-                            source[12], check_digit);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 280,
+                                "Invalid ISBN check digit '%1$c', expecting '%2$c'", source[12], check_digit);
         }
         source[12] = '\0';
 
@@ -591,9 +591,9 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int l
 
         check_digit = isbnx_check(source, 9);
         if (check_digit != source[9]) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 281,
-                            "Invalid %1$s check digit '%2$c', expecting '%3$c'", length == 9 ? "SBN" : "ISBN",
-                            source[9], check_digit);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 281,
+                                "Invalid %1$s check digit '%2$c', expecting '%3$c'", length == 9 ? "SBN" : "ISBN",
+                                source[9], check_digit);
         }
         for (i = 11; i > 2; i--) { /* This drops the check digit */
             source[i] = source[i - 3];

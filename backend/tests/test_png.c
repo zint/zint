@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,7 +42,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     struct item {
         int width;
         int height;
-        char *pattern;
+        const char *pattern;
         int repeat;
         int ret;
     };
@@ -60,7 +60,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol *symbol = NULL;
 
-    char *png = "out.png";
+    const char *png = "out.png";
 
     char data_buf[8 * 2 + 1];
 
@@ -135,14 +135,14 @@ static void test_print(const testCtx *const p_ctx) {
         float height;
         float scale;
         struct zint_structapp structapp;
-        char *fgcolour;
-        char *bgcolour;
+        const char *fgcolour;
+        const char *bgcolour;
         float text_gap;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
-        char *expected_file;
-        char *comment;
+        const char *expected_file;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, UNICODE_MODE, -1, -1, -1, -1, -1, -1, -1, 10.0, 0, { 0, 0, "" }, "", "", 1, "!\"#$%&'()*+,-./0123456789:;<=>?@ABCDEFGHIJKLMNOPQRSTUVWXYZ[\\]^_`abcdefghijklmnopqrstuvwxyz{|}~", "", 0, "code128_latin1_1.png", "" },
@@ -249,7 +249,7 @@ static void test_print(const testCtx *const p_ctx) {
     int escaped_size = 1024;
     unsigned char filebuf[32768];
     int filebuf_size;
-    char *text;
+    const char *text;
 
     const char *const have_identify = testUtilHaveIdentify();
 
@@ -310,7 +310,7 @@ static void test_print(const testCtx *const p_ctx) {
         }
         text_length = (int) strlen(text);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
+        ret = ZBarcode_Encode(symbol, TCU(text), text_length);
         assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, png);

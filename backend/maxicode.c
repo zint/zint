@@ -1,7 +1,7 @@
 /* maxicode.c - Handles MaxiCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2010-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2010-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -220,8 +220,8 @@ static int mx_enc_eci(const int eci, unsigned char codewords[144], int ci) {
 
 /* Get the shortest encoded length for the Code Set (state) and plot the path */
 static int mx_get_best_length(const int state, const int i, const unsigned char ch, const int digits, const int num_a,
-            const int best_lengths[16][MX_STATES], const char best_origins[16][MX_STATES],
-            unsigned char *const path_op, char *const prior_code_set) {
+            int best_lengths[16][MX_STATES], char best_origins[16][MX_STATES], unsigned char *const path_op,
+            char *const prior_code_set) {
     const char *const latch_length_s = mx_latch_len[state];
     int min_len = 999999;
     int j;
@@ -674,9 +674,9 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
                             "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 559,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 559,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 549, "Structured Append ID not available for MaxiCode");

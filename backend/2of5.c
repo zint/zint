@@ -65,8 +65,8 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, error_base, "Input length %1$d too long (maximum %2$d)", length,
-                        max);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, error_base, "Input length %1$d too long (maximum %2$d)",
+                            length, max);
     }
     if ((i = not_sane(NEON_F, source, length))) {
         /* Note: for all "at position" error messages, escape sequences not accounted for */

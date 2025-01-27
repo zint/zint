@@ -1,5 +1,5 @@
 # Copyright (C) 2008 by BogDan Vatra < bogdan@licentia.eu >
-# Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+# Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 # vim: set ts=4 sw=4 et :
 
 cmake_minimum_required(VERSION 3.10)
@@ -53,17 +53,30 @@ if(NOT MSVC) # Use default warnings if MSVC otherwise inundated
         add_compile_options("-Wextra")
     endif()
 
-    # gcc complains about "%n$" `errtxtf()` arguments if "-Wpedantic" used, so only use for clang
-    if(CMAKE_C_COMPILER_ID MATCHES "Clang")
-        check_c_compiler_flag("-Wpedantic" C_COMPILER_FLAG_WPEDANTIC)
-        if(C_COMPILER_FLAG_WPEDANTIC)
-            add_compile_options("-Wpedantic")
-        endif()
+    check_c_compiler_flag("-Wpedantic" C_COMPILER_FLAG_WPEDANTIC)
+    if(C_COMPILER_FLAG_WPEDANTIC)
+        add_compile_options("-Wpedantic")
     endif()
 
+    check_c_compiler_flag("-Wcast-align" C_COMPILER_FLAG_WCASTALIGN)
+    if(C_COMPILER_FLAG_WCASTALIGN)
+        add_compile_options("-Wcast-align")
+    endif()
+    check_c_compiler_flag("-Wpointer-arith" C_COMPILER_FLAG_WPOINTERARITH)
+    if(C_COMPILER_FLAG_WPOINTERARITH)
+        add_compile_options("-Wpointer-arith")
+    endif()
+    check_c_compiler_flag("-Wshadow" C_COMPILER_FLAG_WSHADOW)
+    if(C_COMPILER_FLAG_WSHADOW)
+        add_compile_options("-Wshadow")
+    endif()
     check_c_compiler_flag("-Wundef" C_COMPILER_FLAG_WUNDEF)
     if(C_COMPILER_FLAG_WUNDEF)
         add_compile_options("-Wundef")
+    endif()
+    check_c_compiler_flag("-Wwrite-strings" C_COMPILER_FLAG_WWRITESTRINGS)
+    if(C_COMPILER_FLAG_WWRITESTRINGS)
+        add_compile_options("-Wwrite-strings")
     endif()
 endif()
 

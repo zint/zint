@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -38,12 +38,12 @@ static void test_large(const testCtx *const p_ctx) {
         int option_1;
         int option_3;
         struct zint_structapp structapp;
-        char *pattern;
+        const char *pattern;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -109,7 +109,7 @@ static void test_large(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
@@ -132,12 +132,12 @@ static void test_reader_init(const testCtx *const p_ctx) {
         int input_mode;
         int output_options;
         int option_3;
-        char *data;
+        const char *data;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected;
-        char *comment;
+        const char *expected;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, READER_INIT, 0, "A", 0, 13, 14, "(3) 257 269 65", "8-bit FNC3 A" },
@@ -162,7 +162,7 @@ static void test_reader_init(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_ULTRA, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -195,10 +195,10 @@ static void test_input(const testCtx *const p_ctx) {
         int option_2;
         int option_3;
         struct zint_structapp structapp;
-        char *data;
+        const char *data;
         int ret;
-        char *expected;
-        char *comment;
+        const char *expected;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Default (Revision 1)" },
@@ -293,7 +293,7 @@ static void test_input(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -322,14 +322,14 @@ static void test_encode(const testCtx *const p_ctx) {
         int option_2;
         int option_3;
         struct zint_structapp structapp;
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Based on AIMD/TSC15032-43 (v 0.99c), with values updated from BWIPP update 2021-07-14
        https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc
@@ -804,7 +804,7 @@ static void test_encode(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -861,8 +861,8 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Based on AIMD/TSC15032-43 (v 0.99c), with values updated from BWIPP update 2021-07-14
        https://github.com/bwipp/postscriptbarcode/commit/4255810845fa8d45c6192dd30aee1fdad1aaf0cc

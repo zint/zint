@@ -1,7 +1,7 @@
 /*  hanxin.c - Han Xin Code */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1585,14 +1585,14 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     if ((symbol->option_2 != 0) && (symbol->option_2 < version)) {
         free(binary);
         if (ecc_level == 1) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
-                            "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
-                            symbol->option_2, codewords, hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
+                                "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                                symbol->option_2, codewords, hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
         }
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
-                        "Input too long for Version %1$d, ECC %2$d, requires %3$d codewords (maximum %4$d)",
-                        symbol->option_2, ecc_level, codewords,
-                        hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 542,
+                            "Input too long for Version %1$d, ECC %2$d, requires %3$d codewords (maximum %4$d)",
+                            symbol->option_2, ecc_level, codewords,
+                            hx_data_codewords[ecc_level - 1][symbol->option_2 - 1]);
     }
 
     /* If there is spare capacity, increase the level of ECC */

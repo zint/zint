@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,7 +41,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     struct item {
         int width;
         int height;
-        char *pattern;
+        const char *pattern;
         int repeat;
         int no_identify; /* identify fails for some valid TIFFs (eg. RGB with LZW and large rows) */
         int ret;
@@ -91,7 +91,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol *symbol = NULL;
 
-    char *tif = "out.tif";
+    const char *tif = "out.tif";
 
     char data_buf[ZINT_MAX_DATA_LEN * 2 + 1];
 
@@ -172,12 +172,12 @@ static void test_print(const testCtx *const p_ctx) {
         int option_2;
         int height;
         float scale;
-        char *fgcolour;
-        char *bgcolour;
-        char *data;
-        char *composite;
-        char *expected_file;
-        char *comment;
+        const char *fgcolour;
+        const char *bgcolour;
+        const char *data;
+        const char *composite;
+        const char *expected_file;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE128, -1, -1, -1, 1, -1, -1, -1, -1, 0, 0, "112233", "EEDDCC", "A", "", "code128_fgbg.tif", "" },
@@ -216,7 +216,7 @@ static void test_print(const testCtx *const p_ctx) {
     int escaped_size = 1024;
     unsigned char filebuf[32768];
     int filebuf_size;
-    char *text;
+    const char *text;
 
     int have_tiffinfo = testUtilHaveTiffInfo();
     const char *const have_identify = testUtilHaveIdentify();
@@ -273,7 +273,7 @@ static void test_print(const testCtx *const p_ctx) {
         }
         text_length = (int) strlen(text);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) text, text_length);
+        ret = ZBarcode_Encode(symbol, TCU(text), text_length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, tif);

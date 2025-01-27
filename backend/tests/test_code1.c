@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -38,12 +38,12 @@ static void test_large(const testCtx *const p_ctx) {
         int eci;
         int option_2;
         struct zint_structapp structapp;
-        char *pattern;
+        const char *pattern;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* Reference AIM USS Code One Table 2 */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -217,7 +217,7 @@ static void test_large(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, length);
+        ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
@@ -241,7 +241,7 @@ static void test_input(const testCtx *const p_ctx) {
         int eci;
         int option_2;
         struct zint_structapp structapp;
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_rows;
@@ -307,7 +307,7 @@ static void test_input(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
@@ -330,15 +330,15 @@ static void test_encode(const testCtx *const p_ctx) {
         int eci;
         int option_2;
         struct zint_structapp structapp;
-        char *data;
+        const char *data;
         int length;
         int ret;
 
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
     static const struct item data[] = {
@@ -2910,7 +2910,7 @@ static void test_encode(const testCtx *const p_ctx) {
             symbol->structapp = data[i].structapp;
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -2972,8 +2972,8 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Figure examples AIM USS Code One (USSCO) Revision March 3, 2000 */
     static const struct item data[] = {
@@ -3363,11 +3363,11 @@ static void test_fuzz(const testCtx *const p_ctx) {
 
     struct item {
         int option_2;
-        char *data;
+        const char *data;
         int length;
         int ret;
         int bwipp_cmp;
-        char *comment;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -3398,7 +3398,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_CODEONE, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {

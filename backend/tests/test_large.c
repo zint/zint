@@ -816,7 +816,7 @@ static void test_dump(const testCtx *const p_ctx) {
 
     struct item {
         large_uint t;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {

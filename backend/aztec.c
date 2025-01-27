@@ -1,7 +1,7 @@
 /* aztec.c - Handles Aztec 2D Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -893,9 +893,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
                             "Structured Append count '%d' out of range (2 to 26)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 702,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 702,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
 
         for (id_len = 0; id_len < 32 && symbol->structapp.id[id_len]; id_len++);
@@ -976,14 +976,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
             if (layers == 0) { /* Couldn't find a symbol which fits the data */
                 if (adjustment_size == 0) {
-                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 707,
+                    return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 707,
                                     "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
                                     ecc_level, AztecDataSizes[ecc_level - 1][31] / 12);
                 }
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 504,
-                                "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)",
-                                ecc_level, (data_length + adjustment_size + 11) / 12,
-                                AztecDataSizes[ecc_level - 1][31] / 12);
+                return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 504,
+                                    "Input too long for ECC level %1$d, requires %2$d codewords (maximum %3$d)",
+                                    ecc_level, (data_length + adjustment_size + 11) / 12,
+                                    AztecDataSizes[ecc_level - 1][31] / 12);
             }
 
             codeword_size = az_codeword_size(layers);
@@ -991,9 +991,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size,
                                                 adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY, adjusted_string);
             if (adjusted_length == 0) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 705,
-                                "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
-                                ecc_level, (adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY) / codeword_size);
+                return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 705,
+                                    "Input too long for ECC level %1$d, requires too many codewords (maximum %2$d)",
+                                    ecc_level, (adjustment_size ? data_maxsize : AZTEC_BIN_CAPACITY) / codeword_size);
             }
             adjustment_size = adjusted_length - data_length;
 
@@ -1050,9 +1050,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
         adjusted_length = az_bitrun_stuff(binary_string, data_length, codeword_size, data_maxsize, adjusted_string);
         if (adjusted_length == 0) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 704,
-                            "Input too long for Version %1$d, requires too many codewords (maximum %2$d)",
-                            symbol->option_2, data_maxsize / codeword_size);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 704,
+                                "Input too long for Version %1$d, requires too many codewords (maximum %2$d)",
+                                symbol->option_2, data_maxsize / codeword_size);
         }
 
         /* Add padding */
@@ -1067,10 +1067,10 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         /* Check if the data actually fits into the selected symbol size */
 
         if (adjusted_length + padbits > data_maxsize) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 505,
-                            "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
-                            symbol->option_2, (adjusted_length + padbits) / codeword_size,
-                            data_maxsize / codeword_size);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 505,
+                                "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                                symbol->option_2, (adjusted_length + padbits) / codeword_size,
+                                data_maxsize / codeword_size);
         }
 
         adjusted_length = az_add_padding(padbits, codeword_size, adjusted_string, adjusted_length);
@@ -1102,9 +1102,9 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         ecc_blocks = AztecSizes[layers - 1] - data_blocks;
     }
     if (ecc_blocks < data_blocks / 20) {
-        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
-                                "Number of ECC codewords %1$d less than %2$d (5%% of data codewords %3$d)",
-                                ecc_blocks, data_blocks / 20, data_blocks);
+        error_number = ZEXT errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
+                                    "Number of ECC codewords %1$d less than %2$d (5%% of data codewords %3$d)",
+                                    ecc_blocks, data_blocks / 20, data_blocks);
     }
 
     if (debug_print) {

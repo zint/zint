@@ -1,7 +1,7 @@
 /* dotcode.c - Handles DotCode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2017-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2017-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1244,9 +1244,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
                             "Structured Append count '%d' out of range (2 to 35)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 731,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 731,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 732, "Structured Append ID not available for DotCode");
@@ -1337,20 +1337,21 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if ((height > 200) || (width > 200)) {
         if (height > 200 && width > 200) {
-            errtxtf(0, symbol, 526, "Symbol size '%1$dx%2$d' (WxH) is too large", width, height);
+            ZEXT errtxtf(0, symbol, 526, "Symbol size '%1$dx%2$d' (WxH) is too large", width, height);
         } else {
-            errtxtf(0, symbol, 528, "Symbol %1$s '%2$d' is too large",
-                    width > 200 ? "width" : "height", width > 200 ? width : height);
+            ZEXT errtxtf(0, symbol, 528, "Symbol %1$s '%2$d' is too large", width > 200 ? "width" : "height",
+                        width > 200 ? width : height);
         }
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((height < 5) || (width < 5)) {
         if (height < 5 && width < 5) { /* Won't happen as if width < 5, min height is 19 */
-            errtxtf(0, symbol, 527, "Symbol size '%1$dx%2$d' (WxH) is too small", width, height); /* Not reached */
+            ZEXT errtxtf(0, symbol, 527, "Symbol size '%1$dx%2$d' (WxH) is too small", width,
+                        height); /* Not reached */
         } else {
-            errtxtf(0, symbol, 529, "Symbol %1$s '%2$d' is too small",
-                        width < 5 ? "width" : "height", width < 5 ? width : height);
+            ZEXT errtxtf(0, symbol, 529, "Symbol %1$s '%2$d' is too small", width < 5 ? "width" : "height",
+                        width < 5 ? width : height);
         }
         return ZINT_ERROR_INVALID_OPTION;
     }

@@ -1,7 +1,7 @@
 /* rss.c - GS1 DataBar (formerly Reduced Space Symbology) */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -303,8 +303,8 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 388, "Invalid check digit '%1$c', expecting '%2$c'",
-                            source[13], gs1_check_digit(source, 13));
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 388, "Invalid check digit '%1$c', expecting '%2$c'",
+                                source[13], gs1_check_digit(source, 13));
         }
         length--; /* Ignore */
     }
@@ -638,8 +638,8 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     if (length == 14) { /* Verify check digit */
         if (gs1_check_digit(source, 13) != source[13]) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 389, "Invalid check digit '%1$c', expecting '%2$c'",
-                            source[13], gs1_check_digit(source, 13));
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 389, "Invalid check digit '%1$c', expecting '%2$c'",
+                                source[13], gs1_check_digit(source, 13));
         }
         length--; /* Ignore */
     }

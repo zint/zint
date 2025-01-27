@@ -79,8 +79,8 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 359, "Does not end with \"A\", \"B\", \"C\" or \"D\"");
     }
     if ((i = not_sane_lookup(CALCIUM, sizeof(CALCIUM) - 1, source, length, posns))) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 357,
-                        "Invalid character at position %1$d in input (\"%2$s\" only)", i, CALCIUM);
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 357,
+                            "Invalid character at position %1$d in input (\"%2$s\" only)", i, CALCIUM);
     }
     /* And must not use A, B, C or D otherwise (BS EN 798:1995 4.3.2) */
     if ((i = not_sane(CALCIUM_INNER_F, source + 1, length - 2))) {

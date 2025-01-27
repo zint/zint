@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -281,10 +281,10 @@ static void test_dump_args(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
-        char *data2;
-        char *input;
-        char *input2;
+        const char *data;
+        const char *data2;
+        const char *input;
+        const char *input2;
         int input_mode;
         int output_options;
         int batch;
@@ -294,13 +294,13 @@ static void test_dump_args(const testCtx *const p_ctx) {
         int fullmultibyte;
         int mask;
         int mode;
-        char *primary;
+        const char *primary;
         int rows;
         int secure;
         int square;
         int vers;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -355,8 +355,8 @@ static void test_dump_args(const testCtx *const p_ctx) {
     char cmd[4096];
     char buf[4096];
 
-    char *input1_filename = "test_dump_args1.txt";
-    char *input2_filename = "test_dump_args2.txt";
+    const char *input1_filename = "test_dump_args1.txt";
+    const char *input2_filename = "test_dump_args2.txt";
     int have_input1;
     int have_input2;
 
@@ -413,14 +413,14 @@ static void test_dump_segs(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
-        char *data_seg1;
-        char *data_seg2;
+        const char *data;
+        const char *data_seg1;
+        const char *data_seg2;
         int eci;
         int eci_seg1;
         int eci_seg2;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -498,13 +498,13 @@ static void test_input(const testCtx *const p_ctx) {
         int batch;
         int input_mode;
         int mirror;
-        char *filetype;
-        char *input_filename;
-        char *input;
-        char *outfile;
+        const char *filetype;
+        const char *input_filename;
+        const char *input;
+        const char *outfile;
 
         int num_expected;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -544,14 +544,14 @@ static void test_input(const testCtx *const p_ctx) {
     char cmd[4096];
     char buf[4096];
 
-    char *input_filename;
-    char *outfile;
+    const char *input_filename;
+    const char *outfile;
 
     testStart("test_input");
 
     for (i = 0; i < data_size; i++) {
         int j;
-        char *slash;
+        const char *slash;
 
         if (testContinue(p_ctx, i)) continue;
 #ifdef _WIN32
@@ -610,9 +610,9 @@ static void test_stdin_input(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
-        char *input;
-        char *outfile;
+        const char *data;
+        const char *input;
+        const char *outfile;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -624,7 +624,7 @@ static void test_stdin_input(const testCtx *const p_ctx) {
     char cmd[4096];
     char buf[4096];
 
-    char *input_filename = "-";
+    const char *input_filename = "-";
 
     testStart("test_stdin_input");
 
@@ -656,11 +656,11 @@ static void test_batch_input(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
-        char *input;
-        char *input2;
+        const char *data;
+        const char *input;
+        const char *input2;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -674,8 +674,8 @@ static void test_batch_input(const testCtx *const p_ctx) {
     char cmd[4096];
     char buf[4096];
 
-    char *input1_filename = "test_batch_input1.txt";
-    char *input2_filename = "test_batch_input2.txt";
+    const char *input1_filename = "test_batch_input1.txt";
+    const char *input2_filename = "test_batch_input2.txt";
     int have_input1;
     int have_input2;
 
@@ -717,10 +717,10 @@ static void test_batch_large(const testCtx *const p_ctx) {
     struct item {
         int b;
         int mirror;
-        char *pattern;
+        const char *pattern;
         int length;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -735,7 +735,7 @@ static void test_batch_large(const testCtx *const p_ctx) {
     char data_buf[8192];
     char buf[16384];
 
-    char *input_filename = "test_batch_large.txt";
+    const char *input_filename = "test_batch_large.txt";
     int have_input;
 
     testStart("test_batch_large");
@@ -790,7 +790,7 @@ static void test_checks(const testCtx *const p_ctx) {
         double dotsize;
         double textgap;
         int eci;
-        char *filetype;
+        const char *filetype;
         double height;
         double guard_descent;
         int mask;
@@ -805,7 +805,7 @@ static void test_checks(const testCtx *const p_ctx) {
         int vwhitesp;
         int w;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -1163,12 +1163,12 @@ static void test_other_opts(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
+        const char *data;
         int input_mode;
-        char *opt;
-        char *opt_data;
+        const char *opt;
+        const char *opt_data;
 
-        char *expected;
+        const char *expected;
         int strstr_cmp;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -1284,11 +1284,11 @@ static void test_combos(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
-        char *opts;
+        const char *data;
+        const char *opts;
 
-        char *expected;
-        char *outfilename;
+        const char *expected;
+        const char *outfilename;
         int strstr_cmp;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -1334,10 +1334,10 @@ static void test_exit_status(const testCtx *const p_ctx) {
 
     struct item {
         int b;
-        char *data;
+        const char *data;
         int input_mode;
-        char *opt;
-        char *opt_data;
+        const char *opt;
+        const char *opt_data;
 
         int expected;
     };

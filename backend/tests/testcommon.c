@@ -287,7 +287,7 @@ static int validate_int_range(const char src[], int *p_val, int *p_val_end) {
 /* Begin test program, parse args */
 void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
     int i, ran;
-    char *optarg;
+    char *opt_arg;
     char *func = NULL;
     char func_buf[256 + 5];
     char *func_not = NULL;
@@ -324,8 +324,8 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
                 fprintf(stderr, "***testRun: -d debug value missing, ignoring***\n");
             } else {
                 int d; /* Allow multiple debug flags, OR-ing */
-                optarg = argv[++i];
-                if (!validate_int(optarg, &d)) {
+                opt_arg = argv[++i];
+                if (!validate_int(opt_arg, &d)) {
                     fprintf(stderr, "***testRun: -d debug value invalid, ignoring***\n");
                 } else {
                     ctx.debug |= d;
@@ -335,13 +335,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
             if (i + 1 == argc) {
                 fprintf(stderr, "***testRun: -f func value missing, ignoring***\n");
             } else {
-                optarg = argv[++i];
-                if (strlen(optarg) < 256) {
-                    if (strncmp(optarg, "test_", 5) == 0) {
-                        strcpy(func_buf, optarg);
+                opt_arg = argv[++i];
+                if (strlen(opt_arg) < 256) {
+                    if (strncmp(opt_arg, "test_", 5) == 0) {
+                        strcpy(func_buf, opt_arg);
                     } else {
                         strcpy(func_buf, "test_");
-                        strcat(func_buf, optarg);
+                        strcat(func_buf, opt_arg);
                     }
                     func = func_buf;
                 } else {
@@ -353,13 +353,13 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
             if (i + 1 == argc) {
                 fprintf(stderr, "***testRun: -n func exclude value missing, ignoring***\n");
             } else {
-                optarg = argv[++i];
-                if (strlen(optarg) < 256) {
-                    if (strncmp(optarg, "test_", 5) == 0) {
-                        strcpy(func_not_buf, optarg);
+                opt_arg = argv[++i];
+                if (strlen(opt_arg) < 256) {
+                    if (strncmp(opt_arg, "test_", 5) == 0) {
+                        strcpy(func_not_buf, opt_arg);
                     } else {
                         strcpy(func_not_buf, "test_");
-                        strcat(func_not_buf, optarg);
+                        strcat(func_not_buf, opt_arg);
                     }
                     func_not = func_not_buf;
                 } else {
@@ -379,8 +379,8 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
             if (i + 1 == argc) {
                 fprintf(stderr, "***testRun: -i index value missing, ignoring***\n");
             } else {
-                optarg = argv[++i];
-                if (!validate_int_range(optarg, &ctx.index, &ctx.index_end)) {
+                opt_arg = argv[++i];
+                if (!validate_int_range(opt_arg, &ctx.index, &ctx.index_end)) {
                     fprintf(stderr, "***testRun: -i index value invalid, ignoring***\n");
                     ctx.index = ctx.index_end = -1;
                 }
@@ -389,10 +389,10 @@ void testRun(int argc, char *argv[], testFunction funcs[], int funcs_size) {
             if (i + 1 == argc) {
                 fprintf(stderr, "***testRun: -x exclude value missing, ignoring***\n");
             } else {
-                optarg = argv[++i];
+                opt_arg = argv[++i];
                 if (exclude_idx + 1 == ZINT_TEST_CTX_EXC_MAX) {
                     fprintf(stderr, "***testRun: too many -x exclude values, ignoring***\n");
-                } else if (!validate_int_range(optarg, &ctx.exclude[exclude_idx], &ctx.exclude_end[exclude_idx])) {
+                } else if (!validate_int_range(opt_arg, &ctx.exclude[exclude_idx], &ctx.exclude_end[exclude_idx])) {
                     fprintf(stderr, "***testRun: -x exclude value invalid, ignoring***\n");
                     ctx.exclude[exclude_idx] = ctx.exclude_end[exclude_idx] = -1;
                 } else {

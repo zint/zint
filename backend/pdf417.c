@@ -1,7 +1,7 @@
 /* pdf417.c - Handles PDF417 stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
     Portions Copyright (C) 2004 Grandzebu
     Bug Fixes thanks to KL Chin <klchin@users.sourceforge.net>
 
@@ -1130,9 +1130,9 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
                             "Structured Append count '%d' out of range (2 to 99999)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 741,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 741,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id_len;
@@ -1152,9 +1152,9 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
                                     "Invalid Structured Append ID (digits only)");
                 }
                 if (ids[id_cnt] > 899) {
-                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 744,
-                                    "Structured Append ID triplet %1$d value '%2$03d' out of range (000 to 899)",
-                                    id_cnt + 1, ids[id_cnt]);
+                    return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 744,
+                                        "Structured Append ID triplet %1$d value '%2$03d' out of range (000 to 899)",
+                                        id_cnt + 1, ids[id_cnt]);
                 }
             }
         }
@@ -1280,8 +1280,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
             }
         }
         if (rows != symbol->option_3) {
-            error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 746,
-                                    "Number of rows increased from %1$d to %2$d", symbol->option_3, rows);
+            error_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 746,
+                                        "Number of rows increased from %1$d to %2$d", symbol->option_3, rows);
         }
     } else { /* Rows automatic, cols automatic or given */
         if (cols < 1) { /* Cols automatic */
@@ -1302,8 +1302,8 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
                                 "Input too long, requires too many codewords (maximum 928)");
             }
             if (symbol->option_2 && cols != symbol->option_2) { /* Note previously did not warn if cols auto-upped */
-                error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 748,
-                                        "Number of columns increased from %1$d to %2$d", symbol->option_2, cols);
+                error_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 748,
+                                            "Number of columns increased from %1$d to %2$d", symbol->option_2, cols);
             }
         }
     }
@@ -1547,9 +1547,9 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     if (symbol->option_2 >= 1 && mclength + structapp_cp > col_max_codewords[symbol->option_2]) {
         /* The user specified the column but the data doesn't fit - go to automatic */
         if (symbol->warn_level == WARN_FAIL_ALL) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 469,
-                            "Input too long for number of columns '%1$d', requires %2$d codewords (maximum %3$d)",
-                            symbol->option_2, mclength + structapp_cp, col_max_codewords[symbol->option_2]);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 469,
+                                "Input too long for number of columns '%1$d', requires %2$d codewords (maximum %3$d)",
+                                symbol->option_2, mclength + structapp_cp, col_max_codewords[symbol->option_2]);
         }
         error_number = errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 470,
                                 "Input too long for number of columns '%d', ignoring", symbol->option_2);

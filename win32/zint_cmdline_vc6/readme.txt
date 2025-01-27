@@ -1,5 +1,5 @@
 Harald Oehlmann
-2025-01-22
+2025-01-27
 
 Why to use VC6 ?
 It avoids DLL Hell as the runtime is present on all Windows Versions since XP.
@@ -19,7 +19,7 @@ cd $ZR\..\zlib
 nmake -f win32\Makefile.msc
 -> generates zlib.lib, zlib1.dll
 
-b) lpng (version: 1.6.44 - note 1.6.45 has non-C89 variable declaration)
+b) lpng (current version: 1.6.46)
 * put libpng to $ZR\..\lpng
 cd $ZR\..\lpng
 nmake -f scripts\makefile.vcwin32

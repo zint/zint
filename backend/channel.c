@@ -216,12 +216,12 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (target_value > max_ranges[channels]) {
         if (channels == 8) {
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 318, "Input value \"%1$d\" out of range (0 to %2$d)",
-                            target_value, max_ranges[channels]);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 318, "Input value \"%1$d\" out of range (0 to %2$d)",
+                                target_value, max_ranges[channels]);
         }
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 335,
-                        "Input value \"%1$d\" out of range (0 to %2$d for %3$d channels)",
-                        target_value, max_ranges[channels], channels);
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 335,
+                            "Input value \"%1$d\" out of range (0 to %2$d for %3$d channels)", target_value,
+                            max_ranges[channels], channels);
     }
 
     CHNCHR(channels, target_value, B, S);

@@ -1531,7 +1531,9 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
 
     symbols_left = last_seg ? dm_codewords_remaining(symbol, tp, process_p) : 3;
 
-    if (debug_print) printf("\nsymbols_left %d, tp %d, process_p %d, last_seg %d, ", symbols_left, tp, process_p, last_seg);
+    if (debug_print) {
+        printf("\nsymbols_left %d, tp %d, process_p %d, last_seg %d, ", symbols_left, tp, process_p, last_seg);
+    }
 
     if (current_mode == DM_C40 || current_mode == DM_TEXT) {
         /* NOTE: changed to follow spec exactly here, only using Shift 1 padded triplets when 2 symbol chars remain.
@@ -1694,9 +1696,9 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
                             "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 721,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 721,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len, id1_err, id2_err;
@@ -1718,19 +1720,19 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
             id2_err = id2 < 1 || id2 > 254;
             if (id1_err || id2_err) {
                 if (id1_err && id2_err) {
-                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 724,
-                                    "Structured Append ID1 '%1$03d' and ID2 '%2$03d' out of range (001 to 254)"
-                                    " (ID \"%3$03d%4$03d\")",
-                                    id1, id2, id1, id2);
+                    return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 724,
+                                        "Structured Append ID1 '%1$03d' and ID2 '%2$03d' out of range (001 to 254)"
+                                        " (ID \"%3$03d%4$03d\")",
+                                        id1, id2, id1, id2);
                 }
                 if (id1_err) {
-                    return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 725,
+                    return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 725,
                                     "Structured Append ID1 '%1$03d' out of range (001 to 254) (ID \"%2$03d%3$03d\")",
                                     id1, id1, id2);
                 }
-                return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 726,
-                                "Structured Append ID2 '%1$03d' out of range (001 to 254) (ID \"%2$03d%3$03d\")",
-                                id2, id1, id2);
+                return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 726,
+                                    "Structured Append ID2 '%1$03d' out of range (001 to 254) (ID \"%2$03d%3$03d\")",
+                                    id2, id1, id2);
             }
         } else {
             id1 = id2 = 1;
@@ -1852,9 +1854,9 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (binlen > dm_matrixbytes[symbolsize]) {
         if ((symbol->option_2 >= 1) && (symbol->option_2 <= DMSIZESCOUNT)) {
             /* The symbol size was given by --ver (option_2) */
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 522,
-                        "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
-                        symbol->option_2, binlen, dm_matrixbytes[symbolsize]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 522,
+                                "Input too long for Version %1$d, requires %2$d codewords (maximum %3$d)",
+                                symbol->option_2, binlen, dm_matrixbytes[symbolsize]);
         }
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 523, "Input too long, requires %d codewords (maximum 1558)",
                         binlen);

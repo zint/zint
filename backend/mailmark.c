@@ -1,7 +1,7 @@
 /* mailmark.c - Royal Mail 4-state and 2D Mailmark barcodes */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -220,7 +220,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         printf("Producing 4-state Mailmark (%d): %s<end>\n", length, local_source);
     }
 
-    if ((i = not_sane(RUBIDIUM_F, (unsigned char *) local_source, length))) {
+    if ((i = not_sane(RUBIDIUM_F, (const unsigned char *) local_source, length))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 581,
                         "Invalid character at position %d in input (alphanumerics and space only)", i);
     }

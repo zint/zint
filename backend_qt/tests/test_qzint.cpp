@@ -1,5 +1,5 @@
 /***************************************************************************
- *   Copyright (C) 2021-2024 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2021-2025 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -446,7 +446,7 @@ private slots:
     void renderTest()
     {
 #ifdef TESTQZINT_GUILESS
-        QSKIP("disabled on Linux for Qt5 > 5.15.13 & Qt6 > 6.4.2 due to memory leaks (ZINT_SANITIZE)");
+        QSKIP("disabled on Linux for Qt5 > 5.15.13 & Qt6 > 6.4.2 due to memory leaks (ZINT_SANITIZE)", "" /*Dummy arg to suppress -Wc++20-extensions*/);
 #endif
         Zint::QZint bc;
 

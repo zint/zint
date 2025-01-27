@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,11 +42,11 @@ static void test_print(const testCtx *const p_ctx) {
         int whitespace_height;
         int option_1;
         int option_2;
-        char *fgcolour;
-        char *bgcolour;
+        const char *fgcolour;
+        const char *bgcolour;
         float scale;
-        char *data;
-        char *expected_file;
+        const char *data;
+        const char *expected_file;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -61,7 +61,7 @@ static void test_print(const testCtx *const p_ctx) {
     struct zint_symbol *symbol;
 
     const char *data_dir = "/backend/tests/data/pcx";
-    char *pcx = "out.pcx";
+    const char *pcx = "out.pcx";
     char expected_file[4096];
     char escaped[1024];
     int escaped_size = 1024;
@@ -109,7 +109,7 @@ static void test_print(const testCtx *const p_ctx) {
         }
         symbol->debug |= debug;
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, pcx);

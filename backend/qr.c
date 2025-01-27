@@ -1,7 +1,7 @@
-/* qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR */
+/*  qr.c Handles QR Code, Micro QR Code, UPNQR and rMQR */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1672,9 +1672,9 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
                             "Structured Append count '%d' out of range (2 to 16)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 751,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 751,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             int id, id_len;
@@ -1726,12 +1726,13 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     if (est_binlen > (8 * max_cw)) {
         if (ecc_level == QR_LEVEL_L) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 567, "Input too long, requires %1$d codewords (maximum %2$d)",
-                            (est_binlen + 7) / 8, max_cw);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 567,
+                                "Input too long, requires %1$d codewords (maximum %2$d)", (est_binlen + 7) / 8,
+                                max_cw);
         }
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 561,
-                        "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
-                        qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 561,
+                            "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
+                            qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
     }
 
     autosize = 40;
@@ -1796,10 +1797,10 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
         }
 
         if (symbol->option_2 < version) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 569,
-                        "Input too long for Version %1$d-%2$c, requires %3$d codewords (maximum %4$d)",
-                        symbol->option_2, qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8,
-                        qr_data_codewords[ecc_level][symbol->option_2 - 1]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 569,
+                                "Input too long for Version %1$d-%2$c, requires %3$d codewords (maximum %4$d)",
+                                symbol->option_2, qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8,
+                                qr_data_codewords[ecc_level][symbol->option_2 - 1]);
         }
     }
 
@@ -2269,9 +2270,9 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Eliminate possible versions depending on binary length and error correction level specified */
     if (binary_count[3] > microqr_data[ecc_level][3][0]) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 565,
-                        "Input too long for Version M4-%1$c, requires %2$d codewords (maximum %3$d)",
-                        qr_ecc_level_names[ecc_level], (binary_count[3] + 7) / 8, microqr_data[ecc_level][3][1]);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 565,
+                            "Input too long for Version M4-%1$c, requires %2$d codewords (maximum %3$d)",
+                            qr_ecc_level_names[ecc_level], (binary_count[3] + 7) / 8, microqr_data[ecc_level][3][1]);
     }
     for (i = 0; i < 3; i++) {
         if (binary_count[i] > microqr_data[ecc_level][i][0]) {
@@ -2303,10 +2304,10 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
         if (symbol->option_2 - 1 >= version) {
             version = symbol->option_2 - 1;
         } else {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 570,
-                            "Input too long for Version M%1$d-%2$c, requires %3$d codewords (maximum %4$d)",
-                            symbol->option_2, qr_ecc_level_names[ecc_level], (binary_count[version] + 7) / 8,
-                            microqr_data[ecc_level][symbol->option_2 - 1][1]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 570,
+                                "Input too long for Version M%1$d-%2$c, requires %3$d codewords (maximum %4$d)",
+                                symbol->option_2, qr_ecc_level_names[ecc_level], (binary_count[version] + 7) / 8,
+                                microqr_data[ecc_level][symbol->option_2 - 1][1]);
         }
     }
 
@@ -2658,9 +2659,9 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     max_cw = rmqr_data_codewords[ecc_level >> 1][31];
 
     if (est_binlen > (8 * max_cw)) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 578,
-                        "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
-                        qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 578,
+                            "Input too long for ECC level %1$c, requires %2$d codewords (maximum %3$d)",
+                            qr_ecc_level_names[ecc_level], (est_binlen + 7) / 8, max_cw);
     }
 
     version = 31; /* Set default to keep compiler happy */
@@ -2719,10 +2720,10 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
     if (est_binlen > (target_codewords * 8)) {
         /* User has selected a symbol too small for the data */
         assert(symbol->option_2 > 0);
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 560,
-                        "Input too long for Version %1$d %2$s-%3$c, requires %4$d codewords (maximum %5$d)",
-                        symbol->option_2, rmqr_version_names[symbol->option_2 - 1], qr_ecc_level_names[ecc_level],
-                        (est_binlen + 7) / 8, target_codewords);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 560,
+                            "Input too long for Version %1$d %2$s-%3$c, requires %4$d codewords (maximum %5$d)",
+                            symbol->option_2, rmqr_version_names[symbol->option_2 - 1], qr_ecc_level_names[ecc_level],
+                            (est_binlen + 7) / 8, target_codewords);
     }
 
     if (debug_print) {

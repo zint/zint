@@ -51,8 +51,8 @@ static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], co
     int i;
 
     if (length > data_len) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %1$d too long (maximum %2$d)", length,
-                        data_len);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %1$d too long (maximum %2$d)", length,
+                            data_len);
     }
 
     if ((i = not_sane(NEON_F, source, length))) {
@@ -260,8 +260,8 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
         check_digit = 5;
     }
     if (have_check_digit && ctoi(have_check_digit) != check_digit) {
-        return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 838, "Invalid check digit '%1$c', expecting '%2$c'",
-                        have_check_digit, itoc(check_digit));
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 838, "Invalid check digit '%1$c', expecting '%2$c'",
+                            have_check_digit, itoc(check_digit));
     }
     /* Add in (back) check digit */
     local_source[12] = local_source[11];

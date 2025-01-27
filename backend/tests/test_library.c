@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -41,7 +41,7 @@ static void test_checks(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
+        const char *data;
         int length;
         int input_mode;
         int eci;
@@ -56,7 +56,7 @@ static void test_checks(const testCtx *const p_ctx) {
         int warn_level;
         int ret;
 
-        char *expected;
+        const char *expected;
         int expected_symbology;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -258,7 +258,7 @@ static void test_checks(const testCtx *const p_ctx) {
             symbol->warn_level = data[i].warn_level;
         }
 
-        ret = ZBarcode_Encode(symbol, TU(data[i].data), length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret, symbol->errtxt);
 
         ret = strcmp(symbol->errtxt, data[i].expected);
@@ -289,7 +289,7 @@ static void test_checks_segs(const testCtx *const p_ctx) {
         int warn_level;
         int ret;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -345,12 +345,12 @@ static void test_input_data(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
-        char *data;
+        const char *data;
         int length;
-        char *composite;
+        const char *composite;
         int ret;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -366,7 +366,7 @@ static void test_input_data(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char *text;
+    const char *text;
 
     testStartSymbol("test_input_data", &symbol);
 
@@ -385,7 +385,7 @@ static void test_input_data(const testCtx *const p_ctx) {
         }
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) text, length);
+        ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode(%d) ret %d != %d (%s)\n", i, data[i].symbology, ret, data[i].ret, symbol->errtxt);
 
         ret = strcmp(symbol->errtxt, data[i].expected);
@@ -397,7 +397,7 @@ static void test_input_data(const testCtx *const p_ctx) {
     if (p_ctx->index == -1 && p_ctx->exclude[0] == -1) {
         char data_buf[ZINT_MAX_DATA_LEN + 10];
         int expected_ret = ZINT_ERROR_TOO_LONG;
-        char *expected_errtxt[] = { "Error 797: Input too long", "Error 340: Input length 17399 too long (maximum 256)" };
+        const char *expected_errtxt[] = { "Error 797: Input too long", "Error 340: Input length 17399 too long (maximum 256)" };
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -527,7 +527,7 @@ static void test_symbologies(const testCtx *const p_ctx) {
         if (testContinue(p_ctx, i)) continue;
 
         symbol->symbology = i;
-        ret = ZBarcode_Encode(symbol, TU(""), 0);
+        ret = ZBarcode_Encode(symbol, TCU(""), 0);
         assert_notequal(ret, ZINT_ERROR_ENCODING_PROBLEM, "i:%d Encoding problem (%s)\n", i, symbol->errtxt);
 
         if (!ZBarcode_ValidID(i)) {
@@ -551,12 +551,12 @@ static void test_input_mode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int input_mode;
         int ret;
 
         int expected_input_mode;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -587,7 +587,7 @@ static void test_input_mode(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, TU(data[i].data), length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->input_mode, data[i].expected_input_mode, "i:%d symbol->input_mode %d != %d\n", i, symbol->input_mode, data[i].expected_input_mode);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d ZBarcode_Encode strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
@@ -605,13 +605,13 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
         int symbology;
         int input_mode;
         int eci;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
         int expected_width;
-        char *expected;
+        const char *expected;
         int compare_previous;
-        char *comment;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 26, "01 05 08 09 0A 0B 0C 0D 0E 1C 1E 1F EB 02 5D 81 21 0D 92 2E 3D FD B6 9A 37 2A CD 61 FB 95", 0, "" },
@@ -707,9 +707,9 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
     char escaped[1024];
     char escaped_composite[1024];
     struct zint_symbol previous_symbol;
-    char *input_filename = "test_escape.txt";
+    const char *input_filename = "test_escape.txt";
 
-    char *text;
+    const char *text;
 
     testStartSymbol("test_escape_char_process", &symbol);
 
@@ -731,7 +731,7 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode | ESCAPE_MODE, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, TU(text), length);
+        ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -796,9 +796,9 @@ static void test_escape_char_process_test(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
-        char *data;
+        const char *data;
         int ret;
-        char *expected;
+        const char *expected;
         int expected_len;
     };
     static const struct item data[] = {
@@ -1126,9 +1126,9 @@ static void test_encode_file_directory(const testCtx *const p_ctx) {
 static void test_encode_file(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol = NULL;
-    char *data = "1";
-    char *filename = "test_encode_file_in.txt";
-    char *outfile = "test_encode_file_out.gif";
+    const char *data = "1";
+    const char *filename = "test_encode_file_in.txt";
+    const char *outfile = "test_encode_file_out.gif";
     FILE *fp;
 
     (void)p_ctx;
@@ -1206,7 +1206,7 @@ static void test_encode_print_outfile_directory(const testCtx *const p_ctx) {
     assert_zero(ret, "testUtilMkDir(%s) %d != 0 (%d: %s)\n", dirname, ret, errno, strerror(errno));
 
     strcpy(symbol->outfile, dirname);
-    ret = ZBarcode_Encode_and_Print(symbol, TU("1"), 0, 0);
+    ret = ZBarcode_Encode_and_Print(symbol, TCU("1"), 0, 0);
     assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "ret %d != ZINT_ERROR_FILE_ACCESS (%s)\n", ret, symbol->errtxt);
     assert_zero(strcmp(symbol->errtxt, expected), "strcmp(%s, %s) != 0\n", symbol->errtxt, expected);
 
@@ -1222,9 +1222,9 @@ static void test_bad_args(const testCtx *const p_ctx) {
     int ret;
     unsigned int uret;
     struct zint_symbol *symbol = NULL;
-    char *data = "1";
-    char *filename = "1.png";
-    char *empty = "";
+    const char *data = "1";
+    const char *filename = "1.png";
+    const char *empty = "";
     struct zint_seg seg = { TU("1"), -1, 4 };
     struct zint_seg seg_empty = { TU(""), -1, 4 };
     struct zint_seg seg_too_long = { TU("1"), ZINT_MAX_DATA_LEN + 1, 4 };
@@ -1260,16 +1260,16 @@ static void test_bad_args(const testCtx *const p_ctx) {
     assert_zero(uret, "ZBarcode_Cap(10, ~0) uret 0x%X != 0\n", uret);
 
     /* NULL symbol */
-    assert_equal(ZBarcode_Encode(NULL, TU(data), 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(NULL, data, 1) != ZINT_ERROR_INVALID_DATA\n");
+    assert_equal(ZBarcode_Encode(NULL, TCU(data), 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(NULL, data, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_Segs(NULL, &seg, 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs(NULL, &seg, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Print(NULL, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Print(NULL, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Buffer(NULL, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Buffer(NULL, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Buffer_Vector(NULL, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Buffer_Vector(NULL, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_equal(ZBarcode_Encode_and_Print(NULL, TU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Print(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_equal(ZBarcode_Encode_and_Print(NULL, TCU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Print(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_Segs_and_Print(NULL, &seg, 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Seg_and_Print(NULL, &seg, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_equal(ZBarcode_Encode_and_Buffer(NULL, TU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_equal(ZBarcode_Encode_and_Buffer(NULL, TCU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_Segs_and_Buffer(NULL, &seg, 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs_and_Buffer(NULL, &seg, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_equal(ZBarcode_Encode_and_Buffer_Vector(NULL, TU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer_Vector(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_equal(ZBarcode_Encode_and_Buffer_Vector(NULL, TCU(data), 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer_Vector(NULL, data, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_Segs_and_Buffer_Vector(NULL, &seg, 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs_and_Buffer_Vector(NULL, &seg, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_File(NULL, filename), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File(NULL, filename) != ZINT_ERROR_INVALID_DATA\n");
     assert_equal(ZBarcode_Encode_File_and_Print(NULL, filename, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_File_and_Print(NULL, filename, 0) != ZINT_ERROR_INVALID_DATA\n");
@@ -1315,23 +1315,23 @@ static void test_bad_args(const testCtx *const p_ctx) {
 
     /* Empty data/segs/filename */
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode(symbol, TU(empty), 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode(symbol, TU(empty), 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
+    assert_equal(ZBarcode_Encode(symbol, TCU(empty), 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode(symbol, empty, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode(symbol, TCU(empty), 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_Segs(symbol, &seg_empty, 1), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs(symbol, &seg_empty, 1) != ZINT_ERROR_INVALID_DATA\n");
     assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_Segs(symbol, &seg_empty, 1) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode_and_Print(symbol, TU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Print(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Print(symbol, TU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
+    assert_equal(ZBarcode_Encode_and_Print(symbol, TCU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Print(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Print(symbol, TCU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode_and_Buffer(symbol, TU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Buffer(symbol, TU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
+    assert_equal(ZBarcode_Encode_and_Buffer(symbol, TCU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Buffer(symbol, TCU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_Segs_and_Buffer(symbol, &seg_empty, 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs_and_Buffer(symbol, &seg_empty, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_Segs_and_Buffer(symbol, &seg_empty, 1, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode_and_Buffer_Vector(symbol, TU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer_Vector(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
-    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Buffer_Vector(symbol, TU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
+    assert_equal(ZBarcode_Encode_and_Buffer_Vector(symbol, TCU(empty), 0, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_and_Buffer_Vector(symbol, empty, 0, 0) != ZINT_ERROR_INVALID_DATA\n");
+    assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_and_Buffer_Vector(symbol, TCU(empty), 0, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_Segs_and_Buffer_Vector(symbol, &seg_empty, 1, 0), ZINT_ERROR_INVALID_DATA, "ZBarcode_Encode_Segs_and_Buffer_Vector(symbol, &seg_empty, 1, 0) != ZINT_ERROR_INVALID_DATA\n");
     assert_zero(strcmp(expected[3], symbol->errtxt), "ZBarcode_Encode_Segs_and_Buffer_Vector(symbol, &seg_empty, 1, 0) strcmp(%s, %s) != 0\n", expected[3], symbol->errtxt);
@@ -1361,8 +1361,8 @@ static void test_bad_args(const testCtx *const p_ctx) {
 
     /* Data/seg too big */
     symbol->errtxt[0] = '\0';
-    assert_equal(ZBarcode_Encode(symbol, TU(empty), ZINT_MAX_DATA_LEN + 1), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) != ZINT_ERROR_TOO_LONG\n");
-    assert_zero(strcmp(expected[7], symbol->errtxt), "ZBarcode_Encode(symbol, TU(empty), ZINT_MAX_DATA_LEN + 1) strcmp(%s, %s) != 0\n", expected[7], symbol->errtxt);
+    assert_equal(ZBarcode_Encode(symbol, TCU(empty), ZINT_MAX_DATA_LEN + 1), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode(symbol, empty, ZINT_MAX_DATA_LEN + 1) != ZINT_ERROR_TOO_LONG\n");
+    assert_zero(strcmp(expected[7], symbol->errtxt), "ZBarcode_Encode(symbol, TCU(empty), ZINT_MAX_DATA_LEN + 1) strcmp(%s, %s) != 0\n", expected[7], symbol->errtxt);
     symbol->errtxt[0] = '\0';
     assert_equal(ZBarcode_Encode_Segs(symbol, &seg_too_long, 1), ZINT_ERROR_TOO_LONG, "ZBarcode_Encode_Segs(symbol, &seg_too_long, 1) != ZINT_ERROR_TOO_LONG\n");
     assert_zero(strcmp(expected[7], symbol->errtxt), "ZBarcode_Encode_Segs(symbol, &seg_too_long, 1) strcmp(%s, %s) != 0\n", expected[7], symbol->errtxt);
@@ -1611,9 +1611,9 @@ static void test_error_tag(const testCtx *const p_ctx) {
         int debug_test;
         int error_number;
         int warn_level;
-        char *data;
+        const char *data;
         int ret;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -1702,7 +1702,7 @@ static void test_zero_outfile(const testCtx *const p_ctx) {
 
     int ret;
     struct zint_symbol *symbol = NULL;
-    char *data = "1234";
+    const char *data = "1234";
 
     (void)p_ctx;
 
@@ -1714,7 +1714,7 @@ static void test_zero_outfile(const testCtx *const p_ctx) {
     assert_nonzero(symbol->outfile[0], "ZBarcode_Create() outfile zero\n");
     symbol->outfile[0] = '\0';
 
-    ret = ZBarcode_Encode(symbol, TU(data), 0);
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "ZBarcode_Encode(%s) ret %d != 0 (%s)\n", data, ret, symbol->errtxt);
     assert_zero(symbol->outfile[0], "ZBarcode_Encode() outfile non-zero\n");
 
@@ -1735,7 +1735,7 @@ static void test_clear(const testCtx *const p_ctx) {
 
     int ret;
     struct zint_symbol *symbol = NULL;
-    char *data = "1234";
+    const char *data = "1234";
 
     (void)p_ctx;
 
@@ -1754,7 +1754,7 @@ static void test_clear(const testCtx *const p_ctx) {
 
     /* Raster */
 
-    ret = ZBarcode_Encode(symbol, TU(data), 0);
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
 
     assert_nonzero(symbol->rows, "ZBarcode_Encode() rows 0\n");
@@ -1785,7 +1785,7 @@ static void test_clear(const testCtx *const p_ctx) {
 
     /* Vector */
 
-    ret = ZBarcode_Encode(symbol, TU(data), 0);
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
 
     assert_nonzero(symbol->rows, "ZBarcode_Encode() rows 0\n");
@@ -1855,7 +1855,7 @@ static void test_reset(const testCtx *const p_ctx) {
     int ret;
     struct zint_symbol *symbol;
     struct zint_symbol *symbol_def;
-    char *data = "1234";
+    const char *data = "1234";
 
     (void)p_ctx;
 
@@ -1871,7 +1871,7 @@ static void test_reset(const testCtx *const p_ctx) {
 
     /* Raster */
 
-    ret = ZBarcode_Encode(symbol, TU(data), 0);
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
 
     assert_nonzero(symbol->rows, "ZBarcode_Encode() rows 0\n");
@@ -1922,7 +1922,7 @@ static void test_reset(const testCtx *const p_ctx) {
 
     set_symbol_fields(symbol);
 
-    ret = ZBarcode_Encode(symbol, TU(data), 0);
+    ret = ZBarcode_Encode(symbol, TCU(data), 0);
     assert_zero(ret, "ZBarcode_Encode() ret %d != 0 (%s)\n", ret, symbol->errtxt);
 
     assert_nonzero(symbol->rows, "ZBarcode_Encode() rows 0\n");
@@ -1984,7 +1984,7 @@ static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
         float x_dim;
         float dpmm;
         int dpi;
-        char *filetype;
+        const char *filetype;
         float expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
@@ -2116,7 +2116,7 @@ static void test_xdimdp_from_scale(const testCtx *const p_ctx) {
         float scale;
         float dpmm; /* Note testing "normal" case that want X-dim, not dpmm */
         int dpi;
-        char *filetype;
+        const char *filetype;
         float expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */

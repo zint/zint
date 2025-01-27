@@ -454,8 +454,9 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
         }
 
         if (input_check != output_check) {
-            return errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 338,
-                            "Invalid check digit '%1$c' (position 9), expecting '%2$c'", input_check, output_check);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 338,
+                                "Invalid check digit '%1$c' (position 9), expecting '%2$c'", input_check,
+                                output_check);
         }
     }
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2023-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2023-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -45,12 +45,12 @@ static void test_svg(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int output_options;
-        char *outfile;
-        char *data;
+        const char *outfile;
+        const char *data;
         int length;
         int ret;
 
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -85,7 +85,7 @@ static void test_svg(const testCtx *const p_ctx) {
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, data[i].data, data[i].length, debug);
         strcpy(symbol->outfile, data[i].outfile);
 
-        ret = ZBarcode_Encode_and_Print(symbol, TU(data[i].data), length, 0);
+        ret = ZBarcode_Encode_and_Print(symbol, TCU(data[i].data), length, 0);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_and_Print(%d) ret %d != %d (%s)\n",
                         i, data[i].symbology, ret, data[i].ret, symbol->errtxt);
 
@@ -445,7 +445,7 @@ static void test_large(const testCtx *const p_ctx) {
     symbol->option_2 = 84;
     symbol->scale = 10.0f; /* Could go up to 86.5 (pixel buffer 0x3FB913B1, file size 8868579) but very very slow */
 
-    ret = ZBarcode_Encode_and_Print(symbol, TU(data), -1, 0);
+    ret = ZBarcode_Encode_and_Print(symbol, TCU(data), -1, 0);
     assert_zero(ret, "ZBarcode_Encode_and_Print ret %d != 0 (%s)\n", ret, symbol->errtxt);
     assert_nonnull(symbol->memfile, "memfile NULL (%s)\n", symbol->errtxt);
     assert_equal(symbol->memfile_size, expected_size, "memfile_size %d != expected %d\n",

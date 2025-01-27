@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -54,7 +54,7 @@ static int is_sane_orig(const char test_string[], const unsigned char source[], 
 static void test_to_int(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
     };
@@ -88,9 +88,9 @@ static void test_to_int(const testCtx *const p_ctx) {
 static void test_to_upper(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -126,7 +126,7 @@ static void test_to_upper(const testCtx *const p_ctx) {
 static void test_chr_cnt(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         char c;
         int ret;
@@ -159,11 +159,11 @@ static void test_not_sane(const testCtx *const p_ctx) {
 
     struct item {
         unsigned int flg;
-        char *data;
+        const char *data;
         int length;
         int ret;
 
-        char *orig_test;
+        const char *orig_test;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -292,9 +292,9 @@ static void test_not_sane(const testCtx *const p_ctx) {
 static void test_not_sane_lookup(const testCtx *const p_ctx) {
 
     struct item {
-        char *test_string;
+        const char *test_string;
         int test_length;
-        char *data;
+        const char *data;
         int length;
         int ret;
 
@@ -339,8 +339,8 @@ static void test_errtxt(const testCtx *const p_ctx) {
         int debug_test;
         int error_number;
         int err_id;
-        char *msg;
-        char *expected;
+        const char *msg;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -385,13 +385,13 @@ static void test_errtxtf(const testCtx *const p_ctx) {
         int debug_test;
         int error_number;
         int err_id;
-        char *fmt;
+        const char *fmt;
         int num_args;
         int i_arg;
         const char *s_arg;
         double f_arg;
         int ret;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -536,7 +536,7 @@ static void test_errtxtf(const testCtx *const p_ctx) {
 static void test_cnt_digits(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int position;
         int max;
@@ -572,10 +572,10 @@ static void test_cnt_digits(const testCtx *const p_ctx) {
 static void test_is_valid_utf8(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
-        char *comment;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -612,13 +612,13 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int disallow_4byte;
         int ret;
         int ret_length;
         unsigned int expected_vals[20];
-        char *comment;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -666,11 +666,11 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
-        char *expected;
-        char *comment;
+        const char *expected;
+        const char *comment;
     };
     /*
        NBSP U+00A0 (\240, 160), UTF-8 C2A0 (\302\240)
@@ -748,8 +748,8 @@ static void test_set_height(const testCtx *const p_ctx) {
 
         int ret;
         float expected_height;
-        char *expected_errtxt;
-        char *comment;
+        const char *expected_errtxt;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -803,7 +803,7 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
     struct item {
         int codewords[50];
         int length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {

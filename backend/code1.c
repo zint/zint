@@ -1,7 +1,7 @@
 /* code1.c - USS Code One */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1046,9 +1046,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
                             "Structured Append count '%d' out of range (2 to 128)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 712,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 712,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         if (symbol->structapp.id[0]) {
             return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 713, "Structured Append ID not available for Code One");
@@ -1249,9 +1249,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         }
 
         if ((symbol->option_2 != 0) && (symbol->option_2 < size)) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 518,
-                            "Input too long for Version %1$c, requires %2$d codewords (maximum %3$d)",
-                            'A' + symbol->option_2 - 1, data_length, c1_data_length[symbol->option_2 - 1]);
+            return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 518,
+                                "Input too long for Version %1$c, requires %2$d codewords (maximum %3$d)",
+                                'A' + symbol->option_2 - 1, data_length, c1_data_length[symbol->option_2 - 1]);
         }
         data_cw = c1_data_length[size - 1];
 

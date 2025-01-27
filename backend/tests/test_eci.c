@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -79,7 +79,7 @@ static void test_bom(const testCtx *const p_ctx) {
 
     length = (int) strlen(data);
 
-    ret = ZBarcode_Encode(symbol, (unsigned char *) data, length);
+    ret = ZBarcode_Encode(symbol, TCU(data), length);
     assert_equal(ret, ZINT_WARN_USES_ECI, "ZBarcode_Encode ret %d != ZINT_WARN_USES_ECI\n", ret);
     assert_equal(symbol->eci, 21, "eci %d != 21\n", symbol->eci); /* ECI 21 == Windows-1250 */
 
@@ -109,7 +109,7 @@ static void test_iso_8859_16(const testCtx *const p_ctx) {
 
     length = (int) strlen(data);
 
-    ret = ZBarcode_Encode(symbol, (unsigned char *) data, length);
+    ret = ZBarcode_Encode(symbol, TCU(data), length);
     assert_equal(ret, ZINT_WARN_USES_ECI, "ZBarcode_Encode ret %d != ZINT_WARN_USES_ECI\n", ret);
     assert_equal(symbol->eci, 18, "eci %d != 18\n", symbol->eci); /* ECI 18 == ISO 8859-16 */
 
@@ -126,10 +126,10 @@ static void test_reduced_charset_input(const testCtx *const p_ctx) {
         int symbology;
         int input_mode;
         int eci;
-        char *data;
+        const char *data;
         int ret;
         int expected_eci;
-        char *comment;
+        const char *comment;
     };
     /*
        é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS
@@ -396,7 +396,7 @@ static void test_reduced_charset_input(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (data[i].expected_eci != -1) {
@@ -724,7 +724,7 @@ static void test_utf8_to_eci_ascii(const testCtx *const p_ctx) {
 
     struct item {
         int eci;
-        char *data;
+        const char *data;
         int length;
         int ret;
     };
@@ -783,11 +783,11 @@ static void test_utf8_to_eci_ascii(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_utf16be(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -848,11 +848,11 @@ static void test_utf8_to_eci_utf16be(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_utf16le(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -913,11 +913,11 @@ static void test_utf8_to_eci_utf16le(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_utf32be(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -977,11 +977,11 @@ static void test_utf8_to_eci_utf32be(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_utf32le(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
@@ -1041,7 +1041,7 @@ static void test_utf8_to_eci_utf32le(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_sjis(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
@@ -1097,7 +1097,7 @@ static void test_utf8_to_eci_sjis(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_big5(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
@@ -1143,7 +1143,7 @@ static void test_utf8_to_eci_big5(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_gb2312(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
@@ -1189,7 +1189,7 @@ static void test_utf8_to_eci_gb2312(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_euc_kr(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
@@ -1235,7 +1235,7 @@ static void test_utf8_to_eci_euc_kr(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_gbk(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;
@@ -1281,7 +1281,7 @@ static void test_utf8_to_eci_gbk(const testCtx *const p_ctx) {
 static void test_utf8_to_eci_gb18030(const testCtx *const p_ctx) {
 
     struct item {
-        char *data;
+        const char *data;
         int length;
         int ret;
         int expected_length;

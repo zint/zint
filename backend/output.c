@@ -1,7 +1,7 @@
 /*  output.c - Common routines for raster/vector
 
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -56,8 +56,8 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
                             name);
         }
         if (not_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
-                            "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
+                                "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
         }
 
         return 0;

@@ -1,7 +1,7 @@
 /* ps.c - Post Script output */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -198,8 +198,8 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 646, "Vector header NULL");
     }
     if (!fm_open(fmp, symbol, "w")) {
-        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 645, "Could not open EPS output file (%1$d: %2$s)", fmp->err,
-                        strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 645, "Could not open EPS output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
 
     if (is_rgb) {
@@ -507,14 +507,14 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     }
 
     if (fm_error(fmp)) {
-        errtxtf(0, symbol, 647, "Incomplete write of EPS output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        ZEXT errtxtf(0, symbol, 647, "Incomplete write of EPS output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 649, "Failure on closing EPS output file (%1$d: %2$s)",
-                        fmp->err, strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 649, "Failure on closing EPS output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
 
     return 0;

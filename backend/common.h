@@ -245,6 +245,12 @@ INTERNAL void expand(struct zint_symbol *symbol, const char data[], const int le
    omitted */
 INTERNAL int errtxt(const int error_number, struct zint_symbol *symbol, const int err_id, const char *msg);
 
+#if defined(__GNUC__) && !defined(__clang__)
+#define ZEXT __extension__ /* Suppress gcc pedantic warnings including when using format "%<n>$" with `errtxtf()` */
+#else
+#define ZEXT
+#endif
+
 /* Set `symbol->errtxt` to "err_id: msg" with restricted subset of `printf()` formatting, returning `error_number`.
    If `err_id` is -1, the "err_id: " prefix is omitted. Only the following specifiers are supported: "c", "d", "f",
    "g" and "s", with no modifiers apart from "<n>$" numbering for l10n ("<n>" 1-9), in which case all specifiers must

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,7 +32,7 @@
 #include "testcommon.h"
 #include <sys/stat.h>
 
-INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf);
+INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf);
 
 static void test_pixel_plot(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
@@ -40,7 +40,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     struct item {
         int width;
         int height;
-        char *pattern;
+        const char *pattern;
         int repeat;
         int ret;
     };
@@ -61,7 +61,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol *symbol;
 
-    char *bmp = "out.bmp";
+    const char *bmp = "out.bmp";
 
     char data_buf[8 * 2 + 1];
 
@@ -99,7 +99,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
         symbol->bitmap = (unsigned char *) data_buf;
 
-        ret = bmp_pixel_plot(symbol, (unsigned char *) data_buf);
+        ret = bmp_pixel_plot(symbol, TCU(data_buf));
         assert_equal(ret, data[i].ret, "i:%d bmp_pixel_plot ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
@@ -135,10 +135,10 @@ static void test_print(const testCtx *const p_ctx) {
         int whitespace_height;
         int option_1;
         int option_2;
-        char *fgcolour;
-        char *bgcolour;
-        char *data;
-        char *expected_file;
+        const char *fgcolour;
+        const char *bgcolour;
+        const char *data;
+        const char *expected_file;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_PDF417, -1, -1, 5, -1, -1, -1, "147AD0", "FC9630", "123", "pdf417_fg_bg.bmp" },
@@ -195,7 +195,7 @@ static void test_print(const testCtx *const p_ctx) {
             strcpy(symbol->bgcolour, data[i].bgcolour);
         }
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, bmp);

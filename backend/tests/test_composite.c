@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,8 +36,8 @@ static void test_eanx_leading_zeroes(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
@@ -92,7 +92,7 @@ static void test_eanx_leading_zeroes(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -104,7 +104,8 @@ static void test_eanx_leading_zeroes(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_helper_generate(const struct zint_symbol *symbol, int ret, int i, char *data, char *composite, int option_1, char *comment, int bwipp_cmp) {
+static void test_helper_generate(const struct zint_symbol *symbol, int ret, int i, const char *data,
+                const char *composite, int option_1, const char *comment, int bwipp_cmp) {
     char esc_data[1024];
     char esc_composite[4096];
 
@@ -140,15 +141,15 @@ static void test_examples(const testCtx *const p_ctx) {
         int symbology;
         int input_mode;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24723:2010, with noted exceptions, and verified via bwipp_dump.ps against BWIPP */
     static const struct item data[] = {
@@ -1553,7 +1554,7 @@ static void test_examples(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -1598,14 +1599,14 @@ static void test_odd_numbered_numeric(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP, and manually against tec-it.com */
     static const struct item data[] = {
@@ -1726,7 +1727,7 @@ static void test_odd_numbered_numeric(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -1762,15 +1763,15 @@ static void test_ean128_cc_shift(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP except where noted, when shift verified manually (tec-it.com seems to be off by 2 for top shifts > 1) */
     static const struct item data[] = {
@@ -1855,7 +1856,7 @@ static void test_ean128_cc_shift(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -1893,13 +1894,13 @@ static void test_ean128_cc_width(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
+        const char *comment;
     };
     /* Verified manually with BWIPP (except very large tests) */
     static const struct item data[] = {
@@ -1936,7 +1937,7 @@ static void test_ean128_cc_width(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -1960,14 +1961,14 @@ static void test_encodation_0(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP and manually against tec-it.com (with noted exception) */
     static const struct item data[] = {
@@ -2403,7 +2404,7 @@ static void test_encodation_0(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -2439,14 +2440,14 @@ static void test_encodation_10(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP, and manually, with noted exceptions, against tec-it.com */
     static const struct item data[] = {
@@ -2541,7 +2542,7 @@ static void test_encodation_10(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -2577,14 +2578,14 @@ static void test_encodation_11(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP, and manually against tec-it.com (with noted exception) */
     static const struct item data[] = {
@@ -2957,7 +2958,7 @@ static void test_encodation_11(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -2995,13 +2996,13 @@ static void test_addongap(const testCtx *const p_ctx) {
         int symbology;
         int option_1;
         int option_2;
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP */
     static const struct item data[] = {
@@ -3091,7 +3092,7 @@ static void test_addongap(const testCtx *const p_ctx) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    char *composite = "[91]12";
+    const char *composite = "[91]12";
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
@@ -3110,7 +3111,7 @@ static void test_addongap(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -3150,8 +3151,8 @@ static void test_gs1parens(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
@@ -3201,7 +3202,7 @@ static void test_gs1parens(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
@@ -3219,11 +3220,11 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
 
         int ret;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -3282,7 +3283,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
 
         assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
@@ -3303,13 +3304,13 @@ static void test_input(const testCtx *const p_ctx) {
         int option_1;
         int option_2;
         int option_3;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
 
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -3446,7 +3447,7 @@ static void test_input(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
 
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
@@ -3470,13 +3471,13 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int symbology;
         int input_mode;
         int option_1;
-        char *data;
+        const char *data;
         int length;
-        char *composite;
+        const char *composite;
         int ret;
         int bwipp_cmp;
-        char *expected_errtxt;
-        char *comment;
+        const char *expected_errtxt;
+        const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -3516,7 +3517,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
 
         composite_length = (int) strlen(data[i].composite);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
                         i, symbol->errtxt, data[i].expected_errtxt);
@@ -3555,13 +3556,13 @@ static void test_perf(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_1;
-        char *data;
-        char *composite;
+        const char *data;
+        const char *composite;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_EANX_CC, 1, "123456789012",
@@ -3609,7 +3610,7 @@ static void test_perf(const testCtx *const p_ctx) {
             composite_length = (int) strlen(data[i].composite);
 
             start = clock();
-            ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].composite, composite_length);
+            ret = ZBarcode_Encode(symbol, TCU(data[i].composite), composite_length);
             diff_encode += clock() - start;
             assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -35,7 +35,7 @@ static void test_4s_input(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int ret;
         int expected_rows;
         int expected_width;
@@ -115,7 +115,7 @@ static void test_4s_input(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
@@ -138,12 +138,12 @@ static void test_4s_encode_vector(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int ret_encode;
         float w;
         float h;
         int ret_vector;
-        char *expected_daft;
+        const char *expected_daft;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -185,7 +185,7 @@ static void test_4s_encode_vector(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
 
         assert_equal(symbol->rows, 3, "i:%d symbol->rows %d != 3\n", i, symbol->rows);
@@ -207,13 +207,13 @@ static void test_4s_encode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
     struct item {
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     static const struct item data[] = {
         /*  0*/ { "1100000000000XY11     ", 0, 3, 131, "Verified manually against TEC-IT",
@@ -239,7 +239,7 @@ static void test_4s_encode(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -271,11 +271,11 @@ static void test_2d_input(const testCtx *const p_ctx) {
 
     struct item {
         int option_2;
-        char *data;
+        const char *data;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -329,7 +329,7 @@ static void test_2d_input(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
@@ -349,14 +349,14 @@ static void test_2d_encode(const testCtx *const p_ctx) {
 
     struct item {
         int option_2;
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Mailmark Mailing Requirements for Letters and Large Letters 14th Nov 2019 (MMRLLL)
        https://www.royalmailtechnical.com/rmt_docs/User_Guides_2020/Mailmark_Letters_and_Large_Letters_20200723.pdf */
@@ -550,7 +550,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {

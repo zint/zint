@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2019-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2019-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,13 +36,13 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        char *data;
+        const char *data;
         float w;
         float h;
 
         int expected_rows;
         int expected_width;
-        char *expected;
+        const char *expected;
     };
     static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, "1234567890123", 100, 30, 1, 96, "010111010010000001001110000000010100001011111010110100011001100101111111110001011011000111000101" },
@@ -121,7 +121,7 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char *text;
+    const char *text;
 
     char escaped[1024];
     char cmp_buf[1024];
@@ -147,7 +147,7 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
         }
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) text, length);
+        ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -202,14 +202,14 @@ static void test_examples(const testCtx *const p_ctx) {
         int input_mode;
         int option_2;
         int option_3;
-        char *data;
+        const char *data;
 
         int ret;
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified manually against GS1 General Specifications 21.0.1 (GGS) and ISO/IEC 24724:2011, and verified via bwipp_dump.ps against BWIPP */
     static const struct item data[] = {
@@ -883,7 +883,7 @@ static void test_examples(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -939,12 +939,12 @@ static void test_general_field(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        char *data;
+        const char *data;
 
         int expected_rows;
         int expected_width;
-        char *comment;
-        char *expected;
+        const char *comment;
+        const char *expected;
     };
     /* Verified via bwipp_dump.ps against BWIPP and manually against tec-it.com (some separators differ from tec-it.com where noted) */
     static const struct item data[] = {
@@ -1210,7 +1210,7 @@ static void test_general_field(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
         if (p_ctx->generate) {
@@ -1239,13 +1239,13 @@ static void test_binary_buffer_size(const testCtx *const p_ctx) {
 
     struct item {
         int input_mode;
-        char *data;
+        const char *data;
         int ret;
 
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
-        char *comment;
+        const char *expected_errtxt;
+        const char *comment;
     };
     static const struct item data[] = {
         /*  0*/ { -1, "[91]1", 0, 1, 102, "", "Minimum digit" },
@@ -1276,7 +1276,7 @@ static void test_binary_buffer_size(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, BARCODE_DBAR_EXP, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
 
@@ -1302,10 +1302,10 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
-        char *data;
+        const char *data;
 
         int ret;
-        char *expected;
+        const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -1334,7 +1334,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
 
         assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
@@ -1353,11 +1353,11 @@ static void test_input(const testCtx *const p_ctx) {
         int input_mode;
         int option_2;
         int option_3;
-        char *data;
+        const char *data;
         int ret;
         int expected_rows;
         int expected_width;
-        char *expected_errtxt;
+        const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -1488,7 +1488,7 @@ static void test_input(const testCtx *const p_ctx) {
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
 
-        ret = ZBarcode_Encode(symbol, (const unsigned char *) data[i].data, length);
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 

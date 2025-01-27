@@ -66,7 +66,6 @@ extern int pclose(FILE *stream);
 #endif
 
 #if defined(__GNUC__)
-#  pragma GCC diagnostic ignored "-Wpedantic"
 #  pragma GCC diagnostic ignored "-Woverlength-strings"
 #elif defined(_MSC_VER)
 #  pragma warning(disable: 4305) /* truncation from 'double' to 'float' */
@@ -82,8 +81,8 @@ extern const char *testAssertFilename;
 #define testStart(name) (testStartReal("", name, NULL))
 #define testStartSymbol(name, pp_symbol) (testStartReal("", name, pp_symbol))
 #else
-#define testStart(name) (testStartReal(__func__, name, NULL))
-#define testStartSymbol(name, pp_symbol) (testStartReal(__func__, name, pp_symbol))
+#define testStart(name) (ZEXT testStartReal(__func__, name, NULL))
+#define testStartSymbol(name, pp_symbol) (ZEXT testStartReal(__func__, name, pp_symbol))
 #endif
 void testStartReal(const char *func, const char *name, struct zint_symbol **pp_symbol);
 void testFinish(void);
@@ -130,6 +129,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...);
 #endif
 
 #define TU(p) ((unsigned char *) (p))
+#define TCU(p) ((const unsigned char *) (p))
 
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 

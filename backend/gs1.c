@@ -1,7 +1,7 @@
 /* gs1.c - Verifies GS1 data */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1771,7 +1771,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
                 } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
                     errtxtf(0, symbol, 259, "Invalid data length for AI (%02d)", ai_value[i]);
                 } else {
-                    errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn, err_msg);
+                    ZEXT errtxtf(0, symbol, 261, "AI (%1$02d) position %2$d: %3$s", ai_value[i], err_posn, err_msg);
                 }
                 /* For backward compatibility only error on unknown AI or bad length */
                 if (err_no == 1 || err_no == 2) {

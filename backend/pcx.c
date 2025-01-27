@@ -1,7 +1,7 @@
 /* pcx.c - Handles output to ZSoft PCX file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -86,8 +86,8 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
 
     /* Open output file in binary mode */
     if (!fm_open(fmp, symbol, "wb")) {
-        return errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 621, "Could not open PCX output file (%1$d: %2$s)", fmp->err,
-                        strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_ACCESS, symbol, 621, "Could not open PCX output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
 
     fm_write(&header, sizeof(pcx_header_t), 1, fmp);
@@ -151,14 +151,14 @@ INTERNAL int pcx_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
     }
 
     if (fm_error(fmp)) {
-        errtxtf(0, symbol, 622, "Incomplete write of PCX output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
+        ZEXT errtxtf(0, symbol, 622, "Incomplete write of PCX output (%1$d: %2$s)", fmp->err, strerror(fmp->err));
         (void) fm_close(fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(fmp, symbol)) {
-        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 624, "Failure on closing PCX output file (%1$d: %2$s)",
-                        fmp->err, strerror(fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 624, "Failure on closing PCX output file (%1$d: %2$s)",
+                            fmp->err, strerror(fmp->err));
     }
 
     return 0;

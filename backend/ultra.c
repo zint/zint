@@ -1,7 +1,7 @@
 /*  ultra.c - Ultracode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -949,9 +949,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
                             "Structured Append count '%d' out of range (2 to 8)", symbol->structapp.count);
         }
         if (symbol->structapp.index < 1 || symbol->structapp.index > symbol->structapp.count) {
-            return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 597,
-                            "Structured Append index '%1$d' out of range (1 to count %2$d)",
-                            symbol->structapp.index, symbol->structapp.count);
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 597,
+                                "Structured Append index '%1$d' out of range (1 to count %2$d)",
+                                symbol->structapp.index, symbol->structapp.count);
         }
         scr_cw_count = 1;
 
@@ -1059,9 +1059,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     total_cws = data_cw_count + qcc + 3; /* 3 == TCC pattern + RSEC pattern + QCC pattern */
     if (total_cws - 3 > 282) {
         static const int max_data_cws_by_ecc[6] = { 279, 266, 255, 237, 223, 205 };
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 591,
-                        "Input too long for ECC level EC%1$d, requires %2$d codewords (maximum %3$d)",
-                        ecc_level, data_cw_count, max_data_cws_by_ecc[ecc_level]);
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 591,
+                            "Input too long for ECC level EC%1$d, requires %2$d codewords (maximum %3$d)",
+                            ecc_level, data_cw_count, max_data_cws_by_ecc[ecc_level]);
     }
 
     rows = 5;

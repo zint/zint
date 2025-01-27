@@ -1,7 +1,7 @@
 /* auspost.c - Handles Australia Post 4-State Barcode */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -194,7 +194,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Verify that the first 8 characters are numbers */
     memcpy(dpid, localstr, 8);
     dpid[8] = '\0';
-    if ((i = not_sane(NEON_F, (unsigned char *) dpid, 8))) {
+    if ((i = not_sane(NEON_F, (const unsigned char *) dpid, 8))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 405,
                         "Invalid character at position %d in DPID (first 8 characters) (digits only)", i);
     }

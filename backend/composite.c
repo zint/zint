@@ -1,7 +1,7 @@
 /* composite.c - Handles GS1 Composite Symbols */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -1433,7 +1433,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     if (error_number) {
-        errtxtf(0, symbol, -1, "%1$s%2$s", linear->errtxt, " (linear component)");
+        ZEXT errtxtf(0, symbol, -1, "%1$s%2$s", linear->errtxt, " (linear component)");
         if (error_number >= ZINT_ERROR) {
             ZBarcode_Delete(linear);
             return error_number;

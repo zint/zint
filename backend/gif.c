@@ -1,7 +1,7 @@
 /* gif.c - Handles output to gif file */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -276,8 +276,8 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
 
     /* Open output file in binary mode */
     if (!fm_open(State.fmp, symbol, "wb")) {
-        errtxtf(0, symbol, 611, "Could not open GIF output file (%1$d: %2$s)", State.fmp->err,
-                        strerror(State.fmp->err));
+        ZEXT errtxtf(0, symbol, 611, "Could not open GIF output file (%1$d: %2$s)", State.fmp->err,
+                    strerror(State.fmp->err));
         free(State.pOut);
         return ZINT_ERROR_FILE_ACCESS;
     }
@@ -453,15 +453,15 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     fm_putc(';', State.fmp);
 
     if (fm_error(State.fmp)) {
-        errtxtf(0, symbol, 615, "Incomplete write of GIF output (%1$d: %2$s)", State.fmp->err,
-                        strerror(State.fmp->err));
+        ZEXT errtxtf(0, symbol, 615, "Incomplete write of GIF output (%1$d: %2$s)", State.fmp->err,
+                    strerror(State.fmp->err));
         (void) fm_close(State.fmp, symbol);
         return ZINT_ERROR_FILE_WRITE;
     }
 
     if (!fm_close(State.fmp, symbol)) {
-        return errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 617, "Failure on closing GIF output file (%1$d: %2$s)",
-                        State.fmp->err, strerror(State.fmp->err));
+        return ZEXT errtxtf(ZINT_ERROR_FILE_WRITE, symbol, 617, "Failure on closing GIF output file (%1$d: %2$s)",
+                            State.fmp->err, strerror(State.fmp->err));
     }
 
     return 0;
