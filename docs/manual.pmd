@@ -239,8 +239,7 @@ root directory.
 
 The Tcl backend in the `"backend_tcl"` sub-directory may be built using the
 provided TEA (Tcl Extension Architecture) build on Linux, Windows, macOS and
-Android. For Windows, an MSVC6 makefile is also available. See [Annex C. Tcl
-Backend Binding] for further details.
+Android. See [Annex C. Tcl Backend Binding] for further details.
 
 
 # 3. Using Zint Barcode Studio
@@ -5033,9 +5032,11 @@ sudo make install
 ```
 
 For Windows, a Microsoft Visual C++ project file is available at
-`"backend_tcl\zint_tcl.vcxproj"`. There is also a Visual Studio makefile
-available at `"backend_tcl\win\makefile.vc"`, which can be run with `nmake` -
-for details see `"backend_tcl\win\README.txt"`.
+`"backend_tcl\zint_tcl.vcxproj"`. Note that this assumes that Tcl/Tk is
+available in `"C:\Tcl"` and that the libraries are named `"tclstub.lib"` and
+`"tkstub.lib"` - change to match your setup. There is also a Visual Studio
+makefile available at `"backend_tcl\win\makefile.vc"`, which can be run with
+`nmake` - for details see `"backend_tcl\win\README.txt"`.
 
 Once built and installed, invoke the Tcl/Tk CLI `"wish"`:
 
@@ -5046,7 +5047,7 @@ wish
 and ignoring the Tk window click back to the command prompt `"%"` and type:
 
 ```bash
-require package zint
+package require zint
 zint help
 ```
 

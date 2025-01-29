@@ -67,7 +67,7 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
     symbol->option_1 = -1;
     symbol->show_hrt = 1; /* Show human readable text */
     symbol->input_mode = DATA_MODE;
-    symbol->eci = 0; /* Default 0 uses ECI 3 */
+    /* symbol->eci = 0; Default 0 uses ECI 3 */
     symbol->dot_size = 0.8f; /* 0.4 / 0.5 */
     symbol->text_gap = 1.0f;
     symbol->guard_descent = 5.0f;
@@ -607,7 +607,7 @@ static const barcode_seg_func_t barcode_seg_funcs[BARCODE_LAST + 1 - LIB_SEG_FUN
           NULL,        NULL,        NULL,        NULL,        NULL, /*130-134*/
           NULL,        NULL,        NULL,        NULL,        NULL, /*135-139*/
           NULL,     codeone,  gridmatrix,        NULL,       ultra, /*140-144*/
-          rmqr,        NULL,                                        /*145-146*/
+          rmqr,        NULL,        NULL,                           /*145-147*/
 };
 
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);

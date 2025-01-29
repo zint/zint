@@ -1,7 +1,7 @@
 /* zint_tcl.c TCL binding for zint */
 /*
     zint - the open source tcl binding to the zint barcode library
-    Copyright (C) 2014-2024 Harald Oehlmann <oehhar@users.sourceforge.net>
+    Copyright (C) 2014-2025 Harald Oehlmann <oehhar@users.sourceforge.net>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -178,6 +178,8 @@
 - remove the zint command on dll unload
 2024-12-23 GL
 - Added DXFILMEDGE
+2025-01-29 GL
+- MSVC: suppress warning 4996 (_CRT_SECURE_NO_WARNINGS)
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -193,6 +195,11 @@
 #ifdef ERROR_INVALID_DATA
 #undef ERROR_INVALID_DATA
 #endif
+
+#if defined(_MSC_VER) && _MSC_VER > 1200 /* VC6 */
+#pragma warning(disable: 4996) /* function or variable may be unsafe */
+#endif
+
 #endif
 
 #include <zint.h>
@@ -603,7 +610,7 @@ EXPORT BOOL WINAPI DllEntryPoint (HINSTANCE hInstance,
 /* Initialisation Procedures */
 DLLEXPORT int Zint_Init (Tcl_Interp *interp)
 {
-    int * tkFlagPtr;
+    int *tkFlagPtr;
     Tcl_CmdInfo info;
     /*------------------------------------------------------------------------*/
     /* If TCL_STUB is not defined, the following only does a version check    */
@@ -837,8 +844,8 @@ static int Encode(Tcl_Interp *interp, int objc,
     int seg_count = 0;
     int seg_no;
     Tcl_Obj *pSegDataObjs[10] = {0};
-    Tcl_DString segInputs[10];
-    struct zint_seg segs[10];
+    Tcl_DString segInputs[10] = {{0}};
+    struct zint_seg segs[10] = {{0}};
     double xdim = 0.0;
     double resolution = 0.0;
     /*------------------------------------------------------------------------*/
@@ -1643,8 +1650,8 @@ static int Encode(Tcl_Interp *interp, int objc,
                 Tcl_NewStringObj("Unknown photo image", -1));
             fError = 1;
         } else {
-            Tk_PhotoImageBlock sImageBlock;
-            char * pImageRGBA = NULL;
+            Tk_PhotoImageBlock sImageBlock = {0};
+            char *pImageRGBA = NULL;
             if (my_symbol->alphamap == NULL) {
                 sImageBlock.pixelPtr = (unsigned char *) my_symbol->bitmap;
                 sImageBlock.width = my_symbol->bitmap_width;

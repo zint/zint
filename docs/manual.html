@@ -985,9 +985,9 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb10-1"><a href=
 <h2 id="zint-tcl-backend">2.5 Zint Tcl Backend</h2>
 <p>The Tcl backend in the <code>"backend_tcl"</code> sub-directory may
 be built using the provided TEA (Tcl Extension Architecture) build on
-Linux, Windows, macOS and Android. For Windows, an MSVC6 makefile is
-also available. See <a href="#annex-c.-tcl-backend-binding">Annex C. Tcl
-Backend Binding</a> for further details.</p>
+Linux, Windows, macOS and Android. See <a
+href="#annex-c.-tcl-backend-binding">Annex C. Tcl Backend Binding</a>
+for further details.</p>
 <h1 id="using-zint-barcode-studio">3. Using Zint Barcode Studio</h1>
 <p>Zint Barcode Studio is the graphical user interface for Zint. If you
 are starting from a command line interface you can start the GUI by
@@ -8695,9 +8695,12 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb123-1"><a href
 <span id="cb123-4"><a href="#cb123-4" aria-hidden="true" tabindex="-1"></a><span class="fu">make</span></span>
 <span id="cb123-5"><a href="#cb123-5" aria-hidden="true" tabindex="-1"></a><span class="fu">sudo</span> make install</span></code></pre></div>
 <p>For Windows, a Microsoft Visual C++ project file is available at
-<code>"backend_tcl\zint_tcl.vcxproj"</code>. There is also a Visual
-Studio makefile available at <code>"backend_tcl\win\makefile.vc"</code>,
-which can be run with <code>nmake</code> - for details see
+<code>"backend_tcl\zint_tcl.vcxproj"</code>. Note that this assumes that
+Tcl/Tk is available in <code>"C:\Tcl"</code> and that the libraries are
+named <code>"tclstub.lib"</code> and <code>"tkstub.lib"</code> - change
+to match your setup. There is also a Visual Studio makefile available at
+<code>"backend_tcl\win\makefile.vc"</code>, which can be run with
+<code>nmake</code> - for details see
 <code>"backend_tcl\win\README.txt"</code>.</p>
 <p>Once built and installed, invoke the Tcl/Tk CLI
 <code>"wish"</code>:</p>
@@ -8706,7 +8709,7 @@ class="sourceCode bash"><code class="sourceCode bash"><span id="cb124-1"><a href
 <p>and ignoring the Tk window click back to the command prompt
 <code>"%"</code> and type:</p>
 <div class="sourceCode" id="cb125"><pre
-class="sourceCode bash"><code class="sourceCode bash"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="ex">require</span> package zint</span>
+class="sourceCode bash"><code class="sourceCode bash"><span id="cb125-1"><a href="#cb125-1" aria-hidden="true" tabindex="-1"></a><span class="ex">package</span> require zint</span>
 <span id="cb125-2"><a href="#cb125-2" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> help</span></code></pre></div>
 <p>which will show the usage message, with options very similiar to the
 Zint CLI. (One notable difference is that boolean options such as

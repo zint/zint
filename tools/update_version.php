@@ -2,7 +2,7 @@
 /* Update Zint version number in various files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -274,9 +274,10 @@ version_replace(1, $data_dirname . 'backend/Makefile.mingw', '/^ZINT_VERSION:=-D
 
 version_replace(1, $data_dirname . 'backend_tcl/configure.ac', '/^AC_INIT\(\[zint\],[ \t]*\[/', '/[0-9.]+/', $v_base_str);
 
-// backend_tcl/zint_tcl.dsp
+// backend_tcl/zint_tcl.vcxproj
 
-version_replace(2, $data_dirname . 'backend_tcl/zint_tcl.dsp', '/ZINT_VERSION="\\\\"/', '/ZINT_VERSION="\\\\"[0-9.]+\\\\""/', 'ZINT_VERSION="\\"' . $v_str . '\\""');
+version_replace(2, $data_dirname . 'backend_tcl/zint_tcl.vcxproj', '/ZINT_VERSION="/', '/ZINT_VERSION="[0-9.]+"/', 'ZINT_VERSION="' . $v_str . '"');
+version_replace(2, $data_dirname . 'backend_tcl/zint_tcl.vcxproj', '/PACKAGE_VERSION="/', '/PACKAGE_VERSION="[0-9.]+"/', 'PACKAGE_VERSION="' . $v_base_str . '"');
 
 // backend_tcl/lib/zint/pkgIndex.tcl
 
