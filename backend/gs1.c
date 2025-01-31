@@ -292,12 +292,7 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
 static int keyoff1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    if (!key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only)) {
-        (*p_err_posn)--;
-        return 0;
-    }
-
-    return 1;
+    return key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only);
 }
 
 /* Note following date/time checkers (!length_only) assume data all digits, i.e. `numeric()` has succeeded */
