@@ -4714,8 +4714,8 @@ Revision 2 of Ultracode (2023) may be specified using `--vers=2` (API
 `option_2 = 2`).
 
 * * *
-WARNING: Revision 2 of Ultracode was only finalized December 2023 and Zint has
-not yet been updated to support it. Do not use.
+WARNING: Revision 2 of Ultracode was finalized December 2023 and Zint has not
+yet been updated to support it. Do not use.
 
 * * *
 
@@ -4847,7 +4847,7 @@ international standards:
 - ISO/IEC 15417:2007 Information technology - Automatic identification and data
      capture techniques - Code 128 bar code symbology specification
 - BS EN 12323:2005 AIDC technologies - Symbology specifications - Code 16K
-- ISO/IEC 16388:2007 Information technology - Automatic identification and data
+- ISO/IEC 16388:2023 Information technology - Automatic identification and data
      capture techniques - Code 39 bar code symbology specification
 - ANSI/AIM BC6-2000 - Uniform Symbology Specification Code 49
 - ANSI/AIM BC5-1995 - Uniform Symbology Specification Code 93
@@ -4879,7 +4879,7 @@ international standards:
      capture techniques - MicroPDF417 bar code symbology specification
 - ISO/IEC 15438:2015 Information technology - Automatic identification and data
      capture techniques - PDF417 bar code symbology specification
-- ISO/IEC 18004:2015 Information technology - Automatic identification and data
+- ISO/IEC 18004:2024 Information technology - Automatic identification and data
      capture techniques - QR Code bar code symbology specification
 - ISO/IEC 23941:2022 Information technology - Automatic identification and data
      capture techniques - Rectangular Micro QR Code (rMQR) bar code symbology

@@ -4,7 +4,7 @@
  */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -36,26 +36,26 @@
 #ifndef Z_GS1_LINT_H
 #define Z_GS1_LINT_H
 
-/* N18,csum,key (Used by SSCC, GSRN - PROVIDER, GSRN - RECIPIENT) */
-static int n18_csum_key(const unsigned char *data,
+/* N18,csum,keyoff1 (Used by SSCC) */
+static int n18_csum_keyoff1(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 18
             && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && keyoff1(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg)
             && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0)
-            && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0);
+            && keyoff1(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0);
 }
 
-/* N14,csum,key (Used by GTIN, CONTENT, MTO GTIN) */
-static int n14_csum_key(const unsigned char *data,
+/* N14,csum,keyoff1 (Used by GTIN, CONTENT, MTO GTIN) */
+static int n14_csum_keyoff1(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 14
             && csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
-            && key(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && keyoff1(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && numeric(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg)
             && csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0)
-            && key(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0);
+            && keyoff1(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0);
 }
 
 /* X..20 (Used by BATCH/LOT, SERIAL, CPV, PCN, GLN EXTENSION COMPONENT, SHIP TO POST, RTN TO POST, REFURB LOT, ...) */
@@ -626,6 +626,17 @@ static int x__25_csumalpha_key_hasnondigit(const unsigned char *data,
             && hasnondigit(data, data_len, 0, 1, 25, p_err_no, p_err_posn, err_msg, 0);
 }
 
+/* N18,csum,key (Used by GSRN - PROVIDER, GSRN - RECIPIENT) */
+static int n18_csum_key(const unsigned char *data,
+            const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
+    return data_len == 18
+            && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && numeric(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg)
+            && csum(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0)
+            && key(data, data_len, 0, 18, 18, p_err_no, p_err_posn, err_msg, 0);
+}
+
 /* N..10 (Used by SRIN) */
 static int n__10(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
@@ -682,10 +693,10 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
     if (ai < 100) {
 
         if (ai == 0) {
-            return n18_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n18_csum_keyoff1(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai >= 1 && ai <= 3) {
-            return n14_csum_key(data, data_len, p_err_no, p_err_posn, err_msg);
+            return n14_csum_keyoff1(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 10 || ai == 21 || ai == 22) {
             return x__20(data, data_len, p_err_no, p_err_posn, err_msg);

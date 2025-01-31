@@ -245,6 +245,8 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
     return 1;
 }
 
+#define GS1_GCP_MIN_LENGTH  4 /* Minimum length of GS1 Company Prefix */
+
 /* Check for a GS1 Prefix (GS1 General Specifications GS1 1.4.2) */
 static int key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
@@ -262,14 +264,37 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
     }
 
     if (!length_only && data_len) {
-        data += offset;
+        int i;
 
-        if (!z_isdigit(data[0]) || !z_isdigit(data[1])) {
+        if (data_len < GS1_GCP_MIN_LENGTH) {
             *p_err_no = 3;
-            *p_err_posn = offset + z_isdigit(data[0]) + 1;
-            sprintf(err_msg, "Non-numeric company prefix '%c'", data[z_isdigit(data[0])]);
+            *p_err_posn = offset + 1;
+            sprintf(err_msg, "GS1 Company Prefix length %d too short (minimum 4)", data_len);
             return 0;
         }
+
+        data += offset;
+
+        for (i = 0; i < GS1_GCP_MIN_LENGTH; i++) {
+            if (!z_isdigit(data[i])) {
+                *p_err_no = 3;
+                *p_err_posn = offset + i + 1;
+                sprintf(err_msg, "Non-numeric company prefix '%c'", data[i]);
+                return 0;
+            }
+        }
+    }
+
+    return 1;
+}
+
+/* Check for a GS1 Prefix at offset 1 (2nd position) */
+static int keyoff1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+            int *p_err_posn, char err_msg[50], const int length_only) {
+
+    if (!key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only)) {
+        (*p_err_posn)--;
+        return 0;
     }
 
     return 1;

@@ -2,7 +2,7 @@
 /* Generate GS1 verify include "backend/gs1_lint.h" for "backend/gs1.c" */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2024 <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 <rstuart114@gmail.com>
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
@@ -243,7 +243,7 @@ if ($print_copyright) {
 print <<<'EOD'
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
