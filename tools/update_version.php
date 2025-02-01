@@ -56,12 +56,18 @@ $rc_str2 = "$major.$minor.$release.$build";
 
 $year = date("Y");
 
-/* `$to_do` is no. of lines that should get replaced/changed, not no. of replacements */
-function version_replace($to_do, $file, $match_pattern, $replace_pattern, $replace_str) {
+/* Ouput error message and exit */
+function err_exit($line_no, $msg) {
     global $basename;
 
+    exit("$basename:$line_no ERROR: $msg" . PHP_EOL);
+}
+
+/* `$to_do` is no. of lines that should get replaced/changed, not no. of replacements */
+function version_replace($to_do, $file, $match_pattern, $replace_pattern, $replace_str) {
+
     if (($get = file_get_contents($file)) === false) {
-        exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not read file \"$file\"");
     }
 
     $lines = explode("\n", $get);
@@ -71,7 +77,7 @@ function version_replace($to_do, $file, $match_pattern, $replace_pattern, $repla
             $cnt = 0;
             $lines[$li] = preg_replace($replace_pattern, $replace_str, $line, -1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
-                exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
+                err_exit(__LINE__, "Could not replace \"$match_pattern\" in file \"$file\"");
             }
             $done++;
         }
@@ -80,18 +86,18 @@ function version_replace($to_do, $file, $match_pattern, $replace_pattern, $repla
         }
     }
     if ($done !== $to_do) {
-        exit("$basename: ERROR: Only did $done replacements of $to_do in file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Only did $done replacements of $to_do in file \"$file\"");
     }
     if (!file_put_contents($file, implode("\n", $lines))) {
-        exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not write file \"$file\"");
     }
 }
 
+/* Do ".rc" replace, `$rc_str1` is comma-separated version, `$rc_str2` dot-separated version */
 function rc_replace($file, $rc_str1, $rc_str2, $year = '') {
-    global $basename;
 
     if (($get = file_get_contents($file)) === false) {
-        exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not read file \"$file\"");
     }
 
     $match_pattern1 = '/#define[ \t]+VER_FILEVERSION[ \t]+/';
@@ -103,14 +109,14 @@ function rc_replace($file, $rc_str1, $rc_str2, $year = '') {
             $cnt = 0;
             $lines[$li] = preg_replace('/[0-9,]+/', $rc_str1, $line, 1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
-                exit("$basename: ERROR: Could not replace \"$match_pattern1\" in file \"$file\"" . PHP_EOL);
+                err_exit(__LINE__, "Could not replace \"$match_pattern1\" in file \"$file\"");
             }
             $done++;
         } else if (preg_match($match_pattern2, $line)) {
             $cnt = 0;
             $lines[$li] = preg_replace('/[0-9.]+/', $rc_str2, $line, 1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
-                exit("$basename: ERROR: Could not replace \"$match_pattern2\" in file \"$file\"" . PHP_EOL);
+                err_exit(__LINE__, "Could not replace \"$match_pattern2\" in file \"$file\"");
             }
             $done++;
         }
@@ -119,7 +125,7 @@ function rc_replace($file, $rc_str1, $rc_str2, $year = '') {
         }
     }
     if ($done !== 2) {
-        exit("$basename: ERROR: Only did $done replacements of 2 in file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Only did $done replacements of 2 in file \"$file\"");
     }
     if ($year !== '') {
         $match_pattern = '/VALUE[ \t]+"LegalCopyright",[ \t]+"Copyright /';
@@ -129,26 +135,25 @@ function rc_replace($file, $rc_str1, $rc_str2, $year = '') {
                 $cnt = 0;
                 $lines[$li] = preg_replace('/[0-9]+/', $year, $line, 1, $cnt);
                 if ($cnt === 0 || $lines[$li] === NULL) {
-                    exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
+                    err_exit(__LINE__, "Could not replace \"$match_pattern\" in file \"$file\"");
                 }
                 $done++;
                 break;
             }
         }
         if ($done !== 1) {
-            exit("$basename: ERROR: Failed to replace Copyright year in file \"$file\"" . PHP_EOL);
+            err_exit(__LINE__, "Failed to replace Copyright year in file \"$file\"");
         }
     }
     if (!file_put_contents($file, implode("\n", $lines))) {
-        exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not write file \"$file\"");
     }
 }
 
 function year_replace($file, $year) {
-    global $basename;
 
     if (($get = file_get_contents($file)) === false) {
-        exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not read file \"$file\"");
     }
 
     $match_pattern = '/Copyright /';
@@ -159,17 +164,17 @@ function year_replace($file, $year) {
             $cnt = 0;
             $lines[$li] = preg_replace('/[0-9]+/', $year, $line, 1, $cnt);
             if ($cnt === 0 || $lines[$li] === NULL) {
-                exit("$basename: ERROR: Could not replace \"$match_pattern\" in file \"$file\"" . PHP_EOL);
+                err_exit(__LINE__, "Could not replace \"$match_pattern\" in file \"$file\"");
             }
             $done++;
             break;
         }
     }
     if ($done !== 1) {
-        exit("$basename: ERROR: Failed to replace Copyright year in file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Failed to replace Copyright year in file \"$file\"");
     }
     if (!file_put_contents($file, implode("\n", $lines))) {
-        exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+        err_exit(__LINE__, "Could not write file \"$file\"");
     }
 }
 
@@ -178,7 +183,7 @@ function year_replace($file, $year) {
 $file = $data_dirname . 'CMakeLists.txt';
 
 if (($get = file_get_contents($file)) === false) {
-    exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Could not read file \"$file\"");
 }
 
 $lines = explode("\n", $get);
@@ -189,7 +194,7 @@ foreach ($lines as $li => $line) {
         $mmr = $matches[1] === "MAJOR" ? $major : ($matches[1] === "MINOR" ? $minor : ($matches[1] === "RELEASE" ? $release : $build));
         $lines[$li] = preg_replace('/[0-9]+\)/', $mmr . ')', $line, 1, $cnt);
         if ($cnt === 0 || $lines[$li] === NULL) {
-            exit("$basename: ERROR: Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"" . PHP_EOL);
+            err_exit(__LINE__, "Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"");
         }
         $done++;
     }
@@ -198,10 +203,10 @@ foreach ($lines as $li => $line) {
     }
 }
 if ($done !== 4) {
-    exit("$basename: ERROR: Only did $done replacements of 4 in file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Only did $done replacements of 4 in file \"$file\"");
 }
 if (!file_put_contents($file, implode("\n", $lines))) {
-    exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Could not write file \"$file\"");
 }
 
 // README
@@ -233,7 +238,7 @@ version_replace(1, $data_dirname . 'backend/zint.h', '/^ \* Version: /', '/[0-9]
 $file = $data_dirname . 'backend/zintconfig.h';
 
 if (($get = file_get_contents($file)) === false) {
-    exit("$basename: ERROR: Could not read file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Could not read file \"$file\"");
 }
 
 $lines = explode("\n", $get);
@@ -244,14 +249,14 @@ foreach ($lines as $li => $line) {
         $mmr = $matches[1] === "MAJOR" ? $major : ($matches[1] === "MINOR" ? $minor : $release);
         $lines[$li] = preg_replace('/[0-9]+/', $mmr, $line, 1, $cnt);
         if ($cnt === 0 || $lines[$li] === NULL) {
-            exit("$basename: ERROR: Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"" . PHP_EOL);
+            err_exit(__LINE__, "Could not replace ZINT_VERSION_{$matches[1]} in file \"$file\"");
         }
         $done++;
     } elseif (preg_match('/define[ \t]+ZINT_VERSION_BUILD[ \t]+/', $line)) {
         $cnt = 0;
         $lines[$li] = preg_replace('/(BUILD[ \t]+)[0-9]+/', '${1}' . $build, $line, 1, $cnt);
         if ($cnt === 0 || $lines[$li] === NULL) {
-            exit("$basename: ERROR: Could not replace ZINT_VERSION_BUILD in file \"$file\"" . PHP_EOL);
+            err_exit(__LINE__, "Could not replace ZINT_VERSION_BUILD in file \"$file\"");
         }
         $done++;
     }
@@ -260,10 +265,10 @@ foreach ($lines as $li => $line) {
     }
 }
 if ($done !== 4) {
-    exit("$basename: ERROR: Only did $done replacements of 4 in file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Only did $done replacements of 4 in file \"$file\"");
 }
 if (!file_put_contents($file, implode("\n", $lines))) {
-    exit("$basename: ERROR: Could not write file \"$file\"" . PHP_EOL);
+    err_exit(__LINE__, "Could not write file \"$file\"");
 }
 
 // backend/Makefile.mingw
