@@ -333,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.13.0.9</p>
-<p class="date">January 2025</p>
+<p class="date">February 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -9104,7 +9104,8 @@ being applied. The default scale is 1.</p>
 <p>For MaxiCode, the scale is multiplied by 10 for raster output, by 40
 for EMF output, and by 2 otherwise.</p>
 <p>Increments of 0.5 (half-integers) are recommended for non-MaxiCode
-raster output (BMP, GIF, PCX, PNG and TIF).</p>
+raster output (BMP, GIF, PCX, PNG and TIF). Human Readable Text (HRT)
+for raster output will not be shown for scales less than 1.</p>
 <p>See also <code>--scalexdimdp</code> below.</p>
 </dd>
 <dt><code>--scalexdimdp=X[,R]</code></dt>

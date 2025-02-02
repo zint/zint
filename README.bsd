@@ -1,5 +1,5 @@
-% README.bsd 2025-01-18
-% Tested on FreeBSD 14.2-RELEASE (with X11 + GNOME installed), OpenBSD 7.6 (with X11) and NetBSD 10.0 (with X11)
+% README.bsd 2025-02-02
+% Tested on FreeBSD 14.2-RELEASE (with X11 + GNOME installed), OpenBSD 7.6 (with X11) and NetBSD 10.1 (with X11)
 
 1. Prerequisites for building zint
 ==================================
@@ -55,6 +55,7 @@ On NetBSD:
 
 The rest is standard CMake (allowing for absence of sudo)
 
+    cd zint
     mkdir build
     cd build
     cmake ..

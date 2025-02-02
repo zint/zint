@@ -1,6 +1,6 @@
 /***************************************************************************
  *   Copyright (C) 2008 by BogDan Vatra <bogdan@licentia.eu>               *
- *   Copyright (C) 2009-2024 by Robin Stuart <rstuart114@gmail.com>        *
+ *   Copyright (C) 2009-2025 by Robin Stuart <rstuart114@gmail.com>        *
  *                                                                         *
  *   This program is free software: you can redistribute it and/or modify  *
  *   it under the terms of the GNU General Public License as published by  *
@@ -197,13 +197,13 @@ static const struct bstyle_item bstyle_items[] = {
 void MainWindow::mac_hack_vLayouts(QWidget *win)
 {
     QList<QVBoxLayout *> vlayouts = win->findChildren<QVBoxLayout *>();
-    for (int i = 0, cnt = vlayouts.size(); i < cnt; i++) {
+    for (int i = 0, vcnt = vlayouts.size(); i < vcnt; i++) {
         if (vlayouts[i]->objectName() == "vLayoutData" || vlayouts[i]->objectName() == "vLayoutComposite"
                 || vlayouts[i]->objectName() == "vLayoutSegs") {
             vlayouts[i]->setSpacing(2);
             // If set spacing on QVBoxLayout then it seems its QHBoxLayout children inherit this so undo
             QList<QHBoxLayout *> hlayouts = vlayouts[i]->findChildren<QHBoxLayout *>();
-            for (int j = 0, cnt = hlayouts.size(); j < cnt; j++) {
+            for (int j = 0, hcnt = hlayouts.size(); j < hcnt; j++) {
                 hlayouts[j]->setSpacing(8);
             }
         }
@@ -799,7 +799,7 @@ void MainWindow::about()
             "<p>A free barcode generator</p>"
             "<p>Instruction manual is available at the project homepage:<br>"
             "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
-            "<p>Copyright &copy; 2006-2024 Robin Stuart and others.<br>"
+            "<p>Copyright &copy; 2006-2025 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
             "<p>Qt version %2<br>%3</p>"

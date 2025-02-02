@@ -1,6 +1,6 @@
-% README.linux 2024-10-04
+% README.linux 2025-02-02
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
-% Fedora Linux 40 (Workstation Edition)
+% Fedora Linux 41 (Workstation Edition)
 
 1. Prerequisites for building zint
 ==================================
@@ -109,8 +109,15 @@ The rest is standard CMake
     make
     sudo make install
 
+4. Run
+======
 
-4. CMake options
+On Fedora you may have to set LD_LIBRARY_PATH for zint ("libzint.so") and zint-qt (Qt libraries):
+
+    export LD_LIBRARY_PATH=/usr/local/lib64:<qt-version-dir>/gcc_64/lib
+
+
+5. CMake options
 ================
 
 A number of options are available:

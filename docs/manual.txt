@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.13.0.9
-January 2025
+February 2025
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -4864,7 +4864,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.13.0.9 % % January 2025
+% ZINT(1) Version 2.13.0.9 % % February 2025
 
 NAME
 
@@ -5221,7 +5221,8 @@ OPTIONS
     output, and by 2 otherwise.
 
     Increments of 0.5 (half-integers) are recommended for non-MaxiCode raster
-    output (BMP, GIF, PCX, PNG and TIF).
+    output (BMP, GIF, PCX, PNG and TIF). Human Readable Text (HRT) for raster
+    output will not be shown for scales less than 1.
 
     See also --scalexdimdp below.
 
