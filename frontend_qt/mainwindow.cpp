@@ -798,7 +798,7 @@ void MainWindow::about()
             "<h2>Zint Barcode Studio %1</h2>"
             "<p>A free barcode generator</p>"
             "<p>Instruction manual is available at the project homepage:<br>"
-            "<a href=\"http://www.zint.org.uk\">http://www.zint.org.uk</a>.</p>"
+            "<a href=\"https://www.zint.org.uk\">https://www.zint.org.uk</a>.</p>"
             "<p>Copyright &copy; 2006-2025 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"

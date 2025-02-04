@@ -31,7 +31,7 @@
 /* SPDX-License-Identifier: BSD-3-Clause */
 
 /*
- * Version: 2.13.0.9 (dev) (see "zintconfig.h")
+ * Version: 2.14.0 (see "zintconfig.h")
  *
  * For documentation, see "../docs/manual.txt" or "../docs/manual.html" or online at
  * https://zint.org.uk/manual/
