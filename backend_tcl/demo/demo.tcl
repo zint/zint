@@ -1,4 +1,5 @@
 package require Tk
+lappend auto_path [file normalize [file dirname [info script]]/..]
 package require zint
 wm title . "ZINT Demo"
 wm minsize . 480 320
