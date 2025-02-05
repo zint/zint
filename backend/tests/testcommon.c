@@ -3689,12 +3689,12 @@ int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, co
 }
 
 /* Whether ZXing-C++ Decoder available on system */
-/* Requires the "diagnostics2" branch from https://github.com/gitlost/zxing-cpp built with BUILD_EXAMPLE_DECODER
-   and "zxingcppdecoder" placed in PATH, e.g.:
+/* Requires the "diagnostics2" branch from https://github.com/gitlost/zxing-cpp built with ZXING_EXAMPLE_DECODER
+   defined and "zxingcppdecoder" placed in PATH, e.g.:
      git clone --branch diagnostics2 https://github.com/gitlost/zxing-cpp zxing-cpp-diagnostics2
      cd zxing-cpp-diagnostics2
      mkdir build; cd build
-     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DBUILD_EXAMPLE_DECODER=ON ..
+     cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DZXING_EXAMPLE_DECODER=ON ..
      make && sudo make install
  */
 int testUtilHaveZXingCPPDecoder(void) {
