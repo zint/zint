@@ -520,7 +520,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                         1      (1 visible check digit)
                         2      (no check digits)
         Code 39         1 or 2 (add visible or hidden check digit)
-        Code 93         1      (hide the default check characters)
+        Code 93         1      (show the default check characters)
         EXCODE39        1 or 2 (add visible or hidden check digit)
         LOGMARS         1 or 2 (add visible or hidden check digit)
         MSI Plessey     0 to 6 (none to various visible options)
