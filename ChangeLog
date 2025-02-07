@@ -1,5 +1,9 @@
-Version 2.14.0.9 (dev) not released yet (2025-02-06)
+Version 2.14.0.9 (dev) not released yet (2025-02-07)
 ====================================================
+
+Changes
+-------
+- iso4217: remove 191 (HRK), 694 (SLL), 931 (CUC); add 926 (VED)
 
 Bugs
 ----
