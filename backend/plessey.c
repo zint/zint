@@ -1,7 +1,7 @@
 /* plessey.c - Handles Plessey and MSI Plessey */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -59,7 +59,9 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     static const char grid[9] = {1, 1, 1, 1, 0, 1, 0, 0, 1};
     char dest[570]; /* 8 + 67 * 8 + 2 * 8 + 9 + 1 = 570 */
     char *d = dest;
+    unsigned int check_digits = 0;
     int error_number = 0;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
@@ -75,7 +77,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Data area */
     for (i = 0; i < length; i++, d += 8) {
-        unsigned int check = source[i] - '0' - (source[i] >> 6) * 7;
+        const unsigned int check = source[i] - '0' - (source[i] >> 6) * 7;
         memcpy(d, PlessTable[check], 8);
         checkptr[4 * i] = check & 1;
         checkptr[4 * i + 1] = (check >> 1) & 1;
@@ -101,6 +103,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
                 break;
             case 1: memcpy(d, "31", 2);
                 d += 2;
+                check_digits |= (1 << i);
                 break;
         }
     }
@@ -113,8 +116,13 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* TODO: Find documentation on BARCODE_PLESSEY dimensions/height */
 
-    symbol->text[0] = '\0';
-    ustrncat(symbol->text, source, length);
+    hrt_cpy_nochk(symbol, source, length);
+    if (symbol->option_2 == 1 || plain_hrt) {
+        const unsigned c1 = check_digits & 0xF;
+        const unsigned c2 = check_digits >> 4;
+        hrt_cat_chr_nochk(symbol, xtoc(c1));
+        hrt_cat_chr_nochk(symbol, xtoc(c2));
+    }
 
     return error_number;
 }
@@ -164,8 +172,7 @@ static char *msi_plessey_nomod(struct zint_symbol *symbol, const unsigned char s
         memcpy(d, MSITable[source[i] - '0'], 8);
     }
 
-    symbol->text[0] = '\0';
-    ustrncat(symbol->text, source, length);
+    hrt_cpy_nochk(symbol, source, length);
 
     return d;
 }
@@ -176,23 +183,21 @@ static char *msi_plessey_mod10(struct zint_symbol *symbol, const unsigned char s
     int i;
     char check_digit;
 
-    /* draw data section */
+    /* Draw data section */
     for (i = 0; i < length; i++, d += 8) {
         memcpy(d, MSITable[source[i] - '0'], 8);
     }
 
-    /* calculate check digit */
+    /* Calculate check digit */
     check_digit = msi_check_digit_mod10(source, length);
 
-    /* draw check digit */
+    /* Draw check digit */
     memcpy(d, MSITable[check_digit - '0'], 8);
     d += 8;
 
-    symbol->text[0] = '\0';
-    ustrncat(symbol->text, source, length);
+    hrt_cpy_nochk(symbol, source, length);
     if (!no_checktext) {
-        symbol->text[length] = check_digit;
-        symbol->text[length + 1] = '\0';
+        hrt_cat_chr_nochk(symbol, check_digit);
     }
 
     return d;
@@ -203,25 +208,22 @@ static char *msi_plessey_mod1010(struct zint_symbol *symbol, const unsigned char
             const int no_checktext, char *d) {
 
     int i;
-    unsigned char temp[92 + 2 + 1];
+    unsigned char local_source[92 + 2];
 
     /* Append check digits */
-    temp[0] = '\0';
-    ustrncat(temp, source, length);
-    temp[length] = msi_check_digit_mod10(source, length);
-    temp[length + 1] = msi_check_digit_mod10(temp, length + 1);
-    temp[length + 2] = '\0';
+    memcpy(local_source, source, length);
+    local_source[length] = msi_check_digit_mod10(source, length);
+    local_source[length + 1] = msi_check_digit_mod10(local_source, length + 1);
 
-    /* draw data section */
+    /* Draw data section */
     for (i = 0; i < length + 2; i++, d += 8) {
-        memcpy(d, MSITable[temp[i] - '0'], 8);
+        memcpy(d, MSITable[local_source[i] - '0'], 8);
     }
 
     if (no_checktext) {
-        symbol->text[0] = '\0';
-        ustrncat(symbol->text, source, length);
+        hrt_cpy_nochk(symbol, source, length);
     } else {
-        ustrcpy(symbol->text, temp);
+        hrt_cpy_nochk(symbol, local_source, length + 2);
     }
 
     return d;
@@ -234,7 +236,7 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
     int i;
     char check_digit;
 
-    /* draw data section */
+    /* Draw data section */
     for (i = 0; i < length; i++, d += 8) {
         memcpy(d, MSITable[source[i] - '0'], 8);
     }
@@ -251,14 +253,12 @@ static char *msi_plessey_mod11(struct zint_symbol *symbol, const unsigned char s
         d += 8;
     }
 
-    symbol->text[0] = '\0';
-    ustrncat(symbol->text, source, length);
+    hrt_cpy_nochk(symbol, source, length);
     if (!no_checktext) {
         if (check_digit == ':') {
-            ustrcat(symbol->text, "10");
+            hrt_cat_nochk(symbol, (const unsigned char *) "10", 2);
         } else {
-            symbol->text[length] = check_digit;
-            symbol->text[length + 1] = '\0';
+            hrt_cat_chr_nochk(symbol, check_digit);
         }
     }
 
@@ -271,35 +271,33 @@ static char *msi_plessey_mod1110(struct zint_symbol *symbol, const unsigned char
     /* Uses the IBM weight system if wrap = 7, and the NCR system if wrap = 9 */
     int i;
     char check_digit;
-    unsigned char temp[92 + 3 + 1];
-    int temp_len = length;
+    unsigned char local_source[92 + 3 + 1];
+    int local_length = length;
 
-    temp[0] = '\0';
-    ustrncat(temp, source, length);
+    memcpy(local_source, source, length);
 
     /* Append first (mod 11) digit */
     check_digit = msi_check_digit_mod11(source, length, wrap);
     if (check_digit == ':') {
-        temp[temp_len++] = '1';
-        temp[temp_len++] = '0';
+        local_source[local_length++] = '1';
+        local_source[local_length++] = '0';
     } else {
-        temp[temp_len++] = check_digit;
+        local_source[local_length++] = check_digit;
     }
 
     /* Append second (mod 10) check digit */
-    temp[temp_len] = msi_check_digit_mod10(temp, temp_len);
-    temp[++temp_len] = '\0';
+    local_source[local_length] = msi_check_digit_mod10(local_source, local_length);
+    local_length++;
 
-    /* draw data section */
-    for (i = 0; i < temp_len; i++, d += 8) {
-        memcpy(d, MSITable[temp[i] - '0'], 8);
+    /* Draw data section */
+    for (i = 0; i < local_length; i++, d += 8) {
+        memcpy(d, MSITable[local_source[i] - '0'], 8);
     }
 
     if (no_checktext) {
-        symbol->text[0] = '\0';
-        ustrncat(symbol->text, source, length);
+        hrt_cpy_nochk(symbol, source, length);
     } else {
-        ustrcpy(symbol->text, temp);
+        hrt_cpy_nochk(symbol, local_source, local_length);
     }
 
     return d;
@@ -312,6 +310,7 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
     char *d = dest;
     int check_option = symbol->option_2;
     int no_checktext = 0;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 92) { /* 3 (Start) + 92 * 12 + 3 * 12 + 4 (Stop) = 1147 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 372, "Input length %d too long (maximum 92)", length);
@@ -323,7 +322,7 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
 
     if (check_option >= 11 && check_option <= 16) { /* +10 means don't print check digits in HRT */
         check_option -= 10;
-        no_checktext = 1;
+        no_checktext = !plain_hrt;
     }
     if ((check_option < 0) || (check_option > 6)) {
         check_option = 0;

@@ -214,6 +214,74 @@ static void test_japanpost(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int option_2;
+        int output_options;
+        const char *data;
+
+        const char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_FLAT, -1, -1, "12345", "" }, /* None */
+        /*  1*/ { BARCODE_FLAT, -1, BARCODE_PLAIN_HRT, "12345", "12345" },
+        /*  2*/ { BARCODE_POSTNET, -1, -1, "12345", "" }, /* None */
+        /*  3*/ { BARCODE_POSTNET, -1, BARCODE_PLAIN_HRT, "12345", "123455" },
+        /*  4*/ { BARCODE_FIM, -1, -1, "e", "" }, /* None */
+        /*  5*/ { BARCODE_FIM, -1, BARCODE_PLAIN_HRT, "e", "E" },
+        /*  6*/ { BARCODE_CEPNET, -1, -1, "12345678", "" }, /* None */
+        /*  7*/ { BARCODE_CEPNET, -1, BARCODE_PLAIN_HRT, "12345678", "123456784" },
+        /*  8*/ { BARCODE_RM4SCC, -1, -1, "BX11LT1A", "" }, /* None*/
+        /*  9*/ { BARCODE_RM4SCC, -1, BARCODE_PLAIN_HRT, "BX11LT1A", "BX11LT1AI" },
+        /* 10*/ { BARCODE_JAPANPOST, -1, -1, "1234", "" }, /* None*/
+        /* 11*/ { BARCODE_JAPANPOST, -1, BARCODE_PLAIN_HRT, "1234", "1234" }, /* Note check char not included */
+        /* 12*/ { BARCODE_JAPANPOST, -1, BARCODE_PLAIN_HRT, "123456-AB", "123456-AB" }, /* Ditto */
+        /* 13*/ { BARCODE_KOREAPOST, -1, -1, "123456", "1234569" },
+        /* 14*/ { BARCODE_KOREAPOST, -1, BARCODE_PLAIN_HRT, "123456", "1234569" }, /* No difference */
+        /* 15*/ { BARCODE_PLANET, -1, -1, "12345678901", "" }, /* None */
+        /* 16*/ { BARCODE_PLANET, -1, BARCODE_PLAIN_HRT, "12345678901", "123456789014" },
+        /* 17*/ { BARCODE_KIX, -1, -1, "0123456789ABCDEFGH", "" }, /* None */
+        /* 18*/ { BARCODE_KIX, -1, BARCODE_PLAIN_HRT, "0123456789ABCDEFGH", "0123456789ABCDEFGH" },
+        /* 19*/ { BARCODE_DAFT, -1, -1, "DAFT", "" }, /* None */
+        /* 20*/ { BARCODE_DAFT, -1, BARCODE_PLAIN_HRT, "DAFT", "DAFT" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+    int expected_length;
+
+    testStartSymbol("test_hrt", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
+
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_input(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -641,6 +709,7 @@ int main(int argc, char *argv[]) {
         { "test_large", test_large },
         { "test_koreapost", test_koreapost },
         { "test_japanpost", test_japanpost },
+        { "test_hrt", test_hrt },
         { "test_input", test_input },
         { "test_encode", test_encode },
         { "test_perf", test_perf },

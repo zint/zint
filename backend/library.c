@@ -55,14 +55,14 @@ static void set_symbol_defaults(struct zint_symbol *symbol) {
 
     symbol->symbology = BARCODE_CODE128;
     symbol->scale = 1.0f;
-    strcpy(symbol->fgcolour, "000000");
+    memcpy(symbol->fgcolour, "000000", 7); /* Include terminating NUL */
     symbol->fgcolor = &symbol->fgcolour[0];
-    strcpy(symbol->bgcolour, "ffffff");
+    memcpy(symbol->bgcolour, "ffffff", 7);
     symbol->bgcolor = &symbol->bgcolour[0];
 #ifdef ZINT_NO_PNG
-    strcpy(symbol->outfile, "out.gif");
+    memcpy(symbol->outfile, "out.gif", 8); /* Include terminating NUL */
 #else
-    strcpy(symbol->outfile, "out.png");
+    memcpy(symbol->outfile, "out.png", 8);
 #endif
     symbol->option_1 = -1;
     symbol->show_hrt = 1; /* Show human readable text */
@@ -105,6 +105,7 @@ void ZBarcode_Clear(struct zint_symbol *symbol) {
     symbol->width = 0;
     memset(symbol->row_height, 0, sizeof(symbol->row_height));
     memset(symbol->text, 0, sizeof(symbol->text));
+    symbol->text_length = 0;
     symbol->errtxt[0] = '\0';
     if (symbol->bitmap != NULL) {
         free(symbol->bitmap);
@@ -370,6 +371,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     int counter, error_number = 0;
     char to_process[110 + 2 + 1];
     int posns[110];
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
@@ -401,16 +403,24 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
             error_number = code128(symbol, segs[0].source, segs[0].length);
-            ustrcpy(symbol->text, "*");
-            ustrcat(symbol->text, to_process);
-            ustrcat(symbol->text, "*");
+            if (plain_hrt) {
+                hrt_cpy_nochk(symbol, segs[0].source, segs[0].length);
+            } else {
+                hrt_cpy_chr(symbol, '*');
+                hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
+                hrt_cat_chr_nochk(symbol, '*');
+            }
             break;
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
             error_number = code39(symbol, segs[0].source, segs[0].length);
-            ustrcpy(symbol->text, "*");
-            ustrcat(symbol->text, to_process);
-            ustrcat(symbol->text, "*");
+            if (plain_hrt) {
+                hrt_cpy_nochk(symbol, segs[0].source, segs[0].length);
+            } else {
+                hrt_cpy_chr(symbol, '*');
+                hrt_cat_nochk(symbol, segs[0].source, segs[0].length);
+                hrt_cat_chr_nochk(symbol, '*');
+            }
             break;
         case BARCODE_HIBC_DM:
             error_number = datamatrix(symbol, segs, seg_count);
@@ -1188,14 +1198,13 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     if (escape_mode && symbol->primary[0] && strchr(symbol->primary, '\\') != NULL) {
-        char primary[sizeof(symbol->primary)];
-        int primary_len = (int) strlen(symbol->primary);
+        unsigned char primary[sizeof(symbol->primary)];
+        int primary_len = (int) ustrlen(symbol->primary);
         if (primary_len >= (int) sizeof(symbol->primary)) {
             return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 799, "Invalid primary string");
         }
-        ustrcpy(primary, symbol->primary);
-        error_number = escape_char_process(symbol, (const unsigned char *) primary, &primary_len,
-                                            (unsigned char *) symbol->primary);
+        memcpy(primary, symbol->primary, primary_len);
+        error_number = escape_char_process(symbol, primary, &primary_len, (unsigned char *) symbol->primary);
         if (error_number != 0) { /* Only returns errors, not warnings */
             return error_tag(error_number, symbol, -1, NULL);
         }
@@ -1217,7 +1226,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                handle it themselves */
             if (is_composite(symbol->symbology) || !check_force_gs1(symbol->symbology)) {
                 unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
-                error_number = gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced);
+                error_number = gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced,
+                                            &local_segs[0].length);
                 if (error_number) {
                     if (is_composite(symbol->symbology)) {
                         errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
@@ -1228,8 +1238,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
                     }
                     warn_number = error_number; /* Override any previous warning (errtxt has been overwritten) */
                 }
-                ustrcpy(local_segs[0].source, reduced); /* Cannot contain NUL char */
-                local_segs[0].length = (int) ustrlen(reduced);
+                memcpy(local_segs[0].source, reduced, local_segs[0].length + 1); /* Include terminating NUL */
             }
         } else {
             return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 210, "Selected symbology does not support GS1 mode");
@@ -1655,7 +1664,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
     assert(symbol_id >= 0 && symbol_id < ARRAY_SIZE(names) && names[symbol_id][0]);
 
     memcpy(name, "BARCODE_", 8);
-    strcpy(name + 8, names[symbol_id]);
+    memcpy(name + 8, names[symbol_id], strlen(names[symbol_id]) + 1); /* Include terminating NUL */
 
     return 0;
 }

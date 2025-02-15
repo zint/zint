@@ -1,7 +1,7 @@
 /* telepen.c - Handles Telepen and Telepen numeric */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -91,6 +91,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number;
     char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
     char *d = dest;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     error_number = 0;
 
@@ -137,14 +138,11 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
         (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
     }
 
-    for (i = 0; i < length; i++) {
-        if (source[i] == '\0') {
-            symbol->text[i] = ' ';
-        } else {
-            symbol->text[i] = source[i];
-        }
+    hrt_cpy_iso8859_1(symbol, source, length);
+    if (plain_hrt) {
+        hrt_cat_chr_nochk(symbol, check_digit);
     }
-    symbol->text[length] = '\0';
+
     return error_number;
 }
 
@@ -154,7 +152,8 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     int i;
     char dest[1129]; /* 12 (Start) + 68 * 16 (max for DELs) + 16 (Check) + 12 (Stop) + 1 = 1129 */
     char *d = dest;
-    unsigned char temp[137];
+    unsigned char local_source[137];
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     count = 0;
 
@@ -168,29 +167,28 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
 
     /* Add a leading zero if required */
     if (length & 1) {
-        memcpy(temp + 1, source, length++);
-        temp[0] = '0';
+        memcpy(local_source + 1, source, length++);
+        local_source[0] = '0';
     } else {
-        memcpy(temp, source, length);
+        memcpy(local_source, source, length);
     }
-    temp[length] = '\0';
-    to_upper(temp, length);
+    to_upper(local_source, length);
 
     /* Start character */
     memcpy(d, TeleTable['_'], 12);
     d += 12;
 
     for (i = 0; i < length; i += 2) {
-        if (temp[i] == 'X') {
+        if (local_source[i] == 'X') {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 394, "Invalid odd position %d of \"X\" in Telepen data",
                             i + 1);
         }
 
-        if (temp[i + 1] == 'X') {
-            glyph = ctoi(temp[i]) + 17;
+        if (local_source[i + 1] == 'X') {
+            glyph = ctoi(local_source[i]) + 17;
             count += glyph;
         } else {
-            glyph = (10 * ctoi(temp[i])) + ctoi(temp[i + 1]);
+            glyph = (10 * ctoi(local_source[i])) + ctoi(local_source[i + 1]);
             glyph += 27;
             count += glyph;
         }
@@ -219,7 +217,11 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
         (void) set_height(symbol, 0.0f, 50.0f, 0, 1 /*no_errtxt*/);
     }
 
-    ustrcpy(symbol->text, temp);
+    hrt_cpy_nochk(symbol, local_source, length);
+    if (plain_hrt) {
+        hrt_cat_chr_nochk(symbol, check_digit);
+    }
+
     return error_number;
 }
 

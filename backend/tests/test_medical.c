@@ -99,28 +99,48 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
 
         const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, "123456", "" }, /* None */
-        /*  1*/ { BARCODE_PHARMA_TWO, -1, "123456", "" }, /* None */
-        /*  2*/ { BARCODE_CODE32, -1, "123456", "A001234564" },
-        /*  3*/ { BARCODE_CODE32, -1, "12345678", "A123456788" },
-        /*  4*/ { BARCODE_PZN, -1, "12345", "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
-        /*  5*/ { BARCODE_PZN, -1, "123456", "PZN - 01234562" },
-        /*  6*/ { BARCODE_PZN, -1, "1234567", "PZN - 12345678" },
-        /*  7*/ { BARCODE_PZN, -1, "12345678", "PZN - 12345678" },
-        /*  8*/ { BARCODE_PZN, 1, "1234", "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
-        /*  9*/ { BARCODE_PZN, 1, "12345", "PZN - 0123458" },
-        /* 10*/ { BARCODE_PZN, 1, "123456", "PZN - 1234562" },
-        /* 11*/ { BARCODE_PZN, 1, "1234562", "PZN - 1234562" },
+        /*  0*/ { BARCODE_PHARMA, -1, -1, "123456", "" }, /* None */
+        /*  1*/ { BARCODE_PHARMA, -1, BARCODE_PLAIN_HRT, "123456", "123456" },
+        /*  2*/ { BARCODE_PHARMA_TWO, -1, -1, "123456", "" }, /* None */
+        /*  3*/ { BARCODE_PHARMA_TWO, -1, BARCODE_PLAIN_HRT, "123456", "123456" },
+        /*  4*/ { BARCODE_CODE32, -1, -1, "123456", "A001234564" },
+        /*  5*/ { BARCODE_CODE32, -1, BARCODE_PLAIN_HRT, "123456", "015PN4" }, /* Actual encoded CODE39 value */
+        /*  6*/ { BARCODE_CODE32, -1, -1, "12345678", "A123456788" },
+        /*  7*/ { BARCODE_CODE32, -1, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /*  8*/ { BARCODE_CODE32, 1, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
+        /*  9*/ { BARCODE_CODE32, 1, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /* 10*/ { BARCODE_CODE32, 2, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
+        /* 11*/ { BARCODE_CODE32, 2, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /* 12*/ { BARCODE_PZN, -1, -1, "12345", "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
+        /* 13*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "12345", "-00123458" }, /* Actual encoded CODE39 value */
+        /* 14*/ { BARCODE_PZN, -1, -1, "123456", "PZN - 01234562" },
+        /* 15*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "123456", "-01234562" },
+        /* 16*/ { BARCODE_PZN, -1, -1, "1234567", "PZN - 12345678" },
+        /* 17*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "1234567", "-12345678" },
+        /* 18*/ { BARCODE_PZN, -1, -1, "12345678", "PZN - 12345678" },
+        /* 19*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "12345678", "-12345678" },
+        /* 20*/ { BARCODE_PZN, 1, -1, "1234", "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
+        /* 21*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "1234", "-0012345" },
+        /* 22*/ { BARCODE_PZN, 1, -1, "12345", "PZN - 0123458" },
+        /* 23*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "12345", "-0123458" },
+        /* 24*/ { BARCODE_PZN, 1, -1, "123456", "PZN - 1234562" },
+        /* 25*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "123456", "-1234562" },
+        /* 26*/ { BARCODE_PZN, 1, -1, "1234562", "PZN - 1234562" },
+        /* 27*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "1234562", "-1234562" },
+        /* 28*/ { BARCODE_PZN, 2, -1, "12345", "PZN - 00123458" }, /* Ignore option_2 re check digits */
+        /* 29*/ { BARCODE_PZN, 2, BARCODE_PLAIN_HRT, "12345", "-00123458" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -131,12 +151,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d (%s)\n",
+                    i, symbol->text_length, expected_length, symbol->text);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }
@@ -270,14 +296,23 @@ static void test_encode(const testCtx *const p_ctx) {
         /*  4*/ { BARCODE_CODE32, -1, "34567890", 0, 1, 103, "Verified manually against TEC-IT",
                     "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
                 },
-        /*  5*/ { BARCODE_PZN, -1, "1234567", 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against TEC-IT",
+        /*  5*/ { BARCODE_CODE32, 1, "34567890", 0, 1, 103, "Make sure option_2 doesn't add extra check digit",
+                    "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
+                },
+        /*  6*/ { BARCODE_CODE32, 2, "34567890", 0, 1, 103, "Make sure option_2 doesn't add extra check digit",
+                    "1001011011010101101001011010110010110101011011010010101100101101011010010101101010101100110100101101101"
+                },
+        /*  7*/ { BARCODE_PZN, -1, "1234567", 0, 1, 142, "Example from IFA Info Code 39 EN V2.1; verified manually against TEC-IT",
                     "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
                 },
-        /*  6*/ { BARCODE_PZN, -1, "2758089", 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against TEC-IT",
+        /*  8*/ { BARCODE_PZN, -1, "2758089", 0, 1, 142, "Example from IFA Info Check Digit Calculations EN 15 July 2019; verified manually against TEC-IT",
                     "1001011011010100101011011010110010101101010010110110110100110101011010010110101010011011010110100101101010110010110101011001011010100101101101"
                 },
-        /*  7*/ { BARCODE_PZN, 1, "123456", 0, 1, 129, "Example from BWIPP; verified manually against TEC-IT",
+        /*  9*/ { BARCODE_PZN, 1, "123456", 0, 1, 129, "Example from BWIPP; verified manually against TEC-IT",
                     "100101101101010010101101101101001010110101100101011011011001010101010011010110110100110101010110011010101011001010110100101101101"
+                },
+        /* 10*/ { BARCODE_PZN, 2, "1234567", 0, 1, 142, "Make sure option_2 ignored for check digit",
+                    "1001011011010100101011011011010010101101011001010110110110010101010100110101101101001101010101100110101010100101101101101001011010100101101101"
                 },
     };
     const int data_size = ARRAY_SIZE(data);

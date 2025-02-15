@@ -92,22 +92,30 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
 
         const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODABAR, -1, "A1234B", "A1234B" },
-        /*  1*/ { BARCODE_CODABAR, -1, "a1234c", "A1234C" }, /* Converts to upper */
-        /*  2*/ { BARCODE_CODABAR, 1, "A1234B", "A1234B" }, /* Check not included */
-        /*  3*/ { BARCODE_CODABAR, 2, "A1234B", "A12345B" }, /* Check included */
-        /*  4*/ { BARCODE_CODABAR, 1, "A123456A", "A123456A" }, /* Check not included */
-        /*  5*/ { BARCODE_CODABAR, 2, "A123456A", "A123456$A" }, /* Check included */
+        /*  0*/ { BARCODE_CODABAR, -1, -1, "A1234B", "A1234B" },
+        /*  1*/ { BARCODE_CODABAR, -1, BARCODE_PLAIN_HRT, "A1234B", "A1234B" },
+        /*  2*/ { BARCODE_CODABAR, -1, -1, "a1234c", "A1234C" }, /* Converts to upper */
+        /*  3*/ { BARCODE_CODABAR, -1, BARCODE_PLAIN_HRT, "a1234c", "A1234C" },
+        /*  4*/ { BARCODE_CODABAR, 1, -1, "A1234B", "A1234B" }, /* Check not included */
+        /*  5*/ { BARCODE_CODABAR, 1, BARCODE_PLAIN_HRT, "A1234B", "A12345B" },
+        /*  6*/ { BARCODE_CODABAR, 2, -1, "A1234B", "A12345B" }, /* Check included */
+        /*  7*/ { BARCODE_CODABAR, 2, BARCODE_PLAIN_HRT, "A1234B", "A12345B" },
+        /*  8*/ { BARCODE_CODABAR, 1, -1, "A123456A", "A123456A" }, /* Check not included */
+        /*  9*/ { BARCODE_CODABAR, 1, BARCODE_PLAIN_HRT, "A123456A", "A123456$A" },
+        /* 10*/ { BARCODE_CODABAR, 2, -1, "A123456A", "A123456$A" }, /* Check included */
+        /* 11*/ { BARCODE_CODABAR, 2, BARCODE_PLAIN_HRT, "A123456A", "A123456$A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -118,12 +126,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

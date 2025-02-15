@@ -93,6 +93,7 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
         int length;
 
@@ -100,14 +101,19 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODE11, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
-        /*  1*/ { BARCODE_CODE11, 1, "123-45", -1, "123-455" }, /* 1 check digit */
-        /*  2*/ { BARCODE_CODE11, 2, "123-45", -1, "123-45" }, /* No checksums */
-        /*  3*/ { BARCODE_CODE11, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
+        /*  0*/ { BARCODE_CODE11, -1, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
+        /*  1*/ { BARCODE_CODE11, -1, BARCODE_PLAIN_HRT, "123-45", -1, "123-4552" }, /* No difference */
+        /*  2*/ { BARCODE_CODE11, 1, -1, "123-45", -1, "123-455" }, /* 1 check digit */
+        /*  3*/ { BARCODE_CODE11, 1, BARCODE_PLAIN_HRT, "123-45", -1, "123-455" }, /* No difference */
+        /*  4*/ { BARCODE_CODE11, 2, -1, "123-45", -1, "123-45" }, /* No checksums */
+        /*  5*/ { BARCODE_CODE11, 2, BARCODE_PLAIN_HRT, "123-45", -1, "123-45" }, /* No difference */
+        /*  6*/ { BARCODE_CODE11, -1, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
+        /*  7*/ { BARCODE_CODE11, -1, BARCODE_PLAIN_HRT, "123456789012", -1, "123456789012-8" }, /* No difference */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -118,12 +124,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, data[i].length, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

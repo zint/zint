@@ -19,11 +19,11 @@ else()
     qt5_wrap_ui(zint-qt_SRCS mainWindow.ui extCLI.ui extData.ui extScale.ui extSequence.ui extExport.ui)
 endif()
 
-#           grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMailmark2D.ui  grpPDF417.ui  grpUPCA.ui
-#           grpC11.ui    grpC49.ui      grpCodeOne.ui     grpDPD.ui      grpMaxicode.ui    grpPZN.ui     grpUPCEAN.ui
-#           grpC128.ui   grpC93.ui      grpDAFT.ui        grpGrid.ui     grpMicroPDF.ui    grpQR.ui      grpUPNQR.ui
-#           grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpHX.ui       grpMQR.ui         grpRMQR.ui    grpVIN.ui
-#           grpC25.ui    grpCodabar.ui  grpDM.ui          grpITF14.ui    grpMSICheck.ui    grpUltra.ui
+#           grpAztec.ui  grpC39.ui      grpCodablockF.ui  grpDotCode.ui  grpMailmark2D.ui  grpPDF417.ui   grpUltra.ui
+#           grpC11.ui    grpC49.ui      grpCodeOne.ui     grpDPD.ui      grpMaxicode.ui    grpPlessey.ui  grpUPCA.ui
+#           grpC128.ui   grpC93.ui      grpDAFT.ui        grpGrid.ui     grpMicroPDF.ui    grpPZN.ui      grpUPCEAN.ui
+#           grpC16k.ui   grpChannel.ui  grpDBExtend.ui    grpHX.ui       grpMQR.ui         grpQR.ui       grpUPNQR.ui
+#           grpC25.ui    grpCodabar.ui  grpDM.ui          grpITF14.ui    grpMSICheck.ui    grpRMQR.ui     grpVIN.ui
 
 if(APPLE)
     # https://doc.qt.io/qt-5/appicon.html

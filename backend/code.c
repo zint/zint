@@ -126,9 +126,8 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     int posns[86];
     char dest[890]; /* 10 (Start) + 86 * 10 + 10 (Check) + 9 (Stop) + 1 = 890 */
     char *d = dest;
-    char localstr[2] = {0};
-
-    counter = 0;
+    char check_digit = '\0';
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 2)) {
         symbol->option_2 = 0;
@@ -155,28 +154,17 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     memcpy(d, C39Table[43], 10);
     d += 10;
 
-    for (i = 0; i < length; i++, d += 10) {
+    for (i = 0, counter = 0; i < length; i++, d += 10) {
         memcpy(d, C39Table[posns[i]], 10);
         counter += posns[i];
     }
 
     if (symbol->option_2 == 1 || symbol->option_2 == 2) { /* Visible or hidden check digit */
-
-        char check_digit;
         counter %= 43;
         check_digit = SILVER[counter];
         memcpy(d, C39Table[counter], 10);
         d += 10;
 
-        /* Display a space check digit as _, otherwise it looks like an error */
-        if (check_digit == ' ') {
-            check_digit = '_';
-        }
-
-        if (symbol->option_2 == 1) { /* Visible check digit */
-            localstr[0] = check_digit;
-            localstr[1] = '\0';
-        }
         if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", check_digit);
     }
 
@@ -223,14 +211,19 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (symbol->symbology == BARCODE_CODE39) {
-        ustrcpy(symbol->text, "*");
-        ustrncat(symbol->text, source, length);
-        ustrcat(symbol->text, localstr);
-        ustrcat(symbol->text, "*");
+    if (symbol->symbology == BARCODE_CODE39 && !plain_hrt) {
+        hrt_cpy_chr(symbol, '*');
+        hrt_cat_nochk(symbol, source, length);
+        if (symbol->option_2 == 1) { /* Visible check digit */
+            /* Display a space check digit as _, otherwise it looks like an error */
+            hrt_cat_chr_nochk(symbol, check_digit == ' ' ? '_' : check_digit);
+        }
+        hrt_cat_chr_nochk(symbol, '*');
     } else {
-        ustrcpy(symbol->text, source);
-        ustrcat(symbol->text, localstr);
+        hrt_cpy_nochk(symbol, source, length);
+        if (symbol->option_2 == 1 || (plain_hrt && check_digit)) {
+            hrt_cat_chr_nochk(symbol, !plain_hrt && check_digit == ' ' ? '_' : check_digit);
+        }
     }
     return error_number;
 }
@@ -243,6 +236,7 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned char check_digit = '\0';
     int i;
     int error_number;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 86) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
@@ -250,7 +244,7 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
 
     /* Creates a buffer string and places control characters into it */
     for (i = 0; i < length; i++) {
-        if (source[i] > 127) {
+        if (!z_isascii(source[i])) {
             /* Cannot encode extended ASCII */
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 329,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
@@ -267,22 +261,16 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     /* Then sends the buffer to the C39 function */
     error_number = code39(symbol, buffer, b - buffer);
 
-    /* Save visible check digit */
-    if (symbol->option_2 == 1) {
-        const int len = (int) ustrlen(symbol->text);
-        if (len > 0) {
-            check_digit = symbol->text[len - 1];
-        }
+    /* Save visible (or BARCODE_PLAIN_HRT) check digit */
+    if (symbol->option_2 == 1 || (plain_hrt && symbol->option_2 == 2)) {
+        check_digit = symbol->text[symbol->text_length - 1];
     }
 
-    /* Copy over source to HRT, subbing space for unprintables */
-    for (i = 0; i < length; i++)
-        symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
-
+    /* Copy over source to HRT, subbing space for unprintables (unless BARCODE_PLAIN_HRT) */
+    (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 86) */
     if (check_digit) {
-        symbol->text[i++] = check_digit;
+        hrt_cat_chr_nochk(symbol, check_digit);
     }
-    symbol->text[i] = '\0';
 
     return error_number;
 }
@@ -301,6 +289,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     char *b = buffer;
     char dest[764]; /* 6 (Start) + 123*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 764 */
     char *d = dest;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
     assert(length > 0);
@@ -311,14 +300,13 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* Message Content */
     for (i = 0; i < length; i++) {
-        if (source[i] > 127) {
+        if (!z_isascii(source[i])) {
             /* Cannot encode extended ASCII */
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 331,
                             "Invalid character at position %d in input, extended ASCII not allowed", i + 1);
         }
         memcpy(b, C93Ctrl[source[i]], 2);
         b += C93Ctrl[source[i]][1] ? 2 : 1;
-        symbol->text[i] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
     }
 
     /* Now we can check the true length of the barcode */
@@ -360,7 +348,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     h += 2;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Check digit c: %d, k: %d\n", c, k);
+        printf("Check digit c: %c (%d), k: %c (%d)\n", SILVER[c], c, SILVER[k], k);
     }
 
     /* Start character */
@@ -387,10 +375,10 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (symbol->option_2 == 1) {
-        symbol->text[length] = SILVER[c];
-        symbol->text[length + 1] = SILVER[k];
-        symbol->text[length + 2] = '\0';
+    (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 123) */
+    if (symbol->option_2 == 1 || plain_hrt) {
+        hrt_cat_chr_nochk(symbol, SILVER[c]);
+        hrt_cat_chr_nochk(symbol, SILVER[k]);
     }
 
     return error_number;
@@ -407,6 +395,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     char output_check;
     int sum;
     int i;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
     static const char weight[17] = { 8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2 };
 
     /* Check length */
@@ -465,7 +454,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     d += 10;
 
     /* Import character 'I' prefix? */
-    if (symbol->option_2 & 1) {
+    if (symbol->option_2 == 1) {
         memcpy(d, C39Table[18], 10);
         d += 10;
     }
@@ -481,7 +470,12 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     expand(symbol, dest, d - dest);
 
-    ustrcpy(symbol->text, source);
+    if (plain_hrt && symbol->option_2 == 1) {
+        hrt_cpy_chr(symbol, 'I');
+        hrt_cat_nochk(symbol, source, length);
+    } else {
+        hrt_cpy_nochk(symbol, source, length);
+    }
 
     /* Specification of dimensions/height for BARCODE_VIN unlikely */
 

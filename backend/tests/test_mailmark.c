@@ -31,6 +31,61 @@
 
 #include "testcommon.h"
 
+static void test_4s_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int output_options;
+        const char *data;
+
+        const char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { -1, "1100000000000XY11", "" }, /* None */
+        /*  1*/ { BARCODE_PLAIN_HRT, "1100000000000XY11", "1100000000000XY11     " },
+        /*  2*/ { -1, "1100000000000XY11 ", "" }, /* None */
+        /*  3*/ { BARCODE_PLAIN_HRT, "1100000000000XY11 ", "1100000000000XY11     " },
+        /*  4*/ { -1, "0100000000000A00AA0A", "" }, /* None */
+        /*  5*/ { BARCODE_PLAIN_HRT, "0100000000000A00AA0A", "0100000000000A00AA0A  " }, /* None */
+        /*  6*/ { -1, "41038422416563762XY11  ", "" }, /* None */
+        /*  7*/ { BARCODE_PLAIN_HRT, "41038422416563762XY11  ", "41038422416563762XY11     " },
+        /*  8*/ { -1, "01000000000000000AA000AA0A", "" }, /* None */
+        /*  9*/ { BARCODE_PLAIN_HRT, "01000000000000000AA000AA0A", "01000000000000000AA000AA0A" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+    int expected_length;
+
+    testStartSymbol("test_4s_hrt", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
+
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d (%s)\n",
+                    i, symbol->text_length, expected_length, symbol->text);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_4s_input(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -604,6 +659,7 @@ static void test_2d_encode(const testCtx *const p_ctx) {
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
+        { "test_4s_hrt", test_4s_hrt },
         { "test_4s_input", test_4s_input },
         { "test_4s_encode_vector", test_4s_encode_vector },
         { "test_4s_encode", test_4s_encode },

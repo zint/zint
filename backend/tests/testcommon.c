@@ -52,6 +52,8 @@
 #include "../eci.h"
 #include "../output.h"
 
+#define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
+
 static int testTests = 0;
 static int testFailed = 0;
 static int testSkipped = 0;
@@ -124,7 +126,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...) {
 #ifdef _WIN32
 #define utf8_to_wide(u, w) \
     { \
-        int lenW; /* Includes NUL terminator */ \
+        int lenW; /* Includes terminating NUL */ \
         if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return 0; \
         w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
         if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return 0; \
@@ -681,6 +683,8 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "COMPLIANT_HEIGHT", COMPLIANT_HEIGHT, 0x2000 },
         { "EANUPC_GUARD_WHITESPACE", EANUPC_GUARD_WHITESPACE, 0x4000 },
         { "EMBED_VECTOR_FONT", EMBED_VECTOR_FONT, 0x8000 },
+        { "BARCODE_MEMORY_FILE", BARCODE_MEMORY_FILE, 0x10000 },
+        { "BARCODE_PLAIN_HRT", BARCODE_PLAIN_HRT, 0x20000 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;
@@ -4183,12 +4187,12 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         expected = escaped;
     }
     if (gs1 && symbology != BARCODE_EAN14 && symbology != BARCODE_NVE18) {
-        ret = gs1_verify(symbol, (const unsigned char *) expected, expected_len, (unsigned char *) reduced);
+        ret = gs1_verify(symbol, (const unsigned char *) expected, expected_len, (unsigned char *) reduced,
+                        &expected_len);
         if (ret >= ZINT_ERROR) {
             sprintf(msg, "gs1_verify %d != 0", ret);
             return 4;
         }
-        expected_len = (int) strlen(reduced);
         expected = reduced;
         if (primary) {
             /* TODO: */
@@ -4450,7 +4454,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         /* Add hyphen at start */
         pzn[0] = '-';
         memcpy(pzn + 1, expected, expected_len);
-        if ((symbol->option_2 == 0 && expected_len != 8) || (symbol->option_2 == 1 && expected_len != 7)) {
+        if ((symbol->option_2 != 1 && expected_len != 8) || (symbol->option_2 == 1 && expected_len != 7)) {
             cmp_len--; /* Don't bother with check digit */
         }
         expected = pzn;

@@ -42,7 +42,7 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
 /* Interleaved 2-of-5 (ITF-14) */
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
-    unsigned char localstr[16] = {0};
+    unsigned char local_source[14];
 
     if (length > 13) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 13)", length);
@@ -56,15 +56,13 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     /* Add leading zeros as required */
     zeroes = 13 - length;
     for (i = 0; i < zeroes; i++) {
-        localstr[i] = '0';
+        local_source[i] = '0';
     }
-    ustrcpy(localstr + zeroes, source);
+    memcpy(local_source + zeroes, source, length);
 
     /* Calculate the check digit - the same method used for EAN-13 */
-    localstr[13] = gs1_check_digit(localstr, 13);
-    localstr[14] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
-    ustrcpy(symbol->text, localstr);
+    local_source[13] = gs1_check_digit(local_source, 13);
+    error_number = c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     if (error_number < ZINT_ERROR) {
         if (!(symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
@@ -88,6 +86,8 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
         }
     }
 
+    hrt_cpy_nochk(symbol, local_source, 14);
+
     return error_number;
 }
 
@@ -101,11 +101,12 @@ static char c25_dp_check_digit(const unsigned int count) {
 https://www.deutschepost.de/content/dam/dpag/images/D_d/dialogpost-schwer/dp-dialogpost-schwer-broschuere-072021.pdf
 */
 INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, j, error_number;
+    int i, error_number;
     unsigned int count;
     int factor;
-    unsigned char localstr[16] = {0};
+    unsigned char local_source[14];
     int zeroes;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     count = 0;
     if (length > 13) {
@@ -118,30 +119,29 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 
     zeroes = 13 - length;
     for (i = 0; i < zeroes; i++)
-        localstr[i] = '0';
-    ustrcpy(localstr + zeroes, source);
+        local_source[i] = '0';
+    memcpy(local_source + zeroes, source, length);
 
     factor = 4;
     for (i = 12; i >= 0; i--) {
-        count += factor * ctoi(localstr[i]);
+        count += factor * ctoi(local_source[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[13] = c25_dp_check_digit(count);
-    localstr[14] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
-
-    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
-       https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
-    for (i = 0, j = 0; i <= 14; i++) {
-        symbol->text[j++] = localstr[i];
-        if (i == 4 || i == 7 || i == 10) {
-            symbol->text[j++] = '.';
-        }
-    }
+    local_source[13] = c25_dp_check_digit(count);
+    error_number = c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* TODO: Find documentation on BARCODE_DPLEIT dimensions/height */
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
+
+    if (plain_hrt) {
+        hrt_cpy_nochk(symbol, local_source, 14);
+    } else {
+        /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
+           https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
+        hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
+                    local_source + 11);
+    }
 
     return error_number;
 }
@@ -149,10 +149,11 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
 /* Deutsche Post Identcode */
 /* See dpleit() for (sort of) documentation reference */
 INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int i, j, error_number, zeroes;
+    int i, error_number, zeroes;
     unsigned int count;
     int factor;
-    unsigned char localstr[16] = {0};
+    unsigned char local_source[12];
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     count = 0;
     if (length > 11) {
@@ -165,31 +166,28 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
 
     zeroes = 11 - length;
     for (i = 0; i < zeroes; i++)
-        localstr[i] = '0';
-    ustrcpy(localstr + zeroes, source);
+        local_source[i] = '0';
+    memcpy(local_source + zeroes, source, length);
 
     factor = 4;
     for (i = 10; i >= 0; i--) {
-        count += factor * ctoi(localstr[i]);
+        count += factor * ctoi(local_source[i]);
         factor ^= 0x0D; /* Toggles 4 and 9 */
     }
-    localstr[11] = c25_dp_check_digit(count);
-    localstr[12] = '\0';
-    error_number = c25_inter_common(symbol, localstr, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
-
-    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
-    for (i = 0, j = 0; i <= 12; i++) {
-        symbol->text[j++] = localstr[i];
-        if (i == 1 || i == 4 || i == 7) {
-            symbol->text[j++] = '.';
-        } else if (i == 3 || i == 10) {
-            symbol->text[j++] = ' ';
-        }
-    }
+    local_source[11] = c25_dp_check_digit(count);
+    error_number = c25_inter_common(symbol, local_source, 12, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     /* TODO: Find documentation on BARCODE_DPIDENT dimensions/height */
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
+
+    if (plain_hrt) {
+        hrt_cpy_nochk(symbol, local_source, 12);
+    } else {
+        /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
+        hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
+                local_source + 5, local_source + 8, local_source[11]);
+    }
 
     return error_number;
 }

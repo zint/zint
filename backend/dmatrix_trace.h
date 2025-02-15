@@ -1,7 +1,7 @@
 /* dmatrix_trace.h - Trace routines for DM_COMPRESSION algorithm */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2021-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2021-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -32,12 +32,6 @@
 
 #ifndef Z_DMATRIX_TRACE_H
 #define Z_DMATRIX_TRACE_H
-
-#ifndef DM_TRACE
-#define DM_TRACE_Edges(px, s, l, p, v)
-#define DM_TRACE_AddEdge(s, l, es, p, v, e)
-#define DM_TRACE_NotAddEdge(s, l, es, p, v, ij, e)
-#else
 
 static int DM_TRACE_getPreviousMode(struct dm_edge *edges, struct dm_edge *edge) {
     struct dm_edge *previous = DM_PREVIOUS(edges, edge);
@@ -70,8 +64,9 @@ static void DM_TRACE_EdgeToString(char *buf, const unsigned char *source, const 
 
 static void DM_TRACE_Path(const unsigned char *source, const int length, struct dm_edge *edges,
             struct dm_edge *edge, char *result, const int result_size) {
+    struct dm_edge *current;
     DM_TRACE_EdgeToString(result, source, length, edges, edge);
-    struct dm_edge *current = DM_PREVIOUS(edges, edge);
+    current = DM_PREVIOUS(edges, edge);
     while (current) {
         char s[256];
         char *pos;
@@ -81,8 +76,7 @@ static void DM_TRACE_Path(const unsigned char *source, const int length, struct 
         assert(pos);
         len = strlen(result);
         if ((pos - s) + 1 + len + 1 >= result_size) {
-            result[result_size - 4] = '\0';
-            strcat(result, "...");
+            memcpy(result + result_size - 4, "...", 4); /* Include terminating NUL */
             break;
         }
         memmove(result + (pos - s) + 1, result, len + 1);
@@ -150,6 +144,5 @@ static void DM_TRACE_NotAddEdge(const unsigned char *source, const int length, s
     }
 }
 
-#endif /* DM_TRACE */
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_DMATRIX_TRACE_H */

@@ -266,7 +266,7 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
         case BARCODE_EANX_CC:
         case BARCODE_ISBNX:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
-            switch (ustrlen(symbol->text)) {
+            switch (symbol->text_length) {
                 case 13: /* EAN-13/ISBN */
                     if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
                         *left = comp_xoffset >= 10 ? 1.0f : 11.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
@@ -311,14 +311,14 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
                 *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need at least 1X for CC-A/B */
-                if (ustrlen(symbol->text) > 12) { /* UPC-A + add-on */
+                if (symbol->text_length > 12) { /* UPC-A + add-on */
                     *right = 5.0f;
                 } else {
                     *right = 9.0f - (comp_xoffset != 0);
                 }
             } else if (!hide_text) {
                 *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need for outside left digit */
-                if (ustrlen(symbol->text) <= 12) { /* No add-on */
+                if (symbol->text_length <= 12) { /* No add-on */
                     *right = 9.0f - (comp_xoffset != 0); /* Need for outside right digit */
                 }
             }
@@ -330,14 +330,14 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             if (!(symbol->output_options & BARCODE_NO_QUIET_ZONES)) {
                 *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset;
-                if (ustrlen(symbol->text) > 8) { /* UPC-E + add-on */
+                if (symbol->text_length > 8) { /* UPC-E + add-on */
                     *right = 5.0f;
                 } else {
                     *right = 7.0f - (comp_xoffset != 0);
                 }
             } else if (!hide_text) {
                 *left = comp_xoffset >= 8 ? 1.0f : 9.0f - comp_xoffset; /* Need for outside left digit */
-                if (ustrlen(symbol->text) <= 8) { /* No add-on */
+                if (symbol->text_length <= 8) { /* No add-on */
                     *right = 7.0f - (comp_xoffset != 0); /* Need for outside right digit */
                 }
             }
@@ -747,12 +747,11 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
     int main_width; /* Width of main linear symbol, excluding add-on */
     int upceanflag; /* EAN/UPC type flag */
     int i, j, latch;
-    const int text_length = (int) ustrlen(symbol->text);
 
     latch = 0;
     j = 0;
     /* Isolate add-on text */
-    for (i = 6; i < text_length && j < 5; i++) {
+    for (i = 6; i < symbol->text_length && j < 5; i++) {
         if (latch == 1) {
             /* Use dummy space-filled add-on if no hrt */
             addon[j] = symbol->show_hrt ? symbol->text[i] : ' ';
@@ -776,7 +775,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
     main_width = symbol->width;
     if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
             || (symbol->symbology == BARCODE_EANX_CC) || (symbol->symbology == BARCODE_ISBNX)) {
-        switch (text_length) {
+        switch (symbol->text_length) {
             case 13: /* EAN-13 */
             case 16: /* EAN-13 + EAN-2 */
             case 19: /* EAN-13 + EAN-5 */
@@ -889,7 +888,7 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
 /* Convert UTF-8 to Windows wide chars. Ticket #288, props Marcel */
 #define utf8_to_wide(u, w, r) \
     { \
-        int lenW; /* Includes NUL terminator */ \
+        int lenW; /* Includes terminating NUL */ \
         if ((lenW = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, NULL, 0)) == 0) return r; \
         w = (wchar_t *) z_alloca(sizeof(wchar_t) * lenW); \
         if (MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, u, -1, w, lenW) == 0) return r; \
@@ -899,14 +898,14 @@ INTERNAL float out_large_bar_height(struct zint_symbol *symbol, const int si, in
 INTERNAL FILE *out_win_fopen(const char *filename, const char *mode) {
     wchar_t *filenameW, *modeW;
 
-    utf8_to_wide(filename, filenameW, NULL);
+    utf8_to_wide(filename, filenameW, NULL /*fail return*/);
     utf8_to_wide(mode, modeW, NULL);
 
     return _wfopen(filenameW, modeW);
 }
 #endif
 
-/* Make a directory; already existing dir okay */
+/* Make a directory; already existing dir okay. Returns 0 on success */
 /* Adapted from https://gist.github.com/JonathonReinhart/8c0d90191c38af2dcadb102c4e202950 and
    https://nachtimwald.com/2019/07/10/recursive-create-directory-in-c-revisited/ */
 static int out_maybe_mkdir(const char *path) {
@@ -915,7 +914,7 @@ static int out_maybe_mkdir(const char *path) {
     wchar_t *pathW;
 
     /* Assumes `path` is UTF-8 encoded */
-    utf8_to_wide(path, pathW, 0);
+    utf8_to_wide(path, pathW, -1 /*fail return*/);
 
     /* Try to make the directory */
     if (CreateDirectoryW(pathW, NULL) != 0) { /* Non-zero on success */

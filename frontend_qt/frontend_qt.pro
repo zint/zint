@@ -52,6 +52,7 @@ FORMS += extCLI.ui \
          grpMQR.ui \
          grpMSICheck.ui \
          grpPDF417.ui \
+         grpPlessey.ui \
          grpPZN.ui \
          grpQR.ui \
          grpRMQR.ui \

@@ -1,7 +1,7 @@
 /* pdf417_trace.h - Trace routines for optimal PDF417 optimization algorithm */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022-2023 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -33,12 +33,6 @@
 #ifndef Z_PDF417_TRACE_H
 #define Z_PDF417_TRACE_H
 
-#ifndef PDF_TRACE
-#define PDF_TRACE_Edges(px, s, l, p, v)
-#define PDF_TRACE_AddEdge(s, l, es, p, v, t, e) do { (void)(s); (void)(l); } while (0)
-#define PDF_TRACE_NotAddEdge(s, l, es, p, v, t, e) do { (void)(s); (void)(l); } while (0)
-#else
-
 static int PDF_TRACE_getPreviousMode(struct pdf_edge *edges, struct pdf_edge *edge) {
     struct pdf_edge *previous = PDF_PREVIOUS(edges, edge);
     return previous == NULL ? PDF_ALP : previous->mode;
@@ -61,8 +55,9 @@ static void PDF_TRACE_EdgeToString(char *buf, const unsigned char *source, const
 
 static void PDF_TRACE_Path(const unsigned char *source, const int length, struct pdf_edge *edges,
             struct pdf_edge *edge, char *result, const int result_size) {
+    struct pdf_edge *current;
     PDF_TRACE_EdgeToString(result, source, length, edges, edge);
-    struct pdf_edge *current = PDF_PREVIOUS(edges, edge);
+    current = PDF_PREVIOUS(edges, edge);
     while (current) {
         char s[256];
         char *pos;
@@ -72,8 +67,7 @@ static void PDF_TRACE_Path(const unsigned char *source, const int length, struct
         assert(pos);
         len = strlen(result);
         if ((pos - s) + 1 + len + 1 >= result_size) {
-            result[result_size - 4] = '\0';
-            strcat(result, "...");
+            memcpy(result + result_size - 4, "...", 4); /* Include terminating NUL */
             break;
         }
         memmove(result + (pos - s) + 1, result, len + 1);
@@ -131,6 +125,5 @@ static void PDF_TRACE_NotAddEdge(const unsigned char *source, const int length, 
             new_size, edge->units, edge->unit_size, edge->size);
 }
 
-#endif /* PDF_TRACE */
 /* vim: set ts=4 sw=4 et : */
 #endif /* Z_PDF417_TRACE_H */

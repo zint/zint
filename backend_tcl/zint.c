@@ -180,6 +180,8 @@
 - Added DXFILMEDGE
 2025-01-29 GL
 - MSVC: suppress warning 4996 (_CRT_SECURE_NO_WARNINGS)
+2025-02-15 GL
+- strcpy() -> memcpy(); sizeof(primary); tabs -> spaces
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -620,60 +622,60 @@ DLLEXPORT int Zint_Init (Tcl_Interp *interp)
     /*------------------------------------------------------------------------*/
     /* Add build info                                                         */
     if (Tcl_GetCommandInfo(interp, "::tcl::build-info", &info)) {
-	Tcl_CreateObjCommand(interp, "::zint::build-info",
-		info.objProc, (void *)(
-		    PACKAGE_VERSION "+" STRINGIFY(SAMPLE_VERSION_UUID)
+    Tcl_CreateObjCommand(interp, "::zint::build-info",
+        info.objProc, (void *)(
+            PACKAGE_VERSION "+" STRINGIFY(SAMPLE_VERSION_UUID)
 #if defined(__clang__) && defined(__clang_major__)
-			    ".clang-" STRINGIFY(__clang_major__)
+                ".clang-" STRINGIFY(__clang_major__)
 #if __clang_minor__ < 10
-			    "0"
+                "0"
 #endif
-			    STRINGIFY(__clang_minor__)
+                STRINGIFY(__clang_minor__)
 #endif
 #if defined(__cplusplus) && !defined(__OBJC__)
-			    ".cplusplus"
+                ".cplusplus"
 #endif
 #ifndef NDEBUG
-			    ".debug"
+                ".debug"
 #endif
 #if !defined(__clang__) && !defined(__INTEL_COMPILER) && defined(__GNUC__)
-			    ".gcc-" STRINGIFY(__GNUC__)
+                ".gcc-" STRINGIFY(__GNUC__)
 #if __GNUC_MINOR__ < 10
-			    "0"
+                "0"
 #endif
-			    STRINGIFY(__GNUC_MINOR__)
+                STRINGIFY(__GNUC_MINOR__)
 #endif
 #ifdef __INTEL_COMPILER
-			    ".icc-" STRINGIFY(__INTEL_COMPILER)
+                ".icc-" STRINGIFY(__INTEL_COMPILER)
 #endif
 #ifdef TCL_MEM_DEBUG
-			    ".memdebug"
+                ".memdebug"
 #endif
 #if defined(_MSC_VER)
-			    ".msvc-" STRINGIFY(_MSC_VER)
+                ".msvc-" STRINGIFY(_MSC_VER)
 #endif
 #ifdef USE_NMAKE
-			    ".nmake"
+                ".nmake"
 #endif
 #ifndef TCL_CFG_OPTIMIZED
-			    ".no-optimize"
+                ".no-optimize"
 #endif
 #ifdef __OBJC__
-			    ".objective-c"
+                ".objective-c"
 #if defined(__cplusplus)
-			    "plusplus"
+                "plusplus"
 #endif
 #endif
 #ifdef TCL_CFG_PROFILED
-			    ".profile"
+                ".profile"
 #endif
 #ifdef PURIFY
-			    ".purify"
+                ".purify"
 #endif
 #ifdef STATIC_BUILD
-			    ".static"
+                ".static"
 #endif
-		), NULL);
+        ), NULL);
     }
     /*------------------------------------------------------------------------*/
     /* This procedure is called once per thread and any thread local data     */
@@ -684,7 +686,7 @@ DLLEXPORT int Zint_Init (Tcl_Interp *interp)
     *tkFlagPtr = 0;
     Tcl_CallWhenDeleted(interp, InterpCleanupProc, (ClientData)tkFlagPtr);
     /*------------------------------------------------------------------------*/
-    /* FIXME: to unload even on command rename, capture the tolken, put it in */
+    /* FIXME: to unload even on command rename, capture the token, put it in  */
     /* the client data and use it to delete the command.                      */
     Tcl_CreateObjCommand(interp, "zint", ZintCmd, (ClientData)tkFlagPtr,
             (Tcl_CmdDeleteProc *)NULL);
@@ -987,12 +989,11 @@ static int Encode(Tcl_Interp *interp, int objc,
             }
             break;
         case iPrimary:
-            /* > Primary String up to 90 characters */
-            /* > Output filename up to 250 characters */
+            /* > Primary String up to 127 characters */
             Tcl_DStringInit(& dString);
             pStr = Tcl_GetStringFromObj(objv[optionPos+1], &lStr);
             Tcl_UtfToExternalDString( hZINTEncoding, pStr, lStr, &dString);
-            if (Tcl_DStringLength(&dString) > (optionIndex==iPrimary?90:250)) {
+            if (Tcl_DStringLength(&dString) >= (int) sizeof(my_symbol->primary)) {
                 Tcl_DStringFree(&dString);
                 Tcl_SetObjResult(interp,Tcl_NewStringObj("String too long", -1));
                 fError = 1;
@@ -1181,8 +1182,8 @@ static int Encode(Tcl_Interp *interp, int objc,
             break;
         case iReverse:
             if (intValue) {
-                strcpy(my_symbol->fgcolour, "ffffff");
-                strcpy(my_symbol->bgcolour, "000000");
+                memcpy(my_symbol->fgcolour, "ffffff", 7); /* Include terminating NUL */
+                memcpy(my_symbol->bgcolour, "000000", 7);
             }
             break;
         case iWError:
@@ -1200,7 +1201,7 @@ static int Encode(Tcl_Interp *interp, int objc,
             break;
         case iNoBackground:
             if (intValue) {
-                strcpy(my_symbol->bgcolour, "ffffff00");
+                memcpy(my_symbol->bgcolour, "ffffff00", 9); /* Include terminating NUL */
             }
             break;
         case iNoQuietZones:
@@ -1372,7 +1373,8 @@ static int Encode(Tcl_Interp *interp, int objc,
             }
             break;
         case iPrimary:
-            strcpy(my_symbol->primary, Tcl_DStringValue( &dString ) );
+            /* Include terminating NUL */
+            memcpy(my_symbol->primary, Tcl_DStringValue(&dString), Tcl_DStringLength(&dString) + 1);
             Tcl_DStringFree(&dString);
             break;
         case iRotate:

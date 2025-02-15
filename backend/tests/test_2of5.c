@@ -115,39 +115,65 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
         const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_C25STANDARD, -1, "123456789", "123456789" },
-        /*  1*/ { BARCODE_C25STANDARD, 1, "123456789", "1234567895" },
-        /*  2*/ { BARCODE_C25STANDARD, 2, "123456789", "123456789" }, /* Suppresses printing of check digit */
-        /*  3*/ { BARCODE_C25INTER, -1, "123456789", "0123456789" }, /* Adds leading zero if odd */
-        /*  4*/ { BARCODE_C25INTER, 1, "123456789", "1234567895" }, /* Unless check digit added when it becomes even */
-        /*  5*/ { BARCODE_C25INTER, 2, "123456789", "123456789" },
-        /*  6*/ { BARCODE_C25INTER, -1, "1234567890", "1234567890" }, /* No leading zero if even */
-        /*  7*/ { BARCODE_C25INTER, 1, "1234567890", "012345678905" }, /* Unless check digit added when it becomes odd */
-        /*  8*/ { BARCODE_C25INTER, 2, "1234567890", "01234567890" },
-        /*  9*/ { BARCODE_C25IATA, -1, "123456789", "123456789" },
-        /* 10*/ { BARCODE_C25IATA, 1, "123456789", "1234567895" },
-        /* 11*/ { BARCODE_C25IATA, 2, "123456789", "123456789" },
-        /* 12*/ { BARCODE_C25LOGIC, -1, "123456789", "123456789" },
-        /* 13*/ { BARCODE_C25LOGIC, 1, "123456789", "1234567895" },
-        /* 14*/ { BARCODE_C25LOGIC, 2, "123456789", "123456789" },
-        /* 15*/ { BARCODE_C25IND, -1, "123456789", "123456789" },
-        /* 16*/ { BARCODE_C25IND, 1, "123456789", "1234567895" },
-        /* 17*/ { BARCODE_C25IND, 2, "123456789", "123456789" },
-        /* 18*/ { BARCODE_DPLEIT, -1, "123456789", "00001.234.567.890" }, /* Leading zeroes added to make 13 + appended checksum */
-        /* 19*/ { BARCODE_DPLEIT, -1, "1234567890123", "12345.678.901.236" },
-        /* 20*/ { BARCODE_DPIDENT, -1, "123456789", "00.12 3.456.789 0" }, /* Leading zeroes added to make 11 + appended checksum */
-        /* 21*/ { BARCODE_DPIDENT, -1, "12345678901", "12.34 5.678.901 6" },
-        /* 22*/ { BARCODE_ITF14, -1, "123456789", "00001234567895" }, /* Leading zeroes added to make 13 + appended checksum */
-        /* 23*/ { BARCODE_ITF14, -1, "1234567890123", "12345678901231" },
+        /*  0*/ { BARCODE_C25STANDARD, -1, -1, "123456789", "123456789" },
+        /*  1*/ { BARCODE_C25STANDARD, -1, BARCODE_PLAIN_HRT, "123456789", "123456789" },
+        /*  2*/ { BARCODE_C25STANDARD, 1, -1, "123456789", "1234567895" },
+        /*  3*/ { BARCODE_C25STANDARD, 1, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /*  4*/ { BARCODE_C25STANDARD, 2, -1, "123456789", "123456789" }, /* Suppresses printing of check digit */
+        /*  5*/ { BARCODE_C25STANDARD, 2, BARCODE_PLAIN_HRT, "123456789", "1234567895" }, /* Unless plain HRT */
+        /*  6*/ { BARCODE_C25INTER, -1, -1, "123456789", "0123456789" }, /* Adds leading zero if odd */
+        /*  6*/ { BARCODE_C25INTER, -1, BARCODE_PLAIN_HRT, "123456789", "0123456789" },
+        /*  7*/ { BARCODE_C25INTER, 1, -1, "123456789", "1234567895" }, /* Unless check digit added when it becomes even */
+        /*  8*/ { BARCODE_C25INTER, 1, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /*  9*/ { BARCODE_C25INTER, 2, -1, "123456789", "123456789" },
+        /* 10*/ { BARCODE_C25INTER, 2, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 11*/ { BARCODE_C25INTER, -1, -1, "1234567890", "1234567890" }, /* No leading zero if even */
+        /* 12*/ { BARCODE_C25INTER, -1, BARCODE_PLAIN_HRT, "1234567890", "1234567890" },
+        /* 13*/ { BARCODE_C25INTER, 1, -1, "1234567890", "012345678905" }, /* Unless check digit added when it becomes odd */
+        /* 14*/ { BARCODE_C25INTER, 1, BARCODE_PLAIN_HRT, "1234567890", "012345678905" },
+        /* 15*/ { BARCODE_C25INTER, 2, -1, "1234567890", "01234567890" },
+        /* 16*/ { BARCODE_C25INTER, 2, BARCODE_PLAIN_HRT, "1234567890", "012345678905" },
+        /* 17*/ { BARCODE_C25IATA, -1, -1, "123456789", "123456789" },
+        /* 18*/ { BARCODE_C25IATA, -1, BARCODE_PLAIN_HRT, "123456789", "123456789" },
+        /* 19*/ { BARCODE_C25IATA, 1, -1, "123456789", "1234567895" },
+        /* 20*/ { BARCODE_C25IATA, 1, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 21*/ { BARCODE_C25IATA, 2, -1, "123456789", "123456789" },
+        /* 22*/ { BARCODE_C25IATA, 2, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 23*/ { BARCODE_C25LOGIC, -1, -1, "123456789", "123456789" },
+        /* 24*/ { BARCODE_C25LOGIC, -1, BARCODE_PLAIN_HRT, "123456789", "123456789" },
+        /* 25*/ { BARCODE_C25LOGIC, 1, -1, "123456789", "1234567895" },
+        /* 26*/ { BARCODE_C25LOGIC, 1, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 27*/ { BARCODE_C25LOGIC, 2, -1, "123456789", "123456789" },
+        /* 28*/ { BARCODE_C25LOGIC, 2, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 29*/ { BARCODE_C25IND, -1, -1, "123456789", "123456789" },
+        /* 30*/ { BARCODE_C25IND, -1, BARCODE_PLAIN_HRT, "123456789", "123456789" },
+        /* 31*/ { BARCODE_C25IND, 1, -1, "123456789", "1234567895" },
+        /* 32*/ { BARCODE_C25IND, 1, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 33*/ { BARCODE_C25IND, 2, -1, "123456789", "123456789" },
+        /* 34*/ { BARCODE_C25IND, 2, BARCODE_PLAIN_HRT, "123456789", "1234567895" },
+        /* 35*/ { BARCODE_DPLEIT, -1, -1, "123456789", "00001.234.567.890" }, /* Leading zeroes added to make 13 + appended checksum */
+        /* 36*/ { BARCODE_DPLEIT, -1, BARCODE_PLAIN_HRT, "123456789", "00001234567890" },
+        /* 37*/ { BARCODE_DPLEIT, -1, -1, "1234567890123", "12345.678.901.236" },
+        /* 38*/ { BARCODE_DPLEIT, -1, BARCODE_PLAIN_HRT, "1234567890123", "12345678901236" },
+        /* 39*/ { BARCODE_DPIDENT, -1, -1, "123456789", "00.12 3.456.789 0" }, /* Leading zeroes added to make 11 + appended checksum */
+        /* 40*/ { BARCODE_DPIDENT, -1, BARCODE_PLAIN_HRT, "123456789", "001234567890" },
+        /* 41*/ { BARCODE_DPIDENT, -1, -1, "12345678901", "12.34 5.678.901 6" },
+        /* 42*/ { BARCODE_DPIDENT, -1, BARCODE_PLAIN_HRT, "12345678901", "123456789016" },
+        /* 43*/ { BARCODE_ITF14, -1, -1, "123456789", "00001234567895" }, /* Leading zeroes added to make 13 + appended checksum */
+        /* 44*/ { BARCODE_ITF14, -1, BARCODE_PLAIN_HRT, "123456789", "00001234567895" },
+        /* 45*/ { BARCODE_ITF14, -1, -1, "1234567890123", "12345678901231" },
+        /* 46*/ { BARCODE_ITF14, -1, BARCODE_PLAIN_HRT, "1234567890123", "12345678901231" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -158,12 +184,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

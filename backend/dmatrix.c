@@ -761,9 +761,12 @@ static int dm_getEndMode(struct zint_symbol *symbol, const unsigned char *source
 }
 
 #if 0
-#define DM_TRACE
-#endif
 #include "dmatrix_trace.h"
+#else
+#define DM_TRACE_Edges(px, s, l, p, v)
+#define DM_TRACE_AddEdge(s, l, es, p, v, e)
+#define DM_TRACE_NotAddEdge(s, l, es, p, v, ij, e)
+#endif
 
 /* Return number of C40/TEXT codewords needed to encode characters in full batches of 3 (or less if EOD).
    The number of characters encoded is returned in `len` */

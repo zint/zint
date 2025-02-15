@@ -91,25 +91,38 @@ static void test_hrt(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
+        int output_options;
         const char *data;
         int length;
 
         const char *expected;
+        int expected_length;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_TELEPEN, "ABC1234.;$", -1, "ABC1234.;$" },
-        /*  1*/ { BARCODE_TELEPEN, "abc1234.;$", -1, "abc1234.;$" },
-        /*  2*/ { BARCODE_TELEPEN, "ABC1234\001", -1, "ABC1234\001" },
-        /*  3*/ { BARCODE_TELEPEN, "ABC\0001234", 8, "ABC 1234" },
-        /*  4*/ { BARCODE_TELEPEN_NUM, "1234", -1, "1234" },
-        /*  5*/ { BARCODE_TELEPEN_NUM, "123X", -1, "123X" },
-        /*  6*/ { BARCODE_TELEPEN_NUM, "123x", -1, "123X" }, /* Converts to upper */
-        /*  7*/ { BARCODE_TELEPEN_NUM, "12345", -1, "012345" }, /* Adds leading zero if odd */
+        /*  0*/ { BARCODE_TELEPEN, -1, "ABC1234.;$", -1, "ABC1234.;$", -1 },
+        /*  1*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC1234.;$", -1, "ABC1234.;$^", -1 },
+        /*  2*/ { BARCODE_TELEPEN, -1, "abc1234.;$", -1, "abc1234.;$", -1 },
+        /*  3*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "abc1234.;$", -1, "abc1234.;$}", -1 },
+        /*  4*/ { BARCODE_TELEPEN, -1, "ABC1234\001", -1, "ABC1234 ", -1 }, /* Note used to put control chars (apart from NUL) in HRT */
+        /*  5*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC1234\001", -1, "ABC1234\001k", -1 },
+        /*  6*/ { BARCODE_TELEPEN, -1, "ABC\0001234", 8, "ABC 1234", -1 },
+        /*  7*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC\0001234", 8, "ABC\0001234l", 9 },
+        /*  8*/ { BARCODE_TELEPEN, -1, "ABK0", -1, "ABK0", -1 },
+        /*  9*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABK0", -1, "ABK0\000", 5 },
+        /* 10*/ { BARCODE_TELEPEN_NUM, -1, "1234", -1, "1234", -1 },
+        /* 11*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "1234", -1, "1234\033", -1 },
+        /* 12*/ { BARCODE_TELEPEN_NUM, -1, "123X", -1, "123X", -1 },
+        /* 13*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "123X", -1, "123XD", -1 },
+        /* 14*/ { BARCODE_TELEPEN_NUM, -1, "123x", -1, "123X", -1 }, /* Converts to upper */
+        /* 15*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "123x", -1, "123XD", -1 },
+        /* 16*/ { BARCODE_TELEPEN_NUM, -1, "12345", -1, "012345", -1 }, /* Adds leading zero if odd */
+        /* 17*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "12345", -1, "012345h", -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -120,12 +133,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(memcmp(symbol->text, data[i].expected, expected_length), "i:%d memcmp(%s, %s, %d) != 0\n",
+                    i, symbol->text, data[i].expected, expected_length);
 
         ZBarcode_Delete(symbol);
     }

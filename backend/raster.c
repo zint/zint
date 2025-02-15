@@ -1,7 +1,7 @@
 /* raster.c - Handles output to raster files */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -929,7 +929,7 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
                 break;
             default:
                 /* Process ASCII (< 80h), all other unicode points are ignored */
-                if (source[i] < 128) {
+                if (z_isascii(source[i])) {
                     preprocessed[j] = source[i];
                     j++;
                 }
@@ -999,7 +999,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
         upceanflag = out_process_upcean(symbol, comp_xoffset, &main_width, addon, &addon_len, &addon_gap);
     }
 
-    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0) || scaler < 1.0f);
+    hide_text = !symbol->show_hrt || symbol->text_length == 0 || scaler < 1.0f;
 
     out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset,
         NULL /*qz_right*/, si, &xoffset_si, &yoffset_si, &roffset_si, &boffset_si, &qz_right_si);

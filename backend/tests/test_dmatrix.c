@@ -1175,9 +1175,8 @@ static void test_input(const testCtx *const p_ctx) {
                         data[i].expected_rows * data[i].expected_width, data[i - 1].expected_rows * data[i - 1].expected_width);
 
                     if ((data[i].input_mode & 0x07) == GS1_MODE) {
-                        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, reduced);
+                        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, reduced, &length);
                         assert_zero(ret, "i:%d gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-                        length = (int) ustrlen(reduced);
                         text = reduced;
                     } else {
                         text = (unsigned char *) data[i].data;

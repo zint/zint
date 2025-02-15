@@ -1,7 +1,7 @@
 /* bc412.c - Handles IBM BC412 (SEMI T1-95) symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2022-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2022-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -87,7 +87,6 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     for (i = 2; i <= length; i++) {
         padded_source[i] = source[i - 1];
     }
-    padded_source[length + 1] = 0;
 
     if ((i = not_sane_lookup(BROMINE, 35, padded_source, length + 1, posns))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 791,
@@ -131,7 +130,6 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
     d += 3;
 
     expand(symbol, dest, d - dest);
-    ustrcpy(symbol->text, padded_source);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* SEMI T1-95 Table 1 "Module" (Character) Height 2mm ± 0.025mm, using Module Spacing 0.12mm ± 0.025mm as
@@ -145,6 +143,8 @@ INTERNAL int bc412(struct zint_symbol *symbol, unsigned char source[], int lengt
         const float default_height = 16.666666f; /* 2.0 / 0.12 */
         (void) set_height(symbol, 0.0f, default_height, 0.0f, 1 /*no_errtxt*/);
     }
+
+    hrt_cpy_nochk(symbol, padded_source, length + 1);
 
     return error_number;
 }

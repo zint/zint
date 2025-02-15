@@ -171,7 +171,7 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height,
 /* Royal Mail 4-state Mailmark */
 INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length) {
 
-    char local_source[28];
+    unsigned char local_source[28];
     int format;
     int version_id;
     int mail_class;
@@ -192,35 +192,32 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     int i, j, len;
     rs_t rs;
     int error_number = 0;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 26) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 580, "Input length %d too long (maximum 26)", length);
     }
 
-    ustrcpy(local_source, source);
+    memcpy(local_source, source, length);
 
     if (length < 22) {
         if (length < 14) {
             return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 588, "Input length %d too short (minimum 14)", length);
         }
-        for (i = length; i <= 22; i++) {
-            strcat(local_source, " ");
-        }
+        memset(local_source + length, ' ', 22 - length);
         length = 22;
     } else if ((length > 22) && (length < 26)) {
-        for (i = length; i <= 26; i++) {
-            strcat(local_source, " ");
-        }
+        memset(local_source + length, ' ', 26 - length);
         length = 26;
     }
 
-    to_upper((unsigned char *) local_source, length);
+    to_upper(local_source, length);
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Producing 4-state Mailmark (%d): %s<end>\n", length, local_source);
+        printf("Producing 4-state Mailmark (%d): %.*s<end>\n", length, length, local_source);
     }
 
-    if ((i = not_sane(RUBIDIUM_F, (const unsigned char *) local_source, length))) {
+    if ((i = not_sane(RUBIDIUM_F, local_source, length))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 581,
                         "Invalid character at position %d in input (alphanumerics and space only)", i);
     }
@@ -503,6 +500,10 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     symbol->rows = 3;
     symbol->width = j - 1;
 
+    if (plain_hrt) {
+        hrt_cpy_nochk(symbol, local_source, length);
+    }
+
     return error_number;
 }
 
@@ -532,11 +533,11 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         if (length > 86) {
             return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 861, "Input length %d too long (maximum 86)", length);
         }
-        ustrcpy(local_source, "JGB ");
-        ustrcpy(local_source + 4, source);
+        memcpy(local_source, "JGB ", 4);
+        memcpy(local_source + 4, source, length);
         length += 4;
     } else {
-        ustrcpy(local_source, source);
+        memcpy(local_source, source, length);
     }
 
     if (length < 32) {
@@ -544,16 +545,15 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
     if (length < 39) { /* Space-pad Return to Sender Post Code */
         memset(local_source + length, ' ', 39 - length);
-        local_source[39] = '\0';
         length = 39;
     }
     to_upper(local_source, 39);
 
     if (length < 45) { /* Space-pad Reserved */
         memset(local_source + length, ' ', 45 - length);
-        local_source[45] = '\0';
         length = 45;
     }
+    local_source[length] = '\0';
 
     /* 8: 24 x 24, 10: 32 x 32, 30: 16 x 48 */
     if (symbol->option_2) {

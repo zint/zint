@@ -116,7 +116,7 @@ static const unsigned short flgs[256] = {
 
 /* Whether a character matches `flg` */
 INTERNAL int is_chr(const unsigned int flg, const unsigned int c) {
-    return c < 0x80 && (flgs[c] & flg) != 0;
+    return z_isascii(c) && (flgs[c] & flg);
 }
 
 /* Verifies if a string only uses valid characters, returning 1-based position in `source` if not, 0 for success */
@@ -263,7 +263,7 @@ static int errtxt_id_str(char *errtxt, int num) {
 /* Set `symbol->errtxt` to "err_id: msg", returning `error_number`. If `err_id` is -1, the "err_id: " prefix is
    omitted */
 INTERNAL int errtxt(const int error_number, struct zint_symbol *symbol, const int err_id, const char *msg) {
-    const int max_len = (int) sizeof(symbol->errtxt) - 1;
+    const int max_len = ARRAY_SIZE(symbol->errtxt) - 1;
     const int id_len = errtxt_id_str(symbol->errtxt, err_id);
     int msg_len = (int) strlen(msg);
 
@@ -348,7 +348,7 @@ static int errtxtf_dpad(const char *fmt) {
    be numbered, "%s" with length precisions: "%.*s", "%<n+1>$.*<n>$s", "%.<p>s" and "%<n>$.<p>s", and "%d" with
    zero-padded minimum field lengths: "%0<m>d" or %<n>$0<m>d" ("<m>" 1-99) */
 INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const int err_id, const char *fmt, ...) {
-    const int max_len = (int) sizeof(symbol->errtxt) - 1;
+    const int max_len = ARRAY_SIZE(symbol->errtxt) - 1;
     int p = errtxt_id_str(symbol->errtxt, err_id);
     const char *f;
     int i;
@@ -499,21 +499,9 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
 /* Helper to prepend/append to existing `symbol->errtxt` by calling `errtxtf(fmt)` with 2 arguments (copy of `errtxt`
    & `msg`) if `msg` not NULL, or 1 argument (just copy of `errtxt`) if `msg` NULL, returning `error_number` */
 INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, const char *fmt, const char *msg) {
-    char err_buf[sizeof(symbol->errtxt)];
+    char err_buf[ARRAY_SIZE(symbol->errtxt)];
 
-    err_buf[0] = '\0';
-
-/* Suppress gcc 8+ warning output may be truncated */
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wstringop-truncation"
-#endif
-
-    strncat(err_buf, symbol->errtxt, sizeof(symbol->errtxt) - 1);
-
-#if defined(__GNUC__) && !defined(__clang__) && __GNUC__ >= 8
-#pragma GCC diagnostic pop
-#endif
+    memcpy(err_buf, symbol->errtxt, strlen(symbol->errtxt) + 1); /* Include terminating NUL */
 
     if (msg) {
         errtxtf(0, symbol, -1, fmt, err_buf, msg);
@@ -716,12 +704,11 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
         } while (bpos < *length && state != 0 && state != 12);
 
         if (state != 0) {
-            strcpy(symbol->errtxt, "240: Corrupt Unicode data");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 240, "Corrupt Unicode data");
         }
         if (disallow_4byte && codepoint > 0xffff) {
-            strcpy(symbol->errtxt, "242: Unicode sequences of more than 3 bytes not supported");
-            return ZINT_ERROR_INVALID_DATA;
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 242,
+                            "Unicode sequences of more than 3 bytes not supported");
         }
 
         vals[jpos] = codepoint;
@@ -734,27 +721,29 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
 }
 
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
-   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_PLAIN_HRT set in `output_options`.
+   Returns warning if truncated, else 0 */
 INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
     int i, j;
     int warn_number = 0;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
-    for (i = 0, j = 0; i < length && j < (int) sizeof(symbol->text); i++) {
-        if (source[i] < 0x80) {
-            symbol->text[j++] = source[i] >= ' ' && source[i] != 0x7F ? source[i] : ' ';
+    for (i = 0, j = 0; i < length && j < ARRAY_SIZE(symbol->text); i++) {
+        if (z_isascii(source[i])) {
+            symbol->text[j++] = !plain_hrt && z_iscntrl(source[i]) ? ' ' : source[i];
         } else if (source[i] < 0xC0) {
-            if (source[i] >= 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
-                if (j + 2 >= (int) sizeof(symbol->text)) {
+            if (!plain_hrt && source[i] < 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
+                symbol->text[j++] = ' ';
+            } else {
+                if (j + 2 >= ARRAY_SIZE(symbol->text)) {
                     warn_number = ZINT_WARN_HRT_TRUNCATED;
                     break;
                 }
                 symbol->text[j++] = 0xC2;
                 symbol->text[j++] = source[i];
-            } else {
-                symbol->text[j++] = ' ';
             }
         } else {
-            if (j + 2 >= (int) sizeof(symbol->text)) {
+            if (j + 2 >= ARRAY_SIZE(symbol->text)) {
                 warn_number = ZINT_WARN_HRT_TRUNCATED;
                 break;
             }
@@ -762,16 +751,90 @@ INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char s
             symbol->text[j++] = source[i] - 0x40;
         }
     }
-    if (j == sizeof(symbol->text)) {
+    if (j == ARRAY_SIZE(symbol->text)) {
         warn_number = ZINT_WARN_HRT_TRUNCATED;
         j--;
     }
+    symbol->text_length = j;
     symbol->text[j] = '\0';
 
     if (warn_number) {
         errtxt(0, symbol, 249, "Human Readable Text truncated");
     }
     return warn_number;
+}
+
+/* No-check as-is copy of ASCII into `symbol->text`, assuming `length` fits */
+INTERNAL void hrt_cpy_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+    assert(length < ARRAY_SIZE(symbol->text));
+
+    memcpy(symbol->text, source, length);
+    symbol->text_length = length;
+    symbol->text[length] = '\0';
+}
+
+/* Copy a single ASCII character into `symbol->text` (i.e. replaces content) */
+INTERNAL void hrt_cpy_chr(struct zint_symbol *symbol, const char ch) {
+    symbol->text[0] = ch;
+    symbol->text_length = 1;
+    symbol->text[1] = '\0';
+}
+
+/* No-check as-is append of ASCII to `symbol->text`, assuming current `symbol->text_length` + `length` fits */
+INTERNAL void hrt_cat_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length) {
+    assert(symbol->text_length + length < ARRAY_SIZE(symbol->text));
+
+    memcpy(symbol->text + symbol->text_length, source, length);
+    symbol->text_length += length;
+    symbol->text[symbol->text_length] = '\0';
+}
+
+/* No-check append of `ch` to `symbol->text`, assuming current `symbol->text_length` + 1 fits */
+INTERNAL void hrt_cat_chr_nochk(struct zint_symbol *symbol, const char ch) {
+    assert(symbol->text_length + 1 < ARRAY_SIZE(symbol->text));
+
+    symbol->text[symbol->text_length++] = (const unsigned char) ch;
+    symbol->text[symbol->text_length] = '\0';
+}
+
+/* No-check `sprintf()` into `symbol->text`, assuming it fits */
+INTERNAL void hrt_printf_nochk(struct zint_symbol *symbol, const char *fmt, ...) {
+    va_list ap;
+    int size;
+
+    va_start(ap, fmt);
+
+    size = vsprintf((char *) symbol->text, fmt, ap);
+
+    assert(size >= 0);
+    assert(size < ARRAY_SIZE(symbol->text));
+
+    symbol->text_length = size;
+
+    va_end(ap);
+}
+
+/* No-check copy of `source` into `symbol->text`, converting GS1 square brackets into round ones. Assumes it fits */
+INTERNAL void hrt_conv_gs1_brackets_nochk(struct zint_symbol *symbol, const unsigned char source[],
+                const int length) {
+    int i;
+    int bracket_level = 0; /* Non-compliant closing square brackets may be in text */
+
+    assert(length < ARRAY_SIZE(symbol->text));
+
+    for (i = 0; i < length; i++) {
+        if (source[i] == '[') {
+            symbol->text[i] = '(';
+            bracket_level++;
+        } else if (source[i] == ']' && bracket_level) {
+            symbol->text[i] = ')';
+            bracket_level--;
+        } else {
+            symbol->text[i] = source[i];
+        }
+    }
+    symbol->text_length = length;
+    symbol->text[length] = '\0';
 }
 
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.
@@ -882,7 +945,7 @@ INTERNAL char *debug_print_escape(const unsigned char *source, const int first_l
         int j = 0;
         for (i = 0; i < first_len; i++) {
             const unsigned char ch = source[i];
-            if (ch < 32 || ch >= 127) {
+            if (z_iscntrl(ch) || !z_isascii(ch)) {
                 j += sprintf(buf + j, "\\x%02X", ch & 0xFF);
             } else {
                 buf[j++] = ch;
@@ -892,7 +955,7 @@ INTERNAL char *debug_print_escape(const unsigned char *source, const int first_l
     } else {
         for (i = 0; i < first_len; i++) {
             const unsigned char ch = source[i];
-            if (ch < 32 || ch >= 127) {
+            if (z_iscntrl(ch) || !z_isascii(ch)) {
                 printf("\\x%02X", ch & 0xFF);
             } else {
                 fputc(ch, stdout);
@@ -911,7 +974,7 @@ INTERNAL char *debug_print_escape(const unsigned char *source, const int first_l
 /* Dumps hex-formatted codewords in symbol->errtxt (for use in testing) */
 INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigned char *codewords, const int length) {
     int i, max = length, cnt_len = 0;
-    assert(sizeof(symbol->errtxt) >= 100);
+    assert(ARRAY_SIZE(symbol->errtxt) >= 100);
     if (length > 30) { /* 30*3 < errtxt 92 (100 - "Warning ") chars */
         sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
         cnt_len = (int) strlen(symbol->errtxt);
@@ -927,7 +990,7 @@ INTERNAL void debug_test_codeword_dump(struct zint_symbol *symbol, const unsigne
 INTERNAL void debug_test_codeword_dump_short(struct zint_symbol *symbol, const short *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
-    assert(sizeof(symbol->errtxt) >= 100);
+    assert(ARRAY_SIZE(symbol->errtxt) >= 100);
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
     for (i = 0, cnt_len = errtxt_len; i < length; i++) {
         cnt_len += sprintf(temp, "%d ", codewords[i]);
@@ -946,7 +1009,7 @@ INTERNAL void debug_test_codeword_dump_short(struct zint_symbol *symbol, const s
 INTERNAL void debug_test_codeword_dump_int(struct zint_symbol *symbol, const int *codewords, const int length) {
     int i, max = 0, cnt_len, errtxt_len;
     char temp[20];
-    assert(sizeof(symbol->errtxt) >= 100);
+    assert(ARRAY_SIZE(symbol->errtxt) >= 100);
     errtxt_len = sprintf(symbol->errtxt, "(%d) ", length); /* Place the number of codewords at the front */
     for (i = 0, cnt_len = errtxt_len; i < length; i++) {
         cnt_len += sprintf(temp, "%d ", codewords[i]);

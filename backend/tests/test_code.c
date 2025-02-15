@@ -111,47 +111,84 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
         int length;
 
         const char *expected;
+        int expected_length;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODE39, -1, "ABC1234", -1, "*ABC1234*" },
-        /*  1*/ { BARCODE_CODE39, 1, "ABC1234", -1, "*ABC12340*" }, /* With visible check digit */
-        /*  2*/ { BARCODE_CODE39, -1, "abc1234", -1, "*ABC1234*" }, /* Converts to upper */
-        /*  3*/ { BARCODE_CODE39, 1, "abc1234", -1, "*ABC12340*" }, /* Converts to upper */
-        /*  4*/ { BARCODE_CODE39, -1, "123456789", -1, "*123456789*" },
-        /*  5*/ { BARCODE_CODE39, 1, "123456789", -1, "*1234567892*" }, /* With visible check digit */
-        /*  6*/ { BARCODE_CODE39, 2, "123456789", -1, "*123456789*" }, /* With hidden check digit */
-        /*  7*/ { BARCODE_EXCODE39, -1, "ABC1234", -1, "ABC1234" },
-        /*  8*/ { BARCODE_EXCODE39, 1, "ABC1234", -1, "ABC12340" }, /* With visible check digit */
-        /*  9*/ { BARCODE_EXCODE39, -1, "abc1234", -1, "abc1234" },
-        /* 10*/ { BARCODE_EXCODE39, 1, "abc1234", -1, "abc1234." }, /* With visible check digit (previously was hidden) */
-        /* 11*/ { BARCODE_EXCODE39, 2, "abc1234", -1, "abc1234" }, /* With hidden check digit */
-        /* 12*/ { BARCODE_EXCODE39, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* NUL, ctrls and DEL replaced with spaces */
-        /* 13*/ { BARCODE_EXCODE39, 1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~L" }, /* With visible check digit */
-        /* 14*/ { BARCODE_EXCODE39, 2, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~" }, /* With hidden check digit */
-        /* 15*/ { BARCODE_LOGMARS, -1, "ABC1234", -1, "ABC1234" },
-        /* 16*/ { BARCODE_LOGMARS, -1, "abc1234", -1, "ABC1234" }, /* Converts to upper */
-        /* 17*/ { BARCODE_LOGMARS, 1, "abc1234", -1, "ABC12340" }, /* With check digit */
-        /* 18*/ { BARCODE_LOGMARS, 1, "12345/ABCDE", -1, "12345/ABCDET" }, /* With visible check digit */
-        /* 19*/ { BARCODE_LOGMARS, 2, "12345/ABCDE", -1, "12345/ABCDE" }, /* With hidden check digit */
-        /* 20*/ { BARCODE_CODE93, -1, "ABC1234", -1, "ABC1234" }, /* No longer shows 2 check chars added (same as BWIPP and TEC-IT) */
-        /* 21*/ { BARCODE_CODE93, 1, "ABC1234", -1, "ABC1234S5" }, /* Unless requested */
-        /* 22*/ { BARCODE_CODE93, -1, "abc1234", -1, "abc1234" },
-        /* 23*/ { BARCODE_CODE93, 1, "abc1234", -1, "abc1234ZG" },
-        /* 24*/ { BARCODE_CODE93, -1, "A\001a\000b\177d\037e", 9, "A a b d e" }, /* NUL, ctrls and DEL replaced with spaces */
-        /* 25*/ { BARCODE_VIN, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180" },
-        /* 26*/ { BARCODE_VIN, 1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511" }, /* Include Import char - no change */
-        /* 27*/ { BARCODE_HIBC_39, -1, "ABC1234", -1, "*+ABC1234+*" },
-        /* 28*/ { BARCODE_HIBC_39, -1, "abc1234", -1, "*+ABC1234+*" }, /* Converts to upper */
-        /* 29*/ { BARCODE_HIBC_39, -1, "123456789", -1, "*+1234567890*" },
+        /*  0*/ { BARCODE_CODE39, -1, -1, "ABC1234", -1, "*ABC1234*", -1 },
+        /*  1*/ { BARCODE_CODE39, -1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC1234", -1 },
+        /*  2*/ { BARCODE_CODE39, 1, -1, "ABC1234", -1, "*ABC12340*", -1 }, /* With visible check digit */
+        /*  3*/ { BARCODE_CODE39, 1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC12340", -1 },
+        /*  4*/ { BARCODE_CODE39, -1, -1, "abc1234", -1, "*ABC1234*", -1 }, /* Converts to upper */
+        /*  5*/ { BARCODE_CODE39, -1, BARCODE_PLAIN_HRT, "abc1234", -1, "ABC1234", -1 },
+        /*  6*/ { BARCODE_CODE39, 1, -1, "abc1234", -1, "*ABC12340*", -1 }, /* Converts to upper */
+        /*  7*/ { BARCODE_CODE39, 1, BARCODE_PLAIN_HRT, "abc1234", -1, "ABC12340", -1 },
+        /*  8*/ { BARCODE_CODE39, 1, -1, "ab", -1, "*ABL*", -1 }, /* Converts to upper */
+        /*  9*/ { BARCODE_CODE39, 1, BARCODE_PLAIN_HRT, "ab", -1, "ABL", -1 },
+        /* 10*/ { BARCODE_CODE39, -1, -1, "123456789", -1, "*123456789*", -1 },
+        /* 11*/ { BARCODE_CODE39, -1, BARCODE_PLAIN_HRT, "123456789", -1, "123456789", -1 },
+        /* 12*/ { BARCODE_CODE39, 1, -1, "123456789", -1, "*1234567892*", -1 }, /* With visible check digit */
+        /* 13*/ { BARCODE_CODE39, 1, BARCODE_PLAIN_HRT, "123456789", -1, "1234567892", -1 },
+        /* 14*/ { BARCODE_CODE39, 2, -1, "123456789", -1, "*123456789*", -1 }, /* With hidden check digit */
+        /* 15*/ { BARCODE_CODE39, 2, BARCODE_PLAIN_HRT, "123456789", -1, "1234567892", -1 }, /* Includes check digit */
+        /* 16*/ { BARCODE_EXCODE39, -1, -1, "ABC1234", -1, "ABC1234", -1 },
+        /* 17*/ { BARCODE_EXCODE39, -1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC1234", -1 },
+        /* 18*/ { BARCODE_EXCODE39, 1, -1, "ABC1234", -1, "ABC12340", -1 }, /* With visible check digit */
+        /* 19*/ { BARCODE_EXCODE39, 1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC12340", -1 },
+        /* 20*/ { BARCODE_EXCODE39, -1, -1, "abc1234", -1, "abc1234", -1 },
+        /* 21*/ { BARCODE_EXCODE39, -1, BARCODE_PLAIN_HRT, "abc1234", -1, "abc1234", -1 },
+        /* 22*/ { BARCODE_EXCODE39, 1, -1, "abc1234", -1, "abc1234.", -1 }, /* With visible check digit (previously was hidden) */
+        /* 23*/ { BARCODE_EXCODE39, 1, BARCODE_PLAIN_HRT, "abc1234", -1, "abc1234.", -1 },
+        /* 24*/ { BARCODE_EXCODE39, 2, -1, "abc1234", -1, "abc1234", -1 }, /* With hidden check digit */
+        /* 25*/ { BARCODE_EXCODE39, 2, BARCODE_PLAIN_HRT, "abc1234", -1, "abc1234.", -1 }, /* Includes check digit */
+        /* 26*/ { BARCODE_EXCODE39, -1, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~", -1 }, /* NUL, ctrls and DEL replaced with spaces */
+        /* 27*/ { BARCODE_EXCODE39, -1, BARCODE_PLAIN_HRT, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%\000\001$\177z\033\037!+/\\@A~", 16 }, /* No replacements */
+        /* 28*/ { BARCODE_EXCODE39, 1, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~L", -1 }, /* With visible check digit */
+        /* 29*/ { BARCODE_EXCODE39, 1, BARCODE_PLAIN_HRT, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%\000\001$\177z\033\037!+/\\@A~L", 17 },
+        /* 30*/ { BARCODE_EXCODE39, 2, -1, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%  $ z  !+/\\@A~", -1 }, /* With hidden check digit */
+        /* 31*/ { BARCODE_EXCODE39, 2, BARCODE_PLAIN_HRT, "a%\000\001$\177z\033\037!+/\\@A~", 16, "a%\000\001$\177z\033\037!+/\\@A~L", 17 }, /* Includes check digit */
+        /* 32*/ { BARCODE_LOGMARS, -1, -1, "ABC1234", -1, "ABC1234", -1 },
+        /* 33*/ { BARCODE_LOGMARS, -1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC1234", -1 },
+        /* 34*/ { BARCODE_LOGMARS, -1, -1, "abc1234", -1, "ABC1234", -1 }, /* Converts to upper */
+        /* 35*/ { BARCODE_LOGMARS, -1, BARCODE_PLAIN_HRT, "abc1234", -1, "ABC1234", -1 },
+        /* 36*/ { BARCODE_LOGMARS, 1, -1, "abc1234", -1, "ABC12340", -1 }, /* With check digit */
+        /* 37*/ { BARCODE_LOGMARS, 1, BARCODE_PLAIN_HRT, "abc1234", -1, "ABC12340", -1 },
+        /* 38*/ { BARCODE_LOGMARS, 1, -1, "12345/ABCDE", -1, "12345/ABCDET", -1 }, /* With visible check digit */
+        /* 39*/ { BARCODE_LOGMARS, 1, BARCODE_PLAIN_HRT, "12345/ABCDE", -1, "12345/ABCDET", -1 },
+        /* 40*/ { BARCODE_LOGMARS, 2, -1, "12345/ABCDE", -1, "12345/ABCDE", -1 }, /* With hidden check digit */
+        /* 41*/ { BARCODE_LOGMARS, 2, BARCODE_PLAIN_HRT, "12345/ABCDE", -1, "12345/ABCDET", -1 }, /* Includes check digit */
+        /* 42*/ { BARCODE_CODE93, -1, -1, "ABC1234", -1, "ABC1234", -1 }, /* No longer shows 2 check chars added (same as BWIPP and TEC-IT) */
+        /* 43*/ { BARCODE_CODE93, -1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC1234S5", -1 }, /* Unless BARCODE_PLAIN_HRT */
+        /* 44*/ { BARCODE_CODE93, 1, -1, "ABC1234", -1, "ABC1234S5", -1 }, /* Unless requested */
+        /* 45*/ { BARCODE_CODE93, 1, BARCODE_PLAIN_HRT, "ABC1234", -1, "ABC1234S5", -1 },
+        /* 46*/ { BARCODE_CODE93, -1, -1, "abc1234", -1, "abc1234", -1 },
+        /* 47*/ { BARCODE_CODE93, -1, BARCODE_PLAIN_HRT, "abc1234", -1, "abc1234ZG", -1 },
+        /* 48*/ { BARCODE_CODE93, 1, -1, "abc1234", -1, "abc1234ZG", -1 },
+        /* 49*/ { BARCODE_CODE93, 1, BARCODE_PLAIN_HRT, "abc1234", -1, "abc1234ZG", -1 },
+        /* 50*/ { BARCODE_CODE93, -1, -1, "A\001a\000b\177d\037e", 9, "A a b d e", -1 }, /* NUL, ctrls and DEL replaced with spaces */
+        /* 51*/ { BARCODE_CODE93, -1, BARCODE_PLAIN_HRT, "A\001a\000b\177d\037e", 9, "A\001a\000b\177d\037e1R", 11 }, /* No replacements */
+        /* 52*/ { BARCODE_CODE93, 1, -1, "A\001a\000b\177d\037e", 9, "A a b d e1R", -1 },
+        /* 53*/ { BARCODE_CODE93, 1, BARCODE_PLAIN_HRT, "A\001a\000b\177d\037e", 9, "A\001a\000b\177d\037e1R", 11 },
+        /* 54*/ { BARCODE_VIN, -1, -1, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180", -1 },
+        /* 55*/ { BARCODE_VIN, -1, BARCODE_PLAIN_HRT, "1FTCR10UXTPA78180", -1, "1FTCR10UXTPA78180", -1 },
+        /* 56*/ { BARCODE_VIN, 1, -1, "2FTPX28L0XCA15511", -1, "2FTPX28L0XCA15511", -1 }, /* Include Import char - no change */
+        /* 57*/ { BARCODE_VIN, 1, BARCODE_PLAIN_HRT, "2FTPX28L0XCA15511", -1, "I2FTPX28L0XCA15511", -1 }, /* Unless BARCODE_PLAIN_HRT */
+        /* 58*/ { BARCODE_HIBC_39, -1, -1, "ABC1234", -1, "*+ABC1234+*", -1 },
+        /* 59*/ { BARCODE_HIBC_39, -1, BARCODE_PLAIN_HRT, "ABC1234", -1, "+ABC1234+", -1 },
+        /* 60*/ { BARCODE_HIBC_39, -1, -1, "abc1234", -1, "*+ABC1234+*", -1 }, /* Converts to upper */
+        /* 61*/ { BARCODE_HIBC_39, -1, BARCODE_PLAIN_HRT, "abc1234", -1, "+ABC1234+", -1 },
+        /* 62*/ { BARCODE_HIBC_39, -1, -1, "123456789", -1, "*+1234567890*", -1 },
+        /* 63*/ { BARCODE_HIBC_39, -1, BARCODE_PLAIN_HRT, "123456789", -1, "+1234567890", -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -162,12 +199,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(memcmp(symbol->text, data[i].expected, expected_length), "i:%d memcmp(%s, %s, %d) != 0\n",
+                    i, symbol->text, data[i].expected, expected_length);
 
         ZBarcode_Delete(symbol);
     }

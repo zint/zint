@@ -142,7 +142,7 @@ static int c128_cost_ab(const int cset, const unsigned char ch, int *p_mode) {
     }
 
     /* FNC4 */
-    if (C128_A0B0(cset) == (ch >= 128)) { /* If A0/B0 and extended ASCII, or A1/B1 and ASCII */
+    if (C128_A0B0(cset) == !z_isascii(ch)) { /* If A0/B0 and extended ASCII, or A1/B1 and ASCII */
         cost++;
         *p_mode |= 0x20;
     }
@@ -508,6 +508,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     int separator_row = 0;
     int reduced_length;
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
@@ -522,12 +523,11 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->rows += 1;
     }
 
-    error_number = gs1_verify(symbol, source, length, reduced);
+    error_number = gs1_verify(symbol, source, length, reduced, &reduced_length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
 
-    reduced_length = (int) ustrlen(reduced);
     memset(fncs, 1, reduced_length);
 
     /* Control and extended chars not allowed so only have B/C (+FNC1) */
@@ -631,29 +631,16 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
                                 "Cannot use Reader Initialisation in GS1 mode, ignoring");
     }
 
-    if (symbol->input_mode & GS1PARENS_MODE) {
-        i = length < (int) sizeof(symbol->text) ? length : (int) sizeof(symbol->text);
-        memcpy(symbol->text, source, i);
+    /* Note won't overflow `text` buffer due to symbol character maximum restricted to C128_SYMBOL_MAX */
+    if (plain_hrt) {
+        hrt_cpy_nochk(symbol, reduced, reduced_length);
     } else {
-        int bracket_level = 0; /* Non-compliant closing square brackets may be in text */
-        for (i = 0; i < length && i < (int) sizeof(symbol->text); i++) {
-            if (source[i] == '[') {
-                symbol->text[i] = '(';
-                bracket_level++;
-            } else if (source[i] == ']' && bracket_level) {
-                symbol->text[i] = ')';
-                bracket_level--;
-            } else {
-                symbol->text[i] = source[i];
-            }
+        if (symbol->input_mode & GS1PARENS_MODE) {
+            hrt_cpy_nochk(symbol, source, length);
+        } else {
+            hrt_conv_gs1_brackets_nochk(symbol, source, length);
         }
     }
-    if (i == sizeof(symbol->text)) {
-        /* Trumps all other warnings */
-        error_number = errtxt(ZINT_WARN_HRT_TRUNCATED, symbol, 844, "Human Readable Text truncated");
-        i--;
-    }
-    symbol->text[i] = '\0';
 
     return error_number;
 }

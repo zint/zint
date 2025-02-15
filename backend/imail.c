@@ -30,6 +30,10 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+/* USPS-B-3200 - Intelligent Mail Barcode 4-State 2015-04-20 Rev H
+   https://postalpro.usps.com/storages/2017-08/2190_USPSB3200IntelligentMailBarcode4State_0.pdf
+*/
+
 /*  The function "USPS_MSB_Math_CRC11GenerateFrameCheckSequence"
     is Copyright (C) 2006 United States Postal Service */
 
@@ -38,9 +42,9 @@
 
 #define SODIUM_MNS_F (IS_NUM_F | IS_MNS_F) /* SODIUM "0123456789-" */
 
-/* The following lookup tables were generated using the code in Appendix C */
+/* The following lookup tables were generated using the code in USPS-B-3200 Appendix C */
 
-/* Appendix D Table 1 - 5 of 13 characters */
+/* USPS-B-3200 Appendix D Table 1 - 5 of 13 characters */
 static const unsigned short AppxD_I[1287] = {
     0x001F, 0x1F00, 0x002F, 0x1E80, 0x0037, 0x1D80, 0x003B, 0x1B80, 0x003D, 0x1780,
     0x003E, 0x0F80, 0x004F, 0x1E40, 0x0057, 0x1D40, 0x005B, 0x1B40, 0x005D, 0x1740,
@@ -173,7 +177,7 @@ static const unsigned short AppxD_I[1287] = {
     0x08E2, 0x064C, 0x0554, 0x04E4, 0x0358, 0x02E8, 0x01F0
 };
 
-/* Appendix D Table II - 2 of 13 characters */
+/* USPS-B-3200 Appendix D Table II - 2 of 13 characters */
 static const unsigned short AppxD_II[78] = {
     0x0003, 0x1800, 0x0005, 0x1400, 0x0006, 0x0C00, 0x0009, 0x1200, 0x000A, 0x0A00,
     0x000C, 0x0600, 0x0011, 0x1100, 0x0012, 0x0900, 0x0014, 0x0500, 0x0018, 0x0300,
@@ -185,7 +189,7 @@ static const unsigned short AppxD_II[78] = {
     0x0801, 0x1002, 0x1001, 0x0802, 0x0404, 0x0208, 0x0110, 0x00A0
 };
 
-/* Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
+/* USPS-B-3200 Appendix D Table IV - Bar-to-Character Mapping (reverse lookup) */
 static const unsigned char AppxD_IV[130] = {
      67,   6, 78,  16,  86,  95,  34, 40,  45, 113, 117, 121, 62,  87, 18, 104,  41,  76, 57, 119,
     115,  72, 97,   2, 127,  26, 105, 35, 122,  52, 114,   7, 24,  82, 68,  63,  94,  44, 77, 112,
@@ -248,7 +252,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     int error_number = 0;
     int i, j, read;
     char tracker[33] = {0}; /* Zero to prevent false warning from clang-tidy */
-    char zip[33], temp[2];
+    char zip[33];
     large_uint accum;
     large_uint byte_array_reg;
     unsigned char byte_array[13];
@@ -256,7 +260,8 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned int codeword[10];
     unsigned short characters[10];
     short bar_map[130];
-    int zip_len, len;
+    int zip_len;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 32) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 450, "Input length %d too long (maximum 32)", length);
@@ -397,29 +402,22 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     /* *** Step 6 - Conversion from Characters to the Intelligent Mail Barcode *** */
     for (i = 0; i < 10; i++) {
         for (j = 0; j < 13; j++) {
-            if (characters[i] & (1 << j)) {
-                bar_map[AppxD_IV[(13 * i) + j] - 1] = 1;
-            } else {
-                bar_map[AppxD_IV[(13 * i) + j] - 1] = 0;
-            }
+            bar_map[AppxD_IV[(13 * i) + j] - 1] = (characters[i] >> j) & 1;
         }
     }
 
-    data_pattern[0] = '\0';
-    temp[1] = '\0';
     for (i = 0; i < 65; i++) {
         j = 0;
         if (bar_map[i] == 0)
             j += 1;
         if (bar_map[i + 65] == 0)
             j += 2;
-        temp[0] = itoc(j);
-        strcat(data_pattern, temp);
+        data_pattern[i] = itoc(j);
     }
 
     /* Translate 4-state data pattern to symbol */
     read = 0;
-    for (i = 0, len = (int) strlen(data_pattern); i < len; i++) {
+    for (i = 0; i < 65; i++) {
         if ((data_pattern[i] == '1') || (data_pattern[i] == '0')) {
             set_module(symbol, 0, read);
         }
@@ -450,6 +448,11 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     }
     symbol->rows = 3;
     symbol->width = read - 1;
+
+    if (plain_hrt) {
+        hrt_cpy_nochk(symbol, source, length);
+    }
+
     return error_number;
 }
 

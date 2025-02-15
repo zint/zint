@@ -48,8 +48,9 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
     int i, j, error_number = 0;
     char dest[638]; /* 4 + (125 + 1) * 5 + 3 + 1 = 638 */
     char *d = dest;
-    unsigned char temp[125 + 1 + 1];
+    unsigned char local_source[125 + 1];
     const int have_checkdigit = checkdigit_option == 1 || checkdigit_option == 2;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > 125) { /* 4 + (125 + 1) * 9 + 5 = 1143 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 309, "Input length %d too long (maximum 125)", length);
@@ -63,17 +64,16 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
        if an odd number of characters has been entered and no check digit or an even number and have check digit
        then add a leading zero */
     if (have_checkdigit == !(length & 1)) {
-        temp[0] = '0';
-        memcpy(temp + 1, source, length++);
+        local_source[0] = '0';
+        memcpy(local_source + 1, source, length++);
     } else {
-        memcpy(temp, source, length);
+        memcpy(local_source, source, length);
     }
-    temp[length] = '\0';
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
-        temp[length] = gs1_check_digit(temp, length);
-        temp[++length] = '\0';
+        local_source[length] = gs1_check_digit(local_source, length);
+        length++;
     }
 
     /* Start character */
@@ -82,8 +82,8 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
 
     for (i = 0; i < length; i += 2) {
         /* Look up the bars and the spaces */
-        const char *const bars = C25InterTable[temp[i] - '0'];
-        const char *const spaces = C25InterTable[temp[i + 1] - '0'];
+        const char *const bars = C25InterTable[local_source[i] - '0'];
+        const char *const spaces = C25InterTable[local_source[i + 1] - '0'];
 
         /* Then merge (interlace) the strings together */
         for (j = 0; j < 5; j++) {
@@ -97,12 +97,6 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
     d += 3;
 
     expand(symbol, dest, d - dest);
-
-    ustrcpy(symbol->text, temp);
-    if (checkdigit_option == 2) {
-        /* Remove check digit from HRT */
-        symbol->text[length - 1] = '\0';
-    }
 
     if (!dont_set_height) {
         if (symbol->output_options & COMPLIANT_HEIGHT) {
@@ -121,6 +115,13 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
         } else {
             (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
         }
+    }
+
+    if (checkdigit_option == 2 && !plain_hrt) {
+        /* Exclude check digit from HRT */
+        hrt_cpy_nochk(symbol, local_source, length - 1);
+    } else {
+        hrt_cpy_nochk(symbol, local_source, length);
     }
 
     return error_number;

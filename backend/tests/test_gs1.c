@@ -265,6 +265,7 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int input_mode;
+        int output_options;
         const char *data;
         const char *composite;
 
@@ -273,64 +274,96 @@ static void test_hrt(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_GS1_128, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
-        /*  1*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
-        /*  2*/ { BARCODE_GS1_128, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /*  3*/ { BARCODE_GS1_128, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
-        /*  4*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[01]12345678901231[10]10[20]AB", "", 0, "(01)12345678901231(10)10(20)AB" },
-        /*  5*/ { BARCODE_GS1_128, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
-        /*  6*/ { BARCODE_GS1_128, -1, "[91]ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDEF]GH" }, /* Invalid CSET 82 character */
-        /*  7*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, "[91]ABCDEF]GH", "", 0, "(91)ABCDEF]GH" },
-        /*  8*/ { BARCODE_GS1_128, -1, "[91]ABCDEF)GH", "", 0, "(91)ABCDEF)GH" },
-        /*  9*/ { BARCODE_GS1_128, -1, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH" },
-        /* 10*/ { BARCODE_GS1_128, -1, "[91]ABCDE(20)12", "", 0, "(91)ABCDE(20)12" },
-        /* 11*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(91)ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDEF]GH" }, /* Invalid CSET 82 character */
-        /* 12*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, "(91)ABCDEF]GH", "", 0, "(91)ABCDEF]GH" },
-        /* 13*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(91)ABCDEF)GH", "", 0, "(91)ABCDEF)GH" },
-        /* 14*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(91)ABCDE[FGH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDE[FGH" }, /* Invalid CSET 82 character */
-        /* 15*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, "(91)ABCDE[FGH", "", 0, "(91)ABCDE[FGH" },
-        /* 16*/ { BARCODE_GS1_128, GS1PARENS_MODE, "(91)ABCDE[92]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDE[92]GH" }, /* Invalid CSET 82 character */
-        /* 17*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, "(91)ABCDE[92]GH", "", 0, "(91)ABCDE[92]GH" },
-        /* 18*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
-        /* 19*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "[21]12345", 0, "(01)12345678901234(20)12" },
-        /* 20*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12" },
-        /* 21*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
-        /* 22*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]12[20]AB", "[21]12345", 0, "(01)12345678901231(10)12(20)AB" },
-        /* 23*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12" },
-        /* 24*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12" },
-        /* 25*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, "[01]12345678901231[10]AB[20]12", "[30]1234567A", 0, "(01)12345678901231(10)AB(20)12" },
-        /* 26*/ { BARCODE_EAN14, -1, "1234567890123", "", 0, "(01)12345678901231" },
-        /* 27*/ { BARCODE_EAN14, -1, "1234", "", 0, "(01)00000000012348" },
-        /* 28*/ { BARCODE_EAN14, -1, "12345", "", 0, "(01)00000000123457" },
-        /* 29*/ { BARCODE_EAN14, -1, "12340", "", 0, "(01)00000000123402" },
-        /* 30*/ { BARCODE_NVE18, -1, "12345678901234567", "", 0, "(00)123456789012345675" },
-        /* 31*/ { BARCODE_NVE18, -1, "1234", "", 0, "(00)000000000000012348" },
-        /* 32*/ { BARCODE_NVE18, -1, "12345", "", 0, "(00)000000000000123457" },
-        /* 33*/ { BARCODE_NVE18, -1, "12340", "", 0, "(00)000000000000123402" },
-        /* 34*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
-        /* 35*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
-        /* 36*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
-        /* 37*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
-        /* 38*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, "[01]12345678901231[10]12[20]AB", "", 0, "(01)12345678901231(10)12(20)AB" },
-        /* 39*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
-        /* 40*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012" },
-        /* 41*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12" },
-        /* 42*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12" },
-        /* 43*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234" },
-        /* 44*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, "[01]12345678901234", "[21]12345", 0, "(01)12345678901234" },
-        /* 45*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231" },
-        /* 46*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345" },
-        /* 47*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "" },
-        /* 48*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "", 0, "" },
-        /* 49*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231[20]12", "", 0, "" },
-        /* 50*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(20)12(90)ABC(20)12" },
-        /* 51*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" },
-        /* 52*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, "[01]12345678901234[20]12", "[21]12345", 0, "" },
-        /* 53*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231[20]12", "[21]12345", 0, "" },
+        /*  0*/ { BARCODE_GS1_128, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
+        /*  1*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
+        /*  2*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "01123456789012342012" },
+        /*  3*/ { BARCODE_GS1_128, -1, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
+        /*  4*/ { BARCODE_GS1_128, -1, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
+        /*  5*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]10[20]AB", "", 0, "(01)12345678901231(10)10(20)AB" },
+        /*  6*/ { BARCODE_GS1_128, -1, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
+        /*  7*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDEF]GH" }, /* Invalid CSET 82 character */
+        /*  8*/ { BARCODE_GS1_128, GS1NOCHECK_MODE, -1, "[91]ABCDEF]GH", "", 0, "(91)ABCDEF]GH" },
+        /*  9*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[91]ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "91ABCDEF]GH" },
+        /* 10*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF)GH", "", 0, "(91)ABCDEF)GH" },
+        /* 11*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[91]ABCDEF)GH", "", 0, "91ABCDEF)GH" },
+        /* 12*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDEF(GH", "", 0, "(91)ABCDEF(GH" },
+        /* 13*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[91]ABCDEF(GH", "", 0, "91ABCDEF(GH" },
+        /* 14*/ { BARCODE_GS1_128, -1, -1, "[91]ABCDE(20)12", "", 0, "(91)ABCDE(20)12" },
+        /* 15*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[91]ABCDE(20)12", "", 0, "91ABCDE(20)12" },
+        /* 16*/ { BARCODE_GS1_128, -1, -1, "[90]1234[91]ABCDE(20)12", "", 0, "(90)1234(91)ABCDE(20)12" },
+        /* 17*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[90]1234[91]ABCDE(20)12", "", 0, "901234\03591ABCDE(20)12" },
+        /* 18*/ { BARCODE_GS1_128, -1, -1, "[90]1234[91]ABCDE(20)12[20]12", "", 0, "(90)1234(91)ABCDE(20)12(20)12" },
+        /* 19*/ { BARCODE_GS1_128, -1, BARCODE_PLAIN_HRT, "[90]1234[91]ABCDE(20)12[20]12", "", 0, "901234\03591ABCDE(20)12\0352012" },
+        /* 20*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDEF]GH" }, /* Invalid CSET 82 character */
+        /* 21*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "(91)ABCDEF]GH", "", 0, "(91)ABCDEF]GH" },
+        /* 22*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_PLAIN_HRT, "(91)ABCDEF]GH", "", ZINT_WARN_NONCOMPLIANT, "91ABCDEF]GH" },
+        /* 23*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDEF)GH", "", 0, "(91)ABCDEF)GH" },
+        /* 24*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_PLAIN_HRT, "(91)ABCDEF)GH", "", 0, "91ABCDEF)GH" },
+        /* 25*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDE[FGH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDE[FGH" }, /* Invalid CSET 82 character */
+        /* 26*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "(91)ABCDE[FGH", "", 0, "(91)ABCDE[FGH" },
+        /* 27*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_PLAIN_HRT, "(91)ABCDE[FGH", "", ZINT_WARN_NONCOMPLIANT, "91ABCDE[FGH" },
+        /* 28*/ { BARCODE_GS1_128, GS1PARENS_MODE, -1, "(91)ABCDE[92]GH", "", ZINT_WARN_NONCOMPLIANT, "(91)ABCDE[92]GH" }, /* Invalid CSET 82 character */
+        /* 29*/ { BARCODE_GS1_128, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "(91)ABCDE[92]GH", "", 0, "(91)ABCDE[92]GH" },
+        /* 30*/ { BARCODE_GS1_128, GS1PARENS_MODE, BARCODE_PLAIN_HRT, "(91)ABCDE[92]GH", "", ZINT_WARN_NONCOMPLIANT, "91ABCDE[92]GH" },
+        /* 31*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
+        /* 32*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "(01)12345678901234(20)12" },
+        /* 33*/ { BARCODE_GS1_128_CC, -1, BARCODE_PLAIN_HRT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "01123456789012342012" },
+        /* 34*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "(01)12345678901231(20)12" },
+        /* 35*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
+        /* 36*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "[21]12345", 0, "(01)12345678901231(10)12(20)AB" },
+        /* 37*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "(01)12345678901231(10)AB(20)12" },
+        /* 38*/ { BARCODE_GS1_128_CC, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12", "[21]12345", 0, "011234567890123110AB\0352012" },
+        /* 39*/ { BARCODE_GS1_128_CC, -1, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)AB(20)12" },
+        /* 40*/ { BARCODE_GS1_128_CC, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]AB[20]12", "[30]1234567A", 0, "(01)12345678901231(10)AB(20)12" },
+        /* 41*/ { BARCODE_EAN14, -1, -1, "1234567890123", "", 0, "(01)12345678901231" },
+        /* 42*/ { BARCODE_EAN14, -1, BARCODE_PLAIN_HRT, "1234567890123", "", 0, "0112345678901231" },
+        /* 43*/ { BARCODE_EAN14, -1, -1, "1234", "", 0, "(01)00000000012348" },
+        /* 44*/ { BARCODE_EAN14, -1, BARCODE_PLAIN_HRT, "1234", "", 0, "0100000000012348" },
+        /* 45*/ { BARCODE_EAN14, -1, -1, "12345", "", 0, "(01)00000000123457" },
+        /* 46*/ { BARCODE_EAN14, -1, -1, "12340", "", 0, "(01)00000000123402" },
+        /* 47*/ { BARCODE_NVE18, -1, -1, "12345678901234567", "", 0, "(00)123456789012345675" },
+        /* 48*/ { BARCODE_NVE18, -1, BARCODE_PLAIN_HRT, "12345678901234567", "", 0, "00123456789012345675" },
+        /* 49*/ { BARCODE_NVE18, -1, -1, "1234", "", 0, "(00)000000000000012348" },
+        /* 50*/ { BARCODE_NVE18, -1, BARCODE_PLAIN_HRT, "1234", "", 0, "00000000000000012348" },
+        /* 51*/ { BARCODE_NVE18, -1, -1, "12345", "", 0, "(00)000000000000123457" },
+        /* 52*/ { BARCODE_NVE18, -1, -1, "12340", "", 0, "(00)000000000000123402" },
+        /* 53*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234(20)12" }, /* Incorrect check digit */
+        /* 54*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "(01)12345678901234(20)12" },
+        /* 55*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "01123456789012342012" },
+        /* 56*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[20]12", "", 0, "(01)12345678901231(20)12" },
+        /* 57*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[20]12", "", 0, "01123456789012312012" },
+        /* 58*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231(10)12(20)AB" }, /* AI (20) should be 2 nos. */
+        /* 59*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, "[01]12345678901231[10]12[20]AB", "", 0, "(01)12345678901231(10)12(20)AB" },
+        /* 60*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]12[20]AB", "", ZINT_WARN_NONCOMPLIANT, "01123456789012311012\03520AB" },
+        /* 61*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12", "", 0, "(01)12345678901231(10)AB(20)12" },
+        /* 62*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12", "", 0, "011234567890123110AB\0352012" },
+        /* 63*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(2012" },
+        /* 64*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12[90]ABC(2012", "", 0, "011234567890123110AB\035201290ABC(2012" },
+        /* 65*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC20)12" },
+        /* 66*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12[90]ABC20)12", "", 0, "011234567890123110AB\035201290ABC20)12" },
+        /* 67*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12" },
+        /* 68*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12", "", 0, "011234567890123110AB\035201290ABC(20)12" },
+        /* 69*/ { BARCODE_DBAR_EXP, -1, -1, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "(01)12345678901231(10)AB(20)12(90)ABC(20)12(91)12(" },
+        /* 70*/ { BARCODE_DBAR_EXP, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[10]AB[20]12[90]ABC(20)12[91]12(", "", 0, "011234567890123110AB\035201290ABC(20)12\0359112(" },
+        /* 71*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "(01)12345678901234" },
+        /* 72*/ { BARCODE_DBAR_EXP_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234", "[21]12345", 0, "(01)12345678901234" },
+        /* 73*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_PLAIN_HRT, "[01]12345678901234", "[21]12345", ZINT_WARN_NONCOMPLIANT, "0112345678901234" },
+        /* 74*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231", "[21]12345", 0, "(01)12345678901231" },
+        /* 75*/ { BARCODE_DBAR_EXP_CC, -1, -1, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "(01)12345678901231(20)12(21)12345" },
+        /* 76*/ { BARCODE_DBAR_EXP_CC, -1, BARCODE_PLAIN_HRT, "[01]12345678901231[20]12[21]12345", "[21]12345", 0, "011234567890123120122112345" },
+        /* 77*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 78*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "", 0, "" },
+        /* 79*/ { BARCODE_DBAR_EXPSTK, -1, BARCODE_PLAIN_HRT, "[01]12345678901234[20]12", "", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 80*/ { BARCODE_DBAR_EXPSTK, -1, -1, "[01]12345678901231[20]12", "", 0, "" },
+        /* 81*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 82*/ { BARCODE_DBAR_EXPSTK_CC, GS1NOCHECK_MODE, -1, "[01]12345678901234[20]12", "[21]12345", 0, "" },
+        /* 83*/ { BARCODE_DBAR_EXPSTK_CC, -1, BARCODE_PLAIN_HRT, "[01]12345678901234[20]12", "[21]12345", ZINT_WARN_NONCOMPLIANT, "" },
+        /* 84*/ { BARCODE_DBAR_EXPSTK_CC, -1, -1, "[01]12345678901231[20]12", "[21]12345", 0, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     const char *text;
 
@@ -349,12 +382,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         } else {
             text = data[i].data;
         }
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, text, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    text, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(text), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }
@@ -1407,6 +1446,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int reduced_length;
 
     char reduced[1024];
     char escaped[1024];
@@ -1422,7 +1462,7 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
+        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced, &reduced_length);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, \"%s\", \"%s\" },\n",
@@ -1435,6 +1475,8 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 assert_zero(strcmp(reduced, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                             i, reduced, data[i].expected);
+                assert_equal(reduced_length, (int) strlen(reduced), "i:%d reduced_length %d != strlen %d\n",
+                            i, reduced_length, (int) strlen(reduced));
             }
             assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
                         i, symbol->errtxt, data[i].expected_errtxt);
@@ -2112,6 +2154,7 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int reduced_length;
 
     char reduced[1024];
 
@@ -2126,11 +2169,13 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
 
         length = (int) strlen(data[i].data);
 
-        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced);
+        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, (unsigned char *) reduced, &reduced_length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (length %d \"%s\") (%s)\n", i, ret, data[i].ret, length, data[i].data, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_zero(strcmp(reduced, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, reduced, data[i].expected);
+            assert_equal(reduced_length, (int) strlen(reduced), "i:%d reduced_length %d != strlen %d\n",
+                        i, reduced_length, (int) strlen(reduced));
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
 

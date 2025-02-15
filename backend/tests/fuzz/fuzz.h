@@ -1,7 +1,7 @@
 /*  fuzz.h - common functions for fuzzing libzint */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -311,6 +311,8 @@ static const struct settings_item settings[] = {
     { 143, BARCODE_UPNQR,                   0,           0,  -1,           0,  -1, ZINT_FULL_MULTIBYTE,     1,  411 },
     { 144, BARCODE_ULTRA,                   0,          -1,   5,           0,   2, ULTRA_COMPRESSION,       1,  504 },
     { 145, BARCODE_RMQR,                    0,          -1,   4,           0,  38,           0,             1,  361 },
+    { 146, BARCODE_BC412,           ARSENIC_F,           0,  -1,           0,  -1,           0,             7,   18 },
+    { 147, BARCODE_DXFILMEDGE,       SILVER_F,           0,  -1,           0,  -1,           0,             1,   10 },
 };
 
 /* Make sure value `v` is between `min` and `max` */

@@ -100,17 +100,42 @@ static void test_hrt(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
+        int output_options;
         const char *data;
 
         const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AUSPOST, "12345678901234567890123", "" }, /* None */
+        /*  0*/ { BARCODE_AUSPOST, -1, "12345678", "" }, /* None */
+        /*  1*/ { BARCODE_AUSPOST, BARCODE_PLAIN_HRT, "12345678", "1112345678" },
+        /*  2*/ { BARCODE_AUSPOST, -1, "1234567890123", "" }, /* None */
+        /*  3*/ { BARCODE_AUSPOST, BARCODE_PLAIN_HRT, "1234567890123", "591234567890123" },
+        /*  4*/ { BARCODE_AUSPOST, -1, "1234567890123456", "" }, /* None */
+        /*  5*/ { BARCODE_AUSPOST, BARCODE_PLAIN_HRT, "1234567890123456", "591234567890123456" },
+        /*  6*/ { BARCODE_AUSPOST, -1, "123456789012345678", "" }, /* None */
+        /*  7*/ { BARCODE_AUSPOST, BARCODE_PLAIN_HRT, "123456789012345678", "62123456789012345678" },
+        /*  8*/ { BARCODE_AUSPOST, -1, "12345678901234567890123", "" }, /* None */
+        /*  9*/ { BARCODE_AUSPOST, BARCODE_PLAIN_HRT, "12345678901234567890123", "6212345678901234567890123" },
+        /* 10*/ { BARCODE_AUSREPLY, -1, "1234567", "" }, /* None */
+        /* 11*/ { BARCODE_AUSREPLY, BARCODE_PLAIN_HRT, "1234567", "4501234567" },
+        /* 12*/ { BARCODE_AUSREPLY, -1, "12345678", "" }, /* None */
+        /* 13*/ { BARCODE_AUSREPLY, BARCODE_PLAIN_HRT, "12345678", "4512345678" },
+        /* 14*/ { BARCODE_AUSROUTE, -1, "123456", "" }, /* None */
+        /* 15*/ { BARCODE_AUSROUTE, BARCODE_PLAIN_HRT, "123456", "8700123456" },
+        /* 16*/ { BARCODE_AUSROUTE, -1, "12345678", "" }, /* None */
+        /* 17*/ { BARCODE_AUSROUTE, BARCODE_PLAIN_HRT, "12345678", "8712345678" },
+        /* 18*/ { BARCODE_AUSROUTE, -1, "12345", "" }, /* None */
+        /* 19*/ { BARCODE_AUSROUTE, BARCODE_PLAIN_HRT, "12345", "8700012345" },
+        /* 20*/ { BARCODE_AUSREDIRECT, -1, "12345678", "" }, /* None */
+        /* 21*/ { BARCODE_AUSREDIRECT, BARCODE_PLAIN_HRT, "12345678", "9212345678" },
+        /* 22*/ { BARCODE_AUSREDIRECT, -1, "1234", "" }, /* None */
+        /* 23*/ { BARCODE_AUSREDIRECT, BARCODE_PLAIN_HRT, "1234", "9200001234" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -121,12 +146,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

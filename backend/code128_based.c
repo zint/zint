@@ -62,9 +62,9 @@ static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], co
     }
 
     zeroes = data_len - length;
-    ustrcpy(ean128_equiv, prefix[data_len == 17][!(symbol->input_mode & GS1PARENS_MODE)]);
+    memcpy(ean128_equiv, prefix[data_len == 17][!(symbol->input_mode & GS1PARENS_MODE)], 4);
     memset(ean128_equiv + 4, '0', zeroes);
-    ustrcpy(ean128_equiv + 4 + zeroes, source);
+    memcpy(ean128_equiv + 4 + zeroes, source, length);
 
     ean128_equiv[data_len + 4] = gs1_check_digit(ean128_equiv + 4, data_len);
     ean128_equiv[data_len + 5] = '\0';
@@ -97,8 +97,10 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     unsigned char ident_tag;
     unsigned char local_source_buf[29];
     unsigned char *local_source;
+    unsigned char hrt[37];
     const int mod = 36;
     const int relabel = symbol->option_2 == 1; /* A "relabel" has no identification tag */
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
     int cd; /* Check digit */
 
     if ((length != 27 && length != 28) || (length == 28 && relabel)) {
@@ -110,7 +112,7 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     if (length == 27 && !relabel) {
         local_source_buf[0] = '%';
-        ustrcpy(local_source_buf + 1, source);
+        memcpy(local_source_buf + 1, source, length);
         local_source = local_source_buf;
         length++;
     } else {
@@ -129,9 +131,9 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
                         "Invalid character at position %d in input (alphanumerics only after first)", i);
     }
 
-    if ((ident_tag < 32) || (ident_tag > 127)) {
+    if (z_iscntrl(ident_tag) || !z_isascii(ident_tag)) {
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 343,
-                        "Invalid DPD identification tag (first character), ASCII values 32 to 127 only");
+                        "Invalid DPD identification tag (first character), ASCII values 32 to 126 only");
     }
 
     (void) code128(symbol, local_source, length); /* Only error returned is for large text which can't happen */
@@ -160,27 +162,27 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     cd = mod;
 
-    p = 0;
-    for (i = !relabel; i < length; i++) {
-        symbol->text[p] = local_source[i];
-        p++;
+    for (i = !relabel, p = 0; i < length; i++) {
+        hrt[p++] = local_source[i];
 
         cd += posn(KRSET, local_source[i]);
         if (cd > mod) cd -= mod;
         cd *= 2;
         if (cd >= (mod + 1)) cd -= mod + 1;
 
-        switch (i + relabel) {
-            case 4:
-            case 7:
-            case 11:
-            case 15:
-            case 19:
-            case 21:
-            case 24:
-            case 27:
-                symbol->text[p++] = ' ';
-                break;
+        if (!plain_hrt) {
+            switch (i + relabel) {
+                case 4:
+                case 7:
+                case 11:
+                case 15:
+                case 19:
+                case 21:
+                case 24:
+                case 27:
+                    hrt[p++] = ' ';
+                    break;
+            }
         }
     }
 
@@ -188,13 +190,12 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     if (cd == mod) cd = 0;
 
     if (cd < 10) {
-        symbol->text[p] = cd + '0';
+        hrt[p] = cd + '0';
     } else {
-        symbol->text[p] = (cd - 10) + 'A';
+        hrt[p] = (cd - 10) + 'A';
     }
-    p++;
 
-    symbol->text[p] = '\0';
+    hrt_cpy_nochk(symbol, hrt, p + 1);
 
     /* Some compliance checks */
     if (not_sane(NEON_F, local_source + length - 16, 16)) {
@@ -215,12 +216,14 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 /* Universal Postal Union S10 */
 /* https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf */
 INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length) {
+    static const char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
     int i, j;
     unsigned char local_source[13 + 1];
     unsigned char have_check_digit = '\0';
     int check_digit;
-    static const char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
     int error_number = 0;
+    unsigned char hrt[18];
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length != 12 && length != 13) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 only)", length);
@@ -228,9 +231,10 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     if (length == 13) { /* Includes check digit - remove for now */
         have_check_digit = source[10];
         memcpy(local_source, source, 10);
-        ustrcpy(local_source + 10, source + 11);
+        memcpy(local_source + 10, source + 11, length - 11);
+        length--;
     } else {
-        ustrcpy(local_source, source);
+        memcpy(local_source, source, length);
     }
     to_upper(local_source, length);
 
@@ -283,14 +287,15 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
 
     (void) code128(symbol, local_source, 13); /* Only error returned is for large text which can't happen */
 
-    j = 0;
-    for (i = 0; i < 13; i++) {
-        if (i == 2 || i == 5 || i == 8 || i == 11) {
-            symbol->text[j++] = ' ';
+    for (i = 0, j = 0; i < 13; i++) {
+        if (!plain_hrt) {
+            if (i == 2 || i == 5 || i == 8 || i == 11) {
+                hrt[j++] = ' ';
+            }
         }
-        symbol->text[j++] = local_source[i];
+        hrt[j++] = local_source[i];
     }
-    symbol->text[j] = '\0';
+    hrt_cpy_nochk(symbol, hrt, j);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Universal Postal Union S10 Section 8, using max X 0.51mm & minimum height 12.5mm or 15% of width */

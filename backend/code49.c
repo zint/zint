@@ -1,7 +1,7 @@
 /* code49.c - Handles Code 49 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -254,8 +254,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
             }
         }
     } else if (symbol->option_1 >= 1) {
-        strcpy(symbol->errtxt, "433: Minimum number of rows out of range (2 to 8)");
-        return ZINT_ERROR_INVALID_OPTION;
+        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 433, "Minimum number of rows out of range (2 to 8)");
     }
 
     /* Add row count and mode character */

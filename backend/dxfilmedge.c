@@ -52,25 +52,17 @@
 #define DX_MAX_FRAME_INFO_LENGTH    3
 #define DX_MAX_FRAME_INFO_MAX_STR   "3" /* String version of above */
 
-static void dx_int_to_binary(const int value, const int width, char *output) {
-    int i;
-    for (i = 0; i < width; i++) {
-        output[width - 1 - i] = (value & (1 << i)) ? '1' : '0';
-    }
-    output[width] = '\0';
-}
-
 static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source, const int length,
             char *binary_output, int *output_length, int *has_frame_info) {
     int i;
     int parity_bit = 0;
-    int dx_extract = -1, dx_code_1 = -1, dx_code_2 = -1, frame_number = -1;
-    char binary_dx_code_1[8], binary_dx_code_2[5], binary_frame_number[7];
+    int dx_code_1 = -1, dx_code_2 = -1, frame_number = -1;
+    int bp;
     char half_frame_flag = '\0';
-    char dx_info[DX_MAX_DX_INFO_LENGTH + 1] = "\0";
-    char frame_info[DX_MAX_FRAME_INFO_LENGTH + 1] = "\0";
+    char dx_info[DX_MAX_DX_INFO_LENGTH + 1] = {0};
+    char frame_info[DX_MAX_FRAME_INFO_LENGTH + 1] = {0};
     int dx_length;
-    const char *frame_start;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     *has_frame_info = 0;
@@ -85,20 +77,20 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
     dx_length = posn((const char *) source, '/');
     if (dx_length != -1) {
         /* Split the DX information from the frame number */
+        const char *frame_start;
         int frame_info_len;
         if (dx_length > DX_MAX_DX_INFO_LENGTH) {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 971,
                             "DX information length %d too long (maximum " DX_MAX_DX_INFO_MAX_STR ")", dx_length);
         }
-        ustrncat(dx_info, source, dx_length);
-        dx_info[dx_length] = '\0';
+        memcpy(dx_info, source, dx_length);
         frame_start = (const char *) source + dx_length + 1;
         frame_info_len = (int) strlen(frame_start);
         if (frame_info_len > DX_MAX_FRAME_INFO_LENGTH) {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 972,
                     "Frame number part length %d too long (maximum " DX_MAX_FRAME_INFO_MAX_STR ")", frame_info_len);
         }
-        ustrcpy(frame_info, frame_start);
+        memcpy(frame_info, frame_start, frame_info_len);
         *has_frame_info = 1;
         to_upper((unsigned char *) frame_info, frame_info_len);
         if (not_sane(IS_UPR_F | IS_NUM_F | IS_MNS_F, (const unsigned char *) frame_info, frame_info_len)) {
@@ -113,7 +105,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 974,
                             "DX information length %d too long (maximum " DX_MAX_DX_INFO_MAX_STR ")", dx_length);
         }
-        ustrcpy(dx_info, source);
+        memcpy(dx_info, source, dx_length);
     }
 
     if ((i = not_sane(IS_NUM_F | IS_MNS_F, (const unsigned char *) dx_info, dx_length))) {
@@ -143,6 +135,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
                             dx_code_2);
         }
     } else {
+        int dx_extract;
         /* DX format is either 4 digits (DX Extract, eg: 1271) or 6 digits (DX Full, eg: 012710) */
         if (debug_print) printf("No \"-\" separator, computing from DX Extract (4 digits) or DX Full (6 digits)\n");
         if (dx_length == 5 || dx_length > 6) {
@@ -157,7 +150,6 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
             for (i = 0; i <= 3; ++i) {
                 dx_info[i] = dx_info[i + 1];
             }
-            dx_info[4] = '\0';
             dx_length = 4;
         }
         /* Compute the DX parts 1 and 2 from the DX extract */
@@ -172,13 +164,9 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
         dx_code_2 = dx_extract % 16;
     }
 
-    /* Convert components to binary strings */
-    dx_int_to_binary(dx_code_1, 7, binary_dx_code_1);
-    dx_int_to_binary(dx_code_2, 4, binary_dx_code_2);
-
     if (debug_print) {
-        printf("%-*s%d\t-> %s\n", DX_DEBUG_STR_LEN, "DX code 1:", dx_code_1, binary_dx_code_1);
-        printf("%-*s%d\t-> %s\n", DX_DEBUG_STR_LEN, "DX code 2:", dx_code_2, binary_dx_code_2);
+        printf("%-*s%d\n", DX_DEBUG_STR_LEN, "DX code 1:", dx_code_1);
+        printf("%-*s%d\n", DX_DEBUG_STR_LEN, "DX code 2:", dx_code_2);
     }
 
     if (*has_frame_info) {
@@ -190,17 +178,17 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
         }
         /* Some frame numbers are special values, convert them their equivalent number */
         if (strcmp(frame_info, "S") == 0 || strcmp(frame_info, "X") == 0) {
-            strcpy(frame_info, "62");
+            memcpy(frame_info, "62", 3); /* Include terminating NUL */
         } else if (strcmp(frame_info, "SA") == 0 || strcmp(frame_info, "XA") == 0) {
-            strcpy(frame_info, "62A");
+            memcpy(frame_info, "62A", 4);
         } else if (strcmp(frame_info, "K") == 0 || strcmp(frame_info, "00") == 0) {
-            strcpy(frame_info, "63");
+            memcpy(frame_info, "63", 3);
         } else if (strcmp(frame_info, "KA") == 0 || strcmp(frame_info, "00A") == 0) {
-            strcpy(frame_info, "63A");
+            memcpy(frame_info, "63A", 4);
         } else if (strcmp(frame_info, "F") == 0) {
-            strcpy(frame_info, "0");
+            memcpy(frame_info, "0", 2);
         } else if (strcmp(frame_info, "FA") == 0) {
-            strcpy(frame_info, "0A");
+            memcpy(frame_info, "0A", 3);
         }
 
         ret_sscanf = sscanf(frame_info, "%d%c%n", &frame_number, &half_frame_flag, &n);
@@ -213,23 +201,22 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 984, "Frame number \"%d\" out of range (0 to 63)",
                             frame_number);
         }
-        dx_int_to_binary(frame_number, 6, binary_frame_number);
         if (debug_print) {
-            printf("%-*s%d\t-> %s\n", DX_DEBUG_STR_LEN, "Frame number:", frame_number, binary_frame_number);
+            printf("%-*s%d\n", DX_DEBUG_STR_LEN, "Frame number:", frame_number);
         }
     }
 
     /* Build the binary output */
-    strcpy(binary_output, "101010"); /* Start pattern */
-    strcat(binary_output, binary_dx_code_1);
-    strcat(binary_output, "0"); /* Separator between DX part 1 and DX part 2 */
-    strcat(binary_output, binary_dx_code_2);
+    memcpy(binary_output, "101010", 6); /* Start pattern */
+    bp = bin_append_posn(dx_code_1, 7, binary_output, 6);
+    binary_output[bp++] = '0'; /* Separator between DX part 1 and DX part 2 */
+    bp = bin_append_posn(dx_code_2, 4, binary_output, bp);
     if (*has_frame_info) {
-        strcat(binary_output, binary_frame_number);
+        bp = bin_append_posn(frame_number, 6, binary_output, bp);
         to_upper((unsigned char *) &half_frame_flag, 1);
         if (half_frame_flag == 'A') {
             if (debug_print) printf("%-*s'%c'\t-> 1\n", DX_DEBUG_STR_LEN, "Half frame flag:", half_frame_flag);
-            strcat(binary_output, "1"); /* Half-frame is set */
+            binary_output[bp++] = '1'; /* Half-frame is set */
         } else {
             if (half_frame_flag) {
                 return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 985,
@@ -237,70 +224,69 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
                             frame_info);
             }
             if (debug_print) printf("%-*s'%c'\t-> 0\n", DX_DEBUG_STR_LEN, "Half frame flag:", half_frame_flag);
-            strcat(binary_output, "0"); /* Half-frame is NOT set */
+            binary_output[bp++] = '0'; /* Half-frame is NOT set */
         }
-        strcat(binary_output, "0"); /* Separator between half frame flag and parity bit*/
+        binary_output[bp++] = '0'; /* Separator between half frame flag and parity bit*/
     }
 
     /* Parity bit */
-    for (i = 6; binary_output[i] != '\0'; i++) {
+    for (i = 6; i < bp; i++) {
         if (binary_output[i] == '1') {
-            parity_bit++;
+            parity_bit ^= 1;
         }
     }
-    parity_bit %= 2;
     if (debug_print) {
         printf("%-*s%s\t-> %d\n", DX_DEBUG_STR_LEN, "Parity bit:", parity_bit ? "yes" : "no", parity_bit);
     }
-    if (parity_bit) {
-        strcat(binary_output, "1");
-    } else {
-        strcat(binary_output, "0");
+    binary_output[bp++] = parity_bit ? '1' : '0';
+
+    memcpy(binary_output + bp, "0101", 4); /* Stop pattern */
+    bp += 4;
+
+    *output_length = bp;
+
+    if (plain_hrt) {
+        hrt_printf_nochk(symbol, "%04d%s", (dx_code_1 << 4) | dx_code_2, frame_info);
     }
 
-    strcat(binary_output, "0101"); /* Stop pattern */
-
-    *output_length = (int) strlen(binary_output);
     return 0;
 }
 
 INTERNAL int dxfilmedge(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i;
     int writer = 0;
-    int error_number = 0;
+    int error_number;
 
-    char char_data[32];
-    int data_length;
+    char binary_output[32];
+    int output_length;
     int has_frame_info;
 
     const char long_clock_pattern[] = "1111101010101010101010101010111";
     const char short_clock_pattern[] = "11111010101010101010111";
     const char *clock_pattern;
-    int clock_length;
-    int parse_result = -1;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > 10) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 986, "Input length %d too long (maximum 10)", length);
     }
 
-    parse_result = dx_parse_code(symbol, source, length, char_data, &data_length, &has_frame_info);
-    if (parse_result != 0) {
+    error_number = dx_parse_code(symbol, source, length, binary_output, &output_length, &has_frame_info);
+    if (error_number != 0) {
         if (debug_print) printf("Error %s\n\n", symbol->errtxt);
-        return parse_result;
+        return error_number;
     }
 
     /* Clock signal is longer if the frame number is provided */
     if (has_frame_info) {
         clock_pattern = long_clock_pattern;
-        clock_length = sizeof(long_clock_pattern) -1;
+        assert(output_length == (int) sizeof(long_clock_pattern) - 1);
     } else {
         clock_pattern = short_clock_pattern;
-        clock_length = sizeof(short_clock_pattern) -1;
+        assert(output_length == (int) sizeof(short_clock_pattern) - 1);
     }
 
     /* First row: clock pattern */
-    for (i = 0; i < clock_length; i++) {
+    for (i = 0; i < output_length; i++) {
         if (clock_pattern[i] == '1') {
             set_module(symbol, 0, writer);
         } else if (clock_pattern[i] == '0') {
@@ -313,16 +299,16 @@ INTERNAL int dxfilmedge(struct zint_symbol *symbol, unsigned char source[], int 
     writer = 0;
 
     /* Second row: data signal */
-    for (i = 0; i < clock_length; i++) {
-        if (char_data[i] == '1') {
+    for (i = 0; i < output_length; i++) {
+        if (binary_output[i] == '1') {
             set_module(symbol, 1, writer);
-        } else if (char_data[i] == '0') {
+        } else if (binary_output[i] == '0') {
             unset_module(symbol, 1, writer);
         }
         writer++;
     }
     symbol->rows = 2;
-    symbol->width = clock_length;
+    symbol->width = output_length;
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Measured ratio on 35mm films. Depending on the brands, one symbol height is about 3 * the X-dim.*/

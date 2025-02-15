@@ -523,6 +523,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         Code 93         1      (show the default check characters)
         EXCODE39        1 or 2 (add visible or hidden check digit)
         LOGMARS         1 or 2 (add visible or hidden check digit)
+        UK Plessey      1      (show the default check characters)
         MSI Plessey     0 to 6 (none to various visible options)
                         1, 2   (mod-10, mod-10 + mod-10)
                         3, 4   (mod-11 IBM, mod-11 IBM + mod-10)

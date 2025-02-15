@@ -31,6 +31,135 @@
 
 #include "testcommon.h"
 
+static void test_hrt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int output_options;
+        const char *data;
+
+        const char *expected;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { -1, "79-7", "" }, /* None */
+        /*  1*/ { BARCODE_PLAIN_HRT, "79-7", "1271" },
+        /*  2*/ { -1, "1271", "" }, /* None */
+        /*  3*/ { BARCODE_PLAIN_HRT, "1271", "1271" },
+        /*  4*/ { -1, "012710", "" }, /* None */
+        /*  5*/ { BARCODE_PLAIN_HRT, "012710", "1271" },
+        /*  6*/ { -1, "1-0", "" }, /* None */
+        /*  7*/ { BARCODE_PLAIN_HRT, "1-0", "0016" },
+        /*  8*/ { -1, "2047/63A", "" }, /* None */
+        /*  9*/ { BARCODE_PLAIN_HRT, "2047/63A", "204763A" },
+        /* 10*/ { -1, "79-7/1", "" }, /* None */
+        /* 11*/ { BARCODE_PLAIN_HRT, "79-7/1", "12711" },
+        /* 12*/ { -1, "79-7/sa", "" }, /* None */
+        /* 13*/ { BARCODE_PLAIN_HRT, "79-7/sa", "127162A" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+    int expected_length;
+
+    testStartSymbol("test_hrt", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_DXFILMEDGE, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
+
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d (%s)\n",
+                    i, symbol->text_length, expected_length, symbol->text);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_input(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int input_mode;
+        const char *data;
+        int ret;
+        int expected_rows;
+        int expected_width;
+        const char *expected_errtxt;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_DXFILMEDGE, -1, "79-1/123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 972: Frame number part length 4 too long (maximum 3)" },
+        /*  1*/ { BARCODE_DXFILMEDGE, -1, "79-1/1@A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 973: Frame number \"1@A\" is invalid (expected digits, optionally followed by a single \"A\")" },
+        /*  2*/ { BARCODE_DXFILMEDGE, -1, "012312365", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 974: DX information length 9 too long (maximum 6)" },
+        /*  3*/ { BARCODE_DXFILMEDGE, -1, "12-", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 977: Wrong format for DX parts 1 and 2 (expected format: NNN-NN, digits)" },
+        /*  4*/ { BARCODE_DXFILMEDGE, -1, "01234/00A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 980: DX number \"01234\" is incorrect; expected 4 digits (DX extract) or 6 digits (DX full)" },
+        /*  5*/ { BARCODE_DXFILMEDGE, -1, "0123/0AA", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 983: Frame number \"0AA\" is invalid (expected digits, optionally followed by a single \"A\")" },
+        /*  6*/ { BARCODE_DXFILMEDGE, -1, "128-0/24", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 978: DX part 1 \"128\" out of range (1 to 127)" },
+        /*  7*/ { BARCODE_DXFILMEDGE, -1, "127-16", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 979: DX part 2 \"16\" out of range (0 to 15)" },
+        /*  8*/ { BARCODE_DXFILMEDGE, -1, "79-2/A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 983: Frame number \"A\" is invalid (expected digits, optionally followed by a single \"A\")" },
+        /*  9*/ { BARCODE_DXFILMEDGE, -1, "79-2/-1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 984: Frame number \"-1\" out of range (0 to 63)" },
+        /* 10*/ { BARCODE_DXFILMEDGE, -1, "79-2/64", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 984: Frame number \"64\" out of range (0 to 63)" },
+        /* 11*/ { BARCODE_DXFILMEDGE, -1, "79-2-1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 976: The \"-\" is used to separate DX parts 1 and 2, and should be used no more than once" },
+        /* 12*/ { BARCODE_DXFILMEDGE, -1, "110-2/2B", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 985: Frame number \"2B\" is invalid (expected digits, optionally followed by a single \"A\")" },
+        /* 13*/ { BARCODE_DXFILMEDGE, -1, "099990/123A", ZINT_ERROR_TOO_LONG, -1, -1, "Error 986: Input length 11 too long (maximum 10)" },
+        /* 14*/ { BARCODE_DXFILMEDGE, -1, "0123123/1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 971: DX information length 7 too long (maximum 6)" },
+        /* 15*/ { BARCODE_DXFILMEDGE, -1, "120481", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"2048\" out of range (16 to 2047)" },
+        /* 16*/ { BARCODE_DXFILMEDGE, -1, "100151", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"15\" out of range (16 to 2047)" },
+        /* 17*/ { BARCODE_DXFILMEDGE, -1, "15", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"15\" out of range (16 to 2047)" },
+        /* 18*/ { BARCODE_DXFILMEDGE, -1, "12-12A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 975: Invalid character at position 6 in DX info (digits and \"-\" character only)" },
+        /* 19*/ { BARCODE_DXFILMEDGE, -1, "012X", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 975: Invalid character at position 4 in DX info (digits and \"-\" character only)" },
+        /* 20*/ { BARCODE_DXFILMEDGE, -1, "110-2/", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 982: Frame number indicator \"/\" at position 6, but frame number is empty" },
+        /* 21*/ { BARCODE_DXFILMEDGE, -1, "/", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"/\", DX code should start with a number" },
+        /* 22*/ { BARCODE_DXFILMEDGE, -1, "-12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"-\", DX code should start with a number" },
+        /* 23*/ { BARCODE_DXFILMEDGE, -1, "X1234X", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"X\", DX code should start with a number" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    testStartSymbol("test_input", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 static void test_encode(const testCtx *const p_ctx) {
     int debug = p_ctx->debug;
 
@@ -206,79 +335,10 @@ static void test_encode(const testCtx *const p_ctx) {
     testFinish();
 }
 
-static void test_input(const testCtx *const p_ctx) {
-    int debug = p_ctx->debug;
-
-    struct item {
-        int symbology;
-        int input_mode;
-        const char *data;
-        int ret;
-        int expected_rows;
-        int expected_width;
-        const char *expected_errtxt;
-    };
-    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
-    static const struct item data[] = {
-        /*  0*/ { BARCODE_DXFILMEDGE, -1, "79-1/123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 972: Frame number part length 4 too long (maximum 3)" },
-        /*  1*/ { BARCODE_DXFILMEDGE, -1, "79-1/1@A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 973: Frame number \"1@A\" is invalid (expected digits, optionally followed by a single \"A\")" },
-        /*  2*/ { BARCODE_DXFILMEDGE, -1, "012312365", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 974: DX information length 9 too long (maximum 6)" },
-        /*  3*/ { BARCODE_DXFILMEDGE, -1, "12-", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 977: Wrong format for DX parts 1 and 2 (expected format: NNN-NN, digits)" },
-        /*  4*/ { BARCODE_DXFILMEDGE, -1, "01234/00A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 980: DX number \"01234\" is incorrect; expected 4 digits (DX extract) or 6 digits (DX full)" },
-        /*  5*/ { BARCODE_DXFILMEDGE, -1, "0123/0AA", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 983: Frame number \"0AA\" is invalid (expected digits, optionally followed by a single \"A\")" },
-        /*  6*/ { BARCODE_DXFILMEDGE, -1, "128-0/24", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 978: DX part 1 \"128\" out of range (1 to 127)" },
-        /*  7*/ { BARCODE_DXFILMEDGE, -1, "127-16", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 979: DX part 2 \"16\" out of range (0 to 15)" },
-        /*  8*/ { BARCODE_DXFILMEDGE, -1, "79-2/A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 983: Frame number \"A\" is invalid (expected digits, optionally followed by a single \"A\")" },
-        /*  9*/ { BARCODE_DXFILMEDGE, -1, "79-2/-1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 984: Frame number \"-1\" out of range (0 to 63)" },
-        /* 10*/ { BARCODE_DXFILMEDGE, -1, "79-2/64", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 984: Frame number \"64\" out of range (0 to 63)" },
-        /* 11*/ { BARCODE_DXFILMEDGE, -1, "79-2-1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 976: The \"-\" is used to separate DX parts 1 and 2, and should be used no more than once" },
-        /* 12*/ { BARCODE_DXFILMEDGE, -1, "110-2/2B", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 985: Frame number \"2B\" is invalid (expected digits, optionally followed by a single \"A\")" },
-        /* 13*/ { BARCODE_DXFILMEDGE, -1, "099990/123A", ZINT_ERROR_TOO_LONG, -1, -1, "Error 986: Input length 11 too long (maximum 10)" },
-        /* 14*/ { BARCODE_DXFILMEDGE, -1, "0123123/1", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 971: DX information length 7 too long (maximum 6)" },
-        /* 15*/ { BARCODE_DXFILMEDGE, -1, "120481", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"2048\" out of range (16 to 2047)" },
-        /* 16*/ { BARCODE_DXFILMEDGE, -1, "100151", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"15\" out of range (16 to 2047)" },
-        /* 17*/ { BARCODE_DXFILMEDGE, -1, "15", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 981: DX extract \"15\" out of range (16 to 2047)" },
-        /* 18*/ { BARCODE_DXFILMEDGE, -1, "12-12A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 975: Invalid character at position 6 in DX info (digits and \"-\" character only)" },
-        /* 19*/ { BARCODE_DXFILMEDGE, -1, "012X", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 975: Invalid character at position 4 in DX info (digits and \"-\" character only)" },
-        /* 20*/ { BARCODE_DXFILMEDGE, -1, "110-2/", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 982: Frame number indicator \"/\" at position 6, but frame number is empty" },
-        /* 21*/ { BARCODE_DXFILMEDGE, -1, "/", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"/\", DX code should start with a number" },
-        /* 22*/ { BARCODE_DXFILMEDGE, -1, "-12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"-\", DX code should start with a number" },
-        /* 23*/ { BARCODE_DXFILMEDGE, -1, "X1234X", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 970: Invalid first character \"X\", DX code should start with a number" },
-    };
-    const int data_size = ARRAY_SIZE(data);
-    int i, length, ret;
-    struct zint_symbol *symbol = NULL;
-
-    testStartSymbol("test_input", &symbol);
-
-    for (i = 0; i < data_size; i++) {
-
-        if (testContinue(p_ctx, i)) continue;
-
-        symbol = ZBarcode_Create();
-        assert_nonnull(symbol, "Symbol not created\n");
-
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
-
-        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
-
-        if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
-        }
-
-        ZBarcode_Delete(symbol);
-    }
-
-    testFinish();
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
+        { "test_hrt", test_hrt },
         { "test_input", test_input },
         { "test_encode", test_encode },
     };

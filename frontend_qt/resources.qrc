@@ -26,6 +26,7 @@
         <file>grpMQR.ui</file>
         <file>grpMSICheck.ui</file>
         <file>grpPDF417.ui</file>
+        <file>grpPlessey.ui</file>
         <file>grpPZN.ui</file>
         <file>grpQR.ui</file>
         <file>grpRMQR.ui</file>

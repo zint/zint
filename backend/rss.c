@@ -155,16 +155,17 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
 
 /* Set GTIN-14 human readable text */
 static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int length) {
-    unsigned char *hrt = symbol->text + 4;
-    const int leading_zeroes = 13 - length;
+    static const unsigned char zeroes_str[] = "0000000000000"; /* 13 zeroes */
+    const int zeroes = 13 - length;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
-    ustrcpy(symbol->text, "(01)");
-    if (leading_zeroes) {
-        memset(hrt, '0', leading_zeroes);
+    if (plain_hrt) {
+        hrt_printf_nochk(symbol, "01%.*s%.*s", zeroes, zeroes_str, length, source);
+        hrt_cat_chr_nochk(symbol, gs1_check_digit(symbol->text + 2, 13));
+    } else {
+        hrt_printf_nochk(symbol, "(01)%.*s%.*s", zeroes, zeroes_str, length, source);
+        hrt_cat_chr_nochk(symbol, gs1_check_digit(symbol->text + 4, 13));
     }
-    memcpy(hrt + leading_zeroes, source, length);
-    hrt[13] = gs1_check_digit(hrt, 13);
-    hrt[14] = '\0';
 }
 
 /* Expand from a width pattern to a bit pattern */
@@ -822,13 +823,12 @@ INTERNAL int dbar_date(const unsigned char source[], const int length, const int
 }
 
 /* Handles all data encodation from section 7.2.5 of ISO/IEC 24724 */
-static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned char source[], char binary_string[],
-            int *p_cols_per_row, const int max_rows, int *p_bp) {
+static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned char source[], const int length,
+            char binary_string[], int *p_cols_per_row, const int max_rows, int *p_bp) {
     int encoding_method, i, j, read_posn, mode = NUMERIC;
     char last_digit = '\0';
     int symbol_characters, characters_per_row = *p_cols_per_row * 2;
     int min_cols_per_row = 0;
-    int length = (int) ustrlen(source);
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     char *general_field = (char *) z_alloca(length + 1);
     int bp = *p_bp;
@@ -1017,7 +1017,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
     } else if ((encoding_method >= 7) && (encoding_method <= 14)) {
         /* Encoding method fields "0111000" through "0111111" - variable weight item plus date */
         int group_val;
-        char weight_str[8];
+        unsigned char weight_str[7];
 
         for (i = 3; i < 15; i += 3) { /* Leading "019" stripped, and final check digit excluded */
             bp = bin_append_posn(to_int(source + i, 3), 10, binary_string, bp);
@@ -1030,7 +1030,7 @@ static int dbar_exp_binary_string(struct zint_symbol *symbol, const unsigned cha
         }
         weight_str[6] = '\0';
 
-        bp = bin_append_posn(atoi(weight_str), 20, binary_string, bp);
+        bp = bin_append_posn(to_int(weight_str, 6), 20, binary_string, bp);
 
         if (length == 34) {
             /* Date information is included */
@@ -1250,19 +1250,9 @@ static void dbar_exp_hrt(struct zint_symbol *symbol, unsigned char source[], con
 
     /* Max possible length is 77 digits so will fit */
     if (symbol->input_mode & GS1PARENS_MODE) {
-        memcpy(symbol->text, source, length + 1); /* Include terminating NUL */
+        hrt_cpy_nochk(symbol, source, length);
     } else {
-        int i;
-        /* Can't have square brackets in content so bracket level not required */
-        for (i = 0; i <= length /* Include terminating NUL */; i++) {
-            if (source[i] == '[') {
-                symbol->text[i] = '(';
-            } else if (source[i] == ']') {
-                symbol->text[i] = ')';
-            } else {
-                symbol->text[i] = source[i];
-            }
-        }
+        hrt_conv_gs1_brackets_nochk(symbol, source, length);
     }
 }
 
@@ -1283,18 +1273,20 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     int stack_rows = 1;
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
+    int reduced_length;
     char *binary_string = (char *) z_alloca(bin_len);
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     separator_row = 0;
 
-    error_number = gs1_verify(symbol, source, length, reduced);
+    error_number = gs1_verify(symbol, source, length, reduced, &reduced_length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }
     warn_number = error_number;
 
     if (debug_print) {
-        printf("Reduced (%d): %s\n", (int) ustrlen(reduced), reduced);
+        printf("Reduced (%d): %s\n", reduced_length, reduced);
     }
 
     if ((symbol->symbology == BARCODE_DBAR_EXP_CC) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
@@ -1325,7 +1317,8 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    error_number = dbar_exp_binary_string(symbol, reduced, binary_string, &cols_per_row, max_rows, &bp);
+    error_number = dbar_exp_binary_string(symbol, reduced, reduced_length, binary_string, &cols_per_row, max_rows,
+                                            &bp);
     if (error_number != 0) {
         return error_number;
     }
@@ -1468,7 +1461,11 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows + 1;
 
-        dbar_exp_hrt(symbol, source, length);
+        if (plain_hrt) {
+            hrt_cpy_nochk(symbol, reduced, reduced_length);
+        } else {
+            dbar_exp_hrt(symbol, source, length);
+        }
 
     } else {
         int current_row, current_block, left_to_right;

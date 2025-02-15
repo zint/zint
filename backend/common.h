@@ -140,15 +140,16 @@ typedef unsigned __int64 uint64_t;
 #define z_isdigit(c) ((c) <= '9' && (c) >= '0')
 #define z_isupper(c) ((c) >= 'A' && (c) <= 'Z')
 #define z_islower(c) ((c) >= 'a' && (c) <= 'z')
+#define z_isascii(c) (((c) & 0x7F) == (c))
+#define z_iscntrl(c) (z_isascii(c) && ((c) < 32 || (c) == 127))
 
-/* Helpers to cast away char pointer signedness */
+/* Helper to cast away char pointer signedness */
 #define ustrlen(source) strlen((const char *) (source))
-#define ustrcpy(target, source) strcpy((char *) (target), (const char *) (source))
-#define ustrcat(target, source) strcat((char *) (target), (const char *) (source))
-#define ustrncat(target, source, count) strncat((char *) (target), (const char *) (source), (count))
 
 /* Converts an integer value to its value + '0' (so >= 10 becomes ':', ';' etc) */
 #define itoc(i) ((i) + '0')
+/* Converts an integer value to its hexadecimal digit */
+#define xtoc(i) ((i) < 10 ? itoc(i) : ((i) - 10) + 'A')
 
 /* Converts a character 0-9, A-F to its equivalent integer value */
 INTERNAL int ctoi(const char source);
@@ -299,8 +300,27 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
                 int *length, const int disallow_4byte);
 
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
-   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_PLAIN_HRT set in `output_options`.
+   Returns warning if truncated, else 0 */
 INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+/* No-check as-is copy of ASCII into `symbol->text`, assuming `length` fits */
+INTERNAL void hrt_cpy_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+/* Copy a single ASCII character into `symbol->text` (i.e. replaces content) */
+INTERNAL void hrt_cpy_chr(struct zint_symbol *symbol, const char ch);
+
+/* No-check as-is append of ASCII to `symbol->text`, assuming current `symbol->text_length` + `length` fits */
+INTERNAL void hrt_cat_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+/* No-check append of `ch` to `symbol->text`, assuming current `symbol->text_length` + 1 fits */
+INTERNAL void hrt_cat_chr_nochk(struct zint_symbol *symbol, const char ch);
+
+/* No-check `sprintf()` into `symbol->text`, assuming it fits */
+INTERNAL void hrt_printf_nochk(struct zint_symbol *symbol, const char *fmt, ...) ZINT_FORMAT_PRINTF(2, 3);
+
+/* No-check copy of `source` into `symbol->text`, converting GS1 square brackets into round ones. Assumes it fits */
+INTERNAL void hrt_conv_gs1_brackets_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
 
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.

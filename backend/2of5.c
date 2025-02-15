@@ -60,8 +60,9 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     int i;
     char dest[818]; /* Largest destination 4 + (80 + 1) * 10 + 3 + 1 = 818 */
     char *d = dest;
-    unsigned char temp[113 + 1 + 1]; /* Largest maximum 113 + optional check digit */
+    unsigned char local_source[113 + 1]; /* Largest maximum 113 + optional check digit */
     const int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
+    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
@@ -75,13 +76,13 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
                         "Invalid character at position %d in input (digits only)", i);
     }
 
-    ustrcpy(temp, source);
+    memcpy(local_source, source, length);
 
     if (have_checkdigit) {
         /* Add standard GS1 check digit */
-        temp[length] = gs1_check_digit(source, length);
-        temp[++length] = '\0';
-        if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", temp[length - 1]);
+        local_source[length] = gs1_check_digit(source, length);
+        length++;
+        if (symbol->debug & ZINT_DEBUG_PRINT) printf("Check digit: %c\n", local_source[length - 1]);
     }
 
     /* Start character */
@@ -90,11 +91,11 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     if (is_matrix) {
         for (i = 0; i < length; i++, d += 6) {
-            memcpy(d, C25MatrixTable[temp[i] - '0'], 6);
+            memcpy(d, C25MatrixTable[local_source[i] - '0'], 6);
         }
     } else {
         for (i = 0; i < length; i++, d += 10) {
-            memcpy(d, C25IndustTable[temp[i] - '0'], 10);
+            memcpy(d, C25IndustTable[local_source[i] - '0'], 10);
         }
     }
 
@@ -104,10 +105,11 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     expand(symbol, dest, d - dest);
 
-    ustrcpy(symbol->text, temp);
-    if (symbol->option_2 == 2) {
-        /* Remove check digit from HRT */
-        symbol->text[length - 1] = '\0';
+    if (symbol->option_2 == 2 && !plain_hrt) {
+        /* Exclude check digit from HRT */
+        hrt_cpy_nochk(symbol, local_source, length - 1);
+    } else {
+        hrt_cpy_nochk(symbol, local_source, length);
     }
 
     return 0;

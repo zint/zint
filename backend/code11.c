@@ -55,8 +55,8 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     int error_number = 0;
     char *d = dest;
     int num_check_digits;
-    char checkstr[3] = {0};
-    static const char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
+    unsigned char checkstr[2];
+    static const unsigned char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
@@ -134,7 +134,8 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("Check digit (%d): %s\n", num_check_digits, num_check_digits ? checkstr : "<none>");
+        printf("Check digits (%d): %.*s%s\n", num_check_digits, num_check_digits, checkstr,
+                num_check_digits ? "" : "<none>");
     }
 
     /* Stop character */
@@ -145,9 +146,9 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
 
     /* TODO: Find documentation on BARCODE_CODE11 dimensions/height */
 
-    ustrcpy(symbol->text, source);
+    hrt_cpy_nochk(symbol, source, length);
     if (num_check_digits) {
-        ustrcat(symbol->text, checkstr);
+        hrt_cat_nochk(symbol, checkstr, num_check_digits);
     }
     return error_number;
 }

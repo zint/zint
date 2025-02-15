@@ -187,7 +187,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
     struct zint_vector_hexagon *hex;
     struct zint_vector_circle *circle;
     struct zint_vector_string *string;
-    int i, len;
+    int i;
     int ps_len = 0;
     int iso_latin1 = 0;
     int have_circles_with_width = 0, have_circles_without_width = 0;
@@ -229,7 +229,7 @@ INTERNAL int ps_plot(struct zint_symbol *symbol) {
         draw_background = 0;
     }
 
-    for (i = 0, len = (int) ustrlen(symbol->text); i < len; i++) {
+    for (i = 0; i < symbol->text_length; i++) {
         switch (symbol->text[i]) {
             case '(':
             case ')':

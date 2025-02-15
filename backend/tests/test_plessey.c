@@ -109,45 +109,93 @@ static void test_hrt(const testCtx *const p_ctx) {
     struct item {
         int symbology;
         int option_2;
+        int output_options;
         const char *data;
 
         const char *expected;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_MSI_PLESSEY, -1, "1234567", "1234567" },
-        /*  1*/ { BARCODE_MSI_PLESSEY, 0, "1234567", "1234567" },
-        /*  2*/ { BARCODE_MSI_PLESSEY, 1, "1234567", "12345674" },
-        /*  3*/ { BARCODE_MSI_PLESSEY, 1 + 10, "1234567", "1234567" },
-        /*  4*/ { BARCODE_MSI_PLESSEY, 1, "9999999999", "99999999990" },
-        /*  5*/ { BARCODE_MSI_PLESSEY, 2, "1234567", "123456741" },
-        /*  6*/ { BARCODE_MSI_PLESSEY, 2 + 10, "1234567", "1234567" },
-        /*  7*/ { BARCODE_MSI_PLESSEY, 2, "9999999999", "999999999900" },
-        /*  8*/ { BARCODE_MSI_PLESSEY, 3, "1234567", "12345674" },
-        /*  9*/ { BARCODE_MSI_PLESSEY, 3 + 10, "1234567", "1234567" },
-        /* 10*/ { BARCODE_MSI_PLESSEY, 3, "9999999999", "99999999995" },
-        /* 11*/ { BARCODE_MSI_PLESSEY, 4, "1234567", "123456741" },
-        /* 12*/ { BARCODE_MSI_PLESSEY, 4 + 10, "1234567", "1234567" },
-        /* 13*/ { BARCODE_MSI_PLESSEY, 4, "9999999999", "999999999959" },
-        /* 14*/ { BARCODE_MSI_PLESSEY, 5, "1234567", "12345679" },
-        /* 15*/ { BARCODE_MSI_PLESSEY, 5 + 10, "1234567", "1234567" },
-        /* 16*/ { BARCODE_MSI_PLESSEY, 5, "9999999999", "999999999910" },
-        /* 17*/ { BARCODE_MSI_PLESSEY, 6, "1234567", "123456790" },
-        /* 18*/ { BARCODE_MSI_PLESSEY, 6 + 10, "1234567", "1234567" },
-        /* 19*/ { BARCODE_MSI_PLESSEY, 6, "9999999999", "9999999999109" },
-        /* 20*/ { BARCODE_MSI_PLESSEY, 1, "123456", "1234566" },
-        /* 21*/ { BARCODE_MSI_PLESSEY, 2, "123456", "12345666" },
-        /* 22*/ { BARCODE_MSI_PLESSEY, 3, "123456", "1234560" },
-        /* 23*/ { BARCODE_MSI_PLESSEY, 4, "123456", "12345609" },
-        /* 24*/ { BARCODE_MSI_PLESSEY, 3, "2211", "221110" }, /* Mod-11 check digit '10' */
-        /* 25*/ { BARCODE_MSI_PLESSEY, 3 + 10, "2211", "2211" }, /* Mod-11 check digit '10' */
-        /* 26*/ { BARCODE_MSI_PLESSEY, 4, "2211", "2211100" },
-        /* 27*/ { BARCODE_MSI_PLESSEY, 4 + 10, "2211", "2211" },
-        /* 28*/ { BARCODE_PLESSEY, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
+        /*  0*/ { BARCODE_MSI_PLESSEY, -1, -1, "1234567", "1234567" },
+        /*  1*/ { BARCODE_MSI_PLESSEY, -1, BARCODE_PLAIN_HRT, "1234567", "1234567" },
+        /*  2*/ { BARCODE_MSI_PLESSEY, 0, -1, "1234567", "1234567" },
+        /*  3*/ { BARCODE_MSI_PLESSEY, 0, BARCODE_PLAIN_HRT, "1234567", "1234567" },
+        /*  4*/ { BARCODE_MSI_PLESSEY, 1, -1, "1234567", "12345674" },
+        /*  5*/ { BARCODE_MSI_PLESSEY, 1, BARCODE_PLAIN_HRT, "1234567", "12345674" },
+        /*  6*/ { BARCODE_MSI_PLESSEY, 1 + 10, -1, "1234567", "1234567" },
+        /*  7*/ { BARCODE_MSI_PLESSEY, 1 + 10, BARCODE_PLAIN_HRT, "1234567", "12345674" },
+        /*  8*/ { BARCODE_MSI_PLESSEY, 1, -1, "9999999999", "99999999990" },
+        /*  9*/ { BARCODE_MSI_PLESSEY, 1, BARCODE_PLAIN_HRT, "9999999999", "99999999990" },
+        /* 10*/ { BARCODE_MSI_PLESSEY, 2, -1, "1234567", "123456741" },
+        /* 11*/ { BARCODE_MSI_PLESSEY, 2, BARCODE_PLAIN_HRT, "1234567", "123456741" },
+        /* 12*/ { BARCODE_MSI_PLESSEY, 2 + 10, -1, "1234567", "1234567" },
+        /* 13*/ { BARCODE_MSI_PLESSEY, 2 + 10, BARCODE_PLAIN_HRT, "1234567", "123456741" },
+        /* 14*/ { BARCODE_MSI_PLESSEY, 2, -1, "9999999999", "999999999900" },
+        /* 15*/ { BARCODE_MSI_PLESSEY, 2, BARCODE_PLAIN_HRT, "9999999999", "999999999900" },
+        /* 16*/ { BARCODE_MSI_PLESSEY, 3, -1, "1234567", "12345674" },
+        /* 17*/ { BARCODE_MSI_PLESSEY, 3, BARCODE_PLAIN_HRT, "1234567", "12345674" },
+        /* 18*/ { BARCODE_MSI_PLESSEY, 3 + 10, -1, "1234567", "1234567" },
+        /* 19*/ { BARCODE_MSI_PLESSEY, 3 + 10, BARCODE_PLAIN_HRT, "1234567", "12345674" },
+        /* 20*/ { BARCODE_MSI_PLESSEY, 3, -1, "9999999999", "99999999995" },
+        /* 21*/ { BARCODE_MSI_PLESSEY, 3, BARCODE_PLAIN_HRT, "9999999999", "99999999995" },
+        /* 22*/ { BARCODE_MSI_PLESSEY, 4, -1, "1234567", "123456741" },
+        /* 23*/ { BARCODE_MSI_PLESSEY, 4, BARCODE_PLAIN_HRT, "1234567", "123456741" },
+        /* 24*/ { BARCODE_MSI_PLESSEY, 4 + 10, -1, "1234567", "1234567" },
+        /* 25*/ { BARCODE_MSI_PLESSEY, 4 + 10, BARCODE_PLAIN_HRT, "1234567", "123456741" },
+        /* 26*/ { BARCODE_MSI_PLESSEY, 4, -1, "9999999999", "999999999959" },
+        /* 27*/ { BARCODE_MSI_PLESSEY, 4, BARCODE_PLAIN_HRT, "9999999999", "999999999959" },
+        /* 28*/ { BARCODE_MSI_PLESSEY, 5, -1, "1234567", "12345679" },
+        /* 29*/ { BARCODE_MSI_PLESSEY, 5, BARCODE_PLAIN_HRT, "1234567", "12345679" },
+        /* 30*/ { BARCODE_MSI_PLESSEY, 5 + 10, -1, "1234567", "1234567" },
+        /* 31*/ { BARCODE_MSI_PLESSEY, 5 + 10, BARCODE_PLAIN_HRT, "1234567", "12345679" },
+        /* 32*/ { BARCODE_MSI_PLESSEY, 5, -1, "9999999999", "999999999910" },
+        /* 33*/ { BARCODE_MSI_PLESSEY, 5, BARCODE_PLAIN_HRT, "9999999999", "999999999910" },
+        /* 34*/ { BARCODE_MSI_PLESSEY, 6, -1, "1234567", "123456790" },
+        /* 35*/ { BARCODE_MSI_PLESSEY, 6, BARCODE_PLAIN_HRT, "1234567", "123456790" },
+        /* 36*/ { BARCODE_MSI_PLESSEY, 6 + 10, -1, "1234567", "1234567" },
+        /* 37*/ { BARCODE_MSI_PLESSEY, 6 + 10, BARCODE_PLAIN_HRT, "1234567", "123456790" },
+        /* 38*/ { BARCODE_MSI_PLESSEY, 6, -1, "9999999999", "9999999999109" },
+        /* 39*/ { BARCODE_MSI_PLESSEY, 6, BARCODE_PLAIN_HRT, "9999999999", "9999999999109" },
+        /* 40*/ { BARCODE_MSI_PLESSEY, 1, -1, "123456", "1234566" },
+        /* 41*/ { BARCODE_MSI_PLESSEY, 1, BARCODE_PLAIN_HRT, "123456", "1234566" },
+        /* 42*/ { BARCODE_MSI_PLESSEY, 2, -1, "123456", "12345666" },
+        /* 43*/ { BARCODE_MSI_PLESSEY, 2, BARCODE_PLAIN_HRT, "123456", "12345666" },
+        /* 44*/ { BARCODE_MSI_PLESSEY, 3, -1, "123456", "1234560" },
+        /* 45*/ { BARCODE_MSI_PLESSEY, 3, BARCODE_PLAIN_HRT, "123456", "1234560" },
+        /* 46*/ { BARCODE_MSI_PLESSEY, 4, -1, "123456", "12345609" },
+        /* 47*/ { BARCODE_MSI_PLESSEY, 4, BARCODE_PLAIN_HRT, "123456", "12345609" },
+        /* 48*/ { BARCODE_MSI_PLESSEY, 3, -1, "2211", "221110" }, /* Mod-11 check digit '10' */
+        /* 49*/ { BARCODE_MSI_PLESSEY, 3, BARCODE_PLAIN_HRT, "2211", "221110" },
+        /* 50*/ { BARCODE_MSI_PLESSEY, 3 + 10, -1, "2211", "2211" }, /* Mod-11 check digit '10' */
+        /* 51*/ { BARCODE_MSI_PLESSEY, 3 + 10, BARCODE_PLAIN_HRT, "2211", "221110" },
+        /* 52*/ { BARCODE_MSI_PLESSEY, 4, -1, "2211", "2211100" },
+        /* 53*/ { BARCODE_MSI_PLESSEY, 4, BARCODE_PLAIN_HRT, "2211", "2211100" },
+        /* 54*/ { BARCODE_MSI_PLESSEY, 4 + 10, -1, "2211", "2211" },
+        /* 55*/ { BARCODE_MSI_PLESSEY, 4 + 10, BARCODE_PLAIN_HRT, "2211", "2211100" },
+        /* 56*/ { BARCODE_PLESSEY, -1, -1, "0123456789ABCDEF", "0123456789ABCDEF" },
+        /* 57*/ { BARCODE_PLESSEY, -1, BARCODE_PLAIN_HRT, "0123456789ABCDEF", "0123456789ABCDEF90" },
+        /* 58*/ { BARCODE_PLESSEY, 1, -1, "0123456789ABCDEF", "0123456789ABCDEF90" },
+        /* 59*/ { BARCODE_PLESSEY, 1, BARCODE_PLAIN_HRT, "0123456789ABCDEF", "0123456789ABCDEF90" },
+        /* 60*/ { BARCODE_PLESSEY, -1, -1, "1", "1" },
+        /* 61*/ { BARCODE_PLESSEY, -1, BARCODE_PLAIN_HRT, "1", "173" },
+        /* 62*/ { BARCODE_PLESSEY, 1, -1, "1", "173" },
+        /* 63*/ { BARCODE_PLESSEY, 1, BARCODE_PLAIN_HRT, "1", "173" },
+        /* 64*/ { BARCODE_PLESSEY, -1, -1, "7", "7" },
+        /* 65*/ { BARCODE_PLESSEY, -1, BARCODE_PLAIN_HRT, "7", "758" },
+        /* 66*/ { BARCODE_PLESSEY, 1, -1, "7", "758" },
+        /* 67*/ { BARCODE_PLESSEY, 1, BARCODE_PLAIN_HRT, "7", "758" },
+        /* 68*/ { BARCODE_PLESSEY, -1, -1, "75", "75" },
+        /* 69*/ { BARCODE_PLESSEY, -1, BARCODE_PLAIN_HRT, "75", "7580" },
+        /* 70*/ { BARCODE_PLESSEY, 1, -1, "75", "7580" },
+        /* 71*/ { BARCODE_PLESSEY, 1, BARCODE_PLAIN_HRT, "75", "7580" },
+        /* 72*/ { BARCODE_PLESSEY, -1, -1, "993", "993" },
+        /* 73*/ { BARCODE_PLESSEY, -1, BARCODE_PLAIN_HRT, "993", "993AA" },
+        /* 74*/ { BARCODE_PLESSEY, 1, -1, "993", "993AA" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -158,12 +206,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
 
-        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

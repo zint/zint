@@ -2206,6 +2206,17 @@ void MainWindow::change_options()
         connect(m_btnHeightPerRowDisable, SIGNAL(clicked(bool)), SLOT(height_per_row_disable()));
         connect(m_btnHeightPerRowDefault, SIGNAL(clicked(bool)), SLOT(height_per_row_default()));
 
+    } else if (symbology == BARCODE_PLESSEY) {
+        QFile file(QSL(":/grpPlessey.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
+            connect(get_widget(QSL("chkPlesseyShowChecks")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_ULTRA) {
         QFile file(QSL(":/grpUltra.ui"));
         if (!file.open(QIODevice::ReadOnly))
@@ -3236,6 +3247,13 @@ void MainWindow::update_preview()
             }
             if (get_chk_val(QSL("chkHXFullMultibyte"))) {
                 m_bc.bc.setOption3(ZINT_FULL_MULTIBYTE | m_bc.bc.option3());
+            }
+            break;
+
+        case BARCODE_PLESSEY:
+            m_bc.bc.setSymbol(BARCODE_PLESSEY);
+            if (get_chk_val(QSL("chkPlesseyShowChecks"))) {
+                m_bc.bc.setOption2(1);
             }
             break;
 
@@ -4385,6 +4403,10 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/dbar_expstk/height_per_row"), get_dspn_val(QSL("spnDBESHeightPerRow")));
             break;
 
+        case BARCODE_PLESSEY:
+            settings.setValue(QSL("studio/bc/plessey/chk_show_checks"), get_chk_val(QSL("chkPlesseyShowChecks")));
+            break;
+
         case BARCODE_ULTRA:
             settings.setValue(QSL("studio/bc/ultra/autoresizing"), get_rad_grp_index(
                 QStringList() << QSL("radUltraAuto") << QSL("radUltraEcc")));
@@ -4822,6 +4844,10 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_cmb_from_setting(settings, QSL("studio/bc/dbar_expstk/rows"), QSL("cmbDBESRows"));
             set_dspn_from_setting(settings, QSL("studio/bc/dbar_expstk/height_per_row"), QSL("spnDBESHeightPerRow"),
                 0.0f);
+            break;
+
+        case BARCODE_PLESSEY:
+            set_chk_from_setting(settings, QSL("studio/bc/plessey/chk_show_checks"), QSL("chkPlesseyShowChecks"));
             break;
 
         case BARCODE_ULTRA:

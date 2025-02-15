@@ -62,7 +62,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
                 const int cc_rows);
 
 INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[],
+INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char source[], const int length,
                 unsigned char local_source[], int *p_with_addon, unsigned char *zfirst_part,
                 unsigned char *zsecond_part);
 
@@ -1210,20 +1210,19 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 }
 
 /* Calculate the width of the linear part (primary) */
-static int cc_linear_dummy_run(int input_mode, unsigned char *source, const int length, const int debug,
-            char *errtxt) {
+static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source, const int length) {
     struct zint_symbol dummy = {0};
     int error_number;
     int linear_width;
 
     dummy.symbology = BARCODE_GS1_128_CC;
     dummy.option_1 = -1;
-    dummy.input_mode = input_mode;
-    dummy.debug = debug;
+    dummy.input_mode = symbol->input_mode;
+    dummy.debug = symbol->debug;
     error_number = gs1_128_cc(&dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
     linear_width = dummy.width;
-    if (error_number >= ZINT_ERROR || (debug & ZINT_DEBUG_TEST)) {
-        strcpy(errtxt, dummy.errtxt);
+    if (error_number >= ZINT_ERROR || (symbol->debug & ZINT_DEBUG_TEST)) {
+        (void) errtxt(0, symbol, -1, dummy.errtxt);
     }
 
     if (error_number >= ZINT_ERROR) {
@@ -1268,8 +1267,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = cc_linear_dummy_run(symbol->input_mode, (unsigned char *) symbol->primary, pri_len,
-                                            symbol->debug, symbol->errtxt);
+        linear_width = cc_linear_dummy_run(symbol, (unsigned char *) symbol->primary, pri_len);
         if (linear_width == 0) {
             return errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
         }
@@ -1285,8 +1283,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 int padded_pri_len;
                 int with_addon;
                 unsigned char padded_pri[21];
-                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, padded_pri, &with_addon, NULL,
-                                        NULL)) {
+                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, pri_len, padded_pri, &with_addon,
+                                        NULL, NULL)) {
                     return errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
                 padded_pri_len = (int) ustrlen(padded_pri);
@@ -1448,7 +1446,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     switch (symbol->symbology) {
             /* Determine horizontal alignment (according to section 12.3) */
         case BARCODE_EANX_CC:
-            switch (ustrlen(linear->text)) { /* Use zero-padded length */
+            switch (linear->text_length) { /* Use zero-padded length */
                 case 8: /* EAN-8 */
                 case 11: /* EAN-8 + 2 */
                 case 14: /* EAN-8 + 5 */
@@ -1580,7 +1578,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         }
     }
 
-    ustrcpy(symbol->text, linear->text);
+    hrt_cpy_nochk(symbol, linear->text, linear->text_length);
 
     ZBarcode_Delete(linear);
 

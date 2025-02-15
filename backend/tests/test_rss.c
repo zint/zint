@@ -1301,7 +1301,7 @@ static void test_hrt(const testCtx *const p_ctx) {
 
     struct item {
         int symbology;
-        int input_mode;
+        int output_options;
         const char *data;
 
         int ret;
@@ -1310,18 +1310,28 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_DBAR_OMN, -1, "1234567890123", 0, "(01)12345678901231" },
-        /*  1*/ { BARCODE_DBAR_OMN, -1, "12345678901231", 0, "(01)12345678901231" },
+        /*  1*/ { BARCODE_DBAR_OMN, BARCODE_PLAIN_HRT, "1234567890123", 0, "0112345678901231" },
+        /*  2*/ { BARCODE_DBAR_OMN, -1, "12345678901231", 0, "(01)12345678901231" },
+        /*  3*/ { BARCODE_DBAR_OMN, BARCODE_PLAIN_HRT, "12345678901231", 0, "0112345678901231" },
         /*  4*/ { BARCODE_DBAR_OMN, -1, "1000000000009", 0, "(01)10000000000090" },
-        /*  5*/ { BARCODE_DBAR_LTD, -1, "1341056790138", 0, "(01)13410567901384" },
-        /*  6*/ { BARCODE_DBAR_LTD, -1, "13410567901384", 0, "(01)13410567901384" },
-        /*  9*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231" }, /* See test_hrt() in "test_gs1.c" for full HRT tests */
-        /* 10*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "" }, /* No HRT for stacked */
-        /* 11*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "" },
-        /* 12*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "" },
+        /*  5*/ { BARCODE_DBAR_OMN, BARCODE_PLAIN_HRT, "1000000000009", 0, "0110000000000090" },
+        /*  6*/ { BARCODE_DBAR_LTD, -1, "1341056790138", 0, "(01)13410567901384" },
+        /*  7*/ { BARCODE_DBAR_LTD, BARCODE_PLAIN_HRT, "1341056790138", 0, "0113410567901384" },
+        /*  8*/ { BARCODE_DBAR_LTD, -1, "13410567901384", 0, "(01)13410567901384" },
+        /*  9*/ { BARCODE_DBAR_LTD, BARCODE_PLAIN_HRT, "13410567901384", 0, "0113410567901384" },
+        /* 10*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231" }, /* See test_hrt() in "test_gs1.c" for full HRT tests */
+        /* 11*/ { BARCODE_DBAR_EXP, BARCODE_PLAIN_HRT, "[01]12345678901231", 0, "0112345678901231" },
+        /* 12*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "" }, /* No HRT for stacked */
+        /* 13*/ { BARCODE_DBAR_STK, BARCODE_PLAIN_HRT, "12345678901231", 0, "" },
+        /* 14*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "" },
+        /* 15*/ { BARCODE_DBAR_OMNSTK, BARCODE_PLAIN_HRT, "10000000000090", 0, "" },
+        /* 16*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "" },
+        /* 17*/ { BARCODE_DBAR_EXPSTK, BARCODE_PLAIN_HRT, "[01]12345678901231", 0, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+    int expected_length;
 
     testStartSymbol("test_hrt", &symbol);
 
@@ -1332,12 +1342,18 @@ static void test_hrt(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, -1, debug);
+        expected_length = (int) strlen(data[i].expected);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, data[i].ret, ret, symbol->errtxt);
 
-        assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
+                    i, symbol->text_length, expected_length);
+        assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
 
         ZBarcode_Delete(symbol);
     }

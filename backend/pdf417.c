@@ -687,9 +687,12 @@ struct pdf_edge {
     ((edge)->previous ? (edges) + (edge)->previous : NULL)
 
 #if 0
-#define PDF_TRACE
-#endif
 #include "pdf417_trace.h"
+#else
+#define PDF_TRACE_Edges(px, s, l, p, v)
+#define PDF_TRACE_AddEdge(s, l, es, p, v, t, e) do { (void)(s); (void)(l); } while (0)
+#define PDF_TRACE_NotAddEdge(s, l, es, p, v, t, e) do { (void)(s); (void)(l); } while (0)
+#endif
 
 /* Initialize a new edge */
 static int pdf_new_Edge(struct pdf_edge *edges, const int mode, const int from, const int len, const int t_table,

@@ -346,6 +346,9 @@ static void test_fopen(const testCtx *const p_ctx) {
         /* 13*/ { "out_test\\", "\\out_test_subdir\\", "out.png", 1 },
         /* 14*/ { "", "", "outé.png", 1 },
         /* 15*/ { "outé_test", "", "outé.png", 1 },
+#ifdef _WIN32
+        /* 16*/ { "out\351_test", "", "out.png", 0 }, /* Invalid UTF-8 */
+#endif
     };
     const int data_size = ARRAY_SIZE(data);
     int i, len;

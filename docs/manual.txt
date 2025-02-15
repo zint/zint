@@ -2053,6 +2053,8 @@ the following members:
                                     formatting, with a
                                     terminating NUL.
 
+  text_length          integer      Length of text.            0 (output only)
+
   rows                 integer      Number of rows used by the (output only)
                                     symbol.
 
@@ -2311,6 +2313,11 @@ together when adjusting this value:
 
   BARCODE_MEMORY_FILE        Write output to in-memory buffer symbol->memfile
                              instead of to outfile file.
+
+  BARCODE_PLAIN_HRT          Set HRT with no decoration,[13] complete with any
+                             control characters[14] and check characters,[15]
+                             and for all linear symbologies, including those
+                             that normally don’t set it.[16]
   ------------------------------------------------------------------------------
 
   : Table  : API output_options Values
@@ -2539,7 +2546,7 @@ see which are set.
 
   ZINT_CAP_STACKABLE          Is the symbology stackable?
 
-  ZINT_CAP_EANUPC[13]         Is the symbology EAN/UPC?
+  ZINT_CAP_EANUPC[17]         Is the symbology EAN/UPC?
 
   ZINT_CAP_COMPOSITE          Does the symbology support composite data? (see
                               6.3 GS1 Composite Symbols (ISO 24723) below)
@@ -2854,7 +2861,9 @@ UPC Version E.
 
 Also known as Plessey Code, this symbology was developed by the Plessey Company
 Ltd. in the UK. The symbol can encode data consisting of digits (0-9) or letters
-A-F up to a maximum of 67 characters and includes a hidden CRC check digit.
+A-F (i.e. hexadecimal digits) up to a maximum of 67 characters and includes two
+hidden CRC check digits, which may be shown in the Human Readable Text by
+setting --vers=1 (API option_2 |= 1).
 
 6.1.5.2 MSI Plessey
 
@@ -3053,7 +3062,7 @@ alphanumerics) are not recommended.
 [zint -b CODE128AB -d "130170X178"]
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[14] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[18] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special extra escapes mentioned above are not available for this
@@ -3605,7 +3614,7 @@ first and last digit are ignored, leaving a 4-digit DX Extract number in any
 case, which must be in the range 16 to 2047. The second format "NNN-NN"
 represents the DX Extract as two numbers separated by a dash (-), the first
 number being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).[15]
+0 to 15).[19]
 
 The optional frame number is a number in the range 0 to 63, and may have a half
 frame indicator "A" appended. Special character sequences (with or without a
@@ -3697,14 +3706,14 @@ Solomon error correction. Input is a pre-formatted alphanumeric string of 22
 78 bars respectively. The rules for the input data are complex, as summarized in
 the following table.
 
-  ----------------------------------------------------------------------------
-  Format   Version   Class        Supply Chain ID  Item ID   Destination+DPS
+  ------------------------------------------------------------------------------
+  Format   Version   Class        Supply Chain ID   Item ID    Destination+DPS
            ID
-  -------- --------- ------------ ---------------- --------- -----------------
-  1 digit  1 digit   1 alphanum.  2 digits (C) or  8 digits  9 alphanumerics
-  (0-4)    (0-3)     (0-9A-E)     6 digits (L)               (1 of 6 patterns)
+  -------- --------- ------------ ----------------- ---------- -----------------
+  1 digit  1 digit   1 alphanum.  2 digits (C) or 6 8 digits   9 alphanumerics
+  (0-4)    (0-3)     (0-9A-E)     digits (L)                   (1 of 6 patterns)
 
-  ----------------------------------------------------------------------------
+  ------------------------------------------------------------------------------
 
   Table : Royal Mail 4-State Mailmark Input Fields
 
@@ -4710,7 +4719,7 @@ company references in particular.
     May 2004)
 -   AIM ITS/04-023 International Technical Standard - Extended Channel
     Interpretations Part 3: Register (Version 2, February 2022)
--   GS1 General Specifications Release 24.0 (Jan 2024)
+-   GS1 General Specifications Release 25.0 (Jan 2025)
 -   ANSI/HIBC 2.6-2016 - The Health Industry Bar Code (HIBC) Supplier Labeling
     Standard
 
@@ -5431,6 +5440,7 @@ OPTIONS
         Code 93         1      (show the default check characters)
         EXCODE39        1 or 2 (add visible or hidden check digit)
         LOGMARS         1 or 2 (add visible or hidden check digit)
+        UK Plessey      1      (show the default check characters)
         MSI Plessey     0 to 6 (none to various visible options)
                         1, 2   (mod-10, mod-10 + mod-10)
                         3, 4   (mod-11 IBM, mod-11 IBM + mod-10)
@@ -5612,11 +5622,28 @@ Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 [12] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
 UPC-E have compliant quiet zones added by default.
 
-[13] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
+[13] In particular no parentheses will appear in the HRT for GS1 symbologies,
+and GS separators will be added as required. Also for EAN/UPC symbologies, any
+add-on data will directly follow the main data, i.e. will not be separated by
+a + character.
+
+[14] Normally control characters (including DEL) and non-ISO/IEC 8859-1 are
+replaced by spaces in the HRT.
+
+[15] Except for Japanese Postal Code, whose check character is not truly
+representable in HRT.
+
+[16] HRT is normally not set for the postal codes Australia Post (all variants),
+USPS Intelligent Mail, POSTNET and PLANET, Brazilian CEPNet, Royal Mail 4-State
+Customer Code and 4-State Mailmark, Dutch Post KIX Code, Japanese Postal Code,
+DAFT Code, Flattermarken and FIM, the pharma codes Pharmacode One-Track and
+Pharmacode Two-Track, and DX Film Edge Barcode.
+
+[17] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
 recognised.
 
-[14] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[18] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.
 
-[15] The DX number may be looked up in The (Modified) Big Film Database at
+[19] The DX number may be looked up in The (Modified) Big Film Database at
 https://thebigfilmdatabase.merinorus.com.

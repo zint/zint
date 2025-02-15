@@ -174,6 +174,7 @@ nb0:    if (++B[0] <= bmax[0]) goto lb0;
 /* Channel Code - According to ANSI/AIM BC12-1998 */
 INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const int max_ranges[] = { -1, -1, -1, 26, 292, 3493, 44072, 576688, 7742862 };
+    static const unsigned char zeroes_str[] = "0000000"; /* 7 zeroes */
     int S[8] = {0}, B[8] = {0};
     int target_value;
     char dest[30];
@@ -233,14 +234,6 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
         *d++ = itoc(B[i]);
     }
 
-    zeroes = channels - 1 - length;
-    if (zeroes < 0) {
-        zeroes = 0;
-    } else if (zeroes) {
-        memset(symbol->text, '0', zeroes);
-    }
-    ustrcpy(symbol->text + zeroes, source);
-
     expand(symbol, dest, d - dest);
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
@@ -251,6 +244,14 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
         error_number = set_height(symbol, min_height, 20.0f, 0.0f, 0 /*no_errtxt*/);
     } else {
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+
+    zeroes = channels - 1 - length;
+    if (zeroes > 0) {
+        hrt_cpy_nochk(symbol, zeroes_str, zeroes);
+        hrt_cat_nochk(symbol, source, length);
+    } else {
+        hrt_cpy_nochk(symbol, source, length);
     }
 
     return error_number;

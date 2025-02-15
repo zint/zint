@@ -1,7 +1,7 @@
 /*  vector.c - Creates vector image objects */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2018-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2018-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -467,7 +467,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         main_width -= comp_xoffset + comp_roffset;
     }
 
-    hide_text = ((!symbol->show_hrt) || (ustrlen(symbol->text) == 0));
+    hide_text = !symbol->show_hrt || symbol->text_length == 0;
 
     out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, &qz_right,
         0 /*scaler*/, NULL, NULL, NULL, NULL, NULL);
@@ -877,7 +877,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
             if (text_yposn < 0.0f) {
                 text_yposn = 0.0f;
             }
-            addon_len = (int) ustrlen(symbol->text);
+            addon_len = symbol->text_length;
             textwidth = addon_len * 8.5f;
             if (!vector_add_string(symbol, symbol->text, addon_len, text_xposn, text_yposn, font_height,
                     textwidth, 0 /*centre align*/, &last_string)) return ZINT_ERROR_MEMORY;

@@ -53,7 +53,7 @@ static void svg_pick_colour(const int colour, char colour_code[7]) {
         "000000", /* 6: Black (7) */
         "ffffff", /* 7: White (8) */
     };
-    strcpy(colour_code, rgbs[idx]);
+    memcpy(colour_code, rgbs[idx], 7); /* Include terminating NUL */
 }
 
 /* Convert text to use HTML entity codes */
@@ -62,27 +62,27 @@ static void svg_make_html_friendly(const unsigned char *string, char *html_versi
     for (; *string; string++) {
         switch (*string) {
             case '>':
-                strcpy(html_version, "&gt;");
+                memcpy(html_version, "&gt;", 4);
                 html_version += 4;
                 break;
 
             case '<':
-                strcpy(html_version, "&lt;");
+                memcpy(html_version, "&lt;", 4);
                 html_version += 4;
                 break;
 
             case '&':
-                strcpy(html_version, "&amp;");
+                memcpy(html_version, "&amp;", 5);
                 html_version += 5;
                 break;
 
             case '"':
-                strcpy(html_version, "&quot;");
+                memcpy(html_version, "&quot;", 6);
                 html_version += 6;
                 break;
 
             case '\'':
-                strcpy(html_version, "&apos;");
+                memcpy(html_version, "&apos;", 6);
                 html_version += 6;
                 break;
 
@@ -133,7 +133,7 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     struct zint_vector_string *string;
 
     char colour_code[7];
-    int len, html_len;
+    int html_len;
 
     const int upcean = is_upcean(symbol->symbology);
     char *html_string;
@@ -149,10 +149,9 @@ INTERNAL int svg_plot(struct zint_symbol *symbol) {
     }
     sprintf(bgcolour_string, "%02X%02X%02X", bgred, bggreen, bgblue);
 
-    len = (int) ustrlen(symbol->text);
-    html_len = len + 1;
+    html_len = symbol->text_length + 1;
 
-    for (i = 0; i < len; i++) {
+    for (i = 0; i < symbol->text_length; i++) {
         switch (symbol->text[i]) {
             case '>':
             case '<':
