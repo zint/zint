@@ -236,6 +236,7 @@ static int c128_set_values(const unsigned char source[], const int length, const
 
     memset(costs, 0, sizeof(*costs) * length);
 
+    assert(source[length] == '\0'); /* Terminating NUL required by `c128_cost()` */
     c128_cost(source, length, 0 /*i*/, 0 /*prior_cset*/, start_idx, priority, fncs, manuals, costs, modes);
 
     if (costs[0][0] > C128_SYMBOL_MAX) { /* Total minimal cost (glyph count) */

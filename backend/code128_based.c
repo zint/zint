@@ -67,7 +67,7 @@ static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], co
     memcpy(ean128_equiv + 4 + zeroes, source, length);
 
     ean128_equiv[data_len + 4] = gs1_check_digit(ean128_equiv + 4, data_len);
-    ean128_equiv[data_len + 5] = '\0';
+    ean128_equiv[data_len + 5] = '\0'; /* Terminating NUL required by `c128_cost()` */
 
     error_number = gs1_128(symbol, ean128_equiv, data_len + 5);
 
@@ -112,9 +112,8 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     if (length == 27 && !relabel) {
         local_source_buf[0] = '%';
-        memcpy(local_source_buf + 1, source, length);
+        memcpy(local_source_buf + 1, source, ++length); /* Include terminating NUL (required by `c128_cost()`) */
         local_source = local_source_buf;
-        length++;
     } else {
         local_source = source;
     }
@@ -271,7 +270,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     local_source[12] = local_source[11];
     local_source[11] = local_source[10];
     local_source[10] = itoc(check_digit);
-    local_source[13] = '\0';
+    local_source[13] = '\0'; /* Terminating NUL required by `c128_cost()` */
 
     /* Do some checks on the Service Indicator (first char only) and Country Code */
     if (strchr("JKSTW", local_source[0]) != NULL) { /* These are reserved & cannot be assigned */
