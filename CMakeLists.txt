@@ -114,10 +114,6 @@ if(ZINT_SANITIZE)
             unset(CMAKE_REQUIRED_LIBRARIES)
         endforeach()
 
-        if(NOT ZINT_DEBUG AND CMAKE_C_COMPILER_ID MATCHES "GNU")
-            # Gives warning on MainWindow::setupUI() and retries (& takes forever) if var-tracking-assignments enabled
-            add_compile_options(-fno-var-tracking-assignments)
-        endif()
         if(CMAKE_C_COMPILER_ID MATCHES "Clang")
             # Recent clangs added deprecation warnings for `sprintf()` that are only triggered on sanitize - suppress
             add_compile_options(-Wno-deprecated-declarations)

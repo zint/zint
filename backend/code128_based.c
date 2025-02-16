@@ -188,11 +188,7 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     cd = mod + 1 - cd;
     if (cd == mod) cd = 0;
 
-    if (cd < 10) {
-        hrt[p] = cd + '0';
-    } else {
-        hrt[p] = (cd - 10) + 'A';
-    }
+    hrt[p] = xtoc(cd);
 
     hrt_cpy_nochk(symbol, hrt, p + 1);
 

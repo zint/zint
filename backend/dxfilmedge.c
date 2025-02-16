@@ -258,7 +258,7 @@ INTERNAL int dxfilmedge(struct zint_symbol *symbol, unsigned char source[], int 
     int error_number;
 
     char binary_output[32];
-    int output_length;
+    int output_length = 0; /* Suppress gcc warning -Wmaybe-uninitialized */
     int has_frame_info;
 
     const char long_clock_pattern[] = "1111101010101010101010101010111";
