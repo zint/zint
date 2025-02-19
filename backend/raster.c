@@ -185,7 +185,9 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
         if (!(rotated_pixbuf = (unsigned char *) raster_malloc((size_t) image_size, 0 /*prev_size*/))) {
             return errtxt(ZINT_ERROR_MEMORY, symbol, 650, "Insufficient memory for pixel buffer");
         }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
         memset(rotated_pixbuf, DEFAULT_PAPER, image_size);
+#endif
     }
 
     /* Rotate image before plotting */

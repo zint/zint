@@ -367,7 +367,7 @@ INTERNAL int emf_plot(struct zint_symbol *symbol, int rotate_angle) {
     recordcount++;
 
     if (symbol->symbology == BARCODE_ULTRA) {
-        static const char ultra_chars[] = { '0', 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
+        static const unsigned char ultra_chars[9] = { '0', 'C', 'B', 'M', 'R', 'Y', 'G', 'K', 'W' };
         for (i = 0; i < 9; i++) {
             out_le_u32(emr_createbrushindirect_colour[i].type, 0x00000027); /* EMR_CREATEBRUSHINDIRECT */
             out_le_u32(emr_createbrushindirect_colour[i].size, 24);

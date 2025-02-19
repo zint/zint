@@ -69,12 +69,12 @@ INTERNAL int bmp_pixel_plot(struct zint_symbol *symbol, const unsigned char *pix
             if (memcmp(&palette[i], &fg, sizeof(fg)) == 0) {
                 ultra_fg_index = i + 1;
             }
-            map[ultra_chars[i]] = i + 1;
+            map[ultra_chars[i]] = (unsigned char) (i + 1);
         }
         bits_per_pixel = 4;
         colour_count = ultra_fg_index == 9 ? 10 : 9;
         map['0'] = 0;
-        map['1'] = ultra_fg_index;
+        map['1'] = (unsigned char) ultra_fg_index;
     } else {
         bits_per_pixel = 1;
         colour_count = 2;

@@ -1,7 +1,7 @@
 /*  output.h - Common routines for raster/vector */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -50,7 +50,8 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
                 unsigned char *rgb_alpha);
 
 /* Convert internal colour chars "WCBMRYGK" to RGB */
-INTERNAL int out_colour_char_to_rgb(const char ch, unsigned char *red, unsigned char *green, unsigned char *blue);
+INTERNAL int out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
+                unsigned char *blue);
 
 /* Set left (x), top (y), right and bottom offsets for whitespace, also right quiet zone */
 INTERNAL void out_set_whitespace_offsets(const struct zint_symbol *symbol, const int hide_text,

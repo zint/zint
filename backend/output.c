@@ -114,11 +114,11 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
     int black, val;
 
     if ((comma1 = strchr(colour, ',')) == NULL) {
-        *red = 16 * ctoi(colour[0]) + ctoi(colour[1]);
-        *green = 16 * ctoi(colour[2]) + ctoi(colour[3]);
-        *blue = 16 * ctoi(colour[4]) + ctoi(colour[5]);
+        *red = (unsigned char) (16 * ctoi(colour[0]) + ctoi(colour[1]));
+        *green = (unsigned char) (16 * ctoi(colour[2]) + ctoi(colour[3]));
+        *blue = (unsigned char) (16 * ctoi(colour[4]) + ctoi(colour[5]));
         if (alpha) {
-            *alpha = colour[6] ? 16 * ctoi(colour[6]) + ctoi(colour[7]) : 0xFF;
+            *alpha = (unsigned char) (colour[6] ? 16 * ctoi(colour[6]) + ctoi(colour[7]) : 0xFF);
             return colour[6] ? 1 : 0;
         }
         return 0;
@@ -129,13 +129,13 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
     black = 100 - to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
 
     val = 100 - to_int((const unsigned char *) colour, (int) (comma1 - colour)); /* Cyan */
-    *red = (int) round((0xFF * val * black) / 10000.0);
+    *red = (unsigned char) round((0xFF * val * black) / 10000.0);
 
     val = 100 - to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
-    *green = (int) round((0xFF * val * black) / 10000.0);
+    *green = (unsigned char) round((0xFF * val * black) / 10000.0);
 
     val = 100 - to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
-    *blue = (int) round((0xFF * val * black) / 10000.0);
+    *blue = (unsigned char) round((0xFF * val * black) / 10000.0);
 
     if (alpha) {
         *alpha = 0xFF;
@@ -190,7 +190,8 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
 }
 
 /* Convert internal colour chars "WCBMRYGK" to RGB */
-INTERNAL int out_colour_char_to_rgb(const char ch, unsigned char *red, unsigned char *green, unsigned char *blue) {
+INTERNAL int out_colour_char_to_rgb(const unsigned char ch, unsigned char *red, unsigned char *green,
+                unsigned char *blue) {
     static const char chars[] = "WCBMRYGK";
     static const unsigned char colours[8][3] = {
         { 0xff, 0xff, 0xff, }, /* White */
@@ -202,7 +203,7 @@ INTERNAL int out_colour_char_to_rgb(const char ch, unsigned char *red, unsigned 
         {    0, 0xff,    0, }, /* Green */
         {    0,    0,    0, }, /* Black */
     };
-    int i = posn(chars, ch);
+    int i = posn(chars, (const char) ch);
     int ret = i != -1;
 
     if (i == -1) {

@@ -59,7 +59,7 @@ struct gif_state {
 };
 
 static void gif_BufferNextByte(struct gif_state *pState) {
-    (pState->OutPosCur)++;
+    pState->OutPosCur++;
     if (pState->fOutPaged && pState->OutPosCur + 2 >= pState->OutLength) {
         /* Keep last 256 bytes so `OutByteCountPos` within range */
         fm_write(pState->pOut, 1, pState->OutPosCur - 256, pState->fmp);
@@ -75,25 +75,25 @@ static void gif_BufferNextByte(struct gif_state *pState) {
      * of the last one is set to 255.
      * */
     if (pState->fByteCountByteSet && (pState->OutByteCountPos + 256 == pState->OutPosCur)) {
-        (pState->pOut)[pState->OutByteCountPos] = 255;
+        pState->pOut[pState->OutByteCountPos] = 255;
         pState->OutByteCountPos = pState->OutPosCur;
-        (pState->OutPosCur)++;
+        pState->OutPosCur++;
     }
 
-    (pState->pOut)[pState->OutPosCur] = 0x00;
+    pState->pOut[pState->OutPosCur] = 0x00;
 }
 
 static void gif_AddCodeToBuffer(struct gif_state *pState, unsigned short CodeIn, unsigned char CodeBits) {
     /* Check, if we may fill up the current byte completely */
     if (CodeBits >= pState->OutBitsFree) {
-        (pState->pOut)[pState->OutPosCur] |= (unsigned char) (CodeIn << (8 - pState->OutBitsFree));
+        pState->pOut[pState->OutPosCur] |= (unsigned char) (CodeIn << (8 - pState->OutBitsFree));
         gif_BufferNextByte(pState);
         CodeIn = (unsigned short) (CodeIn >> pState->OutBitsFree);
         CodeBits -= pState->OutBitsFree;
         pState->OutBitsFree = 8;
         /* Write a full byte if there are at least 8 code bits left */
         if (CodeBits >= pState->OutBitsFree) {
-            (pState->pOut)[pState->OutPosCur] = (unsigned char) CodeIn;
+            pState->pOut[pState->OutPosCur] = (unsigned char) CodeIn;
             gif_BufferNextByte(pState);
             CodeIn = (unsigned short) (CodeIn >> 8);
             CodeBits -= 8;
@@ -101,7 +101,7 @@ static void gif_AddCodeToBuffer(struct gif_state *pState, unsigned short CodeIn,
     }
     /* The remaining bits of CodeIn fit in the current byte. */
     if (CodeBits > 0) {
-        (pState->pOut)[pState->OutPosCur] |= (unsigned char) (CodeIn << (8 - pState->OutBitsFree));
+        pState->pOut[pState->OutPosCur] |= (unsigned char) (CodeIn << (8 - pState->OutBitsFree));
         pState->OutBitsFree -= CodeBits;
     }
 }
@@ -109,18 +109,18 @@ static void gif_AddCodeToBuffer(struct gif_state *pState, unsigned short CodeIn,
 static void gif_FlushStringTable(struct gif_state *pState) {
     unsigned short Pos;
     for (Pos = 0; Pos < pState->ClearCode; Pos++) {
-        (pState->NodeAxon)[Pos] = 0;
+        pState->NodeAxon[Pos] = 0;
     }
 }
 
 static unsigned short gif_FindPixelOutlet(struct gif_state *pState, unsigned short HeadNode, unsigned char Byte) {
     unsigned short Outlet;
 
-    Outlet = (pState->NodeAxon)[HeadNode];
+    Outlet = pState->NodeAxon[HeadNode];
     while (Outlet) {
-        if ((pState->NodePix)[Outlet] == Byte)
+        if (pState->NodePix[Outlet] == Byte)
             return Outlet;
-        Outlet = (pState->NodeNext)[Outlet];
+        Outlet = pState->NodeNext[Outlet];
     }
     return 0;
 }
@@ -128,7 +128,7 @@ static unsigned short gif_FindPixelOutlet(struct gif_state *pState, unsigned sho
 static int gif_NextCode(struct gif_state *pState, unsigned char *pPixelValueCur, unsigned char CodeBits) {
     unsigned short UpNode;
     unsigned short DownNode;
-    /* start with the root node for last pixel chain */
+    /* Start with the root node for last pixel chain */
     UpNode = *pPixelValueCur;
     if (pState->pIn == pState->pInEnd) {
         gif_AddCodeToBuffer(pState, UpNode, CodeBits);
@@ -148,22 +148,22 @@ static int gif_NextCode(struct gif_state *pState, unsigned char *pPixelValueCur,
     gif_AddCodeToBuffer(pState, UpNode, CodeBits);
     /* ... and extend the string by appending 'PixelValueCur' */
     /* Create a successor node for 'PixelValueCur' whose code is 'freecode' */
-    (pState->NodePix)[pState->FreeCode] = *pPixelValueCur;
-    (pState->NodeAxon)[pState->FreeCode] = (pState->NodeNext)[pState->FreeCode] = 0;
+    pState->NodePix[pState->FreeCode] = *pPixelValueCur;
+    pState->NodeAxon[pState->FreeCode] = pState->NodeNext[pState->FreeCode] = 0;
     /* ...and link it to the end of the chain emanating from fg_axon[UpNode]. */
-    DownNode = (pState->NodeAxon)[UpNode];
+    DownNode = pState->NodeAxon[UpNode];
     if (!DownNode) {
-        (pState->NodeAxon)[UpNode] = pState->FreeCode;
+        pState->NodeAxon[UpNode] = pState->FreeCode;
     } else {
-        while ((pState->NodeNext)[DownNode]) {
-            DownNode = (pState->NodeNext)[DownNode];
+        while (pState->NodeNext[DownNode]) {
+            DownNode = pState->NodeNext[DownNode];
         }
-        (pState->NodeNext)[DownNode] = pState->FreeCode;
+        pState->NodeNext[DownNode] = pState->FreeCode;
     }
     return 1;
 }
 
-static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
+static int gif_lzw(struct gif_state *pState, unsigned char paletteBitSize) {
     unsigned char PixelValueCur;
     unsigned char CodeBits;
     unsigned short Pos;
@@ -179,7 +179,7 @@ static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
     if (paletteBitSize == 1)
         paletteBitSize = 2;
 
-    /* initial size of compression codes */
+    /* Initial size of compression codes */
     CodeBits = paletteBitSize + 1;
     pState->ClearCode = (1 << paletteBitSize);
     pState->FreeCode = pState->ClearCode + 2;
@@ -188,12 +188,12 @@ static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
     pState->fByteCountByteSet = 0;
 
     for (Pos = 0; Pos < pState->ClearCode; Pos++)
-        (pState->NodePix)[Pos] = (unsigned char) Pos;
+        pState->NodePix[Pos] = (unsigned char) Pos;
 
     gif_FlushStringTable(pState);
 
     /* Write what the GIF specification calls the "code size". */
-    (pState->pOut)[pState->OutPosCur] = paletteBitSize;
+    pState->pOut[pState->OutPosCur] = paletteBitSize;
     /* Reserve first bytecount byte */
     gif_BufferNextByte(pState);
     pState->OutByteCountPos = pState->OutPosCur;
@@ -203,9 +203,9 @@ static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
     gif_AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
 
     for (;;) {
-        /* generate and save the next code, which may consist of multiple input pixels. */
+        /* Generate and save the next code, which may consist of multiple input pixels. */
         if (!gif_NextCode(pState, &PixelValueCur, CodeBits)) { /* Check for end of data stream */
-            /* submit 'eoi' as the last item of the code stream */
+            /* Submit 'eoi' as the last item of the code stream */
             gif_AddCodeToBuffer(pState, (unsigned short) (pState->ClearCode + 1), CodeBits);
             pState->fByteCountByteSet = 0;
             if (pState->OutBitsFree < 8) {
@@ -213,7 +213,7 @@ static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
             }
             /* > Update last bytecount byte; */
             if (pState->OutByteCountPos < pState->OutPosCur) {
-                (pState->pOut)[pState->OutByteCountPos]
+                pState->pOut[pState->OutByteCountPos]
                     = (unsigned char) (pState->OutPosCur - pState->OutByteCountPos - 1);
             }
             pState->OutPosCur++;
@@ -228,7 +228,7 @@ static int gif_lzw(struct gif_state *pState, int paletteBitSize) {
             gif_FlushStringTable(pState);
             gif_AddCodeToBuffer(pState, pState->ClearCode, CodeBits);
 
-            CodeBits = (unsigned char) (1 + paletteBitSize);
+            CodeBits = 1 + paletteBitSize;
             pState->FreeCode = (unsigned short) (pState->ClearCode + 2);
         }
     }
@@ -242,7 +242,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     unsigned char outbuf[10];
     unsigned char paletteRGB[10][3];
     int paletteCount, i;
-    int paletteBitSize;
+    unsigned char paletteBitSize;
     int paletteSize;
     struct gif_state State;
     int transparent_index;
@@ -259,7 +259,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     (void) out_colour_get_rgb(symbol->fgcolour, &RGBfg[0], &RGBfg[1], &RGBfg[2], &fgalpha);
     (void) out_colour_get_rgb(symbol->bgcolour, &RGBbg[0], &RGBbg[1], &RGBbg[2], &bgalpha);
 
-    /* prepare state array */
+    /* Prepare state array */
     State.pIn = pixelbuf;
     State.pInEnd = pixelbuf + bitmapSize;
     /* Allow for overhead of 4 == code size + byte count + overflow byte + zero terminator */
@@ -268,9 +268,12 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (State.fOutPaged) {
         State.OutLength = GIF_LZW_PAGE_SIZE;
     }
-    if (!(State.pOut = (unsigned char *) calloc(1, State.OutLength))) {
+    if (!(State.pOut = (unsigned char *) malloc(State.OutLength))) {
         return errtxt(ZINT_ERROR_MEMORY, symbol, 614, "Insufficient memory for GIF LZW buffer");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(State.pOut, 0, State.OutLength);
+#endif
 
     State.fmp = &fm;
 
@@ -301,7 +304,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (symbol->symbology == BARCODE_ULTRA) {
         static const unsigned char ultra_chars[8] = { 'W', 'C', 'B', 'M', 'R', 'Y', 'G', 'K' };
         for (i = 0; i < 8; i++) {
-            State.map[ultra_chars[i]] = i;
+            State.map[ultra_chars[i]] = (unsigned char) i;
             out_colour_char_to_rgb(ultra_chars[i], &paletteRGB[i][0], &paletteRGB[i][1], &paletteRGB[i][2]);
         }
         paletteCount = 8;
@@ -311,9 +314,9 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         if (symbol->border_width > 0 && (symbol->output_options & (BARCODE_BIND | BARCODE_BOX | BARCODE_BIND_TOP))) {
             /* Check whether can re-use black */
             if (RGBfg[0] == 0 && RGBfg[1] == 0 && RGBfg[2] == 0) {
-                State.map['1'] = fgindex = 7; /* Re-use black */
+                State.map['1'] = (unsigned char) (fgindex = 7); /* Re-use black */
             } else {
-                State.map['1'] = fgindex = paletteCount;
+                State.map['1'] = (unsigned char) (fgindex = paletteCount);
                 memcpy(paletteRGB[paletteCount++], RGBfg, 3);
                 paletteBitSize = 4;
             }
@@ -325,17 +328,17 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
                     && !(symbol->output_options & BARCODE_NO_QUIET_ZONES))) {
             /* Check whether can re-use white */
             if (RGBbg[0] == 0xff && RGBbg[1] == 0xff && RGBbg[2] == 0xff && bgalpha == fgalpha) {
-                State.map['0'] = bgindex = 0; /* Re-use white */
+                State.map['0'] = (unsigned char) (bgindex = 0); /* Re-use white */
             } else {
-                State.map['0'] = bgindex = paletteCount;
+                State.map['0'] = (unsigned char) (bgindex = paletteCount);
                 memcpy(paletteRGB[paletteCount++], RGBbg, 3);
                 paletteBitSize = 4;
             }
         }
     } else {
-        State.map['0'] = bgindex = 0;
+        State.map['0'] = (unsigned char) (bgindex = 0);
         memcpy(paletteRGB[bgindex], RGBbg, 3);
-        State.map['1'] = fgindex = 1;
+        State.map['1'] = (unsigned char) (fgindex = 1);
         memcpy(paletteRGB[fgindex], RGBfg, 3);
         paletteCount = 2;
         paletteBitSize = 1;
@@ -353,7 +356,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
         transparent_index = fgindex;
     }
 
-    /* palette size 2 ^ bit size */
+    /* Palette size is 2 ^ bit size */
     paletteSize = 1 << paletteBitSize;
 
     /* GIF signature (6) */
@@ -365,7 +368,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     /* Screen Height */
     outbuf[2] = (unsigned char) (0xff & symbol->bitmap_height);
     outbuf[3] = (unsigned char) (0xff & (symbol->bitmap_height >> 8));
-    /* write ImageBits-1 to the three least significant bits of byte 5  of
+    /* Write ImageBits-1 to the three least significant bits of byte 5  of
      * the Screen Descriptor
      * Bits 76543210
      *      1        : Global colour map
@@ -379,13 +382,13 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
      * Background colour index
      * Default to 0. If colour code 0 or K is present, it is used as index
      */
-    outbuf[5] = bgindex == -1 ? 0 : bgindex;
+    outbuf[5] = (unsigned char) (bgindex == -1 ? 0 : bgindex);
     /* Byte 7 must be 0x00  */
     outbuf[6] = 0x00;
     fm_write(outbuf, 1, 7, State.fmp);
     /* Global Color Table (paletteSize*3) */
-    fm_write(paletteRGB, 1, 3*paletteCount, State.fmp);
-    /* add unused palette items to fill palette size */
+    fm_write(paletteRGB, 1, 3 * paletteCount, State.fmp);
+    /* Add unused palette items to fill palette size */
     for (i = paletteCount; i < paletteSize; i++) {
         fm_write(RGBUnused, 1, 3, State.fmp);
     }
@@ -440,7 +443,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     outbuf[9] = 0x00;
     fm_write(outbuf, 1, 10, State.fmp);
 
-    /* call lzw encoding */
+    /* Call lzw encoding */
     if (!gif_lzw(&State, paletteBitSize)) {
         free(State.pOut);
         (void) fm_close(State.fmp, symbol);
