@@ -99,8 +99,8 @@ static void test_upce_input(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[4096];
-    char cmp_msg[1024];
+    char cmp_buf[4096] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char cmp_msg[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
@@ -834,7 +834,7 @@ static void test_vector_same(const testCtx *const p_ctx) {
         }
 
         for (j = 0; j < vectors_size; j++) {
-            struct zint_symbol symbol_vector;
+            struct zint_symbol symbol_vector = {0}; /* Suppress clang -fsanitize=memory false positive */
             symbol_vector.vector = vectors[j];
             vector_free(&symbol_vector);
         }
@@ -974,7 +974,7 @@ static void test_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[4096];
+    char cmp_buf[4096] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */

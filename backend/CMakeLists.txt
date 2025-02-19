@@ -88,6 +88,13 @@ else()
     message(STATUS "Not using PNG")
 endif()
 
+# Incompatible with ZINT_SANITIZE (and also with ZINT_USE_PNG unless libpng instrumented)
+if(NOT ZINT_SANITIZE AND ZINT_SANITIZEM AND CMAKE_C_COMPILER_ID MATCHES "Clang")
+    add_compile_options(-fsanitize=memory -fsanitize-memory-track-origins -fno-omit-frame-pointer -O2)
+    link_libraries(-fsanitize=memory)
+    zint_target_compile_definitions(PRIVATE ZINT_SANITIZEM)
+endif()
+
 if(ZINT_TEST)
     zint_target_compile_definitions(PUBLIC ZINT_TEST)
 endif()

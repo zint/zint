@@ -5762,7 +5762,7 @@ static void test_numbprocess(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length;
 
-    short chainemc[32];
+    short chainemc[32] = {0}; /* Suppress clang -fsanitize=memory false positive */
     int mclength;
 
     testStart("test_numbprocess");

@@ -108,6 +108,9 @@ INTERNAL int fm_open(struct filemem *restrict const fmp, struct zint_symbol *sym
         if (!(fmp->mem = (unsigned char *) malloc(FM_PAGE_SIZE))) {
             return fm_seterr(fmp, ENOMEM);
         }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+        memset(fmp->mem, 0, FM_PAGE_SIZE);
+#endif
         fmp->memsize = FM_PAGE_SIZE;
         if (symbol->memfile) {
             free(symbol->memfile);
@@ -160,6 +163,9 @@ static int fm_mem_expand(struct filemem *restrict const fmp, const size_t size) 
         fm_clear_mem(fmp);
         return fm_seterr(fmp, new_size > 0x40000000 ? EINVAL : ENOMEM);
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(new_mem + fmp->memsize, 0, new_size - fmp->memsize);
+#endif
     fmp->mem = new_mem;
     fmp->memsize = new_size;
     return 1;

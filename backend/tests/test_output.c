@@ -68,7 +68,7 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
     };
     const int data_size = ARRAY_SIZE(data);
     int i, ret;
-    struct zint_symbol symbol;
+    struct zint_symbol symbol = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_check_colour_options");
 
@@ -121,7 +121,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
     for (i = 0; i < data_size; i++) {
         /* Suppress clang-16 run-time exception MemorySanitizer: use-of-uninitialized-value (fixed in clang-17) */
         unsigned char red = 0, green = 0, blue = 0, alpha = 0, rgb_alpha = 0;
-        int cyan, magenta, yellow, black;
+        int cyan = 0, magenta = 0, yellow = 0, black = 0; /* Suppress clang -fsanitize=memory false positive */
         int have_alpha;
         char rgb[64];
         char cmyk[64];
@@ -179,8 +179,9 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
     testStart("test_colour_get_cmyk");
 
     for (i = 0; i < data_size; i++) {
-        int cyan, magenta, yellow, black;
-        unsigned char red, green, blue, alpha, rgb_alpha;
+        /* Suppress clang -fsanitize=memory false positives */
+        int cyan = 0, magenta = 0, yellow = 0, black = 0;
+        unsigned char red = '\0', green = '\0', blue = '\0', alpha = '\0', rgb_alpha = '\0';
         char rgb[16];
 
         if (testContinue(p_ctx, i)) continue;

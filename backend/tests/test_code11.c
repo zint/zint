@@ -55,7 +55,7 @@ static void test_large(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char data_buf[4096];
+    char data_buf[4096] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStartSymbol("test_large", &symbol);
 

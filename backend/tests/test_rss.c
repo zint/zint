@@ -865,7 +865,7 @@ static void test_examples(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[4096];
+    char escaped[4096] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_buf[16384];
     char cmp_msg[1024];
 

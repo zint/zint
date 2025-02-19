@@ -1577,7 +1577,7 @@ static int test_prev_ZBarcode_BarcodeName(int symbol_id, char name[32]) {
 static void test_barcode_name(const testCtx *const p_ctx) {
 
     int ret;
-    char name[32];
+    char name[32] = {0}; /* Suppress clang -fsanitize=memory false positive */
     int symbol_id;
 
     (void)p_ctx;

@@ -1534,7 +1534,7 @@ static void test_examples(const testCtx *const p_ctx) {
     char escaped[1024];
     char esc_composite[4096];
 
-    char bwipp_buf[32768];
+    char bwipp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -1836,7 +1836,7 @@ static void test_ean128_cc_shift(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[8192];
+    char bwipp_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -2384,7 +2384,7 @@ static void test_encodation_0(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[8192];
+    char bwipp_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -2522,7 +2522,7 @@ static void test_encodation_10(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[8192];
+    char bwipp_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -2938,7 +2938,7 @@ static void test_encodation_11(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[8192];
+    char bwipp_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -3089,7 +3089,7 @@ static void test_addongap(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char bwipp_buf[8192];
+    char bwipp_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char bwipp_msg[1024];
 
     const char *composite = "[91]12";

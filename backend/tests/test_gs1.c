@@ -1446,9 +1446,9 @@ static void test_gs1_verify(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int reduced_length;
+    int reduced_length = 0; /* Suppress clang -fsanitize=memory false positive */
 
-    char reduced[1024];
+    char reduced[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char escaped[1024];
 
     testStartSymbol("test_gs1_verify", &symbol);
@@ -2154,9 +2154,9 @@ static void test_gs1_lint(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int reduced_length;
+    int reduced_length = 0; /* Suppress clang -fsanitize=memory false positive */
 
-    char reduced[1024];
+    char reduced[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStartSymbol("test_gs1_lint", &symbol);
 

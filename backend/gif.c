@@ -268,7 +268,7 @@ INTERNAL int gif_pixel_plot(struct zint_symbol *symbol, unsigned char *pixelbuf)
     if (State.fOutPaged) {
         State.OutLength = GIF_LZW_PAGE_SIZE;
     }
-    if (!(State.pOut = (unsigned char *) malloc(State.OutLength))) {
+    if (!(State.pOut = (unsigned char *) calloc(1, State.OutLength))) {
         return errtxt(ZINT_ERROR_MEMORY, symbol, 614, "Insufficient memory for GIF LZW buffer");
     }
 

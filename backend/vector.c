@@ -48,6 +48,9 @@ static int vector_add_rect(struct zint_symbol *symbol, const float x, const floa
         errtxt(0, symbol, 691, "Insufficient memory for vector rectangle");
         return 0;
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(rect, 0, sizeof(struct zint_vector_rect));
+#endif
 
     rect->next = NULL;
     rect->x = x;
@@ -73,6 +76,9 @@ static int vector_add_hexagon(struct zint_symbol *symbol, const float x, const f
     if (!(hexagon = (struct zint_vector_hexagon *) malloc(sizeof(struct zint_vector_hexagon)))) {
         return errtxt(0, symbol, 692, "Insufficient memory for vector hexagon");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(hexagon, 0, sizeof(struct zint_vector_hexagon));
+#endif
     hexagon->next = NULL;
     hexagon->x = x;
     hexagon->y = y;
@@ -96,6 +102,9 @@ static int vector_add_circle(struct zint_symbol *symbol, const float x, const fl
     if (!(circle = (struct zint_vector_circle *) malloc(sizeof(struct zint_vector_circle)))) {
         return errtxt(0, symbol, 693, "Insufficient memory for vector circle");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(circle, 0, sizeof(struct zint_vector_circle));
+#endif
     circle->next = NULL;
     circle->x = x;
     circle->y = y;
@@ -121,6 +130,9 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
     if (!(string = (struct zint_vector_string *) malloc(sizeof(struct zint_vector_string)))) {
         return errtxt(0, symbol, 694, "Insufficient memory for vector string");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(string, 0, sizeof(struct zint_vector_string));
+#endif
     string->next = NULL;
     string->x = x;
     string->y = y;
@@ -133,6 +145,9 @@ static int vector_add_string(struct zint_symbol *symbol, const unsigned char *te
         free(string);
         return errtxt(0, symbol, 695, "Insufficient memory for vector string text");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(string->text, 0, string->length + 1);
+#endif
     memcpy(string->text, text, string->length);
     string->text[string->length] = '\0';
 
@@ -444,6 +459,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     if (!(vector = symbol->vector = (struct zint_vector *) malloc(sizeof(struct zint_vector)))) {
         return errtxt(ZINT_ERROR_MEMORY, symbol, 696, "Insufficient memory for vector header");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(vector, 0, sizeof(struct zint_vector));
+#endif
     vector->rectangles = NULL;
     vector->hexagons = NULL;
     vector->circles = NULL;

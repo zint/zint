@@ -115,6 +115,9 @@ static int buffer_plot(struct zint_symbol *symbol, const unsigned char *pixelbuf
     if (!(symbol->bitmap = (unsigned char *) raster_malloc(bm_bitmap_size, 0 /*prev_size*/))) {
         return errtxt(ZINT_ERROR_MEMORY, symbol, 661, "Insufficient memory for bitmap buffer");
     }
+#ifdef ZINT_SANITIZEM /* Suppress clang -fsanitize=memory false positive */
+    memset(symbol->bitmap, 0, bm_bitmap_size);
+#endif
 
     if (plot_alpha) {
         const size_t alpha_size = (size_t) symbol->bitmap_width * symbol->bitmap_height;
@@ -178,10 +181,11 @@ static int save_raster_image_to_file(struct zint_symbol *symbol, const int image
     }
 
     if (rotate_angle) {
-        if (!(rotated_pixbuf = (unsigned char *) raster_malloc((size_t) image_width * image_height,
-                                                                0 /*prev_size*/))) {
+        size_t image_size = (size_t) image_width * image_height;
+        if (!(rotated_pixbuf = (unsigned char *) raster_malloc((size_t) image_size, 0 /*prev_size*/))) {
             return errtxt(ZINT_ERROR_MEMORY, symbol, 650, "Insufficient memory for pixel buffer");
         }
+        memset(rotated_pixbuf, DEFAULT_PAPER, image_size);
     }
 
     /* Rotate image before plotting */

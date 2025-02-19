@@ -342,7 +342,7 @@ static void test_not_sane_lookup(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     int test_length;
-    int posns[32];
+    int posns[32] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_not_sane_lookup");
 
@@ -666,7 +666,7 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    unsigned int vals[20];
+    unsigned int vals[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
     struct zint_symbol s_symbol;
     struct zint_symbol *symbol = &s_symbol;
 

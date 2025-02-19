@@ -758,7 +758,7 @@ static void test_utf8_to_eci_ascii(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    char dest[128];
+    char dest[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_utf8_to_eci_ascii");
 
@@ -815,7 +815,7 @@ static void test_utf8_to_eci_utf16be(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
-        char dest[1024];
+        char dest[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
         if (testContinue(p_ctx, i)) continue;
 
@@ -880,7 +880,7 @@ static void test_utf8_to_eci_utf16le(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
-        char dest[1024];
+        char dest[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
         if (testContinue(p_ctx, i)) continue;
 
@@ -942,7 +942,7 @@ static void test_utf8_to_eci_utf32be(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
-        char dest[1024];
+        char dest[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
         if (testContinue(p_ctx, i)) continue;
 
@@ -1006,7 +1006,7 @@ static void test_utf8_to_eci_utf32le(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
-        char dest[1024];
+        char dest[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
         if (testContinue(p_ctx, i)) continue;
 

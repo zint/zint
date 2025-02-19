@@ -96,7 +96,7 @@ static void test_svg(const testCtx *const p_ctx) {
 
             assert_equal(symbol->memfile_size, expected_size, "i:%d memfile_size %d != %d (%s)\n",
                             i, symbol->memfile_size, expected_size, symbol->errtxt);
-            ret = memcmp(symbol->memfile, data[i].expected, symbol->memfile_size);
+            ret = memcmp(symbol->memfile, data[i].expected, expected_size);
             assert_zero(ret, "i:%d memcmp() %d != 0\n", i, ret);
         } else {
             assert_null(symbol->memfile, "i:%d memfile != NULL (%s)\n", i, symbol->errtxt);
@@ -147,7 +147,7 @@ static void test_putsf(const testCtx *const p_ctx) {
 
     struct zint_symbol symbol_data = {0};
     struct zint_symbol *const symbol = &symbol_data;
-    struct filemem fm;
+    struct filemem fm = {0}; /* Suppress clang -fsanitize=memory false positive */
     struct filemem *const fmp = &fm;
 #ifndef ZINT_TEST_NO_FMEMOPEN
     FILE *fp;
@@ -338,7 +338,7 @@ static void test_seek(const testCtx *const p_ctx) {
     int j;
     struct zint_symbol symbol_data = {0};
     struct zint_symbol *const symbol = &symbol_data;
-    struct filemem fm;
+    struct filemem fm = {0}; /* Suppress clang -fsanitize=memory false positive */
     struct filemem *const fmp = &fm;
     const char outfile[] = "test_seek.tst";
 

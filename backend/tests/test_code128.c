@@ -103,7 +103,7 @@ static void test_large(const testCtx *const p_ctx) {
     char escaped2[1024];
     char cmp_buf[8192];
     char cmp_msg[1024];
-    char ret_buf[8192];
+    char ret_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */

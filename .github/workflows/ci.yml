@@ -65,6 +65,10 @@ jobs:
     - name: Install libpng-dev
       run: sudo apt-get install libpng-dev
 
+    - name: Install locale
+      shell: bash
+      run: sudo locale-gen de_DE.UTF-8 && sudo update-locale
+
     - name: Create Build Environment
       run: cmake -E make_directory ${{runner.workspace}}/build
 

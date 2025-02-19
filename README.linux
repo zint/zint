@@ -1,4 +1,4 @@
-% README.linux 2025-02-02
+% README.linux 2025-02-19
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
 % Fedora Linux 41 (Workstation Edition)
 
@@ -122,21 +122,26 @@ On Fedora you may have to set LD_LIBRARY_PATH for zint ("libzint.so") and zint-q
 
 A number of options are available:
 
-ZINT_COVERAGE:BOOL=OFF # Set code coverage flags
-ZINT_DEBUG:BOOL=OFF    # Set debug compile flags
-ZINT_FRONTEND:BOOL=ON  # Build frontend
-ZINT_NOOPT:BOOL=OFF    # Set no optimize compile flags
-ZINT_SANITIZE:BOOL=OFF # Set sanitize compile/link flags
-ZINT_SHARED:BOOL=ON    # Build shared library
-ZINT_STATIC:BOOL=OFF   # Build static library
-ZINT_TEST:BOOL=OFF     # Set test compile flag
-ZINT_UNINSTALL:BOOL=ON # Add uninstall target
-ZINT_USE_PNG:BOOL=ON   # Build with PNG support
-ZINT_USE_QT:BOOL=ON    # Build with Qt support
-ZINT_QT6:BOOL=OFF      # If ZINT_USE_QT, use Qt6
+ZINT_COVERAGE:BOOL=OFF  # Set code coverage flags
+ZINT_DEBUG:BOOL=OFF     # Set debug compile flags
+ZINT_FRONTEND:BOOL=ON   # Build frontend
+ZINT_NOOPT:BOOL=OFF     # Set no optimize compile flags
+ZINT_SANITIZE:BOOL=OFF  # Set sanitize compile/link flags
+ZINT_SANITIZE:BOOL=OFF  # Set sanitize address/undefined
+ZINT_SANITIZEM:BOOL=OFF # Set sanitize memory (ignored if ZINT_SANITIZE)
+ZINT_SHARED:BOOL=ON     # Build shared library
+ZINT_STATIC:BOOL=OFF    # Build static library
+ZINT_TEST:BOOL=OFF      # Set test compile flag
+ZINT_UNINSTALL:BOOL=ON  # Add uninstall target
+ZINT_USE_PNG:BOOL=ON    # Build with PNG support
+ZINT_USE_QT:BOOL=ON     # Build with Qt support
+ZINT_QT6:BOOL=OFF       # If ZINT_USE_QT, use Qt6
 
 which can be set by doing e.g.
 
     cmake -DZINT_SANITIZE=ON ..
+
+Note that ZINT_SANITIZEM (Clang only) is incompatible with ZINT_SANITIZE, and also with
+ZINT_USE_PNG, unless libpng has also been instrumented with -fsanitize=memory.
 
 For details on ZINT_TEST and building the zint test suite, see "backend/tests/README".

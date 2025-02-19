@@ -188,7 +188,7 @@ static void test_gb2312_utf8(const testCtx *const p_ctx) {
     int i, length, ret;
 
     struct zint_symbol symbol = {0};
-    unsigned int gbdata[20];
+    unsigned int gbdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_gb2312_utf8");
 
@@ -290,7 +290,7 @@ static void test_gb2312_utf8_to_eci(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    unsigned int gbdata[20];
+    unsigned int gbdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_gb2312_utf8_to_eci");
 
@@ -346,7 +346,7 @@ static void test_gb2312_cpy(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length;
 
-    unsigned int gbdata[20];
+    unsigned int gbdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_gb2312_cpy");
 

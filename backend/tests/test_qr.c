@@ -72,8 +72,8 @@ static void test_qr_large(const testCtx *const p_ctx) {
 
     char data_buf[ZINT_MAX_DATA_LEN];
 
-    char escaped[ZINT_MAX_DATA_LEN];
-    char cmp_buf[177 * 177 + 1];
+    char escaped[ZINT_MAX_DATA_LEN] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char cmp_buf[177 * 177 + 1] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -433,7 +433,7 @@ static void test_qr_input(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -763,7 +763,7 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -8874,7 +8874,7 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
-    char cmp_buf[32768];
+    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */

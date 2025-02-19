@@ -44,7 +44,7 @@ INTERNAL int u_ksx1001_test(const unsigned int u, unsigned char *dest);
 
 /* Version of `u_ksx1001()` taking unsigned int destination for backward-compatible testing */
 static int u_ksx1001_int(const unsigned int u, unsigned int *d) {
-    unsigned char dest[2];
+    unsigned char dest[2] = {0}; /* Suppress clang -fsanitize=memory false positive */
     int ret = u_ksx1001_test(u, dest);
     if (ret) {
         *d = ret == 1 ? dest[0] : ((dest[0] << 8) | dest[1]);

@@ -3452,7 +3452,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     int i, j, seg_count, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[8192];
+    char escaped[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_buf[32768];
     char cmp_msg[1024];
 

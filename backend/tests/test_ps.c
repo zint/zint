@@ -235,7 +235,7 @@ static void test_ps_convert(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i;
 
-    unsigned char converted[256];
+    unsigned char converted[256] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStart("test_ps_convert");
 

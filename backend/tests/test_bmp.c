@@ -155,7 +155,7 @@ static void test_print(const testCtx *const p_ctx) {
     char expected_file[4096];
     char escaped[1024];
     int escaped_size = 1024;
-    unsigned char filebuf[32768];
+    unsigned char filebuf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     int filebuf_size;
 
     const char *const have_identify = testUtilHaveIdentify();

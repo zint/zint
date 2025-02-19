@@ -1869,8 +1869,8 @@ int testUtilCmpTxts(const char *txt1, const char *txt2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
-    char buf1[1024];
-    char buf2[1024];
+    char buf1[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char buf2[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
     size_t len1 = 0, len2 = 0;
 
     fp1 = testUtilOpen(txt1, "r");
@@ -1920,8 +1920,8 @@ int testUtilCmpBins(const char *bin1, const char *bin2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
-    char buf1[1024];
-    char buf2[1024];
+    char buf1[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char buf2[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
     size_t len1 = 0, len2 = 0;
 
     fp1 = testUtilOpen(bin1, "rb");
@@ -1970,8 +1970,8 @@ int testUtilCmpEpss(const char *eps1, const char *eps2) {
     int ret = -1;
     FILE *fp1;
     FILE *fp2;
-    char buf1[1024];
-    char buf2[1024];
+    char buf1[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char buf2[1024] = {0}; /* Suppress clang -fsanitize=memory false positive */
     size_t len1 = 0, len2 = 0;
     static char first_line[] = "%!PS-Adobe-3.0 EPSF-3.0\n";
     static char second_line_start[] = "%%Creator: Zint ";
@@ -2053,7 +2053,7 @@ const char *testUtilHaveIdentify(void) {
 
 /* Check raster files */
 int testUtilVerifyIdentify(const char *const prog, const char *filename, int debug) {
-    char cmd[512 + 128];
+    char cmd[512 + 128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     if (strlen(filename) > 512) {
         return -1;
@@ -2210,7 +2210,7 @@ int testUtilHaveTiffInfo(void) {
 
 /* Check TIF files */
 int testUtilVerifyTiffInfo(const char *filename, int debug) {
-    char cmd[512 + 128];
+    char cmd[512 + 128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     if (strlen(filename) > 512) {
         return -1;

@@ -1,6 +1,6 @@
 /*
     libzint - the open source barcode library
-    Copyright (C) 2020-2022 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2020-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -263,7 +263,7 @@ static void test_uint_encoding(const testCtx *const p_ctx) {
 
     for (i = 0; i < data_size; i++) {
         int j;
-        rs_uint_t rs_uint;
+        rs_uint_t rs_uint = {0}; /* Suppress clang -fsanitize=memory false positive */
         unsigned int res[1024];
 
         if (testContinue(p_ctx, i)) continue;

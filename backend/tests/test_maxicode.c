@@ -255,7 +255,7 @@ static void test_input(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[1024];
-    char cmp_buf[32768];
+    char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */

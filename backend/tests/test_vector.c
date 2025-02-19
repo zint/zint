@@ -689,7 +689,7 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     const char *text;
-    char errmsg[128];
+    char errmsg[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStartSymbol("test_buffer_vector", &symbol);
 
@@ -858,7 +858,7 @@ static void test_has_hrt(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     const char *text;
-    char errmsg[128];
+    char errmsg[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
     testStartSymbol("test_has_hrt", &symbol);
 
