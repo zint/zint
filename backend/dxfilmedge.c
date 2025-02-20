@@ -160,8 +160,8 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
                             dx_extract);
         }
         if (debug_print) printf("Computed DX extract: %04d\n", dx_extract);
-        dx_code_1 = dx_extract / 16;
-        dx_code_2 = dx_extract % 16;
+        dx_code_1 = dx_extract >> 4;
+        dx_code_2 = dx_extract & 0xF;
     }
 
     if (debug_print) {

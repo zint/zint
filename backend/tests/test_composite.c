@@ -3239,7 +3239,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /*  7*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "1234567890128" }, /* AI (20) should be 2 nos. */
         /*  8*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890128", "[20]1A", 0, "1234567890128" },
         /*  9*/ { BARCODE_EANX_CC, -1, -1, "1234567890128+12", "[20]12", 0, "1234567890128+12" },
-        /* 10*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "123456789012812" },
+        /* 10*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "1234567890128+12" },
         /* 11*/ { BARCODE_DBAR_OMN_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231" },
         /* 12*/ { BARCODE_DBAR_OMN_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "0112345678901231" },
         /* 13*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231" },
@@ -3262,7 +3262,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 30*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "123456789012" }, /* AI (20) should be 2 nos. */
         /* 31*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789012", "[20]1A", 0, "123456789012" },
         /* 32*/ { BARCODE_UPCA_CC, -1, -1, "123456789012+123", "[20]12", 0, "123456789012+00123" },
-        /* 33*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "12345678901200123" },
+        /* 33*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "123456789012+00123" },
         /* 34*/ { BARCODE_UPCE_CC, -1, -1, "123456", "[20]12", 0, "01234565" },
         /* 35*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "123456", "[20]12", 0, "01234565" },
         /* 36*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]12", 0, "12345670" },
@@ -3273,7 +3273,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 41*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "12345670" }, /* AI (20) should be 2 nos. */
         /* 42*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "1234567", "[20]1A", 0, "12345670" },
         /* 43*/ { BARCODE_UPCE_CC, -1, -1, "1234567+2", "[20]12", 0, "12345670+02" },
-        /* 44*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "1234567002" },
+        /* 44*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02" },
         /* 45*/ { BARCODE_DBAR_STK_CC, -1, -1, "12345678901231", "[20]12", 0, "" }, /* No HRT for stacked symbologies */
         /* 46*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "" },
         /* 47*/ { BARCODE_DBAR_OMNSTK_CC, -1, -1, "12345678901231", "[20]12", 0, "" },

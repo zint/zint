@@ -98,7 +98,7 @@ static void types(void) {
           "47 MSI_PLESSEY MSI Plessey             120 UPU_S10        UPU S10\n", stdout);
     fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-State Mailmark\n"
           "50 LOGMARS     LOGMARS Code 39         128 AZRUNE         Aztec Runes\n"
-          "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32\n"
+          "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32 (Ital. Pharma)\n"
           "52 PZN         Pharmazentralnummer     130 EANX_CC        Composite EAN\n"
           "53 PHARMA_TWO  Pharmacode Two-Track    131 GS1_128_CC     Composite GS1-128\n", stdout);
     fputs("54 CEPNET      Brazilian CEPNet        132 DBAR_OMN_CC    Comp DataBar Omni\n"

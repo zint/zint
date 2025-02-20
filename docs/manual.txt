@@ -5636,9 +5636,8 @@ Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 UPC-E have compliant quiet zones added by default.
 
 [13] In particular no parentheses will appear in the HRT for GS1 symbologies,
-and GS separators will be added as required. Also for EAN/UPC symbologies, any
-add-on data will directly follow the main data, i.e. will not be separated by
-a + character.
+and GS separators will be added as required. However for EAN/UPC symbologies,
+any add-on data will be separated by a + character as usual.
 
 [14] Normally control characters (including DEL) and non-ISO/IEC 8859-1 are
 replaced by spaces in the HRT.
