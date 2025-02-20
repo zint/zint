@@ -100,7 +100,7 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     unsigned char hrt[37];
     const int mod = 36;
     const int relabel = symbol->option_2 == 1; /* A "relabel" has no identification tag */
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     int cd; /* Check digit */
 
     if ((length != 27 && length != 28) || (length == 28 && relabel)) {
@@ -169,7 +169,7 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
         cd *= 2;
         if (cd >= (mod + 1)) cd -= mod + 1;
 
-        if (!plain_hrt) {
+        if (!raw_text) {
             switch (i + relabel) {
                 case 4:
                 case 7:
@@ -218,7 +218,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     int check_digit;
     int error_number = 0;
     unsigned char hrt[18];
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length != 12 && length != 13) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 only)", length);
@@ -283,7 +283,7 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     (void) code128(symbol, local_source, 13); /* Only error returned is for large text which can't happen */
 
     for (i = 0, j = 0; i < 13; i++) {
-        if (!plain_hrt) {
+        if (!raw_text) {
             if (i == 2 || i == 5 || i == 8 || i == 11) {
                 hrt[j++] = ' ';
             }

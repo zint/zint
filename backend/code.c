@@ -127,7 +127,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
     char dest[890]; /* 10 (Start) + 86 * 10 + 10 (Check) + 9 (Stop) + 1 = 890 */
     char *d = dest;
     char check_digit = '\0';
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if ((symbol->option_2 < 0) || (symbol->option_2 > 2)) {
         symbol->option_2 = 0;
@@ -211,7 +211,7 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (symbol->symbology == BARCODE_CODE39 && !plain_hrt) {
+    if (symbol->symbology == BARCODE_CODE39 && !raw_text) {
         hrt_cpy_chr(symbol, '*');
         hrt_cat_nochk(symbol, source, length);
         if (symbol->option_2 == 1) { /* Visible check digit */
@@ -221,8 +221,8 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         hrt_cat_chr_nochk(symbol, '*');
     } else {
         hrt_cpy_nochk(symbol, source, length);
-        if (symbol->option_2 == 1 || (plain_hrt && check_digit)) {
-            hrt_cat_chr_nochk(symbol, !plain_hrt && check_digit == ' ' ? '_' : check_digit);
+        if (symbol->option_2 == 1 || (raw_text && check_digit)) {
+            hrt_cat_chr_nochk(symbol, !raw_text && check_digit == ' ' ? '_' : check_digit);
         }
     }
     return error_number;
@@ -236,7 +236,7 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     unsigned char check_digit = '\0';
     int i;
     int error_number;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 86) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 328, "Input length %d too long (maximum 86)", length);
@@ -261,12 +261,12 @@ INTERNAL int excode39(struct zint_symbol *symbol, unsigned char source[], int le
     /* Then sends the buffer to the C39 function */
     error_number = code39(symbol, buffer, b - buffer);
 
-    /* Save visible (or BARCODE_PLAIN_HRT) check digit */
-    if (symbol->option_2 == 1 || (plain_hrt && symbol->option_2 == 2)) {
+    /* Save visible (or BARCODE_RAW_TEXT) check digit */
+    if (symbol->option_2 == 1 || (raw_text && symbol->option_2 == 2)) {
         check_digit = symbol->text[symbol->text_length - 1];
     }
 
-    /* Copy over source to HRT, subbing space for unprintables (unless BARCODE_PLAIN_HRT) */
+    /* Copy over source to HRT, subbing space for unprintables (unless BARCODE_RAW_TEXT) */
     (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 86) */
     if (check_digit) {
         hrt_cat_chr_nochk(symbol, check_digit);
@@ -289,7 +289,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     char *b = buffer;
     char dest[764]; /* 6 (Start) + 123*6 + 2*6 (Checks) + 7 (Stop) + 1 (NUL) = 764 */
     char *d = dest;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Suppresses clang-tidy clang-analyzer-core.CallAndMessage warning */
     assert(length > 0);
@@ -376,7 +376,7 @@ INTERNAL int code93(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     (void) hrt_cpy_iso8859_1(symbol, source, length); /* Will fit (ASCII, length <= 123) */
-    if (symbol->option_2 == 1 || plain_hrt) {
+    if (symbol->option_2 == 1 || raw_text) {
         hrt_cat_chr_nochk(symbol, SILVER[c]);
         hrt_cat_chr_nochk(symbol, SILVER[k]);
     }
@@ -395,7 +395,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
     char output_check;
     int sum;
     int i;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     static const char weight[17] = { 8, 7, 6, 5, 4, 3, 2, 10, 0, 9, 8, 7, 6, 5, 4, 3, 2 };
 
     /* Check length */
@@ -470,7 +470,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     expand(symbol, dest, d - dest);
 
-    if (plain_hrt && symbol->option_2 == 1) {
+    if (raw_text && symbol->option_2 == 1) {
         hrt_cpy_chr(symbol, 'I');
         hrt_cat_nochk(symbol, source, length);
     } else {

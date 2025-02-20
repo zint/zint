@@ -300,7 +300,7 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
                 int *length, const int disallow_4byte);
 
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
-   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_PLAIN_HRT set in `output_options`.
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_RAW_TEXT set in `output_options`.
    Returns warning if truncated, else 0 */
 INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
 

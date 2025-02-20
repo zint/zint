@@ -192,7 +192,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     int i, j, len;
     rs_t rs;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 26) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 580, "Input length %d too long (maximum 26)", length);
@@ -500,7 +500,7 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     symbol->rows = 3;
     symbol->width = j - 1;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, local_source, length);
     }
 

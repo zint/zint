@@ -261,6 +261,8 @@ static int error_tag(int error_number, struct zint_symbol *symbol, const int err
                 error_number = ZINT_ERROR_INVALID_OPTION;
             } else if (error_number == ZINT_WARN_HRT_TRUNCATED) {
                 error_number = ZINT_ERROR_HRT_TRUNCATED;
+            } else if (error_number == ZINT_WARN_HRT_RAW_TEXT) {
+                error_number = ZINT_ERROR_HRT_RAW_TEXT;
             } else { /* Shouldn't happen */
                 assert(0); /* Not reached */
                 error_number = ZINT_ERROR_ENCODING_PROBLEM;
@@ -371,7 +373,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     int counter, error_number = 0;
     char to_process[110 + 2 + 1];
     int posns[110];
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* without "+" and check: max 110 characters in HIBC 2.6 */
     if (length > 110) {
@@ -403,7 +405,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
     switch (symbol->symbology) {
         case BARCODE_HIBC_128:
             error_number = code128(symbol, segs[0].source, segs[0].length);
-            if (plain_hrt) {
+            if (raw_text) {
                 hrt_cpy_nochk(symbol, segs[0].source, segs[0].length);
             } else {
                 hrt_cpy_chr(symbol, '*');
@@ -414,7 +416,7 @@ static int hibc(struct zint_symbol *symbol, struct zint_seg segs[], const int se
         case BARCODE_HIBC_39:
             symbol->option_2 = 0;
             error_number = code39(symbol, segs[0].source, segs[0].length);
-            if (plain_hrt) {
+            if (raw_text) {
                 hrt_cpy_nochk(symbol, segs[0].source, segs[0].length);
             } else {
                 hrt_cpy_chr(symbol, '*');

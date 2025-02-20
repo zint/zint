@@ -563,6 +563,9 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 :   Success (including when given informational options `-h` | `--help`, `-e` | `--ecinos`, `-t` | `--types`, `-v` |
     `--version`).
 
+`-1`
+:    Human Readable Text was outputted as raw text (`ZINT_WARN_HRT_RAW_TEXT`)
+
 `1`
 :    Human Readable Text was truncated (maximum 199 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
 
@@ -607,6 +610,9 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `15`
 :    Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_TRUNCATED`)
+
+`16`
+:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_RAW_TEXT`)
 
 # EXAMPLES
 

@@ -3111,6 +3111,78 @@ static void test_height_per_row(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_hrt_raw_text(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int option_2;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        const char *expected;
+        int expected_length;
+        const char *expected_errtxt;
+    };
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_CODE128, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, "12345 67890", -1, "" },
+        /*  1*/ { BARCODE_CODE128, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, "12345\00067890", 11, "Warning 698: HRT outputted as raw text" },
+        /*  2*/ { BARCODE_EXCODE39, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, "12345 67890", -1, "" },
+        /*  3*/ { BARCODE_EXCODE39, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, "12345\00067890", 11, "Warning 698: HRT outputted as raw text" },
+        /*  4*/ { BARCODE_TELEPEN, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, "12345 67890", -1, "" },
+        /*  5*/ { BARCODE_TELEPEN, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, "12345\00067890n", 12, "Warning 698: HRT outputted as raw text" },
+        /*  6*/ { BARCODE_EANX, -1, BARCODE_MEMORY_FILE, "123456789012", -1, 0, "1234567890128", -1, "" },
+        /*  7*/ { BARCODE_EANX, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012", -1, ZINT_WARN_HRT_RAW_TEXT, "1234567890128", -1, "Warning 698: HRT outputted as raw text" }, /* Warn but no difference */
+        /*  8*/ { BARCODE_EANX, -1, BARCODE_MEMORY_FILE, "123456789012+12", -1, 0, "1234567890128+12", -1, "" },
+        /*  9*/ { BARCODE_EANX, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012+12", -1, ZINT_WARN_HRT_RAW_TEXT, "123456789012812", -1, "Warning 698: HRT outputted as raw text" },
+        /* 10*/ { BARCODE_CODE39, -1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, "*ABC14*", -1, "" },
+        /* 11*/ { BARCODE_CODE39, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, ZINT_WARN_HRT_RAW_TEXT, "ABC14", -1, "Warning 698: HRT outputted as raw text" },
+        /* 12*/ { BARCODE_CODE39, 1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, "*ABC14_*", -1, "" }, /* Check digit space rendered as underscore */
+        /* 13*/ { BARCODE_CODE39, 1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, ZINT_WARN_HRT_RAW_TEXT, "ABC14 ", -1, "Warning 698: HRT outputted as raw text" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+    int expected_length;
+
+    testStartSymbol("test_hrt_raw_text", &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        strcpy(symbol->outfile, "mem.svg");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+
+        assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d (%s)\n",
+                    i, symbol->text_length, expected_length, symbol->text);
+        assert_zero(memcmp(symbol->text, data[i].expected, expected_length), "i:%d memcmp(%s, %s, %d) != 0\n",
+                    i, symbol->text, data[i].expected, expected_length);
+
+        ret = ZBarcode_Print(symbol, 0);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Print(%s) ret %d != %d (%s)\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -3129,6 +3201,7 @@ int main(int argc, char *argv[]) {
         { "test_text_gap", test_text_gap, },
         { "test_height", test_height },
         { "test_height_per_row", test_height_per_row },
+        { "test_hrt_raw_text", test_hrt_raw_text, },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

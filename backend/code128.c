@@ -509,7 +509,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     int separator_row = 0;
     int reduced_length;
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
@@ -633,7 +633,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     /* Note won't overflow `text` buffer due to symbol character maximum restricted to C128_SYMBOL_MAX */
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, reduced, reduced_length);
     } else {
         if (symbol->input_mode & GS1PARENS_MODE) {

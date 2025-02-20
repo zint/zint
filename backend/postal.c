@@ -141,7 +141,7 @@ static int usps_set_height(struct zint_symbol *symbol, const int no_errtxt) {
 static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 38) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 480, "Input length %d too long (maximum 38)", length);
@@ -182,7 +182,7 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
         hrt_cat_chr_nochk(symbol, check_digit + '0');
     }
@@ -223,7 +223,7 @@ INTERNAL int postnet(struct zint_symbol *symbol, unsigned char source[], int len
 static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], char *d, const int length) {
     int i, sum, check_digit;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 38) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 482, "Input length %d too long (maximum 38)", length);
@@ -256,7 +256,7 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
         hrt_cat_chr_nochk(symbol, check_digit + '0');
     }
@@ -344,7 +344,7 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
     glyphs from http://en.wikipedia.org/wiki/Facing_Identification_Mark */
 INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length) {
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 1) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 486, "Input length %d too long (maximum 1)", length);
@@ -377,7 +377,7 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
             break;
     }
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_chr(symbol, (const char) (z_islower(source[0]) ? source[0] & 0x5F : source[0]));
     }
 
@@ -432,7 +432,7 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height,
 static void rm4scc_enc(struct zint_symbol *symbol, const int *posns, char *d, const int length) {
     int i;
     int top, bottom, row, column, check_digit;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     top = 0;
     bottom = 0;
@@ -465,7 +465,7 @@ static void rm4scc_enc(struct zint_symbol *symbol, const int *posns, char *d, co
     /* Stop character */
     memcpy(d, "0", 2); /* Include terminating NUL */
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cat_chr_nochk(symbol, KRSET[check_digit]);
     }
 }
@@ -478,7 +478,7 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
     int loopey, h;
     int writer;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 50) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 488, "Input length %d too long (maximum 50)", length);
@@ -488,7 +488,7 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 489,
                         "Invalid character at position %d in input (alphanumerics only)", i);
     }
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
     rm4scc_enc(symbol, posns, height_pattern, length);
@@ -540,7 +540,7 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
     int loopey;
     int writer, i, h;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 18) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 490, "Input length %d too long (maximum 18)", length);
@@ -585,7 +585,7 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 
@@ -598,7 +598,7 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
     int posns[576];
     int loopey;
     int writer;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 576) { /* 576 * 2 = 1152 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 492, "Input length %d too long (maximum 576)", length);
@@ -640,7 +640,7 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 
@@ -652,7 +652,7 @@ INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length
     int i, error_number = 0;
     char dest[512]; /* 128 * 4 = 512 */
     char *d = dest;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 128) { /* 128 * 9 = 1152 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 494, "Input length %d too long (maximum 128)", length);
@@ -672,7 +672,7 @@ INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length
 
     /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 
@@ -687,7 +687,7 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
     int writer, loopey, inter_posn, i, sum, check;
     char check_char;
     unsigned char inter[20 + 1];
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 20) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 496, "Input length %d too long (maximum 20)", length);
@@ -791,7 +791,7 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
         (void) daft_set_height(symbol, 0.0f, 0.0f);
     }
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
         /* Note: check char is in KASUTSET and not truly representable in HRT's SHKASUTSET_F */
     }

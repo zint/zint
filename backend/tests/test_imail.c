@@ -174,7 +174,7 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { -1, "53379777234994544928-51135759461", "" }, /* None */
-        /*  1*/ { BARCODE_PLAIN_HRT, "53379777234994544928-51135759461", "53379777234994544928-51135759461" },
+        /*  1*/ { BARCODE_RAW_TEXT, "53379777234994544928-51135759461", "53379777234994544928-51135759461" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

@@ -1,16 +1,17 @@
-Version 2.14.0.9 (dev) not released yet (2025-02-15)
+Version 2.14.0.9 (dev) not released yet (2025-02-20)
 ====================================================
 
 **Incompatible changes**
 ------------------------
 - New `text_length` field in `symbol` (useful for new output option
-  `BARCODE_PLAIN_HRT`)
+  `BARCODE_RAW_TEXT`)
 
 Changes
 -------
 - iso4217: remove 191 (HRK), 694 (SLL), 931 (CUC); add 926 (VED)
 - Add `text_length` (length of `text`) to `zint_symbol`, and new
-  `BARCODE_PLAIN_HRT` option for `output_options`
+  `BARCODE_RAW_TEXT` option for `output_options` and new warning
+  `ZINT_WARN_HRT_RAW_TEXT` for when set when outputting HRT
 - PLESSEY: add show default check characters option
 
 Bugs

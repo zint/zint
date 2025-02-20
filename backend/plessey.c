@@ -61,7 +61,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     char *d = dest;
     unsigned int check_digits = 0;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 67) { /* 16 + 67 * 16 + 4 * 8 + 19 = 1139 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 370, "Input length %d too long (maximum 67)", length);
@@ -117,7 +117,7 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
     /* TODO: Find documentation on BARCODE_PLESSEY dimensions/height */
 
     hrt_cpy_nochk(symbol, source, length);
-    if (symbol->option_2 == 1 || plain_hrt) {
+    if (symbol->option_2 == 1 || raw_text) {
         const unsigned c1 = check_digits & 0xF;
         const unsigned c2 = check_digits >> 4;
         hrt_cat_chr_nochk(symbol, xtoc(c1));
@@ -310,7 +310,7 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
     char *d = dest;
     int check_option = symbol->option_2;
     int no_checktext = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 92) { /* 3 (Start) + 92 * 12 + 3 * 12 + 4 (Stop) = 1147 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 372, "Input length %d too long (maximum 92)", length);
@@ -322,7 +322,7 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
 
     if (check_option >= 11 && check_option <= 16) { /* +10 means don't print check digits in HRT */
         check_option -= 10;
-        no_checktext = !plain_hrt;
+        no_checktext = !raw_text;
     }
     if ((check_option < 0) || (check_option > 6)) {
         check_option = 0;

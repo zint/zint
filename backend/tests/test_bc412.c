@@ -50,20 +50,20 @@ static void test_input(const testCtx *const p_ctx) {
         /*  0*/ { UNICODE_MODE, -1, "123456", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 792: Input length 6 too short (minimum 7)", "" },
         /*  1*/ { UNICODE_MODE, -1, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 790: Input length 19 too long (maximum 18)", "" },
         /*  2*/ { UNICODE_MODE, -1, "1234567", -1, 0, 1, 102, "1U234567", "" },
-        /*  3*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "1234567", -1, 0, 1, 102, "1U234567", "" }, /* No difference */
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "1234567", -1, 0, 1, 102, "1U234567", "" }, /* No difference */
         /*  4*/ { UNICODE_MODE, -1, "1234567 ", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 8 in input (alphanumerics only, excluding \"O\")", "" },
         /*  5*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQR", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 15 in input (alphanumerics only, excluding \"O\")", "" },
         /*  6*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" },
-        /*  7*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
+        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
         /*  8*/ { UNICODE_MODE, -1, "STUVWXYZ1234567890", -1, 0, 1, 234, "SCTUVWXYZ1234567890", "" },
         /*  9*/ { UNICODE_MODE, -1, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" },
-        /* 10*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
+        /* 10*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
         /* 11*/ { UNICODE_MODE, -1, "123456789012345678", -1, 0, 1, 234, "1223456789012345678", "" },
         /* 12*/ { UNICODE_MODE, -1, "MMMMMMMMMMMMMMMMMM", -1, 0, 1, 234, "MTMMMMMMMMMMMMMMMMM", "" },
         /* 13*/ { UNICODE_MODE, -1, "00000000", -1, 0, 1, 114, "000000000", "" },
-        /* 14*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "00000000", -1, 0, 1, 114, "000000000", "" }, /* No difference */
+        /* 14*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "00000000", -1, 0, 1, 114, "000000000", "" }, /* No difference */
         /* 15*/ { UNICODE_MODE, -1, "000000000", -1, 0, 1, 126, "0000000000", "" },
-        /* 16*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "000000000", -1, 0, 1, 126, "0000000000", "" }, /* No difference */
+        /* 16*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "000000000", -1, 0, 1, 126, "0000000000", "" }, /* No difference */
         /* 17*/ { UNICODE_MODE, -1, "000S0S000S", -1, 0, 1, 138, "0S00S0S000S", "" },
         /* 18*/ { UNICODE_MODE, -1, "ZYXWVUTSRQP", -1, 0, 1, 150, "Z0YXWVUTSRQP", "" },
         /* 19*/ { UNICODE_MODE, -1, "0R9GLVHA8EZ4", -1, 0, 1, 162, "0DR9GLVHA8EZ4", "" },
@@ -74,7 +74,7 @@ static void test_input(const testCtx *const p_ctx) {
         /* 24*/ { UNICODE_MODE, -1, "M5PWF3XIUBKYD7C6Q", -1, 0, 1, 222, "M35PWF3XIUBKYD7C6Q", "" },
         /* 25*/ { UNICODE_MODE, -1, "2J1STN4ZE8AHVLG90R", -1, 0, 1, 234, "2PJ1STN4ZE8AHVLG90R", "" },
         /* 26*/ { UNICODE_MODE, -1, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "" },
-        /* 27*/ { UNICODE_MODE, BARCODE_PLAIN_HRT, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "" }, /* No difference */
+        /* 27*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "" }, /* No difference */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

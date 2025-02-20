@@ -947,7 +947,7 @@ static void to_iso8859_1(const unsigned char source[], unsigned char preprocesse
 }
 
 static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angle, const int file_type) {
-    int error_number;
+    int error_number, warn_number = 0;
     int main_width;
     int comp_xoffset = 0;
     unsigned char addon[6];
@@ -1006,6 +1006,9 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     }
 
     hide_text = !symbol->show_hrt || symbol->text_length == 0 || scaler < 1.0f;
+    if (!hide_text && (symbol->output_options & BARCODE_RAW_TEXT)) {
+        warn_number = errtxt(ZINT_WARN_HRT_RAW_TEXT, symbol, 665, "HRT outputted as raw text");
+    }
 
     out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset,
         NULL /*qz_right*/, si, &xoffset_si, &yoffset_si, &roffset_si, &boffset_si, &qz_right_si);
@@ -1407,7 +1410,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
             free(pixelbuf);
         }
     }
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 INTERNAL int plot_raster(struct zint_symbol *symbol, int rotate_angle, int file_type) {

@@ -24,8 +24,8 @@ Code 2 of 5 Data Logic                  Micro QR Code
 Code 2 of 5 IATA                        MSI Plessey
 Code 2 of 5 Industrial                  NVE-18 (SSCC-18)
 Code 2 of 5 Interleaved                 PDF417 (and Compact and HIBC)
-Code 2 of 5 Standard (Matrix)           Pharmacode
-Code 32 (Italian Pharmacode)            Pharmacode 2-track
+Code 2 of 5 Standard (Matrix)           Pharmacode One-Track
+Code 32 (Italian Pharmacode)            Pharmacode Two-Track
 Code 39 (and HIBC)                      Pharma Zentralnummer (PZN)
 Code 39 Extended                        PLANET
 Code 49                                 POSTNET

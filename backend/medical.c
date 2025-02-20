@@ -57,7 +57,7 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
     char *in = inter;
     char dest[64]; /* 17 * 2 + 1 */
     char *d = dest;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 6) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 350, "Input length %d too long (maximum 6)", length);
@@ -98,7 +98,7 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 
@@ -150,7 +150,7 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned int loopey, h;
     int writer;
     int error_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 8) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 354, "Input length %d too long (maximum 8)", length);
@@ -188,7 +188,7 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
         (void) set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 
@@ -203,7 +203,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
     unsigned int pharmacode, devisor;
     int codeword[6];
     const int saved_option_2 = symbol->option_2;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Validate the input */
     if (length > 8) {
@@ -276,7 +276,7 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (!plain_hrt) {
+    if (!raw_text) {
         /* Override the normal text output with the Pharmacode number */
         hrt_cpy_chr(symbol, 'A');
         hrt_cat_nochk(symbol, local_source, 9);
@@ -297,7 +297,7 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     unsigned char local_source[1 + 8]; /* '-' prefix + 8 digits */
     const int pzn7 = symbol->option_2 == 1;
     const int saved_option_2 = symbol->option_2;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 8 - pzn7) {
         return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 325, "Input length %1$d too long (maximum %2$d)", length,
@@ -361,7 +361,7 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
         }
     }
 
-    if (!plain_hrt) {
+    if (!raw_text) {
         hrt_cpy_nochk(symbol, (const unsigned char *) "PZN - ", 6); /* Note changed to put space after hyphen */
         hrt_cat_nochk(symbol, local_source + 1, 9 - pzn7 - 1);
     }

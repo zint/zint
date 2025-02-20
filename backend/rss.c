@@ -157,9 +157,9 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
 static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int length) {
     static const unsigned char zeroes_str[] = "0000000000000"; /* 13 zeroes */
     const int zeroes = 13 - length;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_printf_nochk(symbol, "01%.*s%.*s", zeroes, zeroes_str, length, source);
         hrt_cat_chr_nochk(symbol, gs1_check_digit(symbol->text + 2, 13));
     } else {
@@ -1275,7 +1275,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     unsigned char *reduced = (unsigned char *) z_alloca(length + 1);
     int reduced_length;
     char *binary_string = (char *) z_alloca(bin_len);
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     separator_row = 0;
 
@@ -1461,7 +1461,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows + 1;
 
-        if (plain_hrt) {
+        if (raw_text) {
             hrt_cpy_nochk(symbol, reduced, reduced_length);
         } else {
             dbar_exp_hrt(symbol, source, length);

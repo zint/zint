@@ -102,13 +102,13 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODE11, -1, -1, "123-45", -1, "123-4552" }, /* 2 checksums */
-        /*  1*/ { BARCODE_CODE11, -1, BARCODE_PLAIN_HRT, "123-45", -1, "123-4552" }, /* No difference */
+        /*  1*/ { BARCODE_CODE11, -1, BARCODE_RAW_TEXT, "123-45", -1, "123-4552" }, /* No difference */
         /*  2*/ { BARCODE_CODE11, 1, -1, "123-45", -1, "123-455" }, /* 1 check digit */
-        /*  3*/ { BARCODE_CODE11, 1, BARCODE_PLAIN_HRT, "123-45", -1, "123-455" }, /* No difference */
+        /*  3*/ { BARCODE_CODE11, 1, BARCODE_RAW_TEXT, "123-45", -1, "123-455" }, /* No difference */
         /*  4*/ { BARCODE_CODE11, 2, -1, "123-45", -1, "123-45" }, /* No checksums */
-        /*  5*/ { BARCODE_CODE11, 2, BARCODE_PLAIN_HRT, "123-45", -1, "123-45" }, /* No difference */
+        /*  5*/ { BARCODE_CODE11, 2, BARCODE_RAW_TEXT, "123-45", -1, "123-45" }, /* No difference */
         /*  6*/ { BARCODE_CODE11, -1, -1, "123456789012", -1, "123456789012-8" }, /* First check digit 10 (A) goes to hyphen */
-        /*  7*/ { BARCODE_CODE11, -1, BARCODE_PLAIN_HRT, "123456789012", -1, "123456789012-8" }, /* No difference */
+        /*  7*/ { BARCODE_CODE11, -1, BARCODE_RAW_TEXT, "123456789012", -1, "123456789012-8" }, /* No difference */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

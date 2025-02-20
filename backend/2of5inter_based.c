@@ -106,7 +106,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     int factor;
     unsigned char local_source[14];
     int zeroes;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     count = 0;
     if (length > 13) {
@@ -134,7 +134,7 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, local_source, 14);
     } else {
         /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
@@ -153,7 +153,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned int count;
     int factor;
     unsigned char local_source[12];
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     count = 0;
     if (length > 11) {
@@ -181,7 +181,7 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, local_source, 12);
     } else {
         /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */

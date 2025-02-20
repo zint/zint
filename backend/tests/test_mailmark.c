@@ -43,15 +43,15 @@ static void test_4s_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { -1, "1100000000000XY11", "" }, /* None */
-        /*  1*/ { BARCODE_PLAIN_HRT, "1100000000000XY11", "1100000000000XY11     " },
+        /*  1*/ { BARCODE_RAW_TEXT, "1100000000000XY11", "1100000000000XY11     " },
         /*  2*/ { -1, "1100000000000XY11 ", "" }, /* None */
-        /*  3*/ { BARCODE_PLAIN_HRT, "1100000000000XY11 ", "1100000000000XY11     " },
+        /*  3*/ { BARCODE_RAW_TEXT, "1100000000000XY11 ", "1100000000000XY11     " },
         /*  4*/ { -1, "0100000000000A00AA0A", "" }, /* None */
-        /*  5*/ { BARCODE_PLAIN_HRT, "0100000000000A00AA0A", "0100000000000A00AA0A  " }, /* None */
+        /*  5*/ { BARCODE_RAW_TEXT, "0100000000000A00AA0A", "0100000000000A00AA0A  " }, /* None */
         /*  6*/ { -1, "41038422416563762XY11  ", "" }, /* None */
-        /*  7*/ { BARCODE_PLAIN_HRT, "41038422416563762XY11  ", "41038422416563762XY11     " },
+        /*  7*/ { BARCODE_RAW_TEXT, "41038422416563762XY11  ", "41038422416563762XY11     " },
         /*  8*/ { -1, "01000000000000000AA000AA0A", "" }, /* None */
-        /*  9*/ { BARCODE_PLAIN_HRT, "01000000000000000AA000AA0A", "01000000000000000AA000AA0A" },
+        /*  9*/ { BARCODE_RAW_TEXT, "01000000000000000AA000AA0A", "01000000000000000AA000AA0A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

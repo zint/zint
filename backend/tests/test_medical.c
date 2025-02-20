@@ -107,35 +107,35 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_PHARMA, -1, -1, "123456", "" }, /* None */
-        /*  1*/ { BARCODE_PHARMA, -1, BARCODE_PLAIN_HRT, "123456", "123456" },
+        /*  1*/ { BARCODE_PHARMA, -1, BARCODE_RAW_TEXT, "123456", "123456" },
         /*  2*/ { BARCODE_PHARMA_TWO, -1, -1, "123456", "" }, /* None */
-        /*  3*/ { BARCODE_PHARMA_TWO, -1, BARCODE_PLAIN_HRT, "123456", "123456" },
+        /*  3*/ { BARCODE_PHARMA_TWO, -1, BARCODE_RAW_TEXT, "123456", "123456" },
         /*  4*/ { BARCODE_CODE32, -1, -1, "123456", "A001234564" },
-        /*  5*/ { BARCODE_CODE32, -1, BARCODE_PLAIN_HRT, "123456", "015PN4" }, /* Actual encoded CODE39 value */
+        /*  5*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "123456", "015PN4" }, /* Actual encoded CODE39 value */
         /*  6*/ { BARCODE_CODE32, -1, -1, "12345678", "A123456788" },
-        /*  7*/ { BARCODE_CODE32, -1, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /*  7*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
         /*  8*/ { BARCODE_CODE32, 1, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
-        /*  9*/ { BARCODE_CODE32, 1, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /*  9*/ { BARCODE_CODE32, 1, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
         /* 10*/ { BARCODE_CODE32, 2, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
-        /* 11*/ { BARCODE_CODE32, 2, BARCODE_PLAIN_HRT, "12345678", "3PRM8N" },
+        /* 11*/ { BARCODE_CODE32, 2, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
         /* 12*/ { BARCODE_PZN, -1, -1, "12345", "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
-        /* 13*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "12345", "-00123458" }, /* Actual encoded CODE39 value */
+        /* 13*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345", "-00123458" }, /* Actual encoded CODE39 value */
         /* 14*/ { BARCODE_PZN, -1, -1, "123456", "PZN - 01234562" },
-        /* 15*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "123456", "-01234562" },
+        /* 15*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "123456", "-01234562" },
         /* 16*/ { BARCODE_PZN, -1, -1, "1234567", "PZN - 12345678" },
-        /* 17*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "1234567", "-12345678" },
+        /* 17*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "1234567", "-12345678" },
         /* 18*/ { BARCODE_PZN, -1, -1, "12345678", "PZN - 12345678" },
-        /* 19*/ { BARCODE_PZN, -1, BARCODE_PLAIN_HRT, "12345678", "-12345678" },
+        /* 19*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345678", "-12345678" },
         /* 20*/ { BARCODE_PZN, 1, -1, "1234", "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
-        /* 21*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "1234", "-0012345" },
+        /* 21*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234", "-0012345" },
         /* 22*/ { BARCODE_PZN, 1, -1, "12345", "PZN - 0123458" },
-        /* 23*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "12345", "-0123458" },
+        /* 23*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "12345", "-0123458" },
         /* 24*/ { BARCODE_PZN, 1, -1, "123456", "PZN - 1234562" },
-        /* 25*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "123456", "-1234562" },
+        /* 25*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "123456", "-1234562" },
         /* 26*/ { BARCODE_PZN, 1, -1, "1234562", "PZN - 1234562" },
-        /* 27*/ { BARCODE_PZN, 1, BARCODE_PLAIN_HRT, "1234562", "-1234562" },
+        /* 27*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234562", "-1234562" },
         /* 28*/ { BARCODE_PZN, 2, -1, "12345", "PZN - 00123458" }, /* Ignore option_2 re check digits */
-        /* 29*/ { BARCODE_PZN, 2, BARCODE_PLAIN_HRT, "12345", "-00123458" },
+        /* 29*/ { BARCODE_PZN, 2, BARCODE_RAW_TEXT, "12345", "-00123458" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

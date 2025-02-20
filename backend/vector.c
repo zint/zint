@@ -388,7 +388,7 @@ static void vector_reduce_rectangles(struct zint_symbol *symbol) {
 }
 
 INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_type) {
-    int error_number;
+    int error_number, warn_number = 0;
     int main_width;
     int comp_xoffset = 0;
     int comp_roffset = 0;
@@ -486,6 +486,9 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     hide_text = !symbol->show_hrt || symbol->text_length == 0;
+    if (!hide_text && (symbol->output_options & BARCODE_RAW_TEXT)) {
+        warn_number = errtxt(ZINT_WARN_HRT_RAW_TEXT, symbol, 698, "HRT outputted as raw text");
+    }
 
     out_set_whitespace_offsets(symbol, hide_text, comp_xoffset, &xoffset, &yoffset, &roffset, &boffset, &qz_right,
         0 /*scaler*/, NULL, NULL, NULL, NULL, NULL);
@@ -1038,7 +1041,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
         /* case OUT_BUFFER: No more work needed */
     }
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* vim: set ts=4 sw=4 et : */

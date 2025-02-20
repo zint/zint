@@ -721,18 +721,18 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
 }
 
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
-   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_PLAIN_HRT set in `output_options`.
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_RAW_TEXT set in `output_options`.
    Returns warning if truncated, else 0 */
 INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length) {
     int i, j;
     int warn_number = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0, j = 0; i < length && j < ARRAY_SIZE(symbol->text); i++) {
         if (z_isascii(source[i])) {
-            symbol->text[j++] = !plain_hrt && z_iscntrl(source[i]) ? ' ' : source[i];
+            symbol->text[j++] = !raw_text && z_iscntrl(source[i]) ? ' ' : source[i];
         } else if (source[i] < 0xC0) {
-            if (!plain_hrt && source[i] < 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
+            if (!raw_text && source[i] < 0xA0) { /* 0x80-0x9F not valid ISO/IEC 8859-1 */
                 symbol->text[j++] = ' ';
             } else {
                 if (j + 2 >= ARRAY_SIZE(symbol->text)) {

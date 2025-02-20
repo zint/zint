@@ -62,7 +62,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
     char *d = dest;
     unsigned char local_source[113 + 1]; /* Largest maximum 113 + optional check digit */
     const int have_checkdigit = symbol->option_2 == 1 || symbol->option_2 == 2;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > max) {
         /* errtxt 301: 303: 305: 307: */
@@ -105,7 +105,7 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     expand(symbol, dest, d - dest);
 
-    if (symbol->option_2 == 2 && !plain_hrt) {
+    if (symbol->option_2 == 2 && !raw_text) {
         /* Exclude check digit from HRT */
         hrt_cpy_nochk(symbol, local_source, length - 1);
     } else {

@@ -508,6 +508,7 @@ const char *testUtilErrorName(int error_number) {
         int val;
     };
     static const struct item data[] = {
+        { "ZINT_WARN_HRT_RAW_TEXT", ZINT_WARN_HRT_RAW_TEXT, -1 },
         { "0", 0, 0 },
         { "ZINT_WARN_HRT_TRUNCATED", ZINT_WARN_HRT_TRUNCATED, 1 },
         { "ZINT_WARN_INVALID_OPTION", ZINT_WARN_INVALID_OPTION, 2 },
@@ -524,19 +525,19 @@ const char *testUtilErrorName(int error_number) {
         { "ZINT_ERROR_USES_ECI", ZINT_ERROR_USES_ECI, 13 },
         { "ZINT_ERROR_NONCOMPLIANT", ZINT_ERROR_NONCOMPLIANT, 14 },
         { "ZINT_ERROR_HRT_TRUNCATED", ZINT_ERROR_HRT_TRUNCATED, 15 },
+        { "ZINT_ERROR_HRT_RAW_TEXT", ZINT_ERROR_HRT_RAW_TEXT, 16 },
     };
     const int data_size = ARRAY_SIZE(data);
 
-    if (error_number < 0 || error_number >= data_size) {
+    if (error_number + 1 < 0 || error_number + 1 >= data_size) {
         return "";
     }
     /* Self-check */
-    if (data[error_number].val != error_number
-            || (data[error_number].define != -1 && data[error_number].define != error_number)) {
+    if (data[error_number + 1].val != error_number || (data[error_number + 1].define != error_number)) {
         fprintf(stderr, "testUtilErrorName: data table out of sync (%d)\n", error_number);
         abort();
     }
-    return data[error_number].name;
+    return data[error_number + 1].name;
 }
 
 /* Pretty name for input mode */
@@ -684,7 +685,7 @@ const char *testUtilOutputOptionsName(int output_options) {
         { "EANUPC_GUARD_WHITESPACE", EANUPC_GUARD_WHITESPACE, 0x4000 },
         { "EMBED_VECTOR_FONT", EMBED_VECTOR_FONT, 0x8000 },
         { "BARCODE_MEMORY_FILE", BARCODE_MEMORY_FILE, 0x10000 },
-        { "BARCODE_PLAIN_HRT", BARCODE_PLAIN_HRT, 0x20000 },
+        { "BARCODE_RAW_TEXT", BARCODE_RAW_TEXT, 0x20000 },
     };
     static int const data_size = ARRAY_SIZE(data);
     int set = 0;

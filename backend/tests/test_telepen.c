@@ -101,23 +101,23 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_TELEPEN, -1, "ABC1234.;$", -1, "ABC1234.;$", -1 },
-        /*  1*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC1234.;$", -1, "ABC1234.;$^", -1 },
+        /*  1*/ { BARCODE_TELEPEN, BARCODE_RAW_TEXT, "ABC1234.;$", -1, "ABC1234.;$^", -1 },
         /*  2*/ { BARCODE_TELEPEN, -1, "abc1234.;$", -1, "abc1234.;$", -1 },
-        /*  3*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "abc1234.;$", -1, "abc1234.;$}", -1 },
+        /*  3*/ { BARCODE_TELEPEN, BARCODE_RAW_TEXT, "abc1234.;$", -1, "abc1234.;$}", -1 },
         /*  4*/ { BARCODE_TELEPEN, -1, "ABC1234\001", -1, "ABC1234 ", -1 }, /* Note used to put control chars (apart from NUL) in HRT */
-        /*  5*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC1234\001", -1, "ABC1234\001k", -1 },
+        /*  5*/ { BARCODE_TELEPEN, BARCODE_RAW_TEXT, "ABC1234\001", -1, "ABC1234\001k", -1 },
         /*  6*/ { BARCODE_TELEPEN, -1, "ABC\0001234", 8, "ABC 1234", -1 },
-        /*  7*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABC\0001234", 8, "ABC\0001234l", 9 },
+        /*  7*/ { BARCODE_TELEPEN, BARCODE_RAW_TEXT, "ABC\0001234", 8, "ABC\0001234l", 9 },
         /*  8*/ { BARCODE_TELEPEN, -1, "ABK0", -1, "ABK0", -1 },
-        /*  9*/ { BARCODE_TELEPEN, BARCODE_PLAIN_HRT, "ABK0", -1, "ABK0\000", 5 },
+        /*  9*/ { BARCODE_TELEPEN, BARCODE_RAW_TEXT, "ABK0", -1, "ABK0\000", 5 },
         /* 10*/ { BARCODE_TELEPEN_NUM, -1, "1234", -1, "1234", -1 },
-        /* 11*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "1234", -1, "1234\033", -1 },
+        /* 11*/ { BARCODE_TELEPEN_NUM, BARCODE_RAW_TEXT, "1234", -1, "1234\033", -1 },
         /* 12*/ { BARCODE_TELEPEN_NUM, -1, "123X", -1, "123X", -1 },
-        /* 13*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "123X", -1, "123XD", -1 },
+        /* 13*/ { BARCODE_TELEPEN_NUM, BARCODE_RAW_TEXT, "123X", -1, "123XD", -1 },
         /* 14*/ { BARCODE_TELEPEN_NUM, -1, "123x", -1, "123X", -1 }, /* Converts to upper */
-        /* 15*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "123x", -1, "123XD", -1 },
+        /* 15*/ { BARCODE_TELEPEN_NUM, BARCODE_RAW_TEXT, "123x", -1, "123XD", -1 },
         /* 16*/ { BARCODE_TELEPEN_NUM, -1, "12345", -1, "012345", -1 }, /* Adds leading zero if odd */
-        /* 17*/ { BARCODE_TELEPEN_NUM, BARCODE_PLAIN_HRT, "12345", -1, "012345h", -1 },
+        /* 17*/ { BARCODE_TELEPEN_NUM, BARCODE_RAW_TEXT, "12345", -1, "012345h", -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

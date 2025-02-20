@@ -100,17 +100,17 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODABAR, -1, -1, "A1234B", "A1234B" },
-        /*  1*/ { BARCODE_CODABAR, -1, BARCODE_PLAIN_HRT, "A1234B", "A1234B" },
+        /*  1*/ { BARCODE_CODABAR, -1, BARCODE_RAW_TEXT, "A1234B", "A1234B" },
         /*  2*/ { BARCODE_CODABAR, -1, -1, "a1234c", "A1234C" }, /* Converts to upper */
-        /*  3*/ { BARCODE_CODABAR, -1, BARCODE_PLAIN_HRT, "a1234c", "A1234C" },
+        /*  3*/ { BARCODE_CODABAR, -1, BARCODE_RAW_TEXT, "a1234c", "A1234C" },
         /*  4*/ { BARCODE_CODABAR, 1, -1, "A1234B", "A1234B" }, /* Check not included */
-        /*  5*/ { BARCODE_CODABAR, 1, BARCODE_PLAIN_HRT, "A1234B", "A12345B" },
+        /*  5*/ { BARCODE_CODABAR, 1, BARCODE_RAW_TEXT, "A1234B", "A12345B" },
         /*  6*/ { BARCODE_CODABAR, 2, -1, "A1234B", "A12345B" }, /* Check included */
-        /*  7*/ { BARCODE_CODABAR, 2, BARCODE_PLAIN_HRT, "A1234B", "A12345B" },
+        /*  7*/ { BARCODE_CODABAR, 2, BARCODE_RAW_TEXT, "A1234B", "A12345B" },
         /*  8*/ { BARCODE_CODABAR, 1, -1, "A123456A", "A123456A" }, /* Check not included */
-        /*  9*/ { BARCODE_CODABAR, 1, BARCODE_PLAIN_HRT, "A123456A", "A123456$A" },
+        /*  9*/ { BARCODE_CODABAR, 1, BARCODE_RAW_TEXT, "A123456A", "A123456$A" },
         /* 10*/ { BARCODE_CODABAR, 2, -1, "A123456A", "A123456$A" }, /* Check included */
-        /* 11*/ { BARCODE_CODABAR, 2, BARCODE_PLAIN_HRT, "A123456A", "A123456$A" },
+        /* 11*/ { BARCODE_CODABAR, 2, BARCODE_RAW_TEXT, "A123456A", "A123456$A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

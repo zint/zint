@@ -261,7 +261,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned short characters[10];
     short bar_map[130];
     int zip_len;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 32) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 450, "Input length %d too long (maximum 32)", length);
@@ -449,7 +449,7 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->rows = 3;
     symbol->width = read - 1;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
     }
 

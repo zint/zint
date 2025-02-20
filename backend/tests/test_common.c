@@ -780,7 +780,7 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
                     i, symbol->text, data[i].expected);
 
         memset(symbol, 0, sizeof(*symbol));
-        symbol->output_options = BARCODE_PLAIN_HRT;
+        symbol->output_options = BARCODE_RAW_TEXT;
 
         if (data[i].expected_plain == NULL) {
             expected = data[i].expected;

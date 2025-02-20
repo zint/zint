@@ -122,7 +122,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned char dpid[9];
     unsigned char local_source[30];
     int zeroes = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
@@ -277,7 +277,7 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cpy_nochk(symbol, fcc, 2);
         hrt_cat_nochk(symbol, local_source, length);
     }

@@ -62,7 +62,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
     char dx_info[DX_MAX_DX_INFO_LENGTH + 1] = {0};
     char frame_info[DX_MAX_FRAME_INFO_LENGTH + 1] = {0};
     int dx_length;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     *has_frame_info = 0;
@@ -245,7 +245,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
 
     *output_length = bp;
 
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_printf_nochk(symbol, "%04d%s", (dx_code_1 << 4) | dx_code_2, frame_info);
     }
 

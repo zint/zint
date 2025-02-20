@@ -228,26 +228,26 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_FLAT, -1, -1, "12345", "" }, /* None */
-        /*  1*/ { BARCODE_FLAT, -1, BARCODE_PLAIN_HRT, "12345", "12345" },
+        /*  1*/ { BARCODE_FLAT, -1, BARCODE_RAW_TEXT, "12345", "12345" },
         /*  2*/ { BARCODE_POSTNET, -1, -1, "12345", "" }, /* None */
-        /*  3*/ { BARCODE_POSTNET, -1, BARCODE_PLAIN_HRT, "12345", "123455" },
+        /*  3*/ { BARCODE_POSTNET, -1, BARCODE_RAW_TEXT, "12345", "123455" },
         /*  4*/ { BARCODE_FIM, -1, -1, "e", "" }, /* None */
-        /*  5*/ { BARCODE_FIM, -1, BARCODE_PLAIN_HRT, "e", "E" },
+        /*  5*/ { BARCODE_FIM, -1, BARCODE_RAW_TEXT, "e", "E" },
         /*  6*/ { BARCODE_CEPNET, -1, -1, "12345678", "" }, /* None */
-        /*  7*/ { BARCODE_CEPNET, -1, BARCODE_PLAIN_HRT, "12345678", "123456784" },
+        /*  7*/ { BARCODE_CEPNET, -1, BARCODE_RAW_TEXT, "12345678", "123456784" },
         /*  8*/ { BARCODE_RM4SCC, -1, -1, "BX11LT1A", "" }, /* None*/
-        /*  9*/ { BARCODE_RM4SCC, -1, BARCODE_PLAIN_HRT, "BX11LT1A", "BX11LT1AI" },
+        /*  9*/ { BARCODE_RM4SCC, -1, BARCODE_RAW_TEXT, "BX11LT1A", "BX11LT1AI" },
         /* 10*/ { BARCODE_JAPANPOST, -1, -1, "1234", "" }, /* None*/
-        /* 11*/ { BARCODE_JAPANPOST, -1, BARCODE_PLAIN_HRT, "1234", "1234" }, /* Note check char not included */
-        /* 12*/ { BARCODE_JAPANPOST, -1, BARCODE_PLAIN_HRT, "123456-AB", "123456-AB" }, /* Ditto */
+        /* 11*/ { BARCODE_JAPANPOST, -1, BARCODE_RAW_TEXT, "1234", "1234" }, /* Note check char not included */
+        /* 12*/ { BARCODE_JAPANPOST, -1, BARCODE_RAW_TEXT, "123456-AB", "123456-AB" }, /* Ditto */
         /* 13*/ { BARCODE_KOREAPOST, -1, -1, "123456", "1234569" },
-        /* 14*/ { BARCODE_KOREAPOST, -1, BARCODE_PLAIN_HRT, "123456", "1234569" }, /* No difference */
+        /* 14*/ { BARCODE_KOREAPOST, -1, BARCODE_RAW_TEXT, "123456", "1234569" }, /* No difference */
         /* 15*/ { BARCODE_PLANET, -1, -1, "12345678901", "" }, /* None */
-        /* 16*/ { BARCODE_PLANET, -1, BARCODE_PLAIN_HRT, "12345678901", "123456789014" },
+        /* 16*/ { BARCODE_PLANET, -1, BARCODE_RAW_TEXT, "12345678901", "123456789014" },
         /* 17*/ { BARCODE_KIX, -1, -1, "0123456789ABCDEFGH", "" }, /* None */
-        /* 18*/ { BARCODE_KIX, -1, BARCODE_PLAIN_HRT, "0123456789ABCDEFGH", "0123456789ABCDEFGH" },
+        /* 18*/ { BARCODE_KIX, -1, BARCODE_RAW_TEXT, "0123456789ABCDEFGH", "0123456789ABCDEFGH" },
         /* 19*/ { BARCODE_DAFT, -1, -1, "DAFT", "" }, /* None */
-        /* 20*/ { BARCODE_DAFT, -1, BARCODE_PLAIN_HRT, "DAFT", "DAFT" },
+        /* 20*/ { BARCODE_DAFT, -1, BARCODE_RAW_TEXT, "DAFT", "DAFT" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

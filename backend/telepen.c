@@ -91,7 +91,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number;
     char dest[1145]; /* 12 (Start) + 69 * 16 (max for DELs) + 16 (Check) + 12 (stop) + 1 = 1145 */
     char *d = dest;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     error_number = 0;
 
@@ -139,7 +139,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
     }
 
     hrt_cpy_iso8859_1(symbol, source, length);
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cat_chr_nochk(symbol, check_digit);
     }
 
@@ -153,7 +153,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     char dest[1129]; /* 12 (Start) + 68 * 16 (max for DELs) + 16 (Check) + 12 (Stop) + 1 = 1129 */
     char *d = dest;
     unsigned char local_source[137];
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     count = 0;
 
@@ -218,7 +218,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     hrt_cpy_nochk(symbol, local_source, length);
-    if (plain_hrt) {
+    if (raw_text) {
         hrt_cat_chr_nochk(symbol, check_digit);
     }
 

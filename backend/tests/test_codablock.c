@@ -269,9 +269,9 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { BARCODE_CODABLOCKF, -1, -1, -1, "12345623456", "" }, /* None */
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, BARCODE_PLAIN_HRT, "12345623456", "" }, /* No difference */
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, BARCODE_RAW_TEXT, "12345623456", "" }, /* No difference */
         /*  2*/ { BARCODE_CODABLOCKF, 1, -1, -1, "12345623456", "" }, /* None (CODE128) */
-        /*  3*/ { BARCODE_CODABLOCKF, 1, -1, BARCODE_PLAIN_HRT, "12345623456", "" }, /* No difference */
+        /*  3*/ { BARCODE_CODABLOCKF, 1, -1, BARCODE_RAW_TEXT, "12345623456", "" }, /* No difference */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

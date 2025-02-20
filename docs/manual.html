@@ -3557,7 +3557,7 @@ with a terminating <code>NUL</code>.</td>
 <tr>
 <td style="text-align: left;"><code>text_length</code></td>
 <td style="text-align: left;">integer</td>
-<td style="text-align: left;">Length of <code>text</code>.</td>
+<td style="text-align: left;">Length of <code>text</code> in bytes.</td>
 <td style="text-align: left;">0 (output only)</td>
 </tr>
 <tr>
@@ -3692,6 +3692,12 @@ data-tag=": API Warning and Error Return Values">
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><code>ZINT_WARN_HRT_RAW_TEXT</code></td>
+<td style="text-align: left;">The Human Readable Text returned in
+<code>text</code> was outputted as raw text (<code>output_options</code>
+set to <code>BARCODE_RAW_TEXT</code>).</td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">The Human Readable Text returned in
 <code>text</code> was truncated (maximum 255 bytes).</td>
@@ -3782,6 +3788,12 @@ occurs.</td>
 <td style="text-align: left;"><code>ZINT_ERROR_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_TRUNCATED</code>
+occurs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ZINT_ERROR_HRT_RAW_TEXT</code></td>
+<td style="text-align: left;">Returned if <code>warn_level</code> set to
+<code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_RAW_TEXT</code>
 occurs.</td>
 </tr>
 </tbody>
@@ -3941,7 +3953,7 @@ available for SVG output only.</td>
 file.</td>
 </tr>
 <tr>
-<td style="text-align: left;"><code>BARCODE_PLAIN_HRT</code></td>
+<td style="text-align: left;"><code>BARCODE_RAW_TEXT</code></td>
 <td style="text-align: left;">Set HRT with no decoration,<a href="#fn13"
 class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
 complete with any control characters<a href="#fn14" class="footnote-ref"
@@ -9379,6 +9391,11 @@ Success (including when given informational options <code>-h</code> |
 <code>-t</code> | <code>--types</code>, <code>-v</code> |
 <code>--version</code>).
 </dd>
+<dt><code>-1</code></dt>
+<dd>
+Human Readable Text was outputted as raw text
+(<code>ZINT_WARN_HRT_RAW_TEXT</code>)
+</dd>
 <dt><code>1</code></dt>
 <dd>
 Human Readable Text was truncated (maximum 199 bytes)
@@ -9445,6 +9462,11 @@ Error counterpart of warning if <code>--werror</code> given
 <dd>
 Error counterpart of warning if <code>--werror</code> given
 (<code>ZINT_ERROR_HRT_TRUNCATED</code>)
+</dd>
+<dt><code>16</code></dt>
+<dd>
+Error counterpart of warning if <code>--werror</code> given
+(<code>ZINT_ERROR_HRT_RAW_TEXT</code>)
 </dd>
 </dl>
 <h2 id="examples">EXAMPLES</h2>
@@ -9561,9 +9583,9 @@ class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn16"><p>HRT is normally not set for the postal codes Australia
 Post (all variants), USPS Intelligent Mail, POSTNET and PLANET,
 Brazilian CEPNet, Royal Mail 4-State Customer Code and 4-State Mailmark,
-Dutch Post KIX Code, Japanese Postal Code, DAFT Code, Flattermarken and
-FIM, the pharma codes Pharmacode One-Track and Pharmacode Two-Track, and
-DX Film Edge Barcode.<a href="#fnref16" class="footnote-back"
+Dutch Post KIX Code, Japanese Postal Code, DAFT Code and FIM, the pharma
+codes Pharmacode One-Track and Pharmacode Two-Track, and DX Film Edge
+Barcode and Flattermarken.<a href="#fnref16" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
 <li id="fn17"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a

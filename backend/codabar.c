@@ -58,7 +58,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
     char *d = dest;
     int add_checksum, count = 0, checksum = 0;
     int d_chars = 0;
-    const int plain_hrt = symbol->output_options & BARCODE_PLAIN_HRT;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 103) { /* No stack smashing please (103 + 1) * 11 = 1144 */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 356, "Input length %d too long (maximum 103)", length);
@@ -134,7 +134,7 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (symbol->option_2 == 2 || (plain_hrt && add_checksum)) {
+    if (symbol->option_2 == 2 || (raw_text && add_checksum)) {
         /* Place before final A/B/C/D character (BS EN 798:1995 A.3) */
         hrt_printf_nochk(symbol, "%.*s%c%c", length - 1, source, CALCIUM[checksum], source[length - 1]);
     } else {
