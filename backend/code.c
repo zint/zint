@@ -400,7 +400,7 @@ INTERNAL int vin(struct zint_symbol *symbol, unsigned char source[], int length)
 
     /* Check length */
     if (length != 17) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 336, "Input length %d wrong (17 only)", length);
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 336, "Input length %d wrong (17 characters required)", length);
     }
 
     /* Check input characters, I, O and Q are not allowed */

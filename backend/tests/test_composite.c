@@ -3388,8 +3388,8 @@ static void test_input(const testCtx *const p_ctx) {
         /* 49*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "123456789012", "[20]12", 0, 7, 99, "" },
         /* 50*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 270: Invalid check digit '3', expecting '2' (linear component)" },
         /* 51*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, -1, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 270: Invalid check digit '3', expecting '2' (linear component)" }, /* Linear component still checked */
-        /* 52*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 289: Input length 13 wrong (11 or 12 only) (linear component)" },
-        /* 53*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 289: Input length 13 wrong (11 or 12 only) (linear component)" },
+        /* 52*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 289: Input length 13 wrong (11 or 12 characters required) (linear component)" },
+        /* 53*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 289: Input length 13 wrong (11 or 12 characters required) (linear component)" },
         /* 54*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "12345678901A", "[20]12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 284: Invalid character at position 12 in input (digits and \"+\" only) (linear component)" },
         /* 55*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, -1, -1, "12345678901A", "[20]12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 284: Invalid character at position 12 in input (digits and \"+\" only) (linear component)" },
         /* 56*/ { BARCODE_UPCA_CC, -1, -1, -1, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, 7, 99, "Warning 261: AI (20) position 2: Non-numeric character 'A' (2D component)" }, /* AI (20) should be 2 nos. */
@@ -3401,8 +3401,8 @@ static void test_input(const testCtx *const p_ctx) {
         /* 62*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "12345670", "[20]12", 0, 9, 55, "" }, /* Check digit can now be given for UPCE_CC, like UPCA_CC */
         /* 63*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 274: Invalid check digit '1', expecting '0' (linear component)" },
         /* 64*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, -1, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 274: Invalid check digit '1', expecting '0' (linear component)" }, /* Linear component still checked */
-        /* 65*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "123456712", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 291: Input length 9 wrong (6, 7 or 8 only) (linear component)" },
-        /* 66*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, -1, -1, "123456712", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 291: Input length 9 wrong (6, 7 or 8 only) (linear component)" },
+        /* 65*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "123456712", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 291: Input length 9 wrong (6, 7 or 8 characters required) (linear component)" },
+        /* 66*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, -1, -1, "123456712", "[20]12", ZINT_ERROR_TOO_LONG, -1, -1, "Error 291: Input length 9 wrong (6, 7 or 8 characters required) (linear component)" },
         /* 67*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "1234567A", "[20]12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 284: Invalid character at position 8 in input (digits and \"+\" only) (linear component)" },
         /* 68*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, -1, -1, "1234567A", "[20]12", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 284: Invalid character at position 8 in input (digits and \"+\" only) (linear component)" },
         /* 69*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, 9, 55, "Warning 261: AI (20) position 2: Non-numeric character 'A' (2D component)" }, /* AI (20) should be 2 nos. */

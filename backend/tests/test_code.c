@@ -63,8 +63,8 @@ static void test_large(const testCtx *const p_ctx) {
         /* 14*/ { BARCODE_CODE93, -1, "a1", 82, 0, 1, 1144, "" }, /* Takes 1.5 encoding chars (1.5*82 == 123) */
         /* 15*/ { BARCODE_CODE93, -1, "a1", 83, ZINT_ERROR_TOO_LONG, -1, -1, "Error 332: Input too long, requires 125 symbol characters (maximum 123)" },
         /* 16*/ { BARCODE_VIN, -1, "1", 17, 0, 1, 246, "" },
-        /* 17*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 18 wrong (17 only)" },
-        /* 18*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 16 wrong (17 only)" },
+        /* 17*/ { BARCODE_VIN, -1, "1", 18, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 18 wrong (17 characters required)" },
+        /* 18*/ { BARCODE_VIN, -1, "1", 16, ZINT_ERROR_TOO_LONG, -1, -1, "Error 336: Input length 16 wrong (17 characters required)" },
         /* 19*/ { BARCODE_VIN, 1, "1", 17, 0, 1, 259, "" },
         /* 20*/ { BARCODE_HIBC_39, -1, "1", 68, 0, 1, 1151, "" }, /* 70 - 2 ('+' and check digit) */
         /* 21*/ { BARCODE_HIBC_39, -1, "1", 69, ZINT_ERROR_TOO_LONG, -1, -1, "Error 319: Input length 69 too long (maximum 68)" },

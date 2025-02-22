@@ -127,8 +127,8 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     /* Do all of the length checking first to avoid stack smashing */
     if (symbol->symbology == BARCODE_AUSPOST) {
         if (length != 8 && length != 13 && length != 16 && length != 18 && length != 23) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 401, "Input length %d wrong (8, 13, 16, 18 or 23 only)",
-                            length);
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 401,
+                            "Input length %d wrong (8, 13, 16, 18 or 23 characters required)", length);
         }
     } else if (length > 8) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 403, "Input length %d too long (maximum 8)", length);

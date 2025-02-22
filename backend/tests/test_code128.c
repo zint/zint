@@ -981,13 +981,13 @@ static void test_dpd_input(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { -1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 349: DPD input length 26 wrong (27 or 28 only)", "" },
-        /*  1*/ { 1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 830: DPD relabel input length 26 wrong (27 only)", "" },
+        /*  0*/ { -1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 349: DPD input length 26 wrong (27 or 28 characters required)", "" },
+        /*  1*/ { 1, -1, "12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 830: DPD relabel input length 26 wrong (27 characters required)", "" },
         /*  2*/ { -1, -1, "123456789012345678901234567", 0, 211, 50, 1, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "27 chars ok now, ident tag prefixed" },
         /*  3*/ { -1, -1, "%123456789012345678901234567", 0, 211, 50, 1, "(19) 104 5 17 99 23 45 67 89 1 23 45 67 89 1 23 45 67 51 106", "" },
         /*  4*/ { 1, -1, "123456789012345678901234567", 0, 200, 25, 1, "(18) 105 12 34 56 78 90 12 34 56 78 90 12 34 56 100 23 102 106", "27 chars also ok (and necessary) for relabel" },
-        /*  5*/ { -1, -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 349: DPD input length 29 wrong (27 or 28 only)", "" },
-        /*  6*/ { 1, -1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 830: DPD relabel input length 28 wrong (27 only)", "" },
+        /*  5*/ { -1, -1, "12345678901234567890123456789", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 349: DPD input length 29 wrong (27 or 28 characters required)", "" },
+        /*  6*/ { 1, -1, "1234567890123456789012345678", ZINT_ERROR_TOO_LONG, -1, 0, 1, "Error 830: DPD relabel input length 28 wrong (27 characters required)", "" },
         /*  7*/ { -1, -1, "123456789012345678901234567,", ZINT_ERROR_INVALID_DATA, -1, 0, 1, "Error 299: Invalid character at position 27 in input (alphanumerics only after first)", "Alphanumerics only in body" },
         /*  8*/ { -1, -1, "12345678901234567890123456,", ZINT_ERROR_INVALID_DATA, -1, 0, 1, "Error 300: Invalid character at position 27 in input (alphanumerics only)", "Alphanumerics only" },
         /*  9*/ { -1, -1, ",234567890123456789012345678", 0, 211, 50, 1, "(19) 104 12 18 99 34 56 78 90 12 34 56 78 90 12 34 56 78 64 106", "Non-alphanumeric DPD ident tag (Barcode ID) allowed" },
@@ -1101,8 +1101,8 @@ static void test_upu_s10_input(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { "AB123456789ABC", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 14 wrong (12 or 13 only)", "" },
-        /*  1*/ { "AB1234567AB", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 11 wrong (12 or 13 only)", "" },
+        /*  0*/ { "AB123456789ABC", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 14 wrong (12 or 13 characters required)", "" },
+        /*  1*/ { "AB1234567AB", ZINT_ERROR_TOO_LONG, 0, "Error 834: Input length 11 wrong (12 or 13 characters required)", "" },
         /*  2*/ { "1B123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
         /*  3*/ { "1B12345678AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },
         /*  4*/ { "A2123456789AB", ZINT_ERROR_INVALID_DATA, 0, "Error 835: Invalid character in Service Indictor (first 2 characters) (alphabetic only)", "" },

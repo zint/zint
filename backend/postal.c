@@ -155,7 +155,7 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     } else {
         if (length != 5 && length != 9 && length != 11) {
             error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 479,
-                                    "Input length %d is not standard (5, 9 or 11)", length);
+                                    "Input length %d is not standard (should be 5, 9 or 11 digits)", length);
         }
     }
     if ((i = not_sane(NEON_F, source, length))) {
@@ -229,8 +229,8 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 482, "Input length %d too long (maximum 38)", length);
     }
     if (length != 11 && length != 13) {
-        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 478, "Input length %d is not standard (11 or 13)",
-                                length);
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 478,
+                                "Input length %d is not standard (should be 11 or 13 digits)", length);
     }
     if ((i = not_sane(NEON_F, source, length))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 483,

@@ -188,7 +188,7 @@ static void test_input(const testCtx *const p_ctx) {
         /*  7*/ { BARCODE_AUSPOST, "12345678ABCDefgh #", 0, 3, 133, "" }, /* Length 18 */
         /*  8*/ { BARCODE_AUSPOST, "12345678901234567890123", 0, 3, 133, "" },
         /*  9*/ { BARCODE_AUSPOST, "1234567890123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 406: Invalid character at position 23 in input (digits only for FCC 62 length 23)" },
-        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input length 7 wrong (8, 13, 16, 18 or 23 only)" }, /* No leading zeroes added */
+        /* 10*/ { BARCODE_AUSPOST, "1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 401: Input length 7 wrong (8, 13, 16, 18 or 23 characters required)" }, /* No leading zeroes added */
         /* 11*/ { BARCODE_AUSREPLY, "12345678", 0, 3, 73, "" },
         /* 12*/ { BARCODE_AUSREPLY, "1234567", 0, 3, 73, "" }, /* Leading zeroes added */
         /* 13*/ { BARCODE_AUSREPLY, "123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 403: Input length 9 too long (maximum 8)" },

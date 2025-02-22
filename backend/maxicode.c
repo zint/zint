@@ -593,8 +593,8 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
             if (lp == 0) {
                 return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 548, "Primary Message empty");
             }
-            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551, "Primary Message length %d wrong (7 to 15 only)",
-                            lp);
+            return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 551,
+                            "Primary Message length %d wrong (7 to 15 characters required)", lp);
         }
         postcode_len = lp - 6;
 

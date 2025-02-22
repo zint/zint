@@ -541,7 +541,8 @@ static int isbnx(struct zint_symbol *symbol, unsigned char source[], const int l
 
     /* Input must be 9, 10 or 13 characters */
     if (length != 9 && length != 10 && length != 13) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 278, "Input length %d wrong (9, 10, or 13 only)", length);
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 278, "Input length %d wrong (9, 10, or 13 characters required)",
+                        length);
     }
 
     if (length == 13) /* Using 13 character ISBN */ {
@@ -828,7 +829,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
                     break;
                 default:
                     return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 286,
-                                    "Input length %d wrong (2, 5, 7, 8, 12 or 13 only)", first_part_len);
+                                "Input length %d wrong (2, 5, 7, 8, 12 or 13 characters required)", first_part_len);
                     break;
             }
             break;
@@ -862,8 +863,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
                     error_number = ean13_cc(symbol, first_part, first_part_len, dest, cc_rows);
                     break;
                 default:
-                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 287, "Input length %d wrong (7, 12 or 13 only)",
-                                    first_part_len);
+                    return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 287,
+                                    "Input length %d wrong (7, 12 or 13 characters required)", first_part_len);
                     break;
             }
             break;
@@ -872,8 +873,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
             if ((first_part_len == 11) || (first_part_len == 12)) {
                 error_number = upca(symbol, first_part, first_part_len, dest);
             } else {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 288, "Input length %d wrong (11 or 12 only)",
-                                first_part_len);
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 288,
+                                "Input length %d wrong (11 or 12 characters required)", first_part_len);
             }
             break;
         case BARCODE_UPCA_CC:
@@ -890,8 +891,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
                 symbol->rows += 3;
                 error_number = upca_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 289, "Input length %d wrong (11 or 12 only)",
-                                first_part_len);
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 289,
+                                "Input length %d wrong (11 or 12 characters required)", first_part_len);
             }
             break;
         case BARCODE_UPCE:
@@ -899,8 +900,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
             if ((first_part_len >= 6) && (first_part_len <= 8)) {
                 error_number = upce(symbol, first_part, first_part_len, dest);
             } else {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 290, "Input length %d wrong (6, 7 or 8 only)",
-                                first_part_len);
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 290,
+                                "Input length %d wrong (6, 7 or 8 characters required)", first_part_len);
             }
             break;
         case BARCODE_UPCE_CC:
@@ -917,8 +918,8 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
                 symbol->rows += 3;
                 error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
             } else {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 291, "Input length %d wrong (6, 7 or 8 only)",
-                                first_part_len);
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 291,
+                                "Input length %d wrong (6, 7 or 8 characters required)", first_part_len);
             }
             break;
         case BARCODE_ISBNX:

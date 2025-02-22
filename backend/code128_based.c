@@ -105,9 +105,11 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 
     if ((length != 27 && length != 28) || (length == 28 && relabel)) {
         if (relabel) {
-            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 830, "DPD relabel input length %d wrong (27 only)", length);
+            return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 830,
+                            "DPD relabel input length %d wrong (27 characters required)", length);
         }
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 349, "DPD input length %d wrong (27 or 28 only)", length);
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 349, "DPD input length %d wrong (27 or 28 characters required)",
+                        length);
     }
 
     if (length == 27 && !relabel) {
@@ -221,7 +223,8 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length != 12 && length != 13) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 only)", length);
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 characters required)",
+                        length);
     }
     if (length == 13) { /* Includes check digit - remove for now */
         have_check_digit = source[10];
