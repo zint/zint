@@ -559,6 +559,22 @@ static void test_input(const testCtx *const p_ctx) {
         /*122*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\\^B\202\202", -1, 0, 156, 0, "(14) 103 101 101 98 66 98 66 100 98 66 98 66 72 106", "StartA FNC4 FNC4 ShB 226(E2) ShB 226(E2) CodeB ShA 130(82) ShA 130(82); BWIPP different encodation" },
         /*123*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\342\342\342\342\\^Baaaaa", -1, 0, 255, 0, "(23) 103 101 101 98 66 98 66 98 66 98 66 98 66 100 100 100 65 65 65 65 65 46 106", "BWIPP different encodation" },
         /*124*/ { DATA_MODE | EXTRA_ESCAPE_MODE, "\\^A\342\012\342\342\342\\^B\202\342\012\012", -1, 0, 277, 0, "(25) 103 101 98 66 74 101 101 98 66 98 66 98 66 100 98 66 66 100 100 98 74 98 74 41 106", "BWIPP different encodation" },
+        /*125*/ { UNICODE_MODE, "12é", -1, 0, 79, 0, "(7) 105 12 100 100 73 85 106", "**2.14.0 regression*** StartC 12 CodeB FNC4 é; BWIPP different encodation (StartB)" },
+        /*126*/ { UNICODE_MODE, "123é", -1, 0, 90, 0, "(8) 105 12 100 19 100 73 6 106", "StartC 12 CodeB 3 FNC4 é; BWIPP different encodation (StartB)" },
+        /*127*/ { UNICODE_MODE, "1234é", -1, 0, 90, 1, "(8) 105 12 34 100 100 73 14 106", "StartC 12 34 CodeB FNC4 é" },
+        /*128*/ { UNICODE_MODE, "123456é", -1, 0, 101, 1, "(9) 105 12 34 56 100 100 73 43 106", "StartC 12 34 56 CodeB FNC4 é" },
+        /*129*/ { UNICODE_MODE, "1234567é", -1, 0, 112, 1, "(10) 105 12 34 56 100 23 100 73 22 106", "StartC 12 34 56 CodeB 7 FNC4 é" },
+        /*130*/ { UNICODE_MODE, "1é", -1, 0, 68, 1, "(6) 104 17 100 73 25 106", "StartB 1 FNC4 é" },
+        /*131*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C12é", -1, 0, 79, 0, "(7) 105 12 100 100 73 85 106", "StartC 12 CodeB FNC4 é; BWIPP different encodation (StartB)" },
+        /*132*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^C1é", -1, 0, 68, 1, "(6) 104 17 100 73 25 106", "StartB 1 FNC4 é" },
+        /*133*/ { UNICODE_MODE | EXTRA_ESCAPE_MODE, "\\^Cé", -1, 0, 57, 1, "(5) 104 100 73 41 106", "StartB FNC4 é" },
+        /*134*/ { UNICODE_MODE, "12é12", -1, 0, 101, 0, "(9) 105 12 100 100 73 99 12 34 106", "StartC 12 CodeB FNC4 é CodeC 12; BWIPP different encodation (StartB)" },
+        /*135*/ { UNICODE_MODE, "1234é12", -1, 0, 112, 0, "(10) 105 12 34 100 100 73 99 12 74 106", "StartC 12 34 CodeB FNC4 é CodeC 12; BWIPP different encodation (CodeB)" },
+        /*136*/ { UNICODE_MODE, "1234é1234", -1, 0, 123, 1, "(11) 105 12 34 100 100 73 99 12 34 37 106", "StartC 12 34 CodeB FNC4 é CodeC 12 34" },
+        /*137*/ { DATA_MODE, "12\200", -1, 0, 79, 0, "(7) 105 12 101 101 64 54 106", "StartC 12 CodeA FNC4 PAD; BWIPP different encodation (StartA)" },
+        /*138*/ { DATA_MODE, "1234\200", -1, 0, 90, 1, "(8) 105 12 34 101 101 64 79 106", "StartC 12 34 CodeA FNC4 PAD" },
+        /*139*/ { UNICODE_MODE, "12é12é", -1, 0, 123, 0, "(11) 105 12 100 100 73 17 18 100 73 17 106", "StartC 12 CodeB FNC4 é 1 2 FNC4 é; BWIPP different encodation (StartB)" },
+        /*140*/ { UNICODE_MODE, "1234é123456é", -1, 0, 167, 1, "(15) 105 12 34 100 100 73 99 12 34 56 100 100 73 15 106", "StartC 12 34 CodeB FNC4 é CodeC 12 34 56 CodeB FNC4 é" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

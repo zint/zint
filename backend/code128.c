@@ -122,9 +122,9 @@ static const char c128_start_latch_seq[3][C128_STATES][4] = {
 };
 static const char c128_start_latch_len[3][C128_STATES] = { /* Lengths of above */
     /*        A0          B0            A1                 B1                C0      C1 (not used) */
-    {   0,    1,         1,             3,                 3,                 1         }, /* Normal */
-    {   0,    2,         2,             4,                 4,                 2         }, /* GS1_MODE */
-    {   0,    2,         2,             4,                 4,                 3         }, /* READER_INIT */
+    {   0,    1,         1,             3,                 3,                 1,     64 }, /* Normal */
+    {   0,    2,         2,             4,                 4,                 2,     64 }, /* GS1_MODE */
+    {   0,    2,         2,             4,                 4,                 3,     64 }, /* READER_INIT */
 };
 
 /* Output cost (length) for Code Sets A/B */
@@ -255,6 +255,7 @@ static int c128_set_values(const unsigned char source[], const int length, const
         if (cset != prior_cset) {
             int j;
             if (prior_cset == 0) {
+                assert(cset != C128_C1);
                 for (j = 0; j < c128_start_latch_len[start_idx][cset]; j++) {
                     values[glyph_count++] = c128_start_latch_seq[start_idx][cset][j];
                 }

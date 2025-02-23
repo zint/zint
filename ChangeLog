@@ -1,5 +1,10 @@
-Version 2.14.0.9 (dev) not released yet (2025-02-20)
+Version 2.14.0.9 (dev) not released yet (2025-02-23)
 ====================================================
+
+***2.14.0 regression fix***
+---------------------------
+- CODE128: start code no longer omitted for data starting with numerics followed
+  by extended ASCII (Latin-1)
 
 **Incompatible changes**
 ------------------------
@@ -16,6 +21,7 @@ Changes
 
 Bugs
 ----
+- CODE128: fix 2.14.0 regression (see above), never start in mode C1
 - CODE32: ignore `option_2` (check digit options)
 - PZN: ignore `option_2` (check digit options) except for indicates PZN7 only
 - DPD: exclude DEL from ident tag also
