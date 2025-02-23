@@ -1531,7 +1531,7 @@ int ZBarcode_Encode_File(struct zint_symbol *symbol, const char *filename) {
     }
 
     /* Allocate memory */
-    buffer = (unsigned char *) malloc(fileLen);
+    buffer = (unsigned char *) malloc((size_t) fileLen);
     if (!buffer) {
         if (file_opened) {
             (void) fclose(file);

@@ -1141,7 +1141,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     total_width = columns + 6;
 
     /* Build symbol */
-    pattern = (char *) z_alloca(total_height * total_width);
+    pattern = (char *) z_alloca((size_t) total_height * (size_t) total_width);
 
     for (i = 0; i < (total_height * total_width); i++) {
         pattern[i] = 'W';

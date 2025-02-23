@@ -138,7 +138,8 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
         int dx_extract;
         /* DX format is either 4 digits (DX Extract, eg: 1271) or 6 digits (DX Full, eg: 012710) */
         if (debug_print) printf("No \"-\" separator, computing from DX Extract (4 digits) or DX Full (6 digits)\n");
-        if (dx_length == 5 || dx_length > 6) {
+        assert(dx_length <= 6); /* I.e. DX_MAX_DX_INFO_LENGTH, guaranteed above */
+        if (dx_length == 5) {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 980,
                     "DX number \"%s\" is incorrect; expected 4 digits (DX extract) or 6 digits (DX full)", dx_info);
         }
@@ -154,7 +155,7 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
         }
         /* Compute the DX parts 1 and 2 from the DX extract */
         dx_extract = to_int((const unsigned char *) dx_info, dx_length);
-        assert(dx_extract != -1);
+        assert(dx_extract != -1); /* All digits (no hyphen) & length 6 max - can't fail */
         if (dx_extract < 16 || dx_extract > 2047) {
             return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 981, "DX extract \"%d\" out of range (16 to 2047)",
                             dx_extract);

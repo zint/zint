@@ -69,7 +69,7 @@ typedef struct sCharacterSetTable {
 } CharacterSetTable;
 
 /* Find the possible Code-128 Character sets for a character
- * The result is an or of CodeA, CodeB, CodeC, CodeFNC1, CodeFNC4 depending on the
+ * The result is an OR of CodeA, CodeB, CodeC, CodeFNC1, CodeFNC4 depending on the
  * possible Code 128 character sets.
  */
 static int GetPossibleCharacterSet(unsigned char C) {
@@ -87,13 +87,11 @@ static int GetPossibleCharacterSet(unsigned char C) {
 }
 
 /* Create a Table with the following information for each Data character:
- *  int CharacterSet    is an or of CodeA, CodeB, CodeC, CodeFNC1, CodeFNC4,
- *          depending on which character set is applicable.
- *          (Result of GetPossibleCharacterSet)
- *  int AFollowing,BFollowing   The number of source characters you still may encode
- *          in this character set.
- *  int CFollowing  The number of characters encodable in CodeC if we
- *          start here.
+ *  int CharacterSet            is an OR of CodeA, CodeB, CodeC, CodeFNC1, CodeFNC4,
+ *                              depending on which character set is applicable.
+ *                              (Result of GetPossibleCharacterSet)
+ *  int AFollowing, BFollowing  The number of source characters you still may encode in this character set.
+ *  int CFollowing              The number of characters encodable in CodeC if we start here.
  */
 static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, const int dataLength) {
     int charCur;
@@ -260,6 +258,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                                     if (isFNC4) { /* So skip FNC4 and shift value instead */
                                         --emptyColumns;
                                         ++charCur;
+                                        assert(charCur < dataLength); /* FNC4s always followed by char */
                                     }
                                     pSet[charCur] |= CShift;
                                 } else {
@@ -292,6 +291,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
                                     if (isFNC4) { /* So skip FNC4 and shift value instead */
                                         --emptyColumns;
                                         ++charCur;
+                                        assert(charCur < dataLength); /* FNC4s always followed by char */
                                     }
                                     pSet[charCur] |= CShift;
                                 } else {
@@ -684,7 +684,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     /* >>> Build C128 code numbers */
     /* The C128 column count contains Start (2CW), Row ID, Checksum, Stop */
-    pOutput = (unsigned char *) z_alloca(columns * rows);
+    pOutput = (unsigned char *) z_alloca((size_t) columns * (size_t) rows);
     pOutPos = pOutput;
     charCur = 0;
     /* >> Loop over rows */
@@ -780,7 +780,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
                     --emptyColumns;
                 }
                 /* >> End Criteria */
-                if ((pSet[charCur] & CFill) || (pSet[charCur] & CEnd)) {
+                if (charCur < dataLength && ((pSet[charCur] & CFill) || (pSet[charCur] & CEnd))) {
                     /* Fill line but leave space for checks in last line */
                     if (rowCur == rows - 1) {
                         emptyColumns -= 2;

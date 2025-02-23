@@ -875,8 +875,6 @@ static void gm_add_ecc(const char binary[], const int data_posn, const int layer
         }
         data_size = block_size - ecc_size;
 
-        /* printf("block %d/%d: data %d / ecc %d\n", i + 1, (b1 + b2), data_size, ecc_size);*/
-
         for (j = 0; j < data_size; j++) {
             data_block[j] = data[wp];
             wp++;
