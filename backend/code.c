@@ -211,18 +211,21 @@ INTERNAL int code39(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.f, 0.0f, 1 /*no_errtxt*/);
     }
 
+    /* Display a space check digit as _, otherwise it looks like an error */
+    if (symbol->option_2 == 1 && !raw_text && check_digit == ' ') {
+        check_digit = '_';
+    }
     if (symbol->symbology == BARCODE_CODE39 && !raw_text) {
         hrt_cpy_chr(symbol, '*');
         hrt_cat_nochk(symbol, source, length);
         if (symbol->option_2 == 1) { /* Visible check digit */
-            /* Display a space check digit as _, otherwise it looks like an error */
-            hrt_cat_chr_nochk(symbol, check_digit == ' ' ? '_' : check_digit);
+            hrt_cat_chr_nochk(symbol, check_digit);
         }
         hrt_cat_chr_nochk(symbol, '*');
     } else {
         hrt_cpy_nochk(symbol, source, length);
         if (symbol->option_2 == 1 || (raw_text && check_digit)) {
-            hrt_cat_chr_nochk(symbol, !raw_text && check_digit == ' ' ? '_' : check_digit);
+            hrt_cat_chr_nochk(symbol, check_digit);
         }
     }
     return error_number;

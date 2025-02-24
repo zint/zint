@@ -140,7 +140,7 @@ INTERNAL int telepen(struct zint_symbol *symbol, unsigned char source[], int len
 
     hrt_cpy_iso8859_1(symbol, source, length);
     if (raw_text) {
-        hrt_cat_chr_nochk(symbol, check_digit);
+        hrt_cat_chr_nochk(symbol, (char) check_digit);
     }
 
     return error_number;
@@ -219,7 +219,7 @@ INTERNAL int telepen_num(struct zint_symbol *symbol, unsigned char source[], int
 
     hrt_cpy_nochk(symbol, local_source, length);
     if (raw_text) {
-        hrt_cat_chr_nochk(symbol, check_digit);
+        hrt_cat_chr_nochk(symbol, (char) check_digit);
     }
 
     return error_number;

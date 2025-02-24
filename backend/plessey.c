@@ -118,10 +118,10 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     hrt_cpy_nochk(symbol, source, length);
     if (symbol->option_2 == 1 || raw_text) {
-        const unsigned c1 = check_digits & 0xF;
-        const unsigned c2 = check_digits >> 4;
-        hrt_cat_chr_nochk(symbol, xtoc(c1));
-        hrt_cat_chr_nochk(symbol, xtoc(c2));
+        const unsigned int c1 = check_digits & 0xF;
+        const unsigned int c2 = check_digits >> 4;
+        hrt_cat_chr_nochk(symbol, (char) xtoc(c1));
+        hrt_cat_chr_nochk(symbol, (char) xtoc(c2));
     }
 
     return error_number;

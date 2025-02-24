@@ -184,7 +184,7 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
 
     if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
-        hrt_cat_chr_nochk(symbol, check_digit + '0');
+        hrt_cat_chr_nochk(symbol, (char) itoc(check_digit));
     }
 
     return error_number;
@@ -258,7 +258,7 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
 
     if (raw_text) {
         hrt_cpy_nochk(symbol, source, length);
-        hrt_cat_chr_nochk(symbol, check_digit + '0');
+        hrt_cat_chr_nochk(symbol, (char) itoc(check_digit));
     }
 
     return error_number;
