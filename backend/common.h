@@ -42,6 +42,10 @@ extern "C" {
 #include <stdlib.h>
 #include <string.h>
 
+#define BARCODE_RAW_TEXT         0 /* BARCODE_RAW_TEXT temporarily disabled */
+#define ZINT_WARN_HRT_RAW_TEXT  -1 /* BARCODE_RAW_TEXT temporarily disabled */
+#define ZINT_ERROR_HRT_RAW_TEXT 16 /* BARCODE_RAW_TEXT temporarily disabled */
+
 /* Determine if C89 (excluding MSVC, which doesn't define __STDC_VERSION__) */
 #ifndef _MSC_VER
 #  if !defined(__STDC_VERSION__) || __STDC_VERSION__ < 199000L

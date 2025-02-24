@@ -2379,11 +2379,12 @@ X-dimension at 600 dpi specify:</p>
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb41-1"><a href="#cb41-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> MAXICODE <span class="at">-d</span> <span class="st">&quot;MaxiCode (19 chars)&quot;</span> <span class="at">--scalexdimdp</span><span class="op">=</span>0,600dpi</span></code></pre></div>
 <h2 id="human-readable-text-hrt-options">4.10 Human Readable Text (HRT)
 Options</h2>
-<p>For linear barcodes the text present in the output image can be
-removed by using the <code>--notext</code> option. Note also that for
-raster output text will not be printed for scales less than 1 (see <a
-href="#adjusting-image-size-x-dimension">4.9 Adjusting Image Size
-(X-dimension)</a>).</p>
+<p>For linear barcodes the text present<a href="#fn5"
+class="footnote-ref" id="fnref5" role="doc-noteref"><sup>5</sup></a> in
+the output image can be removed by using the <code>--notext</code>
+option. Note also that for raster output text will not be printed for
+scales less than 1 (see <a href="#adjusting-image-size-x-dimension">4.9
+Adjusting Image Size (X-dimension)</a>).</p>
 <p>Text can be set to bold using the <code>--bold</code> option, or a
 smaller font can be substituted using the <code>--small</code> option.
 The <code>--bold</code> and <code>--small</code> options can be used
@@ -2497,8 +2498,8 @@ data-tag=": Default Character Sets">
 <tr>
 <td style="text-align: left;">Micro QR Code</td>
 <td style="text-align: left;">Latin-1</td>
-<td>Shift JIS (includes ASCII<a href="#fn5" class="footnote-ref"
-id="fnref5" role="doc-noteref"><sup>5</sup></a>)</td>
+<td>Shift JIS (includes ASCII<a href="#fn6" class="footnote-ref"
+id="fnref6" role="doc-noteref"><sup>6</sup></a>)</td>
 </tr>
 <tr>
 <td style="text-align: left;">PDF417</td>
@@ -2746,8 +2747,8 @@ translates the data into the target encoding.</p>
 </tr>
 <tr>
 <td>170</td>
-<td>ISO/IEC 646 Invariant<a href="#fn6" class="footnote-ref" id="fnref6"
-role="doc-noteref"><sup>6</sup></a></td>
+<td>ISO/IEC 646 Invariant<a href="#fn7" class="footnote-ref" id="fnref7"
+role="doc-noteref"><sup>7</sup></a></td>
 </tr>
 <tr>
 <td>899</td>
@@ -3332,8 +3333,8 @@ member <code>memfile</code> instead of to the output file
 <span id="cb64-16"><a href="#cb64-16" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
 <p>will print the SVG output to <code>stdout</code> (the file
 <code>"mem.svg"</code> is not created). This is particularly useful for
-the textual formats EPS and SVG,<a href="#fn7" class="footnote-ref"
-id="fnref7" role="doc-noteref"><sup>7</sup></a> allowing the output to
+the textual formats EPS and SVG,<a href="#fn8" class="footnote-ref"
+id="fnref8" role="doc-noteref"><sup>8</sup></a> allowing the output to
 be manipulated and processed by the client.</p>
 <h2 id="setting-options">5.7 Setting Options</h2>
 <p>So far our application is not very useful unless we plan to only make
@@ -3373,8 +3374,8 @@ href="#specifying-a-symbology">5.9 Specifying a Symbology</a>.</td>
 <td style="text-align: left;"><code>height</code></td>
 <td style="text-align: left;">float</td>
 <td style="text-align: left;">Symbol height in X-dimensions, excluding
-fixed width-to-height symbols.<a href="#fn8" class="footnote-ref"
-id="fnref8" role="doc-noteref"><sup>8</sup></a></td>
+fixed width-to-height symbols.<a href="#fn9" class="footnote-ref"
+id="fnref9" role="doc-noteref"><sup>9</sup></a></td>
 <td style="text-align: left;">Symbol dependent</td>
 </tr>
 <tr>
@@ -3449,8 +3450,8 @@ resulting barcode symbol to. Must end in <code>.png</code>,
 <code>.gif</code>, <code>.bmp</code>, <code>.emf</code>,
 <code>.eps</code>, <code>.pcx</code>, <code>.svg</code>,
 <code>.tif</code> or <code>.txt</code> followed by a terminating
-<code>NUL</code>.<a href="#fn9" class="footnote-ref" id="fnref9"
-role="doc-noteref"><sup>9</sup></a></td>
+<code>NUL</code>.<a href="#fn10" class="footnote-ref" id="fnref10"
+role="doc-noteref"><sup>10</sup></a></td>
 <td style="text-align: left;"><code>"out.png"</code></td>
 </tr>
 <tr>
@@ -3692,12 +3693,6 @@ data-tag=": API Warning and Error Return Values">
 </thead>
 <tbody>
 <tr>
-<td style="text-align: left;"><code>ZINT_WARN_HRT_RAW_TEXT</code></td>
-<td style="text-align: left;">The Human Readable Text returned in
-<code>text</code> was outputted as raw text (<code>output_options</code>
-set to <code>BARCODE_RAW_TEXT</code>).</td>
-</tr>
-<tr>
 <td style="text-align: left;"><code>ZINT_WARN_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">The Human Readable Text returned in
 <code>text</code> was truncated (maximum 255 bytes).</td>
@@ -3790,12 +3785,6 @@ occurs.</td>
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_TRUNCATED</code>
 occurs.</td>
 </tr>
-<tr>
-<td style="text-align: left;"><code>ZINT_ERROR_HRT_RAW_TEXT</code></td>
-<td style="text-align: left;">Returned if <code>warn_level</code> set to
-<code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_RAW_TEXT</code>
-occurs.</td>
-</tr>
 </tbody>
 </table>
 </div>
@@ -3864,15 +3853,15 @@ value:</p>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND_TOP</code></td>
 <td style="text-align: left;">Boundary bar above the symbol only.<a
-href="#fn10" class="footnote-ref" id="fnref10"
-role="doc-noteref"><sup>10</sup></a></td>
+href="#fn11" class="footnote-ref" id="fnref11"
+role="doc-noteref"><sup>11</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BIND</code></td>
 <td style="text-align: left;">Boundary bars above and below the symbol
-and between rows if stacking multiple symbols.<a href="#fn11"
-class="footnote-ref" id="fnref11"
-role="doc-noteref"><sup>11</sup></a></td>
+and between rows if stacking multiple symbols.<a href="#fn12"
+class="footnote-ref" id="fnref12"
+role="doc-noteref"><sup>12</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_BOX</code></td>
@@ -3922,8 +3911,8 @@ Memory (raster)</a>.</td>
 <tr>
 <td style="text-align: left;"><code>BARCODE_QUIET_ZONES</code></td>
 <td style="text-align: left;">Add compliant quiet zones (additional to
-any specified whitespace).<a href="#fn12" class="footnote-ref"
-id="fnref12" role="doc-noteref"><sup>12</sup></a></td>
+any specified whitespace).<a href="#fn13" class="footnote-ref"
+id="fnref13" role="doc-noteref"><sup>13</sup></a></td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_NO_QUIET_ZONES</code></td>
@@ -3951,18 +3940,6 @@ available for SVG output only.</td>
 <td style="text-align: left;">Write output to in-memory buffer
 <code>symbol-&gt;memfile</code> instead of to <code>outfile</code>
 file.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>BARCODE_RAW_TEXT</code></td>
-<td style="text-align: left;">Set HRT with no decoration,<a href="#fn13"
-class="footnote-ref" id="fnref13" role="doc-noteref"><sup>13</sup></a>
-complete with any control characters<a href="#fn14" class="footnote-ref"
-id="fnref14" role="doc-noteref"><sup>14</sup></a> and check
-characters,<a href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a> and for all linear symbologies,
-including those that normally don’t set it.<a href="#fn16"
-class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a></td>
 </tr>
 </tbody>
 </table>
@@ -4225,8 +4202,8 @@ Text?</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
-href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a></td>
+href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
 <tr>
@@ -4901,8 +4878,8 @@ aria-hidden="true"><code>zint -b CODE128AB -d "130170X178"</code></figcaption>
 </figure>
 <p>It is sometimes advantageous to stop Code 128 from using Code Set C
 which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
-href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a> variant (symbology 60) suppresses
+href="#fn15" class="footnote-ref" id="fnref15"
+role="doc-noteref"><sup>15</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
 <p>Note that the special extra escapes mentioned above are not available
 for this variant (nor for any other).</p>
@@ -5642,8 +5619,8 @@ the 6-digit version the first and last digit are ignored, leaving a
 2047. The second format <code>"NNN-NN"</code> represents the DX Extract
 as two numbers separated by a dash (<code>-</code>), the first number
 being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).<a href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a></p>
+0 to 15).<a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
 have a half frame indicator <code>"A"</code> appended. Special character
 sequences (with or without a half frame indicator appended) may also be
@@ -9534,68 +9511,58 @@ and SVG when <code>--nobackground</code> is given. For raster outputs
 GIF, PCX, PNG and TIF, the background’s alpha channel is set to zero
 (fully transparent).<a href="#fnref4" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn5"><p>Shift JIS (JIS X 0201 Roman) re-maps two ASCII
+<li id="fn5"><p>For linear barcodes, Human Readable Text (HRT) is not
+shown for the postal codes Australia Post (all variants), USPS
+Intelligent Mail, POSTNET and PLANET, Brazilian CEPNet, Royal Mail
+4-State Customer Code and 4-State Mailmark, Dutch Post KIX Code,
+Japanese Postal Code, DAFT Code and FIM, the pharma codes Pharmacode
+One-Track and Pharmacode Two-Track, and the specialist codes DX Film
+Edge Barcode and Flattermarken. Note that HRT is never shown for stacked
+and matrix barcodes.<a href="#fnref5" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn6"><p>Shift JIS (JIS X 0201 Roman) re-maps two ASCII
 characters: backslash (<code>\</code>) to the yen sign (¥), and tilde
-(<code>~</code>) to overline (U+203E).<a href="#fnref5"
+(<code>~</code>) to overline (U+203E).<a href="#fnref6"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn6"><p>ISO/IEC 646 Invariant is a subset of ASCII with 12
+<li id="fn7"><p>ISO/IEC 646 Invariant is a subset of ASCII with 12
 characters undefined: <code>#</code>, <code>$</code>, <code>@</code>,
 <code>[</code>, <code>\</code>, <code>]</code>, <code>^</code>,
 <code>`</code>, <code>{</code>, <code>|</code>, <code>}</code>,
-<code>~</code>.<a href="#fnref6" class="footnote-back"
+<code>~</code>.<a href="#fnref7" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn7"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
+<li id="fn8"><p>BARCODE_MEMORY_FILE textual formats EPS and SVG will
 have Unix newlines (LF) on both Windows and Unix, i.e. not CR+LF on
-Windows.<a href="#fnref7" class="footnote-back"
+Windows.<a href="#fnref8" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn8"><p>The <code>height</code> value is ignored for Aztec
+<li id="fn9"><p>The <code>height</code> value is ignored for Aztec
 (including HIBC and Aztec Rune), Code One, Data Matrix (including HIBC),
 DotCode, Grid Matrix, Han Xin, MaxiCode, QR Code (including HIBC, Micro
 QR, rMQR and UPNQR), and Ultracode - all of which have a fixed
 width-to-height ratio (or, in the case of Code One, a fixed height).<a
-href="#fnref8" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn9"><p>For Windows, <code>outfile</code> is assumed to be UTF-8
-encoded.<a href="#fnref9" class="footnote-back"
+href="#fnref9" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn10"><p>For Windows, <code>outfile</code> is assumed to be
+UTF-8 encoded.<a href="#fnref10" class="footnote-back"
 role="doc-backlink">↩︎</a></p></li>
-<li id="fn10"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
+<li id="fn11"><p>The <code>BARCODE_BIND_TOP</code> flag is set by
 default for DPD - see <a href="#dpd-code">6.1.10.7 DPD Code</a>.<a
-href="#fnref10" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn11"><p>The <code>BARCODE_BIND</code> flag is always set for
+href="#fnref11" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn12"><p>The <code>BARCODE_BIND</code> flag is always set for
 Codablock-F, Code 16K and Code 49. Special considerations apply to
-ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref11"
+ITF-14 - see <a href="#itf-14">6.1.2.6 ITF-14</a>.<a href="#fnref12"
 class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn12"><p>Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN,
+<li id="fn13"><p>Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN,
 ITF-14, UPC-A and UPC-E have compliant quiet zones added by default.<a
-href="#fnref12" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn13"><p>In particular no parentheses will appear in the HRT for
-GS1 symbologies, and <code>GS</code> separators will be added as
-required. However for EAN/UPC symbologies, any add-on data will be
-separated by a <code>+</code> character as usual.<a href="#fnref13"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>Normally control characters (including
-<code>DEL</code>) and non-ISO/IEC 8859-1 are replaced by spaces in the
-HRT.<a href="#fnref14" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>Except for Japanese Postal Code, whose check character
-is not truly representable in HRT.<a href="#fnref15"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>HRT is normally not set for the postal codes Australia
-Post (all variants), USPS Intelligent Mail, POSTNET and PLANET,
-Brazilian CEPNet, Royal Mail 4-State Customer Code and 4-State Mailmark,
-Dutch Post KIX Code, Japanese Postal Code, DAFT Code and FIM, the pharma
-codes Pharmacode One-Track and Pharmacode Two-Track, and DX Film Edge
-Barcode and Flattermarken.<a href="#fnref16" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p><code>ZINT_CAP_EANUPC</code> was previously named
+href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn14"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a
-href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p><code>BARCODE_CODE128AB</code> previously used the name
+href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p><code>BARCODE_CODE128AB</code> previously used the name
 <code>BARCODE_CODE128B</code>, which is still recognised.<a
-href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p>The DX number may be looked up in The (Modified) Big
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
-href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

@@ -1006,6 +1006,8 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
+        if (data[i].output_options == BARCODE_RAW_TEXT) continue; /* BARCODE_RAW_TEXT temporarily disabled */
+
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
@@ -3174,6 +3176,8 @@ static void test_hrt_raw_text(const testCtx *const p_ctx) {
     for (i = 0; i < data_size; i++) {
 
         if (testContinue(p_ctx, i)) continue;
+
+        if (data[i].ret == ZINT_WARN_HRT_RAW_TEXT || !data[i].show_hrt) continue; /* BARCODE_RAW_TEXT temporarily disabled */
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
