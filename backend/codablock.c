@@ -812,6 +812,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
             SumASCII(&pOutPos, Sum1, characterSetCur);
             SumASCII(&pOutPos, Sum2, characterSetCur);
         }
+        assert(columns * rowCur + useColumns + 3 == (int) (pOutPos - pOutput)); /* Suppress clang-tidy warning */
         /* Add Code 128 checksum */
         {
             int Sum = pOutput[columns * rowCur] % 103;
