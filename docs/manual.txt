@@ -1,5 +1,5 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
-Version 2.14.0.9
+Version 2.15.0
 February 2025
 
 *******************************************************************************
@@ -4617,7 +4617,7 @@ those owners, companies or organisations.
 
 7.3 Version Information
 
-The current stable version of Zint is 2.14.0, released on 5th February 2025.
+The current stable version of Zint is 2.15.0, released on 25th February 2025.
 
 See "ChangeLog" in the project root directory for information on all releases.
 
@@ -4868,7 +4868,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.14.0.9 % % February 2025
+% ZINT(1) Version 2.15.0 % % February 2025
 
 NAME
 
