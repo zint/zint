@@ -779,9 +779,6 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d symbol->text (%s) != expected (%s)\n",
                     i, symbol->text, data[i].expected);
 
-        #if 1 /* BARCODE_RAW_TEXT temporarily disabled */
-        (void)expected;
-        #else
         memset(symbol, 0, sizeof(*symbol));
         symbol->output_options = BARCODE_RAW_TEXT;
 
@@ -800,7 +797,6 @@ static void test_hrt_cpy_iso8859_1(const testCtx *const p_ctx) {
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
         assert_zero(memcmp(symbol->text, expected, symbol->text_length), "i:%d symbol->text (%s) != expected (%s)\n", i, symbol->text, expected);
-        #endif
     }
 
     testFinish();

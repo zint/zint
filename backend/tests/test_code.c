@@ -196,8 +196,6 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         if (testContinue(p_ctx, i)) continue;
 
-        if (data[i].output_options == BARCODE_RAW_TEXT) continue; /* BARCODE_RAW_TEXT temporarily disabled */
-
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 

@@ -1,7 +1,11 @@
 Version 2.15.0.9 (dev) not released yet (2025-02-25)
 ====================================================
 
-No changes yet
+Changes
+-------
+
+- Add new `BARCODE_RAW_TEXT` option for `output_options` and new warning
+  `ZINT_WARN_HRT_RAW_TEXT` for when set when outputting HRT
 
 
 Version 2.15.0 (2025-02-25)

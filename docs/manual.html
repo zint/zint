@@ -3693,6 +3693,12 @@ data-tag=": API Warning and Error Return Values">
 </thead>
 <tbody>
 <tr>
+<td style="text-align: left;"><code>ZINT_WARN_HRT_RAW_TEXT</code></td>
+<td style="text-align: left;">The Human Readable Text returned in
+<code>text</code> was outputted as raw text (<code>output_options</code>
+set to <code>BARCODE_RAW_TEXT</code>).</td>
+</tr>
+<tr>
 <td style="text-align: left;"><code>ZINT_WARN_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">The Human Readable Text returned in
 <code>text</code> was truncated (maximum 255 bytes).</td>
@@ -3783,6 +3789,12 @@ occurs.</td>
 <td style="text-align: left;"><code>ZINT_ERROR_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_TRUNCATED</code>
+occurs.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>ZINT_ERROR_HRT_RAW_TEXT</code></td>
+<td style="text-align: left;">Returned if <code>warn_level</code> set to
+<code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_RAW_TEXT</code>
 occurs.</td>
 </tr>
 </tbody>
@@ -3940,6 +3952,16 @@ available for SVG output only.</td>
 <td style="text-align: left;">Write output to in-memory buffer
 <code>symbol-&gt;memfile</code> instead of to <code>outfile</code>
 file.</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>BARCODE_RAW_TEXT</code></td>
+<td style="text-align: left;">Set HRT with no decoration,<a href="#fn14"
+class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a>
+complete with any control characters<a href="#fn15" class="footnote-ref"
+id="fnref15" role="doc-noteref"><sup>15</sup></a> and check
+characters,<a href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a> and for all linear symbologies,
+including those that normally don’t set it.</td>
 </tr>
 </tbody>
 </table>
@@ -4202,8 +4224,8 @@ Text?</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
-href="#fn14" class="footnote-ref" id="fnref14"
-role="doc-noteref"><sup>14</sup></a></td>
+href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
 <tr>
@@ -4878,8 +4900,8 @@ aria-hidden="true"><code>zint -b CODE128AB -d "130170X178"</code></figcaption>
 </figure>
 <p>It is sometimes advantageous to stop Code 128 from using Code Set C
 which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
-href="#fn15" class="footnote-ref" id="fnref15"
-role="doc-noteref"><sup>15</sup></a> variant (symbology 60) suppresses
+href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
 <p>Note that the special extra escapes mentioned above are not available
 for this variant (nor for any other).</p>
@@ -5619,8 +5641,8 @@ the 6-digit version the first and last digit are ignored, leaving a
 2047. The second format <code>"NNN-NN"</code> represents the DX Extract
 as two numbers separated by a dash (<code>-</code>), the first number
 being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).<a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a></p>
+0 to 15).<a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
 have a half frame indicator <code>"A"</code> appended. Special character
 sequences (with or without a half frame indicator appended) may also be
@@ -9553,16 +9575,28 @@ class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn13"><p>Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN,
 ITF-14, UPC-A and UPC-E have compliant quiet zones added by default.<a
 href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p><code>ZINT_CAP_EANUPC</code> was previously named
+<li id="fn14"><p>In particular no parentheses will appear in the HRT for
+GS1 symbologies, and <code>GS</code> separators will be added as
+required. However for EAN/UPC symbologies, any add-on data will be
+separated by a <code>+</code> character as usual.<a href="#fnref14"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>Normally control characters (including
+<code>DEL</code>) and non-ISO/IEC 8859-1 are replaced by spaces in the
+HRT.<a href="#fnref15" class="footnote-back"
+role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>Except for Japanese Postal Code, whose check character
+is not truly representable in HRT.<a href="#fnref16"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a
-href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p><code>BARCODE_CODE128AB</code> previously used the name
+href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p><code>BARCODE_CODE128AB</code> previously used the name
 <code>BARCODE_CODE128B</code>, which is still recognised.<a
-href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>The DX number may be looked up in The (Modified) Big
+href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
-href="#fnref16" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>
