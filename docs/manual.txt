@@ -1,5 +1,5 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
-Version 2.15.0
+Version 2.15.0.9
 February 2025
 
 *******************************************************************************
@@ -4868,7 +4868,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.15.0 % % February 2025
+% ZINT(1) Version 2.15.0.9 % % February 2025
 
 NAME
 
