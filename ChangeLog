@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-02-25)
+Version 2.15.0.9 (dev) not released yet (2025-02-28)
 ====================================================
 
 Changes
@@ -6,6 +6,10 @@ Changes
 
 - Add new `BARCODE_RAW_TEXT` option for `output_options` and new warning
   `ZINT_WARN_HRT_RAW_TEXT` for when set when outputting HRT
+
+Bugs
+----
+- AZTEC: fix GS1 mode with Structured Append (wasn't outputting initial FNC1)
 
 
 Version 2.15.0 (2025-02-25)

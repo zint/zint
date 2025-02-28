@@ -329,6 +329,7 @@ static void test_encode(const testCtx *const p_ctx) {
         int output_options;
         int option_1;
         int option_2;
+        struct zint_structapp structapp;
         const char *data;
         int length;
         int ret;
@@ -340,7 +341,7 @@ static void test_encode(const testCtx *const p_ctx) {
         const char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, "123456789012", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
+        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
                     "000111000011100"
                     "110111001110010"
                     "111100001000100"
@@ -357,7 +358,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101011110101010"
                     "100010001000101"
                 },
-        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
+        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
                     "00001100110010010010111000010100001011000"
                     "01000110010110110001000000100101101000001"
                     "01011100101011001110101100000001100011001"
@@ -400,7 +401,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010010010011001011011010000110001000101"
                     "10001000001010100110100000001001001110000"
                 },
-        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "Code 2D!", -1, 0, 15, 15, 0, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
+        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 0, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -417,7 +418,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, "Code 2D!", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
+        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -434,7 +435,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
+        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
                     "00010101011010101010101010110101010101010110101010101"
                     "00101010100101010101010101001010101010101001010101010"
                     "11100101011010101010101010110101010101010110101010110"
@@ -489,7 +490,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010010101010101010010101010101010100101010110"
                     "10101010101101010101010101101010101010101011010101001"
                 },
-        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
+        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
                     "00111111111111111111111111111111111111111111111111111"
                     "00000000000000000000000000000000000000000000000000000"
                     "11101111111111111111111111111111111111111111111111101"
@@ -544,7 +545,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00000000000000000000000000000000000000000000000000001"
                     "11111111111111111111111111111111111111111111111111101"
                 },
-        /*  6*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  6*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "00100000101111000100100"
                     "00011101100110001010000"
                     "00000111000111101011011"
@@ -569,7 +570,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010001010101010101011"
                     "11101100000000000010110"
                 },
-        /*  7*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  7*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "0000000100001010101"
                     "0001101111011000000"
                     "0111100100010110100"
@@ -590,7 +591,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000110111011000101"
                     "1010100000101101001"
                 },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "000000101110011010101010010110011000001010111"
                     "000110001111011100111101101110110000000000011"
                     "001000101100101011000011111111101110111010101"
@@ -637,7 +638,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000011010110101110000101110100000111000011010"
                     "101001110101010110100011010010001111001101101"
                 },
-        /*  9*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "H123ABC01234567890", -1, 0, 19, 19, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
+        /*  9*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
                     "0010111011010110001"
                     "0011011111011111101"
                     "0101100111010110010"
@@ -658,7 +659,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000010101101010001"
                     "1001001001100001100"
                 },
-        /* 10*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Patient Id, same",
+        /* 10*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Patient Id, same",
                     "0001110111000101110"
                     "0010000101001101000"
                     "0101011111101000101"
@@ -679,7 +680,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010110100110111011"
                     "1101111110100000110"
                 },
-        /* 11*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
+        /* 11*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
                     "11010110110000110111011"
                     "10111111001000110100000"
                     "11000001011011010011010"
@@ -704,7 +705,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110110111110011000100"
                     "10110000010101011110010"
                 },
-        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, "/EO523201", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
+        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
                     "0011100011001101111"
                     "0010011001010110110"
                     "0110100100101000000"
@@ -725,7 +726,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0111011100001111101"
                     "1010000000101001001"
                 },
-        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "/KN12345", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
+        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
                     "0011111101100100110"
                     "0010011100111110101"
                     "0111110010101101110"
@@ -746,7 +747,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010000010110001111"
                     "1001101110111100011"
                 },
-        /* 14*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, "IDAutomation example, same",
+        /* 14*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, "IDAutomation example, same",
                     "001010100100100010000010110"
                     "000110110110001000101000100"
                     "010010001101110110001000110"
@@ -775,7 +776,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011010111000111110011011110"
                     "000010010001000011010000001"
                 },
-        /* 15*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, "6 bit words",
+        /* 15*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, "6 bit words",
                     "1101000001111000001"
                     "1101011000011100000"
                     "1000001010001001001"
@@ -796,7 +797,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011110000001001011"
                     "0011111100000000010"
                 },
-        /* 16*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, "8 bit words",
+        /* 16*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, "8 bit words",
                     "11111111111111111100000"
                     "11011101110111011110001"
                     "11110110111011010101100"
@@ -821,7 +822,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11011100001000100010010"
                     "11111110000000000000000"
                 },
-        /* 17*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, "10 bit words",
+        /* 17*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, "10 bit words",
                     "00011010011110010011110101110010000000111111010101001"
                     "00000010100101010010001000010100000010101101001111110"
                     "11101010001110100001111100110101111010110110110001010"
@@ -876,7 +877,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101111010111010000111101011101111011000000001011100"
                     "11111111111111110000111111111111111111100010000011111"
                 },
-        /* 18*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, "12 bit words",
+        /* 18*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, "12 bit words",
                     "11111010101001000010110010110110001010111011100001100010111010111011011110010101111001111110001101011111100000011"
                     "11111001010001010111110100101000101000010110010011001000011010011001111000010101011110010001110101100110011001100"
                     "11101100111000011000000011000001001001111001111110000001110100001110010010001100100011101110000011010101101011011"
@@ -991,7 +992,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000000001000001011101101101101101001100000101000000000010111000000100101000110010000110010000011000101011111000"
                     "11100000100000001110111110110000111110011100000010001110101010101111000011001011111001101101010010001011111011101"
                 },
-        /* 19*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, "A", -1, 0, 15, 15, 1, "",
+        /* 19*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "",
                     "000011000111101"
                     "001110010011000"
                     "011100100000100"
@@ -1008,7 +1009,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110110000101100"
                     "010001010010110"
                 },
-        /* 20*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, "121212121abcd", -1, 0, 19, 19, 1, "#210",
+        /* 20*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, "#210",
                     "1101101111001101010"
                     "1101111011110110000"
                     "0001111101100010000"
@@ -1029,7 +1030,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011111001001010011"
                     "1001101000100100001"
                 },
-        /* 21*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, "\101\300", -1, 0, 15, 15, 1, "AÀ",
+        /* 21*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, "AÀ",
                     "000000101011100"
                     "000100010100111"
                     "001100000110110"
@@ -1046,7 +1047,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001000111110"
                     "111001100011011"
                 },
-        /* 22*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, "AÀ", -1, 0, 15, 15, 1, "AÀ",
+        /* 22*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, "AÀ",
                     "001111011000101"
                     "000110100011000"
                     "001100001000111"
@@ -1063,7 +1064,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100010010010"
                     "011110110011000"
                 },
-        /* 23*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, "A", -1, 0, 15, 15, 1, "FLG(3)",
+        /* 23*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(3)",
                     "001101001111101"
                     "000000111011100"
                     "001100000100101"
@@ -1080,7 +1081,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100011101111100"
                     "000111110001110"
                 },
-        /* 24*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, "A", -1, 0, 15, 15, 1, "FLG(4)",
+        /* 24*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(4)",
                     "001010100011011"
                     "001000100000101"
                     "001100000100111"
@@ -1097,7 +1098,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101000000111010"
                     "000001110101111"
                 },
-        /* 25*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, "A", -1, 0, 15, 15, 1, "FLG(5)",
+        /* 25*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(5)",
                     "000100110110010"
                     "000001000010111"
                     "001100000110101"
@@ -1114,7 +1115,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010001110110"
                     "000000011000101"
                 },
-        /* 26*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, "A", -1, 0, 15, 15, 1, "FLG(6)",
+        /* 26*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(6)",
                     "000010010000010"
                     "001101000100110"
                     "001100000110111"
@@ -1131,7 +1132,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010100011011"
                     "000000000111010"
                 },
-        /* 27*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 0, "Zint website example gui3.png NOTE now ends with D/L . instead of P/S .; BWIPP same encodation but estimates number of Data/ECC codewords differently",
+        /* 27*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 0, "Zint website example gui3.png NOTE now ends with D/L . instead of P/S .; BWIPP same encodation but estimates number of Data/ECC codewords differently",
                     "0010110111101110101100000101001101110100010000100111011100001"
                     "0001100000000000001101110010000100010101110011000001000011110"
                     "0001111110101010100101000110101101000110011000101111011100110"
@@ -1194,7 +1195,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110000011010000000000100001100001000111011110011010000000001"
                     "0000010101001111100010001001111100101000010001110010010101101"
                 },
-        /* 28*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of D/L and B/S)",
+        /* 28*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of D/L and B/S)",
                     "001011011101101011011110111"
                     "101001010000010000111010101"
                     "011101001100101111010111111"
@@ -1223,7 +1224,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000000111111011010100010100"
                     "010000011101011110110000100"
                 },
-        /* 29*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, "BWIPP different encodation (better use of B/S)",
+        /* 29*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, "BWIPP different encodation (better use of B/S)",
                     "11110101100111101010011"
                     "11111111110111111001011"
                     "00000000001000011111000"
@@ -1248,7 +1249,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01100011101111001100010"
                     "11000011000010110000011"
                 },
-        /* 30*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of P/S CRs)",
+        /* 30*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of P/S CRs)",
                     "111111110000010110000011001"
                     "110110110010011110100000101"
                     "000011100001000111001100111"
@@ -1277,7 +1278,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000110100001100100110010100"
                     "101110010000110000111111101"
                 },
-        /* 31*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, "AA!! ", -1, 0, 23, 23, 1, "",
+        /* 31*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, "",
                     "00110111000010111110110"
                     "01011001101100101011001"
                     "00101000101000011110111"
@@ -1302,7 +1303,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00111110110110100011111"
                     "10010010100010101110001"
                 },
-        /* 32*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, "Max version 151x151",
+        /* 32*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, "Max version 151x151",
                     "0110011000001101111010100010010110101010100001110111111001101101010000111100111111111001000011100001010000101001010001001010101001000111101011111001101"
                     "1011011111111000001111111001010101111011100101110110001011011000101000010101101100000110011110100000010100110111100111111011011110001000110100111100100"
                     "1110001110001111110101011110010010011011001011001000001010000010000110101010101011111110110010000010000111000010000011011110001111111001000010000000111"
@@ -1455,7 +1456,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000000100011011110011111011110000011111110111001111111010110101100011000111010100100010001111000101110110110100000111000011101011011101111111000011111"
                     "1000110110001001001111110010011100000100011010101101101101101001001001011110101010011110010011011110100111100111110111111110000101100111110000101010011"
                 },
-        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, "aztec barcode", -1, 0, 131, 131, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
+        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
                     "10101111100010101000001110000100001111111110110110010011000100100000011000101001100000001111111010100010010101111010001011001110001"
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10001110111111000001001111011100100100010011110010101011110111111000000110101100000110101010110000010101101110010010010101001001001"
@@ -1588,7 +1589,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10111010011101110010010111100011101001001011100010101101110000011000110101000011100000011000101000101010001110100000000100101100001"
                 },
-        /* 34*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, "Full 2 layers example",
+        /* 34*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, "Full 2 layers example",
                     "00000100110001011110010"
                     "01111011110100100101111"
                     "00001011010000010011001"
@@ -1613,7 +1614,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001100111110110000000"
                     "00011010100010111001011"
                 },
-        /* 35*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, "Full 3 layers example",
+        /* 35*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, "Full 3 layers example",
                     "001011111011101010010010000"
                     "011111001111111001111010110"
                     "001111101101101100001011101"
@@ -1642,7 +1643,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110011110110011010110100110"
                     "101010010111000001000111010"
                 },
-        /* 36*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, "Full 4 layers example",
+        /* 36*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, "Full 4 layers example",
                     "0011101110100110101001010110000"
                     "0110000101110011101111001100111"
                     "0000011000110010000001101101001"
@@ -1675,7 +1676,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111011001010111010011101111110"
                     "1001011100001000011100011001100"
                 },
-        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, "5 layers example",
+        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, "5 layers example",
                     "0010010100110011001011100010000111101"
                     "0101111010111110110100101101010011001"
                     "1010101010101010101010101010101010101"
@@ -1714,7 +1715,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101001010110100110101111101011110000"
                     "0111100001000111001011001100101001111"
                 },
-        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, "8 layers example",
+        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, "8 layers example",
                     "0001000111011100100000001101000011110011100000101"
                     "0110100001000100011100000000110110101100010111110"
                     "0000011110010100101100001010000010000100110110111"
@@ -1765,7 +1766,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110101111010111101010001000110101110000111011"
                     "1110001110011001010011001001010000100100101000001"
                 },
-        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, "10 layers example",
+        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, "10 layers example",
                     "001011000011100111111010110111010001110110001110011100010"
                     "011110001010001111111111000000100000100100110001001011111"
                     "000101001001111111010111010010011011111011101011010110010"
@@ -1824,7 +1825,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111101011110010100100011010101100011100110010111011001001"
                     "001100101001110000101000010011000100001101011001011100010"
                 },
-        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, "12 layers example",
+        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, "12 layers example",
                     "0000000100001010000100101101101010101011010000001010001111010001101"
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010100101010100010110000101110111100001101110000000100111010001"
@@ -1893,7 +1894,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010011000010100000100100010000011010100101110000010001110001101"
                 },
-        /* 41*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, "13 layers example",
+        /* 41*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, "13 layers example",
                     "00001101010011011010101011001110001000011100011011001100101000001110111"
                     "01110010110000100111001011100101010101000111011001110000100101100001100"
                     "00000111000100010100111110101011100011011010001110001000101100010000011"
@@ -1966,7 +1967,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110010001101011101001110011001111101100101011010011110111110101111111"
                     "10000010100001001000010000110101001001110000100011100001100110010100001"
                 },
-        /* 42*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, "16 layers example",
+        /* 42*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, "16 layers example",
                     "00001011100001101001010010111011000000000010110111001100101011111010100110010011011"
                     "00001100111101010101111001100010000000000101110110000101011100011010011001001000011"
                     "00000001101101111000000010100101011010101011110011000000000101010100111000110101100"
@@ -2051,7 +2052,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01101011110001110011001111101100101011010101110111110101111101011001011101100001111"
                     "00001001000010000110101000101110000100011010001100110010100011011111011100001101110"
                 },
-        /* 43*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, "19 layers example",
+        /* 43*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, "19 layers example",
                     "00010001011000001001011100000100010100011110001000101101010001101011000110101100111011100100000"
                     "00111000100000010000111101010111001010100110100100101001100010111101100100110001001101001001000"
                     "00110000001000100010001011100100111100110000000000111101000101101101011010001100100111011100010"
@@ -2148,7 +2149,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011001111011010101011010011101111110101111010101011110010010111111000001000011100100110011001"
                     "00110101001011100000100011100010100110010100111000001111111101000000001100011000110110100110000"
                 },
-        /* 44*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, "20 layers example",
+        /* 44*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, "20 layers example",
                     "00100011001001111011101000010101101000001111011011100001010111001110100001111011101010011110100110110"
                     "01001011101010010001000100010011010011001011100001000010011001000001100110100110000010001111010101011"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
@@ -2251,7 +2252,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011101100101011001001110111110100111101011010110010100101110001100000100001110000011101010010100001"
                     "01100101110000100011110001100110011010011000001110100010010101000111010001001111111100001101100010111"
                 },
-        /* 45*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, "26 layers example",
+        /* 45*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, "26 layers example",
                     "00100110111101111000100011101010001011000100011001100001000110110101101111011010100110010101111010000000001001111011011101111"
                     "01000110110001010011111011000100001101000010100100110101101011001111101101110000100110101000000100001011010101000110110110011"
                     "00100000111011111011100111001111100011001111101001011011011111100001111010110111111101111111011010001000100011110110101111001"
@@ -2378,7 +2379,70 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11111010111101011001001001001000000000110100010101011110101011001010101011000101010010100111110010111001110100001111110111011"
                     "10011001010011111111011111100010010011110010001010100100000110100111000110011010110111001010011011101001111100110010110010011"
                 },
-        /* 46*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "0", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
+        /* 46*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, "GS1 with Structured Append",
+                    "001101011010101"
+                    "111100100000010"
+                    "101100001000101"
+                    "111111111111110"
+                    "111100000001101"
+                    "010101111101101"
+                    "000101000101100"
+                    "011101010101010"
+                    "001101000101011"
+                    "000101111101001"
+                    "110100000001001"
+                    "000111111111111"
+                    "000001100010011"
+                    "001001100010110"
+                    "000001101000000"
+                },
+        /* 47*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, "GS1 with Structured Append, ECI",
+                    "1101011001100100101"
+                    "1000001000001010100"
+                    "1100010010010100100"
+                    "1101101011111010101"
+                    "0111110101000011000"
+                    "0011111111111110000"
+                    "0001010000000110010"
+                    "1000010111110101101"
+                    "0000010100010110111"
+                    "1011010101010111111"
+                    "1100110100010111001"
+                    "0100010111110111101"
+                    "1110110000000110100"
+                    "1101011111111110100"
+                    "1010000010110000010"
+                    "0011001010000011100"
+                    "0111101011010100100"
+                    "0011010000001001010"
+                    "1011000010000000000"
+                },
+        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, "12345678901234567890123456789012" }, "[01]12345678901231[10]01", -1, 0, 23, 23, 1, "GS1 with Structured Append, full symbol",
+                    "11100110011000010001000"
+                    "10100110000110101111010"
+                    "11000101100000111000011"
+                    "11100111110100011101011"
+                    "01101100001000000011000"
+                    "11001111111111111110111"
+                    "11001100000000000111001"
+                    "00001101111111110100101"
+                    "00011101000000010111000"
+                    "10000101011111010110101"
+                    "01001101010001010100101"
+                    "01010101010101010101010"
+                    "10010101010001010100010"
+                    "10111101011111010110100"
+                    "00110101000000010110110"
+                    "10001101111111110101001"
+                    "10010100000000000100010"
+                    "11000111111111111111010"
+                    "00010000010000000000110"
+                    "11010000010111010111011"
+                    "11101101110011000101000"
+                    "01011110101100000101110"
+                    "00010001000011011101100"
+                },
+        /* 49*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
                     "11101010101"
                     "11111111111"
                     "01000000010"
@@ -2391,7 +2455,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010100"
                 },
-        /* 47*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "25", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
+        /* 50*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
                     "11101100101"
                     "11111111111"
                     "01000000011"
@@ -2404,7 +2468,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100100000"
                 },
-        /* 48*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "125", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
+        /* 51*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
                     "11110101101"
                     "11111111111"
                     "11000000011"
@@ -2417,7 +2481,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111101000"
                 },
-        /* 49*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "255", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
+        /* 52*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
                     "11010101001"
                     "11111111111"
                     "01000000011"
@@ -2430,7 +2494,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011100"
                 },
-        /* 50*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "1", -1, 0, 11, 11, 1, "",
+        /* 53*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, "",
                     "11101010101"
                     "11111111111"
                     "11000000011"
@@ -2443,7 +2507,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100110100"
                 },
-        /* 51*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "15", -1, 0, 11, 11, 1, "",
+        /* 54*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, "",
                     "11101001001"
                     "11111111111"
                     "11000000011"
@@ -2456,7 +2520,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001111100"
                 },
-        /* 52*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "16", -1, 0, 11, 11, 1, "",
+        /* 55*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, "",
                     "11101110101"
                     "11111111111"
                     "11000000010"
@@ -2469,7 +2533,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111100100"
                 },
-        /* 53*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "63", -1, 0, 11, 11, 1, "",
+        /* 56*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, "",
                     "11100101001"
                     "11111111111"
                     "11000000011"
@@ -2482,7 +2546,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010000"
                 },
-        /* 54*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "64", -1, 0, 11, 11, 1, "",
+        /* 57*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, "",
                     "11111010101"
                     "11111111111"
                     "01000000010"
@@ -2495,7 +2559,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011100"
                 },
-        /* 55*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "65", -1, 0, 11, 11, 1, "",
+        /* 58*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, "",
                     "11111010101"
                     "11111111111"
                     "11000000011"
@@ -2508,7 +2572,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111100"
                 },
-        /* 56*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "126", -1, 0, 11, 11, 1, "",
+        /* 59*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, "",
                     "11110101001"
                     "11111111111"
                     "01000000010"
@@ -2521,7 +2585,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111000"
                 },
-        /* 57*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "127", -1, 0, 11, 11, 1, "",
+        /* 60*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, "",
                     "11110101001"
                     "11111111111"
                     "11000000011"
@@ -2534,7 +2598,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011000"
                 },
-        /* 58*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "128", -1, 0, 11, 11, 1, "",
+        /* 61*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, "",
                     "11001010101"
                     "11111111111"
                     "11000000010"
@@ -2547,7 +2611,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010000"
                 },
-        /* 59*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "191", -1, 0, 11, 11, 1, "",
+        /* 62*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, "",
                     "11000101001"
                     "11111111111"
                     "01000000011"
@@ -2560,7 +2624,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010100"
                 },
-        /* 60*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "192", -1, 0, 11, 11, 1, "",
+        /* 63*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, "",
                     "11011010101"
                     "11111111111"
                     "11000000010"
@@ -2573,7 +2637,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011000"
                 },
-        /* 61*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "225", -1, 0, 11, 11, 1, "",
+        /* 64*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, "",
                     "11010010101"
                     "11111111111"
                     "11000000011"
@@ -2586,7 +2650,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001100100"
                 },
-        /* 62*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, "254", -1, 0, 11, 11, 1, "",
+        /* 65*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, "",
                     "11010101001"
                     "11111111111"
                     "11000000010"
@@ -2621,14 +2685,19 @@ static void test_encode(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, data[i].length, debug);
+        if (data[i].structapp.count) {
+            symbol->structapp = data[i].structapp;
+        }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOutputOptionsName(data[i].output_options),
-                    data[i].option_1, data[i].option_2, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, { %d, %d, \"%.32s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
+                    testUtilOutputOptionsName(data[i].output_options), data[i].option_1, data[i].option_2,
+                    data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -2864,6 +2933,23 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                     "11111111000010000100001"
                     "10101100001011010010000"
                     "10001000000000111000011"
+                },
+        /*  7*/ { GS1_MODE, -1, -1, -1, { { TU("[20]01"), -1, 0 }, { TU(""), 0, 0 }, { TU(""), 0, 0 } }, 0, 15, 15, 1, "GS1 with single seg ok",
+                    "000100111011111"
+                    "000101001110001"
+                    "001100000100110"
+                    "011111111111111"
+                    "001100000001110"
+                    "000101111101000"
+                    "011101000101000"
+                    "000101010101001"
+                    "010101000101100"
+                    "111101111101010"
+                    "100100000001100"
+                    "010111111111110"
+                    "000011011110011"
+                    "000001100010000"
+                    "010101010100011"
                 },
     };
     const int data_size = ARRAY_SIZE(data);

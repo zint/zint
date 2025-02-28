@@ -106,7 +106,7 @@ static int az_bin_append_posn(const int arg, const int length, char *binary, con
 
 /* Determine encoding modes and encode */
 static int aztec_text_process(const unsigned char source[], int src_len, int bp, char binary_string[], const int gs1,
-            const int eci, char *p_current_mode, int *data_length, const int debug_print) {
+            const int gs1_bp, const int eci, char *p_current_mode, int *data_length, const int debug_print) {
 
     int i, j;
     const char initial_mode = p_current_mode ? *p_current_mode : 'U';
@@ -401,7 +401,7 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
         printf("%.*s\n", reduced_length, reduced_encode_mode);
     }
 
-    if (bp == 0 && gs1) {
+    if (bp == gs1_bp && gs1) {
         bp = bin_append_posn(0, 5, binary_string, bp); /* P/S */
         bp = bin_append_posn(0, 5, binary_string, bp); /* FLG(n) */
         bp = bin_append_posn(0, 3, binary_string, bp); /* FLG(0) */
@@ -687,14 +687,14 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
 
 /* Call `aztec_text_process()` for each segment */
 static int aztec_text_process_segs(struct zint_seg segs[], const int seg_count, int bp, char binary_string[],
-            const int gs1, int *data_length, const int debug_print) {
+            const int gs1, const int gs1_bp, int *data_length, const int debug_print) {
     int i;
 
     char current_mode = 'U';
 
     for (i = 0; i < seg_count; i++) {
-        if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, segs[i].eci, &current_mode,
-                &bp, debug_print)) {
+        if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp, segs[i].eci,
+                &current_mode, &bp, debug_print)) {
             return 0;
         }
     }
@@ -869,6 +869,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, adjustment_size;
     int bp = 0;
+    int gs1_bp = 0;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
     const int reader_init = symbol->output_options & READER_INIT;
     const int compact_loop_start = reader_init ? 1 : 4; /* Compact 2-4 excluded from Reader Initialisation */
@@ -922,12 +923,13 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
                     symbol->structapp.count, symbol->structapp.index, symbol->structapp.id, sa_src);
         }
 
-        (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*eci*/, NULL /*p_current_mode*/,
-                                    &bp, debug_print);
+        (void) aztec_text_process(sa_src, sa_len, bp, binary_string, 0 /*gs1*/, 0 /*gs1_bp*/, 0 /*eci*/,
+                                    NULL /*p_current_mode*/, &bp, debug_print);
         /* Will be in U/L due to uppercase A-Z index/count indicators at end */
+        gs1_bp = bp; /* Initial FNC1 (FLG0) position */
     }
 
-    if (!aztec_text_process_segs(segs, seg_count, bp, binary_string, gs1, &data_length, debug_print)) {
+    if (!aztec_text_process_segs(segs, seg_count, bp, binary_string, gs1, gs1_bp, &data_length, debug_print)) {
         return errtxt(ZINT_ERROR_TOO_LONG, symbol, 502,
                         "Input too long, requires too many codewords (maximum " AZ_BIN_CAP_CWDS_S ")");
     }
