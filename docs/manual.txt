@@ -72,7 +72,8 @@ February 2025
     -   5.13 Scaling Helpers
     -   5.14 Verifying Symbology Availability
     -   5.15 Checking Symbology Capabilities
-    -   5.16 Zint Version
+    -   5.16 UTF-8 to ECI convenience functions
+    -   5.17 Zint Version
 -   6. Types of Symbology
     -   6.1 One-Dimensional Symbols
         -   6.1.1 Code 11
@@ -2434,8 +2435,8 @@ number of elements it contains. The zint_seg structure is of the form:
 
     struct zint_seg {
         unsigned char *source; /* Data to encode */
-        int length;            /* Length of `source`. If 0, `source` must be
-                                  NUL-terminated */
+        int length;            /* Length of `source`. If 0 or negative, `source`
+                                  must be NUL-terminated */
         int eci;               /* Extended Channel Interpretation */
     };
 
@@ -2599,7 +2600,27 @@ For example:
         printf("PDF417 does not support ECI\n");
     }
 
-5.16 Zint Version
+5.16 UTF-8 to ECI convenience functions
+
+As a convenience the conversion done by Zint from UTF-8 to ECIs is exposed in
+two helper functions (compatible with the libzueci[18] functions
+zueci_utf8_to_eci() and zueci_dest_len_eci()):
+
+    int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length,
+        unsigned char dest[], int *p_dest_length);
+
+    int ZBarcode_Dest_Len_ECI(int eci, const unsigned char *source, int length,
+        int *p_dest_length);
+
+Call ZBarcode_Dest_Len_ECI() to get the size of buffer sufficient to accommodate
+the conversion, then call ZBarcode_UTF8_To_ECI() with an appropriately sized
+buffer to do the conversion. The final destination length, returned in
+p_dest_length, may be smaller than the estimate given by
+ZBarcode_Dest_Len_ECI(). If length is zero or less, source must be
+NUL-terminated. The destination buffer is not NUL-terminated. The obsolete ECIs
+0, 1 and 2 are supported.
+
+5.17 Zint Version
 
 Whether the Zint library linked to was built with PNG support may be determined
 with:
@@ -3069,7 +3090,7 @@ alphanumerics) are not recommended.
 [zint -b CODE128AB -d "130170X178"]
 
 It is sometimes advantageous to stop Code 128 from using Code Set C which
-compresses numerical data. The BARCODE_CODE128AB[18] variant (symbology 60)
+compresses numerical data. The BARCODE_CODE128AB[19] variant (symbology 60)
 suppresses Code Set C in favour of Code Sets A and B.
 
 Note that the special extra escapes mentioned above are not available for this
@@ -3621,7 +3642,7 @@ first and last digit are ignored, leaving a 4-digit DX Extract number in any
 case, which must be in the range 16 to 2047. The second format "NNN-NN"
 represents the DX Extract as two numbers separated by a dash (-), the first
 number being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).[19]
+0 to 15).[20]
 
 The optional frame number is a number in the range 0 to 63, and may have a half
 frame indicator "A" appended. Special character sequences (with or without a
@@ -5656,8 +5677,11 @@ representable in HRT.
 [17] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
 recognised.
 
-[18] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
+[18] The library libzueci, which can convert both to and from UTF-8 and ECI, is
+available at https://sourceforge.net/projects/libzueci/.
+
+[19] BARCODE_CODE128AB previously used the name BARCODE_CODE128B, which is still
 recognised.
 
-[19] The DX number may be looked up in The (Modified) Big Film Database at
+[20] The DX number may be looked up in The (Modified) Big Film Database at
 https://thebigfilmdatabase.merinorus.com.

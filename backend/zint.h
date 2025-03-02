@@ -141,7 +141,7 @@ extern "C" {
     /* Segment for use with `ZBarcode_Encode_Segs()` below */
     struct zint_seg {
         unsigned char *source; /* Data to encode */
-        int length;         /* Length of `source`. If 0, `source` must be NUL-terminated */
+        int length;         /* Length of `source`. If 0 or negative, `source` must be NUL-terminated */
         int eci;            /* Extended Channel Interpretation */
     };
 
@@ -405,7 +405,7 @@ extern "C" {
     ZINT_EXTERN void ZBarcode_Delete(struct zint_symbol *symbol);
 
 
-    /* Encode a barcode. If `length` is 0, `source` must be NUL-terminated */
+    /* Encode a barcode. If `length` is 0 or negative, `source` must be NUL-terminated */
     ZINT_EXTERN int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length);
 
     /* Encode a barcode with multiple ECI segments */
@@ -486,6 +486,18 @@ extern "C" {
        non-zero `x_dim_mm_or_dpmm`. Return value bound to dpmm max not X-dimension max. Returns 0 on error */
     ZINT_EXTERN float ZBarcode_XdimDp_From_Scale(int symbol_id, float scale, float x_dim_mm_or_dpmm,
                         const char *filetype);
+
+
+    /* Convert UTF-8 `source` of length `length` to `eci`-encoded `dest`, setting `p_dest_length` to length of `dest`
+       on output. If `length` is 0 or negative, `source` must be NUL-terminated. Returns 0 on success, else
+       ZINT_ERROR_INVALID_OPTION or ZINT_ERROR_INVALID_DATA. Compatible with libzueci `zueci_utf8_to_eci()` */
+    ZINT_EXTERN int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length, unsigned char dest[],
+                        int *p_dest_length);
+
+    /* Calculate sufficient length needed to convert UTF-8 `source` of length `length` from UTF-8 to `eci`, and place
+       in `p_dest_length`. If `length` is 0 or negative, `source` must be NUL-terminated. Returns 0 on success, else
+       ZINT_ERROR_INVALID_OPTION or ZINT_ERROR_INVALID_DATA. Compatible with libzueci `zueci_dest_len_eci()` */
+    ZINT_EXTERN int ZBarcode_Dest_Len_ECI(int eci, const unsigned char *source, int length, int *p_dest_length);
 
 
     /* Whether Zint built without PNG support */

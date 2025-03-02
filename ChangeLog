@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-02-28)
+Version 2.15.0.9 (dev) not released yet (2025-03-02)
 ====================================================
 
 Changes
@@ -6,6 +6,10 @@ Changes
 
 - Add new `BARCODE_RAW_TEXT` option for `output_options` and new warning
   `ZINT_WARN_HRT_RAW_TEXT` for when set when outputting HRT
+
+Changes
+-------
+- Add API funcs `ZBarcode_UTF8_To_ECI()` and `ZBarcode_Dest_Len_ECI()`
 
 Bugs
 ----

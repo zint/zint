@@ -2177,6 +2177,116 @@ static void test_xdimdp_from_scale(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_utf8_to_eci(const testCtx *const p_ctx) {
+
+    struct item {
+        int eci;
+        const char *data;
+        int length;
+        int ret_dest;
+        int expected_dest_length;
+        int ret;
+        const char *expected;
+        int expected_length;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { 3, "1234", -1, 0, 4, 0, "1234", -1 },
+        /*  1*/ { 3, "1234", 0, 0, 4, 0, "1234", -1 }, /* Zero length allowed */
+        /*  2*/ { 3, "1234", -2, 0, 4, 0, "1234", -1 }, /* Negative length allowed */
+        /*  3*/ { 3, "", -1, 0, 0, 0, "", 0 }, /* Empty allowed */
+        /*  4*/ { 3, NULL, -1, ZINT_ERROR_INVALID_OPTION, 0, -1, "", -1 },
+        /*  5*/ { -1, "1234", -1, ZINT_ERROR_INVALID_OPTION, 0, -1, "", -1 },
+        /*  6*/ { 0, "1234", -1, 0, 4, 0, "1234", -1 },
+        /*  7*/ { 1, "1234", -1, 0, 4, 0, "1234", -1 },
+        /*  8*/ { 2, "1234", -1, 0, 4, 0, "1234", -1 },
+        /*  9*/ { 0, "1234é", -1, 0, 6, 0, "1234\202", 5 }, /* CP437 */
+        /* 10*/ { 1, "1234é", -1, 0, 6, 0, "1234\351", 5 }, /* Same as ISO/IEC 8859-1 */
+        /* 11*/ { 2, "1234é", -1, 0, 6, 0, "1234\202", 5 }, /* CP437 */
+        /* 12*/ { 3, "1234é", -1, 0, 6, 0, "1234\351", 5 },
+        /* 13*/ { 4, "1234˘", -1, 0, 6, 0, "1234\242", 5 }, /* ISO/IEC 8859-2 */
+        /* 14*/ { 5, "1234Ħ", -1, 0, 6, 0, "1234\241", 5 }, /* ISO/IEC 8859-3 */
+        /* 15*/ { 6, "1234ĸ", -1, 0, 6, 0, "1234\242", 5 }, /* ISO/IEC 8859-4 */
+        /* 16*/ { 7, "1234Ё", -1, 0, 6, 0, "1234\241", 5 }, /* ISO/IEC 8859-5 */
+        /* 17*/ { 8, "1234ء", -1, 0, 6, 0, "1234\301", 5 }, /* ISO/IEC 8859-6 */
+        /* 18*/ { 9, "1234π", -1, 0, 6, 0, "1234\360", 5 }, /* ISO/IEC 8859-7 */
+        /* 19*/ { 11, "1234ğ", -1, 0, 6, 0, "1234\360", 5 }, /* ISO/IEC 8859-9 */
+        /* 20*/ { 12, "1234Ŋ", -1, 0, 6, 0, "1234\257", 5 }, /* ISO/IEC 8859-10 */
+        /* 21*/ { 13, "1234๐", -1, 0, 7, 0, "1234\360", 5 }, /* ISO/IEC 8859-11 */
+        /* 22*/ { 14, "1234", -1, ZINT_ERROR_INVALID_OPTION, 0, -1, "", -1 },
+        /* 23*/ { 15, "1234š", -1, 0, 6, 0, "1234\360", 5 }, /* ISO/IEC 8859-13 */
+        /* 24*/ { 16, "1234ŵ", -1, 0, 6, 0, "1234\360", 5 }, /* ISO/IEC 8859-14 */
+        /* 25*/ { 17, "1234œ", -1, 0, 6, 0, "1234\275", 5 }, /* ISO/IEC 8859-15 */
+        /* 26*/ { 18, "1234Ł", -1, 0, 6, 0, "1234\243", 5 }, /* ISO/IEC 8859-16 */
+        /* 27*/ { 19, "1234", -1, ZINT_ERROR_INVALID_OPTION, 0, -1, "", -1 },
+        /* 28*/ { 20, "1234点", -1, 0, 7, 0, "1234\223\137", 6 }, /* Shift JIS */
+        /* 29*/ { 20, "1234¥", -1, 0, 6, 0, "1234\\", 5 }, /* Shift JIS - Yen sign -> backslash */
+        /* 30*/ { 20, "1234~", -1, 0, 5, ZINT_ERROR_INVALID_DATA, "", -1 }, /* Shift JIS - no mapping for tilde */
+        /* 31*/ { 20, "1234\\", -1, 0, 6, 0, "1234\201\137", -1 }, /* Shift JIS - backslash -> full-width reverse solidus */
+        /* 32*/ { 21, "1234Ą", -1, 0, 6, 0, "1234\245", 5 }, /* Windows-1250 */
+        /* 33*/ { 22, "1234ѓ", -1, 0, 6, 0, "1234\203", 5 }, /* Windows-1251 */
+        /* 34*/ { 23, "1234ƒ", -1, 0, 6, 0, "1234\203", 5 }, /* Windows-1252 */
+        /* 35*/ { 24, "1234پ", -1, 0, 6, 0, "1234\201", 5 }, /* Windows-1256 */
+        /* 36*/ { 25, "1234é", -1, 0, 10, 0, "\0001\0002\0003\0004\000\351", 10 }, /* UTF-16BE */
+        /* 37*/ { 26, "1234é", -1, 0, 6, 0, "1234é", 6 }, /* UTF-8 */
+        /* 38*/ { 27, "1234é", -1, 0, 6, ZINT_ERROR_INVALID_DATA, "", -1 }, /* ASCII */
+        /* 39*/ { 27, "1234", -1, 0, 4, 0, "1234", -1 }, /* ASCII */
+        /* 40*/ { 28, "1234＿", -1, 0, 7, 0, "1234\241\304", 6 }, /* Big5 */
+        /* 41*/ { 29, "1234崂", -1, 0, 7, 0, "1234\341\300", 6 }, /* GB 2312 */
+        /* 42*/ { 30, "1234가", -1, 0, 7, 0, "1234\260\241", 6 }, /* EUC-KR */
+        /* 43*/ { 31, "1234郎", -1, 0, 7, 0, "1234\375\234", 6 }, /* GBK */
+        /* 44*/ { 32, "1234崂", -1, 0, 14, 0, "1234\341\300", 6 }, /* GB 18030 */
+        /* 45*/ { 33, "1234é", -1, 0, 10, 0, "1\0002\0003\0004\000\351\000", 10 }, /* UTF-16LE */
+        /* 46*/ { 34, "1234é", -1, 0, 20, 0, "\000\000\0001\000\000\0002\000\000\0003\000\000\0004\000\000\000\351", 20 }, /* UTF-16BE */
+        /* 47*/ { 35, "1234é", -1, 0, 20, 0, "1\000\000\0002\000\000\0003\000\000\0004\000\000\000\351\000\000\000", 20 }, /* UTF-16LE */
+        /* 48*/ { 170, "1234", -1, 0, 4, 0, "1234", 4 }, /* ISO 646 Invariant */
+        /* 49*/ { 170, "1234#", -1, 0, 5, ZINT_ERROR_INVALID_DATA, "", -1 }, /* ISO 646 Invariant */
+        /* 50*/ { 899, "1234\000\127\302\200ÿ", 10, 0, 10, 0, "1234\000\127\200\377", 8 }, /* Binary */
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    int expected_length;
+
+    testStart("test_utf8_to_eci");
+
+    for (i = 0; i < data_size; i++) {
+        int ret_dest;
+        unsigned char dest[1024];
+        int dest_length;
+
+        if (testContinue(p_ctx, i)) continue;
+
+        length = data[i].length == -1 && data[i].data ? (int) strlen(data[i].data) : data[i].length;
+
+        ret_dest = ZBarcode_Dest_Len_ECI(data[i].eci, TCU(data[i].data), length, &dest_length);
+        assert_equal(ret_dest, data[i].ret_dest, "i:%d ZBarcode_Dest_Len_ECI(%d, %s) ret_dest %d != %d\n",
+                    i, data[i].eci, data[i].data, ret_dest, data[i].ret_dest);
+
+        if (ret_dest < ZINT_ERROR) {
+            assert_equal(dest_length, data[i].expected_dest_length,
+                        "i:%d ZBarcode_Dest_Len_ECI dest_length %d != expected_dest_length %d\n",
+                        i, dest_length, data[i].expected_dest_length);
+
+            expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+            ret = ZBarcode_UTF8_To_ECI(data[i].eci, TCU(data[i].data), length, dest, &dest_length);
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_UTF8_To_ECI(%d, %s) ret %d != %d\n",
+                        i, data[i].eci, data[i].data, ret, data[i].ret);
+            if (ret < ZINT_ERROR) {
+                assert_equal(dest_length, expected_length,
+                            "i:%d ZBarcode_UTF8_To_ECI dest_length %d != expected_length %d\n",
+                            i, dest_length, expected_length);
+                #if 0
+                printf("dest_length %d\n", dest_length); debug_print_escape(TCU(dest), dest_length, NULL); printf("\n");
+                #endif
+                assert_zero(memcmp(dest, data[i].expected, expected_length), "i:%d memcmp(\"%s\", \"%s\", %d) != 0\n",
+                            i, dest, data[i].expected, expected_length);
+            }
+        }
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -2205,6 +2315,7 @@ int main(int argc, char *argv[]) {
         { "test_reset", test_reset },
         { "test_scale_from_xdimdp", test_scale_from_xdimdp },
         { "test_xdimdp_from_scale", test_xdimdp_from_scale },
+        { "test_utf8_to_eci", test_utf8_to_eci },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

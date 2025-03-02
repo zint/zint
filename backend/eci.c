@@ -1,7 +1,7 @@
 /*  eci.c - Extended Channel Interpretations */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2009-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2009-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -42,6 +42,30 @@
 #include "sjis.h"
 
 /* Single-byte stuff */
+
+/* ECI 2 (bottom half ASCII, top half CP437), included for libzueci compatibility - assumes valid Unicode */
+static int u_cp437(const unsigned int u, unsigned char *dest) {
+    int s, e;
+    if (u < 0x80) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+
+    s = 0;
+    e = ARRAY_SIZE(cp437_u) - 1;
+    while (s <= e) {
+        const int m = (s + e) >> 1;
+        if (cp437_u[m] < u) {
+            s = m + 1;
+        } else if (cp437_u[m] > u) {
+            e = m - 1;
+        } else {
+            *dest = cp437_sb[m];
+            return 1;
+        }
+    }
+    return 0;
+}
 
 /* Base ISO/IEC 8859 routine to convert Unicode codepoint `u` */
 static int u_iso8859(const unsigned int u, const unsigned short *tab_s, const unsigned short *tab_u,
@@ -179,6 +203,15 @@ static int u_utf32le(const unsigned int u, unsigned char *dest) {
     dest[2] = (unsigned char) (u >> 16);
     dest[3] = 0;
     return 4;
+}
+
+/* ECI 899 Binary, included for libzueci compatibility - assumes valid Unicode */
+static int u_binary(const unsigned int u, unsigned char *dest) {
+    if (u <= 0xFF) {
+        *dest = (unsigned char) u;
+        return 1;
+    }
+    return 0;
 }
 
 /* Multibyte stuff */
@@ -701,7 +734,7 @@ typedef int (*eci_func_t)(const unsigned int u, unsigned char *dest);
 INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned char dest[], int *p_length) {
 
     static const eci_func_t eci_funcs[36] = {
-                NULL,         NULL,         NULL,         NULL,  u_iso8859_2, /*0-4*/
+                NULL,         NULL,      u_cp437,         NULL,  u_iso8859_2, /*0-4*/
          u_iso8859_3,  u_iso8859_4,  u_iso8859_5,  u_iso8859_6,  u_iso8859_7, /*5-9*/
          u_iso8859_8,  u_iso8859_9, u_iso8859_10, u_iso8859_11,         NULL, /*10-14*/
         u_iso8859_13, u_iso8859_14, u_iso8859_15, u_iso8859_16,         NULL, /*15-19*/
@@ -717,7 +750,8 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
     int length = *p_length;
 
     /* Special case ISO/IEC 8859-1 */
-    if (eci == 0 || eci == 3) { /* Default ECI 0 to ISO/IEC 8859-1 */
+    /* Default ECI 0 to ISO/IEC 8859-1 (and ECI 1 for libzueci compatibility) */
+    if (eci == 0 || eci == 3 || eci == 1) {
         while (in_posn < length) {
             do {
                 decode_utf8(&state, &codepoint, source[in_posn++]);
@@ -737,6 +771,8 @@ INTERNAL int utf8_to_eci(const int eci, const unsigned char source[], unsigned c
 
     if (eci == 170) { /* ASCII Invariant (archaic subset) */
         eci_func = u_ascii_inv;
+    } else if (eci == 899) { /* Binary, for libzueci compatibility */
+        eci_func = u_binary;
     } else {
         eci_func = eci_funcs[eci];
         if (eci_func == NULL) {

@@ -979,7 +979,7 @@ static int map_invalid_symbology(struct zint_symbol *symbol) {
     return warn_number;
 }
 
-/* Encode a barcode. If `length` is 0, `source` must be NUL-terminated */
+/* Encode a barcode. If `length` is 0 or negative, `source` must be NUL-terminated */
 int ZBarcode_Encode(struct zint_symbol *symbol, const unsigned char *source, int length) {
     struct zint_seg segs[1];
 
@@ -2068,6 +2068,67 @@ float ZBarcode_XdimDp_From_Scale(int symbol_id, float scale, float xdim_mm_or_dp
     }
 
     return xdim_mm_or_dpmm;
+}
+
+/* Whether `eci` is valid character set ECI */
+static int is_valid_char_set_eci(const int eci) {
+    /* Allowing ECI 1 and ECI 2 for libzueci compatibility (and ECI 0, which is mapped to ECI 2) */
+    return (eci <= 35 && eci >= 0 && eci != 14 && eci != 19) || eci == 170 || eci == 899;
+}
+
+/* Convert UTF-8 `source` of length `length` to `eci`-encoded `dest`, setting `p_dest_length` to length of `dest`
+   on output. If `length` is 0 or negative, `source` must be NUL-terminated. Returns 0 on success, else
+   ZINT_ERROR_INVALID_OPTION or ZINT_ERROR_INVALID_DATA. Compatible with libzueci `zueci_utf8_to_eci()` */
+int ZBarcode_UTF8_To_ECI(int eci, const unsigned char *source, int length, unsigned char dest[], int *p_dest_length) {
+    int error_number;
+
+    /* Map ECI 0 to ECI 2 (CP437) for libzueci compatibility */
+    if (eci == 0) {
+        eci = 2;
+    }
+    if (!is_valid_char_set_eci(eci) || !source || !p_dest_length) {
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if (length <= 0) {
+        length = (int) ustrlen(source); /* Note `zueci_utf8_to_eci()` doesn't do this */
+    }
+    if (!is_valid_utf8(source, length)) {
+        return ZINT_ERROR_INVALID_DATA;
+    }
+
+    if (eci == 26) { /* UTF-8 - no change */
+        memcpy(dest, source, length);
+        *p_dest_length = length;
+        return 0;
+    }
+
+    /* Only set `p_dest_length` on success, for libzueci compatibility */
+    if ((error_number = utf8_to_eci(eci, source, dest, &length)) == 0) {
+        *p_dest_length = length;
+    }
+    return error_number; /* 0 or ZINT_ERROR_INVALID_DATA */
+}
+
+/* Calculate sufficient length needed to convert UTF-8 `source` of length `length` from UTF-8 to `eci`, and place
+   in `p_dest_length`. If `length` is 0 or negative, `source` must be NUL-terminated. Returns 0 on success, else
+   ZINT_ERROR_INVALID_OPTION or ZINT_ERROR_INVALID_DATA. Compatible with libzueci `zueci_dest_len_eci()` */
+int ZBarcode_Dest_Len_ECI(int eci, const unsigned char *source, int length, int *p_dest_length) {
+    /* Map ECI 0 to ECI 2 (CP437) for libzueci compatibility */
+    if (eci == 0) {
+        eci = 2;
+    }
+    if (!is_valid_char_set_eci(eci) || !source || !p_dest_length) {
+        return ZINT_ERROR_INVALID_OPTION;
+    }
+    if (length <= 0) {
+        length = (int) ustrlen(source); /* Note `zueci_dest_len_eci()` doesn't do this */
+    }
+    if (!is_valid_utf8(source, length)) {
+        return ZINT_ERROR_INVALID_DATA;
+    }
+    *p_dest_length = get_eci_length(eci, source, length);
+
+    return 0;
 }
 
 /* Whether Zint built without PNG support */
