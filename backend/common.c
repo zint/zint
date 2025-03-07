@@ -294,7 +294,7 @@ static int errtxtf_num_arg(const char *fmt, int *p_arg) {
     return ret;
 }
 
-/* Helper for `errtxtf()` to parse length precision, returning `fmt` advance increment */
+/* Helper for `errtxtf()` to parse length precision for "%s", returning `fmt` advance increment */
 static int errtxtf_slen(const char *fmt, const int arg, int *p_arg_cnt, int *p_len) {
     int ret = 0;
     int len = -1;
@@ -342,11 +342,21 @@ static int errtxtf_dpad(const char *fmt) {
     return 0;
 }
 
+/* Helper for `errtxtf()` to parse conversion precision for "%f"/"%g", returning `fmt` advance increment */
+static int errtxtf_fprec(const char *fmt) {
+    /* Allow one digit only */
+    if (fmt[0] == '.' && z_isdigit(fmt[1]) && (fmt[2] == 'f' || fmt[2] == 'g')) {
+        return 2;
+    }
+    return 0;
+}
+
 /* Set `symbol->errtxt` to "err_id: msg" with restricted subset of `printf()` formatting, returning `error_number`.
    If `err_id` is -1, the "err_id: " prefix is omitted. Only the following specifiers are supported: "c", "d", "f",
    "g" and "s", with no modifiers apart from "<n>$" numbering for l10n ("<n>" 1-9), in which case all specifiers must
-   be numbered, "%s" with length precisions: "%.*s", "%<n+1>$.*<n>$s", "%.<p>s" and "%<n>$.<p>s", and "%d" with
-   zero-padded minimum field lengths: "%0<m>d" or %<n>$0<m>d" ("<m>" 1-99) */
+   be numbered, "%s" with length precisions: "%.*s", "%<n+1>$.*<n>$s", "%.<p>s" and "%<n>$.<p>s", "%d" with
+   zero-padded minimum field lengths: "%0<m>d" or %<n>$0<m>d" ("<m>" 1-99), and "%f"/"%g" with single-digit precision:
+   "%.<m>f" or "%<n>$.<m>f" */
 INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const int err_id, const char *fmt, ...) {
     const int max_len = ARRAY_SIZE(symbol->errtxt) - 1;
     int p = errtxt_id_str(symbol->errtxt, err_id);
@@ -361,6 +371,7 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
     int slens[9] = {0}; /* "%s" length precisions */
     int have_slens[9] = {0}; /* Bools for if "%s" has length precision */
     char dpads[9][3] = {{0}}; /* 2-digit minimum field length */
+    char fprecs[9] = {0}; /* 1-digit conversion precision */
     char dfgs[9][100] = {{0}}; /* "%d", "%f" and "%g", allowing for padding up to 99 */
     int cs[9] = {0}; /* "%c" */
 
@@ -393,6 +404,11 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
                 }
                 have_unnum_arg = 1;
                 idxs[i] = i;
+            }
+            if ((inc = errtxtf_fprec(f))) {
+                assert(inc == 2);
+                fprecs[idxs[i]] = f[1]; /* TODO: keep `fprecs` separate else last mentioned trumps */
+                f += inc;
             }
             if ((inc = errtxtf_slen(f, arg, &arg_cnt, &len))) {
                 if (len == -1) {
@@ -437,7 +453,13 @@ INTERNAL int errtxtf(const int error_number, struct zint_symbol *symbol, const i
                 sprintf(dfgs[i], "%d", va_arg(ap, int));
             }
         } else if (specs[i] == 'f' || specs[i] == 'g') {
-            sprintf(dfgs[i], specs[i] == 'f' ? "%f" : "%g", va_arg(ap, double));
+            if (fprecs[i]) {
+                char fprec_fmt[5];
+                sprintf(fprec_fmt, "%%.%c%c", fprecs[i], specs[i]); /* TODO: keep `fprecs` separate else last mentioned trumps */
+                sprintf(dfgs[i], fprec_fmt, va_arg(ap, double));
+            } else {
+                sprintf(dfgs[i], specs[i] == 'f' ? "%f" : "%g", va_arg(ap, double));
+            }
         } else if (specs[i] == 's') {
             if (have_slens[i] && slens[i] == -1) {
                 slens[i] = va_arg(ap, int); /* TODO: keep `slens` separate else last mentioned trumps */
@@ -876,7 +898,8 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
             if (stripf(row_height + epsilon) < stripf(min_row_height)) {
                 error_number = ZINT_WARN_NONCOMPLIANT;
                 if (!no_errtxt) {
-                    ZEXT errtxtf(0, symbol, 247, "Height not compliant with standards (minimum %g)", min_row_height);
+                    ZEXT errtxtf(0, symbol, 247, "Height not compliant with standards (minimum %.4g)",
+                                stripf(min_row_height * zero_count));
                 }
             }
         }
@@ -888,7 +911,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
         if (stripf(symbol->height) > stripf(max_height + epsilon)) {
             error_number = ZINT_WARN_NONCOMPLIANT;
             if (!no_errtxt) {
-                ZEXT errtxtf(0, symbol, 248, "Height not compliant with standards (maximum %g)", max_height);
+                ZEXT errtxtf(0, symbol, 248, "Height not compliant with standards (maximum %.4g)", max_height);
             }
         }
     }
