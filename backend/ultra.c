@@ -1000,11 +1000,6 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
         fputc('\n', stdout);
     }
-#ifdef ZINT_TEST
-    if (symbol->debug & ZINT_DEBUG_TEST) {
-        debug_test_codeword_dump_int(symbol, data_codewords, data_cw_count);
-    }
-#endif
 
     data_cw_count += 2 + scr_cw_count; /* 2 == MCC + ACC (data codeword count includes start char) */
 
@@ -1039,6 +1034,9 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     if (debug_print) {
         printf("EC%d codewords: %d\n", ecc_level, qcc);
     }
+
+    /* Feedback options */
+    symbol->option_1 = ecc_level + 1;
 
     acc = qcc - 3;
     if (scr_cw_count) {
@@ -1136,6 +1134,11 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
         fputc('\n', stdout);
     }
+#ifdef ZINT_TEST
+    if (symbol->debug & ZINT_DEBUG_TEST) {
+        debug_test_codeword_dump_int(symbol, codeword, locn);
+    }
+#endif
 
     total_height = (rows * 6) + 1;
     total_width = columns + 6;

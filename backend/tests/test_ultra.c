@@ -140,8 +140,8 @@ static void test_reader_init(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, READER_INIT, 0, "A", 0, 13, 14, "(3) 257 269 65", "8-bit FNC3 A" },
-        /*  1*/ { UNICODE_MODE, READER_INIT, ULTRA_COMPRESSION, "A", 0, 13, 14, "(3) 272 271 65", "ASCII FNC3 A Note: draft spec inconsistent and FNC3 may be 272 in ASCII mode (and FNC1 271)" },
+        /*  0*/ { UNICODE_MODE, READER_INIT, 0, "A", 0, 13, 14, "(16) 257 5 187 37 258 96 43 242 102 12 283 4 269 65 284 7", "8-bit FNC3 A" },
+        /*  1*/ { UNICODE_MODE, READER_INIT, ULTRA_COMPRESSION, "A", 0, 13, 14, "(16) 272 5 222 170 9 204 178 6 110 12 283 4 271 65 284 7", "ASCII FNC3 A Note: draft spec inconsistent and FNC3 may be 272 in ASCII mode (and FNC1 271)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -198,76 +198,84 @@ static void test_input(const testCtx *const p_ctx) {
         const char *data;
         int ret;
         const char *expected;
+        int expected_option_1;
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Default (Revision 1)" },
-        /*  1*/ { UNICODE_MODE, 0, -1, 1, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Revision 1" },
-        /*  2*/ { UNICODE_MODE, 0, -1, 2, -1, { 0, 0, "" }, "A", 0, "(2) 257 65", "Revision 2 (no codeword changes)" },
-        /*  3*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(2) 272 65", "" },
-        /*  4*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "12", 0, "(3) 257 49 50", "" },
-        /*  5*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "12", 0, "(2) 272 140", "" },
-        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "123", 0, "(4) 257 49 50 51", "" },
-        /*  7*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "123", 0, "(3) 272 140 51", "" },
-        /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "ABC", 0, "(4) 257 65 66 67", "" },
-        /*  9*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ABC", 0, "(4) 272 65 66 67", "" },
-        /* 10*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ULTRACODE_123456789!", 0, "(17) 272 85 76 84 82 65 67 79 68 69 95 140 162 184 206 57 33", "" },
-        /* 11*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(253) 257 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "252 chars EC2" },
-        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)", "253 chars EC2" },
-        /* 13*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(277) 257 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "276 chars EC0" },
-        /* 14*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)", "277 chars EC0" },
-        /* 15*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "é", 0, "(2) 257 233", "" },
-        /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "β", ZINT_WARN_USES_ECI, "Warning (2) 263 226", "" },
-        /* 17*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "β", 0, "(2) 263 226", "" },
-        /* 18*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "βAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(253) 263 226 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", "249 chars EC2" },
-        /* 19*/ { UNICODE_MODE, 9, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(2) 263 65", "Note previously ECI ignored and not outputted if ULTRA_COMPRESSION and all ASCII" },
-        /* 20*/ { UNICODE_MODE, 15, -1, -1, -1, { 0, 0, "" }, "Ŗ", 0, "(2) 268 170", "" },
-        /* 21*/ { DATA_MODE, 898, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(7) 278 130 1 2 3 4 255", "" },
-        /* 22*/ { DATA_MODE, 899, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(6) 280 1 2 3 4 255", "" },
-        /* 23*/ { DATA_MODE, 900, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(9) 257 274 137 128 1 2 3 4 255", "" },
-        /* 24*/ { DATA_MODE, 9999, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(9) 257 274 227 227 1 2 3 4 255", "" },
-        /* 25*/ { DATA_MODE, 10000, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(10) 257 275 129 128 128 1 2 3 4 255", "" },
-        /* 26*/ { DATA_MODE, 811799, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(10) 257 275 209 145 227 1 2 3 4 255", "" },
-        /* 27*/ { DATA_MODE, 811800, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", ZINT_ERROR_INVALID_OPTION, "Error 590: ECI code '811800' out of range (0 to 811799)", "" },
-        /* 28*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "123,456,789/12,/3,4,/5//", 0, "(15) 272 140 231 173 234 206 257 140 44 262 242 44 264 47 47", "Mode: a (24)" },
-        /* 29*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(32) 257 256 46 151 78 210 205 208 258 5 148 28 72 2 167 52 127 193 83 75 211 267 76 65 32", "Mode: cccccc88cccccccccc8888aaa8cccccc (32)" },
-        /* 30*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(33) 257 72 69 73 77 65 83 205 208 65 32 75 69 78 78 65 82 65 72 193 83 75 211 76 65 32 205", "" },
-        /* 31*/ { UNICODE_MODE, 10, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "אולטרה-קוד1234", 0, "(14) 264 224 229 236 232 248 228 45 247 229 227 267 140 162", "Mode: 8888888888aaaa (14); Figure G.3" },
-        /* 32*/ { UNICODE_MODE, 10, -1, -1, -1, { 0, 0, "" }, "אולטרה-קוד1234", 0, "(15) 264 224 229 236 232 248 228 45 247 229 227 49 50 51 52", "" },
-        /* 33*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "https://aimglobal.org/jcrv3tX", 0, "(16) 282 266 1 74 41 19 6 168 270 212 59 106 144 56 265 70", "Mode: c (21); Figure G.4a" },
-        /* 34*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "https://aimglobal.org/jcrv3tX", 0, "(22) 282 97 105 109 103 108 111 98 97 108 46 111 114 103 47 106 99 114 118 51 116 88", "" },
-        /* 35*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]121125[10]ABCD1234", 0, "(20) 273 129 131 173 159 148 128 128 139 145 140 139 153 138 65 66 67 68 140 162", "Mode: a (34); Figure G.6 uses C43 for 6 of last 7 chars (same codeword count)" },
-        /* 36*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[17]120508[10]ABCD1234[410]9501101020917", 0, "(21) 273 145 140 133 136 138 65 66 67 68 140 162 272 169 137 178 139 129 130 137 145", "Mode: a (35)" },
-        /* 37*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[17]120508[10]ABCDEFGHI[410]9501101020917", 0, "(24) 273 145 140 133 136 138 65 66 67 68 69 70 71 72 73 272 169 137 178 139 129 130 137 145", "Mode: a (36)" },
-        /* 38*/ { GS1_MODE | GS1PARENS_MODE, 0, -1, -1, -1, { 0, 0, "" }, "(17)120508(10)ABCDEFGHI(410)9501101020917", 0, "(24) 273 145 140 133 136 138 65 66 67 68 69 70 71 72 73 272 169 137 178 139 129 130 137 145", "Mode: a (36)" },
-        /* 39*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ftp://", 0, "(4) 272 278 269 165", "Mode: c (6)" },
-        /* 40*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, ".cgi", 0, "(4) 272 278 274 131", "Mode: c (4)" },
-        /* 41*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ftp://a.cgi", 0, "(6) 272 280 269 123 274 131", "Mode: c (11)" },
-        /* 42*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "e: file:f.shtml !", 0, "(12) 272 280 30 94 236 235 72 233 39 52 267 250", "Mode: c (17)" },
-        /* 43*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Aaatel:", 0, "(6) 272 280 262 76 6 89", "Mode: c (7)" },
-        /* 44*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Aatel:a", 0, "(6) 272 280 262 76 271 161", "Mode: c (7)" },
-        /* 45*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Atel:aAa", 0, "(8) 272 275 6 89 275 148 0 42", "Mode: c (8)" },
-        /* 46*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "tel:AAaa", 0, "(8) 272 275 271 161 6 28 262 118", "Mode: c (8)" },
-        /* 47*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "AAaatel:aA", 0, "(10) 272 276 0 42 0 41 118 46 6 156", "Mode: c (10)" },
-        /* 48*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "émailto:étel:éfile:éhttp://éhttps://éftp://", 0, "(18) 257 233 276 282 233 277 282 233 278 282 233 279 282 233 280 282 233 281", "Mode: 8ccccccc8cccc8ccccc8ccccccc8cccccccc8cccccc (43)" },
-        /* 49*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "éhttp://www.url.com", 0, "(9) 257 233 279 269 186 113 81 45 252", "Mode: 8cccccccccccccccccc (19)" },
-        /* 50*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "éhttps://www.url.com", 0, "(9) 257 233 280 269 186 113 81 45 252", "Mode: 8ccccccccccccccccccc (20)" },
-        /* 51*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "http://url.com", 0, "(8) 281 117 114 108 46 99 111 109", "Mode: 8888888 (7)" },
-        /* 52*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "https://url.com", 0, "(8) 282 117 114 108 46 99 111 109", "Mode: 8888888 (7)" },
-        /* 53*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "http://url.com", 0, "(6) 281 262 133 216 269 251", "Mode: ccccccc (7)" },
-        /* 54*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "https://url.com", 0, "(6) 282 262 133 216 269 251", "Mode: ccccccc (7)" },
-        /* 55*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "{", 0, "(2) 272 123", "Mode: a (1)" },
-        /* 56*/ { UNICODE_MODE, 0, -1, -1, -1, { 2, 3, "" }, "A", 0, "(2) 257 65", "" },
-        /* 57*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 1, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '1' out of range (2 to 8)", "" },
-        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 9, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '9' out of range (2 to 8)", "" },
-        /* 59*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '0' out of range (1 to count 3)", "" },
-        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, { 4, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '4' out of range (1 to count 3)", "" },
-        /* 61*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "0" }, "A", 0, "(2) 257 65", "" },
-        /* 62*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80088" }, "A", 0, "(2) 257 65", "" },
-        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "123456" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 593: Structured Append ID length 6 too long (5 digit maximum)", "" },
-        /* 64*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "A" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 594: Invalid Structured Append ID (digits only)", "" },
-        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80089" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 595: Structured Append ID value '80089' out of range (1 to 80088)", "" },
-        /* 66*/ { UNICODE_MODE, 0, -1, 3, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 592: Revision '3' out of range (1 or 2 only)", "" },
+        /*  0*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 100 2 78 70 131 251 169 11 283 4 65 7", 3, "Default (Revision 1)" },
+        /*  1*/ { UNICODE_MODE, 0, -1, 1, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 100 2 78 70 131 251 169 11 283 4 65 7", 3, "Revision 1" },
+        /*  2*/ { UNICODE_MODE, 0, -1, 2, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 100 2 78 70 131 251 169 11 283 4 65 7", 3, "Revision 2 (no codeword changes)" },
+        /*  3*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(14) 272 4 253 91 139 30 44 278 24 11 283 4 65 7", 3, "" },
+        /*  4*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "12", 0, "(16) 257 5 131 149 47 32 217 242 213 12 283 4 49 50 284 7", 3, "" },
+        /*  5*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "12", 0, "(14) 272 4 255 151 16 88 43 31 40 11 283 4 140 7", 3, "" },
+        /*  6*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "123", 0, "(16) 257 6 148 277 135 29 2 154 20 13 283 4 49 50 51 7", 3, "" },
+        /*  7*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "123", 0, "(16) 272 5 235 104 204 275 243 125 260 12 283 4 140 51 284 7", 3, "" },
+        /*  8*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "ABC", 0, "(16) 257 6 59 122 123 9 160 164 65 13 283 4 65 66 67 7", 3, "" },
+        /*  9*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ABC", 0, "(16) 272 6 216 25 138 123 138 10 1 13 283 4 65 66 67 7", 3, "" },
+        /* 10*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ULTRACODE_123456789!", 0, "(30) 272 19 187 279 112 152 158 278 94 26 283 4 85 76 84 82 65 67 79 68 69 95 140 162 184", 3, "" },
+        /* 11*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(285) 257 255 79 14 72 8 109 235 143 141 195 86 73 68 256 282 138 1 125 0 166 91 245 114", 3, "252 chars EC2" },
+        /* 12*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC2, requires 256 codewords (maximum 255)", 3, "253 chars EC2" },
+        /* 13*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(285) 257 279 92 38 174 282 283 0 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65 65", 1, "276 chars EC0" },
+        /* 14*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", ZINT_ERROR_TOO_LONG, "Error 591: Input too long for ECC level EC0, requires 280 codewords (maximum 279)", 1, "277 chars EC0" },
+        /* 15*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "é", 0, "(14) 257 4 229 193 210 132 208 26 69 11 283 4 233 7", 3, "" },
+        /* 16*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "β", ZINT_WARN_USES_ECI, "Warning (14) 263 4 207 223 144 137 45 124 251 11 283 4 226 7", 3, "" },
+        /* 17*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "β", 0, "(14) 263 4 207 223 144 137 45 124 251 11 283 4 226 7", 3, "" },
+        /* 18*/ { UNICODE_MODE, 9, -1, -1, -1, { 0, 0, "" }, "βAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, "(285) 263 255 210 22 54 37 256 113 255 65 35 200 279 59 171 186 245 52 86 140 213 110 187", 3, "249 chars EC2" },
+        /* 19*/ { UNICODE_MODE, 9, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "A", 0, "(14) 263 4 48 264 159 54 266 92 111 11 283 4 65 7", 3, "Note previously ECI ignored and not outputted if ULTRA_COMPRESSION and all ASCII" },
+        /* 20*/ { UNICODE_MODE, 15, -1, -1, -1, { 0, 0, "" }, "Ŗ", 0, "(14) 268 4 215 189 26 103 179 208 236 11 283 4 170 7", 3, "" },
+        /* 21*/ { DATA_MODE, 898, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(20) 278 9 176 218 67 84 101 267 55 16 283 4 130 1 2 3 4 255 284 7", 3, "" },
+        /* 22*/ { DATA_MODE, 899, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(18) 280 8 267 271 280 16 166 242 240 15 283 4 1 2 3 4 255 7", 3, "" },
+        /* 23*/ { DATA_MODE, 900, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(22) 257 11 257 73 265 10 160 282 87 18 283 4 274 137 128 1 2 3 4 255 284 7", 3, "" },
+        /* 24*/ { DATA_MODE, 9999, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(22) 257 11 188 71 227 117 258 218 7 18 283 4 274 227 227 1 2 3 4 255 284 7", 3, "" },
+        /* 25*/ { DATA_MODE, 10000, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(22) 257 12 273 221 205 261 56 88 270 19 283 4 275 129 128 128 1 2 3 4 255 7", 3, "" },
+        /* 26*/ { DATA_MODE, 811799, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", 0, "(22) 257 12 210 185 6 5 270 164 105 19 283 4 275 209 145 227 1 2 3 4 255 7", 3, "" },
+        /* 27*/ { DATA_MODE, 811800, -1, -1, -1, { 0, 0, "" }, "\001\002\003\004\377", ZINT_ERROR_INVALID_OPTION, "Error 590: ECI code '811800' out of range (0 to 811799)", -1, "" },
+        /* 28*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "123,456,789/12,/3,4,/5//", 0, "(28) 272 17 278 150 175 135 72 215 204 24 283 4 140 231 173 234 206 257 140 44 262 242 44", 3, "Mode: a (24)" },
+        /* 29*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(48) 257 34 149 232 180 91 115 238 155 43 99 43 283 6 256 46 151 78 210 205 208 258 5 148", 3, "Mode: cccccc88cccccccccc8888aaa8cccccc (32)" },
+        /* 30*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "HEIMASÍÐA KENNARAHÁSKÓLA ÍSLANDS", 0, "(48) 257 35 219 88 77 17 102 166 208 47 171 44 283 6 72 69 73 77 65 83 205 208 65 32 75 69", 3, "" },
+        /* 31*/ { UNICODE_MODE, 10, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "אולטרה-קוד1234", 0, "(26) 264 16 176 82 165 201 249 274 175 23 283 4 224 229 236 232 248 228 45 247 229 227 267", 3, "Mode: 8888888888aaaa (14); Figure G.3" },
+        /* 32*/ { UNICODE_MODE, 10, -1, -1, -1, { 0, 0, "" }, "אולטרה-קוד1234", 0, "(28) 264 17 22 136 178 189 212 251 80 24 283 4 224 229 236 232 248 228 45 247 229 227 49 50", 3, "" },
+        /* 33*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "https://aimglobal.org/jcrv3tX", 0, "(28) 282 18 194 8 167 76 15 29 39 25 283 4 266 1 74 41 19 6 168 270 212 59 106 144 56 265", 3, "Mode: c (21); Figure G.4a" },
+        /* 34*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "https://aimglobal.org/jcrv3tX", 0, "(34) 282 24 202 187 44 74 222 123 24 31 283 4 97 105 109 103 108 111 98 97 108 46 111 114", 3, "" },
+        /* 35*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]121125[10]ABCD1234", 0, "(32) 273 22 37 212 237 14 144 80 85 29 283 4 129 131 173 159 148 128 128 139 145 140 139", 3, "Mode: a (34); Figure G.6 uses C43 for 6 of last 7 chars (same codeword count)" },
+        /* 36*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[17]120508[10]ABCD1234[410]9501101020917", 0, "(34) 273 23 92 146 180 275 49 42 208 30 283 4 145 140 133 136 138 65 66 67 68 140 162 272", 3, "Mode: a (35)" },
+        /* 37*/ { GS1_MODE, 0, -1, -1, -1, { 0, 0, "" }, "[17]120508[10]ABCDEFGHI[410]9501101020917", 0, "(38) 273 26 217 78 184 22 66 98 36 49 268 35 283 6 145 140 133 136 138 65 66 67 68 69 70 71", 3, "Mode: a (36)" },
+        /* 38*/ { GS1_MODE | GS1PARENS_MODE, 0, -1, -1, -1, { 0, 0, "" }, "(17)120508(10)ABCDEFGHI(410)9501101020917", 0, "(38) 273 26 217 78 184 22 66 98 36 49 268 35 283 6 145 140 133 136 138 65 66 67 68 69 70 71", 3, "Mode: a (36)" },
+        /* 39*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ftp://", 0, "(16) 272 6 43 99 160 36 225 13 74 13 283 4 278 269 165 7", 3, "Mode: c (6)" },
+        /* 40*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, ".cgi", 0, "(16) 272 6 72 105 164 44 130 49 274 13 283 4 278 274 131 7", 3, "Mode: c (4)" },
+        /* 41*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "ftp://a.cgi", 0, "(18) 272 8 47 217 205 207 140 122 193 15 283 4 280 269 123 274 131 7", 3, "Mode: c (11)" },
+        /* 42*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "e: file:f.shtml !", 0, "(24) 272 14 205 34 221 141 167 101 200 21 283 4 280 30 94 236 235 72 233 39 52 267 250 7", 3, "Mode: c (17)" },
+        /* 43*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Aaatel:", 0, "(18) 272 8 103 151 197 33 149 230 243 15 283 4 280 262 76 6 89 7", 3, "Mode: c (7)" },
+        /* 44*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Aatel:a", 0, "(18) 272 8 158 157 143 212 100 83 119 15 283 4 280 262 76 271 161 7", 3, "Mode: c (7)" },
+        /* 45*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "Atel:aAa", 0, "(20) 272 10 28 218 160 220 32 184 43 17 283 4 275 6 89 275 148 0 42 7", 3, "Mode: c (8)" },
+        /* 46*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "tel:AAaa", 0, "(20) 272 10 75 275 26 136 192 36 62 17 283 4 275 271 161 6 28 262 118 7", 3, "Mode: c (8)" },
+        /* 47*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "AAaatel:aA", 0, "(22) 272 12 79 54 35 200 219 167 35 19 283 4 276 0 42 0 41 118 46 6 156 7", 3, "Mode: c (10)" },
+        /* 48*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "émailto:étel:éfile:éhttp://éhttps://éftp://", 0, "(30) 257 20 33 67 268 39 159 274 263 27 283 4 233 276 282 233 277 282 233 278 282 233 279", 3, "Mode: 8ccccccc8cccc8ccccc8ccccccc8cccccccc8cccccc (43)" },
+        /* 49*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "éhttp://www.url.com", 0, "(22) 257 11 247 165 271 99 210 202 139 18 283 4 233 279 269 186 113 81 45 252 284 7", 3, "Mode: 8cccccccccccccccccc (19)" },
+        /* 50*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "éhttps://www.url.com", 0, "(22) 257 11 280 218 172 261 180 78 134 18 283 4 233 280 269 186 113 81 45 252 284 7", 3, "Mode: 8ccccccccccccccccccc (20)" },
+        /* 51*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "http://url.com", 0, "(20) 281 10 31 75 167 216 44 85 246 17 283 4 117 114 108 46 99 111 109 7", 3, "Mode: 8888888 (7)" },
+        /* 52*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "https://url.com", 0, "(20) 282 10 164 150 180 20 226 234 261 17 283 4 117 114 108 46 99 111 109 7", 3, "Mode: 8888888 (7)" },
+        /* 53*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "http://url.com", 0, "(18) 281 8 126 2 233 149 39 184 232 15 283 4 262 133 216 269 251 7", 3, "Mode: ccccccc (7)" },
+        /* 54*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "https://url.com", 0, "(18) 282 8 280 103 268 218 6 16 191 15 283 4 262 133 216 269 251 7", 3, "Mode: ccccccc (7)" },
+        /* 55*/ { UNICODE_MODE, 0, -1, -1, ULTRA_COMPRESSION, { 0, 0, "" }, "{", 0, "(14) 272 4 247 194 225 139 47 170 259 11 283 4 123 7", 3, "Mode: a (1)" },
+        /* 56*/ { UNICODE_MODE, 0, -1, -1, -1, { 2, 3, "" }, "A", 0, "(16) 257 5 193 57 23 46 46 104 35 12 283 74 157 65 284 7", 3, "" },
+        /* 57*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 1, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '1' out of range (2 to 8)", -1, "" },
+        /* 58*/ { UNICODE_MODE, 0, -1, -1, -1, { 1, 9, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 596: Structured Append count '9' out of range (2 to 8)", -1, "" },
+        /* 59*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '0' out of range (1 to count 3)", -1, "" },
+        /* 60*/ { UNICODE_MODE, 0, -1, -1, -1, { 4, 3, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 597: Structured Append index '4' out of range (1 to count 3)", -1, "" },
+        /* 61*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "0" }, "A", 0, "(16) 257 5 41 170 63 200 4 85 166 12 283 74 203 65 284 7", 3, "" },
+        /* 62*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80088" }, "A", 0, "(18) 257 7 240 112 147 275 67 164 275 14 283 74 273 282 282 65 284 7", 3, "" },
+        /* 63*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "123456" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 593: Structured Append ID length 6 too long (5 digit maximum)", -1, "" },
+        /* 64*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "A" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 594: Invalid Structured Append ID (digits only)", -1, "" },
+        /* 65*/ { UNICODE_MODE, 0, -1, -1, -1, { 8, 8, "80089" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 595: Structured Append ID value '80089' out of range (1 to 80088)", -1, "" },
+        /* 66*/ { UNICODE_MODE, 0, -1, 3, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, "Error 592: Revision '3' out of range (1 or 2 only)", -1, "" },
+        /* 67*/ { UNICODE_MODE, 0, -1, -1, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 100 2 78 70 131 251 169 11 283 4 65 7", 3, "" },
+        /* 68*/ { UNICODE_MODE, 0, 1, -1, -1, { 0, 0, "" }, "A", 0, "(10) 257 4 224 122 261 7 283 0 65 3", 1, "" },
+        /* 69*/ { UNICODE_MODE, 0, 2, -1, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 73 147 175 89 77 248 10 283 3 65 284 6", 2, "" },
+        /* 70*/ { UNICODE_MODE, 0, 3, -1, -1, { 0, 0, "" }, "A", 0, "(14) 257 4 100 2 78 70 131 251 169 11 283 4 65 7", 3, "" },
+        /* 71*/ { UNICODE_MODE, 0, 4, -1, -1, { 0, 0, "" }, "A", 0, "(16) 257 4 157 71 251 225 57 250 69 40 82 13 283 6 65 9", 4, "" },
+        /* 72*/ { UNICODE_MODE, 0, 5, -1, -1, { 0, 0, "" }, "A", 0, "(18) 257 4 90 195 35 197 81 56 120 116 278 62 217 15 283 8 65 11", 5, "" },
+        /* 73*/ { UNICODE_MODE, 0, 6, -1, -1, { 0, 0, "" }, "A", 0, "(20) 257 4 255 264 113 138 228 183 42 193 225 1 248 147 100 17 283 10 65 13", 6, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -297,13 +305,28 @@ static void test_input(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %s, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), data[i].eci, data[i].option_1, data[i].option_2,
                     testUtilOption3Name(BARCODE_ULTRA, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
-                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret), symbol->errtxt, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->errtxt, symbol->option_1, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d\n",
+                        i, symbol->option_1, data[i].expected_option_1);
+            if (data[i].option_2 != -1) {
+                assert_equal(symbol->option_2, data[i].option_2, "i:%d symbol->option_2 %d != %d\n",
+                            i, symbol->option_2, data[i].option_2);
+            } else {
+                assert_zero(symbol->option_2, "i:%d symbol->option_2 %d != 0\n", i, symbol->option_2);
+            }
+            if (data[i].option_3 != -1) {
+                assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 %d != %d\n",
+                            i, symbol->option_3, data[i].option_3);
+            } else {
+                assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3);
+            }
         }
 
         ZBarcode_Delete(symbol);

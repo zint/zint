@@ -345,7 +345,7 @@ static int set_symbol(struct zint_symbol *symbol, const int idx, const int chk_s
         length--;
     }
     /* `option_1` */
-    if (length > si->len_min && si->option_1_min <= si->option_1_max) { 
+    if (length > si->len_min && si->option_1_min <= si->option_1_max) {
         unsigned char ch = *input++;
         if (ch != 0xFF) { /* Special case 255 as default (-1) */
             if (si->option_1_min + 1 == si->option_1_max) { /* Only one in it? */
@@ -357,7 +357,7 @@ static int set_symbol(struct zint_symbol *symbol, const int idx, const int chk_s
         length--;
     }
     /* `option_2` */
-    if (length > si->len_min && si->option_2_min <= si->option_2_max) { 
+    if (length > si->len_min && si->option_2_min <= si->option_2_max) {
         if (si->option_2_min + 1 == si->option_2_max) { /* Only one in it? */
             symbol->option_2 = (*input++ & 1) ? si->option_2_min : si->option_2_max; /* Odd/even */
         } else {

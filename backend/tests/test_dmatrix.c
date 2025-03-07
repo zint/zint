@@ -543,111 +543,112 @@ static void test_options(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
         int bwipp_cmp;
         const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, "" },
-        /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 524: Older Data Matrix standards are no longer supported", 1, "" },
-        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, "" },
-        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, -1, { 0, 0, "" }, "1", 0, 12, 12, "", 1, "" },
-        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, -1, { 0, 0, "" }, "1", 0, 26, 64, "", 1, "" },
-        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 0, "Ignored; BWIPP no options set" },
-        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "", 1, "4 data" },
-        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "____", ZINT_ERROR_TOO_LONG, -1, -1, "Error 522: Input too long for Version 1, requires 4 codewords (maximum 3)", 1, "" },
-        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, 25, -1, -1, { 0, 0, "" }, "____", 0, 8, 18, "", 1, "" },
-        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "10 data" },
-        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "" },
-        /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 1, "" },
-        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 1, "" },
-        /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 1, "" },
-        /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 1, "15 data" },
-        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 1, "" },
-        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________", 0, 18, 18, "", 1, "" },
-        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "", 1, "18 data" },
-        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "", 1, "19 data" },
-        /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "", 1, "21 data" },
-        /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 1, "23 data" },
-        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________", 0, 8, 64, "", 1, "" },
-        /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 1, "" },
-        /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 1, "31 data" },
-        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 0, "BWIPP DMRE requires dimensions" },
-        /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________", 0, 24, 24, "", 1, "" },
-        /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 1, "37 data" },
-        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________", 0, 8, 96, "", 1, "" },
-        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 1, "" },
-        /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 1, "39 data" },
-        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________", 0, 12, 64, "", 1, "" },
-        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 1, "" },
-        /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 1, "43 data" },
-        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________", 0, 12, 64, "", 1, "" },
-        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 1, "" },
-        /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "", 1, "44 data" },
-        /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 1, "45 data" },
-        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 0, "BWIPP DMRE requires dimensions" },
-        /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________________", 0, 32, 32, "", 1, "" },
-        /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 1, "49 data" },
-        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 0, "BWIPP DMRE requires dimensions" },
-        /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________", 0, 32, 32, "", 1, "" },
-        /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 1, "50 data" },
-        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________", 0, 20, 44, "", 1, "" },
-        /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 1, "" },
-        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 0, "51 data; BWIPP different encodation" },
-        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44, "", 0, "BWIPP DMRE requires dimensions" },
-        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 0, "Ignored; BWIPP different encodation" },
-        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "", 1, "61 data" },
-        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "", 1, "62 data" },
-        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 1, "63 data" },
-        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 8, 144, "", 1, "" },
-        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 1, "64 data" },
-        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 12, 88, "", 1, "" },
-        /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 1, "65 data" },
-        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 26, 40, "", 1, "" },
-        /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 1, "70 data" },
-        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 26, 40, "", 1, "" },
-        /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 1, "71 data" },
-        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 22, 48, "", 1, "" },
-        /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 1, "80 data" },
-        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 24, 48, "", 1, "" },
-        /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 1, "84 data" },
-        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 20, 64, "", 1, "" },
-        /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 1, "" },
-        /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 1, "90 data" },
-        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 26, 48, "", 1, "" },
-        /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 1, "" },
-        /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 1, "91 data" },
-        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 24, 64, "", 1, "" },
-        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 1, "" },
-        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 1, "118 data" },
-        /* 78*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "", 1, "118 data" },
-        /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 1, "118 data" },
-        /* 80*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "", 1, "" },
-        /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "", 1, "" },
-        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 1, "" },
-        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 1, "" },
-        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)", 1, "" },
-        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)", 1, "" },
-        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)", 1, "" },
-        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)", 1, "" },
-        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "", 1, "" },
-        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)", 1, "" },
-        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")", 1, "" },
-        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")", 1, "" },
-        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")", 1, "" },
-        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")", 1, "" },
-        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")", 1, "" },
-        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")", 1, "" },
-        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)", 1, "" },
-        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time", 1, "" },
-        /* 98*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "", 1, "Macro05/06 ignored if have Structured Append TODO: error/warning " },
-        /* 99*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)", 1, "" },
+        /*  0*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, 1, "" },
+        /*  1*/ { BARCODE_DATAMATRIX, -1, 2, -1, -1, -1, { 0, 0, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 524: Older Data Matrix standards are no longer supported", 0, 1, "" },
+        /*  2*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, 1, "" },
+        /*  3*/ { BARCODE_DATAMATRIX, -1, -1, 2, -1, -1, { 0, 0, "" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /*  4*/ { BARCODE_DATAMATRIX, -1, -1, 48, -1, -1, { 0, 0, "" }, "1", 0, 26, 64, "", 48, 1, "" },
+        /*  5*/ { BARCODE_DATAMATRIX, -1, -1, 49, -1, -1, { 0, 0, "" }, "1", 0, 10, 10, "", 1, 0, "Ignored; BWIPP no options set" },
+        /*  6*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____", 0, 12, 12, "", 2, 1, "4 data" },
+        /*  7*/ { BARCODE_DATAMATRIX, -1, -1, 1, -1, -1, { 0, 0, "" }, "____", ZINT_ERROR_TOO_LONG, -1, -1, "Error 522: Input too long for Version 1, requires 4 codewords (maximum 3)", 1, 1, "" },
+        /*  8*/ { BARCODE_DATAMATRIX, -1, -1, 25, -1, -1, { 0, 0, "" }, "____", 0, 8, 18, "", 25, 1, "" },
+        /*  9*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 26, 1, "10 data" },
+        /* 10*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 26, 1, "" },
+        /* 11*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 8, 32, "", 26, 1, "" },
+        /* 12*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 4, 1, "" },
+        /* 13*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE | DM_ISO_144, -1, { 0, 0, "" }, "__________", 0, 16, 16, "", 4, 1, "" },
+        /* 14*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 27, 1, "15 data" },
+        /* 15*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________", 0, 12, 26, "", 27, 1, "" },
+        /* 16*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________", 0, 18, 18, "", 5, 1, "" },
+        /* 17*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________", 0, 18, 18, "", 5, 1, "18 data" },
+        /* 18*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________", 0, 20, 20, "", 6, 1, "19 data" },
+        /* 19*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________", 0, 20, 20, "", 6, 1, "21 data" },
+        /* 20*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 7, 1, "23 data" },
+        /* 21*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________", 0, 8, 64, "", 32, 1, "" },
+        /* 22*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________", 0, 22, 22, "", 7, 1, "" },
+        /* 23*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 29, 1, "31 data" },
+        /* 24*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________", 0, 16, 36, "", 29, 0, "BWIPP DMRE requires dimensions" },
+        /* 25*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________", 0, 24, 24, "", 8, 1, "" },
+        /* 26*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 9, 1, "37 data" },
+        /* 27*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________", 0, 8, 96, "", 34, 1, "" },
+        /* 28*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________", 0, 26, 26, "", 9, 1, "" },
+        /* 29*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 9, 1, "39 data" },
+        /* 30*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________", 0, 12, 64, "", 37, 1, "" },
+        /* 31*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________", 0, 26, 26, "", 9, 1, "" },
+        /* 32*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 9, 1, "43 data" },
+        /* 33*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________", 0, 12, 64, "", 37, 1, "" },
+        /* 34*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________", 0, 26, 26, "", 9, 1, "" },
+        /* 35*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________", 0, 26, 26, "", 9, 1, "44 data" },
+        /* 36*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 30, 1, "45 data" },
+        /* 37*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_____________________________________________", 0, 16, 48, "", 30, 0, "BWIPP DMRE requires dimensions" },
+        /* 38*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_____________________________________________", 0, 32, 32, "", 10, 1, "" },
+        /* 39*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 30, 1, "49 data" },
+        /* 40*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________", 0, 16, 48, "", 30, 0, "BWIPP DMRE requires dimensions" },
+        /* 41*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________", 0, 32, 32, "", 10, 1, "" },
+        /* 42*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 10, 1, "50 data" },
+        /* 43*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________", 0, 20, 44, "", 41, 1, "" },
+        /* 44*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________", 0, 32, 32, "", 10, 1, "" },
+        /* 45*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 10, 0, "51 data; BWIPP different encodation" },
+        /* 46*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 20, 44, "", 41, 0, "BWIPP DMRE requires dimensions" },
+        /* 47*/ { BARCODE_DATAMATRIX, -1, -1, -1, 9999, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTU", 0, 32, 32, "", 10, 0, "Ignored; BWIPP different encodation" },
+        /* 48*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_____________________________________________________________", 0, 32, 32, "", 10, 1, "61 data" },
+        /* 49*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________", 0, 32, 32, "", 10, 1, "62 data" },
+        /* 50*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 11, 1, "63 data" },
+        /* 51*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 8, 144, "", 36, 1, "" },
+        /* 52*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 53*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 11, 1, "64 data" },
+        /* 54*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 12, 88, "", 38, 1, "" },
+        /* 55*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 56*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 11, 1, "65 data" },
+        /* 57*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 26, 40, "", 46, 1, "" },
+        /* 58*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 59*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 11, 1, "70 data" },
+        /* 60*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 26, 40, "", 46, 1, "" },
+        /* 61*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 62*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 11, 1, "71 data" },
+        /* 63*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 22, 48, "", 43, 1, "" },
+        /* 64*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "_______________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 65*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 11, 1, "80 data" },
+        /* 66*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 24, 48, "", 44, 1, "" },
+        /* 67*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "________________________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 68*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 11, 1, "84 data" },
+        /* 69*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 20, 64, "", 42, 1, "" },
+        /* 70*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "____________________________________________________________________________________", 0, 36, 36, "", 11, 1, "" },
+        /* 71*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 12, 1, "90 data" },
+        /* 72*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 26, 48, "", 47, 1, "" },
+        /* 73*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "__________________________________________________________________________________________", 0, 40, 40, "", 12, 1, "" },
+        /* 74*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 12, 1, "91 data" },
+        /* 75*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 24, 64, "", 45, 1, "" },
+        /* 76*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "___________________________________________________________________________________________", 0, 40, 40, "", 12, 1, "" },
+        /* 77*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 13, 1, "118 data" },
+        /* 78*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_DMRE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 26, 64, "", 48, 1, "118 data" },
+        /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 13, 1, "118 data" },
+        /* 80*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "", 1, 1, "" },
+        /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "", 1, 1, "" },
+        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)", 0, 1, "" },
+        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)", 0, 1, "" },
+        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)", 0, 1, "" },
+        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)", 0, 1, "" },
+        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)", 0, 1, "" },
+        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")", 0, 1, "" },
+        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")", 0, 1, "" },
+        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")", 0, 1, "" },
+        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")", 0, 1, "" },
+        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")", 0, 1, "" },
+        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")", 0, 1, "" },
+        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)", 0, 1, "" },
+        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time", 0, 1, "" },
+        /* 98*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "", 27, 1, "Macro05/06 ignored if have Structured Append TODO: error/warning " },
+        /* 99*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)", 0, 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -709,7 +710,16 @@ static void test_options(const testCtx *const p_ctx) {
                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
             }
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        if (data[i].option_3 != -1) {
+            assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 %d != %d\n",
+                        i, symbol->option_3, data[i].option_3); /* Unchanged */
+        } else {
+            assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3); /* Unchanged */
+        }
 
         symbol->input_mode |= FAST_MODE;
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
@@ -1111,7 +1121,9 @@ static void test_input(const testCtx *const p_ctx) {
 
         symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_DATAMATRIX, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, data[i].option_2, data[i].option_3, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
@@ -1191,6 +1203,7 @@ static void test_input(const testCtx *const p_ctx) {
                     }
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
+                    symbol->option_2 = data[i].option_2 != -1 ? data[i].option_2 : 0; /* Restore option_2 */
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
                     ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
@@ -1200,6 +1213,7 @@ static void test_input(const testCtx *const p_ctx) {
                     binlen = 0;
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
+                    symbol->option_2 = data[i].option_2 != -1 ? data[i].option_2 : 0; /* Restore option_2 */
                     ret = dm_encode_test(symbol, text, length, symbol->eci, last_seg, gs1, binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 

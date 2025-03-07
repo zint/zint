@@ -24,7 +24,7 @@ can be provided via --config:
 
 Note specifying a matching CMAKE_BUILD_TYPE is required to set the test PATH
 environment for Windows.
-  
+
 ------------------------------------------------------------------------------
 
 In order to run the test suite, the path of the zint library may need to be

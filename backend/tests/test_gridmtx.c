@@ -131,38 +131,43 @@ static void test_options(const testCtx *const p_ctx) {
     struct item {
         int option_1;
         int option_2;
+        int option_3;
         struct zint_structapp structapp;
         const char *data;
         int ret_encode;
         int ret_vector;
         int expected_size;
         const char *expected_errtxt;
+        int expected_option_1;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { 0, 0, { 0, 0, "" }, "12345", 0, 0, 18, "" },
-        /*  1*/ { 0, 1, { 0, 0, "" }, "12345", 0, 0, 18, "" },
-        /*  2*/ { 0, 2, { 0, 0, "" }, "12345", 0, 0, 30, "" },
-        /*  3*/ { 0, 14, { 0, 0, "" }, "12345", 0, 0, 18, "" }, /* Version > max version 13 so ignored */
-        /*  4*/ { 0, 13, { 0, 0, "" }, "12345", 0, 0, 162, "" },
-        /*  5*/ { 0, 1, { 0, 0, "" }, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 13 codewords (maximum 11)" },
-        /*  6*/ { 0, 2, { 0, 0, "" }, "1234567890123456789", 0, 0, 30, "" },
-        /*  7*/ { 0, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* Version auto-set to 2 */
-        /*  8*/ { 0, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
-        /*  9*/ { 5, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" }, /* Version specified so overrides ECC level which gets reduced to 4 */
-        /* 10*/ { 5, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* Version not specified so increased to allow for ECC level */
-        /* 11*/ { 6, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* ECC > max ECC 5 so ignored and auto-settings version 2, ECC 4 used */
-        /* 12*/ { 1, 0, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "" }, /* ECC < min ECC 2, ECC 2 used */
-        /* 13*/ { 4, 1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "" },
-        /* 14*/ { 0, 0, { 1, 2, "" }, "12345", 0, 0, 18, "" },
-        /* 15*/ { 0, 0, { 1, 1, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '1' out of range (2 to 16)" },
-        /* 16*/ { 0, 0, { 1, 17, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '17' out of range (2 to 16)" },
-        /* 17*/ { 0, 0, { 0, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '0' out of range (1 to count 2)" },
-        /* 18*/ { 0, 0, { 3, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '3' out of range (1 to count 2)" },
-        /* 19*/ { 0, 0, { 1, 2, "255" }, "12345", 0, 0, 18, "" },
-        /* 20*/ { 0, 0, { 1, 2, "1234" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 538: Structured Append ID length 4 too long (3 digit maximum)" },
-        /* 21*/ { 0, 0, { 1, 2, "A" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 539: Invalid Structured Append ID (digits only)" },
-        /* 22*/ { 0, 0, { 1, 2, "256" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 530: Structured Append ID value '256' out of range (0 to 255)" },
+        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "12345", 0, 0, 18, "", 5, 1 },
+        /*  1*/ { -1, 1, -1, { 0, 0, "" }, "12345", 0, 0, 18, "", 5, 1 },
+        /*  2*/ { -1, 2, -1, { 0, 0, "" }, "12345", 0, 0, 30, "", 4, 2 },
+        /*  3*/ { -1, 14, -1, { 0, 0, "" }, "12345", 0, 0, 18, "", 5, 1 }, /* Version > max version 13 so ignored */
+        /*  4*/ { -1, 13, -1, { 0, 0, "" }, "12345", 0, 0, 162, "", 3, 13 },
+        /*  5*/ { -1, 1, -1, { 0, 0, "" }, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, -1, "Error 534: Input too long for Version 1, requires 13 codewords (maximum 11)", -1, 1 },
+        /*  6*/ { -1, 2, -1, { 0, 0, "" }, "1234567890123456789", 0, 0, 30, "", 4, 2 },
+        /*  7*/ { -1, -1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "", 4, 2 }, /* Version auto-set to 2 */
+        /*  8*/ { -1, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "", 4, 1 },
+        /*  9*/ { 5, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "", 4, 1 }, /* Version specified so overrides ECC level which gets reduced to 4 */
+        /* 10*/ { 5, -1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "", 5, 2 }, /* Version not specified so increased to allow for ECC level */
+        /* 11*/ { 6, -1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "", 4, 2 }, /* ECC > max ECC 5 so ignored and auto-settings version 2, ECC 4 used */
+        /* 12*/ { 1, -1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 30, "", 2, 2 }, /* ECC < min ECC 2, ECC 2 used */
+        /* 13*/ { 4, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 0, 18, "", 4, 1 },
+        /* 14*/ { -1, -1, -1, { 1, 2, "" }, "12345", 0, 0, 18, "", 5, 1 },
+        /* 15*/ { -1, -1, -1, { 1, 1, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '1' out of range (2 to 16)", -1, 0 },
+        /* 16*/ { -1, -1, -1, { 1, 17, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 536: Structured Append count '17' out of range (2 to 16)", -1, 0 },
+        /* 17*/ { -1, -1, -1, { 0, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '0' out of range (1 to count 2)", -1, 0 },
+        /* 18*/ { -1, -1, -1, { 3, 2, "" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 537: Structured Append index '3' out of range (1 to count 2)", -1, 0 },
+        /* 19*/ { -1, -1, -1, { 1, 2, "255" }, "12345", 0, 0, 18, "", 5, 1 },
+        /* 20*/ { -1, -1, -1, { 1, 2, "1234" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 538: Structured Append ID length 4 too long (3 digit maximum)", -1, 0 },
+        /* 21*/ { -1, -1, -1, { 1, 2, "A" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 539: Invalid Structured Append ID (digits only)", -1, 0 },
+        /* 22*/ { -1, -1, -1, { 1, 2, "256" }, "12345", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 530: Structured Append ID value '256' out of range (0 to 255)", -1, 0 },
+        /* 23*/ { -1, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 0, 42, "", 4, 3 },
+        /* 24*/ { -1, -1, ZINT_FULL_MULTIBYTE, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", 0, 0, 42, "", 4, 3 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -177,7 +182,9 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
@@ -189,6 +196,16 @@ static void test_options(const testCtx *const p_ctx) {
             assert_equal(symbol->rows, data[i].expected_size, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_size);
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        if (data[i].option_3 != -1) {
+            assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 0x%04X != 0x%04X\n",
+                        i, symbol->option_3, data[i].option_3);
+        } else {
+            assert_zero(symbol->option_3, "i:%d symbol->option_3 0x%04X != 0\n", i, symbol->option_3);
+        }
 
         if (data[i].ret_vector != -1) {
             ret = ZBarcode_Buffer_Vector(symbol, 0);

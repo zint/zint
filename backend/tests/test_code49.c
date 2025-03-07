@@ -90,13 +90,17 @@ static void test_input(const testCtx *const p_ctx) {
 
     struct item {
         int input_mode;
+        int output_options;
         int option_1;
+        int option_3;
         const char *data;
         int length;
         int ret;
         int expected_rows;
         int expected_width;
         const char *expected;
+        int expected_option_1;
+        int expected_option_3;
         const char *comment;
     };
     /*
@@ -104,33 +108,36 @@ static void test_input(const testCtx *const p_ctx) {
        US U+001F (\037, 31), S1 5
     */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character at position 1 in input, extended ASCII not allowed", "ASCII only" },
-        /*  1*/ { UNICODE_MODE, -1, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", "2.3.7 Symbol Example" },
-        /*  2*/ { UNICODE_MODE, -1, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
-        /*  3*/ { UNICODE_MODE, -1, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", "2.3 Example 1: Numeric Encodation" },
-        /*  4*/ { UNICODE_MODE, -1, "12345678", -1, 0, 2, 70, "(16) 5 17 9 14 6 48 48 0 48 48 25 42 2 17 2 37", "2.3 Example 1: Numeric Encodation" },
-        /*  5*/ { UNICODE_MODE, -1, "123456789", -1, 0, 2, 70, "(16) 5 17 9 46 16 37 48 31 48 48 7 26 9 39 2 32", "2.3 Example 1: Numeric Encodation" },
-        /*  6*/ { UNICODE_MODE, -1, "1234567", -1, 0, 2, 70, "(16) 43 45 2 11 39 48 48 40 48 48 33 36 38 6 2 15", "2.3 Example 1: Numeric Encodation" },
-        /*  7*/ { UNICODE_MODE, -1, "\037", -1, 0, 2, 70, "(16) 5 48 48 48 48 48 48 48 48 48 4 33 13 15 4 18", "US (Start 4, Alphanumeric S1)" },
-        /*  8*/ { UNICODE_MODE, -1, "\000\037", 2, 0, 2, 70, "(16) 38 43 5 48 48 48 48 33 48 48 45 7 38 43 4 37", "NUL S1 US (Start 4, Alphanumeric S1)" },
-        /*  9*/ { UNICODE_MODE, -1, "a\000", 2, 0, 2, 70, "(16) 10 43 38 48 48 48 48 38 48 48 32 33 14 15 5 48", "a S1 NUL (Start 5, Alphanumeric S2)" },
-        /* 10*/ { UNICODE_MODE, -1, "ab", -1, 0, 2, 70, "(16) 10 44 11 48 48 48 48 12 48 48 27 39 42 0 5 13", "a S2 b (Start 5, Alphanumeric S2)" },
-        /* 11*/ { UNICODE_MODE, -1, "\000A\000a\000", 5, 0, 2, 70, "(16) 38 10 43 38 44 10 43 30 38 48 25 23 38 32 4 12", "NUL A S1 NUL S2 a S1 (C18 30) NUL (Start 4, Alphanumeric S1)" },
-        /* 12*/ { UNICODE_MODE, -1, "1234\037aA12345A", -1, 0, 3, 70, "(24) 1 2 3 4 43 5 44 4 10 10 48 5 17 9 48 0 10 48 19 2 13 32 7 33", "1 2 3 4 S1 US S2 (C18 4) a A NS 12345 NS (C28 0) A (Start 0, Alpha)" },
-        /* 13*/ { GS1_MODE, -1, "[90]12345[91]AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
-        /* 14*/ { GS1_MODE | GS1PARENS_MODE, -1, "(90)12345(91)AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
-        /* 15*/ { UNICODE_MODE, -1, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 16*/ { UNICODE_MODE, 1, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 433: Minimum number of rows out of range (2 to 8)", "" },
-        /* 17*/ { UNICODE_MODE, 9, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 433: Minimum number of rows out of range (2 to 8)", "" },
-        /* 18*/ { UNICODE_MODE, 2, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 19*/ { UNICODE_MODE, 3, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 20*/ { UNICODE_MODE, 4, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 21*/ { UNICODE_MODE, 5, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 22*/ { UNICODE_MODE, 6, "1234567890123456789012345678901234567890", -1, 0, 6, 70, "(48) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 23*/ { UNICODE_MODE, 7, "1234567890123456789012345678901234567890", -1, 0, 7, 70, "(56) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 24*/ { UNICODE_MODE, 8, "1234567890123456789012345678901234567890", -1, 0, 8, 70, "(64) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", "" },
-        /* 25*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW", -1, 0, 8, 70, "(64) 10 11 12 13 14 15 16 42 17 18 19 20 21 22 23 42 24 25 26 27 28 29 30 42 31 32 33 34 35", "" },
-        /* 26*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX", -1, ZINT_ERROR_TOO_LONG, 0, 0, "Error 432: Input too long, requires 50 codewords (maximum 49)", "" },
+        /*  0*/ { UNICODE_MODE, -1, -1, 0, "é", -1, ZINT_ERROR_INVALID_DATA, 0, 0, "Error 431: Invalid character at position 1 in input, extended ASCII not allowed", -1, 0, "ASCII only" },
+        /*  1*/ { UNICODE_MODE, -1, -1, 0, "EXAMPLE 2", -1, 0, 2, 70, "(16) 14 33 10 22 25 21 14 41 38 2 35 14 18 13 0 22", 2, 0, "2.3.7 Symbol Example" },
+        /*  2*/ { UNICODE_MODE, -1, -1, 0, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", 2, 0, "2.3 Example 1: Numeric Encodation (Start 2, Numeric)" },
+        /*  3*/ { UNICODE_MODE, -1, -1, 0, "123456", -1, 0, 2, 70, "(16) 5 17 9 6 48 48 48 34 48 48 36 9 23 41 2 11", 2, 0, "2.3 Example 1: Numeric Encodation" },
+        /*  4*/ { UNICODE_MODE, -1, -1, 0, "12345678", -1, 0, 2, 70, "(16) 5 17 9 14 6 48 48 0 48 48 25 42 2 17 2 37", 2, 0, "2.3 Example 1: Numeric Encodation" },
+        /*  5*/ { UNICODE_MODE, -1, -1, 0, "123456789", -1, 0, 2, 70, "(16) 5 17 9 46 16 37 48 31 48 48 7 26 9 39 2 32", 2, 0, "2.3 Example 1: Numeric Encodation" },
+        /*  6*/ { UNICODE_MODE, -1, -1, 0, "1234567", -1, 0, 2, 70, "(16) 43 45 2 11 39 48 48 40 48 48 33 36 38 6 2 15", 2, 0, "2.3 Example 1: Numeric Encodation" },
+        /*  7*/ { UNICODE_MODE, -1, -1, 0, "\037", -1, 0, 2, 70, "(16) 5 48 48 48 48 48 48 48 48 48 4 33 13 15 4 18", 2, 0, "US (Start 4, Alphanumeric S1)" },
+        /*  8*/ { UNICODE_MODE, -1, -1, 0, "\000\037", 2, 0, 2, 70, "(16) 38 43 5 48 48 48 48 33 48 48 45 7 38 43 4 37", 2, 0, "NUL S1 US (Start 4, Alphanumeric S1)" },
+        /*  9*/ { UNICODE_MODE, -1, -1, 0, "a\000", 2, 0, 2, 70, "(16) 10 43 38 48 48 48 48 38 48 48 32 33 14 15 5 48", 2, 0, "a S1 NUL (Start 5, Alphanumeric S2)" },
+        /* 10*/ { UNICODE_MODE, -1, -1, 0, "ab", -1, 0, 2, 70, "(16) 10 44 11 48 48 48 48 12 48 48 27 39 42 0 5 13", 2, 0, "a S2 b (Start 5, Alphanumeric S2)" },
+        /* 11*/ { UNICODE_MODE, -1, -1, 0, "\000A\000a\000", 5, 0, 2, 70, "(16) 38 10 43 38 44 10 43 30 38 48 25 23 38 32 4 12", 2, 0, "NUL A S1 NUL S2 a S1 (C18 30) NUL (Start 4, Alphanumeric S1)" },
+        /* 12*/ { UNICODE_MODE, -1, -1, 0, "1234\037aA12345A", -1, 0, 3, 70, "(24) 1 2 3 4 43 5 44 4 10 10 48 5 17 9 48 0 10 48 19 2 13 32 7 33", 3, 0, "1 2 3 4 S1 US S2 (C18 4) a A NS 12345 NS (C28 0) A (Start 0, Alpha)" },
+        /* 13*/ { GS1_MODE, -1, -1, 0, "[90]12345[91]AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", 4, 0, "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
+        /* 14*/ { GS1_MODE | GS1PARENS_MODE, -1, -1, 0, "(90)12345(91)AB12345", -1, 0, 4, 70, "(32) 45 48 47 15 4 7 9 28 48 45 9 1 10 11 48 25 5 17 9 48 48 48 48 27 48 48 37 39 26 8 14", 4, 0, "FNC1 NS 9012345 (C18 28) NS FNC1 9 1 A B NS (C28 25) 12345 Pad (4) (C38 27) (Start 0, Alpha)" },
+        /* 15*/ { UNICODE_MODE, -1, -1, 0, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 5, 0, "" },
+        /* 16*/ { UNICODE_MODE, -1, 1, 0, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 433: Minimum number of rows out of range (2 to 8)", 1, 0, "" },
+        /* 17*/ { UNICODE_MODE, -1, 9, 0, "1234567890123456789012345678901234567890", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 433: Minimum number of rows out of range (2 to 8)", 9, 0, "" },
+        /* 18*/ { UNICODE_MODE, -1, 2, 0, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 5, 0, "" },
+        /* 19*/ { UNICODE_MODE, -1, 3, 0, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 5, 0, "" },
+        /* 20*/ { UNICODE_MODE, -1, 4, 0, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 5, 0, "" },
+        /* 21*/ { UNICODE_MODE, -1, 5, 0, "1234567890123456789012345678901234567890", -1, 0, 5, 70, "(40) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 5, 0, "" },
+        /* 22*/ { UNICODE_MODE, -1, 6, 0, "1234567890123456789012345678901234567890", -1, 0, 6, 70, "(48) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 6, 0, "" },
+        /* 23*/ { UNICODE_MODE, -1, 7, 0, "1234567890123456789012345678901234567890", -1, 0, 7, 70, "(56) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 7, 0, "" },
+        /* 24*/ { UNICODE_MODE, -1, 8, 0, "1234567890123456789012345678901234567890", -1, 0, 8, 70, "(64) 5 17 9 29 22 18 5 7 17 9 29 22 18 5 17 19 9 29 22 18 5 17 9 11 29 22 18 48 48 48 48 16", 8, 0, "" },
+        /* 25*/ { UNICODE_MODE, -1, -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVW", -1, 0, 8, 70, "(64) 10 11 12 13 14 15 16 42 17 18 19 20 21 22 23 42 24 25 26 27 28 29 30 42 31 32 33 34 35", 8, 0, "" },
+        /* 26*/ { UNICODE_MODE, -1, -1, 0, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWX", -1, ZINT_ERROR_TOO_LONG, 0, 0, "Error 432: Input too long, requires 50 codewords (maximum 49)", -1, 0, "" },
+        /* 27*/ { UNICODE_MODE, COMPLIANT_HEIGHT, -1, 4, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", 2, 4, "option_3 separator" },
+        /* 28*/ { UNICODE_MODE, COMPLIANT_HEIGHT, -1, 5, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", 2, 1, "option_3 invalid 5 -> 1" },
+        /* 29*/ { UNICODE_MODE, -1, -1, 5, "12345", -1, 0, 2, 70, "(16) 5 17 9 48 48 48 48 27 48 48 13 23 0 13 2 0", 2, 5, "option_3 invalid 5 ignored unless COMPLIANT_HEIGHT" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -153,16 +160,20 @@ static void test_input(const testCtx *const p_ctx) {
 
         symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODE49, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1,
+            printf("        /*%3d*/ { %s, %s, %d, %d, \"%s\", %d, %s, %d, %d, \"%s\", %d, %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
+                    data[i].option_1, data[i].option_3,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width,
+                    symbol->errtxt, symbol->option_1, symbol->option_3, data[i].comment);
         } else {
             assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
@@ -180,6 +191,11 @@ static void test_input(const testCtx *const p_ctx) {
                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
                 }
             }
+            assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d\n",
+                        i, symbol->option_1, data[i].expected_option_1);
+            assert_zero(symbol->option_2, "i:%d symbol->option_2 %d != 0\n", i, symbol->option_2);
+            assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 %d != %d\n",
+                        i, symbol->option_3, data[i].expected_option_3);
         }
 
         ZBarcode_Delete(symbol);

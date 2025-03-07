@@ -120,63 +120,64 @@ static void test_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, "0", 0, 1, 19, "" }, /* < 3 ignored */
-        /*  1*/ { 0, "0", 0, 1, 19, "" },
-        /*  2*/ { 1, "0", 0, 1, 19, "" },
-        /*  3*/ { 2, "0", 0, 1, 19, "" },
-        /*  4*/ { 9, "0", 0, 1, 19, "" }, /* > 8 ignored */
-        /*  5*/ { -1, "00", 0, 1, 19, "" },
-        /*  6*/ { 3, "00", 0, 1, 19, "" },
-        /*  7*/ { -1, "26", 0, 1, 19, "" },
-        /*  8*/ { 3, "26", 0, 1, 19, "" },
-        /*  9*/ { 3, "27", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)" },
-        /* 10*/ { 3, "027", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)" },
-        /* 11*/ { 3, "000", 0, 1, 19, "" },
-        /* 12*/ { 3, "001", 0, 1, 19, "" },
-        /* 13*/ { 3, "026", 0, 1, 19, "" },
-        /* 14*/ { -1, "27", 0, 1, 23, "" }, /* Channel 4 */
-        /* 15*/ { -1, "026", 0, 1, 23, "" }, /* Defaults to channel 4 due to length */
-        /* 16*/ { 3, "0026", 0, 1, 19, "" },
-        /* 17*/ { 3, "1234", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"1234\" out of range (0 to 26 for 3 channels)" },
-        /* 18*/ { 4, "000", 0, 1, 23, "" },
-        /* 19*/ { -1, "000", 0, 1, 23, "" }, /* Defaults to channel 4 due to length */
-        /* 20*/ { 4, "026", 0, 1, 23, "" },
-        /* 21*/ { 4, "0000026", 0, 1, 23, "" },
-        /* 22*/ { 4, "0000", 0, 1, 23, "" },
-        /* 23*/ { 4, "292", 0, 1, 23, "" },
-        /* 24*/ { 4, "293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)" },
-        /* 25*/ { 4, "000293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)" },
-        /* 26*/ { -1, "293", 0, 1, 27, "" }, /* Channel 5 */
-        /* 27*/ { 5, "0000", 0, 1, 27, "" },
-        /* 28*/ { -1, "0000", 0, 1, 27, "" }, /* Defaults to channel 5 due to length */
-        /* 29*/ { -1, "3493", 0, 1, 27, "" },
-        /* 30*/ { 5, "3493", 0, 1, 27, "" },
-        /* 31*/ { 5, "3494", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"3494\" out of range (0 to 3493 for 5 channels)" },
-        /* 32*/ { -1, "3494", 0, 1, 31, "" }, /* Channel 6 */
-        /* 33*/ { 6, "00000", 0, 1, 31, "" },
-        /* 34*/ { -1, "00000", 0, 1, 31, "" }, /* Defaults to channel 5 due to length */
-        /* 35*/ { -1, "44072", 0, 1, 31, "" },
-        /* 36*/ { 6, "44072", 0, 1, 31, "" },
-        /* 37*/ { 6, "44073", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"44073\" out of range (0 to 44072 for 6 channels)" },
-        /* 38*/ { -1, "44073", 0, 1, 35, "" }, /* Channel 7 */
-        /* 39*/ { 7, "000000", 0, 1, 35, "" },
-        /* 40*/ { -1, "000000", 0, 1, 35, "" }, /* Defaults to channel 7 due to length */
-        /* 41*/ { 7, "576688", 0, 1, 35, "" },
-        /* 42*/ { 7, "576689", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"576689\" out of range (0 to 576688 for 7 channels)" },
-        /* 43*/ { 7, "0576688", 0, 1, 35, "" },
-        /* 44*/ { -1, "1234567", 0, 1, 39, "" },
-        /* 45*/ { -1, "576689", 0, 1, 39, "" }, /* Channel 8 */
-        /* 46*/ { 8, "0000000", 0, 1, 39, "" },
-        /* 47*/ { -1, "0000000", 0, 1, 39, "" }, /* Defaults to channel 8 due to length */
-        /* 48*/ { 8, "1234567", 0, 1, 39, "" },
-        /* 49*/ { 8, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)" },
-        /* 50*/ { 8, "01234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)" },
-        /* 51*/ { 8, "00000000", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)" },
-        /* 52*/ { 9, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)" },
-        /* 53*/ { -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 334: Invalid character at position 1 in input (digits only)" },
+        /*  0*/ { -1, "0", 0, 1, 19, "", 3 }, /* < 3 ignored */
+        /*  1*/ { 0, "0", 0, 1, 19, "", 3 },
+        /*  2*/ { 1, "0", 0, 1, 19, "", 3 },
+        /*  3*/ { 2, "0", 0, 1, 19, "", 3 },
+        /*  4*/ { 9, "0", 0, 1, 19, "", 3 }, /* > 8 ignored */
+        /*  5*/ { -1, "00", 0, 1, 19, "", 3 },
+        /*  6*/ { 3, "00", 0, 1, 19, "", 3 },
+        /*  7*/ { -1, "26", 0, 1, 19, "", 3 },
+        /*  8*/ { 3, "26", 0, 1, 19, "", 3 },
+        /*  9*/ { 3, "27", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)", 3 },
+        /* 10*/ { 3, "027", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"27\" out of range (0 to 26 for 3 channels)", 3 },
+        /* 11*/ { 3, "000", 0, 1, 19, "", 3 },
+        /* 12*/ { 3, "001", 0, 1, 19, "", 3 },
+        /* 13*/ { 3, "026", 0, 1, 19, "", 3 },
+        /* 14*/ { -1, "27", 0, 1, 23, "", 4 }, /* Channel 4 */
+        /* 15*/ { -1, "026", 0, 1, 23, "", 4 }, /* Defaults to channel 4 due to length */
+        /* 16*/ { 3, "0026", 0, 1, 19, "", 3 },
+        /* 17*/ { 3, "1234", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"1234\" out of range (0 to 26 for 3 channels)", 3 },
+        /* 18*/ { 4, "000", 0, 1, 23, "", 4 },
+        /* 19*/ { -1, "000", 0, 1, 23, "", 4 }, /* Defaults to channel 4 due to length */
+        /* 20*/ { 4, "026", 0, 1, 23, "", 4 },
+        /* 21*/ { 4, "0000026", 0, 1, 23, "", 4 },
+        /* 22*/ { 4, "0000", 0, 1, 23, "", 4 },
+        /* 23*/ { 4, "292", 0, 1, 23, "", 4 },
+        /* 24*/ { 4, "293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)", 4 },
+        /* 25*/ { 4, "000293", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"293\" out of range (0 to 292 for 4 channels)", 4 },
+        /* 26*/ { -1, "293", 0, 1, 27, "", 5 }, /* Channel 5 */
+        /* 27*/ { 5, "0000", 0, 1, 27, "", 5 },
+        /* 28*/ { -1, "0000", 0, 1, 27, "", 5 }, /* Defaults to channel 5 due to length */
+        /* 29*/ { -1, "3493", 0, 1, 27, "", 5 },
+        /* 30*/ { 5, "3493", 0, 1, 27, "", 5 },
+        /* 31*/ { 5, "3494", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"3494\" out of range (0 to 3493 for 5 channels)", 5 },
+        /* 32*/ { -1, "3494", 0, 1, 31, "", 6 }, /* Channel 6 */
+        /* 33*/ { 6, "00000", 0, 1, 31, "", 6 },
+        /* 34*/ { -1, "00000", 0, 1, 31, "", 6 }, /* Defaults to channel 6 due to length */
+        /* 35*/ { -1, "44072", 0, 1, 31, "", 6 },
+        /* 36*/ { 6, "44072", 0, 1, 31, "", 6 },
+        /* 37*/ { 6, "44073", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"44073\" out of range (0 to 44072 for 6 channels)", 6 },
+        /* 38*/ { -1, "44073", 0, 1, 35, "", 7 }, /* Channel 7 */
+        /* 39*/ { 7, "000000", 0, 1, 35, "", 7 },
+        /* 40*/ { -1, "000000", 0, 1, 35, "", 7 }, /* Defaults to channel 7 due to length */
+        /* 41*/ { 7, "576688", 0, 1, 35, "", 7 },
+        /* 42*/ { 7, "576689", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 335: Input value \"576689\" out of range (0 to 576688 for 7 channels)", 7 },
+        /* 43*/ { 7, "0576688", 0, 1, 35, "", 7 },
+        /* 44*/ { -1, "1234567", 0, 1, 39, "", 8 },
+        /* 45*/ { -1, "576689", 0, 1, 39, "", 8 }, /* Channel 8 */
+        /* 46*/ { 8, "0000000", 0, 1, 39, "", 8 },
+        /* 47*/ { -1, "0000000", 0, 1, 39, "", 8 }, /* Defaults to channel 8 due to length */
+        /* 48*/ { 8, "1234567", 0, 1, 39, "", 8 },
+        /* 49*/ { 8, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)", 8 },
+        /* 50*/ { 8, "01234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)", 8 },
+        /* 51*/ { 8, "00000000", ZINT_ERROR_TOO_LONG, -1, -1, "Error 333: Input length 8 too long (maximum 7)", 8 },
+        /* 52*/ { 9, "7742863", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 318: Input value \"7742863\" out of range (0 to 7742862)", 9 },
+        /* 53*/ { -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 334: Invalid character at position 1 in input (digits only)", 0 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -197,6 +198,8 @@ static void test_input(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d\n", i, ret, data[i].ret);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);

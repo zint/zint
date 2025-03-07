@@ -1378,7 +1378,7 @@ static int hx_evaluate(const unsigned char *local, const int size) {
 /* Apply the four possible bitmasks for evaluation */
 /* TODO: Haven't been able to replicate (or even get close to) the penalty scores in ISO/IEC 20830:2021
  * Annex K examples */
-static void hx_apply_bitmask(unsigned char *grid, const int size, const int version, const int ecc_level,
+static int hx_apply_bitmask(unsigned char *grid, const int size, const int version, const int ecc_level,
             const int user_mask, const int debug_print) {
     int x, y;
     int i, j, r, k;
@@ -1472,6 +1472,8 @@ static void hx_apply_bitmask(unsigned char *grid, const int size, const int vers
     }
     /* Set the Structural Info */
     hx_set_function_info(grid, size, version, ecc_level, best_pattern, debug_print);
+
+    return best_pattern;
 }
 
 /* Han Xin Code - main */
@@ -1481,7 +1483,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     int ecc_level = symbol->option_1;
     int i, j, j_max, version;
     int full_multibyte;
-    int user_mask;
+    int user_mask, bitmask;
     int data_codewords = 0, size;
     int size_squared;
     int codewords;
@@ -1673,7 +1675,12 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
         }
     }
 
-    hx_apply_bitmask(grid, size, version, ecc_level, user_mask, debug_print);
+    bitmask = hx_apply_bitmask(grid, size, version, ecc_level, user_mask, debug_print);
+
+    /* Feedback options */
+    symbol->option_1 = ecc_level;
+    symbol->option_2 = version;
+    symbol->option_3 = (symbol->option_3 & 0xFF) | ((bitmask + 1) << 8);
 
     symbol->width = size;
     symbol->rows = size;

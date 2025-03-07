@@ -682,6 +682,10 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     columns = useColumns + 5;
 
+    /* Feedback options */
+    symbol->option_1 = rows;
+    symbol->option_2 = columns;
+
     /* >>> Build C128 code numbers */
     /* The C128 column count contains Start (2CW), Row ID, Checksum, Stop */
     pOutput = (unsigned char *) z_alloca((size_t) columns * (size_t) rows);

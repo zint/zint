@@ -1,19 +1,29 @@
-Version 2.15.0.9 (dev) not released yet (2025-03-02)
+Version 2.15.0.9 (dev) not released yet (2025-03-07)
 ====================================================
 
+**Incompatible changes**
+------------------------
+- Symbol structure members `option_1`, `option_2` and `option_3` now updated
+  after `ZBarcode_Encode()` and variants are called, and there are three new
+  methods in the Qt Backend to access to them
+
 Changes
 -------
-
 - Add new `BARCODE_RAW_TEXT` option for `output_options` and new warning
   `ZINT_WARN_HRT_RAW_TEXT` for when set when outputting HRT
-
-Changes
--------
 - Add API funcs `ZBarcode_UTF8_To_ECI()` and `ZBarcode_Dest_Len_ECI()`
+- Set `option_1`, `option_2`, `option_3` to values used in encodation, and add
+  new access methods `encodedOption1()` etc. to Qt Backend, and use in GUI to
+  provide better feedback
+- AZTEC: give more precise warnings in low ECC situations, and indicate via
+  `option_1` by setting to -1 (min 3 words), 0 (<5% + 3 words)
+- Better warning messages on non-compliant heights
 
 Bugs
 ----
 - AZTEC: fix GS1 mode with Structured Append (wasn't outputting initial FNC1)
+- set_height: fix non-compliance false positives by using epsilon in checks
+- manual/man page: fix DATAMATRIX Sizes tables "28 12x26" -> "27 12x26"
 
 
 Version 2.15.0 (2025-02-25)

@@ -273,7 +273,7 @@ Value ranges from 2 to 8</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblUltraStructAppIndex">
         <property name="enabled">
@@ -365,7 +365,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblUltraStructAppID">
         <property name="enabled">

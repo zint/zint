@@ -61,52 +61,52 @@ variable widths</string>
        </item>
        <item>
         <property name="text">
-         <string>16 x 18 (Version A)</string>
+         <string>16 x 18 (Version A) (Zint 1)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>22 x 22 (Version B)</string>
+         <string>22 x 22 (Version B) (Zint 2)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>28 x 32 (Version C)</string>
+         <string>28 x 32 (Version C) (Zint 3)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>40 x 42 (Version D)</string>
+         <string>40 x 42 (Version D) (Zint 4)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>52 x 54 (Version E)</string>
+         <string>52 x 54 (Version E) (Zint 5)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>70 x 76 (Version F)</string>
+         <string>70 x 76 (Version F) (Zint 6)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>104 x 98 (Version G)</string>
+         <string>104 x 98 (Version G) (Zint 7)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>148 x 134 (Version H)</string>
+         <string>148 x 134 (Version H) (Zint 8)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>8 x automatic width (Version S)</string>
+         <string>8 x automatic width (Version S) (Zint 9)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>16 x automatic width (Version T)</string>
+         <string>16 x automatic width (Version T) (Zint 10)</string>
         </property>
        </item>
       </widget>
@@ -215,7 +215,7 @@ Value ranges from 1 (Disabled) to 128</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblC1StructAppIndex">
         <property name="enabled">
@@ -270,7 +270,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblC1StructAppIDDisabled">
         <property name="enabled">

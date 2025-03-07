@@ -1,5 +1,5 @@
 #!/bin/bash
-# Copyright (C) 2022-2024 <rstuart114@gmail.com>
+# Copyright (C) 2022-2025 <rstuart114@gmail.com>
 #
 # Generate the barcode .svg images for manual.pdf (via manual.pmd)
 
@@ -18,7 +18,7 @@ SCALE_UPCEAN=0.5
 # Multipying by 4 now seems necessary on Ubuntu 22.04 with pandoc 2.19
 scales=( SCALE_LINEAR SCALE_2D SCALE_2D_BIGGER SCALE_TRACK SCALE_DOTTY SCALE_ULTRA SCALE_UPCEAN )
 for scale in "${scales[@]}" ; do
-	eval $scale=$(echo "${!scale} * 4" | bc)
+    eval $scale=$(echo "${!scale} * 4" | bc)
 done
 
 zint -b PDF417 -d "This Text" --height=4 --heightperrow --scale=$SCALE_LINEAR -o images/pdf417_heightperrow.svg

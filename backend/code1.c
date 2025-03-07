@@ -1253,6 +1253,10 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
                                 "Input too long for Version %1$c, requires %2$d codewords (maximum %3$d)",
                                 'A' + symbol->option_2 - 1, data_length, c1_data_length[symbol->option_2 - 1]);
         }
+
+        /* Feedback options */
+        symbol->option_2 = size;
+
         data_cw = c1_data_length[size - 1];
 
         /* If require padding */

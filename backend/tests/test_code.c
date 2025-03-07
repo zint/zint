@@ -231,62 +231,63 @@ static void test_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODE39, -1, -1, "a", -1, 0, 1, 38, "" }, /* Converts to upper */
-        /*  1*/ { BARCODE_CODE39, -1, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, 1, 584, "" },
-        /*  2*/ { BARCODE_CODE39, -1, -1, "AB!", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 3 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  3*/ { BARCODE_CODE39, -1, -1, "A\"B", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 2 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  4*/ { BARCODE_CODE39, -1, -1, "#AB", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  5*/ { BARCODE_CODE39, -1, -1, "&", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  6*/ { BARCODE_CODE39, -1, -1, "'", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  7*/ { BARCODE_CODE39, -1, -1, "(", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  8*/ { BARCODE_CODE39, -1, -1, ")", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /*  9*/ { BARCODE_CODE39, -1, -1, "*", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, ":", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 12*/ { BARCODE_CODE39, -1, -1, "@", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 13*/ { BARCODE_CODE39, -1, -1, "[", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 14*/ { BARCODE_CODE39, -1, -1, "`", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 15*/ { BARCODE_CODE39, -1, -1, "{", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 16*/ { BARCODE_CODE39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 17*/ { BARCODE_CODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 18*/ { BARCODE_CODE39, -1, 0, "1", -1, 0, 1, 38, "" },
-        /* 19*/ { BARCODE_CODE39, -1, 1, "1", -1, 0, 1, 51, "" }, /* Check digit */
-        /* 20*/ { BARCODE_CODE39, -1, 2, "1", -1, 0, 1, 51, "" }, /* Hidden check digit */
-        /* 21*/ { BARCODE_CODE39, -1, 3, "1", -1, 0, 1, 38, "" }, /* option_2 > 2 ignored */
-        /* 22*/ { BARCODE_EXCODE39, -1, -1, "A", -1, 0, 1, 38, "" },
-        /* 23*/ { BARCODE_EXCODE39, -1, 3, "A", -1, 0, 1, 38, "" }, /* option_2 > 2 ignored */
-        /* 24*/ { BARCODE_EXCODE39, -1, -1, "a", -1, 0, 1, 51, "" },
-        /* 25*/ { BARCODE_EXCODE39, -1, -1, ",", -1, 0, 1, 51, "" },
-        /* 26*/ { BARCODE_EXCODE39, -1, -1, "\000", 1, 0, 1, 51, "" },
-        /* 27*/ { BARCODE_EXCODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 1 in input, extended ASCII not allowed" },
-        /* 28*/ { BARCODE_EXCODE39, -1, -1, "ABCDé", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 5 in input, extended ASCII not allowed" },
-        /* 29*/ { BARCODE_LOGMARS, -1, -1, "A", -1, 0, 1, 47, "" },
-        /* 30*/ { BARCODE_LOGMARS, -1, -1, "a", -1, 0, 1, 47, "" },
-        /* 31*/ { BARCODE_LOGMARS, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 32*/ { BARCODE_LOGMARS, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 33*/ { BARCODE_LOGMARS, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 34*/ { BARCODE_LOGMARS, -1, 3, "A", -1, 0, 1, 47, "" }, /* option_2 > 2 ignored */
-        /* 35*/ { BARCODE_CODE93, -1, -1, "A", -1, 0, 1, 46, "" },
-        /* 36*/ { BARCODE_CODE93, -1, -1, "a", -1, 0, 1, 55, "" },
-        /* 37*/ { BARCODE_CODE93, -1, -1, ",", -1, 0, 1, 55, "" },
-        /* 38*/ { BARCODE_CODE93, -1, -1, "\000", 1, 0, 1, 55, "" },
-        /* 39*/ { BARCODE_CODE93, -1, -1, "12\3004", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 3 in input, extended ASCII not allowed" },
-        /* 40*/ { BARCODE_CODE93, -1, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 1 in input, extended ASCII not allowed" },
-        /* 41*/ { BARCODE_VIN, -1, -1, "5GZCZ43D13S812715", -1, 0, 1, 246, "" },
-        /* 42*/ { BARCODE_VIN, -1, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 338: Invalid check digit '2' (position 9), expecting '1'" }, /* North American with invalid check character */
-        /* 43*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246, "" }, /* Not North American so no check */
-        /* 44*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 15 in input (alphanumerics only, excluding \"IOQ\")" }, /* I not allowed */
-        /* 45*/ { BARCODE_VIN, -1, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")" }, /* O not allowed */
-        /* 46*/ { BARCODE_VIN, -1, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")" }, /* Q not allowed */
-        /* 47*/ { BARCODE_HIBC_39, -1, -1, "a", -1, 0, 1, 79, "" }, /* Converts to upper */
-        /* 48*/ { BARCODE_HIBC_39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 49*/ { BARCODE_HIBC_39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 50*/ { BARCODE_HIBC_39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)" },
-        /* 51*/ { BARCODE_HIBC_39, -1, 1, "a", -1, 0, 1, 79, "" }, /* option_2 ignored */
-        /* 52*/ { BARCODE_HIBC_39, -1, 2, "a", -1, 0, 1, 79, "" }, /* option_2 ignored */
+        /*  0*/ { BARCODE_CODE39, -1, -1, "a", -1, 0, 1, 38, "", 0 }, /* Converts to upper */
+        /*  1*/ { BARCODE_CODE39, -1, -1, "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ-. $/+%", -1, 0, 1, 584, "", 0 },
+        /*  2*/ { BARCODE_CODE39, -1, -1, "AB!", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 3 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  3*/ { BARCODE_CODE39, -1, -1, "A\"B", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 2 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  4*/ { BARCODE_CODE39, -1, -1, "#AB", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  5*/ { BARCODE_CODE39, -1, -1, "&", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  6*/ { BARCODE_CODE39, -1, -1, "'", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  7*/ { BARCODE_CODE39, -1, -1, "(", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  8*/ { BARCODE_CODE39, -1, -1, ")", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /*  9*/ { BARCODE_CODE39, -1, -1, "*", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 10*/ { BARCODE_CODE39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 11*/ { BARCODE_CODE39, -1, -1, ":", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 12*/ { BARCODE_CODE39, -1, -1, "@", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 13*/ { BARCODE_CODE39, -1, -1, "[", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 14*/ { BARCODE_CODE39, -1, -1, "`", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 15*/ { BARCODE_CODE39, -1, -1, "{", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 16*/ { BARCODE_CODE39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 17*/ { BARCODE_CODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 18*/ { BARCODE_CODE39, -1, 0, "1", -1, 0, 1, 38, "", 0 },
+        /* 19*/ { BARCODE_CODE39, -1, 1, "1", -1, 0, 1, 51, "", 1 }, /* Check digit */
+        /* 20*/ { BARCODE_CODE39, -1, 2, "1", -1, 0, 1, 51, "", 2 }, /* Hidden check digit */
+        /* 21*/ { BARCODE_CODE39, -1, 3, "1", -1, 0, 1, 38, "", 0 }, /* option_2 > 2 ignored */
+        /* 22*/ { BARCODE_EXCODE39, -1, -1, "A", -1, 0, 1, 38, "", 0 },
+        /* 23*/ { BARCODE_EXCODE39, -1, 3, "A", -1, 0, 1, 38, "", 0 }, /* option_2 > 2 ignored */
+        /* 24*/ { BARCODE_EXCODE39, -1, -1, "a", -1, 0, 1, 51, "", 0 },
+        /* 25*/ { BARCODE_EXCODE39, -1, -1, ",", -1, 0, 1, 51, "", 0 },
+        /* 26*/ { BARCODE_EXCODE39, -1, -1, "\000", 1, 0, 1, 51, "", 0 },
+        /* 27*/ { BARCODE_EXCODE39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 1 in input, extended ASCII not allowed", 0 },
+        /* 28*/ { BARCODE_EXCODE39, -1, -1, "ABCDé", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 329: Invalid character at position 5 in input, extended ASCII not allowed", 0 },
+        /* 29*/ { BARCODE_LOGMARS, -1, -1, "A", -1, 0, 1, 47, "", 0 },
+        /* 30*/ { BARCODE_LOGMARS, -1, -1, "a", -1, 0, 1, 47, "", 0 },
+        /* 31*/ { BARCODE_LOGMARS, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 32*/ { BARCODE_LOGMARS, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 33*/ { BARCODE_LOGMARS, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 324: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 34*/ { BARCODE_LOGMARS, -1, 3, "A", -1, 0, 1, 47, "", 0 }, /* option_2 > 2 ignored */
+        /* 35*/ { BARCODE_CODE93, -1, -1, "A", -1, 0, 1, 46, "", 0 },
+        /* 36*/ { BARCODE_CODE93, -1, -1, "a", -1, 0, 1, 55, "", 0 },
+        /* 37*/ { BARCODE_CODE93, -1, -1, ",", -1, 0, 1, 55, "", 0 },
+        /* 38*/ { BARCODE_CODE93, -1, -1, "\000", 1, 0, 1, 55, "", 0 },
+        /* 39*/ { BARCODE_CODE93, -1, -1, "12\3004", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 3 in input, extended ASCII not allowed", 0 },
+        /* 40*/ { BARCODE_CODE93, -1, -1, "é", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 331: Invalid character at position 1 in input, extended ASCII not allowed", 0 },
+        /* 41*/ { BARCODE_VIN, -1, -1, "5GZCZ43D13S812715", -1, 0, 1, 246, "", 0 },
+        /* 42*/ { BARCODE_VIN, -1, -1, "5GZCZ43D23S812715", -1, ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 338: Invalid check digit '2' (position 9), expecting '1'", 0 }, /* North American with invalid check character */
+        /* 43*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392124", -1, 0, 1, 246, "", 0 }, /* Not North American so no check */
+        /* 44*/ { BARCODE_VIN, -1, -1, "WP0ZZZ99ZTS392I24", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 15 in input (alphanumerics only, excluding \"IOQ\")", 0 }, /* I not allowed */
+        /* 45*/ { BARCODE_VIN, -1, -1, "WPOZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")", 0 }, /* O not allowed */
+        /* 46*/ { BARCODE_VIN, -1, -1, "WPQZZZ99ZTS392124", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 337: Invalid character at position 3 in input (alphanumerics only, excluding \"IOQ\")", 0 }, /* Q not allowed */
+        /* 47*/ { BARCODE_HIBC_39, -1, -1, "a", -1, 0, 1, 79, "", 0 }, /* Converts to upper */
+        /* 48*/ { BARCODE_HIBC_39, -1, -1, ",", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 49*/ { BARCODE_HIBC_39, -1, -1, "\000", 1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 50*/ { BARCODE_HIBC_39, -1, -1, "\300", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 1 in input (alphanumerics, space and \"-.$/+%\" only)", 0 },
+        /* 51*/ { BARCODE_HIBC_39, -1, 1, "a", -1, 0, 1, 79, "", 0 }, /* option_2 ignored */
+        /* 52*/ { BARCODE_HIBC_39, -1, 2, "a", -1, 0, 1, 79, "", 0 }, /* option_2 ignored */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -301,12 +302,18 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);

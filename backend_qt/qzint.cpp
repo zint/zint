@@ -22,7 +22,9 @@
 #endif
 #endif
 
-//#include <QDebug>
+#if 0
+#include <QDebug>
+#endif
 #include <QFontDatabase>
 #include <QFontMetrics>
 /* The following include is necessary to compile with Qt 5.15 on Windows; Qt 5.7 did not require it */
@@ -204,6 +206,7 @@ namespace Zint {
             m_warn_level(WARN_DEFAULT), m_debug(false),
             m_encodedWidth(0), m_encodedRows(0), m_encodedHeight(0.0f),
             m_vectorWidth(0.0f), m_vectorHeight(0.0f),
+            m_encodedOption1(-1), m_encodedOption2(0), m_encodedOption3(0),
             m_error(0),
             target_size_horiz(0), target_size_vert(0) // Legacy
     {
@@ -315,10 +318,16 @@ namespace Zint {
             m_encodedHeight = m_zintSymbol->height;
             m_vectorWidth = m_zintSymbol->vector->width;
             m_vectorHeight = m_zintSymbol->vector->height;
+            m_encodedOption1 = m_zintSymbol->option_1;
+            m_encodedOption2 = m_zintSymbol->option_2;
+            m_encodedOption3 = m_zintSymbol->option_3;
             emit encoded();
         } else {
             m_encodedWidth = m_encodedRows = 0;
             m_encodedHeight = m_vectorWidth = m_vectorHeight = 0.0f;
+            m_encodedOption1 = -1;
+            m_encodedOption2 = 0;
+            m_encodedOption3 = 0;
             emit errored();
         }
     }
@@ -796,6 +805,18 @@ namespace Zint {
 
     float QZint::vectorHeight() const { // Read-only, scaled height
         return m_vectorHeight;
+    }
+
+    int QZint::encodedOption1() const { // Read-only, encoded `option_1`
+        return m_encodedOption1;
+    }
+
+    int QZint::encodedOption2() const { // Read-only, encoded `option_2`
+        return m_encodedOption2;
+    }
+
+    int QZint::encodedOption3() const { // Read-only, encoded `option_3`
+        return m_encodedOption3;
     }
 
     /* Legacy property getters/setters */

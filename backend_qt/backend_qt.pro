@@ -8,8 +8,8 @@ CONFIG += staticlib
 #CONFIG += dll
 
 macx{
-	CONFIG -= dll
-	CONFIG += lib_bundle
+    CONFIG -= dll
+    CONFIG += lib_bundle
 }
 
 TARGET = QtZint

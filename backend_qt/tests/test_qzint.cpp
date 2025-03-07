@@ -311,6 +311,9 @@ private slots:
         QCOMPARE(bc.encodedWidth(), 0); // Read-only
         QCOMPARE(bc.encodedRows(), 0); // Read-only
         QCOMPARE(bc.encodedHeight(), 0.0f); // Read-only
+        QCOMPARE(bc.encodedOption1(), -1); // Read-only
+        QCOMPARE(bc.encodedOption2(), 0); // Read-only
+        QCOMPARE(bc.encodedOption3(), 0); // Read-only
 
         QCOMPARE(bc.vectorWidth(), 0.0f); // Read-only
         QCOMPARE(bc.vectorHeight(), 0.0f); // Read-only
@@ -429,18 +432,21 @@ private slots:
         QTest::addColumn<int>("encodedWidth");
         QTest::addColumn<int>("encodedRows");
         QTest::addColumn<float>("encodedHeight");
+        QTest::addColumn<int>("encodedOption1");
+        QTest::addColumn<int>("encodedOption2");
+        QTest::addColumn<int>("encodedOption3");
         QTest::addColumn<float>("vectorWidth");
         QTest::addColumn<float>("vectorHeight");
 
-        QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128 << "1234" << 0.0f << 0 << "" << 57 << 1 << 50.0f << 114.0f << 100.0f;
-        QTest::newRow("BARCODE_CODE128 Scale 2") << BARCODE_CODE128 << "1234" << 2.0f << 0 << "" << 57 << 1 << 50.0f << 228.0f << 200.0f;
-        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0.0f << 0 << "" << 21 << 21 << 21.0f << 42.0f << 42.0f;
-        QTest::newRow("BARCODE_QRCODE Scale 1.5") << BARCODE_QRCODE << "1234" << 1.5f << 0 << "" << 21 << 21 << 21.0f << 63.0f << 63.0f;
+        QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128 << "1234" << 0.0f << 0 << "" << 57 << 1 << 50.0f << -1 << 0 << 0 << 114.0f << 100.0f;
+        QTest::newRow("BARCODE_CODE128 Scale 2") << BARCODE_CODE128 << "1234" << 2.0f << 0 << "" << 57 << 1 << 50.0f << -1 << 0 << 0 << 228.0f << 200.0f;
+        QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE << "1234" << 0.0f << 0 << "" << 21 << 21 << 21.0f << 4 << 1 << (7 << 8) << 42.0f << 42.0f;
+        QTest::newRow("BARCODE_QRCODE Scale 1.5") << BARCODE_QRCODE << "1234" << 1.5f << 0 << "" << 21 << 21 << 21.0f << 4 << 1 << (7 << 8) << 63.0f << 63.0f;
         if (!m_skipIfFontUsed) {
-            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << 0.0f << ZINT_ERROR_INVALID_DATA << "Error 228: No input data (segment 0 empty)" << 0 << 0 << 0.0f << 0.0f << 0.0f;
+            QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << 0.0f << ZINT_ERROR_INVALID_DATA << "Error 228: No input data (segment 0 empty)" << 0 << 0 << 0.0f << 0 << 0 << 0 << 0.0f << 0.0f;
         }
-        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 0.0f << 0 << "" << 30 << 33 << 28.578f << 60.0f << 57.7334f;
-        QTest::newRow("BARCODE_MAXICODE Scale 2") << BARCODE_MAXICODE << "1234" << 2.0f << 0 << "" << 30 << 33 << 28.578f << 120.0f << 115.467f;
+        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 0.0f << 0 << "" << 30 << 33 << 28.578f << -1 << 0 << 0 << 60.0f << 57.7334f;
+        QTest::newRow("BARCODE_MAXICODE Scale 2") << BARCODE_MAXICODE << "1234" << 2.0f << 0 << "" << 30 << 33 << 28.578f << -1 << 0 << 0 << 120.0f << 115.467f;
     }
 
     void renderTest()
@@ -469,6 +475,9 @@ private slots:
         QFETCH(int, encodedWidth);
         QFETCH(int, encodedRows);
         QFETCH(float, encodedHeight);
+        QFETCH(int, encodedOption1);
+        QFETCH(int, encodedOption2);
+        QFETCH(int, encodedOption3);
         QFETCH(float, vectorWidth);
         QFETCH(float, vectorHeight);
 
@@ -494,6 +503,9 @@ private slots:
         QCOMPARE(bc.encodedWidth(), encodedWidth);
         QCOMPARE(bc.encodedRows(), encodedRows);
         QCOMPARE(bc.encodedHeight(), encodedHeight);
+        QCOMPARE(bc.encodedOption1(), encodedOption1);
+        QCOMPARE(bc.encodedOption2(), encodedOption2);
+        QCOMPARE(bc.encodedOption3(), encodedOption3);
         QCOMPARE(bc.vectorWidth(), vectorWidth);
         QCOMPARE(bc.vectorHeight(), vectorHeight);
 

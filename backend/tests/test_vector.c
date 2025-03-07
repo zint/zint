@@ -2372,7 +2372,7 @@ static void test_height(const testCtx *const p_ctx) {
         /* 83*/ { BARCODE_CODE49, COMPLIANT_HEIGHT, 26, "12345678901234567890", "", 0, 26, 3, 70, 162, 56, "" },
         /* 84*/ { BARCODE_CODE93, -1, 1, "1234567890", "", 0, 1, 1, 127, 254, 2, "" },
         /* 85*/ { BARCODE_CODE93, -1, 9.9, "1", "", 0, 9.8999996, 1, 46, 92, 19.799999, "" },
-        /* 86*/ { BARCODE_CODE93, COMPLIANT_HEIGHT, 9.9, "1", "", ZINT_WARN_NONCOMPLIANT, 9.8999996, 1, 46, 92, 19.799999, "Min height data-length dependent" },
+        /* 86*/ { BARCODE_CODE93, COMPLIANT_HEIGHT, 9.89, "1", "", ZINT_WARN_NONCOMPLIANT, 9.89000034, 1, 46, 92, 19.7800007, "Min height data-length dependent" },
         /* 87*/ { BARCODE_CODE93, COMPLIANT_HEIGHT, 10, "1", "", 0, 10, 1, 46, 92, 20, "" },
         /* 88*/ { BARCODE_CODE93, COMPLIANT_HEIGHT, 22, "1234567890", "", ZINT_WARN_NONCOMPLIANT, 22, 1, 127, 254, 44, "Min height data-length dependent" },
         /* 89*/ { BARCODE_CODE93, COMPLIANT_HEIGHT, 22.1, "1234567890", "", 0, 22.1, 1, 127, 254, 44.200001, "" },

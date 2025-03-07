@@ -538,7 +538,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     /* cli option --data is standard parameter */
     "   -dmiso144 bool: Use ISO format for 144x144 Data Matrix symbols\n"
     "   -dmre bool: Allow Data Matrix Rectangular Extended\n"
-    "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n" 
+    "   -dotsize number: radius ratio of dots from 0.01 to 1.0\n"
     "   -dotty bool: use dots instead of boxes for matrix codes\n"
     /* cli option --dump not supported */
     /* cli option --ecinos not supported */
@@ -597,7 +597,7 @@ static const char help_message[] = "zint tcl(stub,obj) dll\n"
     "zint help\n"
     "zint version\n"
     ;
-    
+
 /*----------------------------------------------------------------------------*/
 /* Exported symbols */
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -680,7 +680,7 @@ DLLEXPORT int Zint_Init (Tcl_Interp *interp)
     /*------------------------------------------------------------------------*/
     /* This procedure is called once per thread and any thread local data     */
     /* should be allocated and initialized here (and not in static variables) */
-    
+
     /* Create a flag if Tk is loaded */
     tkFlagPtr = (int *)ckalloc(sizeof(int));
     *tkFlagPtr = 0;
@@ -1640,7 +1640,7 @@ static int Encode(Tcl_Interp *interp, int objc,
         if( 0 != ErrorNumber )
         {
             Tcl_SetObjResult(interp, Tcl_NewStringObj(my_symbol->errtxt, -1));
-        }        
+        }
         if( ZINT_ERROR <= ErrorNumber )
         {
             /* >> Encode error */

@@ -76,102 +76,103 @@ static void test_large(const testCtx *const p_ctx) {
         /* 22*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 7, 0, 15, 15, "", "4 ECC codewords" },
         /* 23*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", "" },
         /* 24*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 2078, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", "" },
-        /* 25*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 22, 0, 19, 19, "", "3 ECC codewords" },
-        /* 26*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
-        /* 27*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
-        /* 28*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 39, 0, 23, 23, "", "3 ECC codewords" },
-        /* 29*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", "" },
-        /* 30*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
-        /* 31*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", "" },
-        /* 32*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 10, 0, 19, 19, "", "3 ECC codewords" },
-        /* 33*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", "" },
-        /* 34*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 27, 0, 23, 23, "", "3 ECC codewords" },
-        /* 35*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", "" },
-        /* 36*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 47, 0, 27, 27, "", "3 ECC codewords" },
-        /* 37*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", "" },
-        /* 38*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 71, 0, 31, 31, "", "4 ECC codewords" },
-        /* 39*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 3 less than 4 (5% of data codewords 85)", "" },
-        /* 40*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", "" },
-        /* 41*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 98, 0, 37, 37, "", "5 ECC codewords" },
-        /* 42*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 3 less than 5 (5% of data codewords 117)", "" },
-        /* 43*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", "" },
-        /* 44*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 128, 0, 41, 41, "", "7 ECC codewords" },
-        /* 45*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 7 (5% of data codewords 150)", "" },
-        /* 46*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 3 less than 7 (5% of data codewords 153)", "" },
-        /* 47*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", "" },
-        /* 48*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 708: Number of ECC codewords 3 less than 9 (5% of data codewords 193)", "" },
-        /* 49*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", "" },
-        /* 50*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 708: Number of ECC codewords 3 less than 11 (5% of data codewords 237)", "" },
-        /* 51*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", "" },
-        /* 52*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 708: Number of ECC codewords 3 less than 11 (5% of data codewords 227)", "" },
-        /* 53*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", "" },
-        /* 54*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 708: Number of ECC codewords 3 less than 13 (5% of data codewords 269)", "" },
-        /* 55*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", "" },
-        /* 56*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 708: Number of ECC codewords 3 less than 15 (5% of data codewords 313)", "" },
-        /* 57*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", "" },
-        /* 58*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 708: Number of ECC codewords 3 less than 18 (5% of data codewords 361)", "" },
-        /* 59*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", "" },
-        /* 60*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 708: Number of ECC codewords 3 less than 20 (5% of data codewords 413)", "" },
-        /* 61*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", "" },
-        /* 62*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 501, 0, 75, 75, "", "22 ECC codewords (448 data codewords)" },
-        /* 63*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 22 (5% of data codewords 449)", "" },
-        /* 64*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 3 less than 23 (5% of data codewords 467)", "" },
-        /* 65*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", "" },
-        /* 66*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 708: Number of ECC codewords 3 less than 26 (5% of data codewords 525)", "" },
-        /* 67*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", "" },
-        /* 68*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 708: Number of ECC codewords 3 less than 29 (5% of data codewords 585)", "" },
-        /* 69*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", "" },
-        /* 70*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 708: Number of ECC codewords 3 less than 32 (5% of data codewords 649)", "" },
-        /* 71*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", "" },
-        /* 72*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 708: Number of ECC codewords 3 less than 35 (5% of data codewords 717)", "" },
-        /* 73*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", "" },
-        /* 74*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 708: Number of ECC codewords 3 less than 39 (5% of data codewords 787)", "" },
-        /* 75*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", "" },
-        /* 76*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 708: Number of ECC codewords 3 less than 43 (5% of data codewords 861)", "" },
-        /* 77*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", "" },
-        /* 78*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 708: Number of ECC codewords 3 less than 46 (5% of data codewords 937)", "" },
-        /* 79*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", "" },
-        /* 80*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1091, 0, 109, 109, "", "48 ecc codewords (972 data codewords)" },
-        /* 81*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 48 (5% of data codewords 973)", "" },
-        /* 82*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 3 less than 50 (5% of data codewords 1017)", "" },
-        /* 83*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", "" },
-        /* 84*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 708: Number of ECC codewords 3 less than 45 (5% of data codewords 917)", "" },
-        /* 85*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", "" },
-        /* 86*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 708: Number of ECC codewords 3 less than 49 (5% of data codewords 989)", "" },
-        /* 87*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", "" },
-        /* 88*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 708: Number of ECC codewords 3 less than 53 (5% of data codewords 1063)", "" },
-        /* 89*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", "" },
-        /* 90*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 708: Number of ECC codewords 3 less than 57 (5% of data codewords 1141)", "" },
-        /* 91*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", "" },
-        /* 92*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 708: Number of ECC codewords 3 less than 61 (5% of data codewords 1221)", "" },
-        /* 93*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", "" },
-        /* 94*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 708: Number of ECC codewords 3 less than 65 (5% of data codewords 1303)", "" },
-        /* 95*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", "" },
-        /* 96*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 708: Number of ECC codewords 3 less than 69 (5% of data codewords 1389)", "" },
-        /* 97*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", "" },
-        /* 98*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 708: Number of ECC codewords 3 less than 73 (5% of data codewords 1477)", "" },
-        /* 99*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", "" },
-        /*100*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 708: Number of ECC codewords 3 less than 73 (5% of data codewords 1477)", "" },
-        /*101*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", "" },
-        /*102*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 3 less than 78 (5% of data codewords 1567)", "" },
-        /*103*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
-        /*104*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3590, 0, 147, 147, "", "74 ECC codewords (1496 data codewords)" },
-        /*105*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 74 (5% of data codewords 1497)", "" },
-        /*106*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 3 less than 78 (5% of data codewords 1567)", "" },
-        /*107*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
-        /*108*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 3 less than 78 (5% of data codewords 1567)", "" },
-        /*109*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", "" },
-        /*110*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4753, 0, 151, 151, "", "79 ECC codewords (1585 data codewords)" },
-        /*111*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 3 less than 83 (5% of data codewords 1661)", "" },
-        /*112*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", "" },
-        /*113*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 3 less than 83 (5% of data codewords 1661)", "" },
-        /*114*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*115*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 3 less than 83 (5% of data codewords 1661)", "" },
-        /*116*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*117*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 3 less than 83 (5% of data codewords 1661)", "" },
-        /*118*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*119*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 3 less than 83 (5% of data codewords 1661)", "" },
-        /*120*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", "" },
+        /* 25*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 21, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 36", "4 ECC codewords" },
+        /* 26*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 22, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
+        /* 27*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
+        /* 28*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
+        /* 29*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 39, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
+        /* 30*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", "" },
+        /* 31*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
+        /* 32*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", "" },
+        /* 33*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 10, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
+        /* 34*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", "" },
+        /* 35*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 27, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
+        /* 36*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", "" },
+        /* 37*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 47, ZINT_WARN_NONCOMPLIANT, 27, 27, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
+        /* 38*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", "" },
+        /* 39*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 71, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 84", "4 ECC codewords" },
+        /* 40*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 41*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", "" },
+        /* 42*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 98, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 5 less than 5% + 3 of data codewords 115", "5 ECC codewords" },
+        /* 43*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 44*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", "" },
+        /* 45*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 128, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 7 less than 5% + 3 of data codewords 149", "7 ECC codewords" },
+        /* 46*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 5% + 3 of data codewords 150", "" },
+        /* 47*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 48*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", "" },
+        /* 49*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 50*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", "" },
+        /* 51*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 52*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", "" },
+        /* 53*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 54*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", "" },
+        /* 55*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 56*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", "" },
+        /* 57*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 58*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", "" },
+        /* 59*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 60*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", "" },
+        /* 61*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 62*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", "" },
+        /* 63*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 501, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 22 less than 5% + 3 of data codewords 448", "22 ECC codewords (448 data codewords)" },
+        /* 64*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 5% + 3 of data codewords 449", "" },
+        /* 65*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 66*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", "" },
+        /* 67*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 68*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", "" },
+        /* 69*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 70*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", "" },
+        /* 71*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 72*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", "" },
+        /* 73*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 74*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", "" },
+        /* 75*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 76*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", "" },
+        /* 77*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 78*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", "" },
+        /* 79*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 80*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", "" },
+        /* 81*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1091, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 48 less than 5% + 3 of data codewords 972", "" },
+        /* 82*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 5% + 3 of data codewords 973", "" },
+        /* 83*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 84*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", "" },
+        /* 85*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 86*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", "" },
+        /* 87*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 88*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", "" },
+        /* 89*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 90*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", "" },
+        /* 91*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 92*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", "" },
+        /* 93*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 94*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", "" },
+        /* 95*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 96*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", "" },
+        /* 97*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /* 98*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", "" },
+        /* 99*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*100*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", "" },
+        /*101*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*102*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", "" },
+        /*103*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*104*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
+        /*105*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3590, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 74 less than 5% + 3 of data codewords 1496", "74 ECC codewords (1496 data codewords)" },
+        /*106*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 5% + 3 of data codewords 1497", "" },
+        /*107*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*108*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
+        /*109*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*110*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", "" },
+        /*111*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4753, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 79 less than 5% + 3 of data codewords 1585", "79 ECC codewords (1585 data codewords)" },
+        /*112*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*113*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", "" },
+        /*114*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*115*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
+        /*116*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*117*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
+        /*118*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*119*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
+        /*120*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
+        /*121*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -254,37 +255,55 @@ static void test_options(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_1;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "" },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "" },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring" },
-        /*  4*/ { BARCODE_AZTEC, -1, -1, -1, 1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Input too long for Version 1, requires 15 codewords (maximum 14)" },
-        /*  5*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "" },
-        /*  6*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)" },
-        /*  7*/ { BARCODE_AZTEC, -1, -1, -1, -2, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)" },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode" },
-        /*  9*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "" },
-        /* 10*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "" },
-        /* 11*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "" }, /* 22 layers */
-        /* 12*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)" }, /* 23 layers */
-        /* 13*/ { BARCODE_AZTEC, -1, READER_INIT, 4, -1, { 0, 0, "" }, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Input too long for Reader Initialisation, requires 23 layers (maximum 22)" }, /* 23 layers */
-        /* 14*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "" }, /* Compact 1 layer */
-        /* 15*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, { 0, 0, "" }, "A", 0, 19, 19, "" }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
-        /* 16*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "" }, /* Compact 1 layer */
-        /* 17*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "" }, /* Still compact 1 layer if READER_INIT set */
-        /* 18*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input length 4 too long (maximum 3)" },
-        /* 19*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character at position 1 in input (digits only)" },
-        /* 20*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input value out of range (0 to 255)" },
-        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "" },
-        /* 22*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "" },
-        /* 23*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count '1' out of range (2 to 26)" },
-        /* 24*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '0' out of range (1 to count 2)" },
-        /* 25*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '3' out of range (1 to count 2)" },
-        /* 26*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "A B" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 703: Structured Append ID cannot contain spaces" },
-        /* 27*/ { BARCODE_HIBC_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890;", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 11 in input (alphanumerics, space and \"-.$/+%\" only)" },
+        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", 4, 1 },
+        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
+        /*  2*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", 4, 1 },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
+        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "12345678901", 0, 15, 15, "", 2, 1 },
+        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", 0, 15, 15, "", 2, 1 },
+        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456", 0, 15, 15, "", 1, 1 },
+        /*  7*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 15, 15, "", 1, 1 },
+        /*  8*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456789", 0, 19, 19, "", 4, 2 },
+        /*  9*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
+        /* 10*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
+        /* 11*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", 4, 2 },
+        /* 12*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", 4, 2 },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring", 3, 1 },
+        /* 14*/ { BARCODE_AZTEC, -1, -1, -1, 1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Input too long for Version 1, requires 15 codewords (maximum 14)", -1, 1 },
+        /* 15*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890", 0, 19, 19, "", 4, 5 },
+        /* 16*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "12345678901", 0, 19, 19, "", 3, 5 },
+        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456", 0, 19, 19, "", 2, 5 },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901", 0, 19, 19, "", 1, 5 },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901234", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 17", 0, 5 },
+        /* 20*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456780123456", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", -1, 5 },
+        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "", 4, 36 },
+        /* 22*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)", -1, 37 },
+        /* 23*/ { BARCODE_AZTEC, -1, -1, -1, -2, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)", -1, -2 },
+        /* 24*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode", -1, 0 },
+        /* 25*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", 3, 1 },
+        /* 26*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", 3, 1 },
+        /* 27*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "", 4, 26 }, /* 22 layers */
+        /* 28*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)", -1, 27 }, /* 23 layers */
+        /* 29*/ { BARCODE_AZTEC, -1, READER_INIT, 4, -1, { 0, 0, "" }, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Input too long for Reader Initialisation, requires 23 layers (maximum 22)", 4, 27 }, /* 23 layers */
+        /* 30*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Compact 1 layer */
+        /* 31*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, { 0, 0, "" }, "A", 0, 19, 19, "", 4, 5 }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
+        /* 32*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Compact 1 layer */
+        /* 33*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Still compact 1 layer if READER_INIT set */
+        /* 34*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input length 4 too long (maximum 3)", -1, 0 },
+        /* 35*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character at position 1 in input (digits only)", -1, 0 },
+        /* 36*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input value out of range (0 to 255)", -1, 0 },
+        /* 37*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "", 2, 1 },
+        /* 38*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "", 3, 3 },
+        /* 39*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count '1' out of range (2 to 26)", -1, 0 },
+        /* 40*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '0' out of range (1 to count 2)", -1, 0 },
+        /* 41*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '3' out of range (1 to count 2)", -1, 0 },
+        /* 42*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "A B" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 703: Structured Append ID cannot contain spaces", -1, 0 },
+        /* 43*/ { BARCODE_HIBC_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890;", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 11 in input (alphanumerics, space and \"-.$/+%\" only)", -1, 0 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -308,10 +327,18 @@ static void test_options(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, symbol->errtxt);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                        i, symbol->rows, data[i].expected_rows, symbol->errtxt);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                        i, symbol->width, data[i].expected_width, symbol->errtxt);
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3); /* Unchanged */
 
         ZBarcode_Delete(symbol);
     }
@@ -2417,7 +2444,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011010000001001010"
                     "1011000010000000000"
                 },
-        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, "12345678901234567890123456789012" }, "[01]12345678901231[10]01", -1, 0, 23, 23, 1, "GS1 with Structured Append, full symbol",
+        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, "12345678901234567890123456789012" }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, "GS1 with Structured Append, full symbol",
                     "11100110011000010001000"
                     "10100110000110101111010"
                     "11000101100000111000011"
@@ -2684,7 +2711,9 @@ static void test_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, data[i].option_2, -1, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
@@ -2705,8 +2734,10 @@ static void test_encode(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                                i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                                i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
@@ -2726,7 +2757,8 @@ static void test_encode(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[22801 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)),
+                                    -1, "i:%d testUtilModulesDump == -1\n", i);
                     ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 

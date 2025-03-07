@@ -247,47 +247,48 @@ static void test_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", },
-        /*  1*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", },
-        /*  2*/ { -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
-        /*  3*/ { -1, -1, 0, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
-        /*  4*/ { -1, -1, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
-        /*  5*/ { -1, -1, 1, { 0, 0, "" }, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 12 codewords (maximum 10)", },
-        /*  6*/ { GS1_MODE, -1, 1, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 18, "", },
-        /*  7*/ { GS1_MODE | GS1PARENS_MODE, -1, 1, { 0, 0, "" }, "(01)12345678901231", -1, 0, 16, 18, "", },
-        /*  8*/ { -1, 3, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", },
-        /*  9*/ { UNICODE_MODE, 3, 1, { 0, 0, "" }, "é", -1, 0, 16, 18, "", },
-        /* 10*/ { GS1_MODE, 3, 1, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 18, "Warning 512: ECI ignored for GS1 mode", },
-        /* 11*/ { -1, -1, 9, { 0, 0, "" }, "123456789012345678", -1, 0, 8, 31, "", },
-        /* 12*/ { -1, -1, 9, { 0, 0, "" }, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid character at position 18 in input (Version S encodes digits only)", },
-        /* 13*/ { -1, -1, 9, { 0, 0, "" }, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input length 19 too long for Version S (maximum 18)", },
-        /* 14*/ { GS1_MODE, -1, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: GS1 mode ignored for Version S", },
-        /* 15*/ { -1, 3, 9, { 0, 0, "" }, "1", -1, ZINT_WARN_INVALID_OPTION, 8, 11, "Warning 511: ECI ignored for Version S", },
-        /* 16*/ { GS1_MODE, 3, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: ECI and GS1 mode ignored for Version S", },
-        /* 17*/ { -1, -1, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, "", },
-        /* 18*/ { -1, -1, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", },
-        /* 19*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 16, 49, "", },
-        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 55 codewords (maximum 38)", },
-        /* 21*/ { -1, -1, 10, { 0, 0, "" }, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 38, 0, 16, 49, "", },
-        /* 22*/ { -1, 3, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456", -1, 0, 16, 49, "", },
-        /* 23*/ { -1, 3, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)", },
-        /* 24*/ { -1, 3, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", },
-        /* 25*/ { GS1_MODE, -1, 10, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 17, "", },
-        /* 26*/ { GS1_MODE, 3, 10, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 17, "Warning 512: ECI ignored for GS1 mode", },
-        /* 27*/ { -1, -1, 11, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '11' out of range (1 to 10)", },
-        /* 28*/ { -1, -1, -2, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '-2' out of range (1 to 10)", },
-        /* 29*/ { GS1_MODE, -1, -1, { 1, 2, "" }, "[01]12345678901231", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 710: Cannot have Structured Append and GS1 mode at the same time", },
-        /* 30*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '1' out of range (2 to 128)", },
-        /* 31*/ { -1, -1, -1, { 1, -1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '-1' out of range (2 to 128)", },
-        /* 32*/ { -1, -1, -1, { 1, 129, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '129' out of range (2 to 128)", },
-        /* 33*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '0' out of range (1 to count 2)", },
-        /* 34*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '3' out of range (1 to count 2)", },
-        /* 35*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", },
-        /* 36*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", },
-        /* 37*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", }, /* Trumps other checking */
+        /*  0*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHI", -1, 0, 22, 22, "", 2 },
+        /*  1*/ { -1, -1, -1, { 0, 0, "" }, "123456789012ABCDEFGHIJ", -1, 0, 22, 22, "", 2 },
+        /*  2*/ { -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", 1 },
+        /*  3*/ { -1, -1, 0, { 0, 0, "" }, "1", -1, 0, 16, 18, "", 1 },
+        /*  4*/ { -1, -1, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", 1 },
+        /*  5*/ { -1, -1, 1, { 0, 0, "" }, "ABCDEFGHIJKLMN", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 518: Input too long for Version A, requires 12 codewords (maximum 10)", 1 },
+        /*  6*/ { GS1_MODE, -1, 1, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 18, "", 1 },
+        /*  7*/ { GS1_MODE | GS1PARENS_MODE, -1, 1, { 0, 0, "" }, "(01)12345678901231", -1, 0, 16, 18, "", 1 },
+        /*  8*/ { -1, 3, 1, { 0, 0, "" }, "1", -1, 0, 16, 18, "", 1 },
+        /*  9*/ { UNICODE_MODE, 3, 1, { 0, 0, "" }, "é", -1, 0, 16, 18, "", 1 },
+        /* 10*/ { GS1_MODE, 3, 1, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 18, "Warning 512: ECI ignored for GS1 mode", 1 },
+        /* 11*/ { -1, -1, 9, { 0, 0, "" }, "123456789012345678", -1, 0, 8, 31, "", 9 },
+        /* 12*/ { -1, -1, 9, { 0, 0, "" }, "12345678901234567A", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 515: Invalid character at position 18 in input (Version S encodes digits only)", 9 },
+        /* 13*/ { -1, -1, 9, { 0, 0, "" }, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 514: Input length 19 too long for Version S (maximum 18)", 9 },
+        /* 14*/ { GS1_MODE, -1, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: GS1 mode ignored for Version S", 9 },
+        /* 15*/ { -1, 3, 9, { 0, 0, "" }, "1", -1, ZINT_WARN_INVALID_OPTION, 8, 11, "Warning 511: ECI ignored for Version S", 9 },
+        /* 16*/ { GS1_MODE, 3, 9, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 8, 31, "Warning 511: ECI and GS1 mode ignored for Version S", 9 },
+        /* 17*/ { -1, -1, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890", -1, 0, 16, 49, "", 10 },
+        /* 18*/ { -1, -1, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", 10 },
+        /* 19*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, 0, 16, 49, "", 10 },
+        /* 20*/ { -1, -1, 10, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 55 codewords (maximum 38)", 10 },
+        /* 21*/ { -1, -1, 10, { 0, 0, "" }, "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000", 38, 0, 16, 49, "", 10 },
+        /* 22*/ { -1, 3, 10, { 0, 0, "" }, "1234567890123456789012345678901234567890123456789012345678901234567890123456", -1, 0, 16, 49, "", 10 },
+        /* 23*/ { -1, 3, 10, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 516: Input too long for Version T, requires 39 codewords (maximum 38)", 10 },
+        /* 24*/ { -1, 3, 10, { 0, 0, "" }, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 519: Input length 91 too long for Version T (maximum 90)", 10 },
+        /* 25*/ { GS1_MODE, -1, 10, { 0, 0, "" }, "[01]12345678901231", -1, 0, 16, 17, "", 10 },
+        /* 26*/ { GS1_MODE, 3, 10, { 0, 0, "" }, "[01]12345678901231", -1, ZINT_WARN_INVALID_OPTION, 16, 17, "Warning 512: ECI ignored for GS1 mode", 10 },
+        /* 27*/ { -1, -1, 11, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '11' out of range (1 to 10)", 11 },
+        /* 28*/ { -1, -1, -2, { 0, 0, "" }, "1", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 513: Version '-2' out of range (1 to 10)", -2 },
+        /* 29*/ { GS1_MODE, -1, -1, { 1, 2, "" }, "[01]12345678901231", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 710: Cannot have Structured Append and GS1 mode at the same time", 0 },
+        /* 30*/ { -1, -1, -1, { 1, 1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '1' out of range (2 to 128)", 0 },
+        /* 31*/ { -1, -1, -1, { 1, -1, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '-1' out of range (2 to 128)", 0 },
+        /* 32*/ { -1, -1, -1, { 1, 129, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 711: Structured Append count '129' out of range (2 to 128)", 0 },
+        /* 33*/ { -1, -1, -1, { 0, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '0' out of range (1 to count 2)", 0 },
+        /* 34*/ { -1, -1, -1, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 712: Structured Append index '3' out of range (1 to count 2)", 0 },
+        /* 35*/ { -1, -1, -1, { 1, 2, "1" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 713: Structured Append ID not available for Code One", 0 },
+        /* 36*/ { -1, -1, 9, { 1, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", 9 },
+        /* 37*/ { -1, -1, 9, { 3, 2, "" }, "123456789012ABCDEFGHI", -1, ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 714: Structured Append not available for Version S", 9 }, /* Trumps other checking */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -302,7 +303,9 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODEONE, data[i].input_mode, data[i].eci, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODEONE, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
@@ -315,6 +318,8 @@ static void test_input(const testCtx *const p_ctx) {
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
 
         ZBarcode_Delete(symbol);
     }

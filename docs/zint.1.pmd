@@ -1,6 +1,6 @@
 % ZINT(1) Version 2.15.0.9
 %
-% February 2025
+% March 2025
 
 # NAME
 
@@ -323,7 +323,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     For MaxiCode, the scale is multiplied by 10 for raster output, by 40 for EMF output, and by 2 otherwise.
 
     Increments of 0.5 (half-integers) are recommended for non-MaxiCode raster output (BMP, GIF, PCX, PNG and TIF).
-	Human Readable Text (HRT) for raster output will not be shown for scales less than 1.
+    Human Readable Text (HRT) for raster output will not be shown for scales less than 1.
 
     See also `--scalexdimdp` below.
 
@@ -427,7 +427,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
                 8   24x24     24  144x144   40  20x36
                 9   26x26     25  8x18      41  20x44
                 10  32x32     26  8x32      42  20x64
-                11  36x36     28  12x26     43  22x48
+                11  36x36     27  12x26     43  22x48
                 12  40x40     28  12x36     44  24x48
                 13  44x44     29  16x36     45  24x64
                 14  48x48     30  16x48     46  26x40

@@ -225,6 +225,9 @@ INTERNAL int channel(struct zint_symbol *symbol, unsigned char source[], int len
                             max_ranges[channels], channels);
     }
 
+    /* Feedback options */
+    symbol->option_2 = channels;
+
     CHNCHR(channels, target_value, B, S);
 
     memcpy(d, "111111111", 9); /* Finder pattern */

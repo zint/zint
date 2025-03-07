@@ -201,7 +201,7 @@ Value ranges from 000 to 999
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="1" column="3">
        <widget class="QLabel" name="lblMaxiSCMService">
         <property name="enabled">
@@ -278,7 +278,7 @@ specified as follows
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="2" column="3">
        <widget class="QLabel" name="lblMaxiSCMVV">
         <property name="enabled">
@@ -423,7 +423,7 @@ Value ranges from 2 to 8</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblMaxiStructAppIndex">
         <property name="enabled">
@@ -515,7 +515,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblMaxiStructAppIDDisabled">
         <property name="enabled">

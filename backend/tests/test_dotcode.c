@@ -44,10 +44,10 @@ static void test_large(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { 200, '0', 2940, 0, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
-        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 528: Symbol height '201' is too large" },
+        /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
         /*  2*/ { 200, '9', 200, 0, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
-        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION, "Error 528: Symbol width '201' is too large" },
-        /*  4*/ { 201, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 526: Symbol size '201x202' (WxH) is too large" }, /* Height > 200 also */
+        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
+        /*  4*/ { 201, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 526: Resulting symbol size '202x201' (HxW) is too large (maximum 200x200)" }, /* Height > 200 also */
         /*  5*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
     };
     const int data_size = ARRAY_SIZE(data);
@@ -95,33 +95,38 @@ static void test_options(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
+        int expected_option_3;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "" },
-        /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
-        /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "" },
-        /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "" },
-        /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "" },
-        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol width '4' is too small" }, /* Cols < 5 */
-        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Symbol height '3' is too small" }, /* Not enough data - height 3 too small */
-        /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "" }, /* Cols 200 max */
-        /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "" },
-        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Symbol width '201' is too large" },
-        /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "" }, /* Mask > 8 + 1 ignored */
-        /* 11*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "" },
-        /* 12*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "" },
-        /* 13*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '1' out of range (2 to 35)" },
-        /* 14*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '36' out of range (2 to 35)" },
-        /* 15*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index '3' out of range (1 to count 2)" },
-        /* 16*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode" },
-        /* 17*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" },
-        /* 18*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards" },
-        /* 19*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
+        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8 },
+        /*  1*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8 },
+        /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8 },
+        /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "", 12, 2 << 8 },
+        /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "", 5, 6 << 8 },
+        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Resulting symbol width '4' is too small (minimum 5)", 4, 0 }, /* Cols < 5 */
+        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Resulting symbol height '3' is too small (minimum 5)", 200, 0 }, /* Not enough data - height 3 too small */
+        /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "", 200, 7 << 8 }, /* Cols 200 max */
+        /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "", 200, 4 << 8 },
+        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Resulting symbol width '201' is too large (maximum 200)", 201, 0 },
+        /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8 }, /* Mask > 8 + 1 ignored */
+        /* 11*/ { -1, -1, -1, -1, 8 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 8 << 8 },
+        /* 12*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "", 19, 3 << 8 },
+        /* 13*/ { -1, -1, -1, 19, -1, { 35, 35, "" }, "ABCDE", 0, 16, 19, "", 19, 2 << 8 },
+        /* 14*/ { -1, -1, -1, 19, -1, { 1, 1, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '1' out of range (2 to 35)", 19, 0 },
+        /* 15*/ { -1, -1, -1, 19, -1, { 1, 36, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 730: Structured Append count '36' out of range (2 to 35)", 19, 0 },
+        /* 16*/ { -1, -1, -1, 19, -1, { 3, 2, "" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 731: Structured Append index '3' out of range (1 to count 2)", 19, 0 },
+        /* 17*/ { -1, -1, -1, 19, -1, { 1, 2, "1" }, "ABCDE", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 732: Structured Append ID not available for DotCode", 19, 0 },
+        /* 18*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 11, 16, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 16, 2 << 8 },
+        /* 19*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 12, 19, "Warning 734: Using Structured Append in GS1 mode not supported by GS1 standards", 19, 4 << 8 },
+        /* 20*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]01", ZINT_WARN_NONCOMPLIANT, 14, 21, "Warning 733: Using ECI in GS1 mode not supported by GS1 standards", 21, 3 << 8 }, /* ECI trumps Structured Append */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
+
+    char option_3_buf[64];
 
     testStartSymbol("test_options", &symbol);
 
@@ -145,6 +150,12 @@ static void test_options(const testCtx *const p_ctx) {
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, symbol->errtxt);
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        strcpy(option_3_buf, testUtilOption3Name(BARCODE_DOTCODE, symbol->option_3)); /* Copy static buffer */
+        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                    i, symbol->option_3, option_3_buf,
+                    data[i].expected_option_3, testUtilOption3Name(BARCODE_DOTCODE, data[i].expected_option_3));
 
         ZBarcode_Delete(symbol);
     }

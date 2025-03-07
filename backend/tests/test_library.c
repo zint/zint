@@ -622,7 +622,7 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
         /*  5*/ { BARCODE_HANXIN, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 23, "2F 80 10 72 09 28 B3 0D 6F F3 00 20 E8 F4 0A E0 00", 0, "" },
         /*  6*/ { BARCODE_MAXICODE, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 30, "(144) 04 3E 3E 00 04 07 08 09 0A 0B 03 3D 2C 24 19 1E 23 1B 18 0E 0C 0D 1E 3F 1D 1E 3C 31", 0, "" },
         /*  7*/ { BARCODE_PDF417, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 120, "(24) 16 901 0 23 655 318 98 18 461 639 893 122 129 92 900 900 872 438 359 646 522 773 831", 0, "" },
-        /*  8*/ { BARCODE_ULTRA, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 20, "(15) 257 0 4 7 8 9 10 11 12 13 27 29 30 129 92", 0, "" },
+        /*  8*/ { BARCODE_ULTRA, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\\\", "", 0, 20, "(28) 257 17 262 228 6 273 193 226 91 24 283 4 0 4 7 8 9 10 11 12 13 27 29 30 129 92 284 7", 0, "" },
         /*  9*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\d129\\o201\\\\", "", 0, 18, "(32) 01 05 08 09 0A 0B 0C 0D 0E 1C 1E 1F E7 32 45 DB 70 5D E3 16 7B 2B 44 60 E1 55 F7 08", 0, "" },
         /* 10*/ { BARCODE_HANXIN, DATA_MODE, -1, "\\0\\E\\a\\b\\t\\n\\v\\f\\r\\e\\G\\R\\x81\\d129\\o201\\\\", "", 0, 23, "2F 80 10 72 09 28 B3 0D 6F F3 00 30 E8 F4 0C 0C 0A E0 00 00 00", 0, "" },
         /* 11*/ { BARCODE_DATAMATRIX, DATA_MODE, -1, "\\c", "", ZINT_ERROR_INVALID_DATA, 0, "Error 234: Unrecognised escape character '\\c' in input", 0, "" },

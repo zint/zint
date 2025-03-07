@@ -1851,6 +1851,11 @@ INTERNAL int qrcode(struct zint_symbol *symbol, struct zint_seg segs[], const in
 
     bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, fast_encode, debug_print);
 
+    /* Feedback options */
+    symbol->option_1 = ecc_level + 1;
+    symbol->option_2 = version;
+    symbol->option_3 = (symbol->option_3 & 0xFF) | ((bitmask + 1) << 8);
+
     qr_add_format_info(grid, size, ecc_level, bitmask);
 
     symbol->width = size;
@@ -2339,6 +2344,11 @@ INTERNAL int microqr(struct zint_symbol *symbol, unsigned char source[], int len
     microqr_populate_grid(grid, size, full_stream, bp);
     bitmask = microqr_apply_bitmask(grid, size, user_mask, debug_print);
 
+    /* Feedback options */
+    symbol->option_1 = ecc_level + 1;
+    symbol->option_2 = version + 1;
+    symbol->option_3 = (symbol->option_3 & 0xFF) | ((bitmask + 1) << 8);
+
     /* Add format data */
     format = version ? (version - 1) * 2 + ecc_level + 1 : 0;
 
@@ -2462,6 +2472,11 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     qr_add_version_info(grid, size, version);
 
     bitmask = qr_apply_bitmask(grid, size, ecc_level, user_mask, fast_encode, debug_print);
+
+    /* Feedback options */
+    symbol->option_1 = ecc_level + 1;
+    symbol->option_2 = version;
+    symbol->option_3 = (symbol->option_3 & 0xFF) | ((bitmask + 1) << 8);
 
     qr_add_format_info(grid, size, ecc_level, bitmask);
 
@@ -2725,6 +2740,10 @@ INTERNAL int rmqr(struct zint_symbol *symbol, struct zint_seg segs[], const int 
                             symbol->option_2, rmqr_version_names[symbol->option_2 - 1], qr_ecc_level_names[ecc_level],
                             (est_binlen + 7) / 8, target_codewords);
     }
+
+    /* Feedback options */
+    symbol->option_1 = ecc_level + 1;
+    symbol->option_2 = version + 1;
 
     if (debug_print) {
         printf("Minimum codewords: %d\n", (est_binlen + 7) / 8);

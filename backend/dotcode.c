@@ -1284,10 +1284,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (symbol->option_2 == 0) {
         /* Automatic sizing */
         /* Following Rule 3 (Section 5.2.2) and applying a recommended width to height ratio 3:2 */
-        /* Eliminates under sized symbols */
+        /* Eliminates undersized symbols */
 
-        float h = (float) (sqrt(min_area * 0.666));
-        float w = (float) (sqrt(min_area * 1.5));
+        float h = (float) sqrt(min_area * 0.666);
+        float w = (float) sqrt(min_area * 1.5);
 
         height = (int) h;
         width = (int) w;
@@ -1321,7 +1321,6 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     } else {
         /* User defined width */
-        /* Eliminates under sized symbols */
 
         width = symbol->option_2;
         height = (min_area + (width - 1)) / width;
@@ -1332,27 +1331,24 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     }
 
     if (debug_print) {
-        printf("Width = %d, Height = %d\n", width, height);
+        printf("Width %d, Height %d\n", width, height);
     }
 
     if ((height > 200) || (width > 200)) {
         if (height > 200 && width > 200) {
-            ZEXT errtxtf(0, symbol, 526, "Symbol size '%1$dx%2$d' (WxH) is too large", width, height);
+            ZEXT errtxtf(0, symbol, 526, "Resulting symbol size '%1$dx%2$d' (HxW) is too large (maximum 200x200)",
+                        height, width);
         } else {
-            ZEXT errtxtf(0, symbol, 528, "Symbol %1$s '%2$d' is too large", width > 200 ? "width" : "height",
-                        width > 200 ? width : height);
+            ZEXT errtxtf(0, symbol, 528, "Resulting symbol %1$s '%2$d' is too large (maximum 200)",
+                        width > 200 ? "width" : "height", width > 200 ? width : height);
         }
         return ZINT_ERROR_INVALID_OPTION;
     }
 
     if ((height < 5) || (width < 5)) {
-        if (height < 5 && width < 5) { /* Won't happen as if width < 5, min height is 19 */
-            ZEXT errtxtf(0, symbol, 527, "Symbol size '%1$dx%2$d' (WxH) is too small", width,
-                        height); /* Not reached */
-        } else {
-            ZEXT errtxtf(0, symbol, 529, "Symbol %1$s '%2$d' is too small", width < 5 ? "width" : "height",
-                        width < 5 ? width : height);
-        }
+        assert(height >= 5 || width >= 5); /* If width < 5, min height is 19 */
+        ZEXT errtxtf(0, symbol, 529, "Resulting symbol %1$s '%2$d' is too small (minimum 5)",
+                    width < 5 ? "width" : "height", width < 5 ? width : height);
         return ZINT_ERROR_INVALID_OPTION;
     }
 
@@ -1404,7 +1400,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     }
 
     if (debug_print) {
-        printf("Codeword length = %d, ECC length = %d\n", data_length, ecc_length);
+        printf("Codeword length %d, ECC length %d\n", data_length, ecc_length);
         fputs("Codewords:", stdout);
         for (i = 0; i < data_length; i++) {
             printf(" %d", codeword_array[i]);
@@ -1502,6 +1498,10 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     /* Apply best mask */
     dc_apply_mask(best_mask % 4, data_length, masked_codeword_array, codeword_array, ecc_length);
+
+    /* Feedback options */
+    symbol->option_2 = width;
+    symbol->option_3 = (symbol->option_3 & 0xFF) | ((best_mask + 1) << 8);
 
     if (debug_print) {
         printf("Masked codewords (%d):", data_length);

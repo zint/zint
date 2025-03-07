@@ -990,12 +990,10 @@ static void test_set_height(const testCtx *const p_ctx) {
         int rows;
         int row_height[20];
         float height;
-
         float min_row_height;
         float default_height;
         float max_height;
         int no_errtxt;
-
         int ret;
         float expected_height;
         const char *expected_errtxt;
@@ -1006,13 +1004,17 @@ static void test_set_height(const testCtx *const p_ctx) {
         /*  0*/ { 0, { 0 }, 0, 0, 0, 0, 0, 0, 0.5, "", "" },
         /*  1*/ { 2, { 1, 1 }, 2, 0, 0, 0, 0, 0, 2, "", "zero_count == 0, fixed height only" },
         /*  2*/ { 2, { 1, 1 }, 2, 0, 0, 1, 1, ZINT_WARN_NONCOMPLIANT, 2, "", "zero_count == 0, height < max height" },
-        /*  3*/ { 2, { 1, 1 }, 2, 0, 0, 1, 0, ZINT_WARN_NONCOMPLIANT, 2, "248: Height not compliant with standards", "zero_count == 0, height < max height" },
+        /*  3*/ { 2, { 1, 1 }, 2, 0, 0, 1, 0, ZINT_WARN_NONCOMPLIANT, 2, "248: Height not compliant with standards (maximum 1)", "zero_count == 0, height < max height" },
         /*  4*/ { 2, { 2, 0 }, 2, 0, 0, 0, 0, 0, 2.5, "", "zero_count != 0, height 2" },
         /*  5*/ { 2, { 2, 0 }, 2, 1, 0, 0, 1, ZINT_WARN_NONCOMPLIANT, 2.5, "", "zero_count != 0, row_height < min_row_height" },
-        /*  6*/ { 2, { 2, 0 }, 2, 1, 0, 0, 0, ZINT_WARN_NONCOMPLIANT, 2.5, "247: Height not compliant with standards", "zero_count != 0, row_height < min_row_height" },
+        /*  6*/ { 2, { 2, 0 }, 2, 1, 0, 0, 0, ZINT_WARN_NONCOMPLIANT, 2.5, "247: Height not compliant with standards (minimum 1)", "zero_count != 0, row_height < min_row_height" },
         /*  7*/ { 2, { 2, 0 }, 0, 0, 20, 0, 0, 0, 22, "", "zero_count != 0, default_height 20" },
         /*  8*/ { 2, { 2, 0 }, 20, 0, 20, 0, 0, 0, 20, "", "zero_count != 0, height 20" },
         /*  9*/ { 2, { 2, 0 }, 0, 2, 0, 0, 0, 0, 4, "", "zero_count != 0, min_row_height 2" },
+        /* 10*/ { 20, { 0 }, 0, 12.9000006, 258, 0, 0, 0, 258, "", "Was non-compliant before use of epsilson (CODABLOCKF)" },
+        /* 11*/ { 1, { 0 }, 9.9, 9.90000057, 40, 0, 0, 0, 9.9, "", "Was non-compliant before use of epsilson (CODE93)" },
+        /* 12*/ { 1, { 0 }, 9.89, 9.90000057, 40, 0, 0, ZINT_WARN_NONCOMPLIANT, 9.89, "247: Height not compliant with standards (minimum 9.9)", "" },
+        /* 13*/ { 1, { 0 }, 40.02, 10, 40, 40.01, 0, ZINT_WARN_NONCOMPLIANT, 40.02, "248: Height not compliant with standards (maximum 40.01)", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, ret;

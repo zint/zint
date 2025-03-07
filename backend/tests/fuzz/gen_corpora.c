@@ -3,16 +3,16 @@
 /*
     From "backend/tests/fuzz" directory:
 
-	rm -rf fuzz_data_corpus fuzz_gs1_corpus
-	rm -f fuzz_data_seed_corpus.zip fuzz_gs1_seed_corpus.zip
-	gcc gen_corpora.c -o gen_corpora -lzint -fsanitize=address
-	./gen_corpora
-	zip -j fuzz_data_seed_corpus.zip fuzz_data_corpus/*
-	zip -j fuzz_gs1_seed_corpus.zip fuzz_gs1_corpus/*
+    rm -rf fuzz_data_corpus fuzz_gs1_corpus
+    rm -f fuzz_data_seed_corpus.zip fuzz_gs1_seed_corpus.zip
+    gcc gen_corpora.c -o gen_corpora -lzint -fsanitize=address
+    ./gen_corpora
+    zip -j fuzz_data_seed_corpus.zip fuzz_data_corpus/*
+    zip -j fuzz_gs1_seed_corpus.zip fuzz_gs1_corpus/*
 */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2024-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -927,10 +927,10 @@ static void write_corp(const char dirname[], const struct item data[], const int
         } else {
             write_setting(filename, data[i].input_mode, 0, fp);
         }
-        if (si->option_1_min <= si->option_1_max) { 
+        if (si->option_1_min <= si->option_1_max) {
             write_setting(filename, data[i].option_1, 0xFF, fp);
         }
-        if (si->option_2_min <= si->option_2_max) { 
+        if (si->option_2_min <= si->option_2_max) {
             write_setting(filename, data[i].option_2, 0, fp);
         }
         if (!no_eci && (ZBarcode_Cap(data[i].symbology, ZINT_CAP_ECI) & ZINT_CAP_ECI)) {

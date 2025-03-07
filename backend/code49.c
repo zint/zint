@@ -257,6 +257,9 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
         return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 433, "Minimum number of rows out of range (2 to 8)");
     }
 
+    /* Feedback options */
+    symbol->option_1 = rows;
+
     /* Add row count and mode character */
     c_grid[rows - 1][6] = (7 * (rows - 2)) + M;
 
@@ -374,6 +377,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
         const float min_row_height = stripf((8.0f * rows + separator * (rows - 1)) / rows);
         const float default_height = 10.0f * rows + separator * (rows - 1);
         error_number = set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
+        symbol->option_3 = separator; /* Feedback options */
     } else {
         (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
     }

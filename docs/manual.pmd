@@ -1,6 +1,6 @@
 % Zint Barcode Generator and Zint Barcode Studio User Manual
 % Version 2.15.0.9
-% February 2025
+% March 2025
 
 # 1. Introduction
 
@@ -4028,7 +4028,7 @@ Input  Symbol Size      Input  Symbol Size      Input  Symbol Size
 4      16 x 16          14     48 x 48          24     144 x 144
 5      18 x 18          15     52 x 52          25     8 x 18
 6      20 x 20          16     64 x 64          26     8 x 32
-7      22 x 22          17     72 x 72          28     12 x 26
+7      22 x 22          17     72 x 72          27     12 x 26
 8      24 x 24          18     80 x 80          28     12 x 36
 9      26 x 26          19     88 x 88          29     16 x 36
 10     32 x 32          20     96 x 96          30     16 x 48

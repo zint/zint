@@ -1,4 +1,4 @@
-% docs/README 2025-02-15
+% docs/README 2025-03-07
 
 For generation of "docs/manual.pdf" and "docs/manual.txt" from "manual.pmd" using a recent version of pandoc
 
@@ -10,15 +10,15 @@ For Ubuntu 22.04 (python < 3.12)
     sudo apt install python3-pip
     pip install pandoc-tablenos --user
 Else for Ubuntu 24.04 (one way around "externally-managed-environment" error, PEP 668)
-	sudo apt install python3-full
-	python3 -m venv ~/py_envs
-	source ~/py_envs/bin/activate
-	pip install pandoc-tablenos
+    sudo apt install python3-full
+    python3 -m venv ~/py_envs
+    source ~/py_envs/bin/activate
+    pip install pandoc-tablenos
 Then
     export PATH=~/.local/bin:"$PATH"
-	# Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
-	python -m pip install --force-reinstall \
-	    git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
+    # Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
+    python -m pip install --force-reinstall \
+        git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
     sudo apt install librsvg2-bin
     sudo apt install texlive-xetex
     sudo apt install texlive-lang-cjk
@@ -33,9 +33,9 @@ On Fedora (tested on Fedora Linux 38 (Workstation Edition) and Fedora Linux 40 (
     sudo dnf install python3-pip
     pip install pandoc-tablenos --user
     export PATH=~/.local/bin:"$PATH"
-	# Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
-	python -m pip install --force-reinstall \
-	    git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
+    # Temporary fix for version regex - see https://github.com/tomduck/pandoc-xnos/pull/29
+    python -m pip install --force-reinstall \
+        git+https://github.com/tomduck/pandoc-xnos@284474574f51888be75603e7d1df667a0890504d#egg=pandoc-xnos
     sudo dnf install librsvg2-tools.x86_64
     sudo dnf install texlive-xetex
     sudo dnf install texlive-ctex.noarch

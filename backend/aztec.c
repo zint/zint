@@ -878,6 +878,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     rs_uint_t rs_uint;
     unsigned int *data_part;
     unsigned int *ecc_part;
+    float ecc_ratio;
 
     if (gs1 && reader_init) {
         return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501, "Cannot use Reader Initialisation in GS1 mode");
@@ -941,7 +942,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             return ZINT_ERROR_INVALID_OPTION;
         }
         error_number = errtxt_adj(ZINT_WARN_INVALID_OPTION, symbol, "%1$s%2$s", ", ignoring");
-        symbol->option_1 = -1;
+        symbol->option_1 = -1; /* Feedback options */
     }
 
     data_maxsize = 0; /* Keep compiler happy! */
@@ -1018,6 +1019,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         /* This loop will only repeat on the rare occasions when the rule about not having all 1s or all 0s
         means that the binary string has had to be lengthened beyond the maximum number of bits that can
         be encoded in a symbol of the selected size */
+
+        symbol->option_2 = compact ? layers : layers + 4; /* Feedback options */
 
     } else { /* The size of the symbol has been specified by the user */
         if ((symbol->option_2 < 0) || (symbol->option_2 > 36)) {
@@ -1103,16 +1106,28 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     } else {
         ecc_blocks = AztecSizes[layers - 1] - data_blocks;
     }
-    if (ecc_blocks < data_blocks / 20) {
-        error_number = ZEXT errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
-                                    "Number of ECC codewords %1$d less than %2$d (5%% of data codewords %3$d)",
-                                    ecc_blocks, data_blocks / 20, data_blocks);
+    if (ecc_blocks == 3) {
+        ecc_ratio = 0.0f;
+        error_number = ZEXT errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 706, "Number of ECC codewords 3 at minimum");
+        symbol->option_1 = -1; /* Feedback options: indicate minimum 3 with -1 */
+    } else {
+        ecc_ratio = (float) (ecc_blocks - 3) / (data_blocks + ecc_blocks);
+        if (ecc_ratio < 0.05f) {
+            error_number = ZEXT errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
+                                        "Number of ECC codewords %1$d less than 5%% + 3 of data codewords %2$d",
+                                        ecc_blocks, data_blocks);
+            symbol->option_1 = 0; /* Feedback options: indicate < 5% + 3 with 0 */
+        } else {
+            /* Feedback options: 0.165 = (.1 + .23) / 2 etc */
+            symbol->option_1 = ecc_ratio < 0.165f ? 1 : ecc_ratio < 0.295f ? 2 : ecc_ratio < 0.43f ? 3 : 4;
+        }
     }
 
     if (debug_print) {
         printf("Generating a %s symbol with %d layers\n", compact ? "compact" : "full-size", layers);
         printf("Requires %d codewords of %d-bits\n", data_blocks + ecc_blocks, codeword_size);
-        printf("    (%d data words, %d ecc words)\n", data_blocks, ecc_blocks);
+        printf("    (%d data words, %d ecc words, %.1f%%, output option_1 %d, option_2 %d)\n",
+                data_blocks, ecc_blocks, ecc_ratio * 100, symbol->option_1, symbol->option_2);
     }
 
     data_part = (unsigned int *) z_alloca(sizeof(unsigned int) * data_blocks);

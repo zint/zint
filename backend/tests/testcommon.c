@@ -626,7 +626,8 @@ const char *testUtilOption3Name(int symbology, int option_3) {
             name = option_3 ? "-1" : "0";
         }
     } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR || symbology == BARCODE_MICROQR
-                || symbology == BARCODE_RMQR || symbology == BARCODE_GRIDMATRIX || symbology == BARCODE_HANXIN) {
+                || symbology == BARCODE_RMQR || symbology == BARCODE_UPNQR || symbology == BARCODE_GRIDMATRIX
+                || symbology == BARCODE_HANXIN) {
         if ((option_3 & 0xFF) == ZINT_FULL_MULTIBYTE) {
             name = "ZINT_FULL_MULTIBYTE";
         } else {

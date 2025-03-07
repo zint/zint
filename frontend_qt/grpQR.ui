@@ -579,7 +579,7 @@ Value ranges from 2 to 16</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblQRStructAppIndex">
         <property name="enabled">
@@ -711,7 +711,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblQRStructAppID">
         <property name="enabled">

@@ -847,6 +847,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
     float row_height;
     int i;
     const int rows = symbol->rows ? symbol->rows : 1; /* Sometimes called before expand() */
+    const float epsilon = 0.00000095367431640625f; /* Allow some leeway in non-compliance checks */
 
     for (i = 0; i < rows; i++) {
         if (symbol->row_height[i]) {
@@ -872,10 +873,10 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
             row_height = 0.5f;
         }
         if (min_row_height) {
-            if (stripf(row_height) < stripf(min_row_height)) {
+            if (stripf(row_height + epsilon) < stripf(min_row_height)) {
                 error_number = ZINT_WARN_NONCOMPLIANT;
                 if (!no_errtxt) {
-                    errtxt(0, symbol, 247, "Height not compliant with standards");
+                    ZEXT errtxtf(0, symbol, 247, "Height not compliant with standards (minimum %g)", min_row_height);
                 }
             }
         }
@@ -884,10 +885,10 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
         symbol->height = stripf(fixed_height); /* Ignore any given height */
     }
     if (max_height) {
-        if (stripf(symbol->height) > stripf(max_height)) {
+        if (stripf(symbol->height) > stripf(max_height + epsilon)) {
             error_number = ZINT_WARN_NONCOMPLIANT;
             if (!no_errtxt) {
-                errtxt(0, symbol, 248, "Height not compliant with standards");
+                ZEXT errtxtf(0, symbol, 248, "Height not compliant with standards (maximum %g)", max_height);
             }
         }
     }

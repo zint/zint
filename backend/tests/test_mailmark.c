@@ -331,43 +331,44 @@ static void test_2d_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, "012100123412345678AB19XY1A 0", 0, 24, 24, "" },
-        /*  1*/ { -1, "012100123412345678ab19xy1a 0", 0, 24, 24, "" }, /* Converts to upper */
-        /*  2*/ { -1, "jgb 012100123412345678ab19xy1a 0", 0, 24, 24, "" },
-        /*  3*/ { -1, "012100123412345678AB19XY1A 0901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)" },
-        /*  4*/ { -1, "012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 860: Input length 27 too short (minimum 28)" },
-        /*  5*/ { -1, "012100123412345678AB19XY1A 090123456789012345678901234567890123456789012345678901234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 861: Input length 87 too long (maximum 86)" },
-        /*  6*/ { -1, "JGB 012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 862: Input length 31 too short (minimum 32)" },
-        /*  7*/ { 9, "JGB 012100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 863: Invalid Version '9' (8, 10 or 30 only)" },
-        /*  8*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456", 0, 24, 24, "" },
-        /*  9*/ { 8, "JGB 012100123412345678AB19XY1A 0             1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 864: Input length 52 too long for Version 8 (maximum 51)" },
-        /* 10*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345", 0, 16, 48, "" },
-        /* 11*/ { 30, "JGB 012100123412345678AB19XY1A 0             12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 865: Input length 71 too long for Version 30 (maximum 70)" },
-        /* 12*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456789012345678901234567890123456789012345", 0, 32, 32, "" },
-        /* 13*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)" },
-        /* 14*/ { -1, "JGB 012100123412345678AB19XY1A 0             .23456", 0, 24, 24, "" },
-        /* 15*/ { -1, "JGB 012100123412345678AB19XY1A 0            . 23456", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 866: Invalid character at position 45 in input (alphanumerics and space only in first 45)" },
-        /* 16*/ { -1, "JGB  12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)" },
-        /* 17*/ { -1, " 12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)" },
-        /* 18*/ { -1, "JGB 022100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 868: Invalid Version ID (\"1\" only)" },
-        /* 19*/ { -1, "JGB 01 100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 869: Invalid Class (cannot be space)" },
-        /* 20*/ { -1, "JGB 012100123A12345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 870: Invalid Supply Chain ID (7 digits only)" },
-        /* 21*/ { -1, "JGB 01210012341234567AAB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 871: Invalid Item ID (8 digits only)" },
-        /* 22*/ { -1, "JGB 012100123412345678AB19VY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS" },
-        /* 22*/ { -1, "JGB 012100123412345678AB19XY11 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS" },
-        /* 23*/ { -1, "JGB 012100123412345678AB19XY1A 7", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 873: Invalid Service Type (\"0\" to \"6\" only)" },
-        /* 24*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XY", 0, 24, 24, "" },
-        /* 25*/ { -1, "JGB 012100123412345678AB190XY1A0AB18XY", 0, 24, 24, "" },
-        /* 26*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XI", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code" },
-        /* 27*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XY", 0, 24, 24, "" },
-        /* 28*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code" },
-        /* 29*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY", 0, 24, 24, "" },
-        /* 30*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181VY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code" },
-        /* 31*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY     ", 0, 24, 24, "" },
-        /* 32*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XYA    ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 875: Invalid Reserved field (must be spaces only)" },
+        /*  0*/ { -1, "012100123412345678AB19XY1A 0", 0, 24, 24, "", 8 },
+        /*  1*/ { -1, "012100123412345678ab19xy1a 0", 0, 24, 24, "", 8 }, /* Converts to upper */
+        /*  2*/ { -1, "jgb 012100123412345678ab19xy1a 0", 0, 24, 24, "", 8 },
+        /*  3*/ { -1, "012100123412345678AB19XY1A 0901234567890123456789012345678901234567890123456789012345678901", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)", 0 },
+        /*  4*/ { -1, "012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 860: Input length 27 too short (minimum 28)", 0 },
+        /*  5*/ { -1, "012100123412345678AB19XY1A 090123456789012345678901234567890123456789012345678901234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 861: Input length 87 too long (maximum 86)", 0 },
+        /*  6*/ { -1, "JGB 012100123412345678AB19XY1A ", ZINT_ERROR_TOO_LONG, -1, -1, "Error 862: Input length 31 too short (minimum 32)", 0 },
+        /*  7*/ { 9, "JGB 012100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 863: Invalid Version '9' (8, 10 or 30 only)", 9 },
+        /*  8*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456", 0, 24, 24, "", 8 },
+        /*  9*/ { 8, "JGB 012100123412345678AB19XY1A 0             1234567", ZINT_ERROR_TOO_LONG, -1, -1, "Error 864: Input length 52 too long for Version 8 (maximum 51)", 8 },
+        /* 10*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345", 0, 16, 48, "", 30 },
+        /* 11*/ { 30, "JGB 012100123412345678AB19XY1A 0             12345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 865: Input length 71 too long for Version 30 (maximum 70)", 30 },
+        /* 12*/ { -1, "JGB 012100123412345678AB19XY1A 0             123456789012345678901234567890123456789012345", 0, 32, 32, "", 10 },
+        /* 13*/ { -1, "JGB 012100123412345678AB19XY1A 0             1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 589: Input length 91 too long (maximum 90)", 0 },
+        /* 14*/ { -1, "JGB 012100123412345678AB19XY1A 0             .23456", 0, 24, 24, "", 8 },
+        /* 15*/ { -1, "JGB 012100123412345678AB19XY1A 0            . 23456", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 866: Invalid character at position 45 in input (alphanumerics and space only in first 45)", 8 },
+        /* 16*/ { -1, "JGB  12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)", 8 },
+        /* 17*/ { -1, " 12100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 867: Invalid Information Type ID (cannot be space)", 8 },
+        /* 18*/ { -1, "JGB 022100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 868: Invalid Version ID (\"1\" only)", 8 },
+        /* 19*/ { -1, "JGB 01 100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 869: Invalid Class (cannot be space)", 8 },
+        /* 20*/ { -1, "JGB 012100123A12345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 870: Invalid Supply Chain ID (7 digits only)", 8 },
+        /* 21*/ { -1, "JGB 01210012341234567AAB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 871: Invalid Item ID (8 digits only)", 8 },
+        /* 22*/ { -1, "JGB 012100123412345678AB19VY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 23*/ { -1, "JGB 012100123412345678AB19XY11 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 24*/ { -1, "JGB 012100123412345678AB19XY1A 7", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 873: Invalid Service Type (\"0\" to \"6\" only)", 8 },
+        /* 25*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XY", 0, 24, 24, "", 8 },
+        /* 26*/ { -1, "JGB 012100123412345678AB190XY1A0AB18XY", 0, 24, 24, "", 8 },
+        /* 27*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XI", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 28*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XY", 0, 24, 24, "", 8 },
+        /* 29*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 30*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY", 0, 24, 24, "", 8 },
+        /* 31*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181VY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 32*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY     ", 0, 24, 24, "", 8 },
+        /* 33*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XYA    ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 875: Invalid Reserved field (must be spaces only)", 8 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -382,7 +383,9 @@ static void test_2d_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -391,7 +394,10 @@ static void test_2d_input(const testCtx *const p_ctx) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d  strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d  strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
 
         ZBarcode_Delete(symbol);
     }

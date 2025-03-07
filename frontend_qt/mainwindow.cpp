@@ -15,7 +15,9 @@
  ***************************************************************************/
 /* SPDX-License-Identifier: GPL-3.0-or-later */
 
-//#include <QDebug>
+#if 0
+#include <QDebug>
+#endif
 #include <QAction>
 #include <QClipboard>
 #include <QColor>
@@ -802,7 +804,7 @@ void MainWindow::about()
             "<p>Copyright &copy; 2006-2025 Robin Stuart and others.<br>"
             "Qt backend by BogDan Vatra.<br>"
             "Released under GNU GPL 3.0 or later.</p>"
-            "<p>Qt version %2<br>%3</p>"
+            "<p>Qt version %2, settings:<br>%3</p>"
             "<p>\"Mailmark\" is a Registered Trademark of Royal Mail.<br>"
             "\"QR Code\" is a Registered Trademark of Denso Corp.<br>"
             "\"Telepen\" is a Registered Trademark of SB Electronics.</p>"
@@ -3576,25 +3578,44 @@ void MainWindow::automatic_info_set()
     if (!m_optionWidget) {
         return;
     }
+
+    static const char qrECCs[4] = { 'L', 'M', 'Q', 'H' };
+    static const char *qrECCPercents[4] = { "~20%", "~37%", "~55%", "~65%" };
     const int symbology = bstyle_items[bstyle->currentIndex()].symbology;
     const bool isError = m_bc.bc.getError() >= ZINT_ERROR;
     QLineEdit *txt;
     QComboBox *cmb;
+    QLabel *lbl;
+    int opt;
 
     if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
         if ((txt = m_optionWidget->findChild<QLineEdit*>(QSL("txtAztecAutoInfo")))) {
-            if (!isError && !get_rad_val(QSL("radAztecSize"))) {
+            if (!isError) {
+                static const QString eccStrs[6] = {
+                    "3 words", "< 5% + 3 words", "10% + 3 words", "23% + 3 words", "36% + 3 words", "50% + 3 words"
+                };
                 const int w = m_bc.bc.encodedWidth();
-                if (w <= 27) { // Note Zint always favours Compact on automatic
-                    txt->setText(QString::asprintf("(%d X %d Compact)", w, w));
-                } else {
-                    int layers;
-                    if (w <= 95) {
-                        layers = (w - 16 + (w <= 61)) / 4;
+                const int z = m_bc.bc.encodedOption2();
+                const int ecc = m_bc.bc.encodedOption1();
+                QString sizeStr, eccStr;
+                if (z >= 1 && z <= 36) {
+                    if (z <= 4) {
+                        sizeStr = QSL("%1 X %2 Compact (Zint %3)").arg(w).arg(w).arg(z);
                     } else {
-                        layers = (w - 20 + (w <= 125) * 2) / 4;
+                        sizeStr = QSL("%1 X %2 (%3 Layers) (Zint %4)").arg(w).arg(w).arg(z - 4).arg(z);
                     }
-                    txt->setText(QString::asprintf("(%d X %d (%d Layers))", w, w, layers));
+                }
+                if (ecc >= -1 && ecc <= 4) { // -1 indicates min 3, 0 indicates < 5% + 3
+                    eccStr = eccStrs[ecc + 1];
+                }
+                if (get_rad_val("radAztecAuto") && !sizeStr.isEmpty() && !eccStr.isEmpty()) {
+                    txt->setText(QSL("%1, ECC %2").arg(sizeStr).arg(eccStr));
+                } else if (get_rad_val("radAztecSize") && !eccStr.isEmpty()) {
+                    txt->setText(QSL("ECC %1").arg(eccStr));
+                } else if (get_rad_val("radAztecECC") && !sizeStr.isEmpty()) {
+                    txt->setText(sizeStr);
+                } else {
+                    txt->setText(QSEmpty);
                 }
             } else {
                 txt->setText(QSEmpty);
@@ -3603,9 +3624,8 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_CHANNEL) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbChannel")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                const int channels = (m_bc.bc.encodedWidth() - 7) / 4;
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", channels));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 3 && opt <= 8) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3613,16 +3633,15 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_CODABLOCKF || symbology == BARCODE_HIBC_BLOCKF) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbCbfWidth")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                const int data_w = (m_bc.bc.encodedWidth() - 57) / 11;
-                cmb->setItemText(0, QString::asprintf("Automatic (%d (%d data))", data_w + 5, data_w));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 9 && opt <= 67) {
+                cmb->setItemText(0, QSL("Automatic %1 (%2 data)").arg(opt).arg(opt - 5));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
         }
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbCbfHeight")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", m_bc.bc.encodedRows()));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 44) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3630,8 +3649,8 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_CODE16K) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbC16kRows")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", m_bc.bc.encodedRows()));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 2 && opt <= 16) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3639,8 +3658,8 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_CODE49) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbC49Rows")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", m_bc.bc.encodedRows()));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 2 && opt <= 8) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3648,18 +3667,13 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_CODEONE) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbC1Size")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 8) {
                 const int r = m_bc.bc.encodedRows();
                 const int w = m_bc.bc.encodedWidth();
                 // Note Versions S & T not used by Zint in automatic mode
-                static const char vers[] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
-                int idx;
-                if (r <= 40) {
-                    idx = (r == 22) + (r == 28) * 2 + (r == 40) * 3;
-                } else {
-                    idx = (r == 70) + (r == 104) * 2 + (r == 148) * 3 + 4;
-                }
-                cmb->setItemText(0, QString::asprintf("Automatic (%d X %d (Version %c))", r, w, vers[idx]));
+                static const char vers[8] = { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (Version %3) (Zint %4)")
+                                        .arg(r).arg(w).arg(vers[opt - 1]).arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3667,43 +3681,13 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_DATAMATRIX || symbology == BARCODE_HIBC_DM) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbDM200Size")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 48) {
                 const int r = m_bc.bc.encodedRows();
                 const int w = m_bc.bc.encodedWidth();
-                int z = 0;
-                if (r == w) {
-                    if (r <= 26) {
-                        z = (r - 8) / 2;
-                    } else if (r <= 52) {
-                        z = 10 + (r - 32) / 4;
-                    } else if (r <= 104) {
-                        z = 16 + (r - 64) / 8;
-                    } else {
-                        z = 22 + (r - 120) / 12;
-                    }
-                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d))", r, w, z));
-                } else if ((r == 8 && (w == 18 || w == 32)) || (r == 12 && (w == 26 || w == 36))
-                            || (r == 16 && (w == 36 || w == 48))) {
-                    z = 25 + (w == 32) + (w == 26) * 2 + (r == 12 && w == 36) * 3
-                            + (r == 16 && w == 36) * 4 + (w == 48) * 5;
-                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d))", r, w, z));
-                } else { // DMRE
-                    if (r == 8) {
-                        z = 31 + (w == 64) + (w == 80) * 2 + (w == 96) * 3 + (w == 120) * 4 + (w == 144) * 5;
-                    } else if (r == 12) {
-                        z = 37 + (w == 88);
-                    } else if (r == 16) {
-                        z = 39;
-                    } else if (r == 20) {
-                        z = 40 + (w == 44) + (w == 64) * 2;
-                    } else if (r == 22) {
-                        z = 43;
-                    } else if (r == 24) {
-                        z = 44 + (w == 64);
-                    } else { /* if (r == 26) */
-                        z = 46 + (w == 48) + (w == 64) * 2;
-                    }
-                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (DMRE) (Zint %d))", r, w, z));
+                if (opt >= 31) {
+                    cmb->setItemText(0, QSL("Automatic %1 x %2 (DMRE) (Zint %3)").arg(r).arg(w).arg(opt));
+                } else {
+                    cmb->setItemText(0, QSL("Automatic %1 x %2 (Zint %3)").arg(r).arg(w).arg(opt));
                 }
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
@@ -3712,17 +3696,11 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_MAILMARK_2D) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMailmark2DSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2())
+                    && (opt == 8 || opt == 10 || opt == 30)) {
                 const int r = m_bc.bc.encodedRows();
                 const int w = m_bc.bc.encodedWidth();
-                int z;
-                if (r == w) {
-                    z = r <= 26 ? 8 : 10;
-                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d) - Type %d)", r, w, z, z - 1));
-                } else {
-                    z = 30;
-                    cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Zint %d) - Type %d)", r, w, z, z - 1));
-                }
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (Zint %3) - Type %4").arg(r).arg(w).arg(opt).arg(opt - 1));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3730,8 +3708,26 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_DOTCODE) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbDotCols")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", m_bc.bc.encodedWidth()));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 5 && opt <= 200) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((lbl = m_optionWidget->findChild<QLabel*>(QSL("lblDotSizeMsg")))) {
+            if (!isError) {
+                lbl->setText(QSL("%1x%2 (HxW)").arg(m_bc.bc.encodedRows()).arg(m_bc.bc.encodedWidth()));
+            } else {
+                lbl->setText(QSEmpty);
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbDotMask")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = (m_bc.bc.encodedOption3() >> 8)) >= 1 && opt <= 8) {
+                QString mask = QString::number((opt - 1) & 0x3);
+                if (opt > 4) {
+                    mask += '\'';
+                }
+                cmb->setItemText(0, QSL("Automatic %1").arg(mask));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3739,9 +3735,16 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_GRIDMATRIX) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbGridSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 13) {
                 const int r = m_bc.bc.encodedRows();
-                cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Version %d))", r, r, (r - 6) / 12));
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (Version %3)").arg(r).arg(r).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbGridECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 5) {
+                cmb->setItemText(0, QSL("Automatic ~%1%").arg(opt * 10));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3749,9 +3752,24 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_HANXIN) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbHXSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 84) {
                 const int r = m_bc.bc.encodedRows();
-                cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Version %d))", r, r, (r - 21) / 2));
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (Version %3)").arg(r).arg(r).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbHXECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 4) {
+                static const char *eccPercents[4] = { "~8%", "~15%", "~23%", "~30%" };
+                cmb->setItemText(0, QSL("Automatic %1 (Level L%2)").arg(eccPercents[opt - 1]).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbHXMask")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = (m_bc.bc.encodedOption3() >> 8)) >= 1 && opt <= 4) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt - 1));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3759,19 +3777,8 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_MICROPDF417 || symbology == BARCODE_HIBC_MICPDF) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMPDFCols")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                const int w = m_bc.bc.encodedWidth();
-                int cols;
-                if (w == 38) {
-                    cols = 1;
-                } else if (w == 55) {
-                    cols = 2;
-                } else if (w == 82) {
-                    cols = 3;
-                } else { /* if (w == 99) */
-                    cols = 4;
-                }
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", cols));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 4) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3779,9 +3786,23 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_MICROQR) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMQRSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 4) {
                 const int r = m_bc.bc.encodedRows();
-                cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Version M%d))", r, r, (r - 9) / 2));
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (M%3)").arg(r).arg(r).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMQRECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 3) {
+                cmb->setItemText(0, QSL("Automatic %1 (Level %2)").arg(qrECCPercents[opt - 1]).arg(qrECCs[opt - 1]));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbMQRMask")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = (m_bc.bc.encodedOption3() >> 8)) >= 1 && opt <= 4) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt - 1));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3789,18 +3810,22 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_PDF417 || symbology == BARCODE_PDF417COMP || symbology == BARCODE_HIBC_PDF) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbPDFCols")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                const int w = m_bc.bc.encodedWidth();
-                const int overhead = get_rad_val(QSL("radPDFTruncated")) || symbology == BARCODE_PDF417COMP ? 35 : 69;
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", (w - overhead) / 17));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 30) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
         }
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbPDFRows")))) {
-            if (!isError && cmb->currentIndex() == 0) {
-                const int r = m_bc.bc.encodedRows();
-                cmb->setItemText(0, QString::asprintf("Automatic (%d)", r));
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedRows()) >= 3 && opt <= 90) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbPDFECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 0 && opt <= 8) {
+                cmb->setItemText(0, QSL("Automatic %1 (%2 words)").arg(opt).arg((int) pow(2, opt + 1)));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3808,9 +3833,23 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_QRCODE || symbology == BARCODE_HIBC_QR) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbQRSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 40) {
                 const int r = m_bc.bc.encodedRows();
-                cmb->setItemText(0, QString::asprintf("Automatic (%d x %d (Version %d))", r, r, (r - 17) / 4));
+                cmb->setItemText(0, QSL("Automatic %1 x %2 (Version %3)").arg(r).arg(r).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbQRECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 4) {
+                cmb->setItemText(0, QSL("Automatic %1 (Level %2)").arg(qrECCPercents[opt - 1]).arg(qrECCs[opt - 1]));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbQRMask")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = (m_bc.bc.encodedOption3() >> 8)) >= 1 && opt <= 8) {
+                cmb->setItemText(0, QSL("Automatic %1").arg(opt - 1));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3818,26 +3857,17 @@ void MainWindow::automatic_info_set()
 
     } else if (symbology == BARCODE_RMQR) {
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbRMQRSize")))) {
-            if (!isError && cmb->currentIndex() == 0) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption2()) >= 1 && opt <= 38) {
                 const int r = m_bc.bc.encodedRows();
                 const int w = m_bc.bc.encodedWidth();
-                int z;
-                if (r == 11 || r == 13) {
-                    z = 11 + (r == 13) * 6 + (w == 43) + (w == 59) * 2 + (w == 77) * 3 + (w == 99) * 4
-                            + (w == 139) * 5;
-                } else {
-                    z = (w == 59) + (w == 77) * 2 + (w == 99) * 3 + (w == 139) * 4;
-                    if (r == 7) {
-                        z += 1;
-                    } else if (r == 9) {
-                        z += 6;
-                    } else if (r == 15) {
-                        z += 23;
-                    } else { /* if (r == 17) */
-                        z += 28;
-                    }
-                }
-                cmb->setItemText(0, QString::asprintf("Automatic (R%dx%d (Zint %d))", r, w, z));
+                cmb->setItemText(0, QSL("Automatic R%1x%2 (Zint %3)").arg(r).arg(w).arg(opt));
+            } else {
+                cmb->setItemText(0, QSL("Automatic"));
+            }
+        }
+        if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbRMQRECC")))) {
+            if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) && (opt == 2 || opt == 4)) {
+                cmb->setItemText(0, QSL("Automatic %1 (Level %2)").arg(qrECCPercents[opt - 1]).arg(qrECCs[opt - 1]));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }
@@ -3846,9 +3876,21 @@ void MainWindow::automatic_info_set()
     } else if (symbology == BARCODE_ULTRA) {
         if ((txt = m_optionWidget->findChild<QLineEdit*>(QSL("txtUltraAutoInfo")))) {
             if (!isError) {
-                const int w = m_bc.bc.encodedWidth();
+                static const QString eccStrs[6] = {
+                    "Error Detection Only", "Approx 5%", "Approx 9%", "Approx 17%", "Approx 25%", "Approx 33%"
+                };
                 const int r = m_bc.bc.encodedRows();
-                txt->setText(QString::asprintf("(%d X %d)", w, r));
+                const int w = m_bc.bc.encodedWidth();
+                const int ecc = m_bc.bc.encodedOption1();
+                QString eccStr;
+                if (ecc >= 1 && ecc <= 6) {
+                    eccStr = eccStrs[ecc - 1];
+                }
+                if (get_rad_val("radUltraAuto")) {
+                    txt->setText(QSL("%1 X %2 (HxW), EC%3 - %4").arg(r).arg(w).arg(ecc - 1).arg(eccStr));
+                } else {
+                    txt->setText(QSL("%1 X %2 (HxW)").arg(r).arg(w));
+                }
             } else {
                 txt->setText(QSEmpty);
             }

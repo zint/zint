@@ -96,7 +96,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     }
 
     if (num_check_digits) {
-		int c_weight = 1, c_count = 0, c_digit;
+        int c_weight = 1, c_count = 0, c_digit;
         /* Calculate C checksum */
         for (h = length - 1; h >= 0; h--) {
             c_count += (c_weight * weight[h]);
@@ -113,7 +113,7 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
         d += 6;
 
         if (num_check_digits == 2) {
-			int k_weight = 1, k_count = 0, k_digit;
+            int k_weight = 1, k_count = 0, k_digit;
             weight[length] = c_digit;
 
             /* Calculate K checksum */

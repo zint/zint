@@ -1195,6 +1195,10 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
         printf("Layers: %d, ECC level: %d, Data Codewords: %d\n", layers, ecc_level, data_cw);
     }
 
+    /* Feedback options */
+    symbol->option_1 = ecc_level;
+    symbol->option_2 = layers;
+
     gm_add_ecc(binary, data_cw, layers, ecc_level, word);
 #ifdef ZINT_TEST
     if (symbol->debug & ZINT_DEBUG_TEST) debug_test_codeword_dump(symbol, word, data_cw);

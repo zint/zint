@@ -1865,6 +1865,15 @@ static int dm_ecc200(struct zint_symbol *symbol, struct zint_seg segs[], const i
                         binlen);
     }
 
+    /* Feedback options */
+    if (symbol->option_2 < 1 || symbol->option_2 > DMSIZESCOUNT) {
+        for (i = 0; i < DMSIZESCOUNT && symbolsize != dm_intsymbol[i]; i++); /* TODO: replace with reverse table? */
+        assert(i < DMSIZESCOUNT);
+        symbol->option_2 = i + 1;
+    }
+
+    if (debug_print) printf("Symbol size: %d, output option 2: %d\n", symbolsize, symbol->option_2);
+
     H = dm_matrixH[symbolsize];
     W = dm_matrixW[symbolsize];
     FH = dm_matrixFH[symbolsize];

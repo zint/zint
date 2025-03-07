@@ -150,70 +150,80 @@ static void test_qr_options(const testCtx *const p_ctx) {
         int eci;
         int option_1;
         int option_2;
+        int option_3;
         struct zint_structapp structapp;
         const char *data;
         int ret_encode;
         int ret_vector;
         int expected_size;
+        int expected_option_1;
+        int expected_option_2;
+        int expected_option_3;
         int compare_previous;
         const char *expected;
     };
     /* 貫 U+8CAB kanji, in Shift JIS 0x8AD1 (\212\321), UTF-8 E8B2AB */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
-        /*  1*/ { -1, -1, 5, -1, { 0, 0, "" }, "12345", 0, 0, 21, 0, "" }, /* ECC > 4 ignored */
-        /*  2*/ { -1, -1, -1, 41, { 0, 0, "" }, "12345", 0, 0, 21, 0, "" }, /* Version > 40 ignored */
-        /*  3*/ { -1, -1, -1, 2, { 0, 0, "" }, "12345", 0, 0, 25, -1, "" }, /* ECC auto-set to 4 (Q), version 2 */
-        /*  4*/ { -1, -1, 4, 2, { 0, 0, "" }, "12345", 0, 0, 25, 0, "" }, /* ECC 4 (Q), version 2 */
-        /*  5*/ { -1, -1, 1, 2, { 0, 0, "" }, "12345", 0, 0, 25, 1, "" }, /* ECC 1 (L), version 2 */
-        /*  6*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
-        /*  7*/ { -1, -1, 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" }, /* Version auto-set to 1 */
-        /*  8*/ { -1, -1, -1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" }, /* ECC auto-set to 1 (L) */
-        /*  9*/ { -1, -1, 1, 1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 0, "" },
-        /* 10*/ { -1, -1, 2, 1, { 0, 0, "" }, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for Version 1-M, requires 17 codewords (maximum 16)" }, /* ECC 2 (M), version 1 */
-        /* 11*/ { -1, -1, 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, -1, "" }, /* Version auto-set to 2 */
-        /* 12*/ { -1, -1, 2, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 0, "" },
-        /* 13*/ { -1, -1, 1, 2, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 1, "" },
-        /* 14*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 3 */
-        /* 15*/ { -1, -1, 1, 3, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 0, "" },
-        /* 16*/ { -1, -1, 2, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, -1, "" }, /* ECC 2 (M), version auto-set to 4 */
-        /* 17*/ { -1, -1, 2, 4, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 0, "" },
-        /* 18*/ { -1, -1, 3, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, -1, "" }, /* ECC 3 (Q), version auto-set to 5 */
-        /* 19*/ { -1, -1, 3, 5, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 0, "" },
-        /* 20*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, -1, "" }, /* ECC 4 (H), version auto-set to 6 */
-        /* 21*/ { -1, -1, 4, 6, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 0, "" },
-        /* 22*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, -1, "" }, /* ECC auto-set to 1, version auto-set to 13 */
-        /* 23*/ { -1, -1, 1, 13, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 0, "" },
-        /* 24*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, -1, "" }, /* ECC 4, version auto-set to 21 */
-        /* 25*/ { -1, -1, 4, 21, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 0, "" },
-        /* 26*/ { -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, -1, "" }, /* ECC auto-set to 1, version auto-set to 22 */
-        /* 27*/ { -1, -1, 1, 22, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 0, "" },
-        /* 28*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 1, "" }, /* ECC 4, version auto-set 34 */
-        /* 29*/ { -1, -1, 4, 34, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 0, "" },
-        /* 30*/ { -1, -1, 4, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1, "" }, /* 1852 alphanumerics max for ECC 4 (H) */
-        /* 31*/ { -1, -1, 1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, -1, "" }, /* 4296 alphanumerics max for ECC 1 (L) */
-        /* 32*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, -1, "" }, /* 424 Kanji, ECC 4 (Q), version 1 */
-        /* 33*/ { -1, -1, 4, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 561: Input too long for ECC level H, requires 1278 codewords (maximum 1276)" }, /* 425 Kanji, ECC 4 (H), version 1 */
-        /* 34*/ { -1, -1, 4, 1, { 0, 0, "" }, "12345678901234567", 0, 0, 21, -1, "" },
-        /* 35*/ { -1, -1, 4, 1, { 1, 2, "" }, "12345678901234567", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for Version 1-H, requires 12 codewords (maximum 9)" },
-        /* 36*/ { -1, -1, 4, 1, { 1, 2, "" }, "123456789012", ZINT_ERROR_TOO_LONG, -1, 0, -1, "Error 569: Input too long for Version 1-H, requires 10 codewords (maximum 9)" },
-        /* 37*/ { -1, -1, 4, 1, { 1, 2, "" }, "12345678901", 0, 0, 21, -1, "" },
-        /* 38*/ { -1, -1, 4, 1, { 3, 16, "123" }, "12345678901", 0, 0, 21, -1, "" },
-        /* 39*/ { -1, -1, 4, 1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 750: Structured Append count '17' out of range (2 to 16)" },
-        /* 40*/ { -1, -1, 4, 1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 751: Structured Append index '3' out of range (1 to count 2)" },
-        /* 41*/ { -1, -1, 4, 1, { 1, 2, "1234" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 752: Structured Append ID length 4 too long (3 digit maximum)" },
-        /* 42*/ { -1, -1, 4, 1, { 1, 2, "12A" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 753: Invalid Structured Append ID (digits only)" },
-        /* 43*/ { -1, -1, 4, 1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, -1, "Error 754: Structured Append ID value '256' out of range (0 to 255)" },
-        /* 44*/ { GS1_MODE, 3, -1, -1, { 0, 0, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" },
-        /* 45*/ { GS1_MODE, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 756: Using Structured Append in GS1 mode not supported by GS1 standards" },
-        /* 46*/ { GS1_MODE, 3, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
+        /*  0*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, 7 << 8, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
+        /*  1*/ { -1, -1, 5, -1, -1, { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, 7 << 8, 0, "" }, /* ECC > 4 ignored */
+        /*  2*/ { -1, -1, -1, 41, -1, { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, 7 << 8, 0, "" }, /* Version > 40 ignored */
+        /*  3*/ { -1, -1, -1, 2, -1, { 0, 0, "" }, "12345", 0, 0, 25, 4, 2, 7 << 8, -1, "" }, /* ECC auto-set to 4 (H), version 2 */
+        /*  4*/ { -1, -1, 4, 2, -1, { 0, 0, "" }, "12345", 0, 0, 25, 4, 2, 7 << 8, 0, "" }, /* ECC 4 (H), version 2 */
+        /*  5*/ { -1, -1, 1, 2, -1, { 0, 0, "" }, "12345", 0, 0, 25, 1, 2, 4 << 8, 1, "" }, /* ECC 1 (L), version 2 */
+        /*  6*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 1, 1, 5 << 8, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 1 */
+        /*  7*/ { -1, -1, 1, -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 1, 1, 5 << 8, 0, "" }, /* Version auto-set to 1 */
+        /*  8*/ { -1, -1, -1, 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 1, 1, 5 << 8, 0, "" }, /* ECC auto-set to 1 (L) */
+        /*  9*/ { -1, -1, 1, 1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 21, 1, 1, 5 << 8, 0, "" },
+        /* 10*/ { -1, -1, 2, 1, -1, { 0, 0, "" }, "貫やぐ識禁", ZINT_ERROR_TOO_LONG, -1, 25, 2, 1, 0, -1, "Error 569: Input too long for Version 1-M, requires 17 codewords (maximum 16)" }, /* ECC 2 (M), version 1 */
+        /* 11*/ { -1, -1, 2, -1, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 2, 2, 2 << 8, -1, "" }, /* Version auto-set to 2 */
+        /* 12*/ { -1, -1, 2, 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 2, 2, 2 << 8, 0, "" },
+        /* 13*/ { -1, -1, 1, 2, -1, { 0, 0, "" }, "貫やぐ識禁", 0, 0, 25, 1, 2, 3 << 8, 1, "" },
+        /* 14*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 1, 3, 8 << 8, -1, "" }, /* ECC auto-set to 1 (L), version auto-set to 3 */
+        /* 15*/ { -1, -1, 1, 3, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 29, 1, 3, 8 << 8, 0, "" },
+        /* 16*/ { -1, -1, 2, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 2, 4, 6 << 8, -1, "" }, /* ECC 2 (M), version auto-set to 4 */
+        /* 17*/ { -1, -1, 2, 4, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 33, 2, 4, 6 << 8, 0, "" },
+        /* 18*/ { -1, -1, 3, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 3, 5, 1 << 8, -1, "" }, /* ECC 3 (Q), version auto-set to 5 */
+        /* 19*/ { -1, -1, 3, 5, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 37, 3, 5, 1 << 8, 0, "" },
+        /* 20*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 4, 6, 6 << 8, -1, "" }, /* ECC 4 (H), version auto-set to 6 */
+        /* 21*/ { -1, -1, 4, 6, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", 0, 0, 41, 4, 6, 6 << 8, 0, "" },
+        /* 22*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 1, 13, 3 << 8, -1, "" }, /* ECC auto-set to 1, version auto-set to 13 */
+        /* 23*/ { -1, -1, 1, 13, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 69, 1, 13, 3 << 8, 0, "" },
+        /* 24*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 4, 21, 3 << 8, -1, "" }, /* ECC 4, version auto-set to 21 */
+        /* 25*/ { -1, -1, 4, 21, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。", 0, 0, 101, 4, 21, 3 << 8, 0, "" },
+        /* 26*/ { -1, -1, -1, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 1, 22, 3 << 8, -1, "" }, /* ECC auto-set to 1, version auto-set to 22 */
+        /* 27*/ { -1, -1, 1, 22, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 105, 1, 22, 3 << 8, 0, "" },
+        /* 28*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 4, 34, 3 << 8, 1, "" }, /* ECC 4, version auto-set 34 */
+        /* 29*/ { -1, -1, 4, 34, -1, { 0, 0, "" }, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", 0, 0, 153, 4, 34, 3 << 8, 0, "" },
+        /* 30*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, 4, 40, 3 << 8, -1, "" }, /* 1852 alphanumerics max for ECC 4 (H) */
+        /* 31*/ { -1, -1, 1, -1, -1, { 0, 0, "" }, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA" "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 0, 0, 177, 1, 40, 3 << 8, -1, "" }, /* 4296 alphanumerics max for ECC 1 (L) */
+        /* 32*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", 0, -1, 0, 4, 40, 4 << 8, -1, "" }, /* 424 Kanji, ECC 4 (H), version 1 */
+        /* 33*/ { -1, -1, 4, -1, -1, { 0, 0, "" }, "貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, 4, 0, 0, -1, "Error 561: Input too long for ECC level H, requires 1278 codewords (maximum 1276)" }, /* 425 Kanji, ECC 4 (H), version 1 */
+        /* 34*/ { -1, -1, 4, 1, -1, { 0, 0, "" }, "12345678901234567", 0, 0, 21, 4, 1, 3 << 8, -1, "" },
+        /* 35*/ { -1, -1, 4, 1, -1, { 1, 2, "" }, "12345678901234567", ZINT_ERROR_TOO_LONG, -1, 0, 4, 1, 0, -1, "Error 569: Input too long for Version 1-H, requires 12 codewords (maximum 9)" },
+        /* 36*/ { -1, -1, 4, 1, -1, { 1, 2, "" }, "123456789012", ZINT_ERROR_TOO_LONG, -1, 0, 4, 1, 0, -1, "Error 569: Input too long for Version 1-H, requires 10 codewords (maximum 9)" },
+        /* 37*/ { -1, -1, 4, 1, -1, { 1, 2, "" }, "12345678901", 0, 0, 21, 4, 1, 4 << 8, -1, "" },
+        /* 38*/ { -1, -1, 4, 1, -1, { 3, 16, "123" }, "12345678901", 0, 0, 21, 4, 1, 2 << 8, -1, "" },
+        /* 39*/ { -1, -1, 4, 1, -1, { 3, 17, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, 4, 1, 0, -1, "Error 750: Structured Append count '17' out of range (2 to 16)" },
+        /* 40*/ { -1, -1, 4, 1, -1, { 3, 2, "123" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, 4, 1, 0, -1, "Error 751: Structured Append index '3' out of range (1 to count 2)" },
+        /* 41*/ { -1, -1, 4, 1, -1, { 1, 2, "1234" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, 4, 1, 0, -1, "Error 752: Structured Append ID length 4 too long (3 digit maximum)" },
+        /* 42*/ { -1, -1, 4, 1, -1, { 1, 2, "12A" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, 4, 1, 0, -1, "Error 753: Invalid Structured Append ID (digits only)" },
+        /* 43*/ { -1, -1, 4, 1, -1, { 1, 2, "256" }, "12345678901", ZINT_ERROR_INVALID_OPTION, -1, 0, 4, 1, 0, -1, "Error 754: Structured Append ID value '256' out of range (0 to 255)" },
+        /* 44*/ { GS1_MODE, 3, -1, -1, -1, { 0, 0, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, 4, 1, 7 << 8, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" },
+        /* 45*/ { GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, 4, 1, 3 << 8, -1, "Warning 756: Using Structured Append in GS1 mode not supported by GS1 standards" },
+        /* 46*/ { GS1_MODE, 3, -1, -1, -1, { 1, 2, "" }, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 21, 4, 1, 8 << 8, -1, "Warning 755: Using ECI in GS1 mode not supported by GS1 standards" }, /* ECI trumps Structured Append */
+        /* 47*/ { -1, -1, -1, -1, ZINT_FULL_MULTIBYTE, { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, ZINT_FULL_MULTIBYTE | (7 << 8), -1, "" },
+        /* 48*/ { -1, -1, -1, -1, 8 << 8, { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, 8 << 8, -1, "" },
+        /* 49*/ { -1, -1, -1, -1, ZINT_FULL_MULTIBYTE | (8 << 8), { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, ZINT_FULL_MULTIBYTE | (8 << 8), -1, "" },
+        /* 50*/ { -1, -1, -1, -1, ZINT_FULL_MULTIBYTE | (9 << 8), { 0, 0, "" }, "12345", 0, 0, 21, 4, 1, ZINT_FULL_MULTIBYTE | (7 << 8), -1, "" }, /* Mask 8 ignored */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     struct zint_symbol previous_symbol;
+
+    char option_3_buf[64];
 
     testStartSymbol("test_qr_options", &symbol);
 
@@ -224,7 +234,9 @@ static void test_qr_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
@@ -240,10 +252,21 @@ static void test_qr_options(const testCtx *const p_ctx) {
 
         if (data[i].ret_vector != -1) {
             ret = ZBarcode_Buffer_Vector(symbol, 0);
-            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
-            assert_equal(symbol->width, data[i].expected_size, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_size);
-            assert_equal(symbol->rows, data[i].expected_size, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_size);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n",
+                        i, ret, data[i].ret_vector);
+            assert_equal(symbol->width, data[i].expected_size, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_size);
+            assert_equal(symbol->rows, data[i].expected_size, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_size);
         }
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        strcpy(option_3_buf, testUtilOption3Name(BARCODE_QRCODE, symbol->option_3)); /* Copy static buffer */
+        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                    i, symbol->option_3, option_3_buf,
+                    data[i].expected_option_3, testUtilOption3Name(BARCODE_QRCODE, data[i].expected_option_3));
 
         ZBarcode_Delete(symbol);
     }
@@ -4883,84 +4906,94 @@ static void test_microqr_options(const testCtx *const p_ctx) {
     struct item {
         int option_1;
         int option_2;
+        int option_3;
         const char *data;
         int ret_encode;
         int ret_vector;
         const int expected_size;
         const char *expected_errtxt;
+        int expected_option_1;
+        int expected_option_2;
+        int expected_option_3;
         int compare_previous;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, "12345", 0, 0, 11, "", -1 }, /* ECC auto-set to 1 (L), version auto-set to 1 */
-        /*  1*/ { 1, -1, "12345", 0, 0, 11, "", 0 }, /* ECC 1 (L), version auto-set to 1 */
-        /*  2*/ { 2, -1, "12345", 0, 0, 13, "", 1 }, /* ECC 2 (M), version auto-set to 2 */
-        /*  3*/ { 3, -1, "12345", 0, 0, 17, "", 1 }, /* ECC 3 (Q), version auto-set to 3 */
-        /*  4*/ { 4, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 566: Error correction level H not available", -1 },
-        /*  5*/ { -1, 1, "12345", 0, 0, 11, "", -1 }, /* ECC auto-set to 1, version 1 */
-        /*  6*/ { -1, 2, "12345", 0, 0, 13, "", 1 }, /* ECC auto-set to 2, version 2 */
-        /*  7*/ { 2, 2, "12345", 0, 0, 13, "", 0 },
-        /*  8*/ { -1, 3, "12345", 0, 0, 15, "", 1 }, /* ECC auto-set to 2, version 3 */
-        /*  9*/ { 2, 3, "12345", 0, 0, 15, "", 0 },
-        /* 10*/ { 1, 3, "12345", 0, 0, 15, "", 1 },
-        /* 11*/ { -1, 4, "12345", 0, 0, 17, "", 1 }, /* ECC auto-set to 3, version 4 */
-        /* 12*/ { 3, 4, "12345", 0, 0, 17, "", 0 }, /* ECC auto-set to 3, version 4 */
-        /* 13*/ { 2, 4, "12345", 0, 0, 17, "", 1 },
-        /* 14*/ { -1, 5, "12345", 0, 0, 11, "", -1 }, /* Size > 4 ignored */
-        /* 15*/ { 1, 5, "12345", 0, 0, 11, "", 0 }, /* Ignored also if ECC given */
-        /* 16*/ { 1, 1, "12345", 0, 0, 11, "", 0 }, /* ECC 1, version 1 */
-        /* 17*/ { 1, 2, "12345", 0, 0, 13, "", 1 }, /* ECC 1, version 2 */
-        /* 18*/ { 1, 3, "12345", 0, 0, 15, "", 1 }, /* ECC 1, version 3 */
-        /* 19*/ { 1, 4, "12345", 0, 0, 17, "", 1 }, /* ECC 1, version 4 */
-        /* 20*/ { 2, 1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 574: Version M1 supports error correction level L only", -1 },
-        /* 21*/ { 2, 2, "12345", 0, -1, 13, "", -1 }, /* ECC 2, version 2 */
-        /* 22*/ { 2, 3, "12345", 0, -1, 15, "", 1 }, /* ECC 2, version 3 */
-        /* 23*/ { 2, 4, "12345", 0, -1, 17, "", 1 }, /* ECC 2, version 4 */
-        /* 24*/ { 3, 1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 574: Version M1 supports error correction level L only", -1 },
-        /* 25*/ { 3, 2, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 563: Error correction level Q requires Version M4", -1 },
-        /* 26*/ { 3, 3, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 563: Error correction level Q requires Version M4", -1 },
-        /* 27*/ { 3, 4, "12345", 0, -1, 17, "", -1 }, /* ECC 3, version 4 */
-        /* 28*/ { 4, 4, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 566: Error correction level H not available", -1 },
-        /* 29*/ { 5, -1, "12345", 0, 0, 11, "", -1 }, /* ECC > 4 ignored */
-        /* 30*/ { 5, 1, "12345", 0, 0, 11, "", 0 }, /* Ignored also if size given */
-        /* 31*/ { 1, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M1-L, requires 4 codewords (maximum 3)", -1 },
-        /* 32*/ { 1, -1, "123456", 0, 0, 13, "", -1 }, /* ECC 1 (L), version auto-set to 2 */
-        /* 33*/ { 1, 2, "123456", 0, 0, 13, "", 0 },
-        /* 34*/ { 2, 2, "ABCDEF", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M2-M, requires 5 codewords (maximum 4)", -1 },
-        /* 35*/ { 1, -1, "ABCDEF", 0, 0, 13, "", -1 }, /* ECC 1 (L), version auto-set to 2 */
-        /* 36*/ { 1, 2, "ABCDEF", 0, 0, 13, "", 0 },
-        /* 37*/ { 2, -1, "ABCDE", 0, 0, 13, "", -1 }, /* ECC 2 (M), version auto-set to 2 */
-        /* 38*/ { 2, 2, "ABCDE", 0, 0, 13, "", 0 }, /* ECC 2 (M), version auto-set to 2 */
-        /* 39*/ { 1, -1, "ABCDEABCDEABCD", 0, 0, 15, "", -1 }, /* 14 alphanumerics, ECC 1, version auto-set to 3 */
-        /* 40*/ { 1, 3, "ABCDEABCDEABCD", 0, 0, 15, "", 0 },
-        /* 41*/ { 2, 3, "ABCDEABCDEABCD", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M3-M, requires 11 codewords (maximum 9)", -1 },
-        /* 42*/ { 2, 3, "ABCDEABCDEA", 0, 0, 15, "", -1 }, /* 11 alphanumerics, ECC 2, version 3 */
-        /* 43*/ { 1, -1, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, "", -1 }, /* 21 alphanumerics, ECC 1, version auto-set to 4 */
-        /* 44*/ { 1, 4, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, "", 0 },
-        /* 45*/ { 2, 4, "ABCDEFGHIJABCDEFGHIJA", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-M, requires 16 codewords (maximum 14)", -1 },
-        /* 46*/ { 2, 4, "ABCDEFGHIJABCDEFGH", 0, 0, 17, "", -1 }, /* 18 alphanumerics, ECC 2, version 4 */
-        /* 47*/ { 3, 4, "ABCDEFGHIJABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-Q, requires 14 codewords (maximum 10)", -1 },
-        /* 48*/ { 3, 4, "ABCDEFGHIJABC", 0, 0, 17, "", -1 }, /* 13 alphanumerics, ECC 3 (Q), version 4 */
-        /* 49*/ { -1, -1, "123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 562: Input length 36 too long (maximum 35)", -1 }, /* 35 absolute max */
-        /* 50*/ { -1, -1, "貫貫貫貫貫", 0, 0, 17, "", -1 }, /* 5 Kanji max */
-        /* 51*/ { -1, -1, "貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-L, requires 19 codewords (maximum 16)", -1 },
-        /* 52*/ { -1, 1, "A", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 758: Invalid character at position 1 in input for Version M1 (digits only)", -1 }, /* Numeric only */
-        /* 53*/ { -1, 2, "A", 0, 0, 13, "", -1 },
-        /* 54*/ { -1, 2, " ", 0, 0, 13, "", -1 },
-        /* 55*/ { -1, 2, "$%*+", 0, 0, 13, "", -1 },
-        /* 56*/ { -1, 2, "-./:", 0, 0, 13, "", -1 },
-        /* 57*/ { -1, 2, "a", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 }, /* Uppercase only */
-        /* 58*/ { -1, 2, "!", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 }, /* Certain punctuation only */
-        /* 59*/ { -1, 2, "#", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 }, /* Certain punctuation only */
-        /* 60*/ { -1, 2, ",", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 }, /* Certain punctuation only */
-        /* 61*/ { -1, 2, "@", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 }, /* Certain punctuation only */
-        /* 62*/ { -1, 2, "\177", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1 },
+        /*  0*/ { -1, -1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, -1 }, /* ECC auto-set to 1 (L), version auto-set to 1 */
+        /*  1*/ { 1, -1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, 0 }, /* ECC 1 (L), version auto-set to 1 */
+        /*  2*/ { 2, -1, -1, "12345", 0, 0, 13, "", 2, 2, 1 << 8, 1 }, /* ECC 2 (M), version auto-set to 2 */
+        /*  3*/ { 3, -1, -1, "12345", 0, 0, 17, "", 3, 4, 1 << 8, 1 }, /* ECC 3 (Q), version auto-set to 3 */
+        /*  4*/ { 4, -1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 566: Error correction level H not available", 4, 0, 0, -1 },
+        /*  5*/ { -1, 1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, -1 }, /* ECC auto-set to 1, version 1 */
+        /*  6*/ { -1, 2, -1, "12345", 0, 0, 13, "", 2, 2, 1 << 8, 1 }, /* ECC auto-set to 2, version 2 */
+        /*  7*/ { 2, 2, -1, "12345", 0, 0, 13, "", 2, 2, 1 << 8, 0 },
+        /*  8*/ { -1, 3, -1, "12345", 0, 0, 15, "", 2, 3, 3 << 8, 1 }, /* ECC auto-set to 2, version 3 */
+        /*  9*/ { 2, 3, -1, "12345", 0, 0, 15, "", 2, 3, 3 << 8, 0 },
+        /* 10*/ { 1, 3, -1, "12345", 0, 0, 15, "", 1, 3, 3 << 8, 1 },
+        /* 11*/ { -1, 4, -1, "12345", 0, 0, 17, "", 3, 4, 1 << 8, 1 }, /* ECC auto-set to 3, version 4 */
+        /* 12*/ { 3, 4, -1, "12345", 0, 0, 17, "", 3, 4, 1 << 8, 0 }, /* ECC auto-set to 3, version 4 */
+        /* 13*/ { 2, 4, -1, "12345", 0, 0, 17, "", 2, 4, 1 << 8, 1 },
+        /* 14*/ { -1, 5, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, -1 }, /* Size > 4 ignored */
+        /* 15*/ { 1, 5, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, 0 }, /* Ignored also if ECC given */
+        /* 16*/ { 1, 1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, 0 }, /* ECC 1, version 1 */
+        /* 17*/ { 1, 2, -1, "12345", 0, 0, 13, "", 1, 2, 1 << 8, 1 }, /* ECC 1, version 2 */
+        /* 18*/ { 1, 3, -1, "12345", 0, 0, 15, "", 1, 3, 3 << 8, 1 }, /* ECC 1, version 3 */
+        /* 19*/ { 1, 4, -1, "12345", 0, 0, 17, "", 1, 4, 1 << 8, 1 }, /* ECC 1, version 4 */
+        /* 20*/ { 2, 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 574: Version M1 supports error correction level L only", 2, 1, 0, -1 },
+        /* 21*/ { 2, 2, -1, "12345", 0, -1, 13, "", 2, 2, 1 << 8, -1 }, /* ECC 2, version 2 */
+        /* 22*/ { 2, 3, -1, "12345", 0, -1, 15, "", 2, 3, 3 << 8, 1 }, /* ECC 2, version 3 */
+        /* 23*/ { 2, 4, -1, "12345", 0, -1, 17, "", 2, 4, 1 << 8, 1 }, /* ECC 2, version 4 */
+        /* 24*/ { 3, 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 574: Version M1 supports error correction level L only", 3, 1, 0, -1 },
+        /* 25*/ { 3, 2, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 563: Error correction level Q requires Version M4", 3, 2, 0, -1 },
+        /* 26*/ { 3, 3, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 563: Error correction level Q requires Version M4", 3, 3, 0, -1 },
+        /* 27*/ { 3, 4, -1, "12345", 0, -1, 17, "", 3, 4, 1 << 8, -1 }, /* ECC 3, version 4 */
+        /* 28*/ { 4, 4, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, "Error 566: Error correction level H not available", 4, 4, 0, -1 },
+        /* 29*/ { 5, -1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, -1 }, /* ECC > 4 ignored */
+        /* 30*/ { 5, 1, -1, "12345", 0, 0, 11, "", 1, 1, 3 << 8, 0 }, /* Ignored also if size given */
+        /* 31*/ { 1, 1, -1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M1-L, requires 4 codewords (maximum 3)", 1, 1, 0, -1 },
+        /* 32*/ { 1, -1, -1, "123456", 0, 0, 13, "", 1, 2, 1 << 8, -1 }, /* ECC 1 (L), version auto-set to 2 */
+        /* 33*/ { 1, 2, -1, "123456", 0, 0, 13, "", 1, 2, 1 << 8, 0 },
+        /* 34*/ { 2, 2, -1, "ABCDEF", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M2-M, requires 5 codewords (maximum 4)", 2, 2, 0, -1 },
+        /* 35*/ { 1, -1, -1, "ABCDEF", 0, 0, 13, "", 1, 2, 1 << 8, -1 }, /* ECC 1 (L), version auto-set to 2 */
+        /* 36*/ { 1, 2, -1, "ABCDEF", 0, 0, 13, "", 1, 2, 1 << 8, 0 },
+        /* 37*/ { 2, -1, -1, "ABCDE", 0, 0, 13, "", 2, 2, 1 << 8, -1 }, /* ECC 2 (M), version auto-set to 2 */
+        /* 38*/ { 2, 2, -1, "ABCDE", 0, 0, 13, "", 2, 2, 1 << 8, 0 }, /* ECC 2 (M), version auto-set to 2 */
+        /* 39*/ { 1, -1, -1, "ABCDEABCDEABCD", 0, 0, 15, "", 1, 3, 2 << 8, -1 }, /* 14 alphanumerics, ECC 1, version auto-set to 3 */
+        /* 40*/ { 1, 3, -1, "ABCDEABCDEABCD", 0, 0, 15, "", 1, 3, 2 << 8, 0 },
+        /* 41*/ { 2, 3, -1, "ABCDEABCDEABCD", ZINT_ERROR_TOO_LONG, -1, 0, "Error 570: Input too long for Version M3-M, requires 11 codewords (maximum 9)", 2, 3, 0, -1 },
+        /* 42*/ { 2, 3, -1, "ABCDEABCDEA", 0, 0, 15, "", 2, 3, 2 << 8, -1 }, /* 11 alphanumerics, ECC 2, version 3 */
+        /* 43*/ { 1, -1, -1, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, "", 1, 4, 1 << 8, -1 }, /* 21 alphanumerics, ECC 1, version auto-set to 4 */
+        /* 44*/ { 1, 4, -1, "ABCDEFGHIJABCDEFGHIJA", 0, 0, 17, "", 1, 4, 1 << 8, 0 },
+        /* 45*/ { 2, 4, -1, "ABCDEFGHIJABCDEFGHIJA", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-M, requires 16 codewords (maximum 14)", 2, 4, 0, -1 },
+        /* 46*/ { 2, 4, -1, "ABCDEFGHIJABCDEFGH", 0, 0, 17, "", 2, 4, 1 << 8, -1 }, /* 18 alphanumerics, ECC 2, version 4 */
+        /* 47*/ { 3, 4, -1, "ABCDEFGHIJABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-Q, requires 14 codewords (maximum 10)", 3, 4, 0, -1 },
+        /* 48*/ { 3, 4, -1, "ABCDEFGHIJABC", 0, 0, 17, "", 3, 4, 1 << 8, -1 }, /* 13 alphanumerics, ECC 3 (Q), version 4 */
+        /* 49*/ { -1, -1, -1, "123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, 0, "Error 562: Input length 36 too long (maximum 35)", -1, 0, 0, -1 }, /* 35 absolute max */
+        /* 50*/ { -1, -1, -1, "貫貫貫貫貫", 0, 0, 17, "", 1, 4, 2 << 8, -1 }, /* 5 Kanji max */
+        /* 51*/ { -1, -1, -1, "貫貫貫貫貫貫", ZINT_ERROR_TOO_LONG, -1, 0, "Error 565: Input too long for Version M4-L, requires 19 codewords (maximum 16)", -1, 0, 0, -1 },
+        /* 52*/ { -1, 1, -1, "A", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 758: Invalid character at position 1 in input for Version M1 (digits only)", -1, 1, 0, -1 }, /* Numeric only */
+        /* 53*/ { -1, 2, -1, "A", 0, 0, 13, "", 2, 2, 3 << 8, -1 },
+        /* 54*/ { -1, 2, -1, " ", 0, 0, 13, "", 2, 2, 3 << 8, -1 },
+        /* 55*/ { -1, 2, -1, "$%*+", 0, 0, 13, "", 2, 2, 3 << 8, -1 },
+        /* 56*/ { -1, 2, -1, "-./:", 0, 0, 13, "", 2, 2, 1 << 8, -1 },
+        /* 57*/ { -1, 2, -1, "a", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 }, /* Uppercase only */
+        /* 58*/ { -1, 2, -1, "!", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 }, /* Certain punctuation only */
+        /* 59*/ { -1, 2, -1, "#", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 }, /* Certain punctuation only */
+        /* 60*/ { -1, 2, -1, ",", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 }, /* Certain punctuation only */
+        /* 61*/ { -1, 2, -1, "@", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 }, /* Certain punctuation only */
+        /* 62*/ { -1, 2, -1, "\177", ZINT_ERROR_INVALID_DATA, -1, 0, "Error 759: Invalid character in input for Version M2 (digits, A-Z, space and \"$%*+-./:\" only)", -1, 2, 0, -1 },
+        /* 63*/ { -1, -1, ZINT_FULL_MULTIBYTE, "12345", 0, 0, 11, "", 1, 1, ZINT_FULL_MULTIBYTE | (3 << 8), -1 },
+        /* 64*/ { -1, -1, 4 << 8, "12345", 0, 0, 11, "", 1, 1, 4 << 8, -1 },
+        /* 65*/ { -1, -1, ZINT_FULL_MULTIBYTE | (4 << 8), "12345", 0, 0, 11, "", 1, 1, ZINT_FULL_MULTIBYTE | (4 << 8), -1 },
+        /* 66*/ { -1, -1, ZINT_FULL_MULTIBYTE | (5 << 8), "12345", 0, 0, 11, "", 1, 1, ZINT_FULL_MULTIBYTE | (3 << 8), -1 }, /* Mask 5 ignored */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     struct zint_symbol previous_symbol;
+
+    char option_3_buf[64];
 
     testStartSymbol("test_microqr_options", &symbol);
 
@@ -4971,7 +5004,9 @@ static void test_microqr_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MICROQR, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MICROQR, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
@@ -4988,6 +5023,14 @@ static void test_microqr_options(const testCtx *const p_ctx) {
             assert_equal(symbol->width, data[i].expected_size, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_size);
             assert_equal(symbol->rows, data[i].expected_size, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_size);
         }
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        strcpy(option_3_buf, testUtilOption3Name(BARCODE_MICROQR, symbol->option_3)); /* Copy static buffer */
+        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                    i, symbol->option_3, option_3_buf,
+                    data[i].expected_option_3, testUtilOption3Name(BARCODE_MICROQR, data[i].expected_option_3));
 
         ZBarcode_Delete(symbol);
     }
@@ -6486,9 +6529,11 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
 
     struct item {
         int input_mode;
+        int option_3;
         const char *data;
         int ret;
         const char *expected;
+        int expected_option_3;
         const char *comment;
     };
     /* Ą U+0104 in ISO 8859-2 0xA1, in other ISO 8859 and Win 1250, UTF-8 C484 */
@@ -6496,15 +6541,16 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
     /* é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9 */
     /* β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS 0x83C0, UTF-8 CEB2 */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", "ECI-4 B2 (ISO 8859-2)" },
-        /*  1*/ { UNICODE_MODE, "é", 0, "(415) 70 44 00 01 E9 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11", "ECI-4 B1 (ISO 8859-2)" },
-        /*  2*/ { UNICODE_MODE, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input for ECI '4'", "β not in ISO 8859-2" },
-        /*  3*/ { DATA_MODE, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", "ŔĄ" },
-        /*  4*/ { GS1_MODE, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", "" },
-        /*  5*/ { UNICODE_MODE, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", 0, "(415) 70 44 01 9B A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1", "Length 411" },
-        /*  6*/ { UNICODE_MODE, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", "Length 412" },
-        /*  7*/ { DATA_MODE, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", 0, "(415) 70 44 01 9B 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34", "Length 411" },
-        /*  8*/ { DATA_MODE, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", "Length 412" },
+        /*  0*/ { UNICODE_MODE, 0, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, "ECI-4 B2 (ISO 8859-2)" },
+        /*  1*/ { UNICODE_MODE, 0, "é", 0, "(415) 70 44 00 01 E9 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11", 5 << 8, "ECI-4 B1 (ISO 8859-2)" },
+        /*  2*/ { UNICODE_MODE, 0, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input for ECI '4'", 0, "β not in ISO 8859-2" },
+        /*  3*/ { DATA_MODE, 0, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, "ŔĄ" },
+        /*  4*/ { GS1_MODE, 0, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", 0, "" },
+        /*  5*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", 0, "(415) 70 44 01 9B A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1", 5 << 8, "Length 411" },
+        /*  6*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, "Length 412" },
+        /*  7*/ { DATA_MODE, 0, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", 0, "(415) 70 44 01 9B 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34", 3 << 8, "Length 411" },
+        /*  8*/ { DATA_MODE, 0, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, "Length 412" },
+        /*  9*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", ZINT_FULL_MULTIBYTE | (3 << 8), "option_3 mask" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -6513,6 +6559,7 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
     char escaped[4096];
     char cmp_buf[32768];
     char cmp_msg[1024];
+    char option_3_buf[64];
 
     #if 0 /* Need to add "force binary mode" to BWIPP for this to work */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
@@ -6530,7 +6577,9 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
 
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_UPNQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_UPNQR, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -6538,12 +6587,26 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
             assert_equal(symbol->eci, 4, "i:%d ZBarcode_Encode symbol->eci %d != 4\n", i, symbol->eci);
         }
 
+
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
-                    symbol->errtxt, data[i].comment);
+            strcpy(option_3_buf, testUtilOption3Name(BARCODE_UPNQR, data[i].option_3)); /* Copy static buffer */
+            printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", %s, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), option_3_buf,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
+                    symbol->errtxt, testUtilOption3Name(BARCODE_UPNQR, data[i].expected_option_3), data[i].comment);
         } else {
+            strcpy(option_3_buf, testUtilOption3Name(BARCODE_UPNQR, symbol->option_3)); /* Copy static buffer */
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            if (ret < ZINT_ERROR) {
+                assert_equal(symbol->option_1, 2, "i:%d symbol->option_1 %d != 2\n", i, symbol->option_1);
+                assert_equal(symbol->option_2, 15, "i:%d symbol->option_2 %d != 15\n", i, symbol->option_2);
+            } else {
+                assert_equal(symbol->option_1, -1, "i:%d symbol->option_1 %d != -1\n", i, symbol->option_1);
+                assert_equal(symbol->option_2, 0, "i:%d symbol->option_2 %d != 0\n", i, symbol->option_2);
+            }
+            assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                        i, symbol->option_3, option_3_buf,
+                        data[i].expected_option_3, testUtilOption3Name(BARCODE_UPNQR, data[i].expected_option_3));
 
             if (ret < ZINT_ERROR) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
@@ -7748,89 +7811,93 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
         int eci;
         int option_1;
         int option_2;
+        int option_3;
         const char *data;
         int ret_encode;
         int ret_vector;
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_1;
+        int expected_option_2;
         int zxingcpp_cmp;
         const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, -1, "12345", 0, 0, 11, 27, "", 1, "" }, /* ECC auto-set to H, version auto-set to 11 (R11x27) */
-        /*  1*/ { UNICODE_MODE, -1, 4, 11, "12345", 0, 0, 11, 27, "", 1, "" },
-        /*  2*/ { UNICODE_MODE, -1, 1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 576: Error correction level L not available in rMQR", 1, "" }, /* ECC L not available */
-        /*  3*/ { UNICODE_MODE, -1, 3, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 577: Error correction level Q not available in rMQR", 1, "" }, /* ECC Q not available */
-        /*  4*/ { UNICODE_MODE, -1, 4, 11, "123456789", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC H, version 11, 9 numbers */
-        /*  5*/ { UNICODE_MODE, -1, 4, 11, "1234567890", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
-        /*  6*/ { UNICODE_MODE, -1, 2, 11, "12345678901234", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC M, version 11, 14 numbers */
-        /*  7*/ { UNICODE_MODE, -1, 2, 11, "123456789012345", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
-        /*  8*/ { UNICODE_MODE, -1, 4, 11, "ABCDEF", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC H, version 11, 6 letters */
-        /*  9*/ { UNICODE_MODE, -1, 4, 11, "ABCDEFG", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
-        /* 10*/ { UNICODE_MODE, -1, 2, 11, "ABCDEFGH", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC M, version 11, 8 letters */
-        /* 11*/ { UNICODE_MODE, -1, 2, 11, "ABCDEFGHI", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
-        /* 12*/ { UNICODE_MODE, -1, 4, 11, "\177\177\177\177", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC H, version 11, 4 bytes */
-        /* 13*/ { UNICODE_MODE, -1, 4, 11, "\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
-        /* 14*/ { UNICODE_MODE, -1, 2, 11, "\177\177\177\177\177\177", 0, 0, 11, 27, "", 1, "" }, /* Max capacity ECC M, version 11, 6 bytes */
-        /* 15*/ { UNICODE_MODE, -1, 2, 11, "\177\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
-        /* 16*/ { UNICODE_MODE, -1, 4, 11, "点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 11, 2 kanji */
-        /* 17*/ { UNICODE_MODE, -1, 4, 11, "点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
-        /* 18*/ { UNICODE_MODE, -1, 2, 11, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC M, version 11, 3 kanji */
-        /* 19*/ { UNICODE_MODE, -1, 2, 11, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
-        /* 20*/ { UNICODE_MODE, -1, -1, 1, "12345", 0, 0, 7, 43, "", 1, "" }, /* ECC auto-set to M, version 1 (R7x43) */
-        /* 21*/ { UNICODE_MODE, -1, 2, 1, "12345", 0, 0, 7, 43, "", 1, "" },
-        /* 22*/ { UNICODE_MODE, -1, 4, 1, "12345", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC H, version 1, 5 numbers */
-        /* 23*/ { UNICODE_MODE, -1, 4, 1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
-        /* 24*/ { UNICODE_MODE, -1, 2, 1, "123456789012", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC M, version 1, 12 numbers */
-        /* 25*/ { UNICODE_MODE, -1, 2, 1, "1234567890123", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 1, "" },
-        /* 26*/ { UNICODE_MODE, -1, 4, 1, "ABC", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC H, version 1, 3 letters */
-        /* 27*/ { UNICODE_MODE, -1, 4, 1, "ABCD", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
-        /* 28*/ { UNICODE_MODE, -1, 2, 1, "ABCDEFG", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC M, version 1, 7 letters */
-        /* 29*/ { UNICODE_MODE, -1, 2, 1, "ABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 1, "" },
-        /* 30*/ { UNICODE_MODE, -1, 4, 1, "\177\177", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC H, version 1, 2 bytes */
-        /* 31*/ { UNICODE_MODE, -1, 4, 1, "\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
-        /* 32*/ { UNICODE_MODE, -1, 2, 1, "\177\177\177\177\177", 0, 0, 7, 43, "", 1, "" }, /* Max capacity ECC M, version 1, 5 bytes */
-        /* 33*/ { UNICODE_MODE, -1, 2, 1, "\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 1, "" },
-        /* 34*/ { UNICODE_MODE, -1, 4, 1, "点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 1, 1 kanji */
-        /* 35*/ { UNICODE_MODE, -1, 4, 1, "点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
-        /* 36*/ { UNICODE_MODE, -1, 2, 1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC M, version 1, 3 kanji */
-        /* 37*/ { UNICODE_MODE, -1, 2, 1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 8 codewords (maximum 6)", 1, "" },
-        /* 38*/ { UNICODE_MODE, -1, 4, 7, "12345678901234567890123", 0, 0, 9, 59, "", 1, "" }, /* Max capacity ECC H, version 7 (R9x59), 23 numbers */
-        /* 39*/ { UNICODE_MODE, -1, 4, 7, "123456789012345678901234", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", 1, "" },
-        /* 40*/ { UNICODE_MODE, -1, 4, 7, "点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 9, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 7, 6 kanji */
-        /* 41*/ { UNICODE_MODE, -1, 4, 7, "点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 13 codewords (maximum 11)", 1, "" },
-        /* 42*/ { UNICODE_MODE, -1, 4, 13, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 13 (R11x59), 8 kanji */
-        /* 43*/ { UNICODE_MODE, -1, 4, 13, "点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 1, "" },
-        /* 44*/ { UNICODE_MODE, -1, 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 77, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 20 (R13x77), 17 kanji */
-        /* 45*/ { UNICODE_MODE, -1, 4, 20, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 31 codewords (maximum 29)", 1, "" },
-        /* 46*/ { UNICODE_MODE, -1, 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 26 (R15x99), 28 kanji */
-        /* 47*/ { UNICODE_MODE, -1, 4, 26, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 1, "" },
-        /* 48*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC H, version 32 (R17x139), 46 kanji */
-        /* 49*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 578: Input too long for ECC level H, requires 78 codewords (maximum 76)", 1, "" },
-        /* 50*/ { UNICODE_MODE, -1, -1, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* Max capacity ECC M, version 32, 92 kanji */
-        /* 51*/ { UNICODE_MODE, -1, 4, 32, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 578: Input too long for ECC level H, requires 153 codewords (maximum 76)", 1, "" },
-        /* 52*/ { UNICODE_MODE, -1, -1, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43 */
-        /* 53*/ { UNICODE_MODE, -1, 4, 33, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59 */
-        /* 54*/ { UNICODE_MODE, -1, 4, 33, "点茗点茗点茗点点茗点茗点茗点点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 33 R7xW-H, requires 26 codewords (maximum 24)", 1, "" },
-        /* 55*/ { UNICODE_MODE, -1, -1, 34, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 9, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43 */
-        /* 56*/ { UNICODE_MODE, -1, -1, 35, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27 */
-        /* 57*/ { UNICODE_MODE, -1, 4, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59 */
-        /* 58*/ { UNICODE_MODE, -1, -1, 35, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43 */
-        /* 59*/ { UNICODE_MODE, -1, -1, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43 */
-        /* 60*/ { UNICODE_MODE, -1, 4, 36, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59 */
-        /* 61*/ { UNICODE_MODE, -1, -1, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43 */
-        /* 62*/ { UNICODE_MODE, -1, 4, 37, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59 */
-        /* 63*/ { UNICODE_MODE, -1, 4, 37, "点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 37 R15xW-H, requires 70 codewords (maximum 69)", 1, "" },
-        /* 64*/ { UNICODE_MODE, -1, -1, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43 */
-        /* 65*/ { UNICODE_MODE, -1, 4, 38, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 77, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77 */
-        /* 66*/ { UNICODE_MODE, -1, -1, 39, "点茗点", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 579: Version '39' out of range (1 to 38)", 1, "" },
-        /* 67*/ { UNICODE_MODE, -1, 4, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, auto-sets R13x27 */
-        /* 68*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, auto-sets R15x99 (max capacity) */
-        /* 69*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 17, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, auto-sets R17x99 */
-        /* 70*/ { UNICODE_MODE, -1, 4, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 1, "" }, /* ECC set to H, auto-sets R17x139 (max capacity) */
-        /* 71*/ { GS1_MODE, 3, -1, -1, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 757: Using ECI in GS1 mode not supported by GS1 standards", 1, "" },
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, -1, "12345", 0, 0, 11, 27, "", 4, 11, 1, "" }, /* ECC auto-set to H, version auto-set to 11 (R11x27) */
+        /*  1*/ { UNICODE_MODE, -1, 4, 11, -1, "12345", 0, 0, 11, 27, "", 4, 11, 1, "" },
+        /*  2*/ { UNICODE_MODE, -1, 1, -1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 576: Error correction level L not available in rMQR", 1, 0, 1, "" }, /* ECC L not available */
+        /*  3*/ { UNICODE_MODE, -1, 3, -1, -1, "12345", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 577: Error correction level Q not available in rMQR", 3, 0, 1, "" }, /* ECC Q not available */
+        /*  4*/ { UNICODE_MODE, -1, 4, 11, -1, "123456789", 0, 0, 11, 27, "", 4, 11, 1, "" }, /* Max capacity ECC H, version 11, 9 numbers */
+        /*  5*/ { UNICODE_MODE, -1, 4, 11, -1, "1234567890", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 4, 11, 1, "" },
+        /*  6*/ { UNICODE_MODE, -1, 2, 11, -1, "12345678901234", 0, 0, 11, 27, "", 2, 11, 1, "" }, /* Max capacity ECC M, version 11, 14 numbers */
+        /*  7*/ { UNICODE_MODE, -1, 2, 11, -1, "123456789012345", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 2, 11, 1, "" },
+        /*  8*/ { UNICODE_MODE, -1, 4, 11, -1, "ABCDEF", 0, 0, 11, 27, "", 4, 11, 1, "" }, /* Max capacity ECC H, version 11, 6 letters */
+        /*  9*/ { UNICODE_MODE, -1, 4, 11, -1, "ABCDEFG", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 4, 11, 1, "" },
+        /* 10*/ { UNICODE_MODE, -1, 2, 11, -1, "ABCDEFGH", 0, 0, 11, 27, "", 2, 11, 1, "" }, /* Max capacity ECC M, version 11, 8 letters */
+        /* 11*/ { UNICODE_MODE, -1, 2, 11, -1, "ABCDEFGHI", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 2, 11, 1, "" },
+        /* 12*/ { UNICODE_MODE, -1, 4, 11, -1, "\177\177\177\177", 0, 0, 11, 27, "", 4, 11, 1, "" }, /* Max capacity ECC H, version 11, 4 bytes */
+        /* 13*/ { UNICODE_MODE, -1, 4, 11, -1, "\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 4, 11, 1, "" },
+        /* 14*/ { UNICODE_MODE, -1, 2, 11, -1, "\177\177\177\177\177\177", 0, 0, 11, 27, "", 2, 11, 1, "" }, /* Max capacity ECC M, version 11, 6 bytes */
+        /* 15*/ { UNICODE_MODE, -1, 2, 11, -1, "\177\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 2, 11, 1, "" },
+        /* 16*/ { UNICODE_MODE, -1, 4, 11, -1, "点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 11, 1, "" }, /* Max capacity ECC H, version 11, 2 kanji */
+        /* 17*/ { UNICODE_MODE, -1, 4, 11, -1, "点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 4, 11, 1, "" },
+        /* 18*/ { UNICODE_MODE, -1, 2, 11, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 11, 1, "" }, /* Max capacity ECC M, version 11, 3 kanji */
+        /* 19*/ { UNICODE_MODE, -1, 2, 11, -1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 2, 11, 1, "" },
+        /* 20*/ { UNICODE_MODE, -1, -1, 1, -1, "12345", 0, 0, 7, 43, "", 2, 1, 1, "" }, /* ECC auto-set to M, version 1 (R7x43) */
+        /* 21*/ { UNICODE_MODE, -1, 2, 1, -1, "12345", 0, 0, 7, 43, "", 2, 1, 1, "" },
+        /* 22*/ { UNICODE_MODE, -1, 4, 1, -1, "12345", 0, 0, 7, 43, "", 4, 1, 1, "" }, /* Max capacity ECC H, version 1, 5 numbers */
+        /* 23*/ { UNICODE_MODE, -1, 4, 1, -1, "123456", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 4, 1, 1, "" },
+        /* 24*/ { UNICODE_MODE, -1, 2, 1, -1, "123456789012", 0, 0, 7, 43, "", 2, 1, 1, "" }, /* Max capacity ECC M, version 1, 12 numbers */
+        /* 25*/ { UNICODE_MODE, -1, 2, 1, -1, "1234567890123", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 2, 1, 1, "" },
+        /* 26*/ { UNICODE_MODE, -1, 4, 1, -1, "ABC", 0, 0, 7, 43, "", 4, 1, 1, "" }, /* Max capacity ECC H, version 1, 3 letters */
+        /* 27*/ { UNICODE_MODE, -1, 4, 1, -1, "ABCD", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 4, 1, 1, "" },
+        /* 28*/ { UNICODE_MODE, -1, 2, 1, -1, "ABCDEFG", 0, 0, 7, 43, "", 2, 1, 1, "" }, /* Max capacity ECC M, version 1, 7 letters */
+        /* 29*/ { UNICODE_MODE, -1, 2, 1, -1, "ABCDEFGH", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 2, 1, 1, "" },
+        /* 30*/ { UNICODE_MODE, -1, 4, 1, -1, "\177\177", 0, 0, 7, 43, "", 4, 1, 1, "" }, /* Max capacity ECC H, version 1, 2 bytes */
+        /* 31*/ { UNICODE_MODE, -1, 4, 1, -1, "\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 4, 1, 1, "" },
+        /* 32*/ { UNICODE_MODE, -1, 2, 1, -1, "\177\177\177\177\177", 0, 0, 7, 43, "", 2, 1, 1, "" }, /* Max capacity ECC M, version 1, 5 bytes */
+        /* 33*/ { UNICODE_MODE, -1, 2, 1, -1, "\177\177\177\177\177\177", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 2, 1, 1, "" },
+        /* 34*/ { UNICODE_MODE, -1, 4, 1, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 1, 1, "" }, /* Max capacity ECC H, version 1, 1 kanji */
+        /* 35*/ { UNICODE_MODE, -1, 4, 1, -1, "点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 4, 1, 1, "" },
+        /* 36*/ { UNICODE_MODE, -1, 2, 1, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 1, 1, "" }, /* Max capacity ECC M, version 1, 3 kanji */
+        /* 37*/ { UNICODE_MODE, -1, 2, 1, -1, "点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 8 codewords (maximum 6)", 2, 1, 1, "" },
+        /* 38*/ { UNICODE_MODE, -1, 4, 7, -1, "12345678901234567890123", 0, 0, 9, 59, "", 4, 7, 1, "" }, /* Max capacity ECC H, version 7 (R9x59), 23 numbers */
+        /* 39*/ { UNICODE_MODE, -1, 4, 7, -1, "123456789012345678901234", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", 4, 7, 1, "" },
+        /* 40*/ { UNICODE_MODE, -1, 4, 7, -1, "点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 9, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 7, 1, "" }, /* Max capacity ECC H, version 7, 6 kanji */
+        /* 41*/ { UNICODE_MODE, -1, 4, 7, -1, "点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 13 codewords (maximum 11)", 4, 7, 1, "" },
+        /* 42*/ { UNICODE_MODE, -1, 4, 13, -1, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 11, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 13, 1, "" }, /* Max capacity ECC H, version 13 (R11x59), 8 kanji */
+        /* 43*/ { UNICODE_MODE, -1, 4, 13, -1, "点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 4, 13, 1, "" },
+        /* 44*/ { UNICODE_MODE, -1, 4, 20, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 77, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 20, 1, "" }, /* Max capacity ECC H, version 20 (R13x77), 17 kanji */
+        /* 45*/ { UNICODE_MODE, -1, 4, 20, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 31 codewords (maximum 29)", 4, 20, 1, "" },
+        /* 46*/ { UNICODE_MODE, -1, 4, 26, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点点茗点茗点茗点点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 26, 1, "" }, /* Max capacity ECC H, version 26 (R15x99), 28 kanji */
+        /* 47*/ { UNICODE_MODE, -1, 4, 26, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 4, 26, 1, "" },
+        /* 48*/ { UNICODE_MODE, -1, 4, 32, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 32, 1, "" }, /* Max capacity ECC H, version 32 (R17x139), 46 kanji */
+        /* 49*/ { UNICODE_MODE, -1, 4, 32, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 578: Input too long for ECC level H, requires 78 codewords (maximum 76)", 4, 32, 1, "" },
+        /* 50*/ { UNICODE_MODE, -1, -1, 32, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 32, 1, "" }, /* Max capacity ECC M, version 32, 92 kanji */
+        /* 51*/ { UNICODE_MODE, -1, 4, 32, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 578: Input too long for ECC level H, requires 153 codewords (maximum 76)", 4, 32, 1, "" },
+        /* 52*/ { UNICODE_MODE, -1, -1, 33, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 1, 1, "" }, /* ECC auto-set to M, version 33 (R7xAuto-width) auto-sets R7x43 */
+        /* 53*/ { UNICODE_MODE, -1, 4, 33, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 7, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 2, 1, "" }, /* ECC set to H, version 33 (R7xAuto-width) auto-sets R7x59 */
+        /* 54*/ { UNICODE_MODE, -1, 4, 33, -1, "点茗点茗点茗点点茗点茗点茗点点", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 33 R7xW-H, requires 26 codewords (maximum 24)", 4, 33, 1, "" },
+        /* 55*/ { UNICODE_MODE, -1, -1, 34, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 9, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 6, 1, "" }, /* ECC auto-set to H, version 34 (R9xAuto-width) auto-sets R9x43 */
+        /* 56*/ { UNICODE_MODE, -1, -1, 35, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 11, 1, "" }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x27 */
+        /* 57*/ { UNICODE_MODE, -1, 4, 35, -1, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 13, 1, "" }, /* ECC set to H, version 35 (R11xAuto-width) auto-sets R11x59 */
+        /* 58*/ { UNICODE_MODE, -1, -1, 35, -1, "点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 11, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 12, 1, "" }, /* ECC auto-set to M, version 35 (R11xAuto-width) auto-sets R11x43 */
+        /* 59*/ { UNICODE_MODE, -1, -1, 36, -1, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 18, 1, "" }, /* ECC auto-set to M, version 36 (R13xAuto-width) auto-sets R13x43 */
+        /* 60*/ { UNICODE_MODE, -1, 4, 36, -1, "点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 13, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 19, 1, "" }, /* ECC set to H, version 36 (R13xAuto-width) auto-sets R13x59 */
+        /* 61*/ { UNICODE_MODE, -1, -1, 37, -1, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 23, 1, "" }, /* ECC auto-set to M, version 37 (R15xAuto-width) auto-sets R15x43 */
+        /* 62*/ { UNICODE_MODE, -1, 4, 37, -1, "点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 15, 59, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 24, 1, "" }, /* ECC set to H, version 37 (R15xAuto-width) auto-sets R15x59 */
+        /* 63*/ { UNICODE_MODE, -1, 4, 37, -1, "点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗点茗点点茗点茗点茗", ZINT_ERROR_TOO_LONG, -1, 0, 0, "Error 560: Input too long for Version 37 R15xW-H, requires 70 codewords (maximum 69)", 4, 37, 1, "" },
+        /* 64*/ { UNICODE_MODE, -1, -1, 38, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 43, "Warning 760: Converted to Shift JIS but no ECI specified", 2, 28, 1, "" }, /* ECC auto-set to M, version 38 (R17xAuto-width) auto-sets R17x43 */
+        /* 65*/ { UNICODE_MODE, -1, 4, 38, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 77, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 30, 1, "" }, /* ECC set to H, version 38 (R17xAuto-width) auto-sets R17x77 */
+        /* 66*/ { UNICODE_MODE, -1, -1, 39, -1, "点茗点", ZINT_ERROR_INVALID_OPTION, -1, 0, 0, "Error 579: Version '39' out of range (1 to 38)", -1, 39, 1, "" },
+        /* 67*/ { UNICODE_MODE, -1, 4, -1, -1, "点茗点", ZINT_WARN_NONCOMPLIANT, 0, 13, 27, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 17, 1, "" }, /* ECC set to H, auto-sets R13x27 */
+        /* 68*/ { UNICODE_MODE, -1, 4, -1, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 15, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 26, 1, "" }, /* ECC set to H, auto-sets R15x99 (max capacity) */
+        /* 69*/ { UNICODE_MODE, -1, 4, -1, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点", ZINT_WARN_NONCOMPLIANT, 0, 17, 99, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 31, 1, "" }, /* ECC set to H, auto-sets R17x99 */
+        /* 70*/ { UNICODE_MODE, -1, 4, -1, -1, "点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗点茗", ZINT_WARN_NONCOMPLIANT, 0, 17, 139, "Warning 760: Converted to Shift JIS but no ECI specified", 4, 32, 1, "" }, /* ECC set to H, auto-sets R17x139 (max capacity) */
+        /* 71*/ { GS1_MODE, 3, -1, -1, -1, "[20]12", ZINT_WARN_NONCOMPLIANT, 0, 11, 27, "Warning 757: Using ECI in GS1 mode not supported by GS1 standards", 4, 11, 1, "" },
+        /* 72*/ { UNICODE_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE, "12345", 0, 0, 11, 27, "", 4, 11, 1, "" }, /* option_3 unchanged */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -7839,6 +7906,7 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
     char escaped[4096];
     char cmp_buf[32768];
     char cmp_msg[1024];
+    char option_3_buf[64];
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
@@ -7851,12 +7919,27 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        strcpy(option_3_buf, testUtilOption3Name(BARCODE_RMQR, symbol->option_3)); /* Copy static buffer */
+        if (data[i].option_3 != -1) {
+            assert_equal(symbol->option_3, data[i].option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                        i, symbol->option_3, option_3_buf,
+                        data[i].option_3, testUtilOption3Name(BARCODE_RMQR, data[i].option_3));
+        } else {
+            assert_zero(symbol->option_3, "i:%d symbol->option_3 0x%04X (%s) != 0\n",
+                        i, symbol->option_3, option_3_buf);
+        }
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);

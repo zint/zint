@@ -75,182 +75,182 @@ be set based on data</string>
        </property>
        <item>
         <property name="text">
-         <string>15 x 15 Compact</string>
+         <string>15 x 15 Compact (Zint 1)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>19 x 19 Compact</string>
+         <string>19 x 19 Compact (Zint 2)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>23 x 23 Compact</string>
+         <string>23 x 23 Compact (Zint 3)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>27 x 27 Compact</string>
+         <string>27 x 27 Compact (Zint 4)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>19 x 19 (1 Layer)</string>
+         <string>19 x 19 (1 Layer) (Zint 5)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>23 x 23 (2 Layers)</string>
+         <string>23 x 23 (2 Layers) (Zint 6)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>27 x 27 (3 Layers)</string>
+         <string>27 x 27 (3 Layers) (Zint 7)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>31 x 31 (4 Layers)</string>
+         <string>31 x 31 (4 Layers) (Zint 8)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>37 x 37 (5 Layers)</string>
+         <string>37 x 37 (5 Layers) (Zint 9)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>41 x 41 (6 Layers)</string>
+         <string>41 x 41 (6 Layers) (Zint 10)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>45 x 45 (7 Layers)</string>
+         <string>45 x 45 (7 Layers) (Zint 11)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>49 x 49 (8 Layers)</string>
+         <string>49 x 49 (8 Layers) (Zint 12)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>53 x 53 (9 Layers)</string>
+         <string>53 x 53 (9 Layers) (Zint 13)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>57 x 57 (10 Layers)</string>
+         <string>57 x 57 (10 Layers) (Zint 14)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>61 x 61 (11 Layers)</string>
+         <string>61 x 61 (11 Layers) (Zint 15)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>67 x 67 (12 Layers)</string>
+         <string>67 x 67 (12 Layers) (Zint 16)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>71 x 71 (13 Layers)</string>
+         <string>71 x 71 (13 Layers) (Zint 17)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>75 x 75 (14 Layers)</string>
+         <string>75 x 75 (14 Layers) (Zint 18)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>79 x 79 (15 Layers)</string>
+         <string>79 x 79 (15 Layers) (Zint 19)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>83 x 83 (16 Layers)</string>
+         <string>83 x 83 (16 Layers) (Zint 20)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>87 x 87 (17 Layers)</string>
+         <string>87 x 87 (17 Layers) (Zint 21)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>91 x 91 (18 Layers)</string>
+         <string>91 x 91 (18 Layers) (Zint 22)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>95 x 95 (19 Layers)</string>
+         <string>95 x 95 (19 Layers) (Zint 23)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>101 x 101 (20 Layers)</string>
+         <string>101 x 101 (20 Layers) (Zint 24)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>105 x 105 (21 Layers)</string>
+         <string>105 x 105 (21 Layers) (Zint 25)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>109 x 109 (22 Layers)</string>
+         <string>109 x 109 (22 Layers) (Zint 26)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>113 x 113 (23 Layers)</string>
+         <string>113 x 113 (23 Layers) (Zint 27)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>117 x 117 (24 Layers)</string>
+         <string>117 x 117 (24 Layers) (Zint 28)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>121 x 121 (25 Layers)</string>
+         <string>121 x 121 (25 Layers) (Zint 29)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>125 x 125 (26 Layers)</string>
+         <string>125 x 125 (26 Layers) (Zint 30)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>131 x 131 (27 Layers)</string>
+         <string>131 x 131 (27 Layers) (Zint 31)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>135 x 135 (28 Layers)</string>
+         <string>135 x 135 (28 Layers) (Zint 32)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>139 x 139 (29 Layers)</string>
+         <string>139 x 139 (29 Layers) (Zint 33)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>143 x 143 (30 Layers)</string>
+         <string>143 x 143 (30 Layers) (Zint 34)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>147 x 147 (31 Layers)</string>
+         <string>147 x 147 (31 Layers) (Zint 35)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>151 x 151 (32 Layers)</string>
+         <string>151 x 151 (32 Layers) (Zint 36)</string>
         </property>
        </item>
       </widget>
@@ -533,7 +533,7 @@ Value ranges from 2 to 26</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblAztecStructAppIndex">
         <property name="enabled">

@@ -134,34 +134,36 @@ static void test_options(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int expected_option_1;
+        int expected_option_2;
         const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 1, -1, "é", 0, 1, 57, "", "CODE128" },
-        /*  1*/ { UNICODE_MODE, -1, -1, "A", 0, 2, 101, "", "Defaults" },
-        /*  2*/ { UNICODE_MODE, 0, -1, "A", 0, 2, 101, "", "0 rows same as -1" },
-        /*  3*/ { UNICODE_MODE, 2, -1, "A", 0, 2, 101, "", "Rows 2, columns default" },
-        /*  4*/ { UNICODE_MODE, 3, -1, "A", 0, 3, 101, "", "Rows 3" },
-        /*  5*/ { UNICODE_MODE, 43, -1, "A", 0, 43, 101, "", "Rows 43" },
-        /*  6*/ { UNICODE_MODE, 44, -1, "A", 0, 44, 101, "", "Max rows" },
-        /*  7*/ { UNICODE_MODE, 45, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 410: Number of rows '45' out of range (0 to 44)", "" },
-        /*  8*/ { UNICODE_MODE, -1, -1, "abcdefg", 0, 3, 101, "", "" },
-        /*  9*/ { UNICODE_MODE, 2, -1, "abcdefg", 0, 2, 112, "", "Rows given so columns expanded" },
-        /* 10*/ { UNICODE_MODE, 3, -1, "abcdefg", 0, 3, 101, "", "" },
-        /* 11*/ { UNICODE_MODE, -1, 8, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '8' out of range (9 to 67)", "Min columns 9 (4 data)" },
-        /* 12*/ { UNICODE_MODE, -1, 9, "A", 0, 2, 101, "", "Min columns 9 (4 data)" },
-        /* 13*/ { UNICODE_MODE, -1, 10, "A", 0, 2, 112, "", "Columns 10" },
-        /* 14*/ { UNICODE_MODE, -1, 66, "A", 0, 2, 728, "", "Columns 66" },
-        /* 15*/ { UNICODE_MODE, -1, 67, "A", 0, 2, 739, "", "Max columns 67 (62 data)" },
-        /* 16*/ { UNICODE_MODE, -1, 68, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '68' out of range (9 to 67)", "" },
-        /* 17*/ { UNICODE_MODE, 2, 9, "A", 0, 2, 101, "", "Rows and columns defaults given" },
-        /* 18*/ { UNICODE_MODE, 2, 10, "A", 0, 2, 112, "", "Rows and columns given" },
-        /* 19*/ { UNICODE_MODE, 3, 11, "A", 0, 3, 123, "", "" },
-        /* 20*/ { UNICODE_MODE, 43, 66, "A", 0, 43, 728, "", "" },
-        /* 21*/ { UNICODE_MODE, 44, 67, "A", 0, 44, 739, "", "Max rows, max columns" },
-        /* 22*/ { GS1_MODE, -1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", "" },
-        /* 23*/ { GS1_MODE, 1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", "Check for CODE128" },
+        /*  0*/ { UNICODE_MODE, 1, -1, "é", 0, 1, 57, "", 1, 0, "CODE128" },
+        /*  1*/ { UNICODE_MODE, -1, -1, "A", 0, 2, 101, "", 2, 9, "Defaults" },
+        /*  2*/ { UNICODE_MODE, 0, -1, "A", 0, 2, 101, "", 2, 9, "0 rows same as -1" },
+        /*  3*/ { UNICODE_MODE, 2, -1, "A", 0, 2, 101, "", 2, 9, "Rows 2, columns default" },
+        /*  4*/ { UNICODE_MODE, 3, -1, "A", 0, 3, 101, "", 3, 9, "Rows 3" },
+        /*  5*/ { UNICODE_MODE, 43, -1, "A", 0, 43, 101, "", 43, 9, "Rows 43" },
+        /*  6*/ { UNICODE_MODE, 44, -1, "A", 0, 44, 101, "", 44, 9, "Max rows" },
+        /*  7*/ { UNICODE_MODE, 45, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 410: Number of rows '45' out of range (0 to 44)", 45, 0, "" },
+        /*  8*/ { UNICODE_MODE, -1, -1, "abcdefg", 0, 3, 101, "", 3, 9, "" },
+        /*  9*/ { UNICODE_MODE, 2, -1, "abcdefg", 0, 2, 112, "", 2, 10, "Rows given so columns expanded" },
+        /* 10*/ { UNICODE_MODE, 3, -1, "abcdefg", 0, 3, 101, "", 3, 9, "" },
+        /* 11*/ { UNICODE_MODE, -1, 8, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '8' out of range (9 to 67)", -1, 8, "Min columns 9 (4 data)" },
+        /* 12*/ { UNICODE_MODE, -1, 9, "A", 0, 2, 101, "", 2, 9, "Min columns 9 (4 data)" },
+        /* 13*/ { UNICODE_MODE, -1, 10, "A", 0, 2, 112, "", 2, 10, "Columns 10" },
+        /* 14*/ { UNICODE_MODE, -1, 66, "A", 0, 2, 728, "", 2, 66, "Columns 66" },
+        /* 15*/ { UNICODE_MODE, -1, 67, "A", 0, 2, 739, "", 2, 67, "Max columns 67 (62 data)" },
+        /* 16*/ { UNICODE_MODE, -1, 68, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 411: Number of columns '68' out of range (9 to 67)", -1, 68, "" },
+        /* 17*/ { UNICODE_MODE, 2, 9, "A", 0, 2, 101, "", 2, 9, "Rows and columns defaults given" },
+        /* 18*/ { UNICODE_MODE, 2, 10, "A", 0, 2, 112, "", 2, 10, "Rows and columns given" },
+        /* 19*/ { UNICODE_MODE, 3, 11, "A", 0, 3, 123, "", 3, 11, "" },
+        /* 20*/ { UNICODE_MODE, 43, 66, "A", 0, 43, 728, "", 43, 66, "" },
+        /* 21*/ { UNICODE_MODE, 44, 67, "A", 0, 44, 739, "", 44, 67, "Max rows, max columns" },
+        /* 22*/ { GS1_MODE, -1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", -1, 0, "" },
+        /* 23*/ { GS1_MODE, 1, -1, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 220: Selected symbology does not support GS1 mode", 1, 0, "Check for CODE128" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -176,7 +178,9 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -187,6 +191,10 @@ static void test_options(const testCtx *const p_ctx) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
             assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
         }
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
 
         ZBarcode_Delete(symbol);
     }

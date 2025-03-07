@@ -1,7 +1,7 @@
 /* code16k.c - Handles Code 16k stacked symbology */
 /*
     libzint - the open source barcode library
-    Copyright (C) 2008-2024 Robin Stuart <rstuart114@gmail.com>
+    Copyright (C) 2008-2025 Robin Stuart <rstuart114@gmail.com>
 
     Redistribution and use in source and binary forms, with or without
     modification, are permitted provided that the following conditions
@@ -106,7 +106,7 @@ static void c16k_grwp(int list[2][C128_MAX], int *p_indexliste) {
                     list[1][j - 1] = list[1][j];
                     j++;
                 }
-                *p_indexliste = *p_indexliste - 1;
+                (*p_indexliste)--;
                 i--;
             }
             i++;
@@ -280,15 +280,15 @@ static void c16k_set_a(const unsigned char source, int values[], int *bar_chars)
 
     if (source >= 128) {
         if (source < 160) {
-            values[(*bar_chars)] = (source - 128) + 64;
+            values[*bar_chars] = (source - 128) + 64;
         } else {
-            values[(*bar_chars)] = (source - 128) - 32;
+            values[*bar_chars] = (source - 128) - 32;
         }
     } else {
         if (source < 32) {
-            values[(*bar_chars)] = source + 64;
+            values[*bar_chars] = source + 64;
         } else {
-            values[(*bar_chars)] = source - 32;
+            values[*bar_chars] = source - 32;
         }
     }
     (*bar_chars)++;
@@ -301,11 +301,11 @@ static void c16k_set_a(const unsigned char source, int values[], int *bar_chars)
  */
 static int c16k_set_b(const unsigned char source, int values[], int *bar_chars) {
     if (source >= 128 + 32) {
-        values[(*bar_chars)] = source - 32 - 128;
+        values[*bar_chars] = source - 32 - 128;
     } else if (source >= 128) { /* Should never happen */
         return 0; /* Not reached */
     } else if (source >= 32) {
-        values[(*bar_chars)] = source - 32;
+        values[*bar_chars] = source - 32;
     } else { /* Should never happen */
         return 0; /* Not reached */
     }
@@ -317,7 +317,7 @@ static int c16k_set_b(const unsigned char source, int values[], int *bar_chars) 
  * This set handles numbers in a compressed form
  */
 static void c16k_set_c(const unsigned char source_a, const unsigned char source_b, int values[], int *bar_chars) {
-    values[(*bar_chars)] = 10 * (source_a - '0') + source_b - '0';
+    values[*bar_chars] = 10 * (source_a - '0') + source_b - '0';
     (*bar_chars)++;
 }
 
@@ -506,6 +506,9 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         rows = symbol->option_1;
     }
 
+    /* Feedback options */
+    symbol->option_1 = rows;
+
     for (i = 0; i < pads_needed + extra_pads; i++) {
         values[bar_characters++] = 103;
     }
@@ -583,6 +586,7 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         const float min_row_height = stripf((8.0f * rows + separator * (rows - 1)) / rows);
         const float default_height = 10.0f * rows + separator * (rows - 1);
         error_number = set_height(symbol, min_row_height, default_height, 0.0f, 0 /*no_errtxt*/);
+        symbol->option_3 = separator; /* Feedback options */
     } else {
         (void) set_height(symbol, 0.0f, 10.0f * rows, 0.0f, 1 /*no_errtxt*/);
     }

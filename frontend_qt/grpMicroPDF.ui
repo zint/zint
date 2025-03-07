@@ -300,7 +300,7 @@ Value ranges from 1 (Disabled) to 99999</string>
          <enum>Qt::Horizontal</enum>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblMPDFStructAppIndex">
         <property name="enabled">

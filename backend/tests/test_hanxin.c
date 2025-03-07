@@ -129,25 +129,34 @@ static void test_options(const testCtx *const p_ctx) {
     struct item {
         int option_1;
         int option_2;
+        int option_3;
         const char *data;
         int ret_encode;
         int ret_vector;
         int expected_size;
+        const char *expected;
+        int expected_option_1;
+        int expected_option_2;
+        int expected_option_3;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, "12345", 0, 0, 23 }, /* Default version 1, ECC auto-set to 4 */
-        /*  1*/ { 1, -1, "12345", 0, 0, 23 },
-        /*  2*/ { -1, 2, "12345", 0, 0, 25 },
-        /*  3*/ { -1, 85, "12345", 0, 0, 23 }, /* Version > max version 85 so ignored */
-        /*  4*/ { -1, 84, "12345", 0, 0, 189 },
-        /*  5*/ { 1, 1, "1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  6*/ { 4, 1, "1234567890123456", ZINT_ERROR_TOO_LONG, -1, -1 },
-        /*  7*/ { 4, 2, "12345678901234567", 0, 0, 25 },
-        /*  8*/ { 4, -1, "12345678901234567", 0, 0, 25 }, /* Version auto-set to 2 */
-        /*  9*/ { -1, -1, "12345678901234567", 0, 0, 23 }, /* Version auto-set to 1, ECC auto-set to 3 */
-        /* 10*/ { 5, -1, "12345678901234567", 0, 0, 23 }, /* ECC > max ECC 4 so ignored and auto-settings version 1, ECC 3 used */
-        /* 11*/ { -1, -1, "1234567890123456789012345678901234567890123456", 0, 0, 25 }, /* Version auto-set to 2, ECC auto-set to 2 */
+        /*  0*/ { -1, -1, -1, "12345", 0, 0, 23, "", 4, 1, 2 << 8 }, /* Default version 1, ECC auto-set to 4 */
+        /*  1*/ { 1, -1, -1, "12345", 0, 0, 23, "", 1, 1, 2 << 8 },
+        /*  2*/ { -1, 2, -1, "12345", 0, 0, 25, "", 4, 2, 3 << 8 },
+        /*  3*/ { -1, 85, -1, "12345", 0, 0, 23, "", 4, 1, 2 << 8 }, /* Version > max version 85 so ignored */
+        /*  4*/ { -1, 84, -1, "12345", 0, 0, 189, "", 4, 84, 2 << 8 },
+        /*  5*/ { 1, 1, -1, "1234567890123456789012345678901234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)", 1, 1, 0 },
+        /*  6*/ { 4, 1, -1, "1234567890123456", ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, ECC 4, requires 10 codewords (maximum 9)", 4, 1, 0 },
+        /*  7*/ { 4, 2, -1, "12345678901234567", 0, 0, 25, "", 4, 2, 4 << 8 },
+        /*  8*/ { 4, -1, -1, "12345678901234567", 0, 0, 25, "", 4, 2, 4 << 8 }, /* Version auto-set to 2 */
+        /*  9*/ { -1, -1, -1, "12345678901234567", 0, 0, 23, "", 3, 1, 3 << 8 }, /* Version auto-set to 1, ECC auto-set to 3 */
+        /* 10*/ { 5, -1, -1, "12345678901234567", 0, 0, 23, "", 3, 1, 3 << 8 }, /* ECC > max ECC 4 so ignored and auto-settings version 1, ECC 3 used */
+        /* 11*/ { -1, -1, -1, "1234567890123456789012345678901234567890123456", 0, 0, 25, "", 2, 2, 2 << 8 }, /* Version auto-set to 2, ECC auto-set to 2 */
+        /* 12*/ { -1, -1, 1 << 8, "12345", 0, 0, 23, "", 4, 1, 1 << 8 },
+        /* 13*/ { -1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "12345", 0, 0, 23, "", 4, 1, ZINT_FULL_MULTIBYTE | (1 << 8) },
+        /* 14*/ { -1, -1, ZINT_FULL_MULTIBYTE, "12345", 0, 0, 23, "", 4, 1, ZINT_FULL_MULTIBYTE | (2 << 8) },
+        /* 15*/ { -1, -1, 9 << 8, "12345", 0, 0, 23, "", 4, 1, 2 << 8 }, /* Mask 8 ignored */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -156,6 +165,7 @@ static void test_options(const testCtx *const p_ctx) {
     char escaped[1024];
     char cmp_buf[32768];
     char cmp_msg[1024];
+    char option_3_buf[64];
 
     int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
 
@@ -168,10 +178,21 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
+                    i, symbol->option_2, data[i].expected_option_2);
+        strcpy(option_3_buf, testUtilOption3Name(BARCODE_QRCODE, symbol->option_3)); /* Copy static buffer */
+        assert_equal(symbol->option_3, data[i].expected_option_3, "i:%d symbol->option_3 0x%04X (%s) != 0x%04X (%s)\n",
+                    i, symbol->option_3, option_3_buf,
+                    data[i].expected_option_3, testUtilOption3Name(BARCODE_QRCODE, data[i].expected_option_3));
 
         if (data[i].ret_vector != -1) {
             ret = ZBarcode_Buffer_Vector(symbol, 0);

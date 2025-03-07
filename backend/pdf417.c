@@ -1312,6 +1312,11 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     }
     assert(rows * cols >= longueur);
 
+    /* Feedback options */
+    symbol->option_1 = ecc;
+    symbol->option_2 = cols;
+    symbol->option_3 = rows; /* Same as `symbol->rows` */
+
     /* 781 - Padding calculation */
     padding = rows * cols - longueur;
 

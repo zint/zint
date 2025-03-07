@@ -25,7 +25,7 @@
      <item row="0" column="0">
       <widget class="QLabel" name="lblDotCols">
        <property name="text">
-        <string>&amp;Number of Data Columns:</string>
+        <string>&amp;Number of Columns:</string>
        </property>
        <property name="toolTip">
         <string>Set the width of the symbol</string>
@@ -1034,26 +1034,48 @@
       </widget>
      </item>
      <item row="1" column="0">
-      <widget class="QLabel" name="labelDotMask">
+      <widget class="QLabel" name="lblDotSize">
+       <property name="text">
+        <string>Size:</string>
+       </property>
+       <property name="toolTip">
+        <string>Height x width in X-dimensions</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="1">
+      <widget class="QLabel" name="lblDotSizeMsg">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="toolTip">
+        <string>Height x width in X-dimensions</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblDotMask">
        <property name="text">
         <string>&amp;Mask:</string>
        </property>
        <property name="toolTip">
-        <string>Manually specify which mask to use
+        <string>Manually specify which mask to use.
 The prime masks 0&apos; to 3&apos; are the same
-as 0 to 3 with the corners lit</string>
+as 0 to 3 with the corners lit (and may
+not differ if already set)</string>
        </property>
        <property name="buddy">
         <cstring>cmbDotMask</cstring>
        </property>
       </widget>
      </item>
-     <item row="1" column="1">
+     <item row="2" column="1">
       <widget class="QComboBox" name="cmbDotMask">
        <property name="toolTip">
-        <string>Manually specify which mask to use
+        <string>Manually specify which mask to use.
 The prime masks 0&apos; to 3&apos; are the same
-as 0 to 3 with the corners lit</string>
+as 0 to 3 with the corners lit (and may
+not differ if already set)</string>
        </property>
        <item>
         <property name="text">
@@ -1373,7 +1395,7 @@ Value ranges from 2 to 35</string>
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="3">
        <widget class="QLabel" name="lblDotStructAppIndex">
         <property name="enabled">
@@ -1600,7 +1622,7 @@ Value ranges from 1 to count
          </size>
         </property>
        </spacer>
-	  </item>
+      </item>
       <item row="0" column="6">
        <widget class="QLabel" name="lblDotStructAppIDDisabled">
         <property name="enabled">

@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.15.0.9
-February 2025
+March 2025
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -3837,7 +3837,7 @@ standards (ECC 000 to 140) have now been removed from Zint.
   4       16 x 16          14      48 x 48          24      144 x 144
   5       18 x 18          15      52 x 52          25      8 x 18
   6       20 x 20          16      64 x 64          26      8 x 32
-  7       22 x 22          17      72 x 72          28      12 x 26
+  7       22 x 22          17      72 x 72          27      12 x 26
   8       24 x 24          18      80 x 80          28      12 x 36
   9       26 x 26          19      88 x 88          29      16 x 36
   10      32 x 32          20      96 x 96          30      16 x 48
@@ -4901,7 +4901,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.15.0.9 % % February 2025
+% ZINT(1) Version 2.15.0.9 % % March 2025
 
 NAME
 
@@ -5372,7 +5372,7 @@ OPTIONS
                 8   24x24     24  144x144   40  20x36
                 9   26x26     25  8x18      41  20x44
                 10  32x32     26  8x32      42  20x64
-                11  36x36     28  12x26     43  22x48
+                11  36x36     27  12x26     43  22x48
                 12  40x40     28  12x36     44  24x48
                 13  44x44     29  16x36     45  24x64
                 14  48x48     30  16x48     46  26x40

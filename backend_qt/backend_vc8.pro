@@ -1,6 +1,6 @@
 win32 {
-	TEMPLATE = vclib
-	CONFIG += staticlib debug-and-release
+    TEMPLATE = vclib
+    CONFIG += staticlib debug-and-release
 }
 
 TARGET = QtZint2

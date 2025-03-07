@@ -235,6 +235,9 @@ public:
     float encodedHeight() const; // Read-only, in X-dimensions
     float vectorWidth() const; // Read-only, scaled width
     float vectorHeight() const; // Read-only, scaled height
+    int encodedOption1() const; // Read-only, encoded `option_1`
+    int encodedOption2() const; // Read-only, encoded `option_2`
+    int encodedOption3() const; // Read-only, encoded `option_3`
 
 
     /* Legacy property getters/setters */
@@ -397,6 +400,9 @@ private:
     float m_encodedHeight;
     float m_vectorWidth;
     float m_vectorHeight;
+    int m_encodedOption1;
+    int m_encodedOption2;
+    int m_encodedOption3;
     QString m_lastError;
     int m_error;
 
