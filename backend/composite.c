@@ -1232,7 +1232,8 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
 }
 
 INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number, cc_mode, cc_width = 0, ecc_level = 0;
+    int error_number = 0, warn_number = 0;
+    int cc_mode, cc_width = 0, ecc_level = 0;
     int j, i, k;
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
     const unsigned int bs = 13 * length + 1000 + 1;
@@ -1246,7 +1247,6 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     if (debug_print) printf("Reduced length: %d\n", length);
 
     /* Perform sanity checks on input options first */
-    error_number = 0;
     pri_len = (int) strlen(symbol->primary);
     if (pri_len == 0) {
         /* TODO: change to more appropiate ZINT_ERROR_INVALID_DATA */
@@ -1377,6 +1377,15 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         case 3: cc_c(symbol, binary_string, cc_width, ecc_level);
             break;
     }
+
+    if (symbol->option_1 >= 1 && symbol->option_1 <= 3 && symbol->option_1 != cc_mode) {
+        warn_number = ZEXT errtxtf(ZINT_WARN_INVALID_OPTION, symbol, 443,
+                                    "Composite type changed from CC-%1$c to CC-%2$c",
+                                    'A' + (symbol->option_1 - 1), 'A' + (cc_mode - 1));
+    }
+
+    /* Feedback options */
+    symbol->option_1 = cc_mode;
 
     /* 2D component done, now calculate linear component */
     linear = ZBarcode_Create(); /* Symbol contains the 2D component and Linear contains the rest */
@@ -1582,7 +1591,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     ZBarcode_Delete(linear);
 
-    return error_number;
+    return error_number ? error_number : warn_number;
 }
 
 /* vim: set ts=4 sw=4 et : */

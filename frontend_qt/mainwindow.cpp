@@ -1355,9 +1355,7 @@ void MainWindow::on_encoded()
     }
     size_msg_ui_set();
 
-    if (m_optionWidget) {
-        automatic_info_set();
-    }
+    automatic_info_set();
 }
 
 void MainWindow::on_errored()
@@ -1370,9 +1368,7 @@ void MainWindow::on_errored()
     enableActions();
     errtxtBar_set();
     size_msg_ui_set();
-    if (m_optionWidget) {
-        automatic_info_set();
-    }
+    automatic_info_set();
 }
 
 void MainWindow::filter_symbologies()
@@ -3575,18 +3571,29 @@ void MainWindow::errtxtBar_set()
 
 void MainWindow::automatic_info_set()
 {
-    if (!m_optionWidget) {
-        return;
-    }
-
     static const char qrECCs[4] = { 'L', 'M', 'Q', 'H' };
     static const char *qrECCPercents[4] = { "~20%", "~37%", "~55%", "~65%" };
     const int symbology = bstyle_items[bstyle->currentIndex()].symbology;
     const bool isError = m_bc.bc.getError() >= ZINT_ERROR;
+
     QLineEdit *txt;
     QComboBox *cmb;
     QLabel *lbl;
     int opt;
+
+    bool compEnabled = !grpComposite->isHidden() && chkComposite->isChecked();
+    if (compEnabled) {
+        if (!isError && cmbCompType->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 1 && opt <= 3) {
+            static const char ccModes[3] = { 'A', 'B', 'C' };
+            cmbCompType->setItemText(0, QSL("Automatic CC-%1").arg(ccModes[opt - 1]));
+        } else {
+            cmbCompType->setItemText(0, QSL("Automatic"));
+        }
+    }
+
+    if (!m_optionWidget) {
+        return;
+    }
 
     if (symbology == BARCODE_AZTEC || symbology == BARCODE_HIBC_AZTEC) {
         if ((txt = m_optionWidget->findChild<QLineEdit*>(QSL("txtAztecAutoInfo")))) {
@@ -3825,7 +3832,7 @@ void MainWindow::automatic_info_set()
         }
         if ((cmb = m_optionWidget->findChild<QComboBox*>(QSL("cmbPDFECC")))) {
             if (!isError && cmb->currentIndex() == 0 && (opt = m_bc.bc.encodedOption1()) >= 0 && opt <= 8) {
-                cmb->setItemText(0, QSL("Automatic %1 (%2 words)").arg(opt).arg((int) pow(2, opt + 1)));
+                cmb->setItemText(0, QSL("Automatic %1 (%2 words)").arg(opt).arg(2 << opt));
             } else {
                 cmb->setItemText(0, QSL("Automatic"));
             }

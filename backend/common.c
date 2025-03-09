@@ -898,8 +898,7 @@ INTERNAL int set_height(struct zint_symbol *symbol, const float min_row_height, 
             if (stripf(row_height + epsilon) < stripf(min_row_height)) {
                 error_number = ZINT_WARN_NONCOMPLIANT;
                 if (!no_errtxt) {
-                    ZEXT errtxtf(0, symbol, 247, "Height not compliant with standards (minimum %.4g)",
-                                stripf(min_row_height * zero_count));
+                    errtxt(0, symbol, 247, "Height not compliant with standards (too small)");
                 }
             }
         }

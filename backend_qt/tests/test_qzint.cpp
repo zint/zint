@@ -445,8 +445,8 @@ private slots:
         if (!m_skipIfFontUsed) {
             QTest::newRow("BARCODE_QRCODE no text") << BARCODE_QRCODE << "" << 0.0f << ZINT_ERROR_INVALID_DATA << "Error 228: No input data (segment 0 empty)" << 0 << 0 << 0.0f << -1 << 0 << 0 << 0.0f << 0.0f;
         }
-        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 0.0f << 0 << "" << 30 << 33 << 28.578f << -1 << 0 << 0 << 60.0f << 57.7334f;
-        QTest::newRow("BARCODE_MAXICODE Scale 2") << BARCODE_MAXICODE << "1234" << 2.0f << 0 << "" << 30 << 33 << 28.578f << -1 << 0 << 0 << 120.0f << 115.467f;
+        QTest::newRow("BARCODE_MAXICODE") << BARCODE_MAXICODE << "1234" << 0.0f << 0 << "" << 30 << 33 << 28.578f << 4 << 0 << 0 << 60.0f << 57.7334f;
+        QTest::newRow("BARCODE_MAXICODE Scale 2") << BARCODE_MAXICODE << "1234" << 2.0f << 0 << "" << 30 << 33 << 28.578f << 4 << 0 << 0 << 120.0f << 115.467f;
     }
 
     void renderTest()

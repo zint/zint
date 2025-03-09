@@ -563,7 +563,7 @@ for this symbology to defaults</string>
                   </property>
                   <property name="minimumSize">
                    <size>
-                    <width>60</width>
+                    <width>140</width>
                     <height>0</height>
                    </size>
                   </property>

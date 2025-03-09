@@ -668,6 +668,9 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
         printf("Mode: %d\n", mode);
     }
 
+    /* Feedback options */
+    symbol->option_1 = mode;
+
     if (symbol->structapp.count) {
         if (symbol->structapp.count < 2 || symbol->structapp.count > 8) {
             return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 558,
