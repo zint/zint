@@ -3275,9 +3275,9 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 43*/ { BARCODE_UPCE_CC, -1, -1, "1234567+2", "[20]12", 0, "12345670+02" },
         /* 44*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02" },
         /* 45*/ { BARCODE_DBAR_STK_CC, -1, -1, "12345678901231", "[20]12", 0, "" }, /* No HRT for stacked symbologies */
-        /* 46*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "" },
+        /* 46*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "0112345678901231" }, /* Unless RAW_TEXT */
         /* 47*/ { BARCODE_DBAR_OMNSTK_CC, -1, -1, "12345678901231", "[20]12", 0, "" },
-        /* 48*/ { BARCODE_DBAR_OMNSTK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "" },
+        /* 48*/ { BARCODE_DBAR_OMNSTK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "0112345678901231" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, composite_length, ret;

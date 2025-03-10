@@ -1322,11 +1322,11 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 10*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", 0, "(01)12345678901231" }, /* See test_hrt() in "test_gs1.c" for full HRT tests */
         /* 11*/ { BARCODE_DBAR_EXP, BARCODE_RAW_TEXT, "[01]12345678901231", 0, "0112345678901231" },
         /* 12*/ { BARCODE_DBAR_STK, -1, "12345678901231", 0, "" }, /* No HRT for stacked */
-        /* 13*/ { BARCODE_DBAR_STK, BARCODE_RAW_TEXT, "12345678901231", 0, "" },
+        /* 13*/ { BARCODE_DBAR_STK, BARCODE_RAW_TEXT, "12345678901231", 0, "0112345678901231" }, /* Unless RAW_TEXT */
         /* 14*/ { BARCODE_DBAR_OMNSTK, -1, "10000000000090", 0, "" },
-        /* 15*/ { BARCODE_DBAR_OMNSTK, BARCODE_RAW_TEXT, "10000000000090", 0, "" },
+        /* 15*/ { BARCODE_DBAR_OMNSTK, BARCODE_RAW_TEXT, "10000000000090", 0, "0110000000000090" },
         /* 16*/ { BARCODE_DBAR_EXPSTK, -1, "[01]12345678901231", 0, "" },
-        /* 17*/ { BARCODE_DBAR_EXPSTK, BARCODE_RAW_TEXT, "[01]12345678901231", 0, "" },
+        /* 17*/ { BARCODE_DBAR_EXPSTK, BARCODE_RAW_TEXT, "[01]12345678901231", 0, "0112345678901231" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

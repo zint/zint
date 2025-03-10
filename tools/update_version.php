@@ -376,8 +376,8 @@ version_replace(2, $data_dirname . 'win32/vs2019/zint.vcxproj', '/ZINT_VERSION="
 
 print PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;
-print '!!!  REMEMBER: update release date in manual and man page         !!!' . PHP_EOL;
-print '!!!  REMEMBER: cd docs; make; make manual.html                    !!!' . PHP_EOL;
+print '!!!  REMEMBER: update release date in manual                      !!!' . PHP_EOL;
+print '!!!  REMEMBER: cd docs; make                                      !!!' . PHP_EOL;
 print '!!!  REMEMBER: run "autoconf" and "./configure" in "backend_tcl/" !!!' . PHP_EOL;
 print '!!!  REMEMBER: update version and date in "ChangeLog"             !!!' . PHP_EOL;
 print '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!' . PHP_EOL;

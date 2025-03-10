@@ -2341,8 +2341,8 @@ Value                      Effect
 
 `BARCODE_RAW_TEXT`         Set HRT with no decoration,[^14] complete with any
                            control characters[^15] and check characters,[^16]
-                           and for all linear symbologies, including those
-                           that normally don't set it.
+                           and for all linear and DataBar Stacked symbologies,
+                           including those that normally don't set it.
 ------------------------------------------------------------------------------
 
 Table: API `output_options` Values {#tbl:api_output_options tag="$ $"}

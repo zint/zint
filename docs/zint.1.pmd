@@ -564,55 +564,55 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
     `--version`).
 
 `-1`
-:    Human Readable Text was outputted as raw text (`ZINT_WARN_HRT_RAW_TEXT`)
+:   Human Readable Text was outputted as raw text (`ZINT_WARN_HRT_RAW_TEXT`)
 
 `1`
-:    Human Readable Text was truncated (maximum 199 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
+:   Human Readable Text was truncated (maximum 199 bytes) (`ZINT_WARN_HRT_TRUNCATED`)
 
 `2`
-:    Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)
+:   Invalid option given but overridden by Zint (`ZINT_WARN_INVALID_OPTION`)
 
 `3`
-:    Automatic ECI inserted by Zint (`ZINT_WARN_USES_ECI`)
+:   Automatic ECI inserted by Zint (`ZINT_WARN_USES_ECI`)
 
 `4`
-:    Symbol created not compliant with standards (`ZINT_WARN_NONCOMPLIANT`)
+:   Symbol created not compliant with standards (`ZINT_WARN_NONCOMPLIANT`)
 
 `5`
-:    Input data wrong length (`ZINT_ERROR_TOO_LONG`)
+:   Input data wrong length (`ZINT_ERROR_TOO_LONG`)
 
 `6`
-:    Input data incorrect (`ZINT_ERROR_INVALID_DATA`)
+:   Input data incorrect (`ZINT_ERROR_INVALID_DATA`)
 
 `7`
-:    Input check digit incorrect (`ZINT_ERROR_INVALID_CHECK`)
+:   Input check digit incorrect (`ZINT_ERROR_INVALID_CHECK`)
 
 `8`
-:    Incorrect option given (`ZINT_ERROR_INVALID_OPTION`)
+:   Incorrect option given (`ZINT_ERROR_INVALID_OPTION`)
 
 `9`
-:    Internal error (should not happen) (`ZINT_ERROR_ENCODING_PROBLEM`)
+:   Internal error (should not happen) (`ZINT_ERROR_ENCODING_PROBLEM`)
 
 `10`
-:    Error opening output file (`ZINT_ERROR_FILE_ACCESS`)
+:   Error opening output file (`ZINT_ERROR_FILE_ACCESS`)
 
 `11`
-:    Memory allocation (malloc) failure (`ZINT_ERROR_MEMORY`)
+:   Memory allocation (malloc) failure (`ZINT_ERROR_MEMORY`)
 
 `12`
-:    Error writing to output file (`ZINT_ERROR_FILE_WRITE`)
+:   Error writing to output file (`ZINT_ERROR_FILE_WRITE`)
 
 `13`
 :   Error counterpart of warning if `--werror` given (`ZINT_ERROR_USES_ECI`)
 
 `14`
-:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_NONCOMPLIANT`)
+:   Error counterpart of warning if `--werror` given (`ZINT_ERROR_NONCOMPLIANT`)
 
 `15`
-:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_TRUNCATED`)
+:   Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_TRUNCATED`)
 
 `16`
-:    Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_RAW_TEXT`)
+:   Error counterpart of warning if `--werror` given (`ZINT_ERROR_HRT_RAW_TEXT`)
 
 # EXAMPLES
 

@@ -301,7 +301,8 @@ extern "C" {
 #define BARCODE_MEMORY_FILE     0x10000 /* Write output to in-memory buffer `memfile` instead of to `outfile` */
 #define BARCODE_RAW_TEXT        0x20000 /* Set HRT with no decoration (GS1 data will not have parentheses but GS
                                            separators as needed), complete with any control chars and check chars, and
-                                           for all linear symbologies, including those that normally don't set it */
+                                           for all linear and DataBar Stacked symbologies, including those that
+                                           normally don't set it */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */

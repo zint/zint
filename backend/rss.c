@@ -291,6 +291,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     int latch;
     int separator_row;
     int widths[4];
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     separator_row = 0;
 
@@ -547,6 +548,10 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             symbol->width = 50;
         }
 
+        if (raw_text) {
+            dbar_set_gtin14_hrt(symbol, source, length);
+        }
+
         if (symbol->symbology != BARCODE_DBAR_STK_CC) { /* Composite calls dbar_omnstk_set_height() itself */
             error_number = dbar_omnstk_set_height(symbol, 0 /*first_row*/);
         }
@@ -594,6 +599,10 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             dbar_omn_separator(symbol, 50, separator_row, 1 /*above*/, 18, 0, 0 /*bottom_finder_value_3*/);
         }
         symbol->rows = symbol->rows + 1;
+
+        if (raw_text) {
+            dbar_set_gtin14_hrt(symbol, source, length);
+        }
 
         /* ISO/IEC 24724:2011 5.3.2.2 minimum 33X height per row */
         if (symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
@@ -1583,6 +1592,10 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
             symbol->rows = symbol->rows + 4;
         }
         symbol->rows = symbol->rows - 3;
+
+        if (raw_text) {
+            hrt_cpy_nochk(symbol, reduced, reduced_length);
+        }
     }
 
     if (symbol->symbology == BARCODE_DBAR_EXP_CC || symbol->symbology == BARCODE_DBAR_EXPSTK_CC) {
