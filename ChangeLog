@@ -21,6 +21,8 @@ Changes
   `option_1` by setting to -1 (min 3 words), 0 (<5% + 3 words)
 - Better warning messages on non-compliant heights
 - composite: warn if CC type upped from requested
+- gs1: csumalpha: improve warning, report both chars (ticket #332, props Harald
+  Oehlmann)
 
 Bugs
 ----

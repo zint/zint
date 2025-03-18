@@ -255,14 +255,8 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
 
         if (de[0] != c1 || de[1] != c2) {
             *p_err_no = 3;
-            if (de[0] != c1) {
-                *p_err_posn = (de - data) + 1;
-                (void) gs1_err_msg_printf_nochk(err_msg, "Bad checksum '%c', expected '%c'", de[0], c1);
-            } else {
-                *p_err_posn = (de + 1 - data) + 1;
-                (void) gs1_err_msg_printf_nochk(err_msg, "Bad checksum '%c', expected '%c'", de[1], c2);
-            }
-            return 0;
+            *p_err_posn = (de - data) + 1;
+            return gs1_err_msg_printf_nochk(err_msg, "Bad checksum '%.2s', expected '%c%c'", de, c1, c2);
         }
     }
 
