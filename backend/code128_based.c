@@ -273,14 +273,15 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
 
     /* Do some checks on the Service Indicator (first char only) and Country Code */
     if (strchr("JKSTW", local_source[0]) != NULL) { /* These are reserved & cannot be assigned */
-        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 839,
-                                "Invalid Service Indicator (first character should not be any of \"JKSTW\")");
-    } else if (strchr("FHIOXY", local_source[0]) != NULL) { /* These aren't allocated as of spec Oct 2017 */
-        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 840,
-                                "Non-standard Service Indicator (first 2 characters)");
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 839,
+                                "Invalid Service Indicator '%.2s' (first character should not be any of \"JKSTW\")",
+                                local_source);
+    } else if (strchr("FIOXY", local_source[0]) != NULL) { /* These aren't allocated as of spec Oct 2017 */
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 840,
+                                "Non-standard Service Indicator '%.2s' (first 2 characters)", local_source);
     } else if (!gs1_iso3166_alpha2(local_source + 11)) {
-        error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 841,
-                                "Country code (last two characters) is not ISO 3166-1");
+        error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 841,
+                                "Country Code '%.2s' (last two characters) is not ISO 3166-1", local_source + 11);
     }
 
     (void) code128(symbol, local_source, 13); /* Only error returned is for large text which can't happen */

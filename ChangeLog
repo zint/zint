@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-03-09)
+Version 2.15.0.9 (dev) not released yet (2025-03-18)
 ====================================================
 
 **Incompatible changes**
@@ -26,6 +26,7 @@ Bugs
 ----
 - AZTEC: fix GS1 mode with Structured Append (wasn't outputting initial FNC1)
 - set_height: fix non-compliance false positives by using epsilon in checks
+- UPU_S10: fix Service Indicator warning re "H" (ticket #331, props Milton Neal)
 - manual/man page: fix DATAMATRIX Sizes tables "28 12x26" -> "27 12x26"
 
 
