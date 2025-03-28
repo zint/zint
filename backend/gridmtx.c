@@ -1024,6 +1024,7 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     const struct zint_structapp *p_structapp = NULL;
     int size_squared;
     int bin_len;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1035,29 +1036,39 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
     /* If ZINT_FULL_MULTIBYTE set use Hanzi mode in DATA_MODE or for non-GB 2312 in UNICODE_MODE */
     full_multibyte = (symbol->option_3 & 0xFF) == ZINT_FULL_MULTIBYTE;
 
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
+
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        gb2312_cpy_segs(local_segs, seg_count, ddata, full_multibyte);
+        if (gb2312_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte)) {
+            return ZINT_ERROR_MEMORY; /* `gb18030_cpy_segs()` only fails with OOM */
+        }
     } else {
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
-            int done = 0;
+            int eci = 0;
             if (local_segs[i].eci != 0 && local_segs[i].eci != 29) { /* Unless default or ECI 29 (GB 2312) */
                 /* Try other conversions */
                 error_number = gb2312_utf8_to_eci(local_segs[i].eci, local_segs[i].source, &local_segs[i].length,
                                                     dd, full_multibyte);
                 if (error_number == 0) {
-                    done = 1;
+                    eci = local_segs[i].eci;
                 } else {
                     return errtxtf(error_number, symbol, 535, "Invalid character in input for ECI '%d'",
                                     local_segs[i].eci);
                 }
             }
-            if (!done) {
+            if (!eci) {
                 /* Try GB 2312 (EUC-CN) */
                 error_number = gb2312_utf8(symbol, local_segs[i].source, &local_segs[i].length, dd);
                 if (error_number != 0) {
                     return error_number;
                 }
+                eci = 29;
+            }
+            if (raw_text && rt_cpy_seg_ddata(symbol, i, &local_segs[i], eci, dd)) {
+                return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
             }
             dd += local_segs[i].length;
         }

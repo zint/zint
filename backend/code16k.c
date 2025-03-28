@@ -334,6 +334,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
     int bar_characters;
     int error_number = 0, first_sum, second_sum;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (length > C128_MAX) {
@@ -595,6 +597,10 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* BS EN 12323:2005 Section 4.3.7 minimum (note change from previous default 2) */
+    }
+
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

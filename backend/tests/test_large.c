@@ -196,7 +196,7 @@ static void test_clz_u64(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_clz_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -229,7 +229,7 @@ static void test_load(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_load");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -270,7 +270,7 @@ static void test_load_str_u64(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_load_str_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -314,7 +314,7 @@ static void test_add_u64(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_add_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -358,7 +358,7 @@ static void test_sub_u64(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_sub_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -415,7 +415,7 @@ static void test_mul_u64(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_mul_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -540,7 +540,7 @@ static void test_div_u64(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_div_u64");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -706,7 +706,7 @@ static void test_unset_bit(const testCtx *const p_ctx) {
     char t_dump[35];
     char expected_dump[35];
 
-    testStart("test_unset_bit");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -780,7 +780,7 @@ static void test_uint_array(const testCtx *const p_ctx) {
     unsigned char uchar_array[130];
     unsigned char uchar_expected_array[130];
 
-    testStart("test_uint_array");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -871,7 +871,7 @@ static void test_dump(const testCtx *const p_ctx) {
 
     char dump[35];
 
-    testStart("test_dump");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 

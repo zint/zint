@@ -1,4 +1,4 @@
-% README.linux 2025-02-19
+% README.linux 2025-03-28
 % Tested on Ubuntu 20.04.4 LTS, Ubuntu 22.04 LTS, Ubuntu 24.04 LTS and
 % Fedora Linux 41 (Workstation Edition)
 
@@ -126,7 +126,6 @@ ZINT_COVERAGE:BOOL=OFF  # Set code coverage flags
 ZINT_DEBUG:BOOL=OFF     # Set debug compile flags
 ZINT_FRONTEND:BOOL=ON   # Build frontend
 ZINT_NOOPT:BOOL=OFF     # Set no optimize compile flags
-ZINT_SANITIZE:BOOL=OFF  # Set sanitize compile/link flags
 ZINT_SANITIZE:BOOL=OFF  # Set sanitize address/undefined
 ZINT_SANITIZEM:BOOL=OFF # Set sanitize memory (ignored if ZINT_SANITIZE)
 ZINT_SHARED:BOOL=ON     # Build shared library

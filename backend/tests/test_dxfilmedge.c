@@ -39,30 +39,31 @@ static void test_hrt(const testCtx *const p_ctx) {
         const char *data;
 
         const char *expected;
+        const char *expected_raw;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, "79-7", "" }, /* None */
-        /*  1*/ { BARCODE_RAW_TEXT, "79-7", "1271" },
-        /*  2*/ { -1, "1271", "" }, /* None */
-        /*  3*/ { BARCODE_RAW_TEXT, "1271", "1271" },
-        /*  4*/ { -1, "012710", "" }, /* None */
-        /*  5*/ { BARCODE_RAW_TEXT, "012710", "1271" },
-        /*  6*/ { -1, "1-0", "" }, /* None */
-        /*  7*/ { BARCODE_RAW_TEXT, "1-0", "0016" },
-        /*  8*/ { -1, "2047/63A", "" }, /* None */
-        /*  9*/ { BARCODE_RAW_TEXT, "2047/63A", "204763A" },
-        /* 10*/ { -1, "79-7/1", "" }, /* None */
-        /* 11*/ { BARCODE_RAW_TEXT, "79-7/1", "12711" },
-        /* 12*/ { -1, "79-7/sa", "" }, /* None */
-        /* 13*/ { BARCODE_RAW_TEXT, "79-7/sa", "127162A" },
+        /*  0*/ { -1, "79-7", "", "" }, /* None */
+        /*  1*/ { BARCODE_RAW_TEXT, "79-7", "", "1271" },
+        /*  2*/ { -1, "1271", "", "" }, /* None */
+        /*  3*/ { BARCODE_RAW_TEXT, "1271", "", "1271" },
+        /*  4*/ { -1, "012710", "", "" }, /* None */
+        /*  5*/ { BARCODE_RAW_TEXT, "012710", "", "1271" },
+        /*  6*/ { -1, "1-0", "", "" }, /* None */
+        /*  7*/ { BARCODE_RAW_TEXT, "1-0", "", "0016" },
+        /*  8*/ { -1, "2047/63A", "", "" }, /* None */
+        /*  9*/ { BARCODE_RAW_TEXT, "2047/63A", "", "204763A" },
+        /* 10*/ { -1, "79-7/1", "", "" }, /* None */
+        /* 11*/ { BARCODE_RAW_TEXT, "79-7/1", "", "12711" },
+        /* 12*/ { -1, "79-7/sa", "", "" }, /* None */
+        /* 13*/ { BARCODE_RAW_TEXT, "79-7/sa", "", "127162A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
-    testStartSymbol("test_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -75,6 +76,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
+        expected_raw_length = (int) strlen(data[i].expected_raw);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -83,6 +85,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length, symbol->text);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_raw_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                        "i:%d memcmp(%s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -133,7 +147,7 @@ static void test_input(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -283,9 +297,10 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[4096];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -318,13 +333,18 @@ static void test_encode(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[8192 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                                sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }

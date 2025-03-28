@@ -188,6 +188,26 @@ tab will be re-enabled)</string>
        </item>
       </layout>
      </item>
+     <item row="2" column="0">
+      <widget class="QLabel" name="lblMPDFECC">
+       <property name="text">
+        <string>Error Correction Percentage:</string>
+       </property>
+       <property name="toolTip">
+        <string>Percentage of codewords for error correction</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QLabel" name="lblMPDFECCMsg">
+       <property name="text">
+        <string/>
+       </property>
+       <property name="toolTip">
+        <string>Percentage of codewords for error correction</string>
+       </property>
+      </widget>
+     </item>
     </layout>
    </item>
    <item>

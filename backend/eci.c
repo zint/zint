@@ -911,15 +911,20 @@ INTERNAL void sjis_cpy(const unsigned char source[], int *p_length, unsigned int
 }
 
 /* Call `sjis_cpy()` for each segment */
-INTERNAL void sjis_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
-                const int full_multibyte) {
+INTERNAL int sjis_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+                unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* Note only called for DATA_MODE */
 
     for (i = 0; i < seg_count; i++) {
         sjis_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        }
         dd += segs[i].length;
     }
+    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `sjis_cpy()` */
@@ -1013,15 +1018,21 @@ INTERNAL void gb2312_cpy_test(const unsigned char source[], int *p_length, unsig
 #endif
 
 /* Call `gb2312_cpy()` for each segment */
-INTERNAL void gb2312_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
-                const int full_multibyte) {
+INTERNAL int gb2312_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+                unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0; i < seg_count; i++) {
+        const int eci = segs[i].eci ? segs[i].eci : 29; /* Need to set as `rt_cpy_seg_ddata()` defaults to 3 */
         gb2312_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], eci, dd)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        }
         dd += segs[i].length;
     }
+    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb2312_cpy()` */
@@ -1132,15 +1143,20 @@ INTERNAL void gb18030_cpy_test(const unsigned char source[], int *p_length, unsi
 #endif
 
 /* Call `gb18030_cpy()` for each segment */
-INTERNAL void gb18030_cpy_segs(struct zint_seg segs[], const int seg_count, unsigned int *ddata,
-                const int full_multibyte) {
+INTERNAL int gb18030_cpy_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
+                unsigned int *ddata, const int full_multibyte) {
     int i;
     unsigned int *dd = ddata;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     for (i = 0; i < seg_count; i++) {
         gb18030_cpy(segs[i].source, &segs[i].length, dd, full_multibyte);
+        if (raw_text && rt_cpy_seg_ddata(symbol, i, &segs[i], 0 /*eci*/, dd)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
+        }
         dd += segs[i].length;
     }
+    return 0;
 }
 
 /* Convert UTF-8 string to ECI and place in array of ints using `gb18030_cpy()` */

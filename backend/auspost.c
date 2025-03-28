@@ -277,9 +277,8 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, fcc, 2);
-        hrt_cat_nochk(symbol, local_source, length);
+    if (raw_text && rt_cpy_cat(symbol, fcc, 2, '\xFF' /*separator (none)*/, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

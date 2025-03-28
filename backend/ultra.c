@@ -792,7 +792,7 @@ static int ult_generate_codewords(struct zint_symbol *symbol, const unsigned cha
 
 /* Call `ult_generate_codewords()` for each segment, dealing with symbol mode and start codeword beforehand */
 static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count,
-            int codewords[]) {
+            int codewords[], int *p_data_cw_count) {
     int i;
     int codeword_count = 0;
     int symbol_mode;
@@ -802,6 +802,8 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     int length = segs[0].length;
     const int eci = segs[0].eci;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE;
+    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
 
     for (i = 0; i < seg_count; i++) {
         if (segs[i].eci) {
@@ -904,12 +906,21 @@ static int ult_generate_codewords_segs(struct zint_symbol *symbol, struct zint_s
     codeword_count = ult_generate_codewords(symbol, source, length, 0 /*eci*/, gs1, symbol_mode, &current_mode,
                                             codewords, codeword_count);
 
+    if (raw_text && (rt_init_segs(symbol, seg_count) || rt_cpy_seg(symbol, 0, &segs[0]))) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` & `rt_cpy_seg()` only fail with OOM */
+    }
+
     for (i = 1; i < seg_count; i++) {
         codeword_count = ult_generate_codewords(symbol, segs[i].source, segs[i].length, segs[i].eci, gs1, symbol_mode,
                                                 &current_mode, codewords, codeword_count);
+        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+        }
     }
 
-    return codeword_count;
+    *p_data_cw_count = codeword_count;
+
+    return 0;
 }
 
 INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
@@ -921,7 +932,7 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int rows, columns;
     int total_cws;
     int pads;
-    int cw_memalloc;
+    int cw_alloc;
     /* Allow for 3 pads in final 57th (60th incl. clock tracks) column of 5-row symbol (57 * 5 == 285) */
     int codeword[282 + 3];
     int i, j, locn;
@@ -933,8 +944,6 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
     const int debug_print = (symbol->debug & ZINT_DEBUG_PRINT);
     int *data_codewords;
     char *pattern;
-
-    (void)seg_count;
 
     if (symbol->eci > 811799) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 590, "ECI code '%d' out of range (0 to 811799)",
@@ -984,14 +993,16 @@ INTERNAL int ultra(struct zint_symbol *symbol, struct zint_seg segs[], const int
         scr[0] = link2 * 70 + (symbol->structapp.count - 1) * 8 + symbol->structapp.index - 1;
     }
 
-    cw_memalloc = segs_length(segs, seg_count) * 2;
-    if (cw_memalloc < 283) {
-        cw_memalloc = 283;
+    cw_alloc = segs_length(segs, seg_count) * 2;
+    if (cw_alloc < 283) {
+        cw_alloc = 283;
     }
 
-    data_codewords = (int *) z_alloca(sizeof(int) * cw_memalloc);
+    data_codewords = (int *) z_alloca(sizeof(int) * cw_alloc);
 
-    data_cw_count = ult_generate_codewords_segs(symbol, segs, seg_count, data_codewords);
+    if (ult_generate_codewords_segs(symbol, segs, seg_count, data_codewords, &data_cw_count)) {
+        return ZINT_ERROR_MEMORY; /* `ult_generate_codewords_segs()` only returns non-zero if OOM */
+    }
 
     if (debug_print) {
         printf("Codewords (%d):", data_cw_count);

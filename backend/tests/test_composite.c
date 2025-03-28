@@ -77,7 +77,7 @@ static void test_eanx_leading_zeroes(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_eanx_leading_zeroes", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1539,7 +1539,7 @@ static void test_examples(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_examples", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1712,7 +1712,7 @@ static void test_odd_numbered_numeric(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_odd_numbered_numeric", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1841,7 +1841,7 @@ static void test_ean128_cc_shift(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_ean128_cc_shift", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1922,7 +1922,7 @@ static void test_ean128_cc_width(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_ean128_cc_width", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2389,7 +2389,7 @@ static void test_encodation_0(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_encodation_0", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2527,7 +2527,7 @@ static void test_encodation_10(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_encodation_10", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2943,7 +2943,7 @@ static void test_encodation_11(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_encodation_11", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3096,7 +3096,7 @@ static void test_addongap(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_addongap", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3187,7 +3187,7 @@ static void test_gs1parens(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_gs1parens", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3226,65 +3226,68 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         int ret;
         const char *expected;
+        const char *expected_raw;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_EANX_CC, -1, -1, "1234567", "[20]12", 0, "12345670" }, /* EAN-8 */
-        /*  1*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567", "[20]12", 0, "12345670" }, /* EAN-8 */
-        /*  2*/ { BARCODE_EANX_CC, -1, -1, "123456789012", "[20]12", 0, "1234567890128" }, /* EAN-13 */
-        /*  3*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "123456789012", "[20]12", 0, "1234567890128" }, /* EAN-13 */
-        /*  4*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]12", 0, "1234567890128" },
-        /*  5*/ { BARCODE_EANX_CC, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
-        /*  6*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "" }, /* Still checked */
-        /*  7*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "1234567890128" }, /* AI (20) should be 2 nos. */
-        /*  8*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890128", "[20]1A", 0, "1234567890128" },
-        /*  9*/ { BARCODE_EANX_CC, -1, -1, "1234567890128+12", "[20]12", 0, "1234567890128+12" },
-        /* 10*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "1234567890128+12" },
-        /* 11*/ { BARCODE_DBAR_OMN_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231" },
-        /* 12*/ { BARCODE_DBAR_OMN_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "0112345678901231" },
-        /* 13*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231" },
-        /* 14*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 15*/ { BARCODE_DBAR_OMN_CC, GS1NOCHECK_MODE, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" }, /* Still checked */
-        /* 16*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231" }, /* AI (20) should be 2 nos. */
-        /* 17*/ { BARCODE_DBAR_OMN_CC, GS1NOCHECK_MODE, -1, "12345678901231", "[20]1A", 0, "(01)12345678901231" },
-        /* 18*/ { BARCODE_DBAR_LTD_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231" },
-        /* 19*/ { BARCODE_DBAR_LTD_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "0112345678901231" },
-        /* 20*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231" },
-        /* 21*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 22*/ { BARCODE_DBAR_LTD_CC, GS1NOCHECK_MODE, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "" }, /* Still checked */
-        /* 23*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231" }, /* AI (20) should be 2 nos. */
-        /* 24*/ { BARCODE_DBAR_LTD_CC, GS1NOCHECK_MODE, -1, "12345678901231", "[20]1A", 0, "(01)12345678901231" },
-        /* 25*/ { BARCODE_UPCA_CC, -1, -1, "12345678901", "[20]12", 0, "123456789012" },
-        /* 26*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "12345678901", "[20]12", 0, "123456789012" },
-        /* 27*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]12", 0, "123456789012" },
-        /* 28*/ { BARCODE_UPCA_CC, -1, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 29*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "" }, /* Still checked */
-        /* 30*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "123456789012" }, /* AI (20) should be 2 nos. */
-        /* 31*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789012", "[20]1A", 0, "123456789012" },
-        /* 32*/ { BARCODE_UPCA_CC, -1, -1, "123456789012+123", "[20]12", 0, "123456789012+00123" },
-        /* 33*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "123456789012+00123" },
-        /* 34*/ { BARCODE_UPCE_CC, -1, -1, "123456", "[20]12", 0, "01234565" },
-        /* 35*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "123456", "[20]12", 0, "01234565" },
-        /* 36*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]12", 0, "12345670" },
-        /* 37*/ { BARCODE_UPCE_CC, -1, -1, "12345670", "[20]12", 0, "12345670" },
-        /* 38*/ { BARCODE_UPCE_CC, -1, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, "" },
-        /* 39*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, "" }, /* Still checked */
-        /* 40*/ { BARCODE_UPCE_CC, -1, -1, "12345670", "[20]12", 0, "12345670" }, /* Check digit can now be given for UPCE_CC, like UPCA_CC */
-        /* 41*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "12345670" }, /* AI (20) should be 2 nos. */
-        /* 42*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "1234567", "[20]1A", 0, "12345670" },
-        /* 43*/ { BARCODE_UPCE_CC, -1, -1, "1234567+2", "[20]12", 0, "12345670+02" },
-        /* 44*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02" },
-        /* 45*/ { BARCODE_DBAR_STK_CC, -1, -1, "12345678901231", "[20]12", 0, "" }, /* No HRT for stacked symbologies */
-        /* 46*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "0112345678901231" }, /* Unless RAW_TEXT */
-        /* 47*/ { BARCODE_DBAR_OMNSTK_CC, -1, -1, "12345678901231", "[20]12", 0, "" },
-        /* 48*/ { BARCODE_DBAR_OMNSTK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "0112345678901231" },
+        /*  0*/ { BARCODE_EANX_CC, -1, -1, "1234567", "[20]12", 0, "12345670", "" }, /* EAN-8 */
+        /*  1*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567", "[20]12", 0, "12345670", "12345670|2012" }, /* EAN-8 */
+        /*  2*/ { BARCODE_EANX_CC, -1, -1, "123456789012", "[20]12", 0, "1234567890128", "" }, /* EAN-13 */
+        /*  3*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "123456789012", "[20]12", 0, "1234567890128", "1234567890128|2012" }, /* EAN-13 */
+        /*  4*/ { BARCODE_EANX_CC, -1, -1, "123456789012", "[10]LOT123[20]12", 0, "1234567890128", "" }, /* EAN-13 */
+        /*  5*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "123456789012", "[10]LOT123[20]12", 0, "1234567890128", "1234567890128|10LOT123\0352012" }, /* EAN-13 */
+        /*  6*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]12", 0, "1234567890128", "" },
+        /*  7*/ { BARCODE_EANX_CC, -1, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
+        /*  8*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890123", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
+        /*  9*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "1234567890128", "" }, /* AI (20) should be 2 nos. */
+        /* 10*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890128", "[20]1A", 0, "1234567890128", "" },
+        /* 11*/ { BARCODE_EANX_CC, -1, -1, "1234567890128+12", "[20]12", 0, "1234567890128+12", "" },
+        /* 12*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "1234567890128+12", "1234567890128+12|2012" },
+        /* 13*/ { BARCODE_DBAR_OMN_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231", "" },
+        /* 14*/ { BARCODE_DBAR_OMN_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "(01)12345678901231", "12345678901231|2012" },
+        /* 15*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231", "" },
+        /* 16*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
+        /* 17*/ { BARCODE_DBAR_OMN_CC, GS1NOCHECK_MODE, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
+        /* 18*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231", "" }, /* AI (20) should be 2 nos. */
+        /* 19*/ { BARCODE_DBAR_OMN_CC, GS1NOCHECK_MODE, -1, "12345678901231", "[20]1A", 0, "(01)12345678901231", "" },
+        /* 20*/ { BARCODE_DBAR_LTD_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231", "" },
+        /* 21*/ { BARCODE_DBAR_LTD_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "(01)12345678901231", "12345678901231|2012" },
+        /* 22*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231", "" },
+        /* 23*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
+        /* 24*/ { BARCODE_DBAR_LTD_CC, GS1NOCHECK_MODE, -1, "12345678901232", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
+        /* 25*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231", "" }, /* AI (20) should be 2 nos. */
+        /* 26*/ { BARCODE_DBAR_LTD_CC, GS1NOCHECK_MODE, -1, "12345678901231", "[20]1A", 0, "(01)12345678901231", "" },
+        /* 27*/ { BARCODE_UPCA_CC, -1, -1, "12345678901", "[20]12", 0, "123456789012", "" },
+        /* 28*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "12345678901", "[20]12", 0, "123456789012", "123456789012|2012" },
+        /* 29*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]12", 0, "123456789012", "" },
+        /* 30*/ { BARCODE_UPCA_CC, -1, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
+        /* 31*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
+        /* 32*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "123456789012", "" }, /* AI (20) should be 2 nos. */
+        /* 33*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789012", "[20]1A", 0, "123456789012", "" },
+        /* 34*/ { BARCODE_UPCA_CC, -1, -1, "123456789012+123", "[20]12", 0, "123456789012+00123", "" },
+        /* 35*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "123456789012+00123", "123456789012+00123|2012" },
+        /* 36*/ { BARCODE_UPCE_CC, -1, -1, "123456", "[20]12", 0, "01234565", "" },
+        /* 37*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "123456", "[20]12", 0, "01234565", "01234565|2012" },
+        /* 38*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]12", 0, "12345670", "" },
+        /* 39*/ { BARCODE_UPCE_CC, -1, -1, "12345670", "[20]12", 0, "12345670", "" },
+        /* 40*/ { BARCODE_UPCE_CC, -1, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
+        /* 41*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
+        /* 42*/ { BARCODE_UPCE_CC, -1, -1, "12345670", "[20]12", 0, "12345670", "" }, /* Check digit can now be given for UPCE_CC, like UPCA_CC */
+        /* 43*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "12345670", "" }, /* AI (20) should be 2 nos. */
+        /* 44*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "1234567", "[20]1A", 0, "12345670", "" },
+        /* 45*/ { BARCODE_UPCE_CC, -1, -1, "1234567+2", "[20]12", 0, "12345670+02", "" },
+        /* 46*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02", "12345670+02|2012" },
+        /* 47*/ { BARCODE_DBAR_STK_CC, -1, -1, "12345678901231", "[20]12", 0, "", "" }, /* No HRT for stacked symbologies */
+        /* 48*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "", "12345678901231|2012" }, /* But have RAW_TEXT */
+        /* 49*/ { BARCODE_DBAR_OMNSTK_CC, -1, -1, "12345678901231", "[20]12", 0, "", "" },
+        /* 50*/ { BARCODE_DBAR_OMNSTK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "", "12345678901231|2012" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
-    testStartSymbol("test_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3300,6 +3303,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         strcpy(symbol->primary, data[i].data);
 
         expected_length = (int) strlen(data[i].expected);
+        expected_raw_length = (int) strlen(data[i].expected_raw);
 
         composite_length = (int) strlen(data[i].composite);
 
@@ -3308,7 +3312,20 @@ static void test_hrt(const testCtx *const p_ctx) {
 
         assert_equal(symbol->text_length, expected_length, "i:%d text_length %d != expected_length %d\n",
                     i, symbol->text_length, expected_length);
-        assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->text, data[i].expected);
+        assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->text, data[i].expected);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_raw_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                        "i:%d memcmp(%s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -3463,7 +3480,7 @@ static void test_input(const testCtx *const p_ctx) {
     int i, length, composite_length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3539,7 +3556,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_fuzz", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 

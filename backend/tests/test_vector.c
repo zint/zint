@@ -500,7 +500,7 @@ static void test_options(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -691,7 +691,7 @@ static void test_buffer_vector(const testCtx *const p_ctx) {
     const char *text;
     char errmsg[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStartSymbol("test_buffer_vector", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -860,7 +860,7 @@ static void test_has_hrt(const testCtx *const p_ctx) {
     const char *text;
     char errmsg[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStartSymbol("test_has_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -918,78 +918,78 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     struct item data[] = {
         /*  0*/ { BARCODE_EANX, -1, -1, "123456789012", 0, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 }, /* EAN-13 */
-        /*  1*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 }, /* EAN-13 */
+        /*  1*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012", 0, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 }, /* EAN-13 */
         /*  2*/ { BARCODE_EANX, 0, -1, "123456789012", 0, 50, 1, 95, 226, 110, -1, -1, -1, -1, 0 }, /* EAN-13 */
         /*  3*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "123456789012", 0, 50, 1, 95, 226, 118, 12.2, 117.2, 227, 117.2, 4 }, /* EAN-13 */
         /*  4*/ { BARCODE_EANX_CHK, -1, -1, "1234567890128", 0, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 }, /* EAN-13 */
         /*  5*/ { BARCODE_EANX_CHK, 0, -1, "1234567890128", 0, 50, 1, 95, 226, 110, -1, -1, -1, -1, 0 }, /* EAN-13 */
         /*  6*/ { BARCODE_EANX_CHK, -1, EANUPC_GUARD_WHITESPACE, "1234567890128", 0, 50, 1, 95, 226, 118, 12.2, 117.2, 227, 117.2, 4 }, /* EAN-13 */
         /*  7*/ { BARCODE_ISBNX, -1, -1, "9784567890120", 0, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 },
-        /*  8*/ { BARCODE_ISBNX, -1, BARCODE_RAW_TEXT, "9784567890120", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 },
+        /*  8*/ { BARCODE_ISBNX, -1, BARCODE_RAW_TEXT, "9784567890120", 0, 50, 1, 95, 226, 118, 12.2, 117.2, -1, -1, 3 },
         /*  9*/ { BARCODE_ISBNX, 0, -1, "9784567890120", 0, 50, 1, 95, 226, 110, -1, -1, -1, -1, 0 },
         /* 10*/ { BARCODE_ISBNX, -1, EANUPC_GUARD_WHITESPACE, "9784567890120", 0, 50, 1, 95, 226, 118, 12.2, 117.2, 227, 117.2, 4 },
         /* 11*/ { BARCODE_EANX, -1, -1, "1234567", 0, 50, 1, 67, 162, 118, 49, 117.2, -1, -1, 2 }, /* EAN-8 */
-        /* 12*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 67, 162, 118, 49, 117.2, -1, -1, 2 }, /* EAN-8 */
+        /* 12*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567", 0, 50, 1, 67, 162, 118, 49, 117.2, -1, -1, 2 }, /* EAN-8 */
         /* 13*/ { BARCODE_EANX, 0, -1, "1234567", 0, 50, 1, 67, 162, 110, -1, -1, -1, -1, 0 }, /* EAN-8 */
         /* 14*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "1234567", 0, 50, 1, 67, 162, 118, 49, 117.2, -1, 117.2, 4 }, /* EAN-8 */
         /* 15*/ { BARCODE_EANX, -1, -1, "1234", 0, 50, 1, 47, 104, 118, 47, 15.6, -1, -1, 1 }, /* EAN-5 */
-        /* 16*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 47, 104, 118, 47, 15.6, -1, -1, 1 }, /* EAN-5 */
+        /* 16*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234", 0, 50, 1, 47, 104, 118, 47, 15.6, -1, -1, 1 }, /* EAN-5 */
         /* 17*/ { BARCODE_EANX, 0, -1, "1234", 0, 50, 1, 47, 104, 100, -1, -1, -1, -1, 0 }, /* EAN-5 */
         /* 18*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "1234", 0, 50, 1, 47, 104, 118, 47, 15.6, 105, 15.6, 2 }, /* EAN-5 */
         /* 19*/ { BARCODE_EANX, -1, -1, "12", 0, 50, 1, 20, 50, 118, 20, 15.6, -1, -1, 1 }, /* EAN-2 */
-        /* 20*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "12", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 20, 50, 118, 20, 15.6, -1, -1, 1 }, /* EAN-2 */
+        /* 20*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "12", 0, 50, 1, 20, 50, 118, 20, 15.6, -1, -1, 1 }, /* EAN-2 */
         /* 21*/ { BARCODE_EANX, 0, -1, "12", 0, 50, 1, 20, 50, 100, -1, -1, -1, -1, 0 }, /* EAN-2 */
         /* 22*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "12", 0, 50, 1, 20, 50, 118, 20, 15.6, 51, 15.6, 2 }, /* EAN-2 */
         /* 23*/ { BARCODE_UPCA, -1, -1, "12345678901", 0, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
-        /* 24*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
+        /* 24*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901", 0, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
         /* 25*/ { BARCODE_UPCA, 0, -1, "12345678901", 0, 50, 1, 95, 226, 110, -1, -1, -1, -1, 0 },
         /* 26*/ { BARCODE_UPCA, -1, EANUPC_GUARD_WHITESPACE, "12345678901", 0, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
         /* 27*/ { BARCODE_UPCA_CHK, -1, -1, "123456789012", 0, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
         /* 28*/ { BARCODE_UPCA_CHK, 0, -1, "123456789012", 0, 50, 1, 95, 226, 110, -1, -1, -1, -1, 0 },
         /* 29*/ { BARCODE_UPCA_CHK, -1, EANUPC_GUARD_WHITESPACE, "123456789012", 0, 50, 1, 95, 226, 118, 8.7, 117.2, -1, -1, 4 },
         /* 30*/ { BARCODE_UPCE, -1, -1, "1234567", 0, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
-        /* 31*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
+        /* 31*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567", 0, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
         /* 32*/ { BARCODE_UPCE, 0, -1, "1234567", 0, 50, 1, 51, 134, 110, -1, -1, -1, -1, 0 },
         /* 33*/ { BARCODE_UPCE, -1, EANUPC_GUARD_WHITESPACE, "1234567", 0, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
         /* 34*/ { BARCODE_UPCE_CHK, -1, -1, "12345670", 0, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
         /* 35*/ { BARCODE_UPCE_CHK, 0, -1, "12345670", 0, 50, 1, 51, 134, 110, -1, -1, -1, -1, 0 },
         /* 36*/ { BARCODE_UPCE_CHK, -1, EANUPC_GUARD_WHITESPACE, "12345670", 0, 50, 1, 51, 134, 118, 8.7, 117.2, -1, -1, 3 },
         /* 37*/ { BARCODE_EANX, -1, -1, "123456789012+12", 0, 50, 1, 122, 276.0, 118, 12.2, 117.2, 246, 15.6, 4 }, /* EAN-13 + EAN-2 */
-        /* 38*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012+12", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 122, 276.0, 118, 12.2, 117.2, 246, 15.6, 4 }, /* EAN-13 + EAN-2 */
+        /* 38*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012+12", 0, 50, 1, 122, 276.0, 118, 12.2, 117.2, 246, 15.6, 4 }, /* EAN-13 + EAN-2 */
         /* 39*/ { BARCODE_EANX, 0, -1, "123456789012+12", 0, 50, 1, 122, 276.0, 110, -1, -1, -1, -1, 0 }, /* EAN-13 + EAN-2 */
         /* 40*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "123456789012+12", 0, 50, 1, 122, 276.0, 118, 12.2, 117.2, 246, 15.6, 5 }, /* EAN-13 + EAN-2 */
         /* 41*/ { BARCODE_ISBNX, -1, -1, "9784567890120+12", 0, 50, 1, 122, 276.0, 118, 12.2, 117.2, 246, 15.6, 4 }, /* ISBN + EAN-2 */
         /* 42*/ { BARCODE_ISBNX, 0, -1, "9784567890120+12", 0, 50, 1, 122, 276.0, 110, -1, -1, -1, -1, 0 }, /* ISBN + EAN-2 */
         /* 43*/ { BARCODE_ISBNX, -1, EANUPC_GUARD_WHITESPACE, "9784567890120+12", 0, 50, 1, 122, 276.0, 118, 246, 15.6, 277, 15.6, 5 }, /* ISBN + EAN-2 */
         /* 44*/ { BARCODE_EANX, -1, -1, "123456789012+12345", 0, 50, 1, 149, 330.0, 118, 12.2, 117.2, 274, 15.6, 4 }, /* EAN-13 + EAN-5 */
-        /* 45*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012+12345", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 149, 330.0, 118, 12.2, 117.2, 274, 15.6, 4 }, /* EAN-13 + EAN-5 */
+        /* 45*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "123456789012+12345", 0, 50, 1, 149, 330.0, 118, 12.2, 117.2, 274, 15.6, 4 }, /* EAN-13 + EAN-5 */
         /* 46*/ { BARCODE_EANX, 0, -1, "123456789012+12345", 0, 50, 1, 149, 330.0, 110, -1, -1, -1, -1, 0 }, /* EAN-13 + EAN-5 */
         /* 47*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "123456789012+12345", 0, 50, 1, 149, 330.0, 118, 12.2, 117.2, 274, 15.6, 5 }, /* EAN-13 + EAN-5 */
         /* 48*/ { BARCODE_ISBNX, -1, -1, "9784567890120+12345", 0, 50, 1, 149, 330.0, 118, 12.2, 117.2, 274, 15.6, 4 }, /* ISBN + EAN-5 */
         /* 49*/ { BARCODE_ISBNX, 0, -1, "9784567890120+12345", 0, 50, 1, 149, 330.0, 110, -1, -1, -1, -1, 0 }, /* ISBN + EAN-5 */
         /* 50*/ { BARCODE_ISBNX, -1, EANUPC_GUARD_WHITESPACE, "9784567890120+12345", 0, 50, 1, 149, 330.0, 118, 274, 15.6, 331, 15.6, 5 }, /* ISBN + EAN-5 */
         /* 51*/ { BARCODE_EANX, -1, -1, "1234567+12", 0, 50, 1, 94, 212, 118, 49, 117.2, 182, 15.6, 3 }, /* EAN-8 + EAN-2 */
-        /* 52*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567+12", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 94, 212, 118, 49, 117.2, 182, 15.6, 3 }, /* EAN-8 + EAN-2 */
+        /* 52*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567+12", 0, 50, 1, 94, 212, 118, 49, 117.2, 182, 15.6, 3 }, /* EAN-8 + EAN-2 */
         /* 53*/ { BARCODE_EANX, 0, -1, "1234567+12", 0, 50, 1, 94, 212, 110, -1, -1, -1, -1, 0 }, /* EAN-8 + EAN-2 */
         /* 54*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "1234567+12", 0, 50, 1, 94, 212, 118, 182, 15.6, 213, 15.6, 5 }, /* EAN-8 + EAN-2 */
         /* 55*/ { BARCODE_EANX, -1, -1, "1234567+12345", 0, 50, 1, 121, 266, 118, 49, 117.2, 210, 15.6, 3 }, /* EAN-8 + EAN-5 */
-        /* 56*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567+12345", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 121, 266, 118, 49, 117.2, 210, 15.6, 3 }, /* EAN-8 + EAN-5 */
+        /* 56*/ { BARCODE_EANX, -1, BARCODE_RAW_TEXT, "1234567+12345", 0, 50, 1, 121, 266, 118, 49, 117.2, 210, 15.6, 3 }, /* EAN-8 + EAN-5 */
         /* 57*/ { BARCODE_EANX, 0, -1, "1234567+12345", 0, 50, 1, 121, 266, 110, -1, -1, -1, -1, 0 }, /* EAN-8 + EAN-5 */
         /* 58*/ { BARCODE_EANX, -1, EANUPC_GUARD_WHITESPACE, "1234567+12345", 0, 50, 1, 121, 266, 118, 210, 15.6, 210, 15.6, 5 }, /* EAN-8 + EAN-5 */
         /* 59*/ { BARCODE_UPCA, -1, -1, "12345678901+12", 0, 50, 1, 124, 276, 118, 8.7, 117.2, 246, 15.6, 5 },
-        /* 60*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901+12", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 124, 276, 118, 8.7, 117.2, 246, 15.6, 5 },
+        /* 60*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901+12", 0, 50, 1, 124, 276, 118, 8.7, 117.2, 246, 15.6, 5 },
         /* 61*/ { BARCODE_UPCA, 0, -1, "12345678901+12", 0, 50, 1, 124, 276, 110, -1, -1, -1, -1, 0 },
         /* 62*/ { BARCODE_UPCA, -1, EANUPC_GUARD_WHITESPACE, "12345678901+12", 0, 50, 1, 124, 276, 118, 8.7, 117.2, 277, 15.6, 6 },
         /* 63*/ { BARCODE_UPCA, -1, -1, "12345678901+12345", 0, 50, 1, 151, 330, 118, 8.7, 117.2, 274, 15.6, 5 },
-        /* 64*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901+12345", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 151, 330, 118, 8.7, 117.2, 274, 15.6, 5 },
+        /* 64*/ { BARCODE_UPCA, -1, BARCODE_RAW_TEXT, "12345678901+12345", 0, 50, 1, 151, 330, 118, 8.7, 117.2, 274, 15.6, 5 },
         /* 65*/ { BARCODE_UPCA, 0, -1, "12345678901+12345", 0, 50, 1, 151, 330, 110, -1, -1, -1, -1, 0 },
         /* 66*/ { BARCODE_UPCA, -1, EANUPC_GUARD_WHITESPACE, "12345678901+12345", 0, 50, 1, 151, 330, 118, 274, 15.6, 331, 15.6, 6 },
         /* 67*/ { BARCODE_UPCE, -1, -1, "1234567+12", 0, 50, 1, 78, 184.0, 118, 8.7, 117.2, 154, 15.6, 4 },
-        /* 68*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567+12", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 78, 184.0, 118, 8.7, 117.2, 154, 15.6, 4 },
+        /* 68*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567+12", 0, 50, 1, 78, 184.0, 118, 8.7, 117.2, 154, 15.6, 4 },
         /* 69*/ { BARCODE_UPCE, 0, -1, "1234567+12", 0, 50, 1, 78, 184.0, 110, -1, -1, -1, -1, 0 },
         /* 70*/ { BARCODE_UPCE, -1, EANUPC_GUARD_WHITESPACE, "1234567+12", 0, 50, 1, 78, 184.0, 118, 8.7, 117.2, 185, 15.6, 5 },
         /* 71*/ { BARCODE_UPCE, -1, -1, "1234567+12345", 0, 50, 1, 105, 238.0, 118, 8.7, 117.2, 182, 15.6, 4 },
-        /* 72*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567+12345", ZINT_WARN_HRT_RAW_TEXT, 50, 1, 105, 238.0, 118, 8.7, 117.2, 182, 15.6, 4 },
+        /* 72*/ { BARCODE_UPCE, -1, BARCODE_RAW_TEXT, "1234567+12345", 0, 50, 1, 105, 238.0, 118, 8.7, 117.2, 182, 15.6, 4 },
         /* 73*/ { BARCODE_UPCE, 0, -1, "1234567+12345", 0, 50, 1, 105, 238.0, 110, -1, -1, -1, -1, 0 },
         /* 74*/ { BARCODE_UPCE, -1, EANUPC_GUARD_WHITESPACE, "1234567+12345", 0, 50, 1, 105, 238.0, 118, 182, 15.6, 239, 15.6, 5 },
     };
@@ -999,7 +999,7 @@ static void test_upcean_hrt(const testCtx *const p_ctx) {
 
     struct zint_vector_string *string;
 
-    testStartSymbol("test_upcean_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
         int string_cnt;
@@ -1104,7 +1104,7 @@ static void test_row_separator(const testCtx *const p_ctx) {
 
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_row_separator", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1170,7 +1170,7 @@ static void test_stacking(const testCtx *const p_ctx) {
 
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_stacking", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
         int length2;
@@ -1306,7 +1306,7 @@ static void test_output_options(const testCtx *const p_ctx) {
 
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_output_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1385,7 +1385,7 @@ static void test_noncomposite_string_x(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_noncomposite_string_x", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1446,7 +1446,7 @@ static void test_upcean_whitespace_width(const testCtx *const p_ctx) {
     struct zint_vector_string *string;
     int string_cnt;
 
-    testStartSymbol("test_upcean_whitespace_width", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1533,7 +1533,7 @@ static void test_scale(const testCtx *const p_ctx) {
     const char *text;
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_scale", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1659,7 +1659,7 @@ static void test_guard_descent(const testCtx *const p_ctx) {
 
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_guard_descent", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2040,7 +2040,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
     struct zint_vector_rect *rect;
     struct zint_vector_circle *circle;
 
-    testStartSymbol("test_quiet_zones", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2201,7 +2201,7 @@ static void test_text_gap(const testCtx *const p_ctx) {
     struct zint_vector_string *string;
     struct zint_vector_rect *rect;
 
-    testStartSymbol("test_text_gap", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2909,7 +2909,7 @@ static void test_height(const testCtx *const p_ctx) {
 
     const char *text;
 
-    testStartSymbol("test_height", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3072,7 +3072,7 @@ static void test_height_per_row(const testCtx *const p_ctx) {
 
     const char *text;
 
-    testStartSymbol("test_height_per_row", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3142,34 +3142,36 @@ static void test_hrt_raw_text(const testCtx *const p_ctx) {
         float expected_vector_width;
         const char *expected;
         int expected_length;
+        const char *expected_raw;
+        int expected_raw_length;
         const char *expected_errtxt;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_CODE128, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 268, "12345 67890", -1, "" },
-        /*  1*/ { BARCODE_CODE128, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, 116.279999, 268, "12345\00067890", 11, "Warning 698: HRT outputted as raw text" },
-        /*  2*/ { BARCODE_EXCODE39, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 362, "12345 67890", -1, "" },
-        /*  3*/ { BARCODE_EXCODE39, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, 116.279999, 362, "12345\00067890", 11, "Warning 698: HRT outputted as raw text" },
-        /*  4*/ { BARCODE_TELEPEN, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 448, "12345 67890", -1, "" },
-        /*  5*/ { BARCODE_TELEPEN, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, ZINT_WARN_HRT_RAW_TEXT, 116.279999, 448, "12345\00067890n", 12, "Warning 698: HRT outputted as raw text" },
-        /*  6*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE, "123456789012", -1, 0, 118, 226, "1234567890128", -1, "" },
-        /*  7*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012", -1, ZINT_WARN_HRT_RAW_TEXT, 118, 226, "1234567890128", -1, "Warning 698: HRT outputted as raw text" }, /* Warn but no difference */
-        /*  8*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE, "123456789012+12", -1, 0, 118, 276, "1234567890128+12", -1, "" },
-        /*  9*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012+12", -1, ZINT_WARN_HRT_RAW_TEXT, 118, 276, "1234567890128+12", -1, "Warning 698: HRT outputted as raw text" },
-        /* 10*/ { BARCODE_CODE39, -1, -1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, 116.279999, 180, "*ABC14*", -1, "" },
-        /* 11*/ { BARCODE_CODE39, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, ZINT_WARN_HRT_RAW_TEXT, 116.279999, 180, "ABC14", -1, "Warning 698: HRT outputted as raw text" },
-        /* 12*/ { BARCODE_CODE39, -1, 1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, 116.279999, 206, "*ABC14_*", -1, "" }, /* Check digit space rendered as underscore */
-        /* 13*/ { BARCODE_CODE39, -1, 1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, ZINT_WARN_HRT_RAW_TEXT, 116.279999, 206, "ABC14 ", -1, "Warning 698: HRT outputted as raw text" },
-        /* 14*/ { BARCODE_POSTNET, -1, -1, BARCODE_MEMORY_FILE, "12345", -1, 0, 24, 126, "", -1, "" },
-        /* 15*/ { BARCODE_POSTNET, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345", -1, ZINT_WARN_HRT_RAW_TEXT, 40.2799988, 126, "123455", -1, "Warning 698: HRT outputted as raw text" }, /* HRT printed */
-        /* 16*/ { BARCODE_POSTNET, 0, -1, BARCODE_MEMORY_FILE, "12345", -1, 0, 24, 126, "", -1, "" },
-        /* 17*/ { BARCODE_POSTNET, 0, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345", -1, 0, 24, 126, "123455", -1, "" }, /* HRT not printed, no warning */
+        /*  0*/ { BARCODE_CODE128, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 268, "12345 67890", -1, "", -1, "" },
+        /*  1*/ { BARCODE_CODE128, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, 0, 116.279999, 268, "12345 67890", -1, "12345\00067890", 11, "" },
+        /*  2*/ { BARCODE_EXCODE39, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 362, "12345 67890", -1, "", -1, "" },
+        /*  3*/ { BARCODE_EXCODE39, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, 0, 116.279999, 362, "12345 67890", -1, "12345\00067890", 11, "" },
+        /*  4*/ { BARCODE_TELEPEN, -1, -1, BARCODE_MEMORY_FILE, "12345\00067890", 11, 0, 116.279999, 448, "12345 67890", -1, "", -1, "" },
+        /*  5*/ { BARCODE_TELEPEN, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345\00067890", 11, 0, 116.279999, 448, "12345 67890", -1, "12345\00067890n", 12, "" },
+        /*  6*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE, "123456789012", -1, 0, 118, 226, "1234567890128", -1, "", -1, "" },
+        /*  7*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012", -1, 0, 118, 226, "1234567890128", -1, "1234567890128", -1, "" },
+        /*  8*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE, "123456789012+12", -1, 0, 118, 276, "1234567890128+12", -1, "", -1, "" },
+        /*  9*/ { BARCODE_EANX, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "123456789012+12", -1, 0, 118, 276, "1234567890128+12", -1, "1234567890128+12", -1, "" },
+        /* 10*/ { BARCODE_CODE39, -1, -1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, 116.279999, 180, "*ABC14*", -1, "", -1, "" },
+        /* 11*/ { BARCODE_CODE39, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, 0, 116.279999, 180, "*ABC14*", -1, "ABC14", -1, "" },
+        /* 12*/ { BARCODE_CODE39, -1, 1, BARCODE_MEMORY_FILE, "ABC14", -1, 0, 116.279999, 206, "*ABC14_*", -1, "", -1, "" }, /* Check digit space rendered as underscore */
+        /* 13*/ { BARCODE_CODE39, -1, 1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "ABC14", -1, 0, 116.279999, 206, "*ABC14_*", -1, "ABC14 ", -1, "" },
+        /* 14*/ { BARCODE_POSTNET, -1, -1, BARCODE_MEMORY_FILE, "12345", -1, 0, 24, 126, "", -1, "", -1, "" },
+        /* 15*/ { BARCODE_POSTNET, -1, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345", -1, 0, 24, 126, "", -1, "123455", -1, "" }, /* HRT not printed */
+        /* 16*/ { BARCODE_POSTNET, 0, -1, BARCODE_MEMORY_FILE, "12345", -1, 0, 24, 126, "", -1, "", -1, "" },
+        /* 17*/ { BARCODE_POSTNET, 0, -1, BARCODE_MEMORY_FILE | BARCODE_RAW_TEXT, "12345", -1, 0, 24, 126, "", -1, "123455", -1, "" }, /* HRT not printed */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
-    testStartSymbol("test_hrt_raw_text", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3188,6 +3190,7 @@ static void test_hrt_raw_text(const testCtx *const p_ctx) {
                     -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                     data[i].data, data[i].length, debug);
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+        expected_raw_length = data[i].expected_raw_length == -1 ? (int) strlen(data[i].expected_raw) : data[i].expected_raw_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode(%s) ret %d != 0 (%s)\n",
@@ -3197,6 +3200,19 @@ static void test_hrt_raw_text(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length, symbol->text);
         assert_zero(memcmp(symbol->text, data[i].expected, expected_length), "i:%d memcmp(%s, %s, %d) != 0\n",
                     i, symbol->text, data[i].expected, expected_length);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_raw_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                        "i:%d memcmp(%.*s, %.*s, %d) != 0\n",
+                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, expected_raw_length,
+                        data[i].expected_raw, expected_raw_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ret = ZBarcode_Print(symbol, 0);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Print(%s) ret %d != %d (%s)\n",

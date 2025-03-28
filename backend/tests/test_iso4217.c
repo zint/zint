@@ -1047,7 +1047,7 @@ static void test_numeric(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_numeric");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1103,7 +1103,7 @@ static void test_numeric_bc(const testCtx *const p_ctx) {
 
     int i, ret, bc_ret;
 
-    testStart("test_numeric_bc");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < 1001; i++) {
         if (testContinue(p_ctx, i)) continue;

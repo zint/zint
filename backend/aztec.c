@@ -686,22 +686,30 @@ static int aztec_text_process(const unsigned char source[], int src_len, int bp,
 }
 
 /* Call `aztec_text_process()` for each segment */
-static int aztec_text_process_segs(struct zint_seg segs[], const int seg_count, int bp, char binary_string[],
-            const int gs1, const int gs1_bp, int *data_length, const int debug_print) {
+static int aztec_text_process_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count, int bp,
+            char binary_string[], const int gs1, const int gs1_bp, int *data_length, const int debug_print) {
     int i;
-
     char current_mode = 'U';
+    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
+
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
 
     for (i = 0; i < seg_count; i++) {
         if (!aztec_text_process(segs[i].source, segs[i].length, bp, binary_string, gs1, gs1_bp, segs[i].eci,
                 &current_mode, &bp, debug_print)) {
-            return 0;
+            return ZINT_ERROR_TOO_LONG; /* `aztec_text_process()` only fails with too long */
+        }
+        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
         }
     }
 
     *data_length = bp;
 
-    return 1;
+    return 0;
 }
 
 /* Prevent data from obscuring reference grid */
@@ -865,7 +873,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     char adjusted_string[AZTEC_MAX_CAPACITY];
     short AztecMap[AZTEC_MAP_SIZE];
     unsigned char desc_data[4], desc_ecc[6];
-    int error_number = 0;
+    int error_number;
     int compact, data_length, data_maxsize, codeword_size, adjusted_length;
     int remainder, padbits, adjustment_size;
     int bp = 0;
@@ -930,9 +938,14 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         gs1_bp = bp; /* Initial FNC1 (FLG0) position */
     }
 
-    if (!aztec_text_process_segs(segs, seg_count, bp, binary_string, gs1, gs1_bp, &data_length, debug_print)) {
-        return errtxt(ZINT_ERROR_TOO_LONG, symbol, 502,
-                        "Input too long, requires too many codewords (maximum " AZ_BIN_CAP_CWDS_S ")");
+    if ((error_number = aztec_text_process_segs(symbol, segs, seg_count, bp, binary_string, gs1, gs1_bp, &data_length,
+                                                debug_print))) {
+        assert(error_number == ZINT_ERROR_TOO_LONG || error_number == ZINT_ERROR_MEMORY);
+        if (error_number == ZINT_ERROR_TOO_LONG) {
+            return errtxt(error_number, symbol, 502,
+                            "Input too long, requires too many codewords (maximum " AZ_BIN_CAP_CWDS_S ")");
+        }
+        return error_number;
     }
     assert(data_length > 0); /* Suppress clang-tidy warning: clang-analyzer-core.UndefinedBinaryOperatorResult */
 
@@ -1121,6 +1134,8 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             /* Feedback options: 0.165 = (.1 + .23) / 2 etc */
             symbol->option_1 = ecc_ratio < 0.165f ? 1 : ecc_ratio < 0.295f ? 2 : ecc_ratio < 0.43f ? 3 : 4;
         }
+        /* Feedback percentage in top byte */
+        symbol->option_1 |= ((int) (ecc_ratio * 100.0f)) << 8;
     }
 
     if (debug_print) {
@@ -1300,8 +1315,9 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     char binary_string[28];
     unsigned char data_codewords[3], ecc_codewords[6];
     int bp = 0;
-    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     rs_t rs;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     input_value = 0;
     if (length > 3) {
@@ -1362,6 +1378,10 @@ INTERNAL int azrune(struct zint_symbol *symbol, unsigned char source[], int leng
     symbol->height = 11;
     symbol->rows = 11;
     symbol->width = 11;
+
+    if (raw_text && rt_printf_256(symbol, "%03d", input_value)) {
+        return ZINT_ERROR_MEMORY; /* `rt_printf_256()` only fails with OOM */
+    }
 
     return 0;
 }

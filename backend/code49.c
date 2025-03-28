@@ -51,6 +51,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     int gs1;
     int h;
     int error_number = 0;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 81) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 430, "Input length %d too long (maximum 81)", length);
@@ -386,6 +387,10 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* ANSI/AIM BC6-2000 Section 2.1 (note change from previous default 2) */
+    }
+
+    if (!gs1 && raw_text && rt_cpy(symbol, source, length)) { /* GS1 dealt with by `ZBarcode_Encode_Segs()` */
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

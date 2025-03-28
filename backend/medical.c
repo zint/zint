@@ -30,6 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 
@@ -98,8 +99,8 @@ INTERNAL int pharma(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -188,8 +189,8 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
         (void) set_height(symbol, 0.0f, 10.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -198,12 +199,12 @@ INTERNAL int pharma_two(struct zint_symbol *symbol, unsigned char source[], int 
 /* Italian Pharmacode */
 INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const unsigned char TABELLA[] = "0123456789BCDFGHJKLMNPQRSTUVWXYZ";
-    int i, zeroes, error_number = 0, checksum, checkpart, checkdigit;
+    int i, zeroes, checksum, checkpart, checkdigit;
     unsigned char local_source[10], risultante[7];
     unsigned int pharmacode, devisor;
     int codeword[6];
+    int error_number;
     const int saved_option_2 = symbol->option_2;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Validate the input */
     if (length > 8) {
@@ -254,15 +255,19 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
         risultante[5 - i] = TABELLA[codeword[i]];
     }
 
-    symbol->option_2 = 0; /* Need to overwrite this so `code39()` doesn't add a check digit itself */
-
-    /* Plot the barcode using Code 39 */
-    error_number = code39(symbol, risultante, 6);
-    if (error_number != 0) { /* Should never happen */
-        return error_number; /* Not reached */
+    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+        symbol->option_2 = 0; /* Need to overwrite this so `code39()` doesn't add a check digit itself */
     }
 
-    symbol->option_2 = saved_option_2; /* Restore */
+    /* Plot the barcode using Code 39 */
+    if ((error_number = code39(symbol, risultante, 6))) {
+        assert(error_number == ZINT_ERROR_MEMORY); /* Only error that can occur */
+        return error_number;
+    }
+
+    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+        symbol->option_2 = saved_option_2; /* Restore */
+    }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Allegato A Caratteristiche tecniche del bollino farmaceutico
@@ -276,11 +281,11 @@ INTERNAL int code32(struct zint_symbol *symbol, unsigned char source[], int leng
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (!raw_text) {
-        /* Override the normal text output with the Pharmacode number */
-        hrt_cpy_chr(symbol, 'A');
-        hrt_cat_nochk(symbol, local_source, 9);
-    }
+    /* Override the normal text output with the Pharmacode number */
+    hrt_cpy_chr(symbol, 'A');
+    hrt_cat_nochk(symbol, local_source, 9);
+
+    /* Use `raw_text` set by `code39()` */
 
     return error_number;
 }
@@ -297,7 +302,6 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
     unsigned char local_source[1 + 8]; /* '-' prefix + 8 digits */
     const int pzn7 = symbol->option_2 == 1;
     const int saved_option_2 = symbol->option_2;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 8 - pzn7) {
         return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 325, "Input length %1$d too long (maximum %2$d)", length,
@@ -339,11 +343,15 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
 
     local_source[8 - pzn7] = itoc(check_digit);
 
-    symbol->option_2 = 0; /* Need to overwrite this so `code39()` doesn't add a check digit itself */
+    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+        symbol->option_2 = 0; /* Need to overwrite this so `code39()` doesn't add a check digit itself */
+    }
 
     error_number = code39(symbol, local_source, 9 - pzn7);
 
-    symbol->option_2 = saved_option_2; /* Restore */
+    if (symbol->option_2 == 1 || symbol->option_2 == 2) {
+        symbol->option_2 = saved_option_2; /* Restore */
+    }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Technical Information regarding PZN Coding V 2.1 (25 Feb 2019) Code size
@@ -361,10 +369,10 @@ INTERNAL int pzn(struct zint_symbol *symbol, unsigned char source[], int length)
         }
     }
 
-    if (!raw_text) {
-        hrt_cpy_nochk(symbol, (const unsigned char *) "PZN - ", 6); /* Note changed to put space after hyphen */
-        hrt_cat_nochk(symbol, local_source + 1, 9 - pzn7 - 1);
-    }
+    hrt_cpy_nochk(symbol, (const unsigned char *) "PZN - ", 6); /* Note changed to put space after hyphen */
+    hrt_cat_nochk(symbol, local_source + 1, 9 - pzn7 - 1);
+
+    /* Use `raw_text` set by `code39()` */
 
     return error_number;
 }

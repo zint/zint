@@ -70,7 +70,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart("test_pcx");
+    testStart(p_ctx->func_name);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -171,7 +171,7 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     (void)p_ctx;
 
-    testStart("test_outfile");
+    testStart(p_ctx->func_name);
 
     symbol.symbology = BARCODE_CODE128;
     symbol.bitmap = data;

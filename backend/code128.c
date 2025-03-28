@@ -381,6 +381,7 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned char *src = source;
     const int ab_only = symbol->symbology == BARCODE_CODE128AB;
     const int start_idx = (symbol->output_options & READER_INIT) ? 2 : 0;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
@@ -491,7 +492,11 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
         }
         length = j;
     }
-    error_number = hrt_cpy_iso8859_1(symbol, src, length);
+    error_number = hrt_cpy_iso8859_1(symbol, src, length); /* Returns warning only */
+
+    if (raw_text && rt_cpy(symbol, src, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    }
 
     return error_number;
 }
@@ -634,14 +639,14 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
     }
 
     /* Note won't overflow `text` buffer due to symbol character maximum restricted to C128_SYMBOL_MAX */
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, reduced, reduced_length);
+    if (symbol->input_mode & GS1PARENS_MODE) {
+        hrt_cpy_nochk(symbol, source, length);
     } else {
-        if (symbol->input_mode & GS1PARENS_MODE) {
-            hrt_cpy_nochk(symbol, source, length);
-        } else {
-            hrt_conv_gs1_brackets_nochk(symbol, source, length);
-        }
+        hrt_conv_gs1_brackets_nochk(symbol, source, length);
+    }
+
+    if (raw_text && rt_cpy(symbol, reduced, reduced_length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

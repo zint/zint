@@ -76,10 +76,11 @@ static void test_qr_large(const testCtx *const p_ctx) {
     char cmp_buf[177 * 177 + 1] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -127,12 +128,14 @@ static void test_qr_large(const testCtx *const p_ctx) {
                 int cmp_len, ret_len;
                 char modules_dump[177 * 177 + 1];
                 assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/,
+                            escaped, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -225,7 +228,7 @@ static void test_qr_options(const testCtx *const p_ctx) {
 
     char option_3_buf[64];
 
-    testStartSymbol("test_qr_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -309,91 +312,91 @@ static void test_qr_input(const testCtx *const p_ctx) {
         /*  1*/ { UNICODE_MODE, 3, 4, -1, "é", 0, 3, "70 34 01 E9 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
         /*  2*/ { UNICODE_MODE, 20, -1, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "é not in Shift JIS" },
         /*  3*/ { UNICODE_MODE, 26, 4, -1, "é", 0, 26, "71 A4 02 C3 A9 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { DATA_MODE, 0, 4, 7 << 8, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /*  5*/ { DATA_MODE, 0, 4, 6 << 8, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1)" },
+        /*  4*/ { DATA_MODE, 0, 4, 7 << 8, "é", 0, 0, "40 2C 3A 90 EC 11 EC 11 EC", 1, 1, "B2 (UTF-8)" },
+        /*  5*/ { DATA_MODE, 0, 4, 6 << 8, "\351", 0, 0, "40 1E 90 EC 11 EC 11 EC 11", 1, 3, "B1 (ISO 8859-1)" },
         /*  6*/ { UNICODE_MODE, 0, 4, 2 << 8, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 00 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
         /*  7*/ { UNICODE_MODE, 9, 4, 7 << 8, "β", 0, 9, "70 94 01 E2 00 EC 11 EC 11", 1, 1, "ECI-9 B1 (ISO 8859-7)" },
         /*  8*/ { UNICODE_MODE, 20, 4, -1, "β", 0, 20, "71 48 01 10 00 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /*  9*/ { UNICODE_MODE, 26, 4, 5 << 8, "β", 0, 26, "71 A4 02 CE B2 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 10*/ { DATA_MODE, 0, 4, 4 << 8, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 10*/ { DATA_MODE, 0, 4, 4 << 8, "β", 0, 0, "40 2C EB 20 EC 11 EC 11 EC", 1, 1, "B2 (UTF-8)" },
         /* 11*/ { UNICODE_MODE, 0, 4, 5 << 8, "ก", ZINT_WARN_USES_ECI, 13, "Warning 70 D4 01 A1 00 EC 11 EC 11", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
         /* 12*/ { UNICODE_MODE, 13, 4, 5 << 8, "ก", 0, 13, "70 D4 01 A1 00 EC 11 EC 11", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
         /* 13*/ { UNICODE_MODE, 20, -1, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "ก not in Shift JIS" },
         /* 14*/ { UNICODE_MODE, 26, 4, 8 << 8, "ก", 0, 26, "71 A4 03 E0 B8 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 15*/ { DATA_MODE, 0, 4, 3 << 8, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 15*/ { DATA_MODE, 0, 4, 3 << 8, "ก", 0, 0, "40 3E 0B 88 10 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
         /* 16*/ { UNICODE_MODE, 0, 4, 8 << 8, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 11 23 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
         /* 17*/ { UNICODE_MODE, 7, 4, -1, "Ж", 0, 7, "70 74 01 B6 00 EC 11 EC 11", 1, 1, "ECI-7 B1 (ISO 8859-5)" },
         /* 18*/ { UNICODE_MODE, 20, 4, 7 << 8, "Ж", 0, 20, "71 48 01 12 38 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /* 19*/ { UNICODE_MODE, 26, 4, -1, "Ж", 0, 26, "71 A4 02 D0 96 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 20*/ { DATA_MODE, 0, 4, -1, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 20*/ { DATA_MODE, 0, 4, -1, "Ж", 0, 0, "40 2D 09 60 EC 11 EC 11 EC", 1, 1, "B2 (UTF-8)" },
         /* 21*/ { UNICODE_MODE, 0, 4, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 03 E0 BA 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
         /* 22*/ { UNICODE_MODE, 20, -1, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "ກ not in Shift JIS" },
         /* 23*/ { UNICODE_MODE, 26, 4, -1, "ກ", 0, 26, "71 A4 03 E0 BA 81 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 24*/ { DATA_MODE, 0, 4, 8 << 8, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 24*/ { DATA_MODE, 0, 4, 8 << 8, "ກ", 0, 0, "40 3E 0B A8 10 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
         /* 25*/ { UNICODE_MODE, 0, 4, 2 << 8, "\\", 0, 0, "40 15 C0 EC 11 EC 11 EC 11", 1, 1, "B1 (ASCII)" },
-        /* 26*/ { UNICODE_MODE, 20, 4, 4 << 8, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", 1, 0, "ECI-20 K1 (Shift JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 26*/ { UNICODE_MODE, 20, 4, 4 << 8, "\\", 0, 20, "71 48 01 00 F8 00 EC 11 EC", 1, 0, "ECI-20 K1 (Shift JIS); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 27*/ { UNICODE_MODE, 20, 4, -1, "[", 0, 20, "71 44 01 5B 00 EC 11 EC 11", 1, 1, "B1 (ASCII)" },
         /* 28*/ { UNICODE_MODE, 20, 4, 3 << 8, "\177", 0, 20, "71 44 01 7F 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (ASCII)" },
-        /* 29*/ { UNICODE_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /* 29*/ { UNICODE_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 1A 50 EC 11 EC 11 EC 11", 1, 3, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
         /* 30*/ { UNICODE_MODE, 3, 4, 3 << 8, "¥", 0, 3, "70 34 01 A5 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
-        /* 31*/ { UNICODE_MODE, 20, 4, 5 << 8, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 31*/ { UNICODE_MODE, 20, 4, 5 << 8, "¥", 0, 20, "71 44 01 5C 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 32*/ { UNICODE_MODE, 26, 4, 6 << 8, "¥", 0, 26, "71 A4 02 C2 A5 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 33*/ { DATA_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 33*/ { DATA_MODE, 0, 4, 2 << 8, "¥", 0, 0, "40 2C 2A 50 EC 11 EC 11 EC", 1, 1, "B2 (UTF-8)" },
         /* 34*/ { UNICODE_MODE, 0, 4, 2 << 8, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1A 50 EC 11 EC 11 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
         /* 35*/ { UNICODE_MODE, 3, -1, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 36*/ { UNICODE_MODE, 20, 4, 7 << 8, "･", 0, 20, "71 44 01 A5 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
         /* 37*/ { UNICODE_MODE, 26, 4, -1, "･", 0, 26, "71 A4 03 EF BD A5 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 38*/ { DATA_MODE, 0, 4, 8 << 8, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 39*/ { UNICODE_MODE, 0, 4, -1, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", 1, 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /* 38*/ { DATA_MODE, 0, 4, 8 << 8, "･", 0, 0, "40 3E FB DA 50 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
+        /* 39*/ { UNICODE_MODE, 0, 4, -1, "¿", 0, 0, "40 1B F0 EC 11 EC 11 EC 11", 1, 3, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
         /* 40*/ { UNICODE_MODE, 3, 4, 8 << 8, "¿", 0, 3, "70 34 01 BF 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
         /* 41*/ { UNICODE_MODE, 20, -1, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "¿ not in Shift JIS" },
         /* 42*/ { UNICODE_MODE, 26, 4, 2 << 8, "¿", 0, 26, "71 A4 02 C2 BF 00 EC 11 EC", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 43*/ { DATA_MODE, 0, 4, 3 << 8, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 43*/ { DATA_MODE, 0, 4, 3 << 8, "¿", 0, 0, "40 2C 2B F0 EC 11 EC 11 EC", 1, 1, "B2 (UTF-8)" },
         /* 44*/ { UNICODE_MODE, 0, 4, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 1B F0 EC 11 EC 11 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
         /* 45*/ { UNICODE_MODE, 3, -1, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 46*/ { UNICODE_MODE, 20, 4, 6 << 8, "ｿ", 0, 20, "71 44 01 BF 00 EC 11 EC 11", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
         /* 47*/ { UNICODE_MODE, 26, 4, 4 << 8, "ｿ", 0, 26, "71 A4 03 EF BD BF 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 48*/ { DATA_MODE, 0, 4, -1, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 48*/ { DATA_MODE, 0, 4, -1, "ｿ", 0, 0, "40 3E FB DB F0 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
         /* 49*/ { UNICODE_MODE, 0, 4, -1, "~", 0, 0, "40 17 E0 EC 11 EC 11 EC 11", 1, 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
         /* 50*/ { UNICODE_MODE, 3, 4, -1, "~", 0, 3, "70 34 01 7E 00 EC 11 EC 11", 1, 1, "ECI-3 B1 (ASCII)" },
         /* 51*/ { UNICODE_MODE, 20, -1, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "tilde not in Shift JIS (codepoint used for overline)" },
-        /* 52*/ { UNICODE_MODE, 0, 4, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 17 E0 EC 11 EC 11 EC 11", 1, 0, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 52*/ { UNICODE_MODE, 0, 4, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 17 E0 EC 11 EC 11 EC 11", 1, 0, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 53*/ { UNICODE_MODE, 3, -1, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
-        /* 54*/ { UNICODE_MODE, 20, 4, 7 << 8, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 54*/ { UNICODE_MODE, 20, 4, 7 << 8, "‾", 0, 20, "71 44 01 7E 00 EC 11 EC 11", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 55*/ { UNICODE_MODE, 26, 4, 1 << 8, "‾", 0, 26, "71 A4 03 E2 80 BE 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 56*/ { DATA_MODE, 0, 4, -1, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 56*/ { DATA_MODE, 0, 4, -1, "‾", 0, 0, "40 3E 28 0B E0 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
         /* 57*/ { UNICODE_MODE, 0, 4, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 16 CF 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
         /* 58*/ { UNICODE_MODE, 3, -1, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 59*/ { UNICODE_MODE, 20, 4, 3 << 8, "点", 0, 20, "71 48 01 6C F8 00 EC 11 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /* 60*/ { UNICODE_MODE, 26, 4, -1, "点", 0, 26, "71 A4 03 E7 82 B9 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 61*/ { DATA_MODE, 0, 4, 6 << 8, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 62*/ { DATA_MODE, 0, 4, 4 << 8, "\223\137", 0, 0, "40 29 35 F0 EC 11 EC 11 EC", 0, 0, "B2 (Shift JIS) (not full multibyte); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 63*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS)" },
-        /* 64*/ { UNICODE_MODE, 0, 4, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B4 (Shift JIS) (optimized to byte mode only); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 61*/ { DATA_MODE, 0, 4, 6 << 8, "点", 0, 0, "40 3E 78 2B 90 EC 11 EC 11", 1, 1, "B3 (UTF-8)" },
+        /* 62*/ { DATA_MODE, 0, 4, 4 << 8, "\223\137", 0, 0, "40 29 35 F0 EC 11 EC 11 EC", 0, 20, "B2 (Shift JIS) (not full multibyte); BWIPP same as FULL_MULTIBYTE" },
+        /* 63*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "80 16 CF 80 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, 4, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B4 (Shift JIS) (optimized to byte mode only); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 65*/ { UNICODE_MODE, 3, -1, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
-        /* 66*/ { UNICODE_MODE, 20, 4, 4 << 8, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", 1, 0, "ECI-20 B4 (Shift JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 66*/ { UNICODE_MODE, 20, 4, 4 << 8, "¥･点", 0, 20, "71 44 04 5C A5 93 5F 00 EC", 1, 0, "ECI-20 B4 (Shift JIS); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 67*/ { UNICODE_MODE, 26, 3, 7 << 8, "¥･点", 0, 26, "71 A4 08 C2 A5 EF BD A5 E7 82 B9 00 EC", 1, 1, "ECI-26 B8 (UTF-8)" },
-        /* 68*/ { DATA_MODE, 0, 4, -1, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B8 (Shift JIS); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 69*/ { DATA_MODE, 0, 3, -1, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", 1, 0, "B8 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 68*/ { DATA_MODE, 0, 4, -1, "\134\245\223\137", 0, 0, "40 45 CA 59 35 F0 EC 11 EC", 1, 0, "B8 (Shift JIS); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 69*/ { DATA_MODE, 0, 3, -1, "¥･点", 0, 0, "40 8C 2A 5E FB DA 5E 78 2B 90 EC 11 EC", 1, 1, "B8 (UTF-8)" },
         /* 70*/ { UNICODE_MODE, 0, 4, 8 << 8, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 26 CF EA A8 00 EC 11 EC", 1, 1, "K2 (Shift JIS)" },
         /* 71*/ { UNICODE_MODE, 0, 4, -1, "点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 36 CF EA A8 34 A0 EC 11", 1, 1, "K3 (Shift JIS)" },
         /* 72*/ { UNICODE_MODE, 0, 4, -1, "点茗テ点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 46 CF EA A8 34 AD 9F 00", 1, 1, "K4 (Shift JIS)" },
         /* 73*/ { UNICODE_MODE, 0, 3, -1, "点茗テ点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 56 CF EA A8 34 AD 9F D5 50 00 EC 11", 1, 1, "K5 (Shift JIS)" },
         /* 74*/ { UNICODE_MODE, 0, 3, 1 << 8, "点茗テ点茗テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 40 EC", 1, 1, "K6 (Shift JIS)" },
         /* 75*/ { UNICODE_MODE, 0, 2, 4 << 8, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", 1, 1, "K6 B1 (Shift JIS)" },
-        /* 76*/ { DATA_MODE, 0, 2, 8 << 8, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "40 D9 35 FE 4A A8 36 59 35 FE 4A A8 36 5B F0 EC", 0, 0, "B13 (Shift JIS); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 77*/ { DATA_MODE, 0, 2, ZINT_FULL_MULTIBYTE | (4 << 8), "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", 1, 1, "K6 B1 (Shift JIS) (full multibyte)" },
-        /* 78*/ { DATA_MODE, 0, 2, 2 << 8, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", 1, 0, "B21 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 79*/ { DATA_MODE, 0, 3, 8 << 8, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", 1, 0, "B18 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 76*/ { DATA_MODE, 0, 2, 8 << 8, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "40 D9 35 FE 4A A8 36 59 35 FE 4A A8 36 5B F0 EC", 0, 20, "B13 (Shift JIS); BWIPP same as FULL_MULTIBYTE" },
+        /* 77*/ { DATA_MODE, 0, 2, ZINT_FULL_MULTIBYTE | (4 << 8), "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "80 66 CF EA A8 34 AD 9F D5 50 69 50 06 FC 00 EC", 1, 20, "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 78*/ { DATA_MODE, 0, 2, 2 << 8, "点茗テ点茗テｿ", 0, 0, "41 5E 78 2B 9E 88 C9 7E 38 38 6E 78 2B 9E 88 C9 7E 38 38 6E FB DB F0 EC 11 EC 11 EC", 1, 1, "B21 (UTF-8)" },
+        /* 79*/ { DATA_MODE, 0, 3, 8 << 8, "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", 1, 1, "B18 (UTF-8)" },
         /* 80*/ { DATA_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (8 << 8), "ÁȁȁȁȁȁȁȂ¢", 0, 0, "41 2C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20 EC 11", 1, 1, "B18 (UTF-8) (full multibyte)" },
-        /* 81*/ { DATA_MODE, 0, 3, 4 << 8, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "41 4C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20", 0, 0, "B20 (UTF-8); BWIPP same as FULL_MULTIBYTE; ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 82*/ { DATA_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (4 << 8), "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "40 1C 38 09 04 40 22 01 10 08 80 44 02 20 11 00 88 0A 12 00 D1 00", 1, 1, "B1 K9 B1 (UTF-8) (full multibyte)" },
+        /* 81*/ { DATA_MODE, 0, 3, 4 << 8, "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "41 4C 38 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 1C 88 2C 2A 20", 0, 1, "B20 (UTF-8)" },
+        /* 82*/ { DATA_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (4 << 8), "ÁȁȁȁȁȁȁȁȂ¢", 0, 0, "40 1C 38 09 04 40 22 01 10 08 80 44 02 20 11 00 88 0A 12 00 D1 00", 1, 26, "B1 K9 B1 (UTF-8) (full multibyte)" },
         /* 83*/ { UNICODE_MODE, 0, 3, 8 << 8, "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 1, 1, "B18 (UTF-8)" },
         /* 84*/ { UNICODE_MODE, 0, 3, ZINT_FULL_MULTIBYTE | (8 << 8), "ÁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 12 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00", 1, 1, "B18 (UTF-8)" },
         /* 85*/ { UNICODE_MODE, 0, 2, 1 << 8, "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 14 C3 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 EC 11 EC 11", 0, 1, "B20 (UTF-8); BWIPP same as FULL_MULTIBYTE" },
         /* 86*/ { UNICODE_MODE, 0, 2, ZINT_FULL_MULTIBYTE | (1 << 8), "ÁȁȁȁȁȁȁȁȂ¢", ZINT_WARN_USES_ECI, 26, "Warning 71 A4 01 C3 80 90 44 02 20 11 00 88 04 40 22 01 10 08 80 A1 20 0D 10 00 EC 11 EC 11", 1, 1, "B1 K9 B1 (UTF-8) (full multibyte)" },
         /* 87*/ { UNICODE_MODE, 0, 4, -1, "áA", 0, 0, "40 2E 14 10 EC 11 EC 11 EC", 0, 1, "B2 (ISO 8859-1); BWIPP same as FULL_MULTIBYTE" },
-        /* 88*/ { UNICODE_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", 1, 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /* 88*/ { UNICODE_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "80 1C 00 80 EC 11 EC 11 EC", 1, 3, "K1 (ISO 8859-1) (full multibyte)" },
         /* 89*/ { UNICODE_MODE, 0, 1, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(34) 21 69 C2 3E 08 79 26 27 A5 50 B5 98 23 32 6C 0E 65 FA C5 19 5B 42 6B 2D C1 C3 B9 E7", 1, 1, "A45" },
         /* 90*/ { UNICODE_MODE, 0, 4, 7 << 8, "˘", ZINT_WARN_USES_ECI, 4, "Warning 70 44 01 A2 00 EC 11 EC 11", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
         /* 91*/ { UNICODE_MODE, 4, 4, 7 << 8, "˘", 0, 4, "70 44 01 A2 00 EC 11 EC 11", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
@@ -406,7 +409,7 @@ static void test_qr_input(const testCtx *const p_ctx) {
         /* 98*/ { UNICODE_MODE, 0, 4, 2 << 8, "テ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 D2 80 EC 11 EC 11 EC", 1, 1, "K1 (SHIFT JIS)" },
         /* 99*/ { UNICODE_MODE, 20, 4, 2 << 8, "テ", 0, 20, "71 48 01 0D 28 00 EC 11 EC", 1, 1, "ECI-20 K1 (SHIFT JIS)" },
         /*100*/ { UNICODE_MODE, 20, 4, 4 << 8, "テテ", 0, 20, "71 48 02 0D 28 69 40 EC 11", 1, 1, "ECI-20 K2 (SHIFT JIS)" },
-        /*101*/ { UNICODE_MODE, 20, 4, -1, "\\\\", 0, 20, "71 48 02 00 F8 07 C0 EC 11", 1, 0, "ECI-20 K2 (SHIFT JIS); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /*101*/ { UNICODE_MODE, 20, 4, -1, "\\\\", 0, 20, "71 48 02 00 F8 07 C0 EC 11", 1, 0, "ECI-20 K2 (SHIFT JIS); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /*102*/ { UNICODE_MODE, 0, 4, -1, "…", ZINT_WARN_NONCOMPLIANT, 0, "Warning 80 10 11 80 EC 11 EC 11 EC", 1, 1, "K1 (SHIFT JIS)" },
         /*103*/ { UNICODE_MODE, 21, 4, -1, "…", 0, 21, "71 54 01 85 00 EC 11 EC 11", 1, 1, "ECI-21 B1 (Win 1250)" },
         /*104*/ { UNICODE_MODE, 0, 4, 7 << 8, "Ґ", ZINT_WARN_USES_ECI, 22, "Warning 71 64 01 A5 00 EC 11 EC 11", 1, 1, "ECI-22 B1 (Win 1251)" },
@@ -433,36 +436,39 @@ static void test_qr_input(const testCtx *const p_ctx) {
         /*125*/ { UNICODE_MODE, 900, 4, 8 << 8, "é", 0, 900, "78 38 44 02 C3 A9 00 EC 11", 1, 1, "ECI-900 B2 (no conversion)" },
         /*126*/ { UNICODE_MODE, 16384, 4, 8 << 8, "é", 0, 16384, "7C 04 00 04 02 C3 A9 00 EC", 1, 1, "ECI-16384 B2 (no conversion)" },
         /*127*/ { UNICODE_MODE, 3, 4, -1, "product:Google Pixel 4a - 128 GB of Storage - Black;price:$439.97", 0, 3, "(86) 70 34 39 70 72 6F 64 75 63 74 3A 47 6F 6F 67 6C 65 20 50 69 78 65 6C 20 34 61 20 2D", 0, 1, "ECI-3 B57 A8; BWIPP different encodation (B65)" },
-        /*128*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\176", 0, 0, "80 10 1F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x817E)" },
-        /*129*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\177", 0, 0, "40 28 17 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x817F previously used Kanji mode, now excludes trailing 0x7F)" },
-        /*130*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\200", 0, 0, "80 10 20 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x8180)" },
-        /*131*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\176", 0, 0, "80 1B 5F 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x9F7E)" },
-        /*132*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (1 << 8), "\237\177", 0, 0, "40 29 F7 F0 EC 11 EC 11 EC", 1, 1, "B2 (0x9F7F previously used Kanji mode, now excludes trailing 0x7F)" },
-        /*133*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (5 << 8), "\340\176", 0, 0, "80 1B BF 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xE07E)" },
-        /*134*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\177", 0, 0, "40 2E 07 F0 EC 11 EC 11 EC", 1, 1, "B2 (0xE07F previously used Kanji mode, now excludes trailing 0x7F)" },
-        /*135*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\352\244", 0, 0, "80 1F 92 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0xEAA4, last valid codepoint)" },
-        /*136*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\353\277", 0, 0, "80 1F FF 80 EC 11 EC 11 EC", 1, 1, "K1 (0xEBBF undefined in Shift JIS but not checked and uses Kanji mode)" },
-        /*137*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\300", 0, 0, "40 2E BC 00 EC 11 EC 11 EC", 1, 1, "B2 (0xEBC0 was always excluded)" },
-        /*138*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\300", 0, 0, "80 10 40 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81C0)" },
-        /*139*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (2 << 8), "\201\374", 0, 0, "80 10 5E 00 EC 11 EC 11 EC", 1, 1, "K1 (Shift JIS 0x81FC)" },
-        /*140*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (8 << 8), "\201\375", 0, 0, "40 28 1F D0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FD previously used Kanji mode, now excludes trailing 0xFD)" },
-        /*141*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\201\376", 0, 0, "40 28 1F E0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FE previously used Kanji mode, now excludes trailing 0xFE)" },
-        /*142*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
-        /*143*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 1, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
-        /*144*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (7 << 8), "\201\255", 0, 0, "80 10 36 80 EC 11 EC 11 EC", 1, 1, "K1 (0x81AD undefined in Shift JIS but not checked and uses Kanji mode)" },
+        /*128*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\176", 0, 0, "80 10 1F 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0x817E)" },
+        /*129*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\177", 0, 0, "40 28 17 F0 EC 11 EC 11 EC", 1, 899, "B2 (0x817F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*130*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\200", 0, 0, "80 10 20 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0x8180)" },
+        /*131*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\237\176", 0, 0, "80 1B 5F 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0x9F7E)" },
+        /*132*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (1 << 8), "\237\177", 0, 0, "40 29 F7 F0 EC 11 EC 11 EC", 1, 899, "B2 (0x9F7F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*133*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (5 << 8), "\340\176", 0, 0, "80 1B BF 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0xE07E)" },
+        /*134*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\340\177", 0, 0, "40 2E 07 F0 EC 11 EC 11 EC", 1, 899, "B2 (0xE07F previously used Kanji mode, now excludes trailing 0x7F)" },
+        /*135*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\352\244", 0, 0, "80 1F 92 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0xEAA4, last valid codepoint)" },
+        /*136*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\353\277", 0, 0, "80 1F FF 80 EC 11 EC 11 EC", 1, 899, "K1 (0xEBBF undefined in Shift JIS but not checked and uses Kanji mode)" },
+        /*137*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\353\300", 0, 0, "40 2E BC 00 EC 11 EC 11 EC", 1, 899, "B2 (0xEBC0 was always excluded)" },
+        /*138*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE, "\201\300", 0, 0, "80 10 40 00 EC 11 EC 11 EC", 1, 899, "K1 (Shift JIS 0x81C0)" },
+        /*139*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (2 << 8), "\201\374", 0, 0, "80 10 5E 00 EC 11 EC 11 EC", 1, 20, "K1 (Shift JIS 0x81FC)" },
+        /*140*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (8 << 8), "\201\375", 0, 0, "40 28 1F D0 EC 11 EC 11 EC", 1, 899, "B2 (0x81FD previously used Kanji mode, now excludes trailing 0xFD)" },
+        /*141*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (4 << 8), "\201\376", 0, 0, "40 28 1F E0 EC 11 EC 11 EC", 1, 899, "B2 (0x81FE previously used Kanji mode, now excludes trailing 0xFE)" },
+        /*142*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 899, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
+        /*143*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (6 << 8), "\201\377", 0, 0, "40 28 1F F0 EC 11 EC 11 EC", 1, 899, "B2 (0x81FF previously used Kanji mode, now excludes trailing 0xFF)" },
+        /*144*/ { DATA_MODE, 0, 4, ZINT_FULL_MULTIBYTE | (7 << 8), "\201\255", 0, 0, "80 10 36 80 EC 11 EC 11 EC", 1, 899, "K1 (0x81AD undefined in Shift JIS but not checked and uses Kanji mode)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
     char escaped[4096];
+    char escaped2[4096];
+    char ret_buf[4096];
     char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -473,10 +479,13 @@ static void test_qr_input(const testCtx *const p_ctx) {
 
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci, data[i].option_1, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, data[i].eci,
+                                    data[i].option_1, -1 /*option_2*/, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %d, %s, \"%s\", %s, %d, \"%s\", %d, %d, \"%s\" },\n",
@@ -487,38 +496,56 @@ static void test_qr_input(const testCtx *const p_ctx) {
                     data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
+                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                            i, symbol->eci, data[i].expected_eci);
             }
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
 
             if (ret < ZINT_ERROR) {
-                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, debug)) {
+                if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1,
+                                                data[i].option_3 | ZINT_FULL_MULTIBYTE, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         char modules_dump[177 * 177 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE,
+                                    data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     if (!data[i].zxingcpp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not ZXing-C++ compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[177 * 177 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
-
-                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, ret_buf, &ret_len);
+                        assert_zero(ret,
+                                    "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual (%d): %s\nexpected (%d): %s\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg,
+                                    cmp_len, testUtilEscape(cmp_buf, cmp_len, escaped, sizeof(escaped)),
+                                    ret_len, testUtilEscape(ret_buf, ret_len, escaped2, sizeof(escaped2)));
                     }
                 }
             }
@@ -671,10 +698,11 @@ static void test_qr_gs1(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_gs1", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -714,19 +742,20 @@ static void test_qr_gs1(const testCtx *const p_ctx) {
                 }
             }
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
-                if (0 /*!data[i].zxingcpp_cmp*/) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
-                } else {
-                    int cmp_len, ret_len;
-                    char modules_dump[177 * 177 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                int cmp_len, ret_len;
+                char modules_dump[177 * 177 + 1];
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                            sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
-                }
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                            NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -747,39 +776,40 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
         int ret;
         const char *expected;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 4, -1, "1", 0, "10 04 40 EC 11 EC 11 EC 11", 1, "N1" },
-        /*  1*/ { UNICODE_MODE, 4, 5 << 8, "AAA", 0, "20 19 CC 28 00 EC 11 EC 11", 1, "A3" },
-        /*  2*/ { UNICODE_MODE, 4, 1 << 8, "0123456789", 0, "10 28 0C 56 6A 69 00 EC 11", 1, " N10 (nayuki.io - pure numeric)" },
-        /*  3*/ { UNICODE_MODE, 4, -1, "ABCDEF", 0, "20 31 CD 45 2A 14 00 EC 11", 1, "A6 (nayuki.io - pure alphanumeric)" },
-        /*  4*/ { UNICODE_MODE, 4, -1, "wxyz", 0, "40 47 77 87 97 A0 EC 11 EC", 1, "B4 (nayuki.io - pure byte)" },
-        /*  5*/ { UNICODE_MODE, 1, -1, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", ZINT_WARN_NONCOMPLIANT, "Warning (55) 81 D0 1A C0 09 F8 0A ED 56 B8 57 02 8E 12 90 2C 86 F4 31 A1 8A 01 B0 50 42 88 00 10", 1, "K29 (nayuki.io - pure kanji)" },
-        /*  6*/ { UNICODE_MODE, 4, 1 << 8, "012345A", 0, "20 38 01 0B A2 E4 A0 EC 11", 1, "A7 (nayuki.io - alpha/numeric)" },
-        /*  7*/ { UNICODE_MODE, 4, -1, "0123456A", 0, "10 1C 0C 56 58 80 25 00 EC", 1, "N7 A1 (nayuki.io - alpha/numeric) (note same bits as A8)" },
-        /*  8*/ { UNICODE_MODE, 4, 1 << 8, "012a", 0, "40 43 03 13 26 10 EC 11 EC", 1, "B4 (nayuki.io - numeric/byte)" },
-        /*  9*/ { UNICODE_MODE, 4, 4 << 8, "0123a", 0, "10 10 0C 34 01 61 00 EC 11", 1, "N4 B1 (nayuki.io - numeric/byte)" },
-        /* 10*/ { UNICODE_MODE, 4, 4 << 8, "ABCDEa", 0, "40 64 14 24 34 44 56 10 EC", 1, "B6 (nayuki.io - alphanumeric/byte)" },
-        /* 11*/ { UNICODE_MODE, 4, -1, "ABCDEFa", 0, "20 31 CD 45 2A 15 00 58 40", 1, "A6 B1 (nayuki.io - alphanumeric/byte)" },
-        /* 12*/ { UNICODE_MODE, 1, 1 << 8, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", 0, "(55) 20 D5 2A 53 54 1A A8 4C DC DF 14 29 EC 47 CA D9 9A 88 05 71 10 59 E3 56 32 5D 45 F0", 1, " A26 N65 (nayuki.io - alpha/numeric)" },
-        /* 13*/ { UNICODE_MODE, 1, -1, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", ZINT_WARN_NONCOMPLIANT, "Warning (80) 41 44 76 F6 C6 46 56 E2 07 26 17 46 96 F2 08 3D 32 03 D2 03 12 E1 19 26 A0 87 DC BB", 1, "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
-        /* 14*/ { UNICODE_MODE, 1, -1, "こんにちwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 41 B8 2B 18 2F 18 2C 98 2B F7 76 18 14 19 0A 28 A4 58 14 92 08 3B F8 3C 08 3C 18 3C", 1, "B27 (nayuki.io - kanji/european **NOT SAME** K4 B2 K4 A1 K4, less bits as nayuki (1.5.0) miscounting byte-mode input as UTF-8)" },
-        /* 15*/ { UNICODE_MODE, 1, 2 << 8, "こんにちテwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 80 50 98 85 C4 29 21 3F 0D 2A 09 BB B0 C0 A0 C8 51 45 22 C0 A4 90 41 DF C1 E0 41 E0", 1, "K5 B19 (nayuki.io - kanji/european + extra leading kanji **NOT SAME** K5 B2 K4 A1 K4, same reason as above)" },
-        /* 16*/ { UNICODE_MODE, 1, 8 << 8, "67128177921547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www0530329356521790265903SG.COM.NETS46968696003522G33250183309051017567088693441243693268766948304B2AE13344004SG.SGQR209710339366720B439682.63667470805057501195235502733744600368027857918629797829126902859SG8236HELLO FOO2517Singapore3272B815", 0, "(232) 10 52 9F 46 70 B3 5D DE 9A 1F A1 7B 1B 7B 69 73 0B 1B 6B 29 99 A9 A9 C1 A3 0B 31 A9", 1, "N20 B47 N9 B15 N22 A11 N14 A1 N47 A19 N15 A8 N65 A20 B8 A8 (nayuki.io - SGQR alpha/numeric/byte)" },
-        /* 17*/ { UNICODE_MODE, 4, 1 << 8, "纪", ZINT_WARN_USES_ECI, "Warning 71 A4 03 E7 BA AA 00 EC 11", 1, "ECI-26 B3 (UTF-8 E7BAAA, U+7EAA, not in Shift JIS)" },
-        /* 18*/ { DATA_MODE, 4, 1 << 8, "纪", 0, "40 3E 7B AA A0 EC 11 EC 11", 1, "B3 (UTF-8 or Shift JIS, note ambiguous as 0xE7BA 0xAA happens to be valid Shift JIS 郤ｪ as well)" },
-        /* 19*/ { UNICODE_MODE, 4, 1 << 8, "郤ｪ", ZINT_WARN_NONCOMPLIANT, "Warning 40 3E 7B AA A0 EC 11 EC 11", 1, "B3 (Shift JIS or UTF-8 E7BAAA 纪, see above)" },
-        /* 20*/ { UNICODE_MODE, 1, -1, "2004年大西洋颶風季是有纪录以来造成人员伤亡和财产损失最为惨重的大西洋飓风季之一，于2004年6月1日正式开始，同年11月30日结束，传统上这样的日期界定了一年中绝大多数热带气旋在大西洋形成的时间段lll ku", ZINT_WARN_USES_ECI, "Warning (324) 71 A1 00 43 21 10 04 4B 96 E6 D3 96 92 9F A2 96 FF 9A D2 2F A6 8A DB A6 8A A3 96 B6", 0, "ECI-26 N4 B274 (nayuki.io - kanji/byte/numeric **NOT SAME* N4 K9 B6 K5 etc mixing Shift JIS and UTF-8); BWIPP different encodation (N4 K1 B272)" },
-        /* 21*/ { UNICODE_MODE, 4, 1 << 8, "AB123456A", 0, "20 49 CD 05 E2 2C 73 94 00", 1, "A9" },
-        /* 22*/ { UNICODE_MODE, 3, -1, "AB1234567890A", 0, "20 69 CD 05 E2 2C 73 94 33 2A 50 00 EC", 1, "A13" },
-        /* 23*/ { UNICODE_MODE, 3, -1, "AB123456789012A", 0, "20 79 CD 05 E2 2C 73 94 33 2A 0B CA 00", 1, "A15" },
-        /* 24*/ { UNICODE_MODE, 3, -1, "AB1234567890123A", 0, "20 11 CD 10 34 7B 72 31 50 30 C8 02 50", 1, "A2 N13 A1" },
-        /* 25*/ { UNICODE_MODE, 3, 2 << 8, "テaABCD1", ZINT_WARN_NONCOMPLIANT, "Warning 40 88 36 56 14 14 24 34 43 10 EC 11 EC", 1, "B8" },
-        /* 26*/ { UNICODE_MODE, 3, -1, "テaABCDE1", ZINT_WARN_NONCOMPLIANT, "Warning 40 38 36 56 12 03 1C D4 52 9D C0 EC 11", 0, "B3 A6; BWIPP different encodation (B9)" },
-        /* 27*/ { UNICODE_MODE, 2, -1, "テéaABCDE1", ZINT_WARN_USES_ECI, "Warning 71 A4 06 E3 83 86 C3 A9 61 20 31 CD 45 29 DC 00", 1, "B6 A6" },
-        /* 28*/ { UNICODE_MODE, 2, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", ZINT_WARN_NONCOMPLIANT, "Warning (44) 80 83 A8 85 88 25 CA 2F 40 B0 53 C2 44 98 41 00 4A 02 0E A8 F8 F5 0D 30 4C 35 A1 CC", 0, "K8 N1 K8 B3; BWIPP different encodation (K8 N1 K8 N1 K1)" },
-        /* 29*/ { UNICODE_MODE, 1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", ZINT_WARN_NONCOMPLIANT, "Warning (589) 80 20 EA 21 62 09 72 8B D0 2C 14 F0 91 26 10 40 04 A0 08 3A A3 E3 D4 34 C1 30 D6 87", 0, "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K89 N2 K14 B5 K28 N2 K40 N1 K65; BWIPP different encodation (same except A2 B6 instead of B5)" },
+        /*  0*/ { UNICODE_MODE, 4, -1, "1", 0, "10 04 40 EC 11 EC 11 EC 11", 1, 1, "N1" },
+        /*  1*/ { UNICODE_MODE, 4, 5 << 8, "AAA", 0, "20 19 CC 28 00 EC 11 EC 11", 1, 1, "A3" },
+        /*  2*/ { UNICODE_MODE, 4, 1 << 8, "0123456789", 0, "10 28 0C 56 6A 69 00 EC 11", 1, 1, " N10 (nayuki.io - pure numeric)" },
+        /*  3*/ { UNICODE_MODE, 4, -1, "ABCDEF", 0, "20 31 CD 45 2A 14 00 EC 11", 1, 1, "A6 (nayuki.io - pure alphanumeric)" },
+        /*  4*/ { UNICODE_MODE, 4, -1, "wxyz", 0, "40 47 77 87 97 A0 EC 11 EC", 1, 1, "B4 (nayuki.io - pure byte)" },
+        /*  5*/ { UNICODE_MODE, 1, -1, "「魔法少女まどか☆マギカ」って、　ИАИ　ｄｅｓｕ　κα？", ZINT_WARN_NONCOMPLIANT, "Warning (55) 81 D0 1A C0 09 F8 0A ED 56 B8 57 02 8E 12 90 2C 86 F4 31 A1 8A 01 B0 50 42 88 00 10", 1, 1, "K29 (nayuki.io - pure kanji)" },
+        /*  6*/ { UNICODE_MODE, 4, 1 << 8, "012345A", 0, "20 38 01 0B A2 E4 A0 EC 11", 1, 1, "A7 (nayuki.io - alpha/numeric)" },
+        /*  7*/ { UNICODE_MODE, 4, -1, "0123456A", 0, "10 1C 0C 56 58 80 25 00 EC", 1, 1, "N7 A1 (nayuki.io - alpha/numeric) (note same bits as A8)" },
+        /*  8*/ { UNICODE_MODE, 4, 1 << 8, "012a", 0, "40 43 03 13 26 10 EC 11 EC", 1, 1, "B4 (nayuki.io - numeric/byte)" },
+        /*  9*/ { UNICODE_MODE, 4, 4 << 8, "0123a", 0, "10 10 0C 34 01 61 00 EC 11", 1, 1, "N4 B1 (nayuki.io - numeric/byte)" },
+        /* 10*/ { UNICODE_MODE, 4, 4 << 8, "ABCDEa", 0, "40 64 14 24 34 44 56 10 EC", 1, 1, "B6 (nayuki.io - alphanumeric/byte)" },
+        /* 11*/ { UNICODE_MODE, 4, -1, "ABCDEFa", 0, "20 31 CD 45 2A 15 00 58 40", 1, 1, "A6 B1 (nayuki.io - alphanumeric/byte)" },
+        /* 12*/ { UNICODE_MODE, 1, 1 << 8, "THE SQUARE ROOT OF 2 IS 1.41421356237309504880168872420969807856967187537694807317667973799", 0, "(55) 20 D5 2A 53 54 1A A8 4C DC DF 14 29 EC 47 CA D9 9A 88 05 71 10 59 E3 56 32 5D 45 F0", 1, 1, " A26 N65 (nayuki.io - alpha/numeric)" },
+        /* 13*/ { UNICODE_MODE, 1, -1, "Golden ratio φ = 1.6180339887498948482045868343656381177203091798057628621354486227052604628189024497072072041893911374......", ZINT_WARN_NONCOMPLIANT, "Warning (80) 41 44 76 F6 C6 46 56 E2 07 26 17 46 96 F2 08 3D 32 03 D2 03 12 E1 19 26 A0 87 DC BB", 1, 1, "B20 N100 A6 (nayuki.io - alpha/numeric/byte)" },
+        /* 14*/ { UNICODE_MODE, 1, -1, "こんにちwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 41 B8 2B 18 2F 18 2C 98 2B F7 76 18 14 19 0A 28 A4 58 14 92 08 3B F8 3C 08 3C 18 3C", 1, 1, "B27 (nayuki.io - kanji/european **NOT SAME** K4 B2 K4 A1 K4, less bits as nayuki (1.5.0) miscounting byte-mode input as UTF-8)" },
+        /* 15*/ { UNICODE_MODE, 1, 2 << 8, "こんにちテwa、世界！ αβγδ", ZINT_WARN_NONCOMPLIANT, "Warning (34) 80 50 98 85 C4 29 21 3F 0D 2A 09 BB B0 C0 A0 C8 51 45 22 C0 A4 90 41 DF C1 E0 41 E0", 1, 1, "K5 B19 (nayuki.io - kanji/european + extra leading kanji **NOT SAME** K5 B2 K4 A1 K4, same reason as above)" },
+        /* 16*/ { UNICODE_MODE, 1, 8 << 8, "67128177921547861663com.acme35584af52fa3-88d0-093b-6c14-b37ddafb59c528908608sg.com.dash.www0530329356521790265903SG.COM.NETS46968696003522G33250183309051017567088693441243693268766948304B2AE13344004SG.SGQR209710339366720B439682.63667470805057501195235502733744600368027857918629797829126902859SG8236HELLO FOO2517Singapore3272B815", 0, "(232) 10 52 9F 46 70 B3 5D DE 9A 1F A1 7B 1B 7B 69 73 0B 1B 6B 29 99 A9 A9 C1 A3 0B 31 A9", 1, 1, "N20 B47 N9 B15 N22 A11 N14 A1 N47 A19 N15 A8 N65 A20 B8 A8 (nayuki.io - SGQR alpha/numeric/byte)" },
+        /* 17*/ { UNICODE_MODE, 4, 1 << 8, "纪", ZINT_WARN_USES_ECI, "Warning 71 A4 03 E7 BA AA 00 EC 11", 1, 1, "ECI-26 B3 (UTF-8 E7BAAA, U+7EAA, not in Shift JIS)" },
+        /* 18*/ { DATA_MODE, 4, 1 << 8, "纪", 0, "40 3E 7B AA A0 EC 11 EC 11", 1, 1, "B3 (UTF-8 or Shift JIS, note ambiguous as 0xE7BA 0xAA happens to be valid Shift JIS 郤ｪ as well)" },
+        /* 19*/ { UNICODE_MODE, 4, 1 << 8, "郤ｪ", ZINT_WARN_NONCOMPLIANT, "Warning 40 3E 7B AA A0 EC 11 EC 11", 1, 20, "B3 (Shift JIS or UTF-8 E7BAAA 纪, see above)" },
+        /* 20*/ { UNICODE_MODE, 1, -1, "2004年大西洋颶風季是有纪录以来造成人员伤亡和财产损失最为惨重的大西洋飓风季之一，于2004年6月1日正式开始，同年11月30日结束，传统上这样的日期界定了一年中绝大多数热带气旋在大西洋形成的时间段lll ku", ZINT_WARN_USES_ECI, "Warning (324) 71 A1 00 43 21 10 04 4B 96 E6 D3 96 92 9F A2 96 FF 9A D2 2F A6 8A DB A6 8A A3 96 B6", 0, 1, "ECI-26 N4 B274 (nayuki.io - kanji/byte/numeric **NOT SAME* N4 K9 B6 K5 etc mixing Shift JIS and UTF-8); BWIPP different encodation (N4 K1 B272)" },
+        /* 21*/ { UNICODE_MODE, 4, 1 << 8, "AB123456A", 0, "20 49 CD 05 E2 2C 73 94 00", 1, 1, "A9" },
+        /* 22*/ { UNICODE_MODE, 3, -1, "AB1234567890A", 0, "20 69 CD 05 E2 2C 73 94 33 2A 50 00 EC", 1, 1, "A13" },
+        /* 23*/ { UNICODE_MODE, 3, -1, "AB123456789012A", 0, "20 79 CD 05 E2 2C 73 94 33 2A 0B CA 00", 1, 1, "A15" },
+        /* 24*/ { UNICODE_MODE, 3, -1, "AB1234567890123A", 0, "20 11 CD 10 34 7B 72 31 50 30 C8 02 50", 1, 1, "A2 N13 A1" },
+        /* 25*/ { UNICODE_MODE, 3, 2 << 8, "テaABCD1", ZINT_WARN_NONCOMPLIANT, "Warning 40 88 36 56 14 14 24 34 43 10 EC 11 EC", 1, 1, "B8" },
+        /* 26*/ { UNICODE_MODE, 3, -1, "テaABCDE1", ZINT_WARN_NONCOMPLIANT, "Warning 40 38 36 56 12 03 1C D4 52 9D C0 EC 11", 0, 1, "B3 A6; BWIPP different encodation (B9)" },
+        /* 27*/ { UNICODE_MODE, 2, -1, "テéaABCDE1", ZINT_WARN_USES_ECI, "Warning 71 A4 06 E3 83 86 C3 A9 61 20 31 CD 45 29 DC 00", 1, 1, "B6 A6" },
+        /* 28*/ { UNICODE_MODE, 2, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁", ZINT_WARN_NONCOMPLIANT, "Warning (44) 80 83 A8 85 88 25 CA 2F 40 B0 53 C2 44 98 41 00 4A 02 0E A8 F8 F5 0D 30 4C 35 A1 CC", 0, 1, "K8 N1 K8 B3; BWIPP different encodation (K8 N1 K8 N1 K1)" },
+        /* 29*/ { UNICODE_MODE, 1, -1, "貫やぐ識禁ぱい再2間変字全ノレ没無8裁花ほゃ過法ひなご札17能つーびれ投覧マ勝動エヨ額界よみ作皇ナヲニ打題ヌルヲ掲布益フが。入35能ト権話しこを断兆モヘ細情おじ名4減エヘイハ側機はょが意見想ハ業独案ユヲウ患職ヲ平美さ毎放どぽたけ家没べお化富べ町大シ情魚ッでれ一冬すぼめり。社ト可化モマ試音ばじご育青康演ぴぎ権型固スで能麩ぜらもほ河都しちほラ収90作の年要とだむ部動ま者断チ第41一1米索焦茂げむしれ。測フ物使だて目月国スリカハ夏検にいへ児72告物ゆは載核ロアメヱ登輸どべゃ催行アフエハ議歌ワ河倫剖だ。記タケウ因載ヒイホヤ禁3輩彦関トえび肝区勝ワリロ成禁ぼよ界白ウヒキレ中島べせぜい各安うしぽリ覧生テ基一でむしゃ中新トヒキソ声碁スしび起田ア信大未ゅもばち。", ZINT_WARN_NONCOMPLIANT, "Warning (589) 80 20 EA 21 62 09 72 8B D0 2C 14 F0 91 26 10 40 04 A0 08 3A A3 E3 D4 34 C1 30 D6 87", 0, 1, "K8 N1 K8 N1 K10 N2 K33 N2 K16 N1 K89 N2 K14 B5 K28 N2 K40 N1 K65; BWIPP different encodation (same except A2 B6 instead of B5)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -789,10 +819,11 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
     char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_optimize", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -803,26 +834,38 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
 
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, -1 /*option_2*/, data[i].option_3 | ZINT_FULL_MULTIBYTE,
+                                    -1 /*output_options*/, data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].comment);
+            printf("        /*%3d*/ { %s, %d, %d, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode), data[i].option_1, data[i].option_3,
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].zxingcpp_cmp,
+                    data[i].comment);
         } else {
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, debug)) {
                 if (!data[i].bwipp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
                 } else {
                     char modules_dump[177 * 177 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, -1, data[i].option_3 | ZINT_FULL_MULTIBYTE,
+                                data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -832,13 +875,19 @@ static void test_qr_optimize(const testCtx *const p_ctx) {
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[177 * 177 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp, cmp_buf,
+                            sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            escaped, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -866,12 +915,13 @@ static void test_qr_encode(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         const char *comment;
         const char *expected;
     };
     /* や U+3084 kanji, in Shift JIS 0x82E2 (\202\342), UTF-8 E38284; its 2nd byte 0xE2 + 0x40-FC also form Shift JIS */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "QR Code Symbol", -1, 0, 21, 21, 0, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101; BWIPP uses 101",
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "QR Code Symbol", -1, 0, 21, 21, 0, 1, "ISO 18004 Figure 1 **NOT SAME** uses mask 110 instead of 101; BWIPP uses 101",
                     "111111101001101111111"
                     "100000101001101000001"
                     "101110101100101011101"
@@ -894,7 +944,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001101111111"
                     "111111101001011000000"
                 },
-        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, 6 << 8, { 0, 0, "" }, "QR Code Symbol", -1, 0, 21, 21, 1, "ISO 18004 Figure 1, explicit mask 101, same",
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, 6 << 8, { 0, 0, "" }, "QR Code Symbol", -1, 0, 21, 21, 1, 1, "ISO 18004 Figure 1, explicit mask 101, same",
                     "111111100001101111111"
                     "100000101001101000001"
                     "101110101110101011101"
@@ -917,7 +967,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001110111100"
                     "111111101011001010010"
                 },
-        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 33, 33, 1, "ISO 18004 Figure 29 (top), same (mask 100)",
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 33, 33, 1, 1, "ISO 18004 Figure 29 (top), same (mask 100)",
                     "111111101100110010010010101111111"
                     "100000100010111010111000101000001"
                     "101110100000001101101100001011101"
@@ -952,7 +1002,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100010110111000110101001001"
                     "111111101101101011010000111100011"
                 },
-        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 1, 4, "1" }, "ABCDEFGHIJKLMN", -1, 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 1st), same",
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 1, 4, "1" }, "ABCDEFGHIJKLMN", -1, 0, 21, 21, 1, 1, "ISO 18004 Figure 29 (bottom 1st), same",
                     "111111100110001111111"
                     "100000101001101000001"
                     "101110100010001011101"
@@ -975,7 +1025,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101110000001"
                     "111111101000110110101"
                 },
-        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, 8 << 8, { 2, 4, "1" }, "OPQRSTUVWXYZ0123", -1, 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 2nd), same with explicit mask 111 (auto 011)",
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, 8 << 8, { 2, 4, "1" }, "OPQRSTUVWXYZ0123", -1, 0, 21, 21, 1, 1, "ISO 18004 Figure 29 (bottom 2nd), same with explicit mask 111 (auto 011)",
                     "111111100011101111111"
                     "100000100001101000001"
                     "101110100001101011101"
@@ -998,7 +1048,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100111100011111"
                     "111111101011011110100"
                 },
-        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 3, 4, "1" }, "456789ABCDEFGHIJ", -1, 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 3rd), same",
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 3, 4, "1" }, "456789ABCDEFGHIJ", -1, 0, 21, 21, 1, 1, "ISO 18004 Figure 29 (bottom 3rd), same",
                     "111111100101001111111"
                     "100000100011101000001"
                     "101110100010101011101"
@@ -1021,7 +1071,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100011100101011"
                     "111111101011000011000"
                 },
-        /*  6*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 4, 4, "1" }, "KLMNOPQRSTUVWXYZ", -1, 0, 21, 21, 1, "ISO 18004 Figure 29 (bottom 4th), same",
+        /*  6*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 4, 4, "1" }, "KLMNOPQRSTUVWXYZ", -1, 0, 21, 21, 1, 1, "ISO 18004 Figure 29 (bottom 4th), same",
                     "111111101011101111111"
                     "100000101010101000001"
                     "101110100011001011101"
@@ -1044,7 +1094,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100010110010010"
                     "111111101110110101110"
                 },
-        /*  7*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, -1, { 0, 0, "" }, "01234567", -1, 0, 21, 21, 0, "ISO 18004 Annex I I.2, same (mask 010); BWIPP uses mask 000",
+        /*  7*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, -1, { 0, 0, "" }, "01234567", -1, 0, 21, 21, 0, 1, "ISO 18004 Annex I I.2, same (mask 010); BWIPP uses mask 000",
                     "111111100101101111111"
                     "100000100111101000001"
                     "101110101000001011101"
@@ -1067,7 +1117,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100000000110110"
                     "111111101111010010100"
                 },
-        /*  8*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, 1 << 8, { 0, 0, "" }, "01234567", -1, 0, 21, 21, 1, "ISO 18004 Annex I Figure I.2, explicit mask 000, same as BWIPP",
+        /*  8*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, 1 << 8, { 0, 0, "" }, "01234567", -1, 0, 21, 21, 1, 1, "ISO 18004 Annex I Figure I.2, explicit mask 000, same as BWIPP",
                     "111111100011101111111"
                     "100000101110001000001"
                     "101110100110001011101"
@@ -1090,7 +1140,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001110111000"
                     "111111101001011100101"
                 },
-        /*  9*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, -1, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", -1, 0, 25, 25, 0, "GS1 General Specifications 20.0 Figure 5.1-7 (note pre-21.0.1) **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 001",
+        /*  9*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, -1, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", -1, 0, 25, 25, 0, 1, "GS1 General Specifications 20.0 Figure 5.1-7 (note pre-21.0.1) **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 001",
                     "1111111001101101001111111"
                     "1000001010010101001000001"
                     "1011101011111010101011101"
@@ -1117,7 +1167,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010110101100111010"
                     "1111111011101100010010111"
                 },
-        /* 10*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, 2 << 8, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", -1, 0, 25, 25, 1, "GS1 General Specifications 20.0 Figure 5.1-7 (note pre-21.0.1), explicit mask 001, same as BWIPP",
+        /* 10*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, 2 << 8, { 0, 0, "" }, "[01]09501101530003[8200]http://example.com", -1, 0, 25, 25, 1, 1, "GS1 General Specifications 20.0 Figure 5.1-7 (note pre-21.0.1), explicit mask 001, same as BWIPP",
                     "1111111010111000001111111"
                     "1000001011100100101000001"
                     "1011101000111101101011101"
@@ -1144,7 +1194,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011110010100000010"
                     "1111111010111001000111101"
                 },
-        /* 11*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, -1, { 0, 0, "" }, "[01]09501101530003[10]640311[21]20FOOPC20", -1, 0, 25, 25, 0, "GS1 General Specifications 22.0 Figure 5.1-7 (note changed 21.0.1) **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 101",
+        /* 11*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, -1, { 0, 0, "" }, "[01]09501101530003[10]640311[21]20FOOPC20", -1, 0, 25, 25, 0, 1, "GS1 General Specifications 22.0 Figure 5.1-7 (note changed 21.0.1) **NOT SAME** figure uses Byte encodation only; BWIPP uses mask 101",
                     "1111111011101111001111111"
                     "1000001011100111001000001"
                     "1011101010110011101011101"
@@ -1171,7 +1221,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010001010110001100"
                     "1111111010110110111110011"
                 },
-        /* 12*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, 6 << 8, { 0, 0, "" }, "[01]09501101530003[10]640311[21]20FOOPC20", -1, 0, 25, 25, 1, "GS1 General Specifications 22.0 Figure 5.1-7 (note changed 21.0.1) **NOT SAME** figure uses Byte encodation only, explicit mask 101, same as BWIPP",
+        /* 12*/ { BARCODE_QRCODE, GS1_MODE, -1, 1, -1, 6 << 8, { 0, 0, "" }, "[01]09501101530003[10]640311[21]20FOOPC20", -1, 0, 25, 25, 1, 1, "GS1 General Specifications 22.0 Figure 5.1-7 (note changed 21.0.1) **NOT SAME** figure uses Byte encodation only, explicit mask 101, same as BWIPP",
                     "1111111000011110101111111"
                     "1000001001100001001000001"
                     "1011101000001011001011101"
@@ -1198,7 +1248,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011110011001000011"
                     "1111111011000111001111101"
                 },
-        /* 13*/ { BARCODE_QRCODE, GS1_MODE, -1, 2, -1, -1, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", -1, 0, 29, 29, 0, "GS1 General Specifications 22.0 Figure 5.7.3-1, same (mask 011); BWIPP uses mask 101",
+        /* 13*/ { BARCODE_QRCODE, GS1_MODE, -1, 2, -1, -1, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", -1, 0, 29, 29, 0, 1, "GS1 General Specifications 22.0 Figure 5.7.3-1, same (mask 011); BWIPP uses mask 101",
                     "11111110100101110101001111111"
                     "10000010111101001000001000001"
                     "10111010010000001110001011101"
@@ -1229,7 +1279,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010010111010001110010100"
                     "11111110101111111011110100110"
                 },
-        /* 14*/ { BARCODE_QRCODE, GS1_MODE, -1, 2, -1, 6 << 8, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", -1, 0, 29, 29, 1, "GS1 General Specifications 22.0 Figure 5.7.3-1, explicit mask 101, same as BWIPP",
+        /* 14*/ { BARCODE_QRCODE, GS1_MODE, -1, 2, -1, 6 << 8, { 0, 0, "" }, "[01]00857674002010[8200]http://www.gs1.org/", -1, 0, 29, 29, 1, 1, "GS1 General Specifications 22.0 Figure 5.7.3-1, explicit mask 101, same as BWIPP",
                     "11111110001000011000101111111"
                     "10000010111011101110101000001"
                     "10111010101011010101001011101"
@@ -1260,7 +1310,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010001111101001001010011"
                     "11111110111001001101000010000"
                 },
-        /* 15*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 21, 21, 1, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
+        /* 15*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 21, 21, 1, 1, "ANSI/HIBC 2.6 - 2016 Figure C5 same (mask 001)",
                     "111111101010001111111"
                     "100000100100101000001"
                     "101110101011001011101"
@@ -1283,7 +1333,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100100101111001"
                     "111111101111011001111"
                 },
-        /* 16*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "/EU720060FF0/O523201", -1, 0, 25, 25, 0, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011; BWIPP uses mask 011",
+        /* 16*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "/EU720060FF0/O523201", -1, 0, 25, 25, 0, 1, "HIBC/PAS Section 2.2 2nd Purchase Order **NOT SAME** uses mask 100 instead of 011; BWIPP uses mask 011",
                     "1111111011011110101111111"
                     "1000001001001111001000001"
                     "1011101001010010001011101"
@@ -1310,7 +1360,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001000010100100011111"
                     "1111111010101101111000001"
                 },
-        /* 17*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, 4 << 8, { 0, 0, "" }, "/EU720060FF0/O523201", -1, 0, 25, 25, 1, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
+        /* 17*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, 4 << 8, { 0, 0, "" }, "/EU720060FF0/O523201", -1, 0, 25, 25, 1, 1, "HIBC/PAS Section 2.2 2nd Purchase Order same, explicit mask 011",
                     "1111111010011001101111111"
                     "1000001011010011001000001"
                     "1011101000000111001011101"
@@ -1337,7 +1387,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001001000001110110101"
                     "1111111011101010111111001"
                 },
-        /* 18*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
+        /* 18*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 21, 21, 1, 1, "HIBC/PAS Section 2.2 Asset Tag **NOT SAME** uses mask 000 instead of 100",
                     "111111100000101111111"
                     "100000101010101000001"
                     "101110100011001011101"
@@ -1360,7 +1410,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100100001100111"
                     "111111101000101110101"
                 },
-        /* 19*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, 5 << 8, { 0, 0, "" }, "/KN12345", -1, 0, 21, 21, 1, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
+        /* 19*/ { BARCODE_HIBC_QR, -1, 0, 2, -1, 5 << 8, { 0, 0, "" }, "/KN12345", -1, 0, 21, 21, 1, 1, "HIBC/PAS Section 2.2 Asset Tag, same, explicit mask 100",
                     "111111101010101111111"
                     "100000100111001000001"
                     "101110100110101011101"
@@ -1383,7 +1433,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100110011110101"
                     "111111101010111100111"
                 },
-        /* 20*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 1, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", -1, 0, 21, 21, 1, "Max capacity ECC 1 Version 1 41 numbers",
+        /* 20*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 1, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", -1, 0, 21, 21, 1, 1, "Max capacity ECC 1 Version 1 41 numbers",
                     "111111101001001111111"
                     "100000101100101000001"
                     "101110101011101011101"
@@ -1406,7 +1456,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000101001010"
                     "111111101010110000111"
                 },
-        /* 21*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", -1, 0, 25, 25, 1, "ECC 2 auto-sets version 2",
+        /* 21*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901", -1, 0, 25, 25, 1, 1, "ECC 2 auto-sets version 2",
                     "1111111011001110101111111"
                     "1000001001000000001000001"
                     "1011101011001111101011101"
@@ -1433,7 +1483,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001000000100111010110"
                     "1111111010011100001100111"
                 },
-        /* 22*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 10, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 57, 57, 1, "Max capacity ECC 4 Version 10 74 kanji",
+        /* 22*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 10, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 57, 57, 1, 1, "Max capacity ECC 4 Version 10 74 kanji",
                     "111111100111100000011001000011111100010010011011001111111"
                     "100000100011100101110000101000101001101111000001001000001"
                     "101110101001011100010001111110111100101001100011001011101"
@@ -1492,7 +1542,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100110011101110011001101110110101010001101000011011"
                     "111111100010001101010110001001000001001011001001011001011"
                 },
-        /* 23*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 27, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 125, 125, 1, "Max capacity ECC 4 Version 27 385 kanji",
+        /* 23*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 27, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 125, 125, 1, 1, "Max capacity ECC 4 Version 27 385 kanji",
                     "11111110101001001100111100100011110001010011110000001100010110100011101010111000011101101001011111001111101101101001101111111"
                     "10000010110001101110011001101111000101001011011001100110101000101010011110000000101000100101101110110000011110100110001000001"
                     "10111010100000000100000101000101111001011001010100100100100000000101100011010001100111101010010101101101101101101101001011101"
@@ -1619,7 +1669,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010010111001111010001100001010001010110110001100000111101011100000010010111101001001100101101111011011001000001101001110"
                     "11111110000000010001110110000001010111011111000000111111010101110100101000110111000101101011001100000101101101101001100111111"
                 },
-        /* 24*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 40, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 177, 177, 1, "Max capacity ECC 4 Version 40 784 kanji",
+        /* 24*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, 40, -1, { 0, 0, "" }, "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点" "点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点点", -1, ZINT_WARN_NONCOMPLIANT, 177, 177, 1, 1, "Max capacity ECC 4 Version 40 784 kanji",
                     "111111101010001111111101101110111010110111001110101000010001011011011101001110110011111011010000010101001010011110010000010110111111001001011111101000010010111111001010001111111"
                     "100000101010110001001000101111011001001100100110110000000111110101111011110001101110000111000100101111010011001111100111111001001011011011110011011111111001000010010010101000001"
                     "101110101001001101111001110010010100000000111001001011111000001001111111101010000111011010011010010001111010111001100011000011110100101110001010110001011110011011011010001011101"
@@ -1798,7 +1848,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100000010000101110000100011000011110011100010100000011111110010100001100010010001001110010000000110010100111101101010110111111001000101010011011011000011110111110000000000"
                     "111111100000001110110110101010011010010100111111101001111101110111010110101111000111011001110100010111000100111000011011001011010011010011010101111010000011100001000011111011001"
                 },
-        /* 25*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE, { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, "Mask automatic (001)",
+        /* 25*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE, { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, 3, "Mask automatic (001)",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1821,7 +1871,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 26*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE | (8 << 8), { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, "Mask 111",
+        /* 26*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE | (8 << 8), { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, 3, "Mask 111",
                     "111111101000101111111"
                     "100000101110101000001"
                     "101110100110101011101"
@@ -1844,7 +1894,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100011111101000"
                     "111111100111010100101"
                 },
-        /* 27*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE | (9 << 8), { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, "Mask > 111 ignored",
+        /* 27*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 4, -1, ZINT_FULL_MULTIBYTE | (9 << 8), { 0, 0, "" }, "áA", -1, 0, 21, 21, 1, 3, "Mask > 111 ignored",
                     "111111100101101111111"
                     "100000101001101000001"
                     "101110101010101011101"
@@ -1867,7 +1917,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100100111010000"
                     "111111100011001000110"
                 },
-        /* 28*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, -1, { 0, 0, "" }, "1234567890", -1, 0, 21, 21, 0, "test_print example, automatic mask 001 (same score as mask 010); BWIPP uses mask 010",
+        /* 28*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, -1, { 0, 0, "" }, "1234567890", -1, 0, 21, 21, 0, 1, "test_print example, automatic mask 001 (same score as mask 010); BWIPP uses mask 010",
                     "111111101001101111111"
                     "100000100100101000001"
                     "101110101001001011101"
@@ -1890,7 +1940,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001011000010"
                     "111111101011111111111"
                 },
-        /* 29*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, 3 << 8, { 0, 0, "" }, "1234567890", -1, 0, 21, 21, 1, "test_print example, explicit mask 010",
+        /* 29*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, 1, 3 << 8, { 0, 0, "" }, "1234567890", -1, 0, 21, 21, 1, 1, "test_print example, explicit mask 010",
                     "111111100010101111111"
                     "100000100000001000001"
                     "101110101010001011101"
@@ -1913,7 +1963,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101111100110"
                     "111111101000100100100"
                 },
-        /* 30*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 1, 2, 2 << 8, { 0, 0, "" }, "?ややややwやややや ややややや", -1, ZINT_WARN_NONCOMPLIANT, 25, 25, 1, "Data with Shift JIS '2nd byte 1st byte' matches; explicit mask 001 (auto 000) to match BWIPP",
+        /* 30*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 1, 2, 2 << 8, { 0, 0, "" }, "?ややややwやややや ややややや", -1, ZINT_WARN_NONCOMPLIANT, 25, 25, 1, 1, "Data with Shift JIS '2nd byte 1st byte' matches; explicit mask 001 (auto 000) to match BWIPP",
                     "1111111010111110001111111"
                     "1000001011100101001000001"
                     "1011101000111110101011101"
@@ -1940,7 +1990,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010100110000011100"
                     "1111111011001111010111001"
                 },
-        /* 31*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 2, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 3 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
+        /* 31*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 2, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 3 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
                     "111111101011101111111"
                     "100000100001001000001"
                     "101110100110001011101"
@@ -1963,7 +2013,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101001111011"
                     "111111101000010100101"
                 },
-        /* 32*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 2, -1, -1, { 0, 0, "" }, "price:£20.00", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 3 Example 2",
+        /* 32*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 2, -1, -1, { 0, 0, "" }, "price:£20.00", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 3 Example 2",
                     "111111101111101111111"
                     "100000101101001000001"
                     "101110100001101011101"
@@ -1986,7 +2036,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101101011110"
                     "111111101100010111000"
                 },
-        /* 33*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 1, -1, -1, { 0, 0, "" }, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 3 Example 3 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 000 instead of 100",
+        /* 33*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 1, -1, -1, { 0, 0, "" }, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 3 Example 3 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 000 instead of 100",
                     "1111111011101001001111111"
                     "1000001011100010101000001"
                     "1011101010110001001011101"
@@ -2013,7 +2063,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011001010011000001"
                     "1111111011010111011011111"
                 },
-        /* 34*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 1, -1, 1 << 8, { 0, 0, "" }, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 3 Example 3 **NOT SAME** different encodation",
+        /* 34*/ { BARCODE_QRCODE, UNICODE_MODE, 3, 1, -1, 1 << 8, { 0, 0, "" }, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 3 Example 3 **NOT SAME** different encodation",
                     "1111111001001101101111111"
                     "1000001000111001101000001"
                     "1011101011101010001011101"
@@ -2040,7 +2090,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011101110111100101"
                     "1111111011110011111111011"
                 },
-        /* 35*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 011 instead of 100",
+        /* 35*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 011 instead of 100",
                     "1111111010000110001111111"
                     "1000001010011110101000001"
                     "1011101011001111101011101"
@@ -2067,7 +2117,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011110101110010101"
                     "1111111010101100000011011"
                 },
-        /* 36*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, 4 << 8, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation",
+        /* 36*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, 4 << 8, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation",
                     "1111111011000001001111111"
                     "1000001000000010101000001"
                     "1011101010011010101011101"
@@ -2094,7 +2144,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010100000100111111"
                     "1111111011101011000100011"
                 },
-        /* 37*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 100 instead of 111",
+        /* 37*/ { BARCODE_QRCODE, UNICODE_MODE, 4, 1, -1, -1, { 0, 0, "" }, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 29, 29, 0, 1, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** different encodation; BWIPP same encodation as example but uses mask 100 instead of 111",
                     "11111110000111011111001111111"
                     "10000010011001101100101000001"
                     "10111010000010110011101011101"
@@ -2125,7 +2175,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010110011101010011100110"
                     "11111110101010100011111001100"
                 },
-        /* 38*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, -1, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP uses mask 011 instead of 101",
+        /* 38*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, -1, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 5 Example 1; BWIPP uses mask 011 instead of 101",
                     "111111100111101111111"
                     "100000100101001000001"
                     "101110100100001011101"
@@ -2148,7 +2198,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010010111111"
                     "111111101011110000010"
                 },
-        /* 39*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, 4 << 8, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 5 Example 1 **NOT SAME** explicit mask 011",
+        /* 39*/ { BARCODE_QRCODE, UNICODE_MODE, 5, 1, -1, 4 << 8, { 0, 0, "" }, "Liĥtenŝtejno", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 5 Example 1 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -2171,7 +2221,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011111110010"
                     "111111101101000110100"
                 },
-        /* 40*/ { BARCODE_QRCODE, UNICODE_MODE, 6, 1, -1, -1, { 0, 0, "" }, "Lietuvą", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 6 Example 1",
+        /* 40*/ { BARCODE_QRCODE, UNICODE_MODE, 6, 1, -1, -1, { 0, 0, "" }, "Lietuvą", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 6 Example 1",
                     "111111101000101111111"
                     "100000101010001000001"
                     "101110100000101011101"
@@ -2194,7 +2244,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011011111011"
                     "111111101111111010101"
                 },
-        /* 41*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 7 Example 1",
+        /* 41*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 7 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2217,7 +2267,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011100101011"
                     "111111101100010100110"
                 },
-        /* 42*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 7 Example 2; BWIPP uses mask 000 instead of 111",
+        /* 42*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 7 Example 2; BWIPP uses mask 000 instead of 111",
                     "111111100101101111111"
                     "100000101101001000001"
                     "101110101100101011101"
@@ -2240,7 +2290,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011000010111"
                     "111111101001110100110"
                 },
-        /* 43*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 7 Example 2 **NOT SAME** explicit mask 000",
+        /* 43*/ { BARCODE_QRCODE, UNICODE_MODE, 7, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 7 Example 2 **NOT SAME** explicit mask 000",
                     "111111100101101111111"
                     "100000100111001000001"
                     "101110101101101011101"
@@ -2263,7 +2313,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001010000101"
                     "111111101000111101111"
                 },
-        /* 44*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 8 Example 1",
+        /* 44*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 8 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2286,7 +2336,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101110000010011"
                     "111111101000010100010"
                 },
-        /* 45*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 8 Example 2; BWIPP uses mask 000 instead of 010",
+        /* 45*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, 1, "AIM ITS/04-023:2022 ECI 8 Example 2; BWIPP uses mask 000 instead of 010",
                     "11111110001011110110001111111"
                     "10000010101001111101001000001"
                     "10111010000011010110101011101"
@@ -2317,7 +2367,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010100011001101001000101"
                     "11111110110010101010110010100"
                 },
-        /* 46*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** explicit mask 000",
+        /* 46*/ { BARCODE_QRCODE, UNICODE_MODE, 8, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** explicit mask 000",
                     "11111110010011001110101111111"
                     "10000010001110111010001000001"
                     "10111010111011101110001011101"
@@ -2348,7 +2398,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010100100001010001111101"
                     "11111110101010010010001010011"
                 },
-        /* 47*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, -1, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses mask 111 instead of 000",
+        /* 47*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, -1, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses mask 111 instead of 000",
                     "111111100100101111111"
                     "100000100111001000001"
                     "101110101100101011101"
@@ -2371,7 +2421,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111110111001"
                     "111111101101001101111"
                 },
-        /* 48*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 8 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 9 Example 1 with explicit mask 111; BWIPP uses mask 000",
+        /* 48*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 8 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 with explicit mask 111; BWIPP uses mask 000",
                     "111111100100101111111"
                     "100000101101001000001"
                     "101110101101101011101"
@@ -2394,7 +2444,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101100101011"
                     "111111101100000100110"
                 },
-        /* 49*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 1 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** explicit mask 000",
+        /* 49*/ { BARCODE_QRCODE, UNICODE_MODE, 9, 1, -1, 1 << 8, { 0, 0, "" }, "Μέρος #. α123", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** explicit mask 000",
                     "111111100100101111111"
                     "100000100111001000001"
                     "101110101100101011101"
@@ -2417,7 +2467,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111110111001"
                     "111111101101001101111"
                 },
-        /* 50*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 10 Example 1; BWIPP uses mask 000 instead of 101",
+        /* 50*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 10 Example 1; BWIPP uses mask 000 instead of 101",
                     "111111100000101111111"
                     "100000100010101000001"
                     "101110100011101011101"
@@ -2440,7 +2490,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111111010011"
                     "111111101110100011010"
                 },
-        /* 51*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 10 Example 1 **NOT SAME** explicit mask 000",
+        /* 51*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "דרכון", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 10 Example 1 **NOT SAME** explicit mask 000",
                     "111111100101101111111"
                     "100000100111001000001"
                     "101110101101101011101"
@@ -2463,7 +2513,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010001111101"
                     "111111101000101101011"
                 },
-        /* 52*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP uses mask 000 instead of 100",
+        /* 52*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, -1, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation; BWIPP uses mask 000 instead of 100",
                     "1111111011101100001111111"
                     "1000001011100001001000001"
                     "1011101010110001001011101"
@@ -2490,7 +2540,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011001010100011101"
                     "1111111011010110001000011"
                 },
-        /* 53*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation",
+        /* 53*/ { BARCODE_QRCODE, UNICODE_MODE, 10, 1, -1, 1 << 8, { 0, 0, "" }, "מספר חלק: A20200715001", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** different encodation",
                     "1111111001001000101111111"
                     "1000001000111010001000001"
                     "1011101011101010001011101"
@@ -2517,7 +2567,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011101110000111001"
                     "1111111011110010101100111"
                 },
-        /* 54*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Amerika Birleşik Devletleri", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 11 Example 1",
+        /* 54*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Amerika Birleşik Devletleri", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 11 Example 1",
                     "1111111000111100101111111"
                     "1000001001101101001000001"
                     "1011101000001000101011101"
@@ -2544,7 +2594,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010110000111010110"
                     "1111111010110101100010101"
                 },
-        /* 55*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 101 instead of 111",
+        /* 55*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, -1, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation; BWIPP same encodation as Zint but uses mask 101 instead of 111",
                     "1111111000100110101111111"
                     "1000001011100110001000001"
                     "1011101010000001001011101"
@@ -2571,7 +2621,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011100010011100111"
                     "1111111010001001010010011"
                 },
-        /* 56*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, 6 << 8, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation",
+        /* 56*/ { BARCODE_QRCODE, UNICODE_MODE, 11, 1, -1, 6 << 8, { 0, 0, "" }, "Biniş kartı #120921039", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** different encodation",
                     "1111111001110011101111111"
                     "1000001000011111101000001"
                     "1011101001110000101011101"
@@ -2598,7 +2648,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010101101010011110"
                     "1111111011011100000111001"
                 },
-        /* 57*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, -1, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 12 Example 1; BWIPP uses mask 111 instead of 100",
+        /* 57*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, -1, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 12 Example 1; BWIPP uses mask 111 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -2621,7 +2671,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110001011"
                     "111111101001101100001"
                 },
-        /* 58*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, 8 << 8, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** explicit mask 111",
+        /* 58*/ { BARCODE_QRCODE, UNICODE_MODE, 12, 1, -1, 8 << 8, { 0, 0, "" }, "Kūrybiškumą", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 **NOT SAME** explicit mask 111",
                     "111111100101101111111"
                     "100000101101001000001"
                     "101110101100101011101"
@@ -2644,7 +2694,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110001011"
                     "111111101010110111010"
                 },
-        /* 59*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, -1, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 13 Example 1; BWIPP uses mask 001 instead of 111",
+        /* 59*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, -1, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 13 Example 1; BWIPP uses mask 001 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2667,7 +2717,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011100101011"
                     "111111101010000100010"
                 },
-        /* 60*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, 2 << 8, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** explicit mask 001",
+        /* 60*/ { BARCODE_QRCODE, UNICODE_MODE, 13, 1, -1, 2 << 8, { 0, 0, "" }, "บาร๋แค่ด", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** explicit mask 001",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -2690,7 +2740,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101100100010011"
                     "111111101110011000001"
                 },
-        /* 61*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, -1, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 15 Example 1; BWIPP uses mask 011 instead of 111",
+        /* 61*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, -1, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 15 Example 1; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2713,7 +2763,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111100101011"
                     "111111101000000101010"
                 },
-        /* 62*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, 4 << 8, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 15 Example 1 **NOT SAME** explicit mask 011",
+        /* 62*/ { BARCODE_QRCODE, UNICODE_MODE, 15, 1, -1, 4 << 8, { 0, 0, "" }, "uzņēmums", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 15 Example 1 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -2736,7 +2786,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001101011010"
                     "111111101001110100100"
                 },
-        /* 63*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, -1, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 16 Example 1; BWIPP uses mask 001 instead of 111",
+        /* 63*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, -1, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 16 Example 1; BWIPP uses mask 001 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2759,7 +2809,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101100001011"
                     "111111101010010001010"
                 },
-        /* 64*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, 2 << 8, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 **NOT SAME** explicit mask 001",
+        /* 64*/ { BARCODE_QRCODE, UNICODE_MODE, 16, 1, -1, 2 << 8, { 0, 0, "" }, "ṁórṡáċ", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 **NOT SAME** explicit mask 001",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -2782,7 +2832,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010100110011"
                     "111111101110001101001"
                 },
-        /* 65*/ { BARCODE_QRCODE, UNICODE_MODE, 17, 1, -1, -1, { 0, 0, "" }, "Price: €13.50", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 17 Example 1",
+        /* 65*/ { BARCODE_QRCODE, UNICODE_MODE, 17, 1, -1, -1, { 0, 0, "" }, "Price: €13.50", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 17 Example 1",
                     "111111100100101111111"
                     "100000101101001000001"
                     "101110101101101011101"
@@ -2805,7 +2855,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000100101111"
                     "111111101101110110110"
                 },
-        /* 66*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, -1, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 18 Example 1; BWIPP uses mask 001 instead of 100",
+        /* 66*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, -1, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 18 Example 1; BWIPP uses mask 001 instead of 100",
                     "1111111010000111001111111"
                     "1000001010011000001000001"
                     "1011101011001100001011101"
@@ -2832,7 +2882,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001011110101011011101"
                     "1111111010001100000011111"
                 },
-        /* 67*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, 2 << 8, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** explicit mask 001",
+        /* 67*/ { BARCODE_QRCODE, UNICODE_MODE, 18, 1, -1, 2 << 8, { 0, 0, "" }, "Te słowa są głębokie", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** explicit mask 001",
                     "1111111011110110101111111"
                     "1000001010010110001000001"
                     "1011101001000010001011101"
@@ -2859,7 +2909,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010000100101010011"
                     "1111111011111101110010001"
                 },
-        /* 68*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 1; BWIPP uses mask 011 instead of 111",
+        /* 68*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 20 Example 1; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -2882,7 +2932,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011100110011"
                     "111111101010000101010"
                 },
-        /* 69*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** explicit mask 011",
+        /* 69*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -2905,7 +2955,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101101000010"
                     "111111101011110100100"
                 },
-        /* 70*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 20 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 70*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, -1, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 20 Example 2; BWIPP uses mask 000 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -2928,7 +2978,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010011010011"
                     "111111101100111011001"
                 },
-        /* 71*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 1 << 8, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** explicit mask 000",
+        /* 71*/ { BARCODE_QRCODE, UNICODE_MODE, 20, 1, -1, 1 << 8, { 0, 0, "" }, "東京都", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** explicit mask 000",
                     "111111100101101111111"
                     "100000100111001000001"
                     "101110101101101011101"
@@ -2951,7 +3001,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000001000001"
                     "111111101110101001011"
                 },
-        /* 72*/ { BARCODE_QRCODE, UNICODE_MODE, 21, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation",
+        /* 72*/ { BARCODE_QRCODE, UNICODE_MODE, 21, 1, -1, -1, { 0, 0, "" }, "Študentska št. 2198390", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation",
                     "1111111010000110001111111"
                     "1000001010011110101000001"
                     "1011101011001111101011101"
@@ -2978,7 +3028,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010010101110010101"
                     "1111111010101100000011011"
                 },
-        /* 73*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 22 Example 1",
+        /* 73*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Россия", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 22 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3001,7 +3051,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001100001011"
                     "111111101100010100110"
                 },
-        /* 74*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 22 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 74*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, -1, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 22 Example 2; BWIPP uses mask 000 instead of 100",
                     "111111101111101111111"
                     "100000101010101000001"
                     "101110101000001011101"
@@ -3024,7 +3074,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001000100111"
                     "111111101000101111101"
                 },
-        /* 75*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 22 Example 2 **NOT SAME** explicit mask 000",
+        /* 75*/ { BARCODE_QRCODE, UNICODE_MODE, 22, 1, -1, 1 << 8, { 0, 0, "" }, "Монголулс", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 22 Example 2 **NOT SAME** explicit mask 000",
                     "111111100101101111111"
                     "100000100111001000001"
                     "101110101101101011101"
@@ -3047,7 +3097,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011010110101"
                     "111111101010111101111"
                 },
-        /* 76*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, -1, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 23 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 76*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, -1, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 23 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3070,7 +3120,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001100100011"
                     "111111101000010110110"
                 },
-        /* 77*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, 1 << 8, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 23 Example 1 ** NOT SAME** explicit mask 000",
+        /* 77*/ { BARCODE_QRCODE, UNICODE_MODE, 23, 1, -1, 1 << 8, { 0, 0, "" }, "bœuf", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 23 Example 1 ** NOT SAME** explicit mask 000",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3093,7 +3143,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110110001"
                     "111111101001011111111"
                 },
-        /* 78*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 24 Example 1",
+        /* 78*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "جواز السفر", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 24 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3116,7 +3166,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010001000001"
                     "111111101101011101011"
                 },
-        /* 79*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, "AIM ITS/04-023:2022 ECI 24 Example 2; BWIPP uses mask 000 instead of 100",
+        /* 79*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, -1, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 0, 1, "AIM ITS/04-023:2022 ECI 24 Example 2; BWIPP uses mask 000 instead of 100",
                     "11111110111010000111101111111"
                     "10000010111000001100101000001"
                     "10111010101101011000101011101"
@@ -3147,7 +3197,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010111101000011000110100"
                     "11111110111011010111000011010"
                 },
-        /* 80*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 24 Example 2 **NOT SAME** explicit mask 000",
+        /* 80*/ { BARCODE_QRCODE, UNICODE_MODE, 24, 1, -1, 1 << 8, { 0, 0, "" }, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, 1, "AIM ITS/04-023:2022 ECI 24 Example 2 **NOT SAME** explicit mask 000",
                     "11111110010011001110101111111"
                     "10000010001110111010001000001"
                     "10111010111011101110001011101"
@@ -3178,7 +3228,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "10000010110100001010001111101"
                     "11111110110010011110001010011"
                 },
-        /* 81*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 1",
+        /* 81*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 25 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3201,7 +3251,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110101101"
                     "111111101111011010111"
                 },
-        /* 82*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 25 Example 2; BWIPP uses mask 000 instead of 111",
+        /* 82*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 25 Example 2; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3224,7 +3274,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001000001011"
                     "111111101110000101110"
                 },
-        /* 83*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, 1 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 2 **NOT SAME** explicit mask 000",
+        /* 83*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, 1 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 25 Example 2 **NOT SAME** explicit mask 000",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3247,7 +3297,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011010011001"
                     "111111101111001100111"
                 },
-        /* 84*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 25 Example 3",
+        /* 84*/ { BARCODE_QRCODE, UNICODE_MODE, 25, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 25 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3270,7 +3320,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101110000101"
                     "111111101001011111011"
                 },
-        /* 85*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 85*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 26 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3293,7 +3343,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111100101011"
                     "111111101110010100110"
                 },
-        /* 86*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, 1 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 26 Example 1 **NOT SAME** explicit mask 000",
+        /* 86*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 1, -1, 1 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 26 Example 1 **NOT SAME** explicit mask 000",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3316,7 +3366,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101110111001"
                     "111111101111011101111"
                 },
-        /* 87*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 0, "AIM ITS/04-023:2022 ECI 26 Example 2; BWIPP uses mask 101 instead of 010",
+        /* 87*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 0, 1, "AIM ITS/04-023:2022 ECI 26 Example 2; BWIPP uses mask 101 instead of 010",
                     "1111111001111101001111111"
                     "1000001001001111001000001"
                     "1011101011101101001011101"
@@ -3343,7 +3393,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001001110010100111010"
                     "1111111010110001001010111"
                 },
-        /* 88*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 6 << 8, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 26 Example 2 **NOT SAME** explicit mask 101",
+        /* 88*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 6 << 8, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 26 Example 2 **NOT SAME** explicit mask 101",
                     "1111111001001011101111111"
                     "1000001010001110001000001"
                     "1011101011101101001011101"
@@ -3370,7 +3420,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001000110011100110010"
                     "1111111010000111111100001"
                 },
-        /* 89*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 26 Example 3; BWIPP uses mask 111 instead of 001",
+        /* 89*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 26 Example 3; BWIPP uses mask 111 instead of 001",
                     "111111101011001111111"
                     "100000100001001000001"
                     "101110101100101011101"
@@ -3393,7 +3443,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100010011011011"
                     "111111101011111001101"
                 },
-        /* 90*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 8 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 26 Example 3 **NOT SAME** explicit mask 111",
+        /* 90*/ { BARCODE_QRCODE, UNICODE_MODE, 26, 2, -1, 8 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 26 Example 3 **NOT SAME** explicit mask 111",
                     "111111100110001111111"
                     "100000100110001000001"
                     "101110100000101011101"
@@ -3416,7 +3466,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101011100011"
                     "111111101111100101110"
                 },
-        /* 91*/ { BARCODE_QRCODE, UNICODE_MODE, 27, 2, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 27 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
+        /* 91*/ { BARCODE_QRCODE, UNICODE_MODE, 27, 2, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 27 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
                     "111111101110101111111"
                     "100000100110001000001"
                     "101110100011001011101"
@@ -3439,7 +3489,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100101001111011"
                     "111111101010010100101"
                 },
-        /* 92*/ { BARCODE_QRCODE, UNICODE_MODE, 28, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 28 Example 1",
+        /* 92*/ { BARCODE_QRCODE, UNICODE_MODE, 28, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 28 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3462,7 +3512,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101110000101"
                     "111111101101011111111"
                 },
-        /* 93*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 1",
+        /* 93*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 29 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3485,7 +3535,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111110111001"
                     "111111101101011100011"
                 },
-        /* 94*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 29 Example 2",
+        /* 94*/ { BARCODE_QRCODE, UNICODE_MODE, 29, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 29 Example 2",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -3508,7 +3558,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101100000111011"
                     "111111101011010110010"
                 },
-        /* 95*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 30 Example 1; BWIPP uses mask 000 instead of 111",
+        /* 95*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 30 Example 1; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3531,7 +3581,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001100010011"
                     "111111101110010101110"
                 },
-        /* 96*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** explicit mask 000",
+        /* 96*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** explicit mask 000",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3554,7 +3604,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110000001"
                     "111111101111011100111"
                 },
-        /* 97*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "서울", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 30 Example 2",
+        /* 97*/ { BARCODE_QRCODE, UNICODE_MODE, 30, 1, -1, -1, { 0, 0, "" }, "서울", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 30 Example 2",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3577,7 +3627,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001110110101"
                     "111111101011011101011"
                 },
-        /* 98*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 1",
+        /* 98*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 31 Example 1",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3600,7 +3650,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011110111001"
                     "111111101101011100011"
                 },
-        /* 99*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 31 Example 2; BWIPP uses mask 011 instead of 010",
+        /* 99*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 31 Example 2; BWIPP uses mask 011 instead of 010",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -3623,7 +3673,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000000111011"
                     "111111101011010110010"
                 },
-        /*100*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 **NOT SAME** explicit mask 011",
+        /*100*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -3646,7 +3696,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101101010110"
                     "111111101101100000100"
                 },
-        /*101*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 31 Example 3",
+        /*101*/ { BARCODE_QRCODE, UNICODE_MODE, 31, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 31 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3669,7 +3719,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001110110001"
                     "111111101111011110111"
                 },
-        /*102*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 1",
+        /*102*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 1",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -3692,7 +3742,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101100000110111"
                     "111111101111010010010"
                 },
-        /*103*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 2; BWIPP uses mask 011 instead of 111",
+        /*103*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "北京", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 32 Example 2; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3715,7 +3765,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101100100111"
                     "111111101000010001010"
                 },
-        /*104*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 **NOT SAME** explicit mask 011",
+        /*104*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "北京", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -3738,7 +3788,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011101010110"
                     "111111101001100000100"
                 },
-        /*105*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 3; BWIPP uses mask 011 instead of 001",
+        /*105*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 32 Example 3; BWIPP uses mask 011 instead of 001",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -3761,7 +3811,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010100011011"
                     "111111101110001011101"
                 },
-        /*106*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** explicit mask 011",
+        /*106*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "條碼", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -3784,7 +3834,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011101010010"
                     "111111101011100110000"
                 },
-        /*107*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "པེ་ཅིང།", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 32 Example 4",
+        /*107*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "པེ་ཅིང།", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 4",
                     "1111111011110110001111111"
                     "1000001000011010101000001"
                     "1011101010110101101011101"
@@ -3811,7 +3861,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010111111111010111"
                     "1111111010011101100000011"
                 },
-        /*108*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 5; BWIPP uses mask 011 instead of 111",
+        /*108*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 32 Example 5; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3834,7 +3884,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001010101111"
                     "111111101110010110110"
                 },
-        /*109*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 5 **NOT SAME** explicit mask 011",
+        /*109*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 5 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -3857,7 +3907,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111011011110"
                     "111111101111100111000"
                 },
-        /*110*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 32 Example 6; BWIPP uses mask 011 instead of 111",
+        /*110*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 32 Example 6; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3880,7 +3930,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101110100001011"
                     "111111101101101010110"
                 },
-        /*111*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 32 Example 6 **NOT SAME** explicit mask 011",
+        /*111*/ { BARCODE_QRCODE, UNICODE_MODE, 32, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 32 Example 6 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -3903,7 +3953,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000101111010"
                     "111111101100011011000"
                 },
-        /*112*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 1; BWIPP uses mask 111 instead of 010",
+        /*112*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 33 Example 1; BWIPP uses mask 111 instead of 010",
                     "111111100100101111111"
                     "100000101001001000001"
                     "101110100100001011101"
@@ -3926,7 +3976,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101010000010111"
                     "111111101101010001110"
                 },
-        /*113*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 8 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 1 **NOT SAME** explicit mask 111",
+        /*113*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 8 << 8, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 33 Example 1 **NOT SAME** explicit mask 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3949,7 +3999,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101001100001011"
                     "111111101010010110110"
                 },
-        /*114*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 2",
+        /*114*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 33 Example 2",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -3972,7 +4022,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101100111010101"
                     "111111101110111010111"
                 },
-        /*115*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 33 Example 3; BWIPP uses mask 000 instead of 111",
+        /*115*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 33 Example 3; BWIPP uses mask 000 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -3995,7 +4045,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111100110011"
                     "111111101000010101110"
                 },
-        /*116*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** explicit mask 000",
+        /*116*/ { BARCODE_QRCODE, UNICODE_MODE, 33, 1, -1, 1 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 **NOT SAME** explicit mask 000",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -4018,7 +4068,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101110100001"
                     "111111101001011100111"
                 },
-        /*117*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 1",
+        /*117*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 34 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -4041,7 +4091,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011100100011"
                     "111111101110000110010"
                 },
-        /*118*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 34 Example 2",
+        /*118*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 34 Example 2",
                     "1111111000100010001111111"
                     "1000001001000100101000001"
                     "1011101010010011001011101"
@@ -4068,7 +4118,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010110001010101001"
                     "1111111010001000110010111"
                 },
-        /*119*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 34 Example 3",
+        /*119*/ { BARCODE_QRCODE, UNICODE_MODE, 34, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 34 Example 3",
                     "111111100010101111111"
                     "100000100000101000001"
                     "101110101010001011101"
@@ -4091,7 +4141,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101101010000101"
                     "111111101010101010111"
                 },
-        /*120*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 35 Example 1",
+        /*120*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "条码", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 35 Example 1",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -4114,7 +4164,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101011100111011"
                     "111111101110000011110"
                 },
-        /*121*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 35 Example 2",
+        /*121*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "バーコード", -1, 0, 25, 25, 1, 1, "AIM ITS/04-023:2022 ECI 35 Example 2",
                     "1111111000100110101111111"
                     "1000001001000111001000001"
                     "1011101010010110101011101"
@@ -4141,7 +4191,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "1000001010110001010010101"
                     "1111111011001000101010111"
                 },
-        /*122*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, "AIM ITS/04-023:2022 ECI 35 Example 3; BWIPP uses mask 011 instead of 111",
+        /*122*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, -1, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 0, 1, "AIM ITS/04-023:2022 ECI 35 Example 3; BWIPP uses mask 011 instead of 111",
                     "111111100010101111111"
                     "100000101010101000001"
                     "101110101011001011101"
@@ -4164,7 +4214,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101000111111011"
                     "111111101101000011110"
                 },
-        /*123*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 35 Example 3 **NOT SAME** explicit mask 011",
+        /*123*/ { BARCODE_QRCODE, UNICODE_MODE, 35, 1, -1, 4 << 8, { 0, 0, "" }, "바코드", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 35 Example 3 **NOT SAME** explicit mask 011",
                     "111111101100101111111"
                     "100000100100101000001"
                     "101110101010101011101"
@@ -4187,7 +4237,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101110110001010"
                     "111111101100110010000"
                 },
-        /*124*/ { BARCODE_QRCODE, UNICODE_MODE, 170, 1, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 170 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
+        /*124*/ { BARCODE_QRCODE, UNICODE_MODE, 170, 1, -1, 5 << 8, { 0, 0, "" }, "sn:7QPB4MN", -1, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 170 Example 1 **NOT SAME** different encodation; explicit mask 100 (auto 011) to match BWIPP",
                     "111111101000101111111"
                     "100000101101001000001"
                     "101110101111101011101"
@@ -4210,7 +4260,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101110111100111"
                     "111111101001001000001"
                 },
-        /*125*/ { BARCODE_QRCODE, DATA_MODE, 899, 1, -1, -1, { 0, 0, "" }, "\000\001\002\133\134\135\375\376\377", 9, 0, 21, 21, 1, "AIM ITS/04-023:2022 ECI 899 Example 1",
+        /*125*/ { BARCODE_QRCODE, DATA_MODE, 899, 1, -1, -1, { 0, 0, "" }, "\000\001\002\133\134\135\375\376\377", 9, 0, 21, 21, 1, 1, "AIM ITS/04-023:2022 ECI 899 Example 1",
                     "111111101111101111111"
                     "100000101101101000001"
                     "101110100111001011101"
@@ -4233,7 +4283,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000101111111000011"
                     "111111101000010110101"
                 },
-        /*126*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, "Automatic mask 011; BWIPP uses mask 111",
+        /*126*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, 1, "Automatic mask 011; BWIPP uses mask 111",
                     "111111100000001111111"
                     "100000100111101000001"
                     "101110100000001011101"
@@ -4256,7 +4306,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100001111110000"
                     "111111100101000111010"
                 },
-        /*127*/ { BARCODE_QRCODE, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, "Fast automatic mask 010; BWIPP uses mask 111",
+        /*127*/ { BARCODE_QRCODE, UNICODE_MODE | FAST_MODE, -1, -1, -1, -1, { 0, 0, "" }, "ABCDEFGHI", 9, 0, 21, 21, 0, 1, "Fast automatic mask 010; BWIPP uses mask 111",
                     "111111101000001111111"
                     "100000101010001000001"
                     "101110101110101011101"
@@ -4279,7 +4329,7 @@ static void test_qr_encode(const testCtx *const p_ctx) {
                     "100000100100010011101"
                     "111111100011110001100"
                 },
-        /*128*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, 1 << 8, { 0, 0, "" }, "202404110011看看16", -1, ZINT_WARN_NONCOMPLIANT, 21, 21, 1, "Shift-JIS range (BWIPP via bwip-js issue #335)",
+        /*128*/ { BARCODE_QRCODE, UNICODE_MODE, -1, 2, -1, 1 << 8, { 0, 0, "" }, "202404110011看看16", -1, ZINT_WARN_NONCOMPLIANT, 21, 21, 1, 1, "Shift-JIS range (BWIPP via bwip-js issue #335)",
                     "111111100000101111111"
                     "100000101111101000001"
                     "101110100111001011101"
@@ -4311,10 +4361,11 @@ static void test_qr_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -4334,45 +4385,62 @@ static void test_qr_encode(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %s, %d, %d, %d, %s, { %d, %d, \"%s\" }, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
-                    data[i].eci, data[i].option_1, data[i].option_2, testUtilOption3Name(data[i].symbology, data[i].option_3),
+                    data[i].eci, data[i].option_1, data[i].option_2,
+                    testUtilOption3Name(data[i].symbology, data[i].option_3),
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
-                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length, testUtilErrorName(data[i].ret),
-                    symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
+                    testUtilErrorName(data[i].ret),
+                    symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
                 int width, row;
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, data[i].option_3,
+                                    data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       data[i].expected);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[32768];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }
@@ -4632,10 +4700,11 @@ static void test_qr_encode_segs(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_qr_encode_segs", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -4695,7 +4764,7 @@ static void test_qr_encode_segs(const testCtx *const p_ctx) {
                 if (do_zxingcpp) {
                     if ((symbol->input_mode & 0x07) == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
                                     i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {
@@ -4705,17 +4774,207 @@ static void test_qr_encode_segs(const testCtx *const p_ctx) {
                             char modules_dump[32768];
                             assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
                             ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length,
-                                    modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                                    modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                             assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                             ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
                                     NULL /*primary*/, escaped, &ret_len);
                             assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
                         }
                     }
                 }
             }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_qr_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int eci;
+        int option_3;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  2*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
+        /*  3*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  4*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
+        /*  5*/ { BARCODE_QRCODE, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "\223\137", -1, 20 }, /* When single segment will try ECI 20 as secondary default */
+        /*  6*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  7*/ { BARCODE_QRCODE, DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  8*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
+        /*  9*/ { BARCODE_QRCODE, DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, needs to be specified */
+        /* 10*/ { BARCODE_QRCODE, DATA_MODE, 20, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 20, "", -1, 0 },
+        /* 11*/ { BARCODE_QRCODE, DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
+        /* 12*/ { BARCODE_QRCODE, UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
+        /* 13*/ { BARCODE_QRCODE, UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 14*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
+        /* 15*/ { BARCODE_QRCODE, UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 16*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
+        /* 17*/ { BARCODE_QRCODE, GS1_MODE, -1, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
+        /* 18*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
+        /* 19*/ { BARCODE_HIBC_QR, UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_qr_rt_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int option_3;
+        int output_options;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        struct zint_seg expected_raw_segs[3];
+        int expected_raw_seg_count;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 21, 21, {{0}}, 0 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 21, 21, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  2*/ { UNICODE_MODE, -1, -1, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("点"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("点"), 3, 26 }, { TU("\266"), 1, 7 }, {0} }, 2 }, /* When multiple segments, ECI 20 is not used as secondary default, so fails and retries with `get_best_eci()` */
+        /*  4*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, {{0}}, 0 },
+        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 21, 21, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  6*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
+        /*  7*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  8*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, {{0}}, 0 },
+        /*  9*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 21, 21, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_QRCODE, data[i].input_mode, -1 /*eci*/,
+                            -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d)\n",
+                    i, symbol->rows, data[i].expected_rows, symbol->width);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                    i, symbol->width, data[i].expected_width);
+
+        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
+                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            for (j = 0; j < symbol->raw_seg_count; j++) {
+                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+
+                expected_length = data[i].expected_raw_segs[j].length;
+
+                assert_equal(symbol->raw_segs[j].length, expected_length,
+                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->raw_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
+                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                                            sizeof(escaped)),
+                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                                            escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
+                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
+                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+            }
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -4995,7 +5254,7 @@ static void test_microqr_options(const testCtx *const p_ctx) {
 
     char option_3_buf[64];
 
-    testStartSymbol("test_microqr_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5066,46 +5325,46 @@ static void test_microqr_input(const testCtx *const p_ctx) {
     /* Á U+00C1, UTF-8 C381; ȁ U+0201, UTF-8 C881; Ȃ U+0202, UTF-8 C882; ¢ U+00A2, UTF-8 C2A2; á U+00E1, UTF-8 C3A1 */
     static const struct item data[] = {
         /*  0*/ { UNICODE_MODE, -1, "é", 0, "87 A4 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (ISO 8859-1)" },
-        /*  1*/ { DATA_MODE, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00 (68)", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /*  1*/ { DATA_MODE, -1, "é", 0, "8B 0E A4 00 EC 11 EC 11 00 (68)", 1, 1, "B2 (UTF-8)" },
         /*  2*/ { UNICODE_MODE, -1, "β", 0, "C8 80 00 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS)" },
         /*  3*/ { UNICODE_MODE, -1, "ก", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input", 1, 1, "ก not in Shift JIS" },
         /*  4*/ { UNICODE_MODE, -1, "Ж", 0, "C8 91 C0 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS)" },
         /*  5*/ { UNICODE_MODE, -1, "ກ", ZINT_ERROR_INVALID_DATA, "Error 800: Invalid character in input", 1, 1, "ກ not in Shift JIS" },
         /*  6*/ { UNICODE_MODE, -1, "\\", 0, "85 70 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (ASCII)" },
-        /*  7*/ { UNICODE_MODE, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
+        /*  7*/ { UNICODE_MODE, -1, "¥", 0, "86 94 00 EC 11 EC 11 EC 00 (68)", 1, 3, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
         /*  8*/ { UNICODE_MODE, -1, "･", 0, "86 94 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
-        /*  9*/ { UNICODE_MODE, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
+        /*  9*/ { UNICODE_MODE, -1, "¿", 0, "86 FC 00 EC 11 EC 11 EC 00 (68)", 1, 3, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
         /* 10*/ { UNICODE_MODE, -1, "ｿ", 0, "86 FC 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (Shift JIS) (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
         /* 11*/ { UNICODE_MODE, -1, "~", 0, "85 F8 00 EC 11 EC 11 EC 00 (68)", 1, 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
-        /* 12*/ { UNICODE_MODE, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00 (68)", 1, 0, "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ doesn't map Shift JIS ASCII" },
+        /* 12*/ { UNICODE_MODE, -1, "‾", 0, "85 F8 00 EC 11 EC 11 EC 00 (68)", 1, 0, "B1 (Shift JIS) (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 13*/ { UNICODE_MODE, -1, "点", 0, "CB 67 C0 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS)" },
-        /* 14*/ { DATA_MODE, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00 (68)", 0, 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 15*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS) (full multibyte)" },
-        /* 16*/ { DATA_MODE, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00 (68)", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 14*/ { DATA_MODE, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 00 (68)", 0, 20, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 15*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 00 (68)", 1, 20, "K1 (Shift JIS) (full multibyte)" },
+        /* 16*/ { DATA_MODE, -1, "点", 0, "8F 9E 0A E4 00 EC 11 EC 00 (68)", 1, 1, "B3 (UTF-8)" },
         /* 17*/ { UNICODE_MODE, -1, "茗", 0, "CE AA 80 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS)" },
-        /* 18*/ { DATA_MODE, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00 (68)", 0, 0, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below; ZXing-C++ test can't handle DATA_MODE for certain inputs)" },
-        /* 19*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (Shift JIS) (full multibyte)" },
-        /* 20*/ { DATA_MODE, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00 (68)", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 21*/ { UNICODE_MODE, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00 (68)", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ doesn't map Shift JIS ASCII" },
-        /* 22*/ { DATA_MODE, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00 (68)", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 23*/ { DATA_MODE, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00 (68)", 1, 0, "B5 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 18*/ { DATA_MODE, -1, "\344\252", 0, "8B 92 A8 00 EC 11 EC 11 00 (68)", 0, 20, "B2 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below" },
+        /* 19*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\344\252", 0, "CE AA 80 00 EC 11 EC 11 00 (68)", 1, 20, "K1 (Shift JIS) (full multibyte)" },
+        /* 20*/ { DATA_MODE, -1, "茗", 0, "8F A2 32 5C 00 EC 11 EC 00 (68)", 1, 1, "B3 (UTF-8)" },
+        /* 21*/ { UNICODE_MODE, -1, "¥点", 0, "8D 72 4D 7C 00 EC 11 EC 00 (68)", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 22*/ { DATA_MODE, -1, "\134\223\137", 0, "8D 72 4D 7C 00 EC 11 EC 00 (68)", 1, 0, "B3 (Shift JIS) (optimized from B1 K1); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 23*/ { DATA_MODE, -1, "¥点", 0, "97 0A 97 9E 0A E4 00 EC 00 (68)", 1, 1, "B5 (UTF-8)" },
         /* 24*/ { UNICODE_MODE, -1, "点茗", 0, "D3 67 F5 54 00 EC 11 EC 00 (68)", 1, 1, "K2 (Shift JIS)" },
-        /* 25*/ { DATA_MODE, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00 (68)", 0, 0, "B4 (Shift JIS; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 26*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00 (68)", 1, 1, "K2 (Shift JIS) (full multibyte)" },
-        /* 27*/ { DATA_MODE, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00 (68)", 1, 0, "B6 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 25*/ { DATA_MODE, -1, "\223\137\344\252", 0, "92 4D 7F 92 A8 00 EC 11 00 (68)", 0, 20, "B4 (Shift JIS; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below))" },
+        /* 26*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252", 0, "D3 67 F5 54 00 EC 11 EC 00 (68)", 1, 20, "K2 (Shift JIS) (full multibyte)" },
+        /* 27*/ { DATA_MODE, -1, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00 (68)", 1, 1, "B6 (UTF-8)" },
         /* 28*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "点茗", 0, "9B 9E 0A E7 A2 32 5C 00 00 (68)", 1, 1, "B6 (UTF-8)" },
         /* 29*/ { UNICODE_MODE, -1, "点茗･", 0, "D3 67 F5 55 0D 28 00 EC 00 (68)", 1, 1, "K2 B1 (Shift JIS)" },
-        /* 30*/ { DATA_MODE, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00 (68)", 0, 0, "B5 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 31*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00 (68)", 1, 1, "K2 B1 (Shift JIS) (full multibyte)" },
-        /* 32*/ { DATA_MODE, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00 (84)", 1, 0, "B9 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 33*/ { UNICODE_MODE, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00 (68)", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ doesn't map Shift JIS ASCII" },
-        /* 34*/ { DATA_MODE, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00 (68)", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 35*/ { DATA_MODE, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00 (112)", 1, 0, "B11 (UTF-8); ZXing-C++ doesn't map Shift JIS ASCII" },
-        /* 36*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 (112)", 1, 0, "B12 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 37*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 (128)", 0, 0, "B14 (UTF-8); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 38*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00 (128)", 1, 1, "B1 K6 B1 (UTF-8) (full multibyte)" },
+        /* 30*/ { DATA_MODE, -1, "\223\137\344\252\245", 0, "96 4D 7F 92 AA 94 00 EC 00 (68)", 0, 20, "B5 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 31*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "\223\137\344\252\245", 0, "D3 67 F5 55 0D 28 00 EC 00 (68)", 1, 20, "K2 B1 (Shift JIS) (full multibyte)" },
+        /* 32*/ { DATA_MODE, -1, "点茗･", 0, "A7 9E 0A E7 A2 32 5F BE F6 94 00 (84)", 1, 1, "B9 (UTF-8)" },
+        /* 33*/ { UNICODE_MODE, -1, "¥点茗･", 0, "99 72 4D 7F 92 AA 94 00 00 (68)", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 34*/ { DATA_MODE, -1, "\134\223\137\344\252\245", 0, "99 72 4D 7F 92 AA 94 00 00 (68)", 1, 0, "B6 (Shift JIS) (optimized from B1 K2 B1); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 35*/ { DATA_MODE, -1, "¥点茗･", 0, "4B C2 A5 E7 82 B9 E8 8C 97 EF BD A5 00 00 (112)", 1, 0, "B11 (UTF-8); ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 36*/ { DATA_MODE, -1, "ÁȁȁȁȂ¢", 0, "4C C3 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 (112)", 1, 1, "B12 (UTF-8)" },
+        /* 37*/ { DATA_MODE, -1, "ÁȁȁȁȁȂ¢", 0, "4E C3 81 C8 81 C8 81 C8 81 C8 81 C8 82 C2 A2 00 (128)", 0, 1, "B14 (UTF-8); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 38*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, "ÁȁȁȁȁȂ¢", 0, "41 C3 6C 08 80 44 02 20 11 00 88 0A 12 0D 10 00 (128)", 1, 20, "B1 K6 B1 (UTF-8) (full multibyte)" },
         /* 39*/ { UNICODE_MODE, -1, "áA", 0, "8B 85 04 00 EC 11 EC 11 00 (68)", 0, 1, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 40*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00 (68)", 1, 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /* 40*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "áA", 0, "CE 00 40 00 EC 11 EC 11 00 (68)", 1, 3, "K1 (ISO 8859-1) (full multibyte)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -5115,10 +5374,11 @@ static void test_microqr_input(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_microqr_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5129,48 +5389,67 @@ static void test_microqr_input(const testCtx *const p_ctx) {
 
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_MICROQR, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MICROQR, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", %d, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode),
                     testUtilOption3Name(BARCODE_MICROQR, data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
-                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].zxingcpp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->errtxt, data[i].bwipp_cmp, data[i].zxingcpp_cmp,
+                    data[i].comment);
         } else {
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
 
             if (ret < ZINT_ERROR) {
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, data[i].option_3, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         char modules_dump[17 * 17 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, -1, -1, data[i].option_3, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, -1, -1, data[i].option_3, data[i].data, length, NULL, cmp_buf,
+                                    sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     if (!data[i].zxingcpp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not ZXing-C++ compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[17 * 17 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
-                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, escaped, &ret_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
                     }
                 }
             }
@@ -5238,10 +5517,11 @@ static void test_microqr_padding(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_microqr_padding", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5284,12 +5564,14 @@ static void test_microqr_padding(const testCtx *const p_ctx) {
                 int cmp_len, ret_len;
                 char modules_dump[17 * 17 + 1];
                 assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            escaped, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
         ZBarcode_Delete(symbol);
@@ -5324,9 +5606,9 @@ static void test_microqr_optimize(const testCtx *const p_ctx) {
         /*  7*/ { UNICODE_MODE, 1, -1, -1, "こんにwa、αβ", 0, "66 13 10 B8 85 25 09 DD 85 98 00 43 FE 20 00 00 (128)", 1, 1, "K3 B2 K3" },
         /*  8*/ { UNICODE_MODE, 1, 3, -1, "こんAB123\177", 0, "D0 4C 42 E2 91 CD 06 3D C2 FE 00 (84)", 0, 1, "K2 A2 N3 B1; BWIPP different encodation (K2 A5 B1)" },
         /*  9*/ { UNICODE_MODE, 1, 4, -1, "こんAB123\177", 0, "64 13 10 B8 92 9C D0 5E 1A 0B F8 00 EC 11 EC 11 (128)", 1, 1, "K2 A5 B1" },
-        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00 (84)", 0, 0, "B2; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00 (84)", 1, 1, "K1" },
-        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00 (84)", 1, 1, "K1" },
+        /* 10*/ { DATA_MODE, 1, -1, -1, "\223\137", 0, "8A 4D 7C 00 EC 11 EC 11 EC 11 00 (84)", 0, 20, "B2; BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 11*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE, "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00 (84)", 1, 20, "K1" },
+        /* 12*/ { DATA_MODE, 1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "\223\137", 0, "CB 67 C0 00 EC 11 EC 11 EC 11 00 (84)", 1, 20, "K1" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -5336,10 +5618,11 @@ static void test_microqr_optimize(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_microqr_optimize", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -5379,19 +5662,19 @@ static void test_microqr_optimize(const testCtx *const p_ctx) {
                 }
             }
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
-                if (!data[i].zxingcpp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
-                } else {
-                    int cmp_len, ret_len;
-                    char modules_dump[17 * 17 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                int cmp_len, ret_len;
+                char modules_dump[17 * 17 + 1];
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                            cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
-                }
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                            NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -6388,10 +6671,11 @@ static void test_microqr_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_microqr_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -6438,13 +6722,97 @@ static void test_microqr_encode(const testCtx *const p_ctx) {
                     int cmp_len, ret_len;
                     char modules_dump[17 * 17 + 1];
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_microqr_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int option_3;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  2*/ { UNICODE_MODE, -1, -1, "点", -1, 0, 0, "", -1, 0 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, "点", -1, 0, 0, "\223\137", -1, 20 },
+        /*  4*/ { DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
+        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, but no way to specify */
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    int expected_length;
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_MICROQR, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
             }
         }
 
@@ -6534,6 +6902,7 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
         int ret;
         const char *expected;
         int expected_option_3;
+        int zxingcpp_cmp;
         const char *comment;
     };
     /* Ą U+0104 in ISO 8859-2 0xA1, in other ISO 8859 and Win 1250, UTF-8 C484 */
@@ -6541,16 +6910,16 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
     /* é U+00E9 in ISO 8859-1 plus other ISO 8859 (but not in ISO 8859-7 or ISO 8859-11), Win 1250 plus other Win, not in Shift JIS, UTF-8 C3A9 */
     /* β U+03B2 in ISO 8859-7 Greek (but not other ISO 8859 or Win page), in Shift JIS 0x83C0, UTF-8 CEB2 */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, 0, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, "ECI-4 B2 (ISO 8859-2)" },
-        /*  1*/ { UNICODE_MODE, 0, "é", 0, "(415) 70 44 00 01 E9 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11", 5 << 8, "ECI-4 B1 (ISO 8859-2)" },
-        /*  2*/ { UNICODE_MODE, 0, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input for ECI '4'", 0, "β not in ISO 8859-2" },
-        /*  3*/ { DATA_MODE, 0, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, "ŔĄ" },
-        /*  4*/ { GS1_MODE, 0, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", 0, "" },
-        /*  5*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", 0, "(415) 70 44 01 9B A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1", 5 << 8, "Length 411" },
-        /*  6*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, "Length 412" },
-        /*  7*/ { DATA_MODE, 0, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", 0, "(415) 70 44 01 9B 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34", 3 << 8, "Length 411" },
-        /*  8*/ { DATA_MODE, 0, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, "Length 412" },
-        /*  9*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", ZINT_FULL_MULTIBYTE | (3 << 8), "option_3 mask" },
+        /*  0*/ { UNICODE_MODE, 0, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, 1, "ECI-4 B2 (ISO 8859-2)" },
+        /*  1*/ { UNICODE_MODE, 0, "é", 0, "(415) 70 44 00 01 E9 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11", 5 << 8, 1, "ECI-4 B1 (ISO 8859-2)" },
+        /*  2*/ { UNICODE_MODE, 0, "β", ZINT_ERROR_INVALID_DATA, "Error 572: Invalid character in input for ECI '4'", 0, 1, "β not in ISO 8859-2" },
+        /*  3*/ { DATA_MODE, 0, "\300\241", 0, "(415) 70 44 00 02 C0 A1 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", 3 << 8, 4, "ŔĄ" },
+        /*  4*/ { GS1_MODE, 0, "[20]12", ZINT_ERROR_INVALID_OPTION, "Error 220: Selected symbology does not support GS1 mode", 0, 1, "" },
+        /*  5*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", 0, "(415) 70 44 01 9B A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1 A1", 5 << 8, 1, "Length 411" },
+        /*  6*/ { UNICODE_MODE, 0, "ĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄĄ", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, 1, "Length 412" },
+        /*  7*/ { DATA_MODE, 0, "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901", 0, "(415) 70 44 01 9B 31 32 33 34 35 36 37 38 39 30 31 32 33 34 35 36 37 38 39 30 31 32 33 34", 3 << 8, 4, "Length 411" },
+        /*  8*/ { DATA_MODE, 0, "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012", ZINT_ERROR_TOO_LONG, "Error 573: Input too long, requires 416 codewords (maximum 415)", 0, 4, "Length 412" },
+        /*  9*/ { UNICODE_MODE, ZINT_FULL_MULTIBYTE, "ĄŔ", 0, "(415) 70 44 00 02 A1 C0 00 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC 11 EC", ZINT_FULL_MULTIBYTE | (3 << 8), 1, "option_3 mask" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -6562,11 +6931,13 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
     char option_3_buf[64];
 
     #if 0 /* Need to add "force binary mode" to BWIPP for this to work */
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     #endif
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_upnqr_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -6590,10 +6961,11 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
 
         if (p_ctx->generate) {
             strcpy(option_3_buf, testUtilOption3Name(BARCODE_UPNQR, data[i].option_3)); /* Copy static buffer */
-            printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", %s, \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %s, \"%s\", %s, \"%s\", %s, %d, \"%s\" },\n",
                     i, testUtilInputModeName(data[i].input_mode), option_3_buf,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), testUtilErrorName(data[i].ret),
-                    symbol->errtxt, testUtilOption3Name(BARCODE_UPNQR, data[i].expected_option_3), data[i].comment);
+                    symbol->errtxt, testUtilOption3Name(BARCODE_UPNQR, data[i].expected_option_3),
+                    data[i].zxingcpp_cmp, data[i].comment);
         } else {
             strcpy(option_3_buf, testUtilOption3Name(BARCODE_UPNQR, symbol->option_3)); /* Copy static buffer */
             assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
@@ -6612,13 +6984,19 @@ static void test_upnqr_input(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[77 * 77 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
                 }
             }
         }
@@ -7132,11 +7510,13 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
     char cmp_msg[1024];
 
     #if 0 /* Need to add "force binary mode" to BWIPP for this to work */
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
+    /* Only do BWIPP test if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
     #endif
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_upnqr_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -7187,13 +7567,94 @@ static void test_upnqr_encode(const testCtx *const p_ctx) {
                     int cmp_len, ret_len;
                     char modules_dump[77 * 77 + 1];
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_upnqr_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, "é", -1, 0, 4, "", -1, 0 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 4, "\351", -1, 4 },
+        /*  2*/ { UNICODE_MODE, -1, "Ŕ", -1, 0, 4, "", -1, 0 },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "é", -1, 0, 4, "\351", -1, 4 },
+        /*  4*/ { DATA_MODE, -1, "\300", -1, 0, 4, "", -1, 0 },
+        /*  5*/ { DATA_MODE, BARCODE_RAW_TEXT, "\300", -1, 0, 4, "\300", -1, 4 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    int expected_length;
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_UPNQR, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
             }
         }
 
@@ -7215,523 +7676,524 @@ static void test_rmqr_large(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int zxingcpp_cmp;
         const char *comment;
     };
     /* ISO/IEC 23941:2022 Table 6 */
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { 2, 1, "1", 12, 0, 7, 43, "", "" },
-        /*  1*/ { 2, 1, "1", 13, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", "" },
-        /*  2*/ { 2, 1, "A", 7, 0, 7, 43, "", "" },
-        /*  3*/ { 2, 1, "A", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", "" },
-        /*  4*/ { 2, 1, "\200", 5, 0, 7, 43, "", "" },
-        /*  5*/ { 2, 1, "\200", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", "" },
-        /*  6*/ { 2, 1, "\201", 6, 0, 7, 43, "", "3 Shift JIS 0x8181" },
-        /*  7*/ { 2, 1, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 8 codewords (maximum 6)", "4 Shift JIS 0x8181" },
-        /*  8*/ { 4, 1, "1", 5, 0, 7, 43, "", "" },
-        /*  9*/ { 4, 1, "1", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", "" },
-        /* 10*/ { 4, 1, "A", 3, 0, 7, 43, "", "" },
-        /* 11*/ { 4, 1, "A", 4, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", "" },
-        /* 12*/ { 4, 1, "\200", 2, 0, 7, 43, "", "" },
-        /* 13*/ { 4, 1, "\200", 3, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", "" },
-        /* 14*/ { 4, 1, "\201", 2, 0, 7, 43, "", "1 Shift JIS 0x8181" },
-        /* 15*/ { 4, 1, "\201", 4, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", "2 Shift JIS 0x8181" },
-        /* 16*/ { 2, 2, "1", 26, 0, 7, 59, "", "" },
-        /* 17*/ { 2, 2, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", "" },
-        /* 18*/ { 2, 2, "A", 16, 0, 7, 59, "", "" },
-        /* 19*/ { 2, 2, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", "" },
-        /* 20*/ { 2, 2, "\200", 11, 0, 7, 59, "", "" },
-        /* 21*/ { 2, 2, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", "" },
-        /* 22*/ { 2, 2, "\201", 12, 0, 7, 59, "", "6 Shift JIS 0x8181" },
-        /* 23*/ { 2, 2, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", "7 Shift JIS 0x8181" },
-        /* 24*/ { 4, 2, "1", 14, 0, 7, 59, "", "" },
-        /* 25*/ { 4, 2, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", "" },
-        /* 26*/ { 4, 2, "A", 8, 0, 7, 59, "", "" },
-        /* 27*/ { 4, 2, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", "" },
-        /* 28*/ { 4, 2, "\200", 6, 0, 7, 59, "", "" },
-        /* 29*/ { 4, 2, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", "" },
-        /* 30*/ { 4, 2, "\201", 6, 0, 7, 59, "", "3 Shift JIS 0x8181" },
-        /* 31*/ { 4, 2, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", "4 Shift JIS 0x8181" },
-        /* 32*/ { 2, 3, "1", 45, 0, 7, 77, "", "" },
-        /* 33*/ { 2, 3, "1", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", "" },
-        /* 34*/ { 2, 3, "A", 27, 0, 7, 77, "", "" },
-        /* 35*/ { 2, 3, "A", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", "" },
-        /* 36*/ { 2, 3, "\200", 19, 0, 7, 77, "", "" },
-        /* 37*/ { 2, 3, "\200", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", "" },
-        /* 38*/ { 2, 3, "\201", 22, 0, 7, 77, "", "11 Shift JIS 0x8181" },
-        /* 39*/ { 2, 3, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", "12 Shift JIS 0x8181" },
-        /* 40*/ { 4, 3, "1", 21, 0, 7, 77, "", "" },
-        /* 41*/ { 4, 3, "1", 22, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", "" },
-        /* 42*/ { 4, 3, "A", 13, 0, 7, 77, "", "" },
-        /* 43*/ { 4, 3, "A", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", "" },
-        /* 44*/ { 4, 3, "\200", 9, 0, 7, 77, "", "" },
-        /* 45*/ { 4, 3, "\200", 10, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", "" },
-        /* 46*/ { 4, 3, "\201", 10, 0, 7, 77, "", "5 Shift JIS 0x8181" },
-        /* 47*/ { 4, 3, "\201", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", "6 Shift JIS 0x8181" },
-        /* 48*/ { 2, 4, "1", 64, 0, 7, 99, "", "" },
-        /* 49*/ { 2, 4, "1", 65, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", "" },
-        /* 50*/ { 2, 4, "A", 39, 0, 7, 99, "", "" },
-        /* 51*/ { 2, 4, "A", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", "" },
-        /* 52*/ { 2, 4, "\200", 27, 0, 7, 99, "", "" },
-        /* 53*/ { 2, 4, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", "" },
-        /* 54*/ { 2, 4, "\201", 32, 0, 7, 99, "", "16 Shift JIS 0x8181" },
-        /* 55*/ { 2, 4, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", "17 Shift JIS 0x8181" },
-        /* 56*/ { 4, 4, "1", 30, 0, 7, 99, "", "" },
-        /* 57*/ { 4, 4, "1", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", "" },
-        /* 58*/ { 4, 4, "A", 18, 0, 7, 99, "", "" },
-        /* 59*/ { 4, 4, "A", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", "" },
-        /* 60*/ { 4, 4, "\200", 13, 0, 7, 99, "", "" },
-        /* 61*/ { 4, 4, "\200", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", "" },
-        /* 62*/ { 4, 4, "\201", 16, 0, 7, 99, "", "8 Shift JIS 0x8181" },
-        /* 63*/ { 4, 4, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 16 codewords (maximum 14)", "9 Shift JIS 0x8181" },
-        /* 64*/ { 2, 5, "1", 102, 0, 7, 139, "", "" },
-        /* 65*/ { 2, 5, "1", 103, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", "" },
-        /* 66*/ { 2, 5, "A", 62, 0, 7, 139, "", "" },
-        /* 67*/ { 2, 5, "A", 63, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", "" },
-        /* 68*/ { 2, 5, "\200", 42, 0, 7, 139, "", "" },
-        /* 69*/ { 2, 5, "\200", 43, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", "" },
-        /* 70*/ { 2, 5, "\201", 52, 0, 7, 139, "", "26 Shift JIS 0x8181" },
-        /* 71*/ { 2, 5, "\201", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", "27 Shift JIS 0x8181" },
-        /* 72*/ { 4, 5, "1", 54, 0, 7, 139, "", "" },
-        /* 73*/ { 4, 5, "1", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", "" },
-        /* 74*/ { 4, 5, "A", 33, 0, 7, 139, "", "" },
-        /* 75*/ { 4, 5, "A", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", "" },
-        /* 76*/ { 4, 5, "\200", 22, 0, 7, 139, "", "" },
-        /* 77*/ { 4, 5, "\200", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", "" },
-        /* 78*/ { 4, 5, "\201", 28, 0, 7, 139, "", "14 Shift JIS 0x8181" },
-        /* 79*/ { 4, 5, "\201", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 26 codewords (maximum 24)", "15 Shift JIS 0x8181" },
-        /* 80*/ { 2, 6, "1", 26, 0, 9, 43, "", "" },
-        /* 81*/ { 2, 6, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", "" },
-        /* 82*/ { 2, 6, "A", 16, 0, 9, 43, "", "" },
-        /* 83*/ { 2, 6, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", "" },
-        /* 84*/ { 2, 6, "\200", 11, 0, 9, 43, "", "" },
-        /* 85*/ { 2, 6, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", "" },
-        /* 86*/ { 2, 6, "\201", 12, 0, 9, 43, "", "6 Shift JIS 0x8181" },
-        /* 87*/ { 2, 6, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", "7 Shift JIS 0x8181" },
-        /* 88*/ { 4, 6, "1", 14, 0, 9, 43, "", "" },
-        /* 89*/ { 4, 6, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", "" },
-        /* 90*/ { 4, 6, "A", 8, 0, 9, 43, "", "" },
-        /* 91*/ { 4, 6, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", "" },
-        /* 92*/ { 4, 6, "\200", 6, 0, 9, 43, "", "" },
-        /* 93*/ { 4, 6, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", "" },
-        /* 94*/ { 4, 6, "\201", 6, 0, 9, 43, "", "3 Shift JIS 0x8181" },
-        /* 95*/ { 4, 6, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", "4 Shift JIS 0x8181" },
-        /* 96*/ { 2, 7, "1", 47, 0, 9, 59, "", "" },
-        /* 97*/ { 2, 7, "1", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", "" },
-        /* 98*/ { 2, 7, "A", 29, 0, 9, 59, "", "" },
-        /* 99*/ { 2, 7, "A", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", "" },
-        /*100*/ { 2, 7, "\200", 20, 0, 9, 59, "", "" },
-        /*101*/ { 2, 7, "\200", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", "" },
-        /*102*/ { 2, 7, "\201", 24, 0, 9, 59, "", "12 Shift JIS 0x8181" },
-        /*103*/ { 2, 7, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", "13 Shift JIS 0x8181" },
-        /*104*/ { 4, 7, "1", 23, 0, 9, 59, "", "" },
-        /*105*/ { 4, 7, "1", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", "" },
-        /*106*/ { 4, 7, "A", 14, 0, 9, 59, "", "" },
-        /*107*/ { 4, 7, "A", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", "" },
-        /*108*/ { 4, 7, "\200", 10, 0, 9, 59, "", "" },
-        /*109*/ { 4, 7, "\200", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", "" },
-        /*110*/ { 4, 7, "\201", 12, 0, 9, 59, "", "6 Shift JIS 0x8181" },
-        /*111*/ { 4, 7, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 13 codewords (maximum 11)", "7 Shift JIS 0x8181" },
-        /*112*/ { 2, 8, "1", 71, 0, 9, 77, "", "" },
-        /*113*/ { 2, 8, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", "" },
-        /*114*/ { 2, 8, "A", 43, 0, 9, 77, "", "" },
-        /*115*/ { 2, 8, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", "" },
-        /*116*/ { 2, 8, "\200", 30, 0, 9, 77, "", "" },
-        /*117*/ { 2, 8, "\200", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", "" },
-        /*118*/ { 2, 8, "\201", 36, 0, 9, 77, "", "18 Shift JIS 0x8181" },
-        /*119*/ { 2, 8, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", "19 Shift JIS 0x8181" },
-        /*120*/ { 4, 8, "1", 37, 0, 9, 77, "", "" },
-        /*121*/ { 4, 8, "1", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", "" },
-        /*122*/ { 4, 8, "A", 23, 0, 9, 77, "", "" },
-        /*123*/ { 4, 8, "A", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", "" },
-        /*124*/ { 4, 8, "\200", 16, 0, 9, 77, "", "" },
-        /*125*/ { 4, 8, "\200", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", "" },
-        /*126*/ { 4, 8, "\201", 18, 0, 9, 77, "", "9 Shift JIS 0x8181" },
-        /*127*/ { 4, 8, "\201", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", "10 Shift JIS 0x8181" },
-        /*128*/ { 2, 9, "1", 97, 0, 9, 99, "", "" },
-        /*129*/ { 2, 9, "1", 98, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", "" },
-        /*130*/ { 2, 9, "A", 59, 0, 9, 99, "", "" },
-        /*131*/ { 2, 9, "A", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", "" },
-        /*132*/ { 2, 9, "\200", 40, 0, 9, 99, "", "" },
-        /*133*/ { 2, 9, "\200", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", "" },
-        /*134*/ { 2, 9, "\201", 50, 0, 9, 99, "", "25 Shift JIS 0x8181" },
-        /*135*/ { 2, 9, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 44 codewords (maximum 42)", "26 Shift JIS 0x8181" },
-        /*136*/ { 4, 9, "1", 49, 0, 9, 99, "", "" },
-        /*137*/ { 4, 9, "1", 50, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", "" },
-        /*138*/ { 4, 9, "A", 30, 0, 9, 99, "", "" },
-        /*139*/ { 4, 9, "A", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", "" },
-        /*140*/ { 4, 9, "\200", 20, 0, 9, 99, "", "" },
-        /*141*/ { 4, 9, "\200", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", "" },
-        /*142*/ { 4, 9, "\201", 24, 0, 9, 99, "", "12 Shift JIS 0x8181" },
-        /*143*/ { 4, 9, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", "13 Shift JIS 0x8181" },
-        /*144*/ { 2, 10, "1", 147, 0, 9, 139, "", "" },
-        /*145*/ { 2, 10, "1", 148, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", "" },
-        /*146*/ { 2, 10, "A", 89, 0, 9, 139, "", "" },
-        /*147*/ { 2, 10, "A", 90, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", "" },
-        /*148*/ { 2, 10, "\200", 61, 0, 9, 139, "", "" },
-        /*149*/ { 2, 10, "\200", 62, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", "" },
-        /*150*/ { 2, 10, "\201", 76, 0, 9, 139, "", "36 Shift JIS 0x8181" },
-        /*151*/ { 2, 10, "\201", 78, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 65 codewords (maximum 63)", "37 Shift JIS 0x8181" },
-        /*152*/ { 4, 10, "1", 75, 0, 9, 139, "", "" },
-        /*153*/ { 4, 10, "1", 76, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", "" },
-        /*154*/ { 4, 10, "A", 46, 0, 9, 139, "", "" },
-        /*155*/ { 4, 10, "A", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", "" },
-        /*156*/ { 4, 10, "\200", 31, 0, 9, 139, "", "" },
-        /*157*/ { 4, 10, "\200", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", "" },
-        /*158*/ { 4, 10, "\201", 38, 0, 9, 139, "", "19 Shift JIS 0x8181" },
-        /*159*/ { 4, 10, "\201", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", "20 Shift JIS 0x8181" },
-        /*160*/ { 2, 11, "1", 14, 0, 11, 27, "", "" },
-        /*161*/ { 2, 11, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", "" },
-        /*162*/ { 2, 11, "A", 8, 0, 11, 27, "", "" },
-        /*163*/ { 2, 11, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", "" },
-        /*164*/ { 2, 11, "\200", 6, 0, 11, 27, "", "" },
-        /*165*/ { 2, 11, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", "" },
-        /*166*/ { 2, 11, "\201", 6, 0, 11, 27, "", "3 Shift JIS 0x8181" },
-        /*167*/ { 2, 11, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", "4 Shift JIS 0x8181" },
-        /*168*/ { 4, 11, "1", 9, 0, 11, 27, "", "" },
-        /*169*/ { 4, 11, "1", 10, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", "" },
-        /*170*/ { 4, 11, "A", 6, 0, 11, 27, "", "" },
-        /*171*/ { 4, 11, "A", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", "" },
-        /*172*/ { 4, 11, "\200", 4, 0, 11, 27, "", "" },
-        /*173*/ { 4, 11, "\200", 5, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", "" },
-        /*174*/ { 4, 11, "\201", 4, 0, 11, 27, "", "2 Shift JIS 0x8181" },
-        /*175*/ { 4, 11, "\201", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", "3 Shift JIS 0x8181" },
-        /*176*/ { 2, 12, "1", 42, 0, 11, 43, "", "" },
-        /*177*/ { 2, 12, "1", 43, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", "" },
-        /*178*/ { 2, 12, "A", 26, 0, 11, 43, "", "" },
-        /*179*/ { 2, 12, "A", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", "" },
-        /*180*/ { 2, 12, "\200", 18, 0, 11, 43, "", "" },
-        /*181*/ { 2, 12, "\200", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", "" },
-        /*182*/ { 2, 12, "\201", 22, 0, 11, 43, "", "11 Shift JIS 0x8181" },
-        /*183*/ { 2, 12, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 21 codewords (maximum 19)", "12 Shift JIS 0x8181" },
-        /*184*/ { 4, 12, "1", 23, 0, 11, 43, "", "" },
-        /*185*/ { 4, 12, "1", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", "" },
-        /*186*/ { 4, 12, "A", 14, 0, 11, 43, "", "" },
-        /*187*/ { 4, 12, "A", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", "" },
-        /*188*/ { 4, 12, "\200", 10, 0, 11, 43, "", "" },
-        /*189*/ { 4, 12, "\200", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", "" },
-        /*190*/ { 4, 12, "\201", 12, 0, 11, 43, "", "6 Shift JIS 0x8181" },
-        /*191*/ { 4, 12, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 13 codewords (maximum 11)", "7 Shift JIS 0x8181" },
-        /*192*/ { 2, 13, "1", 71, 0, 11, 59, "", "" },
-        /*193*/ { 2, 13, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", "" },
-        /*194*/ { 2, 13, "A", 43, 0, 11, 59, "", "" },
-        /*195*/ { 2, 13, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", "" },
-        /*196*/ { 2, 13, "\200", 30, 0, 11, 59, "", "" },
-        /*197*/ { 2, 13, "\200", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", "" },
-        /*198*/ { 2, 13, "\201", 36, 0, 11, 59, "", "18 Shift JIS 0x8181" },
-        /*199*/ { 2, 13, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", "19 Shift JIS 0x8181" },
-        /*200*/ { 4, 13, "1", 33, 0, 11, 59, "", "" },
-        /*201*/ { 4, 13, "1", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", "" },
-        /*202*/ { 4, 13, "A", 20, 0, 11, 59, "", "" },
-        /*203*/ { 4, 13, "A", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", "" },
-        /*204*/ { 4, 13, "\200", 14, 0, 11, 59, "", "" },
-        /*205*/ { 4, 13, "\200", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", "" },
-        /*206*/ { 4, 13, "\201", 16, 0, 11, 59, "", "8 Shift JIS 0x8181" },
-        /*207*/ { 4, 13, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", "9 Shift JIS 0x8181" },
-        /*208*/ { 2, 14, "1", 100, 0, 11, 77, "", "" },
-        /*209*/ { 2, 14, "1", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", "" },
-        /*210*/ { 2, 14, "A", 60, 0, 11, 77, "", "" },
-        /*211*/ { 2, 14, "A", 61, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", "" },
-        /*212*/ { 2, 14, "\200", 41, 0, 11, 77, "", "" },
-        /*213*/ { 2, 14, "\200", 42, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", "" },
-        /*214*/ { 2, 14, "\201", 50, 0, 11, 77, "", "25 Shift JIS 0x8181" },
-        /*215*/ { 2, 14, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", "26 Shift JIS 0x8181" },
-        /*216*/ { 4, 14, "1", 52, 0, 11, 77, "", "" },
-        /*217*/ { 4, 14, "1", 53, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", "" },
-        /*218*/ { 4, 14, "A", 31, 0, 11, 77, "", "" },
-        /*219*/ { 4, 14, "A", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", "" },
-        /*220*/ { 4, 14, "\200", 21, 0, 11, 77, "", "" },
-        /*221*/ { 4, 14, "\200", 22, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", "" },
-        /*222*/ { 4, 14, "\201", 26, 0, 11, 77, "", "13 Shift JIS 0x8181" },
-        /*223*/ { 4, 14, "\201", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", "14 Shift JIS 0x8181" },
-        /*224*/ { 2, 15, "1", 133, 0, 11, 99, "", "" },
-        /*225*/ { 2, 15, "1", 134, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", "" },
-        /*226*/ { 2, 15, "A", 81, 0, 11, 99, "", "" },
-        /*227*/ { 2, 15, "A", 82, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", "" },
-        /*228*/ { 2, 15, "\200", 55, 0, 11, 99, "", "" },
-        /*229*/ { 2, 15, "\200", 56, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", "" },
-        /*230*/ { 2, 15, "\201", 68, 0, 11, 99, "", "34 Shift JIS 0x8181" },
-        /*231*/ { 2, 15, "\201", 70, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", "35 Shift JIS 0x8181" },
-        /*232*/ { 4, 15, "1", 66, 0, 11, 99, "", "" },
-        /*233*/ { 4, 15, "1", 67, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", "" },
-        /*234*/ { 4, 15, "A", 40, 0, 11, 99, "", "" },
-        /*235*/ { 4, 15, "A", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", "" },
-        /*236*/ { 4, 15, "\200", 27, 0, 11, 99, "", "" },
-        /*237*/ { 4, 15, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", "" },
-        /*238*/ { 4, 15, "\201", 34, 0, 11, 99, "", "17 Shift JIS 0x8181" },
-        /*239*/ { 4, 15, "\201", 36, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 31 codewords (maximum 29)", "18 Shift JIS 0x8181" },
-        /*240*/ { 2, 16, "1", 198, 0, 11, 139, "", "" },
-        /*241*/ { 2, 16, "1", 199, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", "" },
-        /*242*/ { 2, 16, "A", 120, 0, 11, 139, "", "" },
-        /*243*/ { 2, 16, "A", 121, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", "" },
-        /*244*/ { 2, 16, "\200", 82, 0, 11, 139, "", "" },
-        /*245*/ { 2, 16, "\200", 83, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", "" },
-        /*246*/ { 2, 16, "\201", 102, 0, 11, 139, "", "51 Shift JIS 0x8181" },
-        /*247*/ { 2, 16, "\201", 104, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 86 codewords (maximum 84)", "52 Shift JIS 0x8181" },
-        /*248*/ { 4, 16, "1", 97, 0, 11, 139, "", "" },
-        /*249*/ { 4, 16, "1", 98, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", "" },
-        /*250*/ { 4, 16, "A", 59, 0, 11, 139, "", "" },
-        /*251*/ { 4, 16, "A", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", "" },
-        /*252*/ { 4, 16, "\200", 40, 0, 11, 139, "", "" },
-        /*253*/ { 4, 16, "\200", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", "" },
-        /*254*/ { 4, 16, "\201", 50, 0, 11, 139, "", "25 Shift JIS 0x8181" },
-        /*255*/ { 4, 16, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 44 codewords (maximum 42)", "26 Shift JIS 0x8181" },
-        /*256*/ { 2, 17, "1", 26, 0, 13, 27, "", "" },
-        /*257*/ { 2, 17, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", "" },
-        /*258*/ { 2, 17, "A", 16, 0, 13, 27, "", "" },
-        /*259*/ { 2, 17, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", "" },
-        /*260*/ { 2, 17, "\200", 11, 0, 13, 27, "", "" },
-        /*261*/ { 2, 17, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", "" },
-        /*262*/ { 2, 17, "\201", 12, 0, 13, 27, "", "6 Shift JIS 0x8181" },
-        /*263*/ { 2, 17, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", "7 Shift JIS 0x8181" },
-        /*264*/ { 4, 17, "1", 14, 0, 13, 27, "", "" },
-        /*265*/ { 4, 17, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", "" },
-        /*266*/ { 4, 17, "A", 8, 0, 13, 27, "", "" },
-        /*267*/ { 4, 17, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", "" },
-        /*268*/ { 4, 17, "\200", 6, 0, 13, 27, "", "" },
-        /*269*/ { 4, 17, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", "" },
-        /*270*/ { 4, 17, "\201", 6, 0, 13, 27, "", "3 Shift JIS 0x8181" },
-        /*271*/ { 4, 17, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", "4 Shift JIS 0x8181" },
-        /*272*/ { 2, 18, "1", 62, 0, 13, 43, "", "" },
-        /*273*/ { 2, 18, "1", 63, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", "" },
-        /*274*/ { 2, 18, "A", 37, 0, 13, 43, "", "" },
-        /*275*/ { 2, 18, "A", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", "" },
-        /*276*/ { 2, 18, "\200", 26, 0, 13, 43, "", "" },
-        /*277*/ { 2, 18, "\200", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", "" },
-        /*278*/ { 2, 18, "\201", 32, 0, 13, 43, "", "16 Shift JIS 0x8181" },
-        /*279*/ { 2, 18, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 29 codewords (maximum 27)", "17 Shift JIS 0x8181" },
-        /*280*/ { 4, 18, "1", 28, 0, 13, 43, "", "" },
-        /*281*/ { 4, 18, "1", 29, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", "" },
-        /*282*/ { 4, 18, "A", 17, 0, 13, 43, "", "" },
-        /*283*/ { 4, 18, "A", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", "" },
-        /*284*/ { 4, 18, "\200", 12, 0, 13, 43, "", "" },
-        /*285*/ { 4, 18, "\200", 13, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", "" },
-        /*286*/ { 4, 18, "\201", 14, 0, 13, 43, "", "7 Shift JIS 0x8181" },
-        /*287*/ { 4, 18, "\201", 16, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", "8 Shift JIS 0x8181" },
-        /*288*/ { 2, 19, "1", 88, 0, 13, 59, "", "" },
-        /*289*/ { 2, 19, "1", 89, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", "" },
-        /*290*/ { 2, 19, "A", 53, 0, 13, 59, "", "" },
-        /*291*/ { 2, 19, "A", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", "" },
-        /*292*/ { 2, 19, "\200", 36, 0, 13, 59, "", "" },
-        /*293*/ { 2, 19, "\200", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", "" },
-        /*294*/ { 2, 19, "\201", 44, 0, 13, 59, "", "22 Shift JIS 0x8181" },
-        /*295*/ { 2, 19, "\201", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", "23 Shift JIS 0x8181" },
-        /*296*/ { 4, 19, "1", 45, 0, 13, 59, "", "" },
-        /*297*/ { 4, 19, "1", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", "" },
-        /*298*/ { 4, 19, "A", 27, 0, 13, 59, "", "" },
-        /*299*/ { 4, 19, "A", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", "" },
-        /*300*/ { 4, 19, "\200", 18, 0, 13, 59, "", "" },
-        /*301*/ { 4, 19, "\200", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", "" },
-        /*302*/ { 4, 19, "\201", 22, 0, 13, 59, "", "11 Shift JIS 0x8181" },
-        /*303*/ { 4, 19, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", "12 Shift JIS 0x8181" },
-        /*304*/ { 2, 20, "1", 124, 0, 13, 77, "", "" },
-        /*305*/ { 2, 20, "1", 125, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", "" },
-        /*306*/ { 2, 20, "A", 75, 0, 13, 77, "", "" },
-        /*307*/ { 2, 20, "A", 76, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", "" },
-        /*308*/ { 2, 20, "\200", 51, 0, 13, 77, "", "" },
-        /*309*/ { 2, 20, "\200", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", "" },
-        /*310*/ { 2, 20, "\201", 62, 0, 13, 77, "", "31 Shift JIS 0x8181" },
-        /*311*/ { 2, 20, "\201", 64, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", "32 Shift JIS 0x8181" },
-        /*312*/ { 4, 20, "1", 66, 0, 13, 77, "", "" },
-        /*313*/ { 4, 20, "1", 67, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", "" },
-        /*314*/ { 4, 20, "A", 40, 0, 13, 77, "", "" },
-        /*315*/ { 4, 20, "A", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", "" },
-        /*316*/ { 4, 20, "\200", 27, 0, 13, 77, "", "" },
-        /*317*/ { 4, 20, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", "" },
-        /*318*/ { 4, 20, "\201", 34, 0, 13, 77, "", "17 Shift JIS 0x8181" },
-        /*319*/ { 4, 20, "\201", 36, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 31 codewords (maximum 29)", "18 Shift JIS 0x8181" },
-        /*320*/ { 2, 21, "1", 171, 0, 13, 99, "", "" },
-        /*321*/ { 2, 21, "1", 172, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", "" },
-        /*322*/ { 2, 21, "A", 104, 0, 13, 99, "", "" },
-        /*323*/ { 2, 21, "A", 105, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", "" },
-        /*324*/ { 2, 21, "\200", 71, 0, 13, 99, "", "" },
-        /*325*/ { 2, 21, "\200", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", "" },
-        /*326*/ { 2, 21, "\201", 88, 0, 13, 99, "", "44 Shift JIS 0x8181" },
-        /*327*/ { 2, 21, "\201", 90, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 75 codewords (maximum 73)", "45 Shift JIS 0x8181" },
-        /*328*/ { 4, 21, "1", 80, 0, 13, 99, "", "" },
-        /*329*/ { 4, 21, "1", 81, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", "" },
-        /*330*/ { 4, 21, "A", 49, 0, 13, 99, "", "" },
-        /*331*/ { 4, 21, "A", 50, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", "" },
-        /*332*/ { 4, 21, "\200", 33, 0, 13, 99, "", "" },
-        /*333*/ { 4, 21, "\200", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", "" },
-        /*334*/ { 4, 21, "\201", 40, 0, 13, 99, "", "20 Shift JIS 0x8181" },
-        /*335*/ { 4, 21, "\201", 42, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", "21 Shift JIS 0x8181" },
-        /*336*/ { 2, 22, "1", 251, 0, 13, 139, "", "" },
-        /*337*/ { 2, 22, "1", 252, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", "" },
-        /*338*/ { 2, 22, "A", 152, 0, 13, 139, "", "" },
-        /*339*/ { 2, 22, "A", 153, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", "" },
-        /*340*/ { 2, 22, "\200", 104, 0, 13, 139, "", "" },
-        /*341*/ { 2, 22, "\200", 105, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", "" },
-        /*342*/ { 2, 22, "\201", 128, 0, 13, 139, "", "64 Shift JIS 0x8181" },
-        /*343*/ { 2, 22, "\201", 130, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", "65 Shift JIS 0x8181" },
-        /*344*/ { 4, 22, "1", 126, 0, 13, 139, "", "" },
-        /*345*/ { 4, 22, "1", 127, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", "" },
-        /*346*/ { 4, 22, "A", 76, 0, 13, 139, "", "" },
-        /*347*/ { 4, 22, "A", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", "" },
-        /*348*/ { 4, 22, "\200", 52, 0, 13, 139, "", "" },
-        /*349*/ { 4, 22, "\200", 53, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", "" },
-        /*350*/ { 4, 22, "\201", 64, 0, 13, 139, "", "32 Shift JIS 0x8181" },
-        /*351*/ { 4, 22, "\201", 66, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", "33 Shift JIS 0x8181" },
-        /*352*/ { 2, 23, "1", 76, 0, 15, 43, "", "" },
-        /*353*/ { 2, 23, "1", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", "" },
-        /*354*/ { 2, 23, "A", 46, 0, 15, 43, "", "" },
-        /*355*/ { 2, 23, "A", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", "" },
-        /*356*/ { 2, 23, "\200", 31, 0, 15, 43, "", "" },
-        /*357*/ { 2, 23, "\200", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", "" },
-        /*358*/ { 2, 23, "\201", 38, 0, 15, 43, "", "19 Shift JIS 0x8181" },
-        /*359*/ { 2, 23, "\201", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", "20 Shift JIS 0x8181" },
-        /*360*/ { 4, 23, "1", 33, 0, 15, 43, "", "" },
-        /*361*/ { 4, 23, "1", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", "" },
-        /*362*/ { 4, 23, "A", 20, 0, 15, 43, "", "" },
-        /*363*/ { 4, 23, "A", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", "" },
-        /*364*/ { 4, 23, "\200", 13, 0, 15, 43, "", "" },
-        /*365*/ { 4, 23, "\200", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", "" },
-        /*366*/ { 4, 23, "\201", 16, 0, 15, 43, "", "8 Shift JIS 0x8181" },
-        /*367*/ { 4, 23, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", "9 Shift JIS 0x8181" },
-        /*368*/ { 2, 24, "1", 112, 0, 15, 59, "", "" },
-        /*369*/ { 2, 24, "1", 113, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", "" },
-        /*370*/ { 2, 24, "A", 68, 0, 15, 59, "", "" },
-        /*371*/ { 2, 24, "A", 69, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", "" },
-        /*372*/ { 2, 24, "\200", 46, 0, 15, 59, "", "" },
-        /*373*/ { 2, 24, "\200", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", "" },
-        /*374*/ { 2, 24, "\201", 56, 0, 15, 59, "", "28 Shift JIS 0x8181" },
-        /*375*/ { 2, 24, "\201", 58, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", "29 Shift JIS 0x8181" },
-        /*376*/ { 4, 24, "1", 59, 0, 15, 59, "", "" },
-        /*377*/ { 4, 24, "1", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", "" },
-        /*378*/ { 4, 24, "A", 36, 0, 15, 59, "", "" },
-        /*379*/ { 4, 24, "A", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", "" },
-        /*380*/ { 4, 24, "\200", 24, 0, 15, 59, "", "" },
-        /*381*/ { 4, 24, "\200", 25, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", "" },
-        /*382*/ { 4, 24, "\201", 30, 0, 15, 59, "", "30 Shift JIS 0x8181" },
-        /*383*/ { 4, 24, "\201", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", "31 Shift JIS 0x8181" },
-        /*384*/ { 2, 25, "1", 157, 0, 15, 77, "", "" },
-        /*385*/ { 2, 25, "1", 158, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", "" },
-        /*386*/ { 2, 25, "A", 95, 0, 15, 77, "", "" },
-        /*387*/ { 2, 25, "A", 96, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", "" },
-        /*388*/ { 2, 25, "\200", 65, 0, 15, 77, "", "" },
-        /*389*/ { 2, 25, "\200", 66, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", "" },
-        /*390*/ { 2, 25, "\201", 80, 0, 15, 77, "", "40 Shift JIS 0x8181" },
-        /*391*/ { 2, 25, "\201", 82, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", "41 Shift JIS 0x8181" },
-        /*392*/ { 4, 25, "1", 71, 0, 15, 77, "", "" },
-        /*393*/ { 4, 25, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", "" },
-        /*394*/ { 4, 25, "A", 43, 0, 15, 77, "", "" },
-        /*395*/ { 4, 25, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", "" },
-        /*396*/ { 4, 25, "\200", 29, 0, 15, 77, "", "" },
-        /*397*/ { 4, 25, "\200", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", "" },
-        /*398*/ { 4, 25, "\201", 36, 0, 15, 77, "", "18 Shift JIS 0x8181" },
-        /*399*/ { 4, 25, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", "" },
-        /*400*/ { 2, 26, "1", 207, 0, 15, 99, "", "" },
-        /*401*/ { 2, 26, "1", 208, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", "" },
-        /*402*/ { 2, 26, "A", 126, 0, 15, 99, "", "" },
-        /*403*/ { 2, 26, "A", 127, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", "" },
-        /*404*/ { 2, 26, "\200", 86, 0, 15, 99, "", "" },
-        /*405*/ { 2, 26, "\200", 87, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", "" },
-        /*406*/ { 2, 26, "\201", 106, 0, 15, 99, "", "53 Shift JIS 0x8181" },
-        /*407*/ { 2, 26, "\201", 108, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", "54 Shift JIS 0x8181" },
-        /*408*/ { 4, 26, "1", 111, 0, 15, 99, "", "" },
-        /*409*/ { 4, 26, "1", 112, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", "" },
-        /*410*/ { 4, 26, "A", 68, 0, 15, 99, "", "" },
-        /*411*/ { 4, 26, "A", 69, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", "" },
-        /*412*/ { 4, 26, "\200", 46, 0, 15, 99, "", "" },
-        /*413*/ { 4, 26, "\200", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", "" },
-        /*414*/ { 4, 26, "\201", 56, 0, 15, 99, "", "28 Shift JIS 0x8181" },
-        /*415*/ { 4, 26, "\201", 58, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", "29 Shift JIS 0x8181" },
-        /*416*/ { 2, 27, "1", 301, 0, 15, 139, "", "" },
-        /*417*/ { 2, 27, "1", 302, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", "" },
-        /*418*/ { 2, 27, "A", 182, 0, 15, 139, "", "" },
-        /*419*/ { 2, 27, "A", 183, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", "" },
-        /*420*/ { 2, 27, "\200", 125, 0, 15, 139, "", "" },
-        /*421*/ { 2, 27, "\200", 126, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", "" },
-        /*422*/ { 2, 27, "\201", 154, 0, 15, 139, "", "77 Shift JIS 0x8181" },
-        /*423*/ { 2, 27, "\201", 156, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", "78 Shift JIS 0x8181" },
-        /*424*/ { 4, 27, "1", 162, 0, 15, 139, "", "" },
-        /*425*/ { 4, 27, "1", 163, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", "" },
-        /*426*/ { 4, 27, "A", 98, 0, 15, 139, "", "" },
-        /*427*/ { 4, 27, "A", 99, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", "" },
-        /*428*/ { 4, 27, "\200", 67, 0, 15, 139, "", "" },
-        /*429*/ { 4, 27, "\200", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", "" },
-        /*430*/ { 4, 27, "\201", 82, 0, 15, 139, "", "41 Shift JIS 0x8181" },
-        /*431*/ { 4, 27, "\201", 84, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", "42 Shift JIS 0x8181" },
-        /*432*/ { 2, 28, "1", 90, 0, 17, 43, "", "" },
-        /*433*/ { 2, 28, "1", 91, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", "" },
-        /*434*/ { 2, 28, "A", 55, 0, 17, 43, "", "" },
-        /*435*/ { 2, 28, "A", 56, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", "" },
-        /*436*/ { 2, 28, "\200", 37, 0, 17, 43, "", "" },
-        /*437*/ { 2, 28, "\200", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", "" },
-        /*438*/ { 2, 28, "\201", 46, 0, 17, 43, "", "23 Shift JIS 0x8181" },
-        /*439*/ { 2, 28, "\201", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", "24 Shift JIS 0x8181" },
-        /*440*/ { 4, 28, "1", 47, 0, 17, 43, "", "" },
-        /*441*/ { 4, 28, "1", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", "" },
-        /*442*/ { 4, 28, "A", 28, 0, 17, 43, "", "" },
-        /*443*/ { 4, 28, "A", 29, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", "" },
-        /*444*/ { 4, 28, "\200", 19, 0, 17, 43, "", "" },
-        /*445*/ { 4, 28, "\200", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", "" },
-        /*446*/ { 4, 28, "\201", 24, 0, 17, 43, "", "12 Shift JIS 0x8181" },
-        /*447*/ { 4, 28, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 23 codewords (maximum 21)", "13 Shift JIS 0x8181" },
-        /*448*/ { 2, 29, "1", 131, 0, 17, 59, "", "" },
-        /*449*/ { 2, 29, "1", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", "" },
-        /*450*/ { 2, 29, "A", 79, 0, 17, 59, "", "" },
-        /*451*/ { 2, 29, "A", 80, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", "" },
-        /*452*/ { 2, 29, "\200", 54, 0, 17, 59, "", "" },
-        /*453*/ { 2, 29, "\200", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", "" },
-        /*454*/ { 2, 29, "\201", 66, 0, 17, 59, "", "33 Shift JIS 0x8181" },
-        /*455*/ { 2, 29, "\201", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", "34 Shift JIS 0x8181" },
-        /*456*/ { 4, 29, "1", 63, 0, 17, 59, "", "" },
-        /*457*/ { 4, 29, "1", 64, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", "" },
-        /*458*/ { 4, 29, "A", 38, 0, 17, 59, "", "" },
-        /*459*/ { 4, 29, "A", 39, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", "" },
-        /*460*/ { 4, 29, "\200", 26, 0, 17, 59, "", "" },
-        /*461*/ { 4, 29, "\200", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", "" },
-        /*462*/ { 4, 29, "\201", 32, 0, 17, 59, "", "16 Shift JIS 0x8181" },
-        /*463*/ { 4, 29, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", "17 Shift JIS 0x8181" },
-        /*464*/ { 2, 30, "1", 183, 0, 17, 77, "", "" },
-        /*465*/ { 2, 30, "1", 184, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", "" },
-        /*466*/ { 2, 30, "A", 111, 0, 17, 77, "", "" },
-        /*467*/ { 2, 30, "A", 112, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", "" },
-        /*468*/ { 2, 30, "\200", 76, 0, 17, 77, "", "" },
-        /*469*/ { 2, 30, "\200", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", "" },
-        /*470*/ { 2, 30, "\201", 94, 0, 17, 77, "", "47 Shift JIS 0x8181" },
-        /*471*/ { 2, 30, "\201", 96, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 80 codewords (maximum 78)", "48 Shift JIS 0x8181" },
-        /*472*/ { 4, 30, "1", 87, 0, 17, 77, "", "" },
-        /*473*/ { 4, 30, "1", 88, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", "" },
-        /*474*/ { 4, 30, "A", 53, 0, 17, 77, "", "" },
-        /*475*/ { 4, 30, "A", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", "" },
-        /*476*/ { 4, 30, "\200", 36, 0, 17, 77, "", "" },
-        /*477*/ { 4, 30, "\200", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", "" },
-        /*478*/ { 4, 30, "\201", 44, 0, 17, 77, "", "22 Shift JIS 0x8181" },
-        /*479*/ { 4, 30, "\201", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", "23 Shift JIS 0x8181" },
-        /*480*/ { 2, 31, "1", 236, 0, 17, 99, "", "" },
-        /*481*/ { 2, 31, "1", 237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", "" },
-        /*482*/ { 2, 31, "A", 143, 0, 17, 99, "", "" },
-        /*483*/ { 2, 31, "A", 144, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", "" },
-        /*484*/ { 2, 31, "\200", 98, 0, 17, 99, "", "" },
-        /*485*/ { 2, 31, "\200", 99, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", "" },
-        /*486*/ { 2, 31, "\201", 120, 0, 17, 99, "", "60 Shift JIS 0x8181" },
-        /*487*/ { 2, 31, "\201", 122, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", "61 Shift JIS 0x8181" },
-        /*488*/ { 4, 31, "1", 131, 0, 17, 99, "", "" },
-        /*489*/ { 4, 31, "1", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", "" },
-        /*490*/ { 4, 31, "A", 79, 0, 17, 99, "", "" },
-        /*491*/ { 4, 31, "A", 80, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", "" },
-        /*492*/ { 4, 31, "\200", 54, 0, 17, 99, "", "" },
-        /*493*/ { 4, 31, "\200", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", "" },
-        /*494*/ { 4, 31, "\201", 66, 0, 17, 99, "", "33 Shift JIS 0x8181" },
-        /*495*/ { 4, 31, "\201", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", "34 Shift JIS 0x8181" },
-        /*496*/ { 2, 32, "1", 361, 0, 17, 139, "", "" },
-        /*497*/ { 2, 32, "1", 362, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", "" },
-        /*498*/ { 2, 32, "A", 219, 0, 17, 139, "", "" },
-        /*499*/ { 2, 32, "A", 220, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", "" },
-        /*500*/ { 2, 32, "\200", 150, 0, 17, 139, "", "" },
-        /*501*/ { 2, 32, "\200", 151, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", "" },
-        /*502*/ { 2, 32, "\201", 184, 0, 17, 139, "", "92 Shift JIS 0x8181" },
-        /*503*/ { 2, 32, "\201", 186, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", "93 Shift JIS 0x8181" },
-        /*504*/ { 4, 32, "1", 178, 0, 17, 139, "", "" },
-        /*505*/ { 4, 32, "1", 179, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", "" },
-        /*506*/ { 4, 32, "A", 108, 0, 17, 139, "", "" },
-        /*507*/ { 4, 32, "A", 109, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", "" },
-        /*508*/ { 4, 32, "\200", 74, 0, 17, 139, "", "" },
-        /*509*/ { 4, 32, "\200", 75, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", "" },
-        /*510*/ { 4, 32, "\201", 92, 0, 17, 139, "", "46 Shift JIS 0x8181" },
-        /*511*/ { 4, 32, "\201", 94, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 78 codewords (maximum 76)", "47 Shift JIS 0x8181" },
+        /*  0*/ { 2, 1, "1", 12, 0, 7, 43, "", 1, "" },
+        /*  1*/ { 2, 1, "1", 13, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 1, "" },
+        /*  2*/ { 2, 1, "A", 7, 0, 7, 43, "", 1, "" },
+        /*  3*/ { 2, 1, "A", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 1, "" },
+        /*  4*/ { 2, 1, "\200", 5, 0, 7, 43, "", 899, "" },
+        /*  5*/ { 2, 1, "\200", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 7 codewords (maximum 6)", 899, "" },
+        /*  6*/ { 2, 1, "\201", 6, 0, 7, 43, "", 20, "3 Shift JIS 0x8181" },
+        /*  7*/ { 2, 1, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-M, requires 8 codewords (maximum 6)", 20, "4 Shift JIS 0x8181" },
+        /*  8*/ { 4, 1, "1", 5, 0, 7, 43, "", 1, "" },
+        /*  9*/ { 4, 1, "1", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
+        /* 10*/ { 4, 1, "A", 3, 0, 7, 43, "", 1, "" },
+        /* 11*/ { 4, 1, "A", 4, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 1, "" },
+        /* 12*/ { 4, 1, "\200", 2, 0, 7, 43, "", 899, "" },
+        /* 13*/ { 4, 1, "\200", 3, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 899, "" },
+        /* 14*/ { 4, 1, "\201", 2, 0, 7, 43, "", 20, "1 Shift JIS 0x8181" },
+        /* 15*/ { 4, 1, "\201", 4, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 1 R7x43-H, requires 4 codewords (maximum 3)", 20, "2 Shift JIS 0x8181" },
+        /* 16*/ { 2, 2, "1", 26, 0, 7, 59, "", 1, "" },
+        /* 17*/ { 2, 2, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", 1, "" },
+        /* 18*/ { 2, 2, "A", 16, 0, 7, 59, "", 1, "" },
+        /* 19*/ { 2, 2, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", 1, "" },
+        /* 20*/ { 2, 2, "\200", 11, 0, 7, 59, "", 899, "" },
+        /* 21*/ { 2, 2, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", 899, "" },
+        /* 22*/ { 2, 2, "\201", 12, 0, 7, 59, "", 20, "6 Shift JIS 0x8181" },
+        /* 23*/ { 2, 2, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-M, requires 13 codewords (maximum 12)", 20, "7 Shift JIS 0x8181" },
+        /* 24*/ { 4, 2, "1", 14, 0, 7, 59, "", 1, "" },
+        /* 25*/ { 4, 2, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", 1, "" },
+        /* 26*/ { 4, 2, "A", 8, 0, 7, 59, "", 1, "" },
+        /* 27*/ { 4, 2, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", 1, "" },
+        /* 28*/ { 4, 2, "\200", 6, 0, 7, 59, "", 899, "" },
+        /* 29*/ { 4, 2, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", 899, "" },
+        /* 30*/ { 4, 2, "\201", 6, 0, 7, 59, "", 20, "3 Shift JIS 0x8181" },
+        /* 31*/ { 4, 2, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 2 R7x59-H, requires 8 codewords (maximum 7)", 20, "4 Shift JIS 0x8181" },
+        /* 32*/ { 2, 3, "1", 45, 0, 7, 77, "", 1, "" },
+        /* 33*/ { 2, 3, "1", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", 1, "" },
+        /* 34*/ { 2, 3, "A", 27, 0, 7, 77, "", 1, "" },
+        /* 35*/ { 2, 3, "A", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", 1, "" },
+        /* 36*/ { 2, 3, "\200", 19, 0, 7, 77, "", 899, "" },
+        /* 37*/ { 2, 3, "\200", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", 899, "" },
+        /* 38*/ { 2, 3, "\201", 22, 0, 7, 77, "", 20, "11 Shift JIS 0x8181" },
+        /* 39*/ { 2, 3, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-M, requires 21 codewords (maximum 20)", 20, "12 Shift JIS 0x8181" },
+        /* 40*/ { 4, 3, "1", 21, 0, 7, 77, "", 1, "" },
+        /* 41*/ { 4, 3, "1", 22, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", 1, "" },
+        /* 42*/ { 4, 3, "A", 13, 0, 7, 77, "", 1, "" },
+        /* 43*/ { 4, 3, "A", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", 1, "" },
+        /* 44*/ { 4, 3, "\200", 9, 0, 7, 77, "", 899, "" },
+        /* 45*/ { 4, 3, "\200", 10, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", 899, "" },
+        /* 46*/ { 4, 3, "\201", 10, 0, 7, 77, "", 20, "5 Shift JIS 0x8181" },
+        /* 47*/ { 4, 3, "\201", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 3 R7x77-H, requires 11 codewords (maximum 10)", 20, "6 Shift JIS 0x8181" },
+        /* 48*/ { 2, 4, "1", 64, 0, 7, 99, "", 1, "" },
+        /* 49*/ { 2, 4, "1", 65, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", 1, "" },
+        /* 50*/ { 2, 4, "A", 39, 0, 7, 99, "", 1, "" },
+        /* 51*/ { 2, 4, "A", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", 1, "" },
+        /* 52*/ { 2, 4, "\200", 27, 0, 7, 99, "", 899, "" },
+        /* 53*/ { 2, 4, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", 899, "" },
+        /* 54*/ { 2, 4, "\201", 32, 0, 7, 99, "", 20, "16 Shift JIS 0x8181" },
+        /* 55*/ { 2, 4, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-M, requires 29 codewords (maximum 28)", 20, "17 Shift JIS 0x8181" },
+        /* 56*/ { 4, 4, "1", 30, 0, 7, 99, "", 1, "" },
+        /* 57*/ { 4, 4, "1", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", 1, "" },
+        /* 58*/ { 4, 4, "A", 18, 0, 7, 99, "", 1, "" },
+        /* 59*/ { 4, 4, "A", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", 1, "" },
+        /* 60*/ { 4, 4, "\200", 13, 0, 7, 99, "", 899, "" },
+        /* 61*/ { 4, 4, "\200", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 15 codewords (maximum 14)", 899, "" },
+        /* 62*/ { 4, 4, "\201", 16, 0, 7, 99, "", 20, "8 Shift JIS 0x8181" },
+        /* 63*/ { 4, 4, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 4 R7x99-H, requires 16 codewords (maximum 14)", 20, "9 Shift JIS 0x8181" },
+        /* 64*/ { 2, 5, "1", 102, 0, 7, 139, "", 1, "" },
+        /* 65*/ { 2, 5, "1", 103, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", 1, "" },
+        /* 66*/ { 2, 5, "A", 62, 0, 7, 139, "", 1, "" },
+        /* 67*/ { 2, 5, "A", 63, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", 1, "" },
+        /* 68*/ { 2, 5, "\200", 42, 0, 7, 139, "", 899, "" },
+        /* 69*/ { 2, 5, "\200", 43, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", 899, "" },
+        /* 70*/ { 2, 5, "\201", 52, 0, 7, 139, "", 20, "26 Shift JIS 0x8181" },
+        /* 71*/ { 2, 5, "\201", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-M, requires 45 codewords (maximum 44)", 20, "27 Shift JIS 0x8181" },
+        /* 72*/ { 4, 5, "1", 54, 0, 7, 139, "", 1, "" },
+        /* 73*/ { 4, 5, "1", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", 1, "" },
+        /* 74*/ { 4, 5, "A", 33, 0, 7, 139, "", 1, "" },
+        /* 75*/ { 4, 5, "A", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", 1, "" },
+        /* 76*/ { 4, 5, "\200", 22, 0, 7, 139, "", 899, "" },
+        /* 77*/ { 4, 5, "\200", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 25 codewords (maximum 24)", 899, "" },
+        /* 78*/ { 4, 5, "\201", 28, 0, 7, 139, "", 20, "14 Shift JIS 0x8181" },
+        /* 79*/ { 4, 5, "\201", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 5 R7x139-H, requires 26 codewords (maximum 24)", 20, "15 Shift JIS 0x8181" },
+        /* 80*/ { 2, 6, "1", 26, 0, 9, 43, "", 1, "" },
+        /* 81*/ { 2, 6, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", 1, "" },
+        /* 82*/ { 2, 6, "A", 16, 0, 9, 43, "", 1, "" },
+        /* 83*/ { 2, 6, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", 1, "" },
+        /* 84*/ { 2, 6, "\200", 11, 0, 9, 43, "", 899, "" },
+        /* 85*/ { 2, 6, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", 899, "" },
+        /* 86*/ { 2, 6, "\201", 12, 0, 9, 43, "", 20, "6 Shift JIS 0x8181" },
+        /* 87*/ { 2, 6, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-M, requires 13 codewords (maximum 12)", 20, "7 Shift JIS 0x8181" },
+        /* 88*/ { 4, 6, "1", 14, 0, 9, 43, "", 1, "" },
+        /* 89*/ { 4, 6, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", 1, "" },
+        /* 90*/ { 4, 6, "A", 8, 0, 9, 43, "", 1, "" },
+        /* 91*/ { 4, 6, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", 1, "" },
+        /* 92*/ { 4, 6, "\200", 6, 0, 9, 43, "", 899, "" },
+        /* 93*/ { 4, 6, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", 899, "" },
+        /* 94*/ { 4, 6, "\201", 6, 0, 9, 43, "", 20, "3 Shift JIS 0x8181" },
+        /* 95*/ { 4, 6, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 6 R9x43-H, requires 8 codewords (maximum 7)", 20, "4 Shift JIS 0x8181" },
+        /* 96*/ { 2, 7, "1", 47, 0, 9, 59, "", 1, "" },
+        /* 97*/ { 2, 7, "1", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", 1, "" },
+        /* 98*/ { 2, 7, "A", 29, 0, 9, 59, "", 1, "" },
+        /* 99*/ { 2, 7, "A", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", 1, "" },
+        /*100*/ { 2, 7, "\200", 20, 0, 9, 59, "", 899, "" },
+        /*101*/ { 2, 7, "\200", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", 899, "" },
+        /*102*/ { 2, 7, "\201", 24, 0, 9, 59, "", 20, "12 Shift JIS 0x8181" },
+        /*103*/ { 2, 7, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-M, requires 22 codewords (maximum 21)", 20, "13 Shift JIS 0x8181" },
+        /*104*/ { 4, 7, "1", 23, 0, 9, 59, "", 1, "" },
+        /*105*/ { 4, 7, "1", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", 1, "" },
+        /*106*/ { 4, 7, "A", 14, 0, 9, 59, "", 1, "" },
+        /*107*/ { 4, 7, "A", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", 1, "" },
+        /*108*/ { 4, 7, "\200", 10, 0, 9, 59, "", 899, "" },
+        /*109*/ { 4, 7, "\200", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 12 codewords (maximum 11)", 899, "" },
+        /*110*/ { 4, 7, "\201", 12, 0, 9, 59, "", 20, "6 Shift JIS 0x8181" },
+        /*111*/ { 4, 7, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 7 R9x59-H, requires 13 codewords (maximum 11)", 20, "7 Shift JIS 0x8181" },
+        /*112*/ { 2, 8, "1", 71, 0, 9, 77, "", 1, "" },
+        /*113*/ { 2, 8, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", 1, "" },
+        /*114*/ { 2, 8, "A", 43, 0, 9, 77, "", 1, "" },
+        /*115*/ { 2, 8, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", 1, "" },
+        /*116*/ { 2, 8, "\200", 30, 0, 9, 77, "", 899, "" },
+        /*117*/ { 2, 8, "\200", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", 899, "" },
+        /*118*/ { 2, 8, "\201", 36, 0, 9, 77, "", 20, "18 Shift JIS 0x8181" },
+        /*119*/ { 2, 8, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-M, requires 32 codewords (maximum 31)", 20, "19 Shift JIS 0x8181" },
+        /*120*/ { 4, 8, "1", 37, 0, 9, 77, "", 1, "" },
+        /*121*/ { 4, 8, "1", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", 1, "" },
+        /*122*/ { 4, 8, "A", 23, 0, 9, 77, "", 1, "" },
+        /*123*/ { 4, 8, "A", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", 1, "" },
+        /*124*/ { 4, 8, "\200", 16, 0, 9, 77, "", 899, "" },
+        /*125*/ { 4, 8, "\200", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", 899, "" },
+        /*126*/ { 4, 8, "\201", 18, 0, 9, 77, "", 20, "9 Shift JIS 0x8181" },
+        /*127*/ { 4, 8, "\201", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 8 R9x77-H, requires 18 codewords (maximum 17)", 20, "10 Shift JIS 0x8181" },
+        /*128*/ { 2, 9, "1", 97, 0, 9, 99, "", 1, "" },
+        /*129*/ { 2, 9, "1", 98, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", 1, "" },
+        /*130*/ { 2, 9, "A", 59, 0, 9, 99, "", 1, "" },
+        /*131*/ { 2, 9, "A", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", 1, "" },
+        /*132*/ { 2, 9, "\200", 40, 0, 9, 99, "", 899, "" },
+        /*133*/ { 2, 9, "\200", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 43 codewords (maximum 42)", 899, "" },
+        /*134*/ { 2, 9, "\201", 50, 0, 9, 99, "", 20, "25 Shift JIS 0x8181" },
+        /*135*/ { 2, 9, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-M, requires 44 codewords (maximum 42)", 20, "26 Shift JIS 0x8181" },
+        /*136*/ { 4, 9, "1", 49, 0, 9, 99, "", 1, "" },
+        /*137*/ { 4, 9, "1", 50, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", 1, "" },
+        /*138*/ { 4, 9, "A", 30, 0, 9, 99, "", 1, "" },
+        /*139*/ { 4, 9, "A", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", 1, "" },
+        /*140*/ { 4, 9, "\200", 20, 0, 9, 99, "", 899, "" },
+        /*141*/ { 4, 9, "\200", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", 899, "" },
+        /*142*/ { 4, 9, "\201", 24, 0, 9, 99, "", 20, "12 Shift JIS 0x8181" },
+        /*143*/ { 4, 9, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 9 R9x99-H, requires 23 codewords (maximum 22)", 20, "13 Shift JIS 0x8181" },
+        /*144*/ { 2, 10, "1", 147, 0, 9, 139, "", 1, "" },
+        /*145*/ { 2, 10, "1", 148, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", 1, "" },
+        /*146*/ { 2, 10, "A", 89, 0, 9, 139, "", 1, "" },
+        /*147*/ { 2, 10, "A", 90, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", 1, "" },
+        /*148*/ { 2, 10, "\200", 61, 0, 9, 139, "", 899, "" },
+        /*149*/ { 2, 10, "\200", 62, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 64 codewords (maximum 63)", 899, "" },
+        /*150*/ { 2, 10, "\201", 76, 0, 9, 139, "", 20, "36 Shift JIS 0x8181" },
+        /*151*/ { 2, 10, "\201", 78, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-M, requires 65 codewords (maximum 63)", 20, "37 Shift JIS 0x8181" },
+        /*152*/ { 4, 10, "1", 75, 0, 9, 139, "", 1, "" },
+        /*153*/ { 4, 10, "1", 76, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", 1, "" },
+        /*154*/ { 4, 10, "A", 46, 0, 9, 139, "", 1, "" },
+        /*155*/ { 4, 10, "A", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", 1, "" },
+        /*156*/ { 4, 10, "\200", 31, 0, 9, 139, "", 899, "" },
+        /*157*/ { 4, 10, "\200", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", 899, "" },
+        /*158*/ { 4, 10, "\201", 38, 0, 9, 139, "", 20, "19 Shift JIS 0x8181" },
+        /*159*/ { 4, 10, "\201", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 10 R9x139-H, requires 34 codewords (maximum 33)", 20, "20 Shift JIS 0x8181" },
+        /*160*/ { 2, 11, "1", 14, 0, 11, 27, "", 1, "" },
+        /*161*/ { 2, 11, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
+        /*162*/ { 2, 11, "A", 8, 0, 11, 27, "", 1, "" },
+        /*163*/ { 2, 11, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 1, "" },
+        /*164*/ { 2, 11, "\200", 6, 0, 11, 27, "", 899, "" },
+        /*165*/ { 2, 11, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 899, "" },
+        /*166*/ { 2, 11, "\201", 6, 0, 11, 27, "", 20, "3 Shift JIS 0x8181" },
+        /*167*/ { 2, 11, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-M, requires 8 codewords (maximum 7)", 20, "4 Shift JIS 0x8181" },
+        /*168*/ { 4, 11, "1", 9, 0, 11, 27, "", 1, "" },
+        /*169*/ { 4, 11, "1", 10, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
+        /*170*/ { 4, 11, "A", 6, 0, 11, 27, "", 1, "" },
+        /*171*/ { 4, 11, "A", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 1, "" },
+        /*172*/ { 4, 11, "\200", 4, 0, 11, 27, "", 899, "" },
+        /*173*/ { 4, 11, "\200", 5, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 899, "" },
+        /*174*/ { 4, 11, "\201", 4, 0, 11, 27, "", 20, "2 Shift JIS 0x8181" },
+        /*175*/ { 4, 11, "\201", 6, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 11 R11x27-H, requires 6 codewords (maximum 5)", 20, "3 Shift JIS 0x8181" },
+        /*176*/ { 2, 12, "1", 42, 0, 11, 43, "", 1, "" },
+        /*177*/ { 2, 12, "1", 43, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", 1, "" },
+        /*178*/ { 2, 12, "A", 26, 0, 11, 43, "", 1, "" },
+        /*179*/ { 2, 12, "A", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", 1, "" },
+        /*180*/ { 2, 12, "\200", 18, 0, 11, 43, "", 899, "" },
+        /*181*/ { 2, 12, "\200", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 20 codewords (maximum 19)", 899, "" },
+        /*182*/ { 2, 12, "\201", 22, 0, 11, 43, "", 20, "11 Shift JIS 0x8181" },
+        /*183*/ { 2, 12, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-M, requires 21 codewords (maximum 19)", 20, "12 Shift JIS 0x8181" },
+        /*184*/ { 4, 12, "1", 23, 0, 11, 43, "", 1, "" },
+        /*185*/ { 4, 12, "1", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", 1, "" },
+        /*186*/ { 4, 12, "A", 14, 0, 11, 43, "", 1, "" },
+        /*187*/ { 4, 12, "A", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", 1, "" },
+        /*188*/ { 4, 12, "\200", 10, 0, 11, 43, "", 899, "" },
+        /*189*/ { 4, 12, "\200", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 12 codewords (maximum 11)", 899, "" },
+        /*190*/ { 4, 12, "\201", 12, 0, 11, 43, "", 20, "6 Shift JIS 0x8181" },
+        /*191*/ { 4, 12, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 12 R11x43-H, requires 13 codewords (maximum 11)", 20, "7 Shift JIS 0x8181" },
+        /*192*/ { 2, 13, "1", 71, 0, 11, 59, "", 1, "" },
+        /*193*/ { 2, 13, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", 1, "" },
+        /*194*/ { 2, 13, "A", 43, 0, 11, 59, "", 1, "" },
+        /*195*/ { 2, 13, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", 1, "" },
+        /*196*/ { 2, 13, "\200", 30, 0, 11, 59, "", 899, "" },
+        /*197*/ { 2, 13, "\200", 31, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", 899, "" },
+        /*198*/ { 2, 13, "\201", 36, 0, 11, 59, "", 20, "18 Shift JIS 0x8181" },
+        /*199*/ { 2, 13, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-M, requires 32 codewords (maximum 31)", 20, "19 Shift JIS 0x8181" },
+        /*200*/ { 4, 13, "1", 33, 0, 11, 59, "", 1, "" },
+        /*201*/ { 4, 13, "1", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 1, "" },
+        /*202*/ { 4, 13, "A", 20, 0, 11, 59, "", 1, "" },
+        /*203*/ { 4, 13, "A", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 1, "" },
+        /*204*/ { 4, 13, "\200", 14, 0, 11, 59, "", 899, "" },
+        /*205*/ { 4, 13, "\200", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 899, "" },
+        /*206*/ { 4, 13, "\201", 16, 0, 11, 59, "", 20, "8 Shift JIS 0x8181" },
+        /*207*/ { 4, 13, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 13 R11x59-H, requires 16 codewords (maximum 15)", 20, "9 Shift JIS 0x8181" },
+        /*208*/ { 2, 14, "1", 100, 0, 11, 77, "", 1, "" },
+        /*209*/ { 2, 14, "1", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", 1, "" },
+        /*210*/ { 2, 14, "A", 60, 0, 11, 77, "", 1, "" },
+        /*211*/ { 2, 14, "A", 61, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", 1, "" },
+        /*212*/ { 2, 14, "\200", 41, 0, 11, 77, "", 899, "" },
+        /*213*/ { 2, 14, "\200", 42, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", 899, "" },
+        /*214*/ { 2, 14, "\201", 50, 0, 11, 77, "", 20, "25 Shift JIS 0x8181" },
+        /*215*/ { 2, 14, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-M, requires 44 codewords (maximum 43)", 20, "26 Shift JIS 0x8181" },
+        /*216*/ { 4, 14, "1", 52, 0, 11, 77, "", 1, "" },
+        /*217*/ { 4, 14, "1", 53, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", 1, "" },
+        /*218*/ { 4, 14, "A", 31, 0, 11, 77, "", 1, "" },
+        /*219*/ { 4, 14, "A", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", 1, "" },
+        /*220*/ { 4, 14, "\200", 21, 0, 11, 77, "", 899, "" },
+        /*221*/ { 4, 14, "\200", 22, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", 899, "" },
+        /*222*/ { 4, 14, "\201", 26, 0, 11, 77, "", 20, "13 Shift JIS 0x8181" },
+        /*223*/ { 4, 14, "\201", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 14 R11x77-H, requires 24 codewords (maximum 23)", 20, "14 Shift JIS 0x8181" },
+        /*224*/ { 2, 15, "1", 133, 0, 11, 99, "", 1, "" },
+        /*225*/ { 2, 15, "1", 134, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", 1, "" },
+        /*226*/ { 2, 15, "A", 81, 0, 11, 99, "", 1, "" },
+        /*227*/ { 2, 15, "A", 82, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", 1, "" },
+        /*228*/ { 2, 15, "\200", 55, 0, 11, 99, "", 899, "" },
+        /*229*/ { 2, 15, "\200", 56, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", 899, "" },
+        /*230*/ { 2, 15, "\201", 68, 0, 11, 99, "", 20, "34 Shift JIS 0x8181" },
+        /*231*/ { 2, 15, "\201", 70, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-M, requires 58 codewords (maximum 57)", 20, "35 Shift JIS 0x8181" },
+        /*232*/ { 4, 15, "1", 66, 0, 11, 99, "", 1, "" },
+        /*233*/ { 4, 15, "1", 67, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", 1, "" },
+        /*234*/ { 4, 15, "A", 40, 0, 11, 99, "", 1, "" },
+        /*235*/ { 4, 15, "A", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", 1, "" },
+        /*236*/ { 4, 15, "\200", 27, 0, 11, 99, "", 899, "" },
+        /*237*/ { 4, 15, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 30 codewords (maximum 29)", 899, "" },
+        /*238*/ { 4, 15, "\201", 34, 0, 11, 99, "", 20, "17 Shift JIS 0x8181" },
+        /*239*/ { 4, 15, "\201", 36, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 15 R11x99-H, requires 31 codewords (maximum 29)", 20, "18 Shift JIS 0x8181" },
+        /*240*/ { 2, 16, "1", 198, 0, 11, 139, "", 1, "" },
+        /*241*/ { 2, 16, "1", 199, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", 1, "" },
+        /*242*/ { 2, 16, "A", 120, 0, 11, 139, "", 1, "" },
+        /*243*/ { 2, 16, "A", 121, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", 1, "" },
+        /*244*/ { 2, 16, "\200", 82, 0, 11, 139, "", 899, "" },
+        /*245*/ { 2, 16, "\200", 83, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 85 codewords (maximum 84)", 899, "" },
+        /*246*/ { 2, 16, "\201", 102, 0, 11, 139, "", 20, "51 Shift JIS 0x8181" },
+        /*247*/ { 2, 16, "\201", 104, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-M, requires 86 codewords (maximum 84)", 20, "52 Shift JIS 0x8181" },
+        /*248*/ { 4, 16, "1", 97, 0, 11, 139, "", 1, "" },
+        /*249*/ { 4, 16, "1", 98, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", 1, "" },
+        /*250*/ { 4, 16, "A", 59, 0, 11, 139, "", 1, "" },
+        /*251*/ { 4, 16, "A", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", 1, "" },
+        /*252*/ { 4, 16, "\200", 40, 0, 11, 139, "", 899, "" },
+        /*253*/ { 4, 16, "\200", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 43 codewords (maximum 42)", 899, "" },
+        /*254*/ { 4, 16, "\201", 50, 0, 11, 139, "", 20, "25 Shift JIS 0x8181" },
+        /*255*/ { 4, 16, "\201", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 16 R11x139-H, requires 44 codewords (maximum 42)", 20, "26 Shift JIS 0x8181" },
+        /*256*/ { 2, 17, "1", 26, 0, 13, 27, "", 1, "" },
+        /*257*/ { 2, 17, "1", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", 1, "" },
+        /*258*/ { 2, 17, "A", 16, 0, 13, 27, "", 1, "" },
+        /*259*/ { 2, 17, "A", 17, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", 1, "" },
+        /*260*/ { 2, 17, "\200", 11, 0, 13, 27, "", 899, "" },
+        /*261*/ { 2, 17, "\200", 12, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", 899, "" },
+        /*262*/ { 2, 17, "\201", 12, 0, 13, 27, "", 20, "6 Shift JIS 0x8181" },
+        /*263*/ { 2, 17, "\201", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-M, requires 13 codewords (maximum 12)", 20, "7 Shift JIS 0x8181" },
+        /*264*/ { 4, 17, "1", 14, 0, 13, 27, "", 1, "" },
+        /*265*/ { 4, 17, "1", 15, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", 1, "" },
+        /*266*/ { 4, 17, "A", 8, 0, 13, 27, "", 1, "" },
+        /*267*/ { 4, 17, "A", 9, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", 1, "" },
+        /*268*/ { 4, 17, "\200", 6, 0, 13, 27, "", 899, "" },
+        /*269*/ { 4, 17, "\200", 7, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", 899, "" },
+        /*270*/ { 4, 17, "\201", 6, 0, 13, 27, "", 20, "3 Shift JIS 0x8181" },
+        /*271*/ { 4, 17, "\201", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 17 R13x27-H, requires 8 codewords (maximum 7)", 20, "4 Shift JIS 0x8181" },
+        /*272*/ { 2, 18, "1", 62, 0, 13, 43, "", 1, "" },
+        /*273*/ { 2, 18, "1", 63, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", 1, "" },
+        /*274*/ { 2, 18, "A", 37, 0, 13, 43, "", 1, "" },
+        /*275*/ { 2, 18, "A", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", 1, "" },
+        /*276*/ { 2, 18, "\200", 26, 0, 13, 43, "", 899, "" },
+        /*277*/ { 2, 18, "\200", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 28 codewords (maximum 27)", 899, "" },
+        /*278*/ { 2, 18, "\201", 32, 0, 13, 43, "", 20, "16 Shift JIS 0x8181" },
+        /*279*/ { 2, 18, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-M, requires 29 codewords (maximum 27)", 20, "17 Shift JIS 0x8181" },
+        /*280*/ { 4, 18, "1", 28, 0, 13, 43, "", 1, "" },
+        /*281*/ { 4, 18, "1", 29, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", 1, "" },
+        /*282*/ { 4, 18, "A", 17, 0, 13, 43, "", 1, "" },
+        /*283*/ { 4, 18, "A", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", 1, "" },
+        /*284*/ { 4, 18, "\200", 12, 0, 13, 43, "", 899, "" },
+        /*285*/ { 4, 18, "\200", 13, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", 899, "" },
+        /*286*/ { 4, 18, "\201", 14, 0, 13, 43, "", 20, "7 Shift JIS 0x8181" },
+        /*287*/ { 4, 18, "\201", 16, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 18 R13x43-H, requires 14 codewords (maximum 13)", 20, "8 Shift JIS 0x8181" },
+        /*288*/ { 2, 19, "1", 88, 0, 13, 59, "", 1, "" },
+        /*289*/ { 2, 19, "1", 89, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", 1, "" },
+        /*290*/ { 2, 19, "A", 53, 0, 13, 59, "", 1, "" },
+        /*291*/ { 2, 19, "A", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", 1, "" },
+        /*292*/ { 2, 19, "\200", 36, 0, 13, 59, "", 899, "" },
+        /*293*/ { 2, 19, "\200", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", 899, "" },
+        /*294*/ { 2, 19, "\201", 44, 0, 13, 59, "", 20, "22 Shift JIS 0x8181" },
+        /*295*/ { 2, 19, "\201", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-M, requires 39 codewords (maximum 38)", 20, "23 Shift JIS 0x8181" },
+        /*296*/ { 4, 19, "1", 45, 0, 13, 59, "", 1, "" },
+        /*297*/ { 4, 19, "1", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", 1, "" },
+        /*298*/ { 4, 19, "A", 27, 0, 13, 59, "", 1, "" },
+        /*299*/ { 4, 19, "A", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", 1, "" },
+        /*300*/ { 4, 19, "\200", 18, 0, 13, 59, "", 899, "" },
+        /*301*/ { 4, 19, "\200", 19, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", 899, "" },
+        /*302*/ { 4, 19, "\201", 22, 0, 13, 59, "", 20, "11 Shift JIS 0x8181" },
+        /*303*/ { 4, 19, "\201", 24, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 19 R13x59-H, requires 21 codewords (maximum 20)", 20, "12 Shift JIS 0x8181" },
+        /*304*/ { 2, 20, "1", 124, 0, 13, 77, "", 1, "" },
+        /*305*/ { 2, 20, "1", 125, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", 1, "" },
+        /*306*/ { 2, 20, "A", 75, 0, 13, 77, "", 1, "" },
+        /*307*/ { 2, 20, "A", 76, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", 1, "" },
+        /*308*/ { 2, 20, "\200", 51, 0, 13, 77, "", 899, "" },
+        /*309*/ { 2, 20, "\200", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", 899, "" },
+        /*310*/ { 2, 20, "\201", 62, 0, 13, 77, "", 20, "31 Shift JIS 0x8181" },
+        /*311*/ { 2, 20, "\201", 64, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-M, requires 54 codewords (maximum 53)", 20, "32 Shift JIS 0x8181" },
+        /*312*/ { 4, 20, "1", 66, 0, 13, 77, "", 1, "" },
+        /*313*/ { 4, 20, "1", 67, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", 1, "" },
+        /*314*/ { 4, 20, "A", 40, 0, 13, 77, "", 1, "" },
+        /*315*/ { 4, 20, "A", 41, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", 1, "" },
+        /*316*/ { 4, 20, "\200", 27, 0, 13, 77, "", 899, "" },
+        /*317*/ { 4, 20, "\200", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 30 codewords (maximum 29)", 899, "" },
+        /*318*/ { 4, 20, "\201", 34, 0, 13, 77, "", 20, "17 Shift JIS 0x8181" },
+        /*319*/ { 4, 20, "\201", 36, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 20 R13x77-H, requires 31 codewords (maximum 29)", 20, "18 Shift JIS 0x8181" },
+        /*320*/ { 2, 21, "1", 171, 0, 13, 99, "", 1, "" },
+        /*321*/ { 2, 21, "1", 172, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", 1, "" },
+        /*322*/ { 2, 21, "A", 104, 0, 13, 99, "", 1, "" },
+        /*323*/ { 2, 21, "A", 105, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", 1, "" },
+        /*324*/ { 2, 21, "\200", 71, 0, 13, 99, "", 899, "" },
+        /*325*/ { 2, 21, "\200", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 74 codewords (maximum 73)", 899, "" },
+        /*326*/ { 2, 21, "\201", 88, 0, 13, 99, "", 20, "44 Shift JIS 0x8181" },
+        /*327*/ { 2, 21, "\201", 90, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-M, requires 75 codewords (maximum 73)", 20, "45 Shift JIS 0x8181" },
+        /*328*/ { 4, 21, "1", 80, 0, 13, 99, "", 1, "" },
+        /*329*/ { 4, 21, "1", 81, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", 1, "" },
+        /*330*/ { 4, 21, "A", 49, 0, 13, 99, "", 1, "" },
+        /*331*/ { 4, 21, "A", 50, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", 1, "" },
+        /*332*/ { 4, 21, "\200", 33, 0, 13, 99, "", 899, "" },
+        /*333*/ { 4, 21, "\200", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", 899, "" },
+        /*334*/ { 4, 21, "\201", 40, 0, 13, 99, "", 20, "20 Shift JIS 0x8181" },
+        /*335*/ { 4, 21, "\201", 42, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 21 R13x99-H, requires 36 codewords (maximum 35)", 20, "21 Shift JIS 0x8181" },
+        /*336*/ { 2, 22, "1", 251, 0, 13, 139, "", 1, "" },
+        /*337*/ { 2, 22, "1", 252, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", 1, "" },
+        /*338*/ { 2, 22, "A", 152, 0, 13, 139, "", 1, "" },
+        /*339*/ { 2, 22, "A", 153, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", 1, "" },
+        /*340*/ { 2, 22, "\200", 104, 0, 13, 139, "", 899, "" },
+        /*341*/ { 2, 22, "\200", 105, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", 899, "" },
+        /*342*/ { 2, 22, "\201", 128, 0, 13, 139, "", 20, "64 Shift JIS 0x8181" },
+        /*343*/ { 2, 22, "\201", 130, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-M, requires 107 codewords (maximum 106)", 20, "65 Shift JIS 0x8181" },
+        /*344*/ { 4, 22, "1", 126, 0, 13, 139, "", 1, "" },
+        /*345*/ { 4, 22, "1", 127, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", 1, "" },
+        /*346*/ { 4, 22, "A", 76, 0, 13, 139, "", 1, "" },
+        /*347*/ { 4, 22, "A", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", 1, "" },
+        /*348*/ { 4, 22, "\200", 52, 0, 13, 139, "", 899, "" },
+        /*349*/ { 4, 22, "\200", 53, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", 899, "" },
+        /*350*/ { 4, 22, "\201", 64, 0, 13, 139, "", 20, "32 Shift JIS 0x8181" },
+        /*351*/ { 4, 22, "\201", 66, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 22 R13x139-H, requires 55 codewords (maximum 54)", 20, "33 Shift JIS 0x8181" },
+        /*352*/ { 2, 23, "1", 76, 0, 15, 43, "", 1, "" },
+        /*353*/ { 2, 23, "1", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", 1, "" },
+        /*354*/ { 2, 23, "A", 46, 0, 15, 43, "", 1, "" },
+        /*355*/ { 2, 23, "A", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", 1, "" },
+        /*356*/ { 2, 23, "\200", 31, 0, 15, 43, "", 899, "" },
+        /*357*/ { 2, 23, "\200", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", 899, "" },
+        /*358*/ { 2, 23, "\201", 38, 0, 15, 43, "", 20, "19 Shift JIS 0x8181" },
+        /*359*/ { 2, 23, "\201", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-M, requires 34 codewords (maximum 33)", 20, "20 Shift JIS 0x8181" },
+        /*360*/ { 4, 23, "1", 33, 0, 15, 43, "", 1, "" },
+        /*361*/ { 4, 23, "1", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", 1, "" },
+        /*362*/ { 4, 23, "A", 20, 0, 15, 43, "", 1, "" },
+        /*363*/ { 4, 23, "A", 21, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", 1, "" },
+        /*364*/ { 4, 23, "\200", 13, 0, 15, 43, "", 899, "" },
+        /*365*/ { 4, 23, "\200", 14, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", 899, "" },
+        /*366*/ { 4, 23, "\201", 16, 0, 15, 43, "", 20, "8 Shift JIS 0x8181" },
+        /*367*/ { 4, 23, "\201", 18, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 23 R15x43-H, requires 16 codewords (maximum 15)", 20, "9 Shift JIS 0x8181" },
+        /*368*/ { 2, 24, "1", 112, 0, 15, 59, "", 1, "" },
+        /*369*/ { 2, 24, "1", 113, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", 1, "" },
+        /*370*/ { 2, 24, "A", 68, 0, 15, 59, "", 1, "" },
+        /*371*/ { 2, 24, "A", 69, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", 1, "" },
+        /*372*/ { 2, 24, "\200", 46, 0, 15, 59, "", 899, "" },
+        /*373*/ { 2, 24, "\200", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", 899, "" },
+        /*374*/ { 2, 24, "\201", 56, 0, 15, 59, "", 20, "28 Shift JIS 0x8181" },
+        /*375*/ { 2, 24, "\201", 58, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-M, requires 49 codewords (maximum 48)", 20, "29 Shift JIS 0x8181" },
+        /*376*/ { 4, 24, "1", 59, 0, 15, 59, "", 1, "" },
+        /*377*/ { 4, 24, "1", 60, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", 1, "" },
+        /*378*/ { 4, 24, "A", 36, 0, 15, 59, "", 1, "" },
+        /*379*/ { 4, 24, "A", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", 1, "" },
+        /*380*/ { 4, 24, "\200", 24, 0, 15, 59, "", 899, "" },
+        /*381*/ { 4, 24, "\200", 25, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", 899, "" },
+        /*382*/ { 4, 24, "\201", 30, 0, 15, 59, "", 20, "30 Shift JIS 0x8181" },
+        /*383*/ { 4, 24, "\201", 32, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 24 R15x59-H, requires 27 codewords (maximum 26)", 20, "31 Shift JIS 0x8181" },
+        /*384*/ { 2, 25, "1", 157, 0, 15, 77, "", 1, "" },
+        /*385*/ { 2, 25, "1", 158, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", 1, "" },
+        /*386*/ { 2, 25, "A", 95, 0, 15, 77, "", 1, "" },
+        /*387*/ { 2, 25, "A", 96, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", 1, "" },
+        /*388*/ { 2, 25, "\200", 65, 0, 15, 77, "", 899, "" },
+        /*389*/ { 2, 25, "\200", 66, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", 899, "" },
+        /*390*/ { 2, 25, "\201", 80, 0, 15, 77, "", 20, "40 Shift JIS 0x8181" },
+        /*391*/ { 2, 25, "\201", 82, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-M, requires 68 codewords (maximum 67)", 20, "41 Shift JIS 0x8181" },
+        /*392*/ { 4, 25, "1", 71, 0, 15, 77, "", 1, "" },
+        /*393*/ { 4, 25, "1", 72, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", 1, "" },
+        /*394*/ { 4, 25, "A", 43, 0, 15, 77, "", 1, "" },
+        /*395*/ { 4, 25, "A", 44, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", 1, "" },
+        /*396*/ { 4, 25, "\200", 29, 0, 15, 77, "", 899, "" },
+        /*397*/ { 4, 25, "\200", 30, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", 899, "" },
+        /*398*/ { 4, 25, "\201", 36, 0, 15, 77, "", 20, "18 Shift JIS 0x8181" },
+        /*399*/ { 4, 25, "\201", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 25 R15x77-H, requires 32 codewords (maximum 31)", 20, "" },
+        /*400*/ { 2, 26, "1", 207, 0, 15, 99, "", 1, "" },
+        /*401*/ { 2, 26, "1", 208, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", 1, "" },
+        /*402*/ { 2, 26, "A", 126, 0, 15, 99, "", 1, "" },
+        /*403*/ { 2, 26, "A", 127, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", 1, "" },
+        /*404*/ { 2, 26, "\200", 86, 0, 15, 99, "", 899, "" },
+        /*405*/ { 2, 26, "\200", 87, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", 899, "" },
+        /*406*/ { 2, 26, "\201", 106, 0, 15, 99, "", 20, "53 Shift JIS 0x8181" },
+        /*407*/ { 2, 26, "\201", 108, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-M, requires 89 codewords (maximum 88)", 20, "54 Shift JIS 0x8181" },
+        /*408*/ { 4, 26, "1", 111, 0, 15, 99, "", 1, "" },
+        /*409*/ { 4, 26, "1", 112, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 1, "" },
+        /*410*/ { 4, 26, "A", 68, 0, 15, 99, "", 1, "" },
+        /*411*/ { 4, 26, "A", 69, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 1, "" },
+        /*412*/ { 4, 26, "\200", 46, 0, 15, 99, "", 899, "" },
+        /*413*/ { 4, 26, "\200", 47, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 899, "" },
+        /*414*/ { 4, 26, "\201", 56, 0, 15, 99, "", 20, "28 Shift JIS 0x8181" },
+        /*415*/ { 4, 26, "\201", 58, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 26 R15x99-H, requires 49 codewords (maximum 48)", 20, "29 Shift JIS 0x8181" },
+        /*416*/ { 2, 27, "1", 301, 0, 15, 139, "", 1, "" },
+        /*417*/ { 2, 27, "1", 302, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", 1, "" },
+        /*418*/ { 2, 27, "A", 182, 0, 15, 139, "", 1, "" },
+        /*419*/ { 2, 27, "A", 183, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", 1, "" },
+        /*420*/ { 2, 27, "\200", 125, 0, 15, 139, "", 899, "" },
+        /*421*/ { 2, 27, "\200", 126, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", 899, "" },
+        /*422*/ { 2, 27, "\201", 154, 0, 15, 139, "", 20, "77 Shift JIS 0x8181" },
+        /*423*/ { 2, 27, "\201", 156, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-M, requires 128 codewords (maximum 127)", 20, "78 Shift JIS 0x8181" },
+        /*424*/ { 4, 27, "1", 162, 0, 15, 139, "", 1, "" },
+        /*425*/ { 4, 27, "1", 163, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", 1, "" },
+        /*426*/ { 4, 27, "A", 98, 0, 15, 139, "", 1, "" },
+        /*427*/ { 4, 27, "A", 99, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", 1, "" },
+        /*428*/ { 4, 27, "\200", 67, 0, 15, 139, "", 899, "" },
+        /*429*/ { 4, 27, "\200", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", 899, "" },
+        /*430*/ { 4, 27, "\201", 82, 0, 15, 139, "", 20, "41 Shift JIS 0x8181" },
+        /*431*/ { 4, 27, "\201", 84, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 27 R15x139-H, requires 70 codewords (maximum 69)", 20, "42 Shift JIS 0x8181" },
+        /*432*/ { 2, 28, "1", 90, 0, 17, 43, "", 1, "" },
+        /*433*/ { 2, 28, "1", 91, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", 1, "" },
+        /*434*/ { 2, 28, "A", 55, 0, 17, 43, "", 1, "" },
+        /*435*/ { 2, 28, "A", 56, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", 1, "" },
+        /*436*/ { 2, 28, "\200", 37, 0, 17, 43, "", 899, "" },
+        /*437*/ { 2, 28, "\200", 38, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", 899, "" },
+        /*438*/ { 2, 28, "\201", 46, 0, 17, 43, "", 20, "23 Shift JIS 0x8181" },
+        /*439*/ { 2, 28, "\201", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-M, requires 40 codewords (maximum 39)", 20, "24 Shift JIS 0x8181" },
+        /*440*/ { 4, 28, "1", 47, 0, 17, 43, "", 1, "" },
+        /*441*/ { 4, 28, "1", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", 1, "" },
+        /*442*/ { 4, 28, "A", 28, 0, 17, 43, "", 1, "" },
+        /*443*/ { 4, 28, "A", 29, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", 1, "" },
+        /*444*/ { 4, 28, "\200", 19, 0, 17, 43, "", 899, "" },
+        /*445*/ { 4, 28, "\200", 20, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 22 codewords (maximum 21)", 899, "" },
+        /*446*/ { 4, 28, "\201", 24, 0, 17, 43, "", 20, "12 Shift JIS 0x8181" },
+        /*447*/ { 4, 28, "\201", 26, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 28 R17x43-H, requires 23 codewords (maximum 21)", 20, "13 Shift JIS 0x8181" },
+        /*448*/ { 2, 29, "1", 131, 0, 17, 59, "", 1, "" },
+        /*449*/ { 2, 29, "1", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", 1, "" },
+        /*450*/ { 2, 29, "A", 79, 0, 17, 59, "", 1, "" },
+        /*451*/ { 2, 29, "A", 80, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", 1, "" },
+        /*452*/ { 2, 29, "\200", 54, 0, 17, 59, "", 899, "" },
+        /*453*/ { 2, 29, "\200", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", 899, "" },
+        /*454*/ { 2, 29, "\201", 66, 0, 17, 59, "", 20, "33 Shift JIS 0x8181" },
+        /*455*/ { 2, 29, "\201", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-M, requires 57 codewords (maximum 56)", 20, "34 Shift JIS 0x8181" },
+        /*456*/ { 4, 29, "1", 63, 0, 17, 59, "", 1, "" },
+        /*457*/ { 4, 29, "1", 64, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", 1, "" },
+        /*458*/ { 4, 29, "A", 38, 0, 17, 59, "", 1, "" },
+        /*459*/ { 4, 29, "A", 39, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", 1, "" },
+        /*460*/ { 4, 29, "\200", 26, 0, 17, 59, "", 899, "" },
+        /*461*/ { 4, 29, "\200", 27, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", 899, "" },
+        /*462*/ { 4, 29, "\201", 32, 0, 17, 59, "", 20, "16 Shift JIS 0x8181" },
+        /*463*/ { 4, 29, "\201", 34, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 29 R17x59-H, requires 29 codewords (maximum 28)", 20, "17 Shift JIS 0x8181" },
+        /*464*/ { 2, 30, "1", 183, 0, 17, 77, "", 1, "" },
+        /*465*/ { 2, 30, "1", 184, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", 1, "" },
+        /*466*/ { 2, 30, "A", 111, 0, 17, 77, "", 1, "" },
+        /*467*/ { 2, 30, "A", 112, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", 1, "" },
+        /*468*/ { 2, 30, "\200", 76, 0, 17, 77, "", 899, "" },
+        /*469*/ { 2, 30, "\200", 77, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 79 codewords (maximum 78)", 899, "" },
+        /*470*/ { 2, 30, "\201", 94, 0, 17, 77, "", 20, "47 Shift JIS 0x8181" },
+        /*471*/ { 2, 30, "\201", 96, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-M, requires 80 codewords (maximum 78)", 20, "48 Shift JIS 0x8181" },
+        /*472*/ { 4, 30, "1", 87, 0, 17, 77, "", 1, "" },
+        /*473*/ { 4, 30, "1", 88, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", 1, "" },
+        /*474*/ { 4, 30, "A", 53, 0, 17, 77, "", 1, "" },
+        /*475*/ { 4, 30, "A", 54, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", 1, "" },
+        /*476*/ { 4, 30, "\200", 36, 0, 17, 77, "", 899, "" },
+        /*477*/ { 4, 30, "\200", 37, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", 899, "" },
+        /*478*/ { 4, 30, "\201", 44, 0, 17, 77, "", 20, "22 Shift JIS 0x8181" },
+        /*479*/ { 4, 30, "\201", 46, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 30 R17x77-H, requires 39 codewords (maximum 38)", 20, "23 Shift JIS 0x8181" },
+        /*480*/ { 2, 31, "1", 236, 0, 17, 99, "", 1, "" },
+        /*481*/ { 2, 31, "1", 237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", 1, "" },
+        /*482*/ { 2, 31, "A", 143, 0, 17, 99, "", 1, "" },
+        /*483*/ { 2, 31, "A", 144, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", 1, "" },
+        /*484*/ { 2, 31, "\200", 98, 0, 17, 99, "", 899, "" },
+        /*485*/ { 2, 31, "\200", 99, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", 899, "" },
+        /*486*/ { 2, 31, "\201", 120, 0, 17, 99, "", 20, "60 Shift JIS 0x8181" },
+        /*487*/ { 2, 31, "\201", 122, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-M, requires 101 codewords (maximum 100)", 20, "61 Shift JIS 0x8181" },
+        /*488*/ { 4, 31, "1", 131, 0, 17, 99, "", 1, "" },
+        /*489*/ { 4, 31, "1", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", 1, "" },
+        /*490*/ { 4, 31, "A", 79, 0, 17, 99, "", 1, "" },
+        /*491*/ { 4, 31, "A", 80, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", 1, "" },
+        /*492*/ { 4, 31, "\200", 54, 0, 17, 99, "", 899, "" },
+        /*493*/ { 4, 31, "\200", 55, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", 899, "" },
+        /*494*/ { 4, 31, "\201", 66, 0, 17, 99, "", 20, "33 Shift JIS 0x8181" },
+        /*495*/ { 4, 31, "\201", 68, ZINT_ERROR_TOO_LONG, 0, 0, "Error 560: Input too long for Version 31 R17x99-H, requires 57 codewords (maximum 56)", 20, "34 Shift JIS 0x8181" },
+        /*496*/ { 2, 32, "1", 361, 0, 17, 139, "", 1, "" },
+        /*497*/ { 2, 32, "1", 362, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", 1, "" },
+        /*498*/ { 2, 32, "A", 219, 0, 17, 139, "", 1, "" },
+        /*499*/ { 2, 32, "A", 220, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", 1, "" },
+        /*500*/ { 2, 32, "\200", 150, 0, 17, 139, "", 899, "" },
+        /*501*/ { 2, 32, "\200", 151, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", 899, "" },
+        /*502*/ { 2, 32, "\201", 184, 0, 17, 139, "", 20, "92 Shift JIS 0x8181" },
+        /*503*/ { 2, 32, "\201", 186, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level M, requires 153 codewords (maximum 152)", 20, "93 Shift JIS 0x8181" },
+        /*504*/ { 4, 32, "1", 178, 0, 17, 139, "", 1, "" },
+        /*505*/ { 4, 32, "1", 179, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", 1, "" },
+        /*506*/ { 4, 32, "A", 108, 0, 17, 139, "", 1, "" },
+        /*507*/ { 4, 32, "A", 109, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", 1, "" },
+        /*508*/ { 4, 32, "\200", 74, 0, 17, 139, "", 899, "" },
+        /*509*/ { 4, 32, "\200", 75, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 77 codewords (maximum 76)", 899, "" },
+        /*510*/ { 4, 32, "\201", 92, 0, 17, 139, "", 20, "46 Shift JIS 0x8181" },
+        /*511*/ { 4, 32, "\201", 94, ZINT_ERROR_TOO_LONG, 0, 0, "Error 578: Input too long for ECC level H, requires 78 codewords (maximum 76)", 20, "47 Shift JIS 0x8181" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -7743,9 +8205,10 @@ static void test_rmqr_large(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -7755,19 +8218,23 @@ static void test_rmqr_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                    i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_RMQR, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, ZINT_FULL_MULTIBYTE, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, ZINT_FULL_MULTIBYTE, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %d, %d, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %d, %d, \"%s\", %d, %s, %d, %d, \"%s\", %d, \"%s\" },\n",
                     i, data[i].option_1, data[i].option_2,
-                    testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+                    testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)),
+                    data[i].length, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt,
+                    data[i].zxingcpp_cmp, data[i].comment);
         } else {
             assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
             if (ret < ZINT_ERROR) {
@@ -7786,13 +8253,19 @@ static void test_rmqr_large(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[17 * 139 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, data[i].zxingcpp_cmp, cmp_buf,
+                                sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/,
+                                escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }
@@ -7908,9 +8381,10 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
     char cmp_msg[1024];
     char option_3_buf[64];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -7949,19 +8423,19 @@ static void test_rmqr_options(const testCtx *const p_ctx) {
             assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d\n", i, ret, data[i].ret_vector);
 
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
-                if (!data[i].zxingcpp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
-                } else {
-                    int cmp_len, ret_len;
-                    char modules_dump[17 * 139 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                int cmp_len, ret_len;
+                char modules_dump[17 * 139 + 1];
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                            cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
-                }
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                            NULL /*primary*/, escaped, &ret_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -7994,78 +8468,78 @@ static void test_rmqr_input(const testCtx *const p_ctx) {
         /*  1*/ { UNICODE_MODE, 3, 4, 11, -1, "é", 0, 3, "E0 6C F4 80 EC", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
         /*  2*/ { UNICODE_MODE, 20, -1, -1, -1, "é", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "é not in Shift JIS" },
         /*  3*/ { UNICODE_MODE, 26, 4, 11, -1, "é", 0, 26, "E3 4D 61 D4 80", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /*  4*/ { DATA_MODE, 0, 4, 11, -1, "é", 0, 0, "6B 0E A4 00 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /*  5*/ { DATA_MODE, 0, 4, 11, -1, "\351", 0, 0, "67 A4 00 EC 11", 1, 1, "B1 (ISO 8859-1)" },
+        /*  4*/ { DATA_MODE, 0, 4, 11, -1, "é", 0, 0, "6B 0E A4 00 EC", 1, 1, "B2 (UTF-8)" },
+        /*  5*/ { DATA_MODE, 0, 4, 11, -1, "\351", 0, 0, "67 A4 00 EC 11", 1, 3, "B1 (ISO 8859-1)" },
         /*  6*/ { UNICODE_MODE, 0, 4, 11, -1, "β", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 80 00 EC 11", 1, 1, "K1 (Shift JIS)" },
         /*  7*/ { UNICODE_MODE, 9, 4, 11, -1, "β", 0, 9, "E1 2C F1 00 EC", 1, 1, "ECI-9 B1 (ISO 8859-7)" },
         /*  8*/ { UNICODE_MODE, 20, 4, 11, -1, "β", 0, 20, "E2 91 10 00 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /*  9*/ { UNICODE_MODE, 26, 4, 11, -1, "β", 0, 26, "E3 4D 67 59 00", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 10*/ { DATA_MODE, 0, 4, 11, -1, "β", 0, 0, "6B 3A C8 00 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 10*/ { DATA_MODE, 0, 4, 11, -1, "β", 0, 0, "6B 3A C8 00 EC", 1, 1, "B2 (UTF-8)" },
         /* 11*/ { UNICODE_MODE, 0, 4, 11, -1, "ก", ZINT_WARN_USES_ECI, 13, "Warning E1 AC D0 80 EC", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
         /* 12*/ { UNICODE_MODE, 13, 4, 11, -1, "ก", 0, 13, "E1 AC D0 80 EC", 1, 1, "ECI-13 B1 (ISO 8859-11)" },
         /* 13*/ { UNICODE_MODE, 20, -1, -1, -1, "ก", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "ก not in Shift JIS" },
         /* 14*/ { UNICODE_MODE, 26, 2, 11, -1, "ก", 0, 26, "E3 4D F0 5C 40 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 15*/ { DATA_MODE, 0, 4, 11, -1, "ก", 0, 0, "6F 82 E2 04 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 15*/ { DATA_MODE, 0, 4, 11, -1, "ก", 0, 0, "6F 82 E2 04 00", 1, 1, "B3 (UTF-8)" },
         /* 16*/ { UNICODE_MODE, 0, 4, 11, -1, "Ж", ZINT_WARN_NONCOMPLIANT, 0, "Warning 88 91 C0 EC 11", 1, 1, "K1 (Shift JIS)" },
         /* 17*/ { UNICODE_MODE, 7, 4, 11, -1, "Ж", 0, 7, "E0 EC DB 00 EC", 1, 1, "ECI-7 B1 (ISO 8859-5)" },
         /* 18*/ { UNICODE_MODE, 20, 4, 11, -1, "Ж", 0, 20, "E2 91 12 38 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /* 19*/ { UNICODE_MODE, 26, 4, 11, -1, "Ж", 0, 26, "E3 4D 68 4B 00", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 20*/ { DATA_MODE, 0, 4, 11, -1, "Ж", 0, 0, "6B 42 58 00 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 20*/ { DATA_MODE, 0, 4, 11, -1, "Ж", 0, 0, "6B 42 58 00 EC", 1, 1, "B2 (UTF-8)" },
         /* 21*/ { UNICODE_MODE, 0, 2, 11, -1, "ກ", ZINT_WARN_USES_ECI, 26, "Warning E3 4D F0 5D 40 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
         /* 22*/ { UNICODE_MODE, 20, -1, -1, -1, "ກ", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "ກ not in Shift JIS" },
         /* 23*/ { UNICODE_MODE, 26, 2, 11, -1, "ກ", 0, 26, "E3 4D F0 5D 40 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 24*/ { DATA_MODE, 0, 4, 11, -1, "ກ", 0, 0, "6F 82 EA 04 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 24*/ { DATA_MODE, 0, 4, 11, -1, "ກ", 0, 0, "6F 82 EA 04 00", 1, 1, "B3 (UTF-8)" },
         /* 25*/ { UNICODE_MODE, 0, 4, 11, -1, "\\", 0, 0, "65 70 00 EC 11", 1, 1, "B1 (ASCII)" },
         /* 26*/ { UNICODE_MODE, 20, 4, 11, -1, "\\", 0, 20, "E2 91 00 F8 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /* 27*/ { UNICODE_MODE, 20, 4, 11, -1, "[", 0, 20, "E2 8C AD 80 EC", 1, 1, "B1 (ASCII)" },
         /* 28*/ { UNICODE_MODE, 20, 4, 11, -1, "\177", 0, 20, "E2 8C BF 80 EC", 1, 1, "ECI-20 B1 (ASCII)" },
-        /* 29*/ { UNICODE_MODE, 0, 4, 11, -1, "¥", 0, 0, "66 94 00 EC 11", 1, 0, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous); ZXing-C++ test can't handle it" },
+        /* 29*/ { UNICODE_MODE, 0, 4, 11, -1, "¥", 0, 0, "66 94 00 EC 11", 1, 3, "B1 (ISO 8859-1) (same bytes as ･ Shift JIS below, so ambiguous)" },
         /* 30*/ { UNICODE_MODE, 3, 4, 11, -1, "¥", 0, 3, "E0 6C D2 80 EC", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
-        /* 31*/ { UNICODE_MODE, 20, 4, 11, -1, "¥", 0, 20, "E2 8C AE 00 EC", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode); ZXing-C++ test can't handle it" },
+        /* 31*/ { UNICODE_MODE, 20, 4, 11, -1, "¥", 0, 20, "E2 8C AE 00 EC", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte backslash codepoint 5C, so byte mode); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 32*/ { UNICODE_MODE, 26, 4, 11, -1, "¥", 0, 26, "E3 4D 61 52 80", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 33*/ { DATA_MODE, 0, 4, 11, -1, "¥", 0, 0, "6B 0A 94 00 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 33*/ { DATA_MODE, 0, 4, 11, -1, "¥", 0, 0, "6B 0A 94 00 EC", 1, 1, "B2 (UTF-8)" },
         /* 34*/ { UNICODE_MODE, 0, 4, 11, -1, "･", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 94 00 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint A5 (same bytes as ¥ ISO 8859-1 above, so ambiguous)" },
         /* 35*/ { UNICODE_MODE, 3, -1, -1, -1, "･", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 36*/ { UNICODE_MODE, 20, 4, 11, -1, "･", 0, 20, "E2 8C D2 80 EC", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint A5" },
         /* 37*/ { UNICODE_MODE, 26, 2, 11, -1, "･", 0, 26, "E3 4D F7 DE D2 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 38*/ { DATA_MODE, 0, 4, 11, -1, "･", 0, 0, "6F BE F6 94 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 39*/ { UNICODE_MODE, 0, 4, 11, -1, "¿", 0, 0, "66 FC 00 EC 11", 1, 0, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous); ZXing-C++ test can't handle it" },
+        /* 38*/ { DATA_MODE, 0, 4, 11, -1, "･", 0, 0, "6F BE F6 94 00", 1, 1, "B3 (UTF-8)" },
+        /* 39*/ { UNICODE_MODE, 0, 4, 11, -1, "¿", 0, 0, "66 FC 00 EC 11", 1, 3, "B1 (ISO 8859-1) (same bytes as ｿ Shift JIS below, so ambiguous)" },
         /* 40*/ { UNICODE_MODE, 3, 4, 11, -1, "¿", 0, 3, "E0 6C DF 80 EC", 1, 1, "ECI-3 B1 (ISO 8859-1)" },
         /* 41*/ { UNICODE_MODE, 20, 4, 11, -1, "¿", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "¿ not in Shift JIS" },
         /* 42*/ { UNICODE_MODE, 26, 4, 11, -1, "¿", 0, 26, "E3 4D 61 5F 80", 1, 1, "ECI-26 B2 (UTF-8)" },
-        /* 43*/ { DATA_MODE, 0, 4, 11, -1, "¿", 0, 0, "6B 0A FC 00 EC", 1, 0, "B2 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 43*/ { DATA_MODE, 0, 4, 11, -1, "¿", 0, 0, "6B 0A FC 00 EC", 1, 1, "B2 (UTF-8)" },
         /* 44*/ { UNICODE_MODE, 0, 4, 11, -1, "ｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 66 FC 00 EC 11", 1, 1, "B1 (Shift JIS) single-byte codepoint BF (same bytes as ¿ ISO 8859-1 above, so ambiguous)" },
         /* 45*/ { UNICODE_MODE, 3, 4, 11, -1, "ｿ", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 46*/ { UNICODE_MODE, 20, 4, 11, -1, "ｿ", 0, 20, "E2 8C DF 80 EC", 1, 1, "ECI-20 B1 (Shift JIS) single-byte codepoint BF" },
         /* 47*/ { UNICODE_MODE, 26, 2, 11, -1, "ｿ", 0, 26, "E3 4D F7 DE DF 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 48*/ { DATA_MODE, 0, 4, 11, -1, "ｿ", 0, 0, "6F BE F6 FC 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 48*/ { DATA_MODE, 0, 4, 11, -1, "ｿ", 0, 0, "6F BE F6 FC 00", 1, 1, "B3 (UTF-8)" },
         /* 49*/ { UNICODE_MODE, 0, 4, 11, -1, "~", 0, 0, "65 F8 00 EC 11", 1, 1, "B1 (ASCII) (same bytes as ‾ Shift JIS below, so ambiguous)" },
         /* 50*/ { UNICODE_MODE, 3, 4, 11, -1, "~", 0, 3, "E0 6C BF 00 EC", 1, 1, "ECI-3 B1 (ASCII)" },
         /* 51*/ { UNICODE_MODE, 20, 4, 11, -1, "~", ZINT_ERROR_INVALID_DATA, -1, "Error 800: Invalid character in input", 1, 1, "tilde not in Shift JIS (codepoint used for overline)" },
-        /* 52*/ { UNICODE_MODE, 0, 4, 11, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 65 F8 00 EC 11", 1, 0, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ test can't handle it" },
+        /* 52*/ { UNICODE_MODE, 0, 4, 11, -1, "‾", ZINT_WARN_NONCOMPLIANT, 0, "Warning 65 F8 00 EC 11", 1, 0, "B1 (Shift JIS) single-byte codepoint 7E (same bytes as ~ ASCII above, so ambiguous); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 53*/ { UNICODE_MODE, 3, 4, 11, -1, "‾", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
-        /* 54*/ { UNICODE_MODE, 20, 4, 11, -1, "‾", 0, 20, "E2 8C BF 00 EC", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode); ZXing-C++ test can't handle it" },
+        /* 54*/ { UNICODE_MODE, 20, 4, 11, -1, "‾", 0, 20, "E2 8C BF 00 EC", 1, 0, "ECI-20 B1 (Shift JIS) (to single-byte tilde codepoint 7E, so byte mode); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 55*/ { UNICODE_MODE, 26, 2, 11, -1, "‾", 0, 26, "E3 4D F1 40 5F 00 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 56*/ { DATA_MODE, 0, 4, 11, -1, "‾", 0, 0, "6F 8A 02 F8 00", 1, 0, "B3 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 56*/ { DATA_MODE, 0, 4, 11, -1, "‾", 0, 0, "6F 8A 02 F8 00", 1, 26, "B3 (UTF-8)" },
         /* 57*/ { UNICODE_MODE, 0, 4, 11, -1, "点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8B 67 C0 EC 11", 1, 1, "K1 (Shift JIS)" },
         /* 58*/ { UNICODE_MODE, 3, 4, 11, -1, "点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
         /* 59*/ { UNICODE_MODE, 20, 4, 11, -1, "点", 0, 20, "E2 91 6C F8 EC", 1, 1, "ECI-20 K1 (Shift JIS)" },
         /* 60*/ { UNICODE_MODE, 26, 2, 11, -1, "点", 0, 26, "E3 4D F3 C1 5C 80 EC", 1, 1, "ECI-26 B3 (UTF-8)" },
-        /* 61*/ { DATA_MODE, 0, 4, 11, -1, "点", 0, 0, "6F 9E 0A E4 00", 1, 0, "B3 (UTF-8; ZXing-C++ test can't handle DATA_MODE for certain inputs)" },
-        /* 62*/ { DATA_MODE, 0, 4, 11, -1, "\223\137", 0, 0, "6A 4D 7C 00 EC", 0, 0, "B2 (Shift JIS) (not full multibyte); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
-        /* 63*/ { DATA_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "8B 67 C0 EC 11", 1, 1, "K1 (Shift JIS)" },
-        /* 64*/ { UNICODE_MODE, 0, 4, 11, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 71 72 96 4D 7C", 1, 0, "B4 (Shift JIS) (optimized to byte mode only); ZXing-C++ test can't handle it" },
+        /* 61*/ { DATA_MODE, 0, 4, 11, -1, "点", 0, 0, "6F 9E 0A E4 00", 1, 1, "B3 (UTF-8)" },
+        /* 62*/ { DATA_MODE, 0, 4, 11, -1, "\223\137", 0, 0, "6A 4D 7C 00 EC", 0, 20, "B2 (Shift JIS) (not full multibyte); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 63*/ { DATA_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "\223\137", 0, 0, "8B 67 C0 EC 11", 1, 20, "K1 (Shift JIS)" },
+        /* 64*/ { UNICODE_MODE, 0, 4, 11, -1, "¥･点", ZINT_WARN_NONCOMPLIANT, 0, "Warning 71 72 96 4D 7C", 1, 0, "B4 (Shift JIS) (optimized to byte mode only); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 65*/ { UNICODE_MODE, 3, -1, -1, -1, "¥･点", ZINT_ERROR_INVALID_DATA, -1, "Error 575: Invalid character in input for ECI '3'", 1, 1, "" },
-        /* 66*/ { UNICODE_MODE, 20, 2, 11, -1, "¥･点", 0, 20, "E2 8E 2E 52 C9 AF 80", 1, 0, "ECI-20 B4 (Shift JIS); ZXing-C++ test can't handle it" },
+        /* 66*/ { UNICODE_MODE, 20, 2, 11, -1, "¥･点", 0, 20, "E2 8E 2E 52 C9 AF 80", 1, 0, "ECI-20 B4 (Shift JIS); ZXing-C++ does straight-thru Shift JIS ASCII" },
         /* 67*/ { UNICODE_MODE, 26, 2, 17, -1, "¥･点", 0, 26, "E3 4E 30 A9 7B EF 69 79 E0 AE 40 EC", 1, 1, "ECI-26 B8 (UTF-8)" },
-        /* 68*/ { DATA_MODE, 0, 4, 11, -1, "\134\245\223\137", 0, 0, "71 72 96 4D 7C", 1, 0, "B8 (Shift JIS; ZXing-C++ test can't handle DATA_MODE for certain inputs)" },
-        /* 69*/ { DATA_MODE, 0, 2, 17, -1, "¥･点", 0, 0, "71 85 4B DF 7B 4B CF 05 72 00 EC 11", 1, 0, "B8 (UTF-8); ZXing-C++ test can't handle DATA_MODE for certain inputs" },
+        /* 68*/ { DATA_MODE, 0, 4, 11, -1, "\134\245\223\137", 0, 0, "71 72 96 4D 7C", 1, 0, "B8 (Shift JIS; ZXing-C++ does straight-thru Shift JIS ASCII" },
+        /* 69*/ { DATA_MODE, 0, 2, 17, -1, "¥･点", 0, 0, "71 85 4B DF 7B 4B CF 05 72 00 EC 11", 1, 26, "B8 (UTF-8)" },
         /* 70*/ { UNICODE_MODE, 0, 4, 11, -1, "点茗", ZINT_WARN_NONCOMPLIANT, 0, "Warning 93 67 F5 54 00", 1, 1, "K2 (Shift JIS)" },
         /* 71*/ { UNICODE_MODE, 0, 2, 12, -1, "点茗テ点茗テｿ", ZINT_WARN_NONCOMPLIANT, 0, "Warning 8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", 1, 1, "K6 B1 (Shift JIS)" },
-        /* 72*/ { DATA_MODE, 0, 2, 12, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "6D 93 5F E4 AA 83 65 93 5F E4 AA 83 65 BF 00 EC 11 EC 11", 0, 0, "B13 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below); ZXing-C++ test can't handle it" },
-        /* 73*/ { DATA_MODE, 0, 2, 12, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", 1, 1, "K6 B1 (Shift JIS) (full multibyte)" },
+        /* 72*/ { DATA_MODE, 0, 2, 12, -1, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "6D 93 5F E4 AA 83 65 93 5F E4 AA 83 65 BF 00 EC 11 EC 11", 0, 20, "B13 (Shift JIS); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
+        /* 73*/ { DATA_MODE, 0, 2, 12, ZINT_FULL_MULTIBYTE, "\223\137\344\252\203\145\223\137\344\252\203\145\277", 0, 0, "8C D9 FD 55 06 95 B3 FA AA 0D 2B 0D F8 EC 11 EC 11 EC 11", 1, 20, "K6 B1 (Shift JIS) (full multibyte)" },
         /* 74*/ { UNICODE_MODE, 0, 4, 11, -1, "áA", 0, 0, "6B 85 04 00 EC", 0, 1, "B2 (ISO 8859-1); BWIPP uses Kanji (ZINT_FULL_MULTIBYTE) mode, see below)" },
-        /* 75*/ { UNICODE_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "8E 00 40 EC 11", 1, 1, "K1 (ISO 8859-1) (full multibyte)" },
+        /* 75*/ { UNICODE_MODE, 0, 4, 11, ZINT_FULL_MULTIBYTE, "áA", 0, 0, "8E 00 40 EC 11", 1, 3, "K1 (ISO 8859-1) (full multibyte)" },
         /* 76*/ { UNICODE_MODE, 0, 2, 23, -1, "A0B1C2D3E4F5G6H7I8J9KLMNOPQRSTUVWXYZ $%*+-./:", 0, 0, "(33) 56 9C 23 E0 87 92 62 7A 55 0B 59 82 33 26 C0 E6 5F AC 51 95 B4 26 B2 DC 1C 3B 9E 76", 1, 1, "A45" },
         /* 77*/ { UNICODE_MODE, 0, 4, 11, -1, "˘", ZINT_WARN_USES_ECI, 4, "Warning E0 8C D1 00 EC", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
         /* 78*/ { UNICODE_MODE, 4, 4, 11, -1, "˘", 0, 4, "E0 8C D1 00 EC", 1, 1, "ECI-4 B1 (ISO 8859-2)" },
@@ -8116,10 +8590,11 @@ static void test_rmqr_input(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -8170,12 +8645,15 @@ static void test_rmqr_input(const testCtx *const p_ctx) {
                         int cmp_len, ret_len;
                         char modules_dump[17 * 139 + 1];
                         assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, escaped, &ret_len);
                         assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
                     }
                 }
             }
@@ -8220,9 +8698,10 @@ static void test_rmqr_gs1(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_gs1", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -8249,12 +8728,14 @@ static void test_rmqr_gs1(const testCtx *const p_ctx) {
                     int cmp_len, ret_len;
                     char modules_dump[17 * 139 + 1];
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }
@@ -8310,10 +8791,11 @@ static void test_rmqr_optimize(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_optimize", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -8355,12 +8837,14 @@ static void test_rmqr_optimize(const testCtx *const p_ctx) {
                 int cmp_len, ret_len;
                 char modules_dump[17 * 139 + 1];
                 assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            escaped, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -8778,10 +9262,11 @@ static void test_rmqr_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -8828,12 +9313,14 @@ static void test_rmqr_encode(const testCtx *const p_ctx) {
                     int cmp_len, ret_len;
                     char modules_dump[17 * 139 + 1];
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }
@@ -8960,10 +9447,11 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
     char cmp_buf[32768] = {0}; /* Suppress clang -fsanitize=memory false positive */
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_rmqr_encode_segs", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -9018,7 +9506,10 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
                 }
                 if (do_zxingcpp) {
                     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n", i, testUtilBarcodeName(symbol->symbology));
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
+                                    i, testUtilBarcodeName(symbol->symbology));
+                        }
                     } else {
                         int length = data[i].segs[0].length == -1 ? (int) ustrlen(data[i].segs[0].source) : data[i].segs[0].length;
                         if (testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length, debug)) {
@@ -9026,17 +9517,200 @@ static void test_rmqr_encode_segs(const testCtx *const p_ctx) {
                             char modules_dump[32768];
                             assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
                             ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length,
-                                    modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                                    modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
                             assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
                             ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
                                     NULL /*primary*/, escaped, &ret_len);
                             assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
                         }
                     }
                 }
             }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rmqr_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int eci;
+        int option_3;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  4*/ { UNICODE_MODE, -1, -1, -1, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "点", -1, ZINT_WARN_NONCOMPLIANT, 0, "\223\137", -1, 20 },
+        /*  6*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  7*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  8*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
+        /*  9*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, needs to be specified */
+        /* 10*/ { DATA_MODE, 20, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 20, "", -1, 0 },
+        /* 11*/ { DATA_MODE, 20, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 20, "\223\137", -1, 20 },
+        /* 12*/ { UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
+        /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 14*/ { UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
+        /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rmqr_rt_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int option_3;
+        int output_options;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        struct zint_seg expected_raw_segs[3];
+        int expected_raw_seg_count;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 11, 27, {{0}}, 0 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 11, 27, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  2*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, {{0}}, 0 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 11, 43, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  4*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },
+        /*  5*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /*  6*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, {{0}}, 0 },
+        /*  7*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 11, 43, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_RMQR, data[i].input_mode, -1 /*eci*/,
+                            -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d)\n",
+                    i, symbol->rows, data[i].expected_rows, symbol->width);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                    i, symbol->width, data[i].expected_width);
+
+        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
+                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            for (j = 0; j < symbol->raw_seg_count; j++) {
+                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+
+                expected_length = data[i].expected_raw_segs[j].length;
+
+                assert_equal(symbol->raw_segs[j].length, expected_length,
+                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->raw_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
+                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                                            sizeof(escaped)),
+                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                                            escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
+                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
+                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+            }
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -9072,7 +9746,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_fuzz", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -9102,6 +9776,8 @@ int main(int argc, char *argv[]) {
         { "test_qr_optimize", test_qr_optimize },
         { "test_qr_encode", test_qr_encode },
         { "test_qr_encode_segs", test_qr_encode_segs },
+        { "test_qr_rt", test_qr_rt },
+        { "test_qr_rt_segs", test_qr_rt_segs },
         { "test_qr_perf", test_qr_perf },
 
         { "test_microqr_options", test_microqr_options },
@@ -9109,10 +9785,12 @@ int main(int argc, char *argv[]) {
         { "test_microqr_padding", test_microqr_padding },
         { "test_microqr_optimize", test_microqr_optimize },
         { "test_microqr_encode", test_microqr_encode },
+        { "test_microqr_rt", test_microqr_rt },
         { "test_microqr_perf", test_microqr_perf },
 
         { "test_upnqr_input", test_upnqr_input },
         { "test_upnqr_encode", test_upnqr_encode },
+        { "test_upnqr_rt", test_upnqr_rt },
 
         { "test_rmqr_large", test_rmqr_large },
         { "test_rmqr_options", test_rmqr_options },
@@ -9121,6 +9799,8 @@ int main(int argc, char *argv[]) {
         { "test_rmqr_optimize", test_rmqr_optimize },
         { "test_rmqr_encode", test_rmqr_encode },
         { "test_rmqr_encode_segs", test_rmqr_encode_segs },
+        { "test_rmqr_rt", test_rmqr_rt },
+        { "test_rmqr_rt_segs", test_rmqr_rt_segs },
 
         { "test_fuzz", test_fuzz },
     };

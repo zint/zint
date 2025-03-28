@@ -43,50 +43,55 @@ static void test_input(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected;
+        const char *expected_raw;
         const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, "123456", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 792: Input length 6 too short (minimum 7)", "" },
-        /*  1*/ { UNICODE_MODE, -1, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 790: Input length 19 too long (maximum 18)", "" },
-        /*  2*/ { UNICODE_MODE, -1, "1234567", -1, 0, 1, 102, "1U234567", "" },
-        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "1234567", -1, 0, 1, 102, "1U234567", "" }, /* No difference */
-        /*  4*/ { UNICODE_MODE, -1, "1234567 ", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 8 in input (alphanumerics only, excluding \"O\")", "" },
-        /*  5*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQR", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 15 in input (alphanumerics only, excluding \"O\")", "" },
-        /*  6*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" },
-        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
-        /*  8*/ { UNICODE_MODE, -1, "STUVWXYZ1234567890", -1, 0, 1, 234, "SCTUVWXYZ1234567890", "" },
-        /*  9*/ { UNICODE_MODE, -1, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" },
-        /* 10*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "" }, /* No difference */
-        /* 11*/ { UNICODE_MODE, -1, "123456789012345678", -1, 0, 1, 234, "1223456789012345678", "" },
-        /* 12*/ { UNICODE_MODE, -1, "MMMMMMMMMMMMMMMMMM", -1, 0, 1, 234, "MTMMMMMMMMMMMMMMMMM", "" },
-        /* 13*/ { UNICODE_MODE, -1, "00000000", -1, 0, 1, 114, "000000000", "" },
-        /* 14*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "00000000", -1, 0, 1, 114, "000000000", "" }, /* No difference */
-        /* 15*/ { UNICODE_MODE, -1, "000000000", -1, 0, 1, 126, "0000000000", "" },
-        /* 16*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "000000000", -1, 0, 1, 126, "0000000000", "" }, /* No difference */
-        /* 17*/ { UNICODE_MODE, -1, "000S0S000S", -1, 0, 1, 138, "0S00S0S000S", "" },
-        /* 18*/ { UNICODE_MODE, -1, "ZYXWVUTSRQP", -1, 0, 1, 150, "Z0YXWVUTSRQP", "" },
-        /* 19*/ { UNICODE_MODE, -1, "0R9GLVHA8EZ4", -1, 0, 1, 162, "0DR9GLVHA8EZ4", "" },
-        /* 20*/ { UNICODE_MODE, -1, "NTS1J2Q6C7DYK", -1, 0, 1, 174, "NRTS1J2Q6C7DYK", "" },
-        /* 21*/ { UNICODE_MODE, -1, "TS1J2Q6C7DYKBU", -1, 0, 1, 186, "TWS1J2Q6C7DYKBU", "" },
-        /* 22*/ { UNICODE_MODE, -1, "IX3FWP5M0R9GLVH", -1, 0, 1, 198, "IBX3FWP5M0R9GLVH", "" },
-        /* 23*/ { UNICODE_MODE, -1, "R9GLVHA8EZ4NTS1J", -1, 0, 1, 210, "RY9GLVHA8EZ4NTS1J", "" },
-        /* 24*/ { UNICODE_MODE, -1, "M5PWF3XIUBKYD7C6Q", -1, 0, 1, 222, "M35PWF3XIUBKYD7C6Q", "" },
-        /* 25*/ { UNICODE_MODE, -1, "2J1STN4ZE8AHVLG90R", -1, 0, 1, 234, "2PJ1STN4ZE8AHVLG90R", "" },
-        /* 26*/ { UNICODE_MODE, -1, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "" },
-        /* 27*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "" }, /* No difference */
+        /*  0*/ { UNICODE_MODE, -1, "123456", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 792: Input length 6 too short (minimum 7)", "", "" },
+        /*  1*/ { UNICODE_MODE, -1, "1234567890123456789", -1, ZINT_ERROR_TOO_LONG, -1, -1, "Error 790: Input length 19 too long (maximum 18)", "", "" },
+        /*  2*/ { UNICODE_MODE, -1, "1234567", -1, 0, 1, 102, "1U234567", "", "" },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "1234567", -1, 0, 1, 102, "1U234567", "1U234567", "No difference" },
+        /*  4*/ { UNICODE_MODE, -1, "1234567 ", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 8 in input (alphanumerics only, excluding \"O\")", "", "" },
+        /*  5*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNOPQR", -1, ZINT_ERROR_INVALID_DATA, -1, -1, "Error 791: Invalid character at position 15 in input (alphanumerics only, excluding \"O\")", "", "" },
+        /*  6*/ { UNICODE_MODE, -1, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "", "" },
+        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "ABCDEFGHIJKLMNPQRS", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "AQBCDEFGHIJKLMNPQRS", "No difference" },
+        /*  8*/ { UNICODE_MODE, -1, "STUVWXYZ1234567890", -1, 0, 1, 234, "SCTUVWXYZ1234567890", "", "" },
+        /*  9*/ { UNICODE_MODE, -1, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "", "" },
+        /* 10*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "abcdefghijklmnpqrs", -1, 0, 1, 234, "AQBCDEFGHIJKLMNPQRS", "AQBCDEFGHIJKLMNPQRS", "No difference" },
+        /* 11*/ { UNICODE_MODE, -1, "123456789012345678", -1, 0, 1, 234, "1223456789012345678", "", "" },
+        /* 12*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "123456789012345678", -1, 0, 1, 234, "1223456789012345678", "1223456789012345678", "No difference" },
+        /* 13*/ { UNICODE_MODE, -1, "MMMMMMMMMMMMMMMMMM", -1, 0, 1, 234, "MTMMMMMMMMMMMMMMMMM", "", "" },
+        /* 14*/ { UNICODE_MODE, -1, "00000000", -1, 0, 1, 114, "000000000", "", "" },
+        /* 15*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "00000000", -1, 0, 1, 114, "000000000", "000000000", "" },
+        /* 16*/ { UNICODE_MODE, -1, "000000000", -1, 0, 1, 126, "0000000000", "", "" },
+        /* 17*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "000000000", -1, 0, 1, 126, "0000000000", "0000000000", "" },
+        /* 18*/ { UNICODE_MODE, -1, "000S0S000S", -1, 0, 1, 138, "0S00S0S000S", "", "" },
+        /* 19*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "000S0S000S", -1, 0, 1, 138, "0S00S0S000S", "0S00S0S000S", "" },
+        /* 20*/ { UNICODE_MODE, -1, "ZYXWVUTSRQP", -1, 0, 1, 150, "Z0YXWVUTSRQP", "", "" },
+        /* 21*/ { UNICODE_MODE, -1, "0R9GLVHA8EZ4", -1, 0, 1, 162, "0DR9GLVHA8EZ4", "", "" },
+        /* 22*/ { UNICODE_MODE, -1, "NTS1J2Q6C7DYK", -1, 0, 1, 174, "NRTS1J2Q6C7DYK", "", "" },
+        /* 23*/ { UNICODE_MODE, -1, "TS1J2Q6C7DYKBU", -1, 0, 1, 186, "TWS1J2Q6C7DYKBU", "", "" },
+        /* 24*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "TS1J2Q6C7DYKBU", -1, 0, 1, 186, "TWS1J2Q6C7DYKBU", "TWS1J2Q6C7DYKBU", "" },
+        /* 25*/ { UNICODE_MODE, -1, "IX3FWP5M0R9GLVH", -1, 0, 1, 198, "IBX3FWP5M0R9GLVH", "", "" },
+        /* 26*/ { UNICODE_MODE, -1, "R9GLVHA8EZ4NTS1J", -1, 0, 1, 210, "RY9GLVHA8EZ4NTS1J", "", "" },
+        /* 27*/ { UNICODE_MODE, -1, "M5PWF3XIUBKYD7C6Q", -1, 0, 1, 222, "M35PWF3XIUBKYD7C6Q", "", "" },
+        /* 28*/ { UNICODE_MODE, -1, "2J1STN4ZE8AHVLG90R", -1, 0, 1, 234, "2PJ1STN4ZE8AHVLG90R", "", "" },
+        /* 29*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "2J1STN4ZE8AHVLG90R", -1, 0, 1, 234, "2PJ1STN4ZE8AHVLG90R", "2PJ1STN4ZE8AHVLG90R", "" },
+        /* 30*/ { UNICODE_MODE, -1, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "", "" },
+        /* 31*/ { UNICODE_MODE, BARCODE_RAW_TEXT, "JJJJJJJJJJJJJJJJJJ", -1, 0, 1, 234, "J9JJJJJJJJJJJJJJJJJ", "J9JJJJJJJJJJJJJJJJJ", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -99,6 +104,7 @@ static void test_input(const testCtx *const p_ctx) {
                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
                     data[i].data, data[i].length, debug);
         expected_length = (int) strlen(data[i].expected);
+        expected_raw_length = (int) strlen(data[i].expected_raw);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -112,6 +118,18 @@ static void test_input(const testCtx *const p_ctx) {
                         i, symbol->text_length, expected_length);
             assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                         i, symbol->text, data[i].expected);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                            "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_raw_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                            "i:%d memcmp(%s, %s, %d) != 0\n",
+                            i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
                 char modules_dump[8192 + 1];
@@ -165,7 +183,7 @@ static void test_encode(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 

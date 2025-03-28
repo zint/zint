@@ -134,11 +134,13 @@ INTERNAL int codabar(struct zint_symbol *symbol, unsigned char source[], int len
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
     }
 
-    if (symbol->option_2 == 2 || (raw_text && add_checksum)) {
-        /* Place before final A/B/C/D character (BS EN 798:1995 A.3) */
-        hrt_printf_nochk(symbol, "%.*s%c%c", length - 1, source, CALCIUM[checksum], source[length - 1]);
-    } else {
-        hrt_cpy_nochk(symbol, source, length);
+    /* If visible check char, place before final A/B/C/D character (BS EN 798:1995 A.3) */
+    hrt_cpy_cat_nochk(symbol, source, length - 1, symbol->option_2 == 2 ? CALCIUM[checksum] : '\xFF',
+                        source + length - 1, 1);
+
+    if (raw_text && rt_cpy_cat(symbol, source, length - 1,
+                                add_checksum ? CALCIUM[checksum] : '\xFF', source + length - 1, 1)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;

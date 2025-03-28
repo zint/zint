@@ -1488,6 +1488,7 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
     int size_squared;
     int codewords;
     int bin_len;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int eci_length_segs = get_eci_length_segs(segs, seg_count);
     struct zint_seg *local_segs = (struct zint_seg *) z_alloca(sizeof(struct zint_seg) * seg_count);
@@ -1508,12 +1509,18 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
         user_mask = 0; /* Ignore */
     }
 
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
+
     if ((symbol->input_mode & 0x07) == DATA_MODE) {
-        gb18030_cpy_segs(local_segs, seg_count, ddata, full_multibyte);
+        if (gb18030_cpy_segs(symbol, local_segs, seg_count, ddata, full_multibyte)) {
+            return ZINT_ERROR_MEMORY; /* `gb18030_cpy_segs()` only fails with OOM */
+        }
     } else {
         unsigned int *dd = ddata;
         for (i = 0; i < seg_count; i++) {
-            int done = 0;
+            int done = 0, eci = local_segs[i].eci;
             if (local_segs[i].eci != 32 || seg_count > 1) { /* Unless ECI 32 (GB 18030) or have multiple segments */
                 /* Try other conversions (ECI 0 defaults to ISO/IEC 8859-1) */
                 int error_number = gb18030_utf8_to_eci(local_segs[i].eci, local_segs[i].source, &local_segs[i].length,
@@ -1535,6 +1542,10 @@ INTERNAL int hanxin(struct zint_symbol *symbol, struct zint_seg segs[], const in
                     warn_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 543,
                                             "Converted to GB 18030 but no ECI specified");
                 }
+                eci = 32;
+            }
+            if (raw_text && rt_cpy_seg_ddata(symbol, i, &local_segs[i], eci, dd)) {
+                return ZINT_ERROR_MEMORY; /* `rt_cpy_seg_ddata()` only fails with OOM */
             }
             dd += local_segs[i].length;
         }

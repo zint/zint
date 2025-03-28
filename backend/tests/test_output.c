@@ -70,7 +70,7 @@ static void test_check_colour_options(const testCtx *const p_ctx) {
     int i, ret;
     struct zint_symbol symbol = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_check_colour_options");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -116,7 +116,7 @@ static void test_colour_get_rgb(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_colour_get_rgb");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         /* Suppress clang-16 run-time exception MemorySanitizer: use-of-uninitialized-value (fixed in clang-17) */
@@ -176,7 +176,7 @@ static void test_colour_get_cmyk(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_colour_get_cmyk");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         /* Suppress clang -fsanitize=memory false positives */
@@ -214,7 +214,7 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
     int comp_xoffset = 0;
     float left, right, top, bottom;
 
-    testStart("test_quiet_zones");
+    testStart(p_ctx->func_name);
 
     for (i = 1; i <= BARCODE_LAST; i++) {
         if (!ZBarcode_ValidID(i)) continue;
@@ -270,7 +270,7 @@ static void test_set_whitespace_offsets(const testCtx *const p_ctx) {
     float xoffset, yoffset, roffset, boffset, qz_right;
     int xoffset_si, yoffset_si, roffset_si, boffset_si, qz_right_si;
 
-    testStart("test_set_whitespace_offsets");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         if (testContinue(p_ctx, i)) continue;
@@ -361,7 +361,7 @@ static void test_fopen(const testCtx *const p_ctx) {
     char subdirname[1024 + 256];
     int dir_exists, subdir_exists;
 
-    testStart("test_fopen");
+    testStart(p_ctx->func_name);
 
     assert_nonnull(getcwd(cwdbuf, sizeof(cwdbuf)), "getcwd NULL (%d, %s)\n", errno, strerror(errno));
 

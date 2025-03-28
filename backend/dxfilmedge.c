@@ -246,8 +246,8 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
 
     *output_length = bp;
 
-    if (raw_text) {
-        hrt_printf_nochk(symbol, "%04d%s", (dx_code_1 << 4) | dx_code_2, frame_info);
+    if (raw_text && rt_printf_256(symbol, "%04d%s", (dx_code_1 << 4) | dx_code_2, frame_info)) {
+        return ZINT_ERROR_MEMORY; /* `rt_printf_256()` only fails with OOM */
     }
 
     return 0;

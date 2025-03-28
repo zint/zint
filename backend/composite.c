@@ -1242,6 +1242,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (debug_print) printf("Reduced length: %d\n", length);
@@ -1588,6 +1589,15 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     }
 
     hrt_cpy_nochk(symbol, linear->text, linear->text_length);
+
+    if (raw_text) {
+        assert(linear->raw_segs && linear->raw_segs[0].source);
+        /* First linear, then pipe '|' separator (following BWIPP), then composite */
+        if (rt_cpy_cat(symbol, linear->raw_segs[0].source, linear->raw_segs[0].length, '|', source, length)) {
+            ZBarcode_Delete(linear);
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+        }
+    }
 
     ZBarcode_Delete(linear);
 

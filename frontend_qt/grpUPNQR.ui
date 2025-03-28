@@ -38,6 +38,28 @@
    <item>
     <layout class="QGridLayout" name="gridLayoutUPNQR">
      <item row="0" column="0">
+      <widget class="QLabel" name="lblUPNQRSizeECC">
+       <property name="text">
+        <string>Size:</string>
+       </property>
+       <property name="toolTip">
+        <string>Size (version) and error correction level
+(pre-set)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="lblUPNQRSizeECCMsg">
+       <property name="text">
+        <string>77 x 77 (Version 15), ECC Level M</string>
+       </property>
+       <property name="toolTip">
+        <string>Size (version) and error correction level
+(pre-set)</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
       <widget class="QLabel" name="labelUPNQRMask">
        <property name="text">
         <string>&amp;Mask:</string>
@@ -50,7 +72,7 @@
        </property>
       </widget>
      </item>
-     <item row="0" column="1">
+     <item row="1" column="1">
       <widget class="QComboBox" name="cmbUPNQRMask">
        <property name="toolTip">
         <string>Manually specify which mask to use</string>

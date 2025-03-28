@@ -90,7 +90,7 @@ static const char *pdf_mode_str(const int mode) {
    original Visual Basic source code file pdf417.frm
    this code retains some original (French) procedure and variable names to ease conversion */
 
-/* text mode processing tables */
+/* Text mode processing tables */
 
 /* TEX sub-mode assignments */
 static const char pdf_asciix[256] = {
@@ -229,7 +229,7 @@ static int pdf_text_num_length(short liste[3][PDF_MAX_LEN], const int indexliste
             break;
 
         len += liste[0][i];
-        if (len >= 5) /* we don't care if it's longer than 5 */
+        if (len >= 5) /* We don't care if it's longer than 5 */
             break;
     }
 
@@ -254,7 +254,7 @@ static int pdf_text_submode_length(const unsigned char chaine[], const int start
             /* Obliged to change table */
             int newtable;
             if (j == (length - 1) || !(listet[j] & listet[j + 1])) {
-                /* we change only one character - look for temporary switch */
+                /* We change only one character - look for temporary switch */
                 if ((listet[j] & T_ALPHA) && (curtable == T_LOWER)) {
                     wnet += 2; /* AS+char */
                     continue;
@@ -330,7 +330,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
     while (i < indexliste) {
 
         if ((liste[1][i] == PDF_NUM) && pdf_num_stay(chaine, indexliste, liste, i)) {
-            /* leave as numeric */
+            /* Leave as numeric */
             liste[0][last] = liste[0][i];
             liste[1][last] = PDF_NUM;
             liste[2][last] = liste[2][i];
@@ -339,7 +339,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
         } else if (((liste[1][i] == PDF_TEX) || (liste[1][i] == PDF_NUM))
                 && (stayintext || i == indexliste - 1 || (liste[0][i] >= 5)
                     || (pdf_text_num_length(liste, indexliste, i) >= 5))) {
-            /* set to text and combine additional text/short numeric segments */
+            /* Set to text and combine additional text/short numeric segments */
             liste[0][last] = liste[0][i];
             liste[1][last] = PDF_TEX;
             liste[2][last] = liste[2][i];
@@ -361,7 +361,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
             i = next;
             continue;
         } else {
-            /* build byte segment, including combining numeric/text segments that aren't long enough on their own */
+            /* Build byte segment, including combining numeric/text segments that aren't long enough on their own */
             liste[0][last] = liste[0][i];
             liste[1][last] = PDF_BYT;
             liste[2][last] = liste[2][i];
@@ -370,7 +370,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
             next = i + 1;
             while (next < indexliste) {
                 if (liste[1][next] != PDF_BYT) {
-                    /* check for case of a single byte shift from text mode */
+                    /* Check for case of a single byte shift from text mode */
                     if ((liste[0][last] == 1) && (last > 0) && (liste[1][last - 1] == PDF_TEX)) {
                         stayintext = 1;
                         break;
@@ -393,7 +393,7 @@ static void pdf_appendix_d_encode(const unsigned char *chaine, short liste[3][PD
         i++;
     }
 
-    /* set the size of the list based on the last consolidated segment */
+    /* Set the size of the list based on the last consolidated segment */
     *p_indexliste = last;
 }
 
@@ -432,12 +432,12 @@ static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned cha
     unsigned char chainet[PDF_MAX_STREAM_LEN];
     int wnet = 0;
 
-    /* add mode indicator if needed */
+    /* Add mode indicator if needed */
     if (real_lastmode != PDF_TEX) {
         chainemc[(*p_mclength)++] = 900;
     }
 
-    /* listet will contain the table numbers and the value of each characters */
+    /* `listet` will contain the table numbers and the value of each characters */
     for (indexlistet = 0; indexlistet < length; indexlistet++) {
         const int codeascii = chaine[start + indexlistet];
         listet[0][indexlistet] = pdf_asciix[codeascii];
@@ -454,7 +454,7 @@ static void pdf_textprocess(short *chainemc, int *p_mclength, const unsigned cha
             /* Obliged to change table */
             int newtable;
             if (j == (length - 1) || !(listet[0][j] & listet[0][j + 1])) {
-                /* we change only one character - look for temporary switch */
+                /* We change only one character - look for temporary switch */
                 if ((listet[0][j] & T_ALPHA) && (curtable == T_LOWER)) {
                     chainet[wnet++] = 27; /* AS */
                     chainet[wnet++] = listet[1][j];
@@ -503,7 +503,7 @@ static void pdf_textprocess_minimal(short *chainemc, int *p_mclength, const unsi
     unsigned char chainet[PDF_MAX_STREAM_LEN];
     int wnet = 0;
 
-    /* add mode indicator if needed */
+    /* Add mode indicator if needed */
     if (real_lastmode != PDF_TEX) {
         chainemc[(*p_mclength)++] = 900;
     }
@@ -557,12 +557,12 @@ INTERNAL void pdf_byteprocess(short *chainemc, int *p_mclength, const unsigned c
     const int real_lastmode = PDF_REAL_MODE(lastmode);
 
     if (length == 1) {
-        /* shift or latch depending on previous mode */
+        /* Shift or latch depending on previous mode */
         chainemc[(*p_mclength)++] = real_lastmode == PDF_TEX ? 913 : 901;
         chainemc[(*p_mclength)++] = chaine[start];
     } else {
         int len;
-        /* select the switch for multiple of 6 bytes */
+        /* Select the switch for multiple of 6 bytes */
         if (length % 6 == 0) {
             chainemc[(*p_mclength)++] = 924;
         } else {
@@ -642,7 +642,7 @@ static void pdf_numbprocess(short *chainemc, int *p_mclength, const unsigned cha
                     nombre -= chainemod[p++] * 900; /* nombre % 900 */
                 }
             }
-            /* return to 723 */
+            /* Return to 723 */
 
             dummy[dumlength++] = nombre;
             len = p;
@@ -997,8 +997,8 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
     int i, indexchaine = 0, indexliste = 0;
     short liste[3][PDF_MAX_LEN] = {{0}};
     int mclength;
-    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
     const int fast_encode = symbol->input_mode & FAST_MODE;
+    const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* 456 */
 
@@ -1090,7 +1090,7 @@ static int pdf_initial(struct zint_symbol *symbol, const unsigned char chaine[],
                 break;
             case PDF_BYT: /* 670 - octet stream mode */
                 pdf_byteprocess(chainemc, &mclength, chaine, indexchaine, liste[0][i], *p_lastmode);
-                /* don't switch mode on single byte shift from text mode */
+                /* Don't switch mode on single byte shift from text mode */
                 if (PDF_REAL_MODE(*p_lastmode) != PDF_TEX || liste[0][i] != 1) {
                     *p_lastmode = PDF_BYT;
                 } else if (*p_curtable == T_PUNCT && *p_tex_padded) { /* If T_PUNCT and padded with AL */
@@ -1122,6 +1122,7 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     int lastmode;
     int curtable;
     int tex_padded;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     *p_mclength = 0;
 
@@ -1183,11 +1184,18 @@ static int pdf_initial_segs(struct zint_symbol *symbol, struct zint_seg segs[], 
     /* Start in upper alpha - tracked across calls to `pdf_textprocess()` to allow for interleaving byte shifts */
     curtable = T_ALPHA;
 
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
+
     for (i = 0; i < seg_count; i++) {
-        error_number = pdf_initial(symbol, segs[i].source, segs[i].length, segs[i].eci, is_micro, i + 1 == seg_count,
-                        &lastmode, &curtable, &tex_padded, chainemc, p_mclength);
-        if (error_number) { /* Only errors >= ZINT_ERROR returned */
+        if ((error_number = pdf_initial(symbol, segs[i].source, segs[i].length, segs[i].eci, is_micro,
+                                    i + 1 == seg_count, &lastmode, &curtable, &tex_padded, chainemc, p_mclength))) {
+            assert(error_number >= ZINT_ERROR);
             return error_number;
+        }
+        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
         }
     }
 
@@ -1207,15 +1215,14 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     int structapp_cp = 0;
     int error_number;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
-    static const short ecc_num_cws[] = { 2, 4, 8, 16, 32, 64, 128, 256, 512 };
 
     if ((i = segs_length(segs, seg_count)) > PDF_MAX_LEN) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 463, "Input length %d too long (maximum " PDF_MAX_LEN_S ")", i);
     }
 
-    error_number = pdf_initial_segs(symbol, segs, seg_count, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
-                    &structapp_cp);
-    if (error_number) { /* Only errors return >= ZINT_ERROR */
+    if ((error_number = pdf_initial_segs(symbol, segs, seg_count, 0 /*is_micro*/, chainemc, &mclength, structapp_cws,
+                                        &structapp_cp))) {
+        assert(error_number >= ZINT_ERROR);
         return error_number;
     }
 
@@ -1246,7 +1253,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
             ecc = 6; /* Not mentioned in Table E.1 */
         }
     }
-    ecc_cws = ecc_num_cws[ecc];
+    ecc_cws = 2 << ecc;
 
     longueur = mclength + structapp_cp + ecc_cws;
 
@@ -1366,7 +1373,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
         mccorrection[0] = (929 - (total * pdf_coefrs[offset]) % 929) % 929;
     }
 
-    /* we add these codes to the string */
+    /* We add these codes to the string */
     for (i = ecc_cws - 1; i >= 0; i--) {
         chainemc[mclength++] = mccorrection[i] ? 929 - mccorrection[i] : 0;
     }
@@ -1391,7 +1398,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     c2 = ecc * 3 + (rows - 1) % 3;
     c3 = cols - 1;
 
-    /* we now encode each row */
+    /* We now encode each row */
     for (i = 0; i < rows; i++) {
         const int k = (i / 3) * 30;
         bp = 0;
@@ -1493,9 +1500,10 @@ INTERNAL int pdf417(struct zint_symbol *symbol, struct zint_seg segs[], const in
     return error_number;
 }
 
-/* like PDF417 only much smaller! */
+/* Like PDF417 only much smaller! */
 INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count) {
     int i, k, j, longueur, mccorrection[50] = {0}, offset;
+    int ecc_cwds;
     int total, mclength, error_number = 0;
     short chainemc[PDF_MAX_STREAM_LEN];
     char pattern[580];
@@ -1518,9 +1526,9 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* Encoding starts out the same as PDF417, so use the same code */
 
-    error_number = pdf_initial_segs(symbol, segs, seg_count, 1 /*is_micro*/, chainemc, &mclength, structapp_cws,
-                    &structapp_cp);
-    if (error_number) { /* Only errors return >= ZINT_ERROR */
+    if ((error_number = pdf_initial_segs(symbol, segs, seg_count, 1 /*is_micro*/, chainemc, &mclength, structapp_cws,
+                                        &structapp_cp))) {
+        assert(error_number >= ZINT_ERROR);
         return error_number;
     }
 
@@ -1565,7 +1573,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     }
 
     if (symbol->option_2 == 1) {
-        /* the user specified 1 column and the data does fit */
+        /* The user specified 1 column and the data does fit */
         if (mclength + structapp_cp <= 4) {
             variant = 1;
         } else if (mclength + structapp_cp <= 7) {
@@ -1580,7 +1588,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
             variant = 6;
         }
     } else if (symbol->option_2 == 2) {
-        /* the user specified 2 columns and the data does fit */
+        /* The user specified 2 columns and the data does fit */
         if (mclength + structapp_cp <= 8) {
             variant = 7;
         } else if (mclength + structapp_cp <= 13) {
@@ -1597,7 +1605,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
             variant = 13;
         }
     } else if (symbol->option_2 == 3) {
-        /* the user specified 3 columns and the data does fit */
+        /* The user specified 3 columns and the data does fit */
         if (mclength + structapp_cp <= 6) {
             variant = 14;
         } else if (mclength + structapp_cp <= 10) {
@@ -1620,7 +1628,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
             variant = 23;
         }
     } else if (symbol->option_2 == 4) {
-        /* the user specified 4 columns and the data does fit */
+        /* The user specified 4 columns and the data does fit */
         if (mclength + structapp_cp <= 8) {
             variant = 24;
         } else if (mclength + structapp_cp <= 12) {
@@ -1659,24 +1667,27 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* Now we have the variant we can load the data */
     variant--;
-    symbol->option_2 = pdf_MicroVariants[variant]; /* columns */
-    symbol->rows = pdf_MicroVariants[variant + 34]; /* rows */
-    k = pdf_MicroVariants[variant + 68]; /* number of EC CWs */
-    longueur = (symbol->option_2 * symbol->rows) - k; /* number of non-EC CWs */
-    i = longueur - (mclength + structapp_cp); /* amount of padding required */
-    offset = pdf_MicroVariants[variant + 102]; /* coefficient offset */
+    symbol->option_2 = pdf_MicroVariants[variant]; /* Columns */
+    symbol->rows = pdf_MicroVariants[variant + 34]; /* Rows */
+    ecc_cwds = pdf_MicroVariants[variant + 68]; /* Number of EC CWs */
+    longueur = (symbol->option_2 * symbol->rows) - ecc_cwds; /* Number of non-EC CWs */
+    i = longueur - (mclength + structapp_cp); /* Amount of padding required */
+    offset = pdf_MicroVariants[variant + 102]; /* Coefficient offset */
+
+    /* Feedback options */
+    /* Place in top byte, leaving bottom one for maybe future use - also compatible with AZTEC */
+    symbol->option_1 = ((int) roundf(ecc_cwds * 100.0f / (longueur + ecc_cwds))) << 8;
 
     if (debug_print) {
         fputs("\nChoose symbol size:\n", stdout);
         printf("%d columns x %d rows, variant %d\n", symbol->option_2, symbol->rows, variant + 1);
-        printf("%d data codewords (including %d pads), %d ecc codewords\n", longueur, i, k);
+        printf("%d data codewords (including %d pads), %d ecc codewords\n", longueur, i, ecc_cwds);
         fputc('\n', stdout);
     }
 
     /* We add the padding */
-    while (i > 0) {
+    while (i-- > 0) {
         chainemc[mclength++] = 900;
-        i--;
     }
 
     /* We add the Structured Append Macro Control Block if any */
@@ -1689,8 +1700,8 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     /* Reed-Solomon error correction */
     longueur = mclength;
     for (i = 0; i < longueur; i++) {
-        total = (chainemc[i] + mccorrection[k - 1]) % 929;
-        for (j = k - 1; j >= 0; j--) {
+        total = (chainemc[i] + mccorrection[ecc_cwds - 1]) % 929;
+        for (j = ecc_cwds - 1; j >= 0; j--) {
             if (j == 0) {
                 mccorrection[j] = (929 - (total * pdf_Microcoeffs[offset + j]) % 929) % 929;
             } else {
@@ -1699,13 +1710,13 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
         }
     }
 
-    for (j = 0; j < k; j++) {
+    for (j = 0; j < ecc_cwds; j++) {
         if (mccorrection[j] != 0) {
             mccorrection[j] = 929 - mccorrection[j];
         }
     }
-    /* we add these codes to the string */
-    for (i = k - 1; i >= 0; i--) {
+    /* We add these codes to the string */
+    for (i = ecc_cwds - 1; i >= 0; i--) {
         chainemc[mclength++] = mccorrection[i];
     }
 
@@ -1762,10 +1773,10 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
             }
         }
         bp = bin_append_posn(pdf_rap_side[RightRAP - 1], 10, pattern, bp);
-        pattern[bp++] = '1'; /* stop */
+        pattern[bp++] = '1'; /* Stop */
         if (debug_print) printf("%.*s\n", bp, pattern);
 
-        /* so now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
+        /* So now pattern[] holds the string of '1's and '0's. - copy this to the symbol */
         for (loop = 0; loop < bp; loop++) {
             if (pattern[loop] == '1') {
                 set_module(symbol, i, loop);

@@ -111,7 +111,7 @@ static void test_u_ksx1001_int(const testCtx *const p_ctx) {
     (void)debug;
 #endif
 
-    testStart("test_u_ksx1001_int");
+    testStart(p_ctx->func_name);
 
 #ifdef TEST_JUST_SAY_GNO
     if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */

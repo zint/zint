@@ -95,7 +95,7 @@ static void test_large(const testCtx *const p_ctx) {
 
     char data_buf[2800 + 1];
 
-    testStartSymbol("test_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -173,7 +173,7 @@ static void test_options(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -364,7 +364,7 @@ static void test_input(const testCtx *const p_ctx) {
 
     char escaped[1024];
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -520,7 +520,7 @@ static void test_encode(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -857,7 +857,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
 
     char escaped[8192];
 
-    testStartSymbol("test_encode_segs", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -899,6 +899,190 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
             }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int eci;
+        int option_3;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\250\246", -1, 29 },
+        /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  4*/ { UNICODE_MODE, -1, -1, -1, "电", -1, 0, 0, "", -1, 0 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "电", -1, 0, 0, "\265\347", -1, 29 },
+        /*  6*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  7*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 29 },
+        /*  8*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  9*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 29 },
+        /* 10*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\265\347", -1, 0, 0, "", -1, 0 },
+        /* 11*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\265\347", -1, 0, 0, "\265\347", -1, 29 },
+        /* 12*/ { UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
+        /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 14*/ { UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
+        /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int output_options;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        struct zint_seg expected_raw_segs[3];
+        int expected_raw_seg_count;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 30, 30, {{0}}, 0 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  2*/ { UNICODE_MODE, -1, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 30, 30, {{0}}, 0 },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 30, 30, { { TU("\241"), 1, 13 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  4*/ { UNICODE_MODE, -1, { { TU("电"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 30, 30, {{0}}, 0 },
+        /*  5*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 30, 30, { { TU("\265\347"), 2, 29 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  6*/ { UNICODE_MODE, -1, { { TU("电电"), -1, 0 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 30, 30, {{0}}, 0 },
+        /*  7*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("电电"), -1, 0 }, { TU("กขฯ"), -1, 13 }, { TU("βββ"), -1, 9 } }, 0, 30, 30, { { TU("\265\347\265\347"), 4, 29 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  8*/ { UNICODE_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("点"), -1, 20 } }, 0, 30, 30, {{0}}, 0 },
+        /*  9*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("点"), -1, 20 } }, 0, 30, 30, { { TU("¶"), 2, 26 }, { TU("\247\250"), 2, 29 }, { TU("\223\137"), 2, 20 } }, 3 },
+        /* 10*/ { DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 30, 30, {{0}}, 0 },
+        /* 11*/ { DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 30, 30, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 29 }, { TU("\223\137"), 2, 20 } }, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_GRIDMATRIX, data[i].input_mode, -1 /*eci*/,
+                            -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d)\n",
+                    i, symbol->rows, data[i].expected_rows, symbol->width);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                    i, symbol->width, data[i].expected_width);
+
+        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
+                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            for (j = 0; j < symbol->raw_seg_count; j++) {
+                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+
+                expected_length = data[i].expected_raw_segs[j].length;
+
+                assert_equal(symbol->raw_segs[j].length, expected_length,
+                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->raw_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
+                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                                            sizeof(escaped)),
+                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                                            escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
+                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
+                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+            }
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -1001,6 +1185,8 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input },
         { "test_encode", test_encode },
         { "test_encode_segs", test_encode_segs },
+        { "test_rt", test_rt },
+        { "test_rt_segs", test_rt_segs },
         { "test_perf", test_perf },
     };
 

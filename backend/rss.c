@@ -62,6 +62,7 @@
  * RSS Expanded Stacked > GS1 DataBar Expanded Stacked Omnidirectional
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "large.h"
@@ -153,19 +154,24 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
     return;
 }
 
+/* Helper to construct zero-padded GTIN14 with check digit, returning `buf` for convenience */
+static unsigned char *dbar_gtin14(const unsigned char *source, const int length, unsigned char buf[14]) {
+    const int zeroes = 13 - length;
+
+    assert(zeroes >= 0);
+    memset(buf, '0', zeroes);
+    memcpy(buf + zeroes, source, length);
+    buf[zeroes + length] = gs1_check_digit(buf, 13);
+
+    return buf;
+}
+
 /* Set GTIN-14 human readable text */
 static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char *source, const int length) {
-    static const unsigned char zeroes_str[] = "0000000000000"; /* 13 zeroes */
-    const int zeroes = 13 - length;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    unsigned char buf[14];
 
-    if (raw_text) {
-        hrt_printf_nochk(symbol, "01%.*s%.*s", zeroes, zeroes_str, length, source);
-        hrt_cat_chr_nochk(symbol, gs1_check_digit(symbol->text + 2, 13));
-    } else {
-        hrt_printf_nochk(symbol, "(01)%.*s%.*s", zeroes, zeroes_str, length, source);
-        hrt_cat_chr_nochk(symbol, gs1_check_digit(symbol->text + 4, 13));
-    }
+    hrt_cpy_nochk(symbol, (const unsigned char *) "(01)", 4);
+    hrt_cat_nochk(symbol, dbar_gtin14(source, length, buf), 14);
 }
 
 /* Expand from a width pattern to a bit pattern */
@@ -548,10 +554,6 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             symbol->width = 50;
         }
 
-        if (raw_text) {
-            dbar_set_gtin14_hrt(symbol, source, length);
-        }
-
         if (symbol->symbology != BARCODE_DBAR_STK_CC) { /* Composite calls dbar_omnstk_set_height() itself */
             error_number = dbar_omnstk_set_height(symbol, 0 /*first_row*/);
         }
@@ -600,10 +602,6 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows + 1;
 
-        if (raw_text) {
-            dbar_set_gtin14_hrt(symbol, source, length);
-        }
-
         /* ISO/IEC 24724:2011 5.3.2.2 minimum 33X height per row */
         if (symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
             symbol->height = symbol->height ? 33.0f : 66.0f; /* Pass back min row or default height */
@@ -613,6 +611,13 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
             } else {
                 (void) set_height(symbol, 0.0f, 66.0f, 0.0f, 1 /*no_errtxt*/);
             }
+        }
+    }
+
+    if (raw_text) {
+        unsigned char buf[14];
+        if (rt_cpy(symbol, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
         }
     }
 
@@ -635,6 +640,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     int latch;
     int separator_row;
     int widths[7];
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     separator_row = 0;
 
@@ -792,6 +798,13 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     /* Set human readable text */
     dbar_set_gtin14_hrt(symbol, source, length);
+
+    if (raw_text) {
+        unsigned char buf[14];
+        if (rt_cpy(symbol, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+        }
+    }
 
     /* ISO/IEC 24724:2011 6.2 10X minimum height, use as default also */
     if (symbol->symbology == BARCODE_DBAR_LTD_CC) {
@@ -1332,6 +1345,12 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         return error_number;
     }
 
+    if ((symbol->symbology == BARCODE_DBAR_EXPSTK) || (symbol->symbology == BARCODE_DBAR_EXPSTK_CC)) {
+        /* Feedback options */
+        symbol->option_2 = cols_per_row;
+        symbol->option_3 = max_rows;
+    }
+
     data_chars = bp / 12;
 
     if (debug_print) fputs("Data:", stdout);
@@ -1470,10 +1489,10 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows + 1;
 
-        if (raw_text) {
-            hrt_cpy_nochk(symbol, reduced, reduced_length);
-        } else {
-            dbar_exp_hrt(symbol, source, length);
+        dbar_exp_hrt(symbol, source, length);
+
+        if (raw_text && rt_cpy(symbol, reduced, reduced_length)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
         }
 
     } else {
@@ -1593,8 +1612,8 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         }
         symbol->rows = symbol->rows - 3;
 
-        if (raw_text) {
-            hrt_cpy_nochk(symbol, reduced, reduced_length);
+        if (raw_text && rt_cpy(symbol, reduced, reduced_length)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
         }
     }
 

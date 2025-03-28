@@ -547,6 +547,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     unsigned char *data;
     int *pSet;
     uchar *pOutput;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Suppresses clang-analyzer-core.VLASize warning */
     assert(length > 0);
@@ -562,6 +563,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
                 symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
             }
             hrt_cpy_nochk(symbol, (const unsigned char *) "", 0); /* Zap HRT for compatibility with CODABLOCKF */
+            /* Use `raw_text` from `code128()` */
             if (symbol->output_options & COMPLIANT_HEIGHT) {
                 /* AIM ISS-X-24 Section 4.6.1 minimum row height 8X (for compatibility with CODABLOCKF, not specced
                    for CODE128) */
@@ -875,6 +877,10 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     if (symbol->border_width == 0) { /* Allow override if non-zero */
         symbol->border_width = 1; /* AIM ISS-X-24 Section 4.6.1 b) (note change from previous default 2) */
+    }
+
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

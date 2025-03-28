@@ -57,32 +57,42 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 10*/ { 5, -1, "12", -1, "0012" },
         /* 11*/ { 5, BARCODE_RAW_TEXT, "12", -1, "0012" },
         /* 12*/ { 5, -1, "1", -1, "0001" },
-        /* 13*/ { 5, -1, "1234", -1, "1234" },
-        /* 14*/ { 6, -1, "1234", -1, "01234" },
-        /* 15*/ { 6, -1, "123", -1, "00123" },
-        /* 16*/ { 6, -1, "12", -1, "00012" },
-        /* 17*/ { 6, -1, "1", -1, "00001" },
-        /* 18*/ { 7, -1, "1234", -1, "001234" },
-        /* 19*/ { 7, -1, "12345", -1, "012345" },
-        /* 20*/ { 7, -1, "123456", -1, "123456" },
-        /* 21*/ { 7, -1, "1", -1, "000001" },
-        /* 22*/ { 8, -1, "12345", -1, "0012345" },
-        /* 23*/ { 8, BARCODE_RAW_TEXT, "12345", -1, "0012345" },
-        /* 24*/ { 8, -1, "123456", -1, "0123456" },
-        /* 25*/ { 8, BARCODE_RAW_TEXT, "123456", -1, "0123456" },
-        /* 26*/ { 8, -1, "1234567", -1, "1234567" },
-        /* 27*/ { 8, BARCODE_RAW_TEXT, "1234567", -1, "1234567" },
-        /* 28*/ { 8, -1, "12", -1, "0000012" },
-        /* 29*/ { 8, BARCODE_RAW_TEXT, "12", -1, "0000012" },
-        /* 30*/ { 8, -1, "1", -1, "0000001" },
-        /* 31*/ { 8, BARCODE_RAW_TEXT, "1", -1, "0000001" },
+        /* 13*/ { 5, BARCODE_RAW_TEXT, "1", -1, "0001" },
+        /* 14*/ { 5, -1, "1234", -1, "1234" },
+        /* 15*/ { 5, BARCODE_RAW_TEXT, "1234", -1, "1234" },
+        /* 16*/ { 6, -1, "1234", -1, "01234" },
+        /* 17*/ { 6, BARCODE_RAW_TEXT, "1234", -1, "01234" },
+        /* 18*/ { 6, -1, "123", -1, "00123" },
+        /* 19*/ { 6, BARCODE_RAW_TEXT, "123", -1, "00123" },
+        /* 20*/ { 6, -1, "12", -1, "00012" },
+        /* 21*/ { 6, BARCODE_RAW_TEXT, "12", -1, "00012" },
+        /* 22*/ { 6, -1, "1", -1, "00001" },
+        /* 23*/ { 6, BARCODE_RAW_TEXT, "1", -1, "00001" },
+        /* 24*/ { 7, -1, "1234", -1, "001234" },
+        /* 25*/ { 7, BARCODE_RAW_TEXT, "1234", -1, "001234" },
+        /* 26*/ { 7, -1, "12345", -1, "012345" },
+        /* 27*/ { 7, BARCODE_RAW_TEXT, "12345", -1, "012345" },
+        /* 28*/ { 7, -1, "123456", -1, "123456" },
+        /* 29*/ { 7, BARCODE_RAW_TEXT, "123456", -1, "123456" },
+        /* 30*/ { 7, -1, "1", -1, "000001" },
+        /* 31*/ { 7, BARCODE_RAW_TEXT, "1", -1, "000001" },
+        /* 32*/ { 8, -1, "12345", -1, "0012345" },
+        /* 33*/ { 8, BARCODE_RAW_TEXT, "12345", -1, "0012345" },
+        /* 34*/ { 8, -1, "123456", -1, "0123456" },
+        /* 35*/ { 8, BARCODE_RAW_TEXT, "123456", -1, "0123456" },
+        /* 36*/ { 8, -1, "1234567", -1, "1234567" },
+        /* 37*/ { 8, BARCODE_RAW_TEXT, "1234567", -1, "1234567" },
+        /* 38*/ { 8, -1, "12", -1, "0000012" },
+        /* 39*/ { 8, BARCODE_RAW_TEXT, "12", -1, "0000012" },
+        /* 40*/ { 8, -1, "1", -1, "0000001" },
+        /* 41*/ { 8, BARCODE_RAW_TEXT, "1", -1, "0000001" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
     int expected_length;
 
-    testStartSymbol("test_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -103,6 +113,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_length,
+                        "i:%d raw_segs[0].length %d != expected_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                        "i:%d memcmp(%s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].source, data[i].expected, expected_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -183,7 +205,7 @@ static void test_input(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -447,7 +469,7 @@ static void test_encode(const testCtx *const p_ctx) {
     char bwipp_buf[8192];
     char bwipp_msg[1024];
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 

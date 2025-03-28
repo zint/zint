@@ -88,6 +88,8 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
 
     hrt_cpy_nochk(symbol, local_source, 14);
 
+    /* Use `raw_text` set by `c25_inter_common()` */
+
     return error_number;
 }
 
@@ -106,7 +108,6 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     int factor;
     unsigned char local_source[14];
     int zeroes;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     count = 0;
     if (length > 13) {
@@ -134,14 +135,12 @@ INTERNAL int dpleit(struct zint_symbol *symbol, unsigned char source[], int leng
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, local_source, 14);
-    } else {
-        /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
-           https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
-        hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
-                    local_source + 11);
-    }
+    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do examples at
+       https://www.philaseiten.de/cgi-bin/index.pl?ST=8615&CP=0&F=1#M147 */
+    hrt_printf_nochk(symbol, "%.5s.%.3s.%.3s.%.3s", local_source, local_source + 5, local_source + 8,
+                local_source + 11);
+
+    /* Use `raw_text` set by `c25_inter_common()` */
 
     return error_number;
 }
@@ -153,7 +152,6 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     unsigned int count;
     int factor;
     unsigned char local_source[12];
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     count = 0;
     if (length > 11) {
@@ -181,13 +179,11 @@ INTERNAL int dpident(struct zint_symbol *symbol, unsigned char source[], int len
     /* Based on eyeballing DIALOGPOST SCHWER, using 72X as default */
     (void) set_height(symbol, 0.0f, 72.0f, 0.0f, 1 /*no_errtxt*/);
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, local_source, 12);
-    } else {
-        /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
-        hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
-                local_source + 5, local_source + 8, local_source[11]);
-    }
+    /* HRT formatting as per DIALOGPOST SCHWER brochure but TEC-IT differs as do other examples (see above) */
+    hrt_printf_nochk(symbol, "%.2s.%.2s %c.%.3s.%.3s %c", local_source, local_source + 2, local_source[4],
+            local_source + 5, local_source + 8, local_source[11]);
+
+    /* Use `raw_text` set by `c25_inter_common()` */
 
     return error_number;
 }

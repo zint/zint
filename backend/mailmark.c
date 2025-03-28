@@ -170,7 +170,6 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height,
 
 /* Royal Mail 4-state Mailmark */
 INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int length) {
-
     unsigned char local_source[28];
     int format;
     int version_id;
@@ -500,8 +499,8 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
     symbol->rows = 3;
     symbol->width = j - 1;
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, local_source, length);
+    if (raw_text && rt_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

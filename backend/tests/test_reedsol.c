@@ -147,7 +147,7 @@ static void test_encoding(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i;
 
-    testStart("test_encoding");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int j;
@@ -210,7 +210,7 @@ static void test_encoding_uint(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i;
 
-    testStart("test_encoding_uint");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int j;
@@ -259,7 +259,7 @@ static void test_uint_encoding(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i;
 
-    testStart("test_uint_encoding");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int j;

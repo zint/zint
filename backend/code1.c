@@ -978,15 +978,26 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
 
 /* Call `c1_encode()` for each segment */
 static int c1_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count, const int gs1,
-            unsigned int target[], int *p_last_mode) {
+            unsigned int target[], int *p_data_length, int *p_last_mode) {
     int i;
     int tp = 0;
+    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    const int raw_text = !gs1 && (symbol->output_options & BARCODE_RAW_TEXT);
+
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
 
     for (i = 0; i < seg_count; i++) {
         tp = c1_encode(symbol, segs[i].source, segs[i].length, segs[i].eci, seg_count, gs1, target, &tp, p_last_mode);
+        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+        }
     }
 
-    return tp;
+    *p_data_length = tp;
+
+    return 0;
 }
 
 /* Set symbol from datagrid */
@@ -1061,6 +1072,7 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         large_uint elreg;
         unsigned int target[30], ecc[15];
         int block_width;
+        const int raw_text = symbol->output_options & BARCODE_RAW_TEXT; /* GS1 mode ignored for Version S */
 
         if (seg_count > 1) {
             return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 715, "Multiple segments not supported for Version S");
@@ -1094,6 +1106,10 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
         if (debug_print) {
             printf("Subversion: %d\n", sub_version);
+        }
+
+        if (raw_text && rt_cpy(symbol, segs[0].source, segs[0].length)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
         }
 
         /* Convert value plus one to binary */
@@ -1148,7 +1164,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
                             i);
         }
 
-        data_length = c1_encode_segs(symbol, segs, seg_count, gs1, target, &last_mode);
+        if (c1_encode_segs(symbol, segs, seg_count, gs1, target, &data_length, &last_mode)) {
+            return ZINT_ERROR_MEMORY; /* `c1_encode_segs()` only returns non-zero with OOM */
+        }
 
         assert(data_length); /* Can't exceed C1_MAX_CWS as input <= 90 */
         if (data_length > 38) {
@@ -1231,7 +1249,9 @@ INTERNAL int codeone(struct zint_symbol *symbol, struct zint_seg segs[], const i
         int blocks, data_blocks, ecc_blocks, ecc_length;
         int last_mode;
 
-        data_length = c1_encode_segs(symbol, segs, seg_count, gs1, target, &last_mode);
+        if (c1_encode_segs(symbol, segs, seg_count, gs1, target, &data_length, &last_mode)) {
+            return ZINT_ERROR_MEMORY; /* `c1_encode_segs()` only returns non-zero with OOM */
+        }
 
         if (data_length == 0) {
             return errtxt(ZINT_ERROR_TOO_LONG, symbol, 517,

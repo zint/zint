@@ -47,132 +47,133 @@ static void test_large(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         const char *expected_errtxt;
+        int zxingcpp_cmp;
         const char *comment;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2053, 0, 151, 151, "", "" },
-        /*  1*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2054, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1496 codewords (maximum 1495)", "" },
-        /*  2*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1631 codewords (maximum 1495)", "" },
-        /*  3*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2238, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)", "" },
-        /*  4*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3835, 0, 151, 151, "", "" },
-        /*  5*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3836, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)", "" },
-        /*  6*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3069, 0, 151, 151, "", "" },
-        /*  7*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3070, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)", "" },
-        /*  8*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1756, 0, 151, 151, "", "" },
-        /*  9*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1757, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1280 codewords (maximum 1279)", "" },
-        /* 10*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3184, 0, 151, 151, "", "" },
-        /* 11*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3185, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1062)", "" },
-        /* 12*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2548, 0, 151, 151, "", "" },
-        /* 13*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2549, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1062)", "" },
-        /* 14*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1457, 0, 151, 151, "", "" },
-        /* 15*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1458, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1063 codewords (maximum 1062)", "" },
-        /* 16*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2485, 0, 151, 151, "", "" },
-        /* 17*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2486, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", "" },
-        /* 18*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1989, 0, 151, 151, "", "" },
-        /* 19*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1990, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", "" },
-        /* 20*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1137, 0, 151, 151, "", "" },
-        /* 21*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1138, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 4, requires 830 codewords (maximum 829)", "" },
-        /* 22*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 7, 0, 15, 15, "", "4 ECC codewords" },
-        /* 23*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", "" },
-        /* 24*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 2078, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", "" },
-        /* 25*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 21, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 36", "4 ECC codewords" },
-        /* 26*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 22, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
-        /* 27*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
-        /* 28*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", "" },
-        /* 29*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 39, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
-        /* 30*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", "" },
-        /* 31*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
-        /* 32*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", "" },
-        /* 33*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 10, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
-        /* 34*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", "" },
-        /* 35*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 27, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
-        /* 36*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", "" },
-        /* 37*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 47, ZINT_WARN_NONCOMPLIANT, 27, 27, "Warning 706: Number of ECC codewords 3 at minimum", "3 ECC codewords" },
-        /* 38*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", "" },
-        /* 39*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 71, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 84", "4 ECC codewords" },
-        /* 40*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 41*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", "" },
-        /* 42*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 98, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 5 less than 5% + 3 of data codewords 115", "5 ECC codewords" },
-        /* 43*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 44*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", "" },
-        /* 45*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 128, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 7 less than 5% + 3 of data codewords 149", "7 ECC codewords" },
-        /* 46*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 5% + 3 of data codewords 150", "" },
-        /* 47*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 48*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", "" },
-        /* 49*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 50*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", "" },
-        /* 51*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 52*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", "" },
-        /* 53*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 54*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", "" },
-        /* 55*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 56*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", "" },
-        /* 57*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 58*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", "" },
-        /* 59*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 60*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", "" },
-        /* 61*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 62*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", "" },
-        /* 63*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 501, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 22 less than 5% + 3 of data codewords 448", "22 ECC codewords (448 data codewords)" },
-        /* 64*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 5% + 3 of data codewords 449", "" },
-        /* 65*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 66*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", "" },
-        /* 67*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 68*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", "" },
-        /* 69*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 70*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", "" },
-        /* 71*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 72*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", "" },
-        /* 73*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 74*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", "" },
-        /* 75*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 76*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", "" },
-        /* 77*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 78*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", "" },
-        /* 79*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 80*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", "" },
-        /* 81*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1091, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 48 less than 5% + 3 of data codewords 972", "" },
-        /* 82*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 5% + 3 of data codewords 973", "" },
-        /* 83*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 84*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", "" },
-        /* 85*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 86*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", "" },
-        /* 87*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 88*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", "" },
-        /* 89*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 90*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", "" },
-        /* 91*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 92*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", "" },
-        /* 93*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 94*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", "" },
-        /* 95*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 96*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", "" },
-        /* 97*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /* 98*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", "" },
-        /* 99*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*100*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", "" },
-        /*101*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*102*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", "" },
-        /*103*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*104*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
-        /*105*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3590, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 74 less than 5% + 3 of data codewords 1496", "74 ECC codewords (1496 data codewords)" },
-        /*106*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 5% + 3 of data codewords 1497", "" },
-        /*107*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*108*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", "" },
-        /*109*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*110*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", "" },
-        /*111*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4753, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 79 less than 5% + 3 of data codewords 1585", "79 ECC codewords (1585 data codewords)" },
-        /*112*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*113*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", "" },
-        /*114*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*115*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*116*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*117*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*118*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*119*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", "" },
-        /*120*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", "" },
-        /*121*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", "" },
+        /*  0*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2053, 0, 151, 151, "", 3, "" },
+        /*  1*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2054, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1496 codewords (maximum 1495)", 3, "" },
+        /*  2*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2237, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 1, requires 1631 codewords (maximum 1495)", 3, "" },
+        /*  3*/ { BARCODE_AZTEC, -1, 1, -1, -1, { 0, 0, "" }, "\377", 2238, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)", 3, "" },
+        /*  4*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3835, 0, 151, 151, "", 1, "" },
+        /*  5*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "1", 3836, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)", 1, "" },
+        /*  6*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3069, 0, 151, 151, "", 1, "" },
+        /*  7*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "A", 3070, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)", 1, "" },
+        /*  8*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1756, 0, 151, 151, "", 3, "" },
+        /*  9*/ { BARCODE_AZTEC, -1, 2, -1, -1, { 0, 0, "" }, "\377", 1757, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 2, requires 1280 codewords (maximum 1279)", 3, "" },
+        /* 10*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3184, 0, 151, 151, "", 1, "" },
+        /* 11*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "1", 3185, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1062)", 1, "" },
+        /* 12*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2548, 0, 151, 151, "", 1, "" },
+        /* 13*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "A", 2549, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 3, requires too many codewords (maximum 1062)", 1, "" },
+        /* 14*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1457, 0, 151, 151, "", 3, "" },
+        /* 15*/ { BARCODE_AZTEC, -1, 3, -1, -1, { 0, 0, "" }, "\377", 1458, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 3, requires 1063 codewords (maximum 1062)", 3, "" },
+        /* 16*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2485, 0, 151, 151, "", 1, "" },
+        /* 17*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "1", 2486, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
+        /* 18*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1989, 0, 151, 151, "", 1, "" },
+        /* 19*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "A", 1990, ZINT_ERROR_TOO_LONG, 0, 0, "Error 707: Input too long for ECC level 4, requires too many codewords (maximum 829)", 1, "" },
+        /* 20*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1137, 0, 151, 151, "", 3, "" },
+        /* 21*/ { BARCODE_AZTEC, -1, 4, -1, -1, { 0, 0, "" }, "\377", 1138, ZINT_ERROR_TOO_LONG, 0, 0, "Error 504: Input too long for ECC level 4, requires 830 codewords (maximum 829)", 3, "" },
+        /* 22*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 7, 0, 15, 15, "", 3, "4 ECC codewords" },
+        /* 23*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 8, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
+        /* 24*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "\377", 2078, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3, "" },
+        /* 25*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 21, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 36", 3, "4 ECC codewords" },
+        /* 26*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 22, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 27*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 23, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
+        /* 28*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "\377", 1866, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 2, requires too many codewords (maximum 37)", 3, "" },
+        /* 29*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 39, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 30*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "\377", 40, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 3, requires too many codewords (maximum 48)", 3, "" },
+        /* 31*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 51, 0, 27, 27, "", 3, "15 ECC codewords (Version 4 (compact) spare 12 ECC blocks bonus)" },
+        /* 32*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "\377", 52, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 4, requires too many codewords (maximum 61)", 3, "" },
+        /* 33*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 10, ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 34*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "\377", 11, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 5, requires too many codewords (maximum 18)", 3, "" },
+        /* 35*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 27, ZINT_WARN_NONCOMPLIANT, 23, 23, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 36*/ { BARCODE_AZTEC, -1, -1, 6, -1, { 0, 0, "" }, "\377", 28, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 6, requires too many codewords (maximum 45)", 3, "" },
+        /* 37*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 47, ZINT_WARN_NONCOMPLIANT, 27, 27, "Warning 706: Number of ECC codewords 3 at minimum", 3, "3 ECC codewords" },
+        /* 38*/ { BARCODE_AZTEC, -1, -1, 7, -1, { 0, 0, "" }, "\377", 48, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 7, requires too many codewords (maximum 57)", 3, "" },
+        /* 39*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 71, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 84", 3, "4 ECC codewords" },
+        /* 40*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 72, ZINT_WARN_NONCOMPLIANT, 31, 31, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 41*/ { BARCODE_AZTEC, -1, -1, 8, -1, { 0, 0, "" }, "\377", 73, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 8, requires too many codewords (maximum 85)", 3, "" },
+        /* 42*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 98, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 708: Number of ECC codewords 5 less than 5% + 3 of data codewords 115", 3, "5 ECC codewords" },
+        /* 43*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 100, ZINT_WARN_NONCOMPLIANT, 37, 37, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 44*/ { BARCODE_AZTEC, -1, -1, 9, -1, { 0, 0, "" }, "\377", 101, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 9, requires too many codewords (maximum 117)", 3, "" },
+        /* 45*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 128, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 7 less than 5% + 3 of data codewords 149", 3, "7 ECC codewords" },
+        /* 46*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 129, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 708: Number of ECC codewords 6 less than 5% + 3 of data codewords 150", 3, "" },
+        /* 47*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 131, ZINT_WARN_NONCOMPLIANT, 41, 41, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 48*/ { BARCODE_AZTEC, -1, -1, 10, -1, { 0, 0, "" }, "\377", 132, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 10, requires too many codewords (maximum 153)", 3, "" },
+        /* 49*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 166, ZINT_WARN_NONCOMPLIANT, 45, 45, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 50*/ { BARCODE_AZTEC, -1, -1, 11, -1, { 0, 0, "" }, "\377", 167, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 11, requires too many codewords (maximum 193)", 3, "" },
+        /* 51*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 205, ZINT_WARN_NONCOMPLIANT, 49, 49, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 52*/ { BARCODE_AZTEC, -1, -1, 12, -1, { 0, 0, "" }, "\377", 206, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 12, requires too many codewords (maximum 237)", 3, "" },
+        /* 53*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 253, ZINT_WARN_NONCOMPLIANT, 53, 53, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 54*/ { BARCODE_AZTEC, -1, -1, 13, -1, { 0, 0, "" }, "\377", 254, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 13, requires too many codewords (maximum 227)", 3, "" },
+        /* 55*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 300, ZINT_WARN_NONCOMPLIANT, 57, 57, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 56*/ { BARCODE_AZTEC, -1, -1, 14, -1, { 0, 0, "" }, "\377", 301, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 14, requires too many codewords (maximum 269)", 3, "" },
+        /* 57*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 349, ZINT_WARN_NONCOMPLIANT, 61, 61, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 58*/ { BARCODE_AZTEC, -1, -1, 15, -1, { 0, 0, "" }, "\377", 350, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 15, requires too many codewords (maximum 313)", 3, "" },
+        /* 59*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 403, ZINT_WARN_NONCOMPLIANT, 67, 67, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 60*/ { BARCODE_AZTEC, -1, -1, 16, -1, { 0, 0, "" }, "\377", 404, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 16, requires too many codewords (maximum 361)", 3, "" },
+        /* 61*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 462, ZINT_WARN_NONCOMPLIANT, 71, 71, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 62*/ { BARCODE_AZTEC, -1, -1, 17, -1, { 0, 0, "" }, "\377", 463, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 17, requires too many codewords (maximum 413)", 3, "" },
+        /* 63*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 501, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 22 less than 5% + 3 of data codewords 448", 3, "22 ECC codewords (448 data codewords)" },
+        /* 64*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 502, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 708: Number of ECC codewords 21 less than 5% + 3 of data codewords 449", 3, "" },
+        /* 65*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 523, ZINT_WARN_NONCOMPLIANT, 75, 75, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 66*/ { BARCODE_AZTEC, -1, -1, 18, -1, { 0, 0, "" }, "\377", 524, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 18, requires too many codewords (maximum 467)", 3, "" },
+        /* 67*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 588, ZINT_WARN_NONCOMPLIANT, 79, 79, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 68*/ { BARCODE_AZTEC, -1, -1, 19, -1, { 0, 0, "" }, "\377", 589, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 19, requires too many codewords (maximum 525)", 3, "" },
+        /* 69*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 655, ZINT_WARN_NONCOMPLIANT, 83, 83, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 70*/ { BARCODE_AZTEC, -1, -1, 20, -1, { 0, 0, "" }, "\377", 656, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 20, requires too many codewords (maximum 585)", 3, "" },
+        /* 71*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 727, ZINT_WARN_NONCOMPLIANT, 87, 87, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 72*/ { BARCODE_AZTEC, -1, -1, 21, -1, { 0, 0, "" }, "\377", 728, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 21, requires too many codewords (maximum 649)", 3, "" },
+        /* 73*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 804, ZINT_WARN_NONCOMPLIANT, 91, 91, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 74*/ { BARCODE_AZTEC, -1, -1, 22, -1, { 0, 0, "" }, "\377", 805, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 22, requires too many codewords (maximum 717)", 3, "" },
+        /* 75*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 883, ZINT_WARN_NONCOMPLIANT, 95, 95, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 76*/ { BARCODE_AZTEC, -1, -1, 23, -1, { 0, 0, "" }, "\377", 884, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 23, requires too many codewords (maximum 787)", 3, "" },
+        /* 77*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 966, ZINT_WARN_NONCOMPLIANT, 101, 101, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 78*/ { BARCODE_AZTEC, -1, -1, 24, -1, { 0, 0, "" }, "\377", 967, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 24, requires too many codewords (maximum 861)", 3, "" },
+        /* 79*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1051, ZINT_WARN_NONCOMPLIANT, 105, 105, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 80*/ { BARCODE_AZTEC, -1, -1, 25, -1, { 0, 0, "" }, "\377", 1052, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 25, requires too many codewords (maximum 937)", 3, "" },
+        /* 81*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1091, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 48 less than 5% + 3 of data codewords 972", 3, "" },
+        /* 82*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1092, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 708: Number of ECC codewords 47 less than 5% + 3 of data codewords 973", 3, "" },
+        /* 83*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1141, ZINT_WARN_NONCOMPLIANT, 109, 109, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 84*/ { BARCODE_AZTEC, -1, -1, 26, -1, { 0, 0, "" }, "\377", 1142, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 26, requires too many codewords (maximum 1017)", 3, "" },
+        /* 85*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1258, ZINT_WARN_NONCOMPLIANT, 113, 113, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 86*/ { BARCODE_AZTEC, -1, -1, 27, -1, { 0, 0, "" }, "\377", 1259, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 27, requires too many codewords (maximum 917)", 3, "" },
+        /* 87*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1357, ZINT_WARN_NONCOMPLIANT, 117, 117, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 88*/ { BARCODE_AZTEC, -1, -1, 28, -1, { 0, 0, "" }, "\377", 1358, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 28, requires too many codewords (maximum 989)", 3, "" },
+        /* 89*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1459, ZINT_WARN_NONCOMPLIANT, 121, 121, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 90*/ { BARCODE_AZTEC, -1, -1, 29, -1, { 0, 0, "" }, "\377", 1460, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 29, requires too many codewords (maximum 1063)", 3, "" },
+        /* 91*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1566, ZINT_WARN_NONCOMPLIANT, 125, 125, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 92*/ { BARCODE_AZTEC, -1, -1, 30, -1, { 0, 0, "" }, "\377", 1567, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 30, requires too many codewords (maximum 1141)", 3, "" },
+        /* 93*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1676, ZINT_WARN_NONCOMPLIANT, 131, 131, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 94*/ { BARCODE_AZTEC, -1, -1, 31, -1, { 0, 0, "" }, "\377", 1677, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 31, requires too many codewords (maximum 1221)", 3, "" },
+        /* 95*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1789, ZINT_WARN_NONCOMPLIANT, 135, 135, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 96*/ { BARCODE_AZTEC, -1, -1, 32, -1, { 0, 0, "" }, "\377", 1790, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 32, requires too many codewords (maximum 1303)", 3, "" },
+        /* 97*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1907, ZINT_WARN_NONCOMPLIANT, 139, 139, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /* 98*/ { BARCODE_AZTEC, -1, -1, 33, -1, { 0, 0, "" }, "\377", 1908, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 33, requires too many codewords (maximum 1389)", 3, "" },
+        /* 99*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4429, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*100*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "1", 4430, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 34, requires 1478 codewords (maximum 1477)", 1, "" },
+        /*101*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2028, ZINT_WARN_NONCOMPLIANT, 143, 143, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*102*/ { BARCODE_AZTEC, -1, -1, 34, -1, { 0, 0, "" }, "\377", 2029, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 34, requires too many codewords (maximum 1477)", 3, "" },
+        /*103*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4699, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*104*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "1", 4700, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
+        /*105*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3590, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 74 less than 5% + 3 of data codewords 1496", 1, "74 ECC codewords (1496 data codewords)" },
+        /*106*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3591, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 708: Number of ECC codewords 73 less than 5% + 3 of data codewords 1497", 1, "" },
+        /*107*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3760, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*108*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "A", 3761, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 35, requires 1568 codewords (maximum 1567)", 1, "" },
+        /*109*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2149, ZINT_WARN_NONCOMPLIANT, 147, 147, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*110*/ { BARCODE_AZTEC, -1, -1, 35, -1, { 0, 0, "" }, "\377", 2150, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 35, requires too many codewords (maximum 1567)", 3, "" },
+        /*111*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4753, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 708: Number of ECC codewords 79 less than 5% + 3 of data codewords 1585", 1, "79 ECC codewords (1585 data codewords)" },
+        /*112*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4981, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 1, "" },
+        /*113*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "1", 4982, ZINT_ERROR_TOO_LONG, 0, 0, "Error 502: Input too long, requires too many codewords (maximum 1661)", 1, "" },
+        /*114*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2279, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*115*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 0, 0, "" }, "\377", 2280, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*116*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*117*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 0, 0, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*118*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2276, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*119*/ { BARCODE_AZTEC, -1, -1, 36, -1, { 2, 3, "" }, "\377", 2277, ZINT_ERROR_TOO_LONG, 0, 0, "Error 704: Input too long for Version 36, requires too many codewords (maximum 1661)", 3, "" },
+        /*120*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2273, ZINT_WARN_NONCOMPLIANT, 151, 151, "Warning 706: Number of ECC codewords 3 at minimum", 3, "" },
+        /*121*/ { BARCODE_AZTEC, 899, -1, 36, -1, { 2, 3, "" }, "\377", 2274, ZINT_ERROR_TOO_LONG, 0, 0, "Error 505: Input too long for Version 36, requires 1662 codewords (maximum 1661)", 3, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -184,9 +185,10 @@ static void test_large(const testCtx *const p_ctx) {
 
     char data_buf[ZINT_MAX_DATA_LEN];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -196,39 +198,55 @@ static void test_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                    i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, data[i].eci, data[i].option_1, data[i].option_2, -1, data[i].output_options, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, data[i].eci,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data_buf, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"\" }, \"%s\", %d, %s, %d, %d, \"%s\", \"%s\" },\n",
+            printf("        /*%3d*/ { %s, %d, %d, %d, %s, { %d, %d, \"\" }, \"%s\", %d, %s, %d, %d, \"%s\", %d, \"%s\" },\n",
                     i, testUtilBarcodeName(data[i].symbology), data[i].eci, data[i].option_1, data[i].option_2,
-                    testUtilOutputOptionsName(data[i].output_options), data[i].structapp.index, data[i].structapp.count,
-                    testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
+                    testUtilOutputOptionsName(data[i].output_options), data[i].structapp.index,
+                    data[i].structapp.count,
+                    testUtilEscape(data[i].pattern, (int) strlen(data[i].pattern), escaped, sizeof(escaped)),
+                    data[i].length, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt,
+                    data[i].zxingcpp_cmp, data[i].comment);
         } else {
-            assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n",
+                        i, symbol->errtxt, data[i].expected_errtxt);
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
 
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[22801 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                ret_len, escaped);
                 }
             }
         }
@@ -260,45 +278,45 @@ static void test_options(const testCtx *const p_ctx) {
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", 4, 1 },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", 4, 1 },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
-        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "12345678901", 0, 15, 15, "", 2, 1 },
-        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", 0, 15, 15, "", 2, 1 },
-        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456", 0, 15, 15, "", 1, 1 },
-        /*  7*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 15, 15, "", 1, 1 },
-        /*  8*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456789", 0, 19, 19, "", 4, 2 },
-        /*  9*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
-        /* 10*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", 3, 1 },
-        /* 11*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", 4, 2 },
-        /* 12*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", 4, 2 },
-        /* 13*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring", 3, 1 },
+        /*  0*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1 },
+        /*  1*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
+        /*  2*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567", 0, 15, 15, "", (47 << 8) | 4, 1 },
+        /*  3*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
+        /*  4*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "12345678901", 0, 15, 15, "", (29 << 8) | 2, 1 },
+        /*  5*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012", 0, 15, 15, "", (29 << 8) | 2, 1 },
+        /*  6*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456", 0, 15, 15, "", (11 << 8) | 1, 1 },
+        /*  7*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "123456789012345678", 0, 15, 15, "", (5 << 8) | 1, 1 },
+        /*  8*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "1234567890123456789", 0, 19, 19, "", (57 << 8) | 4, 2 },
+        /*  9*/ { BARCODE_AZTEC, -1, -1, 2, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
+        /* 10*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "1234567890", 0, 15, 15, "", (35 << 8) | 3, 1 },
+        /* 11*/ { BARCODE_AZTEC, -1, -1, 3, -1, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (70 << 8) | 4, 2 },
+        /* 12*/ { BARCODE_AZTEC, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (72 << 8) | 4, 2 },
+        /* 13*/ { BARCODE_AZTEC, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", ZINT_WARN_INVALID_OPTION, 15, 15, "Warning 503: Error correction level '5' out of range (1 to 4), ignoring", (35 << 8) | 3, 1 },
         /* 14*/ { BARCODE_AZTEC, -1, -1, -1, 1, { 0, 0, "" }, "12345678901234567890", ZINT_ERROR_TOO_LONG, -1, -1, "Error 505: Input too long for Version 1, requires 15 codewords (maximum 14)", -1, 1 },
-        /* 15*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890", 0, 19, 19, "", 4, 5 },
-        /* 16*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "12345678901", 0, 19, 19, "", 3, 5 },
-        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456", 0, 19, 19, "", 2, 5 },
-        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901", 0, 19, 19, "", 1, 5 },
-        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901234", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 17", 0, 5 },
+        /* 15*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890", 0, 19, 19, "", (47 << 8) | 4, 5 },
+        /* 16*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "12345678901", 0, 19, 19, "", (42 << 8) | 3, 5 },
+        /* 17*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456", 0, 19, 19, "", (28 << 8) | 2, 5 },
+        /* 18*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901", 0, 19, 19, "", (14 << 8) | 1, 5 },
+        /* 19*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "123456789012345678901234", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 708: Number of ECC codewords 4 less than 5% + 3 of data codewords 17", (4 << 8) | 0, 5 },
         /* 20*/ { BARCODE_AZTEC, -1, -1, -1, 5, { 0, 0, "" }, "1234567890123456780123456", ZINT_WARN_NONCOMPLIANT, 19, 19, "Warning 706: Number of ECC codewords 3 at minimum", -1, 5 },
-        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "", 4, 36 },
+        /* 21*/ { BARCODE_AZTEC, -1, -1, -1, 36, { 0, 0, "" }, "1234567890", 0, 151, 151, "", (99 << 8) | 4, 36 },
         /* 22*/ { BARCODE_AZTEC, -1, -1, -1, 37, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '37' out of range (1 to 36)", -1, 37 },
         /* 23*/ { BARCODE_AZTEC, -1, -1, -1, -2, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 510: Version '-2' out of range (1 to 36)", -1, -2 },
         /* 24*/ { BARCODE_AZTEC, GS1_MODE, READER_INIT, -1, -1, { 0, 0, "" }, "[91]A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 501: Cannot use Reader Initialisation in GS1 mode", -1, 0 },
-        /* 25*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", 3, 1 },
-        /* 26*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", 3, 1 },
-        /* 27*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "", 4, 26 }, /* 22 layers */
+        /* 25*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, { 0, 0, "" }, "[91]A", 0, 15, 15, "", (41 << 8) | 3, 1 },
+        /* 26*/ { BARCODE_AZTEC, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, { 0, 0, "" }, "(91)A", 0, 15, 15, "", (41 << 8) | 3, 1 },
+        /* 27*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 26, { 0, 0, "" }, "A", 0, 109, 109, "", (99 << 8) | 4, 26 }, /* 22 layers */
         /* 28*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 27, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 709: Version '27' out of range for Reader Initialisation symbols (maximum 26)", -1, 27 }, /* 23 layers */
         /* 29*/ { BARCODE_AZTEC, -1, READER_INIT, 4, -1, { 0, 0, "" }, "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377", ZINT_ERROR_TOO_LONG, -1, -1, "Error 506: Input too long for Reader Initialisation, requires 23 layers (maximum 22)", 4, 27 }, /* 23 layers */
-        /* 30*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Compact 1 layer */
-        /* 31*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, { 0, 0, "" }, "A", 0, 19, 19, "", 4, 5 }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
-        /* 32*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Compact 1 layer */
-        /* 33*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", 4, 1 }, /* Still compact 1 layer if READER_INIT set */
+        /* 30*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Compact 1 layer */
+        /* 31*/ { BARCODE_AZTEC, -1, READER_INIT, -1, 3, { 0, 0, "" }, "A", 0, 19, 19, "", (80 << 8) | 4, 5 }, /* Compact 3 layers gets set to full 1 layer if READER_INIT set */
+        /* 32*/ { BARCODE_AZTEC, -1, -1, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Compact 1 layer */
+        /* 33*/ { BARCODE_AZTEC, -1, READER_INIT, 1, -1, { 0, 0, "" }, "A", 0, 15, 15, "", (76 << 8) | 4, 1 }, /* Still compact 1 layer if READER_INIT set */
         /* 34*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "0001", ZINT_ERROR_TOO_LONG, -1, -1, "Error 507: Input length 4 too long (maximum 3)", -1, 0 },
         /* 35*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 508: Invalid character at position 1 in input (digits only)", -1, 0 },
         /* 36*/ { BARCODE_AZRUNE, -1, -1, -1, -1, { 0, 0, "" }, "256", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 509: Input value out of range (0 to 255)", -1, 0 },
-        /* 37*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "", 2, 1 },
-        /* 38*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "", 3, 3 },
+        /* 37*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, "" }, "1234567890", 0, 15, 15, "", (17 << 8) | 2, 1 },
+        /* 38*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 2, {'1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2','3','4','5','6','7','8','9','0','1','2'} }, "1234567890", 0, 23, 23, "", (41 << 8) | 3, 3 },
         /* 39*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 1, 1, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 701: Structured Append count '1' out of range (2 to 26)", -1, 0 },
         /* 40*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 0, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '0' out of range (1 to count 2)", -1, 0 },
         /* 41*/ { BARCODE_AZTEC, -1, -1, -1, -1, { 3, 2, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 702: Structured Append index '3' out of range (1 to count 2)", -1, 0 },
@@ -309,7 +327,7 @@ static void test_options(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -318,13 +336,16 @@ static void test_options(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
@@ -334,8 +355,10 @@ static void test_options(const testCtx *const p_ctx) {
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
                     i, symbol->errtxt, data[i].expected_errtxt);
-        assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
-                    i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
+        assert_equal(symbol->option_1, data[i].expected_option_1,
+                    "i:%d symbol->option_1 %d (%d << 8) | %d != %d (option_2 %d)\n",
+                    i, symbol->option_1, symbol->option_1 >> 8, symbol->option_1 & 0xFF,
+                    data[i].expected_option_1, symbol->option_2);
         assert_equal(symbol->option_2, data[i].expected_option_2, "i:%d symbol->option_2 %d != %d\n",
                     i, symbol->option_2, data[i].expected_option_2);
         assert_zero(symbol->option_3, "i:%d symbol->option_3 %d != 0\n", i, symbol->option_3); /* Unchanged */
@@ -364,11 +387,12 @@ static void test_encode(const testCtx *const p_ctx) {
         int expected_rows;
         int expected_width;
         int bwipp_cmp;
+        int zxingcpp_cmp;
         const char *comment;
         const char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
+        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "123456789012", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure 1 (left)",
                     "000111000011100"
                     "110111001110010"
                     "111100001000100"
@@ -385,7 +409,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101011110101010"
                     "100010001000101"
                 },
-        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
+        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Aztec Code is a public domain 2D matrix barcode symbology of nominally square symbols built on a square grid with a distinctive square bullseye pattern at their center.", -1, 0, 41, 41, 0, 1, "ISO/IEC 24778:2008 Figure 1 (right) NOTE: Not the same but down to single encoding mode difference (UPPER space rather than LOWER space after 2D); BWIPP same encodation as figure",
                     "00001100110010010010111000010100001011000"
                     "01000110010110110001000000100101101000001"
                     "01011100101011001110101100000001100011001"
@@ -428,7 +452,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010010010011001011011010000110001000101"
                     "10001000001010100110100000001001001110000"
                 },
-        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 0, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
+        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 0, 1, "ISO/IEC 24778:2008 Figure G.2; BWIPP defaults to full (see following)",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -445,7 +469,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
+        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 1, { 0, 0, "" }, "Code 2D!", -1, 0, 15, 15, 1, 1, "ISO/IEC 24778:2008 Figure G.2; specify size",
                     "000110001100000"
                     "000000110000010"
                     "101100001000101"
@@ -462,7 +486,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011000011011010"
                     "111001101100000"
                 },
-        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
+        /*  4*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (left) (note CRLF at end!), same",
                     "00010101011010101010101010110101010101010110101010101"
                     "00101010100101010101010101001010101010101001010101010"
                     "11100101011010101010101010110101010101010110101010110"
@@ -517,7 +541,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010010101010101010010101010101010100101010110"
                     "10101010101101010101010101101010101010101011010101001"
                 },
-        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
+        /*  5*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "3333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333333\015\012", -1, 0, 53, 53, 1, 1, "ISO/IEC 24778:2008 Figure I.1 (right) (CRLF at end), same",
                     "00111111111111111111111111111111111111111111111111111"
                     "00000000000000000000000000000000000000000000000000000"
                     "11101111111111111111111111111111111111111111111111101"
@@ -572,7 +596,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00000000000000000000000000000000000000000000000000001"
                     "11111111111111111111111111111111111111111111111111101"
                 },
-        /*  6*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  6*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]03453120000011[17]120508[10]ABCD1234[410]9501101020917", -1, 0, 23, 23, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "00100000101111000100100"
                     "00011101100110001010000"
                     "00000111000111101011011"
@@ -597,7 +621,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00010001010101010101011"
                     "11101100000000000010110"
                 },
-        /*  7*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  7*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]95012345678903[3103]000123", -1, 0, 19, 19, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "0000000100001010101"
                     "0001101111011000000"
                     "0111100100010110100"
@@ -618,7 +642,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000110111011000101"
                     "1010100000101101001"
                 },
-        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, "#189 Follow embedded FLG(n) with FLG(0)",
+        /*  8*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[01]04610044273252[21]LRFX)k<C7ApWJ[91]003A[92]K8rNAqdvjmdxsmCVuj3FhaoNzQuq7Uff0sHXfz1TT/doiMaGQqNF+VPwMvwVbm1fxjzuDt6jxLCcc8o/tqbEDA==", -1, 0, 45, 45, 1, 1, "#189 Follow embedded FLG(n) with FLG(0)",
                     "000000101110011010101010010110011000001010111"
                     "000110001111011100111101101110110000000000011"
                     "001000101100101011000011111111101110111010101"
@@ -665,7 +689,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000011010110101110000101110100000111000011010"
                     "101001110101010110100011010010001111001101101"
                 },
-        /*  9*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
+        /*  9*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "H123ABC01234567890", -1, 0, 19, 19, 1, 1, "ANSI/HIBC 2.6 - 2016 Figure C1",
                     "0010111011010110001"
                     "0011011111011111101"
                     "0101100111010110010"
@@ -686,7 +710,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000010101101010001"
                     "1001001001100001100"
                 },
-        /* 10*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Patient Id, same",
+        /* 10*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/ACMRN123456/V200912190833", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Patient Id, same",
                     "0001110111000101110"
                     "0010000101001101000"
                     "0101011111101000101"
@@ -707,7 +731,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010110100110111011"
                     "1101111110100000110"
                 },
-        /* 11*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
+        /* 11*/ { BARCODE_AZTEC, DATA_MODE | ESCAPE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[)>\\R06\\G+/ACMRN123456/V2009121908334\\R\\E", -1, 0, 23, 23, 0, 1, "HIBC/PAS Section 2.2 Patient Id Macro **NOT SAME** different encodation, Zint 1 codeword longer; BWIPP same as figure",
                     "11010110110000110111011"
                     "10111111001000110100000"
                     "11000001011011010011010"
@@ -732,7 +756,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11110110111110011000100"
                     "10110000010101011110010"
                 },
-        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
+        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, 3, -1, { 0, 0, "" }, "/EO523201", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Purchase Order, same",
                     "0011100011001101111"
                     "0010011001010110110"
                     "0110100100101000000"
@@ -753,7 +777,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0111011100001111101"
                     "1010000000101001001"
                 },
-        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
+        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "/KN12345", -1, 0, 19, 19, 1, 1, "HIBC/PAS Section 2.2 Asset Tag, same",
                     "0011111101100100110"
                     "0010011100111110101"
                     "0111110010101101110"
@@ -774,7 +798,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0010000010110001111"
                     "1001101110111100011"
                 },
-        /* 14*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, "IDAutomation example, same",
+        /* 14*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "A123ABCDEFGHI1234567891/$$420020216LOT123456789012345/SXYZ456789012345678/16D20130202", -1, 0, 27, 27, 1, 1, "IDAutomation example, same",
                     "001010100100100010000010110"
                     "000110110110001000101000100"
                     "010010001101110110001000110"
@@ -803,7 +827,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "011010111000111110011011110"
                     "000010010001000011010000001"
                 },
-        /* 15*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, "6 bit words",
+        /* 15*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\377\000\000\377\300\000\017\377\376\217\300\017", 12, 0, 19, 19, 1, 899, "6 bit words",
                     "1101000001111000001"
                     "1101011000011100000"
                     "1000001010001001001"
@@ -824,7 +848,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1011110000001001011"
                     "0011111100000000010"
                 },
-        /* 16*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, "8 bit words",
+        /* 16*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 3, { 0, 0, "" }, "\377\377\377\377\377\000\000\000\000\377\377\377\000\000\377\377\377\377\000\000\000\000\000", 23, 0, 23, 23, 1, 899, "8 bit words",
                     "11111111111111111100000"
                     "11011101110111011110001"
                     "11110110111011010101100"
@@ -849,7 +873,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11011100001000100010010"
                     "11111110000000000000000"
                 },
-        /* 17*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, "10 bit words",
+        /* 17*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 13, { 0, 0, "" }, "\000\000\000\377\377\000\000\000\000\377\377\377\377\000\377\377\377\377\000\000\377\000\000", 23, 0, 53, 53, 1, 899, "10 bit words",
                     "00011010011110010011110101110010000000111111010101001"
                     "00000010100101010010001000010100000010101101001111110"
                     "11101010001110100001111100110101111010110110110001010"
@@ -904,7 +928,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101111010111010000111101011101111011000000001011100"
                     "11111111111111110000111111111111111111100010000011111"
                 },
-        /* 18*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, "12 bit words",
+        /* 18*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 27, { 0, 0, "" }, "\377\377\377\000\000\377\377\377\377\000\000\000\000\377\000\000\000\000\377\377\000\377\377\377\000\000\000", 27, 0, 113, 113, 1, 899, "12 bit words",
                     "11111010101001000010110010110110001010111011100001100010111010111011011110010101111001111110001101011111100000011"
                     "11111001010001010111110100101000101000010110010011001000011010011001111000010101011110010001110101100110011001100"
                     "11101100111000011000000011000001001001111001111110000001110100001110010010001100100011101110000011010101101011011"
@@ -1019,7 +1043,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11000000001000001011101101101101101001100000101000000000010111000000100101000110010000110010000011000101011111000"
                     "11100000100000001110111110110000111110011100000010001110101010101111000011001011111001101101010010001011111011101"
                 },
-        /* 19*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "",
+        /* 19*/ { BARCODE_AZTEC, UNICODE_MODE, -1, READER_INIT, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "",
                     "000011000111101"
                     "001110010011000"
                     "011100100000100"
@@ -1036,7 +1060,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110110000101100"
                     "010001010010110"
                 },
-        /* 20*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, "#210",
+        /* 20*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 2, { 0, 0, "" }, "121212121abcd", -1, 0, 19, 19, 1, 1, "#210",
                     "1101101111001101010"
                     "1101111011110110000"
                     "0001111101100010000"
@@ -1057,7 +1081,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011111001001010011"
                     "1001101000100100001"
                 },
-        /* 21*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, "AÀ",
+        /* 21*/ { BARCODE_AZTEC, DATA_MODE, 3, -1, -1, 1, { 0, 0, "" }, "\101\300", -1, 0, 15, 15, 1, 899, "AÀ",
                     "000000101011100"
                     "000100010100111"
                     "001100000110110"
@@ -1074,7 +1098,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110001000111110"
                     "111001100011011"
                 },
-        /* 22*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, "AÀ",
+        /* 22*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, -1, 1, { 0, 0, "" }, "AÀ", -1, 0, 15, 15, 1, 1, "AÀ",
                     "001111011000101"
                     "000110100011000"
                     "001100001000111"
@@ -1091,7 +1115,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001100010010010"
                     "011110110011000"
                 },
-        /* 23*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(3)",
+        /* 23*/ { BARCODE_AZTEC, UNICODE_MODE, 100, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(3)",
                     "001101001111101"
                     "000000111011100"
                     "001100000100101"
@@ -1108,7 +1132,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "100011101111100"
                     "000111110001110"
                 },
-        /* 24*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(4)",
+        /* 24*/ { BARCODE_AZTEC, UNICODE_MODE, 1000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(4)",
                     "001010100011011"
                     "001000100000101"
                     "001100000100111"
@@ -1125,7 +1149,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101000000111010"
                     "000001110101111"
                 },
-        /* 25*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(5)",
+        /* 25*/ { BARCODE_AZTEC, UNICODE_MODE, 10000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(5)",
                     "000100110110010"
                     "000001000010111"
                     "001100000110101"
@@ -1142,7 +1166,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010001110110"
                     "000000011000101"
                 },
-        /* 26*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, "FLG(6)",
+        /* 26*/ { BARCODE_AZTEC, UNICODE_MODE, 100000, -1, -1, 1, { 0, 0, "" }, "A", -1, 0, 15, 15, 1, 1, "FLG(6)",
                     "000010010000010"
                     "001101000100110"
                     "001100000110111"
@@ -1159,7 +1183,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "101010100011011"
                     "000000000111010"
                 },
-        /* 27*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 0, "Zint website example gui3.png NOTE now ends with D/L . instead of P/S .; BWIPP same encodation but estimates number of Data/ECC codewords differently",
+        /* 27*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.", -1, 0, 61, 61, 0, 1, "Zint website example gui3.png NOTE now ends with D/L . instead of P/S .; BWIPP same encodation but estimates number of Data/ECC codewords differently",
                     "0010110111101110101100000101001101110100010000100111011100001"
                     "0001100000000000001101110010000100010101110011000001000011110"
                     "0001111110101010100101000110101101000110011000101111011100110"
@@ -1222,7 +1246,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110000011010000000000100001100001000111011110011010000000001"
                     "0000010101001111100010001001111100101000010001110010010101101"
                 },
-        /* 28*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of D/L and B/S)",
+        /* 28*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "Colon: etc. NUM. 12345, num. 12345 @, 123. . . . . @.¡.!A ", -1, 0, 27, 27, 0, 1, "BWIPP different encodation (better use of D/L and B/S)",
                     "001011011101101011011110111"
                     "101001010000010000111010101"
                     "011101001100101111010111111"
@@ -1251,7 +1275,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000000111111011010100010100"
                     "010000011101011110110000100"
                 },
-        /* 29*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, "BWIPP different encodation (better use of B/S)",
+        /* 29*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1. 1a @ A@@ @@!!@@!!1!!!!¡a ", -1, 0, 23, 23, 0, 1, "BWIPP different encodation (better use of B/S)",
                     "11110101100111101010011"
                     "11111111110111111001011"
                     "00000000001000011111000"
@@ -1276,7 +1300,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01100011101111001100010"
                     "11000011000010110000011"
                 },
-        /* 30*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, "BWIPP different encodation (better use of P/S CRs)",
+        /* 30*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1234\01512\015AB\015AB\015ab\015ab\01512\015ab\015!\015!\015a,a,1,a,@,", -1, 0, 27, 27, 0, 1, "BWIPP different encodation (better use of P/S CRs)",
                     "111111110000010110000011001"
                     "110110110010011110100000101"
                     "000011100001000111001100111"
@@ -1305,7 +1329,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "000110100001100100110010100"
                     "101110010000110000111111101"
                 },
-        /* 31*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, "",
+        /* 31*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "AA!! ", -1, 0, 23, 23, 1, 1, "",
                     "00110111000010111110110"
                     "01011001101100101011001"
                     "00101000101000011110111"
@@ -1330,7 +1354,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "00111110110110100011111"
                     "10010010100010101110001"
                 },
-        /* 32*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, "Max version 151x151",
+        /* 32*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 36, { 0, 0, "" }, "Lorem ipsum dolor sit amet.", -1, 0, 151, 151, 1, 1, "Max version 151x151",
                     "0110011000001101111010100010010110101010100001110111111001101101010000111100111111111001000011100001010000101001010001001010101001000111101011111001101"
                     "1011011111111000001111111001010101111011100101110110001011011000101000010101101100000110011110100000010100110111100111111011011110001000110100111100100"
                     "1110001110001111110101011110010010011011001011001000001010000010000110101010101011111110110010000010000111000010000011011110001111111001000010000000111"
@@ -1483,7 +1507,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1000000100011011110011111011110000011111110111001111111010110101100011000111010100100010001111000101110110110100000111000011101011011101111111000011111"
                     "1000110110001001001111110010011100000100011010101101101101101001001001011110101010011110010011011110100111100111110111111110000101100111110000101010011"
                 },
-        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
+        /* 33*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 31, { 0, 0, "" }, "aztec barcode", -1, 0, 131, 131, 1, 1, "Layers 27 example from Andre Maute, mailing list 2020-12-16",
                     "10101111100010101000001110000100001111111110110110010011000100100000011000101001100000001111111010100010010101111010001011001110001"
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10001110111111000001001111011100100100010011110010101011110111111000000110101100000110101010110000010101101110010010010101001001001"
@@ -1616,7 +1640,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010"
                     "10111010011101110010010111100011101001001011100010101101110000011000110101000011100000011000101000101010001110100000000100101100001"
                 },
-        /* 34*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, "Full 2 layers example",
+        /* 34*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 6, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 23, 23, 1, 1, "Full 2 layers example",
                     "00000100110001011110010"
                     "01111011110100100101111"
                     "00001011010000010011001"
@@ -1641,7 +1665,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11001100111110110000000"
                     "00011010100010111001011"
                 },
-        /* 35*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, "Full 3 layers example",
+        /* 35*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 7, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEF", -1, 0, 27, 27, 1, 1, "Full 3 layers example",
                     "001011111011101010010010000"
                     "011111001111111001111010110"
                     "001111101101101100001011101"
@@ -1670,7 +1694,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110011110110011010110100110"
                     "101010010111000001000111010"
                 },
-        /* 36*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, "Full 4 layers example",
+        /* 36*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 8, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNO", -1, 0, 31, 31, 1, 1, "Full 4 layers example",
                     "0011101110100110101001010110000"
                     "0110000101110011101111001100111"
                     "0000011000110010000001101101001"
@@ -1703,7 +1727,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1111011001010111010011101111110"
                     "1001011100001000011100011001100"
                 },
-        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, "5 layers example",
+        /* 37*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 9, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 37, 37, 1, 1, "5 layers example",
                     "0010010100110011001011100010000111101"
                     "0101111010111110110100101101010011001"
                     "1010101010101010101010101010101010101"
@@ -1742,7 +1766,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101001010110100110101111101011110000"
                     "0111100001000111001011001100101001111"
                 },
-        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, "8 layers example",
+        /* 38*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 12, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 49, 49, 1, 1, "8 layers example",
                     "0001000111011100100000001101000011110011100000101"
                     "0110100001000100011100000000110110101100010111110"
                     "0000011110010100101100001010000010000100110110111"
@@ -1793,7 +1817,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1001110101111010111101010001000110101110000111011"
                     "1110001110011001010011001001010000100100101000001"
                 },
-        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, "10 layers example",
+        /* 39*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 14, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 57, 57, 1, 1, "10 layers example",
                     "001011000011100111111010110111010001110110001110011100010"
                     "011110001010001111111111000000100000100100110001001011111"
                     "000101001001111111010111010010011011111011101011010110010"
@@ -1852,7 +1876,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111101011110010100100011010101100011100110010111011001001"
                     "001100101001110000101000010011000100001101011001011100010"
                 },
-        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, "12 layers example",
+        /* 40*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 16, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 67, 67, 1, 1, "12 layers example",
                     "0000000100001010000100101101101010101011010000001010001111010001101"
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010100101010100010110000101110111100001101110000000100111010001"
@@ -1921,7 +1945,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0101010101010101010101010101010101010101010101010101010101010101010"
                     "0001010011000010100000100100010000011010100101110000010001110001101"
                 },
-        /* 41*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, "13 layers example",
+        /* 41*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 17, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 71, 71, 1, 1, "13 layers example",
                     "00001101010011011010101011001110001000011100011011001100101000001110111"
                     "01110010110000100111001011100101010101000111011001110000100101100001100"
                     "00000111000100010100111110101011100011011010001110001000101100010000011"
@@ -1994,7 +2018,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10110010001101011101001110011001111101100101011010011110111110101111111"
                     "10000010100001001000010000110101001001110000100011100001100110010100001"
                 },
-        /* 42*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, "16 layers example",
+        /* 42*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 20, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 83, 83, 1, 1, "16 layers example",
                     "00001011100001101001010010111011000000000010110111001100101011111010100110010011011"
                     "00001100111101010101111001100010000000000101110110000101011100011010011001001000011"
                     "00000001101101111000000010100101011010101011110011000000000101010100111000110101100"
@@ -2079,7 +2103,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01101011110001110011001111101100101011010101110111110101111101011001011101100001111"
                     "00001001000010000110101000101110000100011010001100110010100011011111011100001101110"
                 },
-        /* 43*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, "19 layers example",
+        /* 43*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 23, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 95, 95, 1, 1, "19 layers example",
                     "00010001011000001001011100000100010100011110001000101101010001101011000110101100111011100100000"
                     "00111000100000010000111101010111001010100110100100101001100010111101100100110001001101001001000"
                     "00110000001000100010001011100100111100110000000000111101000101101101011010001100100111011100010"
@@ -2176,7 +2200,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "10011001111011010101011010011101111110101111010101011110010010111111000001000011100100110011001"
                     "00110101001011100000100011100010100110010100111000001111111101000000001100011000110110100110000"
                 },
-        /* 44*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, "20 layers example",
+        /* 44*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 24, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 101, 101, 1, 1, "20 layers example",
                     "00100011001001111011101000010101101000001111011011100001010111001110100001111011101010011110100110110"
                     "01001011101010010001000100010011010011001011100001000010011001000001100110100110000010001111010101011"
                     "10101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101010101"
@@ -2279,7 +2303,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011101100101011001001110111110100111101011010110010100101110001100000100001110000011101010010100001"
                     "01100101110000100011110001100110011010011000001110100010010101000111010001001111111100001101100010111"
                 },
-        /* 45*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, "26 layers example",
+        /* 45*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, -1, 30, { 0, 0, "" }, "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ", -1, 0, 125, 125, 1, 1, "26 layers example",
                     "00100110111101111000100011101010001011000100011001100001000110110101101111011010100110010101111010000000001001111011011101111"
                     "01000110110001010011111011000100001101000010100100110101101011001111101101110000100110101000000100001011010101000110110110011"
                     "00100000111011111011100111001111100011001111101001011011011111100001111010110111111101111111011010001000100011110110101111001"
@@ -2406,7 +2430,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11111010111101011001001001001000000000110100010101011110101011001010101011000101010010100111110010111001110100001111110111011"
                     "10011001010011111111011111100010010011110010001010100100000110100111000110011010110111001010011011101001111100110010110010011"
                 },
-        /* 46*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, "GS1 with Structured Append",
+        /* 46*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, -1, { 1, 2, "" }, "[20]01", -1, 0, 15, 15, 1, 1, "GS1 with Structured Append",
                     "001101011010101"
                     "111100100000010"
                     "101100001000101"
@@ -2423,7 +2447,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "001001100010110"
                     "000001101000000"
                 },
-        /* 47*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, "GS1 with Structured Append, ECI",
+        /* 47*/ { BARCODE_AZTEC, GS1_MODE, 3, -1, -1, -1, { 3, 3, "AZ1" }, "[20]01", -1, 0, 19, 19, 1, 1, "GS1 with Structured Append, ECI",
                     "1101011001100100101"
                     "1000001000001010100"
                     "1100010010010100100"
@@ -2444,7 +2468,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "0011010000001001010"
                     "1011000010000000000"
                 },
-        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, "12345678901234567890123456789012" }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, "GS1 with Structured Append, full symbol",
+        /* 48*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, -1, 6, { 2, 4, "12345678901234567890123456789012" }, "[01]12345678901231[10]01", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 1, 1, "GS1 with Structured Append, full symbol",
                     "11100110011000010001000"
                     "10100110000110101111010"
                     "11000101100000111000011"
@@ -2469,7 +2493,49 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01011110101100000101110"
                     "00010001000011011101100"
                 },
-        /* 49*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
+        /* 49*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\152\076\350\255\362\357\027\231\072\040\123\224\237\303\035\207", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 1st example; BWIPP different encodation",
+                    "1111001111001101001"
+                    "1011001011010001101"
+                    "0010010101011000011"
+                    "1001011101010100110"
+                    "1110110101101011101"
+                    "0000111111111111001"
+                    "0011010000000110000"
+                    "0111110111110101111"
+                    "1010010100010110111"
+                    "0110110101010100001"
+                    "1100010100010111000"
+                    "1101110111110100010"
+                    "1010010000000100100"
+                    "0100011111111110100"
+                    "1001000110011001010"
+                    "1111000000111010101"
+                    "1011111001010110010"
+                    "0000111100101101101"
+                    "1011101101111100011"
+                },
+        /* 50*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, -1, 2, { 0, 0, "" }, "\035\316\244\056\040\104\004\275\031\175\244\311\030\035\076\164", -1, 0, 19, 19, 0, 899, "BWIP-JS #354 2nd example; BWIPP different encodation",
+                    "1110001010011101111"
+                    "1001010010100100110"
+                    "1100010011111011111"
+                    "0010000000000011110"
+                    "0100110101101011100"
+                    "1110111111111111100"
+                    "1100010000000110110"
+                    "1000110111110100001"
+                    "0011010100010111010"
+                    "1000110101010100000"
+                    "1111010100010110110"
+                    "0011110111110101111"
+                    "1100010000000101011"
+                    "1010011111111110101"
+                    "1010000110011001001"
+                    "1011010011000100000"
+                    "0111110000110001001"
+                    "0001011110011100101"
+                    "0000001100111001111"
+                },
+        /* 51*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "0", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (1st)",
                     "11101010101"
                     "11111111111"
                     "01000000010"
@@ -2482,7 +2548,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010100"
                 },
-        /* 50*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
+        /* 52*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "25", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (2nd)",
                     "11101100101"
                     "11111111111"
                     "01000000011"
@@ -2495,7 +2561,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100100000"
                 },
-        /* 51*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
+        /* 53*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "125", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (3rd)",
                     "11110101101"
                     "11111111111"
                     "11000000011"
@@ -2508,7 +2574,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111101000"
                 },
-        /* 52*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
+        /* 54*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "255", -1, 0, 11, 11, 1, 1, "ISO/IEC 24778:2008 Figure A.1 (4th)",
                     "11010101001"
                     "11111111111"
                     "01000000011"
@@ -2521,7 +2587,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011100"
                 },
-        /* 53*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, "",
+        /* 55*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "1", -1, 0, 11, 11, 1, 1, "",
                     "11101010101"
                     "11111111111"
                     "11000000011"
@@ -2534,7 +2600,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100110100"
                 },
-        /* 54*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, "",
+        /* 56*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "15", -1, 0, 11, 11, 1, 1, "",
                     "11101001001"
                     "11111111111"
                     "11000000011"
@@ -2547,7 +2613,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001111100"
                 },
-        /* 55*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, "",
+        /* 57*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "16", -1, 0, 11, 11, 1, 1, "",
                     "11101110101"
                     "11111111111"
                     "11000000010"
@@ -2560,7 +2626,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111100100"
                 },
-        /* 56*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, "",
+        /* 58*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "63", -1, 0, 11, 11, 1, 1, "",
                     "11100101001"
                     "11111111111"
                     "11000000011"
@@ -2573,7 +2639,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00101010000"
                 },
-        /* 57*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, "",
+        /* 59*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "64", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "01000000010"
@@ -2586,7 +2652,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011100"
                 },
-        /* 58*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, "",
+        /* 60*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "65", -1, 0, 11, 11, 1, 1, "",
                     "11111010101"
                     "11111111111"
                     "11000000011"
@@ -2599,7 +2665,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111100"
                 },
-        /* 59*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, "",
+        /* 61*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "126", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "01000000010"
@@ -2612,7 +2678,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110111000"
                 },
-        /* 60*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, "",
+        /* 62*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "127", -1, 0, 11, 11, 1, 1, "",
                     "11110101001"
                     "11111111111"
                     "11000000011"
@@ -2625,7 +2691,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00111011000"
                 },
-        /* 61*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, "",
+        /* 63*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "128", -1, 0, 11, 11, 1, 1, "",
                     "11001010101"
                     "11111111111"
                     "11000000010"
@@ -2638,7 +2704,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010000"
                 },
-        /* 62*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, "",
+        /* 64*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "191", -1, 0, 11, 11, 1, 1, "",
                     "11000101001"
                     "11111111111"
                     "01000000011"
@@ -2651,7 +2717,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00100010100"
                 },
-        /* 63*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, "",
+        /* 65*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "192", -1, 0, 11, 11, 1, 1, "",
                     "11011010101"
                     "11111111111"
                     "11000000010"
@@ -2664,7 +2730,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00110011000"
                 },
-        /* 64*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, "",
+        /* 66*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "225", -1, 0, 11, 11, 1, 1, "",
                     "11010010101"
                     "11111111111"
                     "11000000011"
@@ -2677,7 +2743,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "01111111111"
                     "00001100100"
                 },
-        /* 65*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, "",
+        /* 67*/ { BARCODE_AZRUNE, UNICODE_MODE, -1, -1, -1, -1, { 0, 0, "" }, "254", -1, 0, 11, 11, 1, 1, "",
                     "11010101001"
                     "11111111111"
                     "11000000010"
@@ -2699,10 +2765,11 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -2712,7 +2779,7 @@ static void test_encode(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
-                                    data[i].option_1, data[i].option_2, -1, data[i].output_options,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                                     data[i].data, data[i].length, debug);
         if (data[i].structapp.count) {
             symbol->structapp = data[i].structapp;
@@ -2722,12 +2789,13 @@ static void test_encode(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, { %d, %d, \"%.32s\" }, \"%s\", %d, %s, %d, %d, %d, \"%s\",\n",
+            printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, { %d, %d, \"%.32s\" }, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\",\n",
                     i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].eci,
                     testUtilOutputOptionsName(data[i].output_options), data[i].option_1, data[i].option_2,
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
-                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
+                    testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp,
+                    data[i].zxingcpp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
@@ -2735,36 +2803,48 @@ static void test_encode(const testCtx *const p_ctx) {
                 int width, row;
 
                 assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
-                                i, symbol->rows, data[i].expected_rows, data[i].data);
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
                 assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
-                                i, symbol->width, data[i].expected_width, data[i].data);
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length,
+                                    NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                    data[i].expected);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[22801 + 1];
+                    assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
                     assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)),
-                                    -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                                -1, "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }
@@ -2992,10 +3072,11 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode_segs", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3005,11 +3086,13 @@ static void test_encode_segs(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilSetSymbol(symbol, BARCODE_AZTEC, data[i].input_mode, -1 /*eci*/,
-                            data[i].option_1, data[i].option_2, -1, data[i].output_options, NULL, 0, debug);
+                            data[i].option_1, data[i].option_2, -1 /*option_3*/,
+                            data[i].output_options, NULL, 0, debug);
         for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
 
         ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n", i, ret, data[i].ret,
+                    symbol->errtxt);
 
         if (p_ctx->generate) {
             char escaped1[4096];
@@ -3020,9 +3103,12 @@ static void test_encode_segs(const testCtx *const p_ctx) {
             printf("        /*%3d*/ { %s, %s, %d, %d, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
                     data[i].option_1, data[i].option_2,
-                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
-                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
-                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)),
+                    data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)),
+                    data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)),
+                    data[i].segs[2].length, data[i].segs[2].eci,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -3030,45 +3116,236 @@ static void test_encode_segs(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                            i, symbol->rows, data[i].expected_rows);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                            i, symbol->width, data[i].expected_width);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
                 assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d\n", i, ret, width, row);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].segs, seg_count, NULL, cmp_buf, sizeof(cmp_buf));
-                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwippSegs(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].segs,
+                                    seg_count, NULL, cmp_buf, sizeof(cmp_buf));
+                        assert_zero(ret, "i:%d %s testUtilBwippSegs ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                    data[i].expected);
                     }
                 }
-                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length, debug)) {
+                if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source,
+                                    data[i].segs[0].length, debug)) {
                     if (data[i].input_mode == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
                                     i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[22801 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, data[i].segs[0].length,
-                                modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source,
+                                    data[i].segs[0].length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                                    sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
-                                NULL /*primary*/, escaped, &ret_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
-                    }
+                                    NULL /*primary*/, escaped, &ret_len);
+                        assert_zero(ret,
+                                    "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                    ret_len, escaped);
+                        }
                 }
             }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int symbology;
+        int input_mode;
+        int eci;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { BARCODE_AZTEC, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  2*/ { BARCODE_AZTEC, UNICODE_MODE, -1, -1, "ก", -1, ZINT_WARN_USES_ECI, 13, "", -1, 0 },
+        /*  3*/ { BARCODE_AZTEC, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_USES_ECI, 13, "\241", -1, 13 },
+        /*  4*/ { BARCODE_AZTEC, DATA_MODE, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  5*/ { BARCODE_AZTEC, DATA_MODE, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /*  6*/ { BARCODE_AZTEC, UNICODE_MODE, 26, -1, "é", -1, 0, 26, "", -1, 0 },
+        /*  7*/ { BARCODE_AZTEC, UNICODE_MODE, 26, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /*  8*/ { BARCODE_AZTEC, UNICODE_MODE, 899, -1, "é", -1, 0, 899, "", -1, 0 },
+        /*  9*/ { BARCODE_AZTEC, UNICODE_MODE, 899, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+        /* 10*/ { BARCODE_AZTEC, GS1_MODE, -1, -1, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "", -1, 0 },
+        /* 11*/ { BARCODE_AZTEC, GS1_MODE, -1, BARCODE_RAW_TEXT, "[01]04912345123459[15]970331[30]128[10]ABC123", -1, 0, 0, "01049123451234591597033130128\03510ABC123", -1, 3 },
+        /* 12*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, -1, "H123ABC01234567890", -1, 0, 0, "", -1, 0 },
+        /* 13*/ { BARCODE_HIBC_AZTEC, UNICODE_MODE, -1, BARCODE_RAW_TEXT, "H123ABC01234567890", -1, 0, 0, "+H123ABC01234567890D", -1, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int output_options;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        struct zint_seg expected_raw_segs[3];
+        int expected_raw_seg_count;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 15, 15, {{0}}, 0 },
+        /*  1*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 15, 15, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  2*/ { UNICODE_MODE, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 19, 19, {{0}}, 0 },
+        /*  3*/ { UNICODE_MODE, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 19, 19, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  4*/ { DATA_MODE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 19, 19, {{0}}, 0 },
+        /*  5*/ { DATA_MODE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\223\137"), -1, 20 } }, 0, 19, 19, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\223\137"), 2, 20 } }, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_AZTEC, data[i].input_mode, -1 /*eci*/,
+                            -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d)\n",
+                    i, symbol->rows, data[i].expected_rows, symbol->width);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                    i, symbol->width, data[i].expected_width);
+
+        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
+                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            for (j = 0; j < symbol->raw_seg_count; j++) {
+                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+
+                expected_length = data[i].expected_raw_segs[j].length;
+
+                assert_equal(symbol->raw_segs[j].length, expected_length,
+                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->raw_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
+                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                                            sizeof(escaped)),
+                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                                            escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
+                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
+                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+            }
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -3090,6 +3367,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         int length;
         int ret;
         const char *expected_errtxt;
+        int zxingcpp_cmp;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
@@ -3165,7 +3443,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "\377\377\377\377\377\377\261\261\261\261\261\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\135\135\135\135\135\135"
                     "\135\335\135\060\060\010\010\010\010\010\060",
-                    2251, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)"
+                    2251, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 2, requires too many codewords (maximum 1279)", 3
                 }, /* Original OSS-Fuzz triggering data for malloc leak */
         /*  1*/ { BARCODE_AZTEC, DATA_MODE, -1, -1,
                     "\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060"
@@ -3256,7 +3534,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\060\060\060\363\060\060\060\060\060\060\060\060\060\060\060\060\362\060\060\060\060\060\000\060\060\377\060\060\060\175\175\175"
                     "\175\060\060\060\175\175\175\175\060\060\005\060\005\060\005\060\060\060\060\000\000\060\060\060\060\060\060\377\060\060\060\060"
                     "\377\060\377\377\060\060\057\060\060\057\060\060\060\000\000\060\060",
-                    2801, ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)"
+                    2801, ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3
                 }, /* Original OSS-Fuzz triggering data for binary_string buffer overrun */
         /*  2*/ { BARCODE_AZTEC, -1, 1, -1,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
@@ -3292,7 +3570,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123",
-                    4483, 0, ""
+                    4483, 0, "", 1
                 }, /* 4483 = (1664 (Max codewords) - 169 (ECC codewords) - 5/12 (D/L) - 3/12 (padding)) * 3 (3 4-bit digits per 12-bit wordcode) = 4483 */
         /*  3*/ { BARCODE_AZTEC, -1, 1, -1,
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
@@ -3328,7 +3606,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
                     "1234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123",
-                    4484, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)"
+                    4484, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)", 1
                 },
         /*  4*/ { BARCODE_AZTEC, -1, 1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -3359,7 +3637,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                    3588, 0, ""
+                    3588, 0, "", 1
                 },
         /*  5*/ { BARCODE_AZTEC, -1, 1, -1,
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -3390,7 +3668,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
                     "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZA",
-                    3589, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)"
+                    3589, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)", 1
                 },
         /*  6*/ { BARCODE_AZTEC, -1, 1, -1,
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
@@ -3449,7 +3727,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240",
-                    2237, 0, ""
+                    2237, 0, "", 3
                 },
         /*  7*/ { BARCODE_AZTEC, -1, 1, -1,
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
@@ -3508,7 +3786,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240"
                     "\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240\240",
-                    2238, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)"
+                    2238, ZINT_ERROR_TOO_LONG, "Error 707: Input too long for ECC level 1, requires too many codewords (maximum 1495)", 3
                 },
         /*  8*/ { BARCODE_AZTEC, DATA_MODE, -1, 1,
                     "\105\105\000\000\000\000\000\000\000\000\077\012\377\377\377\072\376\376\350\350\350\350\350\250\350\350\350\350\354\350\350\350\350\350\001\000\000\000\000\000"
@@ -3566,7 +3844,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\377\377\377\377\377\377\377\000\177\377\377\377"
                     "\046\000\000\000\000\000\000\027\027\027\027\027\027\027\027\027\027\027\027\000\027\027\027\027\000\004\000\000\000\000\000\135\000\044\103\000\000\377\377\377"
                     "\377\377\103\377\364\377\364",
-                    2167, ZINT_ERROR_TOO_LONG, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)"
+                    2167, ZINT_ERROR_TOO_LONG, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3
                 }, /* #300 (#2) Andre Maute */
         /*  9*/ { BARCODE_AZTEC, DATA_MODE, 1, -1,
                     "111\377\377\377\377\377\377\377\377"
@@ -3622,7 +3900,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "111",
-                    2054, 0, ""
+                    2054, 0, "", 3
                 }, /* 2048 byte block surrounded by digits */
         /* 10*/ { BARCODE_AZTEC, DATA_MODE, -1, 1,
                     "\105\105\000\000\000\000\000\000\000\000\077\012\377\377\377\072\376\376\350\350\350\350\350\250\350\350\350\350\354\350\350\350\350\350\001\000\000\000\000\000"
@@ -3679,7 +3957,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\377\377\377\377\377\377\377\000\177\377\377\377\046\000\000\000\000\000\000\027\027\027"
                     "\027\027\027\027\027\027\027\027\027\000\027\027\027\027\000\004\000\000\000\000\000\135\000\044\103\000\000\377\377\377\377\377\103\377\364\377\364",
-                    2157, ZINT_ERROR_TOO_LONG, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)"
+                    2157, ZINT_ERROR_TOO_LONG, "Error 704: Input too long for Version 1, requires too many codewords (maximum 14)", 3
                 }, /* #300 (#3) Andre Maute */
         /* 11*/ { BARCODE_AZTEC, DATA_MODE, 2, -1,
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
@@ -3707,7 +3985,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000"
                     "\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000\000",
-                    996, 0, ""
+                    996, 0, "", 1
                 }, /* Padding 11 example causing issue with ZXing-C++ */
         /* 12*/ { BARCODE_AZTEC, DATA_MODE, -1, -1,
                     "\133\060\060\060\135\060\125\125\125\125\140\060\125\125\125\125\060\060\060\271\060\060\125\103\164\125\125\125\377\377\125\125\125\125\125\125\125\133\060\076"
@@ -3821,7 +4099,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
                     "\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377\377"
                     "\377\377\377\377\377\261\261\261\261\261\060\060\060\060\060\060\060\060\060\060\060\060\060\060\060\135\135\135\135\135\135\135\335\135\060\060\010\010\010\010"
                     "\010\060",
-                    4402, ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)"
+                    4402, ZINT_ERROR_TOO_LONG, "Error 502: Input too long, requires too many codewords (maximum 1661)", 3
                 }, /* fuzz_data (1st) */
     };
     const int data_size = ARRAY_SIZE(data);
@@ -3832,9 +4110,10 @@ static void test_fuzz(const testCtx *const p_ctx) {
     char cmp_buf[32768];
     char cmp_msg[8192];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_fuzz", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3843,25 +4122,36 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d symbol->errtxt %s != %s\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
 
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[22801 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                            cmp_buf, sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            escaped, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            escaped);
             }
         }
 
@@ -3952,15 +4242,20 @@ static void test_perf(const testCtx *const p_ctx) {
             symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 
-            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                        data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                        data[i].data, -1, debug);
 
             start = clock();
             ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
             diff_encode += clock() - start;
-            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret, symbol->errtxt);
 
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                        i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                        i, symbol->width, data[i].expected_width, data[i].data);
 
             start = clock();
             ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
@@ -3970,13 +4265,15 @@ static void test_perf(const testCtx *const p_ctx) {
             ZBarcode_Delete(symbol);
         }
 
-        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("%s: diff_encode %gms, diff_buffer %gms\n",
+                data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
 
         total_encode += diff_encode;
         total_buffer += diff_buffer;
     }
     if (p_ctx->index != -1) {
-        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
+        printf("totals: encode %gms, buffer %gms\n",
+                total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
     }
 }
 
@@ -3987,6 +4284,8 @@ int main(int argc, char *argv[]) {
         { "test_options", test_options },
         { "test_encode", test_encode },
         { "test_encode_segs", test_encode_segs },
+        { "test_rt", test_rt },
+        { "test_rt_segs", test_rt_segs },
         { "test_fuzz", test_fuzz },
         { "test_perf", test_perf },
     };

@@ -47,16 +47,16 @@ static const char C11Table[11 + 1][6] = {
 
 /* Code 11 */
 INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int length) {
-
+    static const unsigned char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
     int i;
     int h;
     int weight[141]; /* 140 + 1 extra for 1st check */
     char dest[864]; /* 6 + 140 * 6 + 2 * 6 + 5 + 1 = 864 */
-    int error_number = 0;
     char *d = dest;
     int num_check_digits;
     unsigned char checkstr[2];
-    static const unsigned char checkchrs[11] = { '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '-' };
+    int error_number = 0;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     /* Suppresses clang-tidy clang-analyzer-core.UndefinedBinaryOperatorResult warning */
     assert(length > 0);
@@ -150,6 +150,11 @@ INTERNAL int code11(struct zint_symbol *symbol, unsigned char source[], int leng
     if (num_check_digits) {
         hrt_cat_nochk(symbol, checkstr, num_check_digits);
     }
+
+    if (raw_text && rt_cpy_cat(symbol, source, length, '\xFF' /*separator (none)*/, checkstr, num_check_digits)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    }
+
     return error_number;
 }
 

@@ -301,12 +301,16 @@ INTERNAL int utf8_to_unicode(struct zint_symbol *symbol, const unsigned char sou
                 int *length, const int disallow_4byte);
 
 /* Treats source as ISO/IEC 8859-1 and copies into `symbol->text`, converting to UTF-8. Control chars (incl. DEL) and
-   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces, unless BARCODE_RAW_TEXT set in `output_options`.
-   Returns warning if truncated, else 0 */
+   non-ISO/IEC 8859-1 (0x80-9F) are replaced with spaces. Returns warning if truncated, else 0 */
 INTERNAL int hrt_cpy_iso8859_1(struct zint_symbol *symbol, const unsigned char source[], const int length);
 
 /* No-check as-is copy of ASCII into `symbol->text`, assuming `length` fits */
 INTERNAL void hrt_cpy_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+/* No-check as-is copy of ASCII into `symbol->text`, appending `separator` (if ASCII - use `\xFF` for none) and then
+   `cat`, assuming total length fits */
+INTERNAL void hrt_cpy_cat_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length,
+                const char separator, const unsigned char cat[], const int cat_length);
 
 /* Copy a single ASCII character into `symbol->text` (i.e. replaces content) */
 INTERNAL void hrt_cpy_chr(struct zint_symbol *symbol, const char ch);
@@ -322,6 +326,35 @@ INTERNAL void hrt_printf_nochk(struct zint_symbol *symbol, const char *fmt, ...)
 
 /* No-check copy of `source` into `symbol->text`, converting GS1 square brackets into round ones. Assumes it fits */
 INTERNAL void hrt_conv_gs1_brackets_nochk(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+
+/* Initialize `raw_segs` for `seg_count` segments. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int rt_init_segs(struct zint_symbol *symbol, const int seg_count);
+
+/* Free `raw_segs` along with any `source` buffers */
+INTERNAL void rt_free_segs(struct zint_symbol *symbol);
+
+/* Copy `seg` to raw seg `seg_idx`. If `seg->eci` not set, raw seg eci set to 3. On error sets `errtxt`, returning
+   BARCODE_ERROR_MEMORY */
+INTERNAL int rt_cpy_seg(struct zint_symbol *symbol, const int seg_idx, const struct zint_seg *seg);
+
+/* Copy `seg` to raw seg `seg_idx` using `ddata` converted to chars as source. If `eci` set, used instead of
+  `seg->eci`, and if neither set, sets raw seg eci to 3. On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int rt_cpy_seg_ddata(struct zint_symbol *symbol, const int seg_idx, const struct zint_seg *seg,
+                const int eci, const unsigned int *ddata);
+
+/* Copy `source` to raw seg 0 buffer, setting raw seg ECI to 3. On error sets `errtxt`, returning
+   BARCODE_ERROR_MEMORY */
+INTERNAL int rt_cpy(struct zint_symbol *symbol, const unsigned char source[], const int length);
+
+/* Copy `source` to raw seg 0 buffer, appending `separator` (if ASCII - use `\xFF` for none) and then `cat`, and
+   setting raw seg ECI to 3.  On error sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int rt_cpy_cat(struct zint_symbol *symbol, const unsigned char source[], const int length,
+                const char separator, const unsigned char cat[], const int cat_length);
+
+/* `sprintf()` into raw seg 0 buffer, assuming formatted data less than 256 bytes. Sets raw seg ECI to 3. On error
+   sets `errtxt`, returning BARCODE_ERROR_MEMORY */
+INTERNAL int rt_printf_256(struct zint_symbol *symbol, const char *fmt, ...) ZINT_FORMAT_PRINTF(2, 3);
 
 
 /* Sets symbol height, returning a warning if not within minimum and/or maximum if given.

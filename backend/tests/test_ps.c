@@ -126,7 +126,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     int have_ghostscript = testUtilHaveGhostscript();
 
-    testStartSymbol("test_print", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -237,7 +237,7 @@ static void test_ps_convert(const testCtx *const p_ctx) {
 
     unsigned char converted[256] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_ps_convert");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -260,7 +260,7 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     (void)p_ctx;
 
-    testStart("test_outfile");
+    testStart(p_ctx->func_name);
 
     symbol.symbology = BARCODE_CODE128;
     symbol.vector = &vector;

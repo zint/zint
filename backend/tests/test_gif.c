@@ -68,7 +68,7 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStart("test_pixel_plot");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int size;
@@ -196,7 +196,7 @@ static void test_print(const testCtx *const p_ctx) {
 
     const char *const have_identify = testUtilHaveIdentify();
 
-    testStartSymbol("test_print", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
@@ -303,7 +303,7 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     (void)p_ctx;
 
-    testStart("test_outfile");
+    testStart(p_ctx->func_name);
 
     symbol.symbology = BARCODE_CODE128;
     symbol.bitmap = data;
@@ -341,7 +341,7 @@ static void test_large_scale(const testCtx *const p_ctx) {
     struct zint_symbol symbol = {0};
     char data[] = "1";
 
-    testStart("test_large_scale");
+    testStart(p_ctx->func_name);
 
     length = (int) strlen(data);
 
@@ -373,7 +373,7 @@ static void test_too_big(const testCtx *const p_ctx) {
 
     (void)debug;
 
-    testStart("test_too_big");
+    testStart(p_ctx->func_name);
 
     length = (int) strlen(data);
 

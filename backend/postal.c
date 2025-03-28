@@ -182,9 +182,8 @@ static int postnet_enc(struct zint_symbol *symbol, const unsigned char source[],
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
-        hrt_cat_chr_nochk(symbol, (char) itoc(check_digit));
+    if (raw_text && rt_cpy_cat(symbol, source, length, itoc(check_digit), NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -256,9 +255,8 @@ static int planet_enc(struct zint_symbol *symbol, const unsigned char source[], 
     /* Stop character */
     memcpy(d, "L", 2); /* Include terminating NUL */
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
-        hrt_cat_chr_nochk(symbol, (char) itoc(check_digit));
+    if (raw_text && rt_cpy_cat(symbol, source, length, itoc(check_digit), NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
     }
 
     return error_number;
@@ -300,6 +298,7 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
     char dest[80];
     char *d = dest;
     int posns[6];
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 6) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 484, "Input length %d too long (maximum 6)", length);
@@ -337,6 +336,10 @@ INTERNAL int koreapost(struct zint_symbol *symbol, unsigned char source[], int l
 
     hrt_cpy_nochk(symbol, local_source, 7);
 
+    if (raw_text && rt_cpy(symbol, local_source, 7)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    }
+
     return error_number;
 }
 
@@ -350,24 +353,21 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 486, "Input length %d too long (maximum 1)", length);
     }
 
+    to_upper(source, length);
+
     switch ((char) source[0]) {
-        case 'a':
         case 'A':
             expand(symbol, "111515111", 9);
             break;
-        case 'b':
         case 'B':
             expand(symbol, "13111311131", 11);
             break;
-        case 'c':
         case 'C':
             expand(symbol, "11131313111", 11);
             break;
-        case 'd':
         case 'D':
             expand(symbol, "1111131311111", 13);
             break;
-        case 'e':
         case 'E':
             expand(symbol, "1317131", 7);
             break;
@@ -375,10 +375,6 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
             return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 487,
                             "Invalid character in input (\"A\", \"B\", \"C\", \"D\" or \"E\" only)");
             break;
-    }
-
-    if (raw_text) {
-        hrt_cpy_chr(symbol, (const char) (z_islower(source[0]) ? source[0] & 0x5F : source[0]));
     }
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
@@ -390,6 +386,10 @@ INTERNAL int fim(struct zint_symbol *symbol, unsigned char source[], int length)
         error_number = set_height(symbol, min_height, default_height, max_height, 0 /*no_errtxt*/);
     } else {
         (void) set_height(symbol, 0.0f, 50.0f, 0.0f, 1 /*no_errtxt*/);
+    }
+
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -428,11 +428,10 @@ INTERNAL int daft_set_height(struct zint_symbol *symbol, const float min_height,
     return error_number;
 }
 
-/* Handles the 4 State barcodes used in the UK by Royal Mail */
-static void rm4scc_enc(struct zint_symbol *symbol, const int *posns, char *d, const int length) {
+/* Handles the 4 State barcodes used in the UK by Royal Mail. Returns check_character */
+static int rm4scc_enc(struct zint_symbol *symbol, const int *posns, char *d, const int length) {
     int i;
     int top, bottom, row, column, check_digit;
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     top = 0;
     bottom = 0;
@@ -465,9 +464,7 @@ static void rm4scc_enc(struct zint_symbol *symbol, const int *posns, char *d, co
     /* Stop character */
     memcpy(d, "0", 2); /* Include terminating NUL */
 
-    if (raw_text) {
-        hrt_cat_chr_nochk(symbol, KRSET[check_digit]);
-    }
+    return KRSET[check_digit];
 }
 
 /* Puts RM4SCC into the data matrix */
@@ -477,6 +474,7 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
     int posns[50];
     int loopey, h;
     int writer;
+    char check_digit;
     int error_number = 0;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
@@ -488,10 +486,8 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 489,
                         "Invalid character at position %d in input (alphanumerics only)", i);
     }
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
-    }
-    rm4scc_enc(symbol, posns, height_pattern, length);
+
+    check_digit = rm4scc_enc(symbol, posns, height_pattern, length);
 
     writer = 0;
     h = (int) strlen(height_pattern);
@@ -526,6 +522,10 @@ INTERNAL int rm4scc(struct zint_symbol *symbol, unsigned char source[], int leng
     }
     symbol->rows = 3;
     symbol->width = writer - 1;
+
+    if (raw_text && rt_cpy_cat(symbol, source, length, check_digit, NULL /*cat*/, 0)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+    }
 
     return error_number;
 }
@@ -585,8 +585,8 @@ INTERNAL int kix(struct zint_symbol *symbol, unsigned char source[], int length)
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -640,8 +640,8 @@ INTERNAL int daft(struct zint_symbol *symbol, unsigned char source[], int length
     symbol->rows = 3;
     symbol->width = writer - 1;
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return 0;
@@ -672,8 +672,8 @@ INTERNAL int flat(struct zint_symbol *symbol, unsigned char source[], int length
 
     /* TODO: Find documentation on BARCODE_FLAT dimensions/height */
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;
@@ -791,9 +791,9 @@ INTERNAL int japanpost(struct zint_symbol *symbol, unsigned char source[], int l
         (void) daft_set_height(symbol, 0.0f, 0.0f);
     }
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
-        /* Note: check char is in KASUTSET and not truly representable in HRT's SHKASUTSET_F */
+    /* Note: check char is in KASUTSET and not truly representable in raw text's SHKASUTSET_F */
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

@@ -73,7 +73,7 @@ static void test_svg(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_svg", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -154,7 +154,7 @@ static void test_putsf(const testCtx *const p_ctx) {
     char buf[512] = {0}; /* Suppress clang-16/17 run-time exception MemorySanitizer: use-of-uninitialized-value */
 #endif
 
-    testStart("test_putsf");
+    testStart(p_ctx->func_name);
 
     for (j = 0; j < 2; j++) { /* 1st `memfile`, then file */
 #ifdef ZINT_TEST_NO_FMEMOPEN
@@ -247,7 +247,7 @@ static void test_printf(const testCtx *const p_ctx) {
 
     (void)debug;
 
-    testStart("test_printf");
+    testStart(p_ctx->func_name);
 
     for (j = 0; j < 2; j++) { /* 1st memfile, then file */
         ZBarcode_Reset(symbol);
@@ -344,7 +344,7 @@ static void test_seek(const testCtx *const p_ctx) {
 
     (void)debug;
 
-    testStart("test_seek");
+    testStart(p_ctx->func_name);
 
     for (j = 0; j < 2; j++) { /* 1st memfile, then file */
         ZBarcode_Reset(symbol);
@@ -434,7 +434,7 @@ static void test_large(const testCtx *const p_ctx) {
 
     (void)debug;
 
-    testStart("test_large");
+    testStart(p_ctx->func_name);
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");

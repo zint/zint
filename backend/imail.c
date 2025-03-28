@@ -449,8 +449,8 @@ INTERNAL int usps_imail(struct zint_symbol *symbol, unsigned char source[], int 
     symbol->rows = 3;
     symbol->width = read - 1;
 
-    if (raw_text) {
-        hrt_cpy_nochk(symbol, source, length);
+    if (raw_text && rt_cpy(symbol, source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

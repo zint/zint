@@ -377,7 +377,7 @@ static void test_numeric(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_numeric");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -440,7 +440,7 @@ static void test_numeric_bc(const testCtx *const p_ctx) {
 
     int i, ret, bc_ret;
 
-    testStart("test_numeric_bc");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < 1001; i++) {
         if (testContinue(p_ctx, i)) continue;
@@ -679,7 +679,7 @@ static void test_alpha2(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    testStart("test_alpha2");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -746,7 +746,7 @@ static void test_alpha2_bc(const testCtx *const p_ctx) {
 
     (void)p_ctx;
 
-    testStart("test_alpha2_bc");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < 128; i++) {
         int j;

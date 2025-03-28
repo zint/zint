@@ -47,6 +47,7 @@ extern "C" {
 #define ZINT_DEBUG_TEST_BWIPP           128
 #define ZINT_DEBUG_TEST_PERFORMANCE     256
 #define ZINT_DEBUG_TEST_ZXINGCPP        512
+#define ZINT_DEBUG_TEST_BWIPP_ZXINGCPP  1024
 
 #include <errno.h>
 #include <stdio.h>
@@ -91,10 +92,12 @@ void testReport(void);
 
 #define ZINT_TEST_CTX_EXC_MAX   32
 typedef struct s_testCtx {
+    const char *func_name;
     int index;
     int index_end;
     int exclude[ZINT_TEST_CTX_EXC_MAX];
     int exclude_end[ZINT_TEST_CTX_EXC_MAX];
+    int arg;
     int generate;
     int debug;
 } testCtx;
@@ -208,12 +211,10 @@ int testUtilBwippCmpRow(const struct zint_symbol *symbol, int row, char *msg, co
 int testUtilHaveZXingCPPDecoder(void);
 int testUtilCanZXingCPP(int index, const struct zint_symbol *symbol, const char *data, const int length,
             const int debug);
-int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, char *bits,
-            char *buffer, const int buffer_size, int *p_cmp_len);
-int testUtilZXingCPPSegs(int index, struct zint_symbol *symbol, const struct zint_seg segs[], const int seg_count, char *bits,
-            char *buffer, const int buffer_size, int *p_cmp_len);
-int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
-            const char *expected, int expected_len, const char *primary, char *ret_buf, int *p_ret_len);
+int testUtilZXingCPP(int index, struct zint_symbol *symbol, const char *source, const int length, const char *bits,
+            const int zxingcpp_cmp, char *buffer, const int buffer_size, int *p_cmp_len);
+int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len, const char *expected,
+            int expected_len, const char *primary, char *ret_buf, int *p_ret_len);
 int testUtilZXingCPPCmpSegs(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len,
             const struct zint_seg segs[], const int seg_count, const char *primary, char *ret_buf, int *p_ret_len);
 

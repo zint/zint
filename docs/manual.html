@@ -488,10 +488,11 @@ Availability</a></li>
 <li><a href="#checking-symbology-capabilities"
 id="toc-checking-symbology-capabilities">5.15 Checking Symbology
 Capabilities</a></li>
+<li><a href="#feedback" id="toc-feedback">5.16 Feedback</a></li>
 <li><a href="#utf-8-to-eci-convenience-functions"
-id="toc-utf-8-to-eci-convenience-functions">5.16 UTF-8 to ECI
+id="toc-utf-8-to-eci-convenience-functions">5.17 UTF-8 to ECI
 convenience functions</a></li>
-<li><a href="#zint-version" id="toc-zint-version">5.17 Zint
+<li><a href="#zint-version" id="toc-zint-version">5.18 Zint
 Version</a></li>
 </ul></li>
 <li><a href="#types-of-symbology" id="toc-types-of-symbology">6. Types
@@ -869,7 +870,9 @@ the height is determined by the width.</p>
 <dd>
 <p>This is a structured way of representing information which consists
 of ‘chunks’ of data, each of which starts with an Application Identifier
-(AI). The AI identifies what type of information is being encoded.</p>
+(AI). The AI identifies what type of information is being encoded. Many
+types are defined, the most prominent being GTIN (Global Trade Item
+Number).</p>
 </dd>
 <dt>Reader Initialisation (Programming)</dt>
 <dd>
@@ -3650,6 +3653,20 @@ in Memory (memfile)</a>.</td>
 <td style="text-align: left;">Length of in-memory file buffer.</td>
 <td style="text-align: left;">(output only)</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>raw_segs</code></td>
+<td style="text-align: left;">pointer to array of segments</td>
+<td style="text-align: left;">Pointer to array of raw segments if
+<code>BARCODE_RAW_TEXT</code> set in <code>output_options</code> - see
+<a href="#feedback">5.16 Feedback</a>.</td>
+<td style="text-align: left;">(output only)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>raw_seg_count</code></td>
+<td style="text-align: left;">integer</td>
+<td style="text-align: left;">Number of raw segments.</td>
+<td style="text-align: left;">(output only)</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -3695,12 +3712,6 @@ data-tag=": API Warning and Error Return Values">
 </tr>
 </thead>
 <tbody>
-<tr>
-<td style="text-align: left;"><code>ZINT_WARN_HRT_RAW_TEXT</code></td>
-<td style="text-align: left;">The Human Readable Text returned in
-<code>text</code> was outputted as raw text (<code>output_options</code>
-set to <code>BARCODE_RAW_TEXT</code>).</td>
-</tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_WARN_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">The Human Readable Text returned in
@@ -3792,12 +3803,6 @@ occurs.</td>
 <td style="text-align: left;"><code>ZINT_ERROR_HRT_TRUNCATED</code></td>
 <td style="text-align: left;">Returned if <code>warn_level</code> set to
 <code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_TRUNCATED</code>
-occurs.</td>
-</tr>
-<tr>
-<td style="text-align: left;"><code>ZINT_ERROR_HRT_RAW_TEXT</code></td>
-<td style="text-align: left;">Returned if <code>warn_level</code> set to
-<code>WARN_FAIL_ALL</code> and <code>ZINT_WARN_HRT_RAW_TEXT</code>
 occurs.</td>
 </tr>
 </tbody>
@@ -3958,13 +3963,9 @@ file.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>BARCODE_RAW_TEXT</code></td>
-<td style="text-align: left;">Set HRT with no decoration,<a href="#fn14"
-class="footnote-ref" id="fnref14" role="doc-noteref"><sup>14</sup></a>
-complete with any control characters<a href="#fn15" class="footnote-ref"
-id="fnref15" role="doc-noteref"><sup>15</sup></a> and check
-characters,<a href="#fn16" class="footnote-ref" id="fnref16"
-role="doc-noteref"><sup>16</sup></a> and for all linear and DataBar
-Stacked symbologies, including those that normally don’t set it.</td>
+<td style="text-align: left;">Write data encoded to raw segment buffers
+<code>symbol-&gt;raw_segs</code> (see <a href="#feedback">5.16
+Feedback</a>).</td>
 </tr>
 </tbody>
 </table>
@@ -4105,7 +4106,7 @@ instead of a pair consisting of <code>"source, length"</code>, a pair
 consisting of <code>"segs, seg_count"</code> is given, with
 <code>segs</code> being an array of <code>struct zint_seg</code>
 segments and <code>seg_count</code> being the number of elements it
-contains. The zint_seg structure is of the form:</p>
+contains. The <code>zint_seg</code> structure is of the form:</p>
 <div class="sourceCode" id="cb76"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb76-1"><a href="#cb76-1" aria-hidden="true" tabindex="-1"></a><span class="kw">struct</span> zint_seg <span class="op">{</span></span>
 <span id="cb76-2"><a href="#cb76-2" aria-hidden="true" tabindex="-1"></a>    <span class="dt">unsigned</span> <span class="dt">char</span> <span class="op">*</span>source<span class="op">;</span> <span class="co">/* Data to encode */</span></span>
 <span id="cb76-3"><a href="#cb76-3" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> length<span class="op">;</span>            <span class="co">/* Length of `source`. If 0 or negative, `source`</span></span>
@@ -4227,8 +4228,8 @@ Text?</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
-href="#fn17" class="footnote-ref" id="fnref17"
-role="doc-noteref"><sup>17</sup></a></td>
+href="#fn14" class="footnote-ref" id="fnref14"
+role="doc-noteref"><sup>14</sup></a></td>
 <td style="text-align: left;">Is the symbology EAN/UPC?</td>
 </tr>
 <tr>
@@ -4302,12 +4303,49 @@ defined?</td>
 <span id="cb85-10"><a href="#cb85-10" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
 <span id="cb85-11"><a href="#cb85-11" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">&quot;PDF417 does not support ECI</span><span class="sc">\n</span><span class="st">&quot;</span><span class="op">);</span></span>
 <span id="cb85-12"><a href="#cb85-12" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div>
-<h2 id="utf-8-to-eci-convenience-functions">5.16 UTF-8 to ECI
+<h2 id="feedback">5.16 Feedback</h2>
+<p>On successful encodation (after using <code>ZBarcode_Encode()</code>
+etc.) the <code>option_1</code>, <code>option_2</code> and
+<code>option_3</code> members will be set to the values used by Zint to
+create the barcode. This is useful for feedback if the values were left
+as defaults or were overridden by Zint.</p>
+<p>In particular for symbologies that have masks,<a href="#fn15"
+class="footnote-ref" id="fnref15" role="doc-noteref"><sup>15</sup></a>
+<code>option_3</code> will contain the mask used as
+<code>(N + 1) &lt;&lt; 8</code>, N being the mask. Also Aztec Code will
+return the actual ECC percentage used in <code>option_1</code> as
+<code>P &lt;&lt; 8</code>, where P is the integer percentage, the low
+byte containing the values given in Table <a href="#tbl:aztec_eccs">:
+Aztec Code Error Correction Modes</a> (with the addition of
+<code>0</code> meaning less than 5% + 3 codewords). Micro PDF417 also
+will return the ECC percentage in <code>option_1</code> as
+<code>P &lt;&lt; 8</code>.</p>
+<p>Detailed feedback on the data encoded may be requested by specifying
+the <code>BARCODE_RAW_TEXT</code> option in the
+<code>output_options</code> member, which will populate the
+<code>raw_segs</code> member with an array of <code>zint_seg</code>
+structures (see <a href="#multiple-segments-1">5.12 Multiple
+Segments</a> for the format), one for each segment specified, the size
+of the array being set in <code>raw_seg_count</code> - which will always
+be at least one.</p>
+<p>The <code>source</code>, <code>length</code> and <code>eci</code>
+members of <code>zint_seg</code> will be set accordingly - the data in
+<code>source</code>, the data length in <code>length</code>, and the
+character set the data is in (UTF-8 data will be converted) in
+<code>eci</code>. Any check characters encoded will be included,<a
+href="#fn16" class="footnote-ref" id="fnref16"
+role="doc-noteref"><sup>16</sup></a> and for GS1 data any
+<code>FNC1</code> separators will be represented as <code>GS</code>
+characters. For EAN/UPC data, add-ons will be separated from the main
+data with a plus (<code>+</code>) sign. GS1 Composite data if any will
+be separated from the primary data (including any EAN/UPC add-ons) by a
+pipe (<code>|</code>) character.</p>
+<h2 id="utf-8-to-eci-convenience-functions">5.17 UTF-8 to ECI
 convenience functions</h2>
 <p>As a convenience the conversion done by Zint from UTF-8 to ECIs is
 exposed in two helper functions (compatible with the
-<code>libzueci</code><a href="#fn18" class="footnote-ref" id="fnref18"
-role="doc-noteref"><sup>18</sup></a> functions
+<code>libzueci</code><a href="#fn17" class="footnote-ref" id="fnref17"
+role="doc-noteref"><sup>17</sup></a> functions
 <code>zueci_utf8_to_eci()</code> and
 <code>zueci_dest_len_eci()</code>):</p>
 <div class="sourceCode" id="cb86"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb86-1"><a href="#cb86-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ZBarcode_UTF8_To_ECI<span class="op">(</span><span class="dt">int</span> eci<span class="op">,</span> <span class="dt">const</span> <span class="dt">unsigned</span> <span class="dt">char</span> <span class="op">*</span>source<span class="op">,</span> <span class="dt">int</span> length<span class="op">,</span></span>
@@ -4323,7 +4361,7 @@ to do the conversion. The final destination length, returned in
 <code>ZBarcode_Dest_Len_ECI()</code>. If <code>length</code> is zero or
 less, <code>source</code> must be NUL-terminated. The destination buffer
 is not NUL-terminated. The obsolete ECIs 0, 1 and 2 are supported.</p>
-<h2 id="zint-version">5.17 Zint Version</h2>
+<h2 id="zint-version">5.18 Zint Version</h2>
 <p>Whether the Zint library linked to was built with PNG support may be
 determined with:</p>
 <div class="sourceCode" id="cb87"><pre class="sourceCode c"><code class="sourceCode c"><span id="cb87-1"><a href="#cb87-1" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> ZBarcode_NoPng<span class="op">();</span></span></code></pre></div>
@@ -4344,18 +4382,18 @@ alt="zint -b CODE11 -d &quot;9212320967&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b CODE11 -d "9212320967"</code></figcaption>
 </figure>
-<p>Developed by Intermec in 1977, Code 11 is similar to Code 2 of 5
-Matrix and is primarily used in telecommunications. The symbol can
-encode data consisting of the digits 0-9 and the dash character
-(<code>-</code>) up to a maximum of 140 characters. Two modulo-11 check
-digits are added by default. To add just one check digit, set
-<code>--vers=1</code> (API <code>option_2 = 1</code>). To add no check
-digits, set <code>--vers=2</code> (API <code>option_2 = 2</code>).</p>
+<p>Developed by Intermec in 1977 for Bell Labs as a high-density barcode
+to track small telephone components, Code 11 can encode data consisting
+of the digits 0-9 and the dash character (<code>-</code>) up to a
+maximum of 140 characters. Two modulo-11 check digits are added by
+default. To add just one check digit, set <code>--vers=1</code> (API
+<code>option_2 = 1</code>). To add no check digits, set
+<code>--vers=2</code> (API <code>option_2 = 2</code>).</p>
 <h3 id="code-2-of-5">6.1.2 Code 2 of 5</h3>
-<p>Code 2 of 5 is a family of one-dimensional symbols, 8 of which are
-supported by Zint. Note that the names given to these standards alters
-from one source to another so you should take care to ensure that you
-have the right barcode type before using these standards.</p>
+<p>Code 2 of 5 is a family of one-dimensional self-checking symbols, 8
+of which are supported by Zint. Note that the names given to these
+standards alters from one source to another so you should take care to
+ensure that you have the right barcode type before using them.</p>
 <h4 id="standard-code-2-of-5">6.1.2.1 Standard Code 2 of 5</h4>
 <figure>
 <img src="images/c25standard.svg" title="fig:" class="lin"
@@ -4363,13 +4401,13 @@ alt="zint -b C25STANDARD -d &quot;9212320967&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b C25STANDARD -d "9212320967"</code></figcaption>
 </figure>
-<p>Also known as Code 2 of 5 Matrix, this is a self-checking code used
-in industrial applications and photo development. Standard Code 2 of 5
-will encode numeric input (digits 0-9) up to a maximum of 112 digits. No
-check digit is added by default. To add a check digit, set
-<code>--vers=1</code> (API <code>option_2 = 1</code>). To add a check
-digit but not show it in the Human Readable Text, set
-<code>--vers=2</code> (API <code>option_2 = 2</code>).</p>
+<p>Also known as Code 2 of 5 Matrix, and used in industrial applications
+and photo development, Standard Code 2 of 5 will encode numeric input
+(digits 0-9) up to a maximum of 112 digits. No check digit is added by
+default. To add a check digit, set <code>--vers=1</code> (API
+<code>option_2 = 1</code>). To add a check digit but not show it in the
+Human Readable Text, set <code>--vers=2</code> (API
+<code>option_2 = 2</code>).</p>
 <h4 id="iata-code-2-of-5">6.1.2.2 IATA Code 2 of 5</h4>
 <figure>
 <img src="images/c25iata.svg" title="fig:" class="lin"
@@ -4377,11 +4415,11 @@ alt="zint -b C25IATA -d &quot;9212320967&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b C25IATA -d "9212320967"</code></figcaption>
 </figure>
-<p>Used for baggage handling in the air-transport industry by the
-International Air Transport Agency, this self-checking code will encode
-numeric input (digits 0-9) up to a maximum of 80 digits. No check digit
-is added by default, but can be set the same as for <a
-href="#standard-code-2-of-5">6.1.2.1 Standard Code 2 of 5</a>.</p>
+<p>Used by the International Air Transport Agency (IATA) for baggage
+handling, this barcode will encode numeric input (digits 0-9) up to a
+maximum of 80 digits. No check digit is added by default, but can be set
+the same as for <a href="#standard-code-2-of-5">6.1.2.1 Standard Code 2
+of 5</a>.</p>
 <h4 id="industrial-code-2-of-5">6.1.2.3 Industrial Code 2 of 5</h4>
 <figure>
 <img src="images/c25ind.svg" title="fig:" class="lin"
@@ -4401,9 +4439,9 @@ alt="zint -b C25INTER --compliantheight -d &quot;9212320967&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b C25INTER --compliantheight -d "9212320967"</code></figcaption>
 </figure>
-<p>This self-checking symbology encodes pairs of numbers, and so can
-only encode an even number of digits (0-9). If an odd number of digits
-is entered a leading zero is added by Zint. A maximum of 62 pairs (124
+<p>A high-density barcode that encodes pairs of numbers, and so can only
+encode an even number of digits (0-9). If an odd number of digits is
+entered a leading zero is added by Zint. A maximum of 62 pairs (124
 digits) can be encoded. No check digit is added by default, but can be
 set the same as for <a href="#standard-code-2-of-5">6.1.2.1 Standard
 Code 2 of 5</a>.</p>
@@ -4426,8 +4464,10 @@ alt="zint -b ITF14 --compliantheight -d &quot;9212320967145&quot;" />
 aria-hidden="true"><code>zint -b ITF14 --compliantheight -d "9212320967145"</code></figcaption>
 </figure>
 <p>ITF-14, also known as UPC Shipping Container Symbol or Case Code, is
-based on Interleaved Code 2 of 5 and requires a 13-digit numeric input
-(digits 0-9). One modulo-10 check digit is added by Zint.</p>
+based on Interleaved Code 2 of 5 and is designed to encode a GTIN-14. It
+takes a 13-digit numeric input (digits 0-9), which will be prefixed with
+leading zeroes if less than 13 digits entered. One modulo-10 check digit
+is added by Zint.</p>
 <p>If no border option is specified Zint defaults to adding a bounding
 box with a border width of 5. This behaviour can be overridden by using
 the <code>--bind</code> option (API
@@ -4525,9 +4565,9 @@ aria-hidden="true"><code>zint -b UPCE --compliantheight -d "1123456"</code></fig
 <p>UPC-E is a zero-compressed version of UPC-A developed for smaller
 packages. The code requires a 6-digit article number (digits 0-9). The
 check digit is calculated by Zint. EAN-2 and EAN-5 add-on symbols can be
-added using the + character as with UPC-A. In addition Zint also
-supports Number System 1 encoding by entering a 7-digit article number
-starting with the digit 1. For example:</p>
+added using the <code>+</code> character as with UPC-A. In addition Zint
+also supports Number System 1 encoding by entering a 7-digit article
+number starting with the digit 1. For example:</p>
 <div class="sourceCode" id="cb93"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb93-1"><a href="#cb93-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> UPCE <span class="at">-d</span> <span class="st">&quot;1123456&quot;</span></span></code></pre></div>
 <p>or</p>
@@ -4741,9 +4781,9 @@ alt="zint -b CODE39 --compliantheight -d &quot;1A&quot; --vers=1" />
 <figcaption
 aria-hidden="true"><code>zint -b CODE39 --compliantheight -d "1A" --vers=1</code></figcaption>
 </figure>
-<p>Standard Code 39 was developed in 1974 by Intermec. Input data can be
-up to 86 characters in length and can include the characters 0-9, A-Z,
-dash (<code>-</code>), full stop (<code>.</code>), space, asterisk
+<p>Standard Code 39 was introduced in 1975 by Intermec. Input data can
+be up to 86 characters in length and can include the characters 0-9,
+A-Z, dash (<code>-</code>), full stop (<code>.</code>), space, asterisk
 (<code>*</code>), dollar (<code>$</code>), slash (<code>/</code>), plus
 (<code>+</code>) and percent (<code>%</code>). The standard does not
 require a check digit but a modulo-43 check digit can be added if
@@ -4847,15 +4887,16 @@ alt="zint -b CODABAR --compliantheight -d &quot;A37859B&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b CODABAR --compliantheight -d "A37859B"</code></figcaption>
 </figure>
-<p>Also known as NW-7, Monarch, ABC Codabar, USD-4, Ames Code and Code
-27, this symbology was developed in 1972 by Monarch Marketing Systems
-for retail purposes. The American Blood Commission adopted Codabar in
-1977 as the standard symbology for blood identification. Codabar can
-encode up to 103 characters starting and ending with the letters A-D and
-containing between these letters the numbers 0-9, dash (<code>-</code>),
-dollar (<code>$</code>), colon (<code>:</code>), slash (<code>/</code>),
-full stop (<code>.</code>) or plus (<code>+</code>). No check character
-is generated by default, but a modulo-16 one can be added by setting
+<p>Also known as Rationalized Codabar, Code 27, 2 of 7 Code, NW-7
+(Japan), USD-4 and Monarch, this symbology was developed in 1972 from
+earlier versions by Pitney Bowes-Alpex for retail price marking. The
+American Blood Commission adopted Codabar in 1979 as the standard
+barcode for blood products. Codabar can encode up to 103 characters
+starting and ending with the letters A-D and containing between these
+letters the numbers 0-9, dash (<code>-</code>), dollar (<code>$</code>),
+colon (<code>:</code>), slash (<code>/</code>), full stop
+(<code>.</code>) or plus (<code>+</code>). No check character is
+generated by default, but a modulo-16 one can be added by setting
 <code>--vers=1</code> (API <code>option_2 = 1</code>). To have the check
 character appear in the Human Readable Text, set <code>--vers=2</code>
 (API <code>option_2 = 2</code>).</p>
@@ -4924,8 +4965,8 @@ aria-hidden="true"><code>zint -b CODE128AB -d "130170X178"</code></figcaption>
 </figure>
 <p>It is sometimes advantageous to stop Code 128 from using Code Set C
 which compresses numerical data. The <code>BARCODE_CODE128AB</code><a
-href="#fn19" class="footnote-ref" id="fnref19"
-role="doc-noteref"><sup>19</sup></a> variant (symbology 60) suppresses
+href="#fn18" class="footnote-ref" id="fnref18"
+role="doc-noteref"><sup>18</sup></a> variant (symbology 60) suppresses
 Code Set C in favour of Code Sets A and B.</p>
 <p>Note that the special extra escapes mentioned above are not available
 for this variant (nor for any other).</p>
@@ -5541,7 +5582,7 @@ class="sourceCode c"><code class="sourceCode c"><span id="cb110-1"><a href="#cb1
 <span id="cb110-6"><a href="#cb110-6" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb110-7"><a href="#cb110-7" aria-hidden="true" tabindex="-1"></a>ZBarcode_Encode_and_Print<span class="op">(</span>my_symbol<span class="op">,</span> <span class="st">&quot;[99]1234-abcd&quot;</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span></code></pre></div>
 <p>EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols
-using the + symbol as described in sections <a
+using the <code>+</code> character as described in sections <a
 href="#upc-universal-product-code-iso-15420">6.1.3 UPC (Universal
 Product Code) (ISO 15420)</a> and <a
 href="#ean-european-article-number-iso-15420">6.1.4 EAN (European
@@ -5665,8 +5706,8 @@ the 6-digit version the first and last digit are ignored, leaving a
 2047. The second format <code>"NNN-NN"</code> represents the DX Extract
 as two numbers separated by a dash (<code>-</code>), the first number
 being 1 to 3 digits (range 1 to 127) and the second 1 to 2 digits (range
-0 to 15).<a href="#fn20" class="footnote-ref" id="fnref20"
-role="doc-noteref"><sup>20</sup></a></p>
+0 to 15).<a href="#fn19" class="footnote-ref" id="fnref19"
+role="doc-noteref"><sup>19</sup></a></p>
 <p>The optional frame number is a number in the range 0 to 63, and may
 have a half frame indicator <code>"A"</code> appended. Special character
 sequences (with or without a half frame indicator appended) may also be
@@ -9415,11 +9456,6 @@ Success (including when given informational options <code>-h</code> |
 <code>-t</code> | <code>--types</code>, <code>-v</code> |
 <code>--version</code>).
 </dd>
-<dt><code>-1</code></dt>
-<dd>
-Human Readable Text was outputted as raw text
-(<code>ZINT_WARN_HRT_RAW_TEXT</code>)
-</dd>
 <dt><code>1</code></dt>
 <dd>
 Human Readable Text was truncated (maximum 199 bytes)
@@ -9486,11 +9522,6 @@ Error counterpart of warning if <code>--werror</code> given
 <dd>
 Error counterpart of warning if <code>--werror</code> given
 (<code>ZINT_ERROR_HRT_TRUNCATED</code>)
-</dd>
-<dt><code>16</code></dt>
-<dd>
-Error counterpart of warning if <code>--werror</code> given
-(<code>ZINT_ERROR_HRT_RAW_TEXT</code>)
 </dd>
 </dl>
 <h2 id="examples">EXAMPLES</h2>
@@ -9600,32 +9631,26 @@ class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 <li id="fn13"><p>Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN,
 ITF-14, UPC-A and UPC-E have compliant quiet zones added by default.<a
 href="#fnref13" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn14"><p>In particular no parentheses will appear in the HRT for
-GS1 symbologies, and <code>GS</code> separators will be added as
-required. However for EAN/UPC symbologies, any add-on data will be
-separated by a <code>+</code> character as usual.<a href="#fnref14"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn15"><p>Normally control characters (including
-<code>DEL</code>) and non-ISO/IEC 8859-1 are replaced by spaces in the
-HRT.<a href="#fnref15" class="footnote-back"
-role="doc-backlink">↩︎</a></p></li>
-<li id="fn16"><p>Except for Japanese Postal Code, whose check character
-is not truly representable in HRT.<a href="#fnref16"
-class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn17"><p><code>ZINT_CAP_EANUPC</code> was previously named
+<li id="fn14"><p><code>ZINT_CAP_EANUPC</code> was previously named
 <code>ZINT_CAP_EXTENDABLE</code>, which is still recognised.<a
-href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn18"><p>The library <code>libzueci</code>, which can convert
+href="#fnref14" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn15"><p>DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have
+variable masks. Rectangular Micro QR Code has a fixed mask (4).<a
+href="#fnref15" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn16"><p>Except for Japanese Postal Code, whose check character
+is not truly representable in the encoded data.<a href="#fnref16"
+class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn17"><p>The library <code>libzueci</code>, which can convert
 both to and from UTF-8 and ECI, is available at <a
 href="https://sourceforge.net/projects/libzueci/">https://sourceforge.net/projects/libzueci/</a>.<a
-href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn19"><p><code>BARCODE_CODE128AB</code> previously used the name
+href="#fnref17" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn18"><p><code>BARCODE_CODE128AB</code> previously used the name
 <code>BARCODE_CODE128B</code>, which is still recognised.<a
-href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
-<li id="fn20"><p>The DX number may be looked up in The (Modified) Big
+href="#fnref18" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+<li id="fn19"><p>The DX number may be looked up in The (Modified) Big
 Film Database at <a
 href="https://thebigfilmdatabase.merinorus.com">https://thebigfilmdatabase.merinorus.com</a>.<a
-href="#fnref20" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+href="#fnref19" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
 </ol>
 </section>
 </body>

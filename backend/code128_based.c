@@ -31,6 +31,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "code128.h"
@@ -47,8 +48,8 @@ static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], co
         { "(00)", "[00]" }, /* NVE18 */
     };
     unsigned char ean128_equiv[23];
-    int error_number, zeroes;
-    int i;
+    int i, zeroes;
+    int error_number;
 
     if (length > data_len) {
         return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %1$d too long (maximum %2$d)", length,
@@ -71,6 +72,8 @@ static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], co
 
     error_number = gs1_128(symbol, ean128_equiv, data_len + 5);
 
+    /* Use `raw_text` set by `gs1_128()` */
+
     return error_number;
 }
 
@@ -92,16 +95,15 @@ static const char KRSET[] = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
 /* Specification at https://esolutions.dpd.com/dokumente/DPD_Parcel_Label_Specification_2.4.1_EN.pdf
  * and identification tag info (Barcode ID) at https://esolutions.dpd.com/dokumente/DPD_Routing_Database_1.3_EN.pdf */
 INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length) {
-    int error_number = 0;
     int i, p;
     unsigned char ident_tag;
     unsigned char local_source_buf[29];
     unsigned char *local_source;
     unsigned char hrt[37];
+    int cd; /* Check digit */
+    int error_number;
     const int mod = 36;
     const int relabel = symbol->option_2 == 1; /* A "relabel" has no identification tag */
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
-    int cd; /* Check digit */
 
     if ((length != 27 && length != 28) || (length == 28 && relabel)) {
         if (relabel) {
@@ -137,7 +139,10 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
                         "Invalid DPD identification tag (first character), ASCII values 32 to 126 only");
     }
 
-    (void) code128(symbol, local_source, length); /* Only error returned is for large text which can't happen */
+    if ((error_number = code128(symbol, local_source, length))) {
+        assert(error_number == ZINT_ERROR_MEMORY); /* Too long can't happen */
+        return error_number;
+    }
 
     if (!(symbol->output_options & (BARCODE_BOX | BARCODE_BIND | BARCODE_BIND_TOP))) {
         /* If no option has been selected then uses default bind top option */
@@ -171,19 +176,17 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
         cd *= 2;
         if (cd >= (mod + 1)) cd -= mod + 1;
 
-        if (!raw_text) {
-            switch (i + relabel) {
-                case 4:
-                case 7:
-                case 11:
-                case 15:
-                case 19:
-                case 21:
-                case 24:
-                case 27:
-                    hrt[p++] = ' ';
-                    break;
-            }
+        switch (i + relabel) {
+            case 4:
+            case 7:
+            case 11:
+            case 15:
+            case 19:
+            case 21:
+            case 24:
+            case 27:
+                hrt[p++] = ' ';
+                break;
         }
     }
 
@@ -193,6 +196,8 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
     hrt[p] = xtoc(cd);
 
     hrt_cpy_nochk(symbol, hrt, p + 1);
+
+    /* Use `raw_text` from `code128()` */
 
     /* Some compliance checks */
     if (not_sane(NEON_F, local_source + length - 16, 16)) {
@@ -214,13 +219,12 @@ INTERNAL int dpd(struct zint_symbol *symbol, unsigned char source[], int length)
 /* https://www.upu.int/UPU/media/upu/files/postalSolutions/programmesAndServices/standards/S10-12.pdf */
 INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int length) {
     static const char weights[8] = { 8, 6, 4, 2, 3, 5, 9, 7 };
-    int i, j;
     unsigned char local_source[13 + 1];
     unsigned char have_check_digit = '\0';
-    int check_digit;
-    int error_number = 0;
     unsigned char hrt[18];
-    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    int i, j;
+    int check_digit;
+    int error_number;
 
     if (length != 12 && length != 13) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 834, "Input length %d wrong (12 or 13 characters required)",
@@ -271,6 +275,11 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
     local_source[10] = itoc(check_digit);
     local_source[13] = '\0'; /* Terminating NUL required by `c128_cost()` */
 
+    if ((error_number = code128(symbol, local_source, 13))) {
+        assert(error_number == ZINT_ERROR_MEMORY); /* Too long can't happen */
+        return error_number;
+    }
+
     /* Do some checks on the Service Indicator (first char only) and Country Code */
     if (strchr("JKSTW", local_source[0]) != NULL) { /* These are reserved & cannot be assigned */
         error_number = errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 839,
@@ -284,17 +293,15 @@ INTERNAL int upu_s10(struct zint_symbol *symbol, unsigned char source[], int len
                                 "Country Code '%.2s' (last two characters) is not ISO 3166-1", local_source + 11);
     }
 
-    (void) code128(symbol, local_source, 13); /* Only error returned is for large text which can't happen */
-
     for (i = 0, j = 0; i < 13; i++) {
-        if (!raw_text) {
-            if (i == 2 || i == 5 || i == 8 || i == 11) {
-                hrt[j++] = ' ';
-            }
+        if (i == 2 || i == 5 || i == 8 || i == 11) {
+            hrt[j++] = ' ';
         }
         hrt[j++] = local_source[i];
     }
     hrt_cpy_nochk(symbol, hrt, j);
+
+    /* Use `raw_text` set by `code128()` */
 
     if (symbol->output_options & COMPLIANT_HEIGHT) {
         /* Universal Postal Union S10 Section 8, using max X 0.51mm & minimum height 12.5mm or 15% of width */

@@ -117,11 +117,11 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
         }
     }
 
-    if (checkdigit_option == 2 && !raw_text) {
-        /* Exclude check digit from HRT */
-        hrt_cpy_nochk(symbol, local_source, length - 1);
-    } else {
-        hrt_cpy_nochk(symbol, local_source, length);
+    /* Exclude check digit from HRT if hidden */
+    hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
+
+    if (raw_text && rt_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return error_number;

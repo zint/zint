@@ -94,6 +94,13 @@ extern "C" {
         char id[32];        /* Optional ID to distinguish sequence, ASCII, NUL-terminated unless max 32 long */
     };
 
+    /* Segment for use with `raw_segs` and API `ZBarcode_Encode_Segs()` */
+    struct zint_seg {
+        unsigned char *source; /* Data to encode, or (`raw_segs`) data encoded */
+        int length;         /* Length of `source`. If 0 or negative, `source` must be NUL-terminated */
+        int eci;            /* Extended Channel Interpretation */
+    };
+
     /* Main symbol structure */
     struct zint_symbol {
         int symbology;      /* Symbol to use (see BARCODE_XXX below) */
@@ -123,7 +130,7 @@ extern "C" {
         int warn_level;     /* Affects error/warning value returned by Zint API (see WARN_XXX below) */
         int debug;          /* Debugging flags */
         unsigned char text[256]; /* Human Readable Text (HRT) (if any), UTF-8, NUL-terminated (output only) */
-        int text_length;    /* Length of text in bytes, useful if BARCODE_RAW_TEXT when may have NULs (output only) */
+        int text_length;    /* Length of text in bytes (output only) */
         int rows;           /* Number of rows used by the symbol (output only) */
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
@@ -136,13 +143,8 @@ extern "C" {
         struct zint_vector *vector; /* Pointer to vector header (vector output only) */
         unsigned char *memfile; /* Pointer to in-memory file buffer if BARCODE_MEMORY_FILE (output only) */
         int memfile_size;   /* Length of in-memory file buffer (output only) */
-    };
-
-    /* Segment for use with `ZBarcode_Encode_Segs()` below */
-    struct zint_seg {
-        unsigned char *source; /* Data to encode */
-        int length;         /* Length of `source`. If 0 or negative, `source` must be NUL-terminated */
-        int eci;            /* Extended Channel Interpretation */
+        struct zint_seg *raw_segs; /* Pointer to array of raw segs if BARCODE_RAW_TEXT (output only) */
+        int raw_seg_count;  /* Number of `raw_segs` (output only) */
     };
 
 /* Symbologies (`symbol->symbology`) */
@@ -299,10 +301,7 @@ extern "C" {
 #define EANUPC_GUARD_WHITESPACE 0x04000 /* Add quiet zone indicators ("<"/">") to HRT whitespace (EAN/UPC) */
 #define EMBED_VECTOR_FONT       0x08000 /* Embed font in vector output - currently only for SVG output */
 #define BARCODE_MEMORY_FILE     0x10000 /* Write output to in-memory buffer `memfile` instead of to `outfile` */
-#define BARCODE_RAW_TEXT        0x20000 /* Set HRT with no decoration (GS1 data will not have parentheses but GS
-                                           separators as needed), complete with any control chars and check chars, and
-                                           for all linear and DataBar Stacked symbologies, including those that
-                                           normally don't set it */
+#define BARCODE_RAW_TEXT        0x20000 /* Write data encoded to raw segment buffers `raw_segs` */
 
 /* Input data types (`symbol->input_mode`) */
 #define DATA_MODE               0       /* Binary */
@@ -330,7 +329,6 @@ extern "C" {
 #define ULTRA_COMPRESSION       128     /* Enable Ultracode compression (experimental) */
 
 /* Warning and error conditions (API return values) */
-#define ZINT_WARN_HRT_RAW_TEXT      -1  /* Human Readable Text outputted with BARCODE_RAW_TEXT */
 #define ZINT_WARN_HRT_TRUNCATED     1   /* Human Readable Text was truncated (max 199 bytes) */
 #define ZINT_WARN_INVALID_OPTION    2   /* Invalid option given but overridden by Zint */
 #define ZINT_WARN_USES_ECI          3   /* Automatic ECI inserted by Zint */
@@ -347,7 +345,6 @@ extern "C" {
 #define ZINT_ERROR_USES_ECI         13  /* Error counterpart of warning if WARN_FAIL_ALL set (see below) */
 #define ZINT_ERROR_NONCOMPLIANT     14  /* Error counterpart of warning if WARN_FAIL_ALL set */
 #define ZINT_ERROR_HRT_TRUNCATED    15  /* Error counterpart of warning if WARN_FAIL_ALL set */
-#define ZINT_ERROR_HRT_RAW_TEXT     16  /* Error counterpart of warning if WARN_FAIL_ALL set */
 
 /* Warning level (`symbol->warn_level`) */
 #define WARN_DEFAULT            0  /* Default behaviour */

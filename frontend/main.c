@@ -927,7 +927,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
                 mirror_start_o = (int) (dir + 1 - symbol->outfile);
                 if (mirror_start_o > 221) { /* Insist on leaving at least ~30 chars for filename */
                     fprintf(stderr, "Warning 188: directory for mirrored batch output too long (greater than 220),"
-                            " ignoring\n");
+                            " **IGNORED**\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning ZINT_WARN_INVALID_INPUT? */
                     mirror_start_o = 0;
@@ -1112,7 +1112,7 @@ static int batch_process(struct zint_symbol *symbol, const char *filename, const
     } while ((!feof(file)) && (line_count < 2000000000));
 
     if (character != '\n') {
-        fprintf(stderr, "Warning 104: No newline at end of file\n");
+        fprintf(stderr, "Warning 104: No newline at end of input file, last line **IGNORED**\n");
         fflush(stderr);
         warn_number = ZINT_WARN_INVALID_OPTION; /* TODO: maybe new warning e.g. ZINT_WARN_INVALID_INPUT? */
     }
@@ -1572,7 +1572,7 @@ int main(int argc, char **argv) {
                 if (val >= 7 && val <= 12) {
                     addon_gap = val;
                 } else {
-                    fprintf(stderr, "Warning 140: Add-on gap '%d' out of range (7 to 12), ignoring\n", val);
+                    fprintf(stderr, "Warning 140: Add-on gap '%d' out of range (7 to 12), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1582,7 +1582,7 @@ int main(int argc, char **argv) {
                     /* Switch to batch processing mode */
                     batch_mode = 1;
                 } else {
-                    fprintf(stderr, "Warning 141: Can't use batch mode if data given, ignoring\n");
+                    fprintf(stderr, "Warning 141: Can't use batch mode if data given, **IGNORED**\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1610,7 +1610,7 @@ int main(int argc, char **argv) {
                 if (val <= 1000) { /* `val` >= 0 always */
                     my_symbol->border_width = val;
                 } else {
-                    fprintf(stderr, "Warning 108: Border width '%d' out of range (0 to 1000), ignoring\n", val);
+                    fprintf(stderr, "Warning 108: Border width '%d' out of range (0 to 1000), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1629,7 +1629,8 @@ int main(int argc, char **argv) {
                 if ((val >= 1) && (val <= 200)) {
                     my_symbol->option_2 = val;
                 } else {
-                    fprintf(stderr, "Warning 111: Number of columns '%d' out of range (1 to 200), ignoring\n", val);
+                    fprintf(stderr, "Warning 111: Number of columns '%d' out of range (1 to 200), **IGNORED**\n",
+                            val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1657,7 +1658,7 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.01f) {
                     my_symbol->dot_size = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 106: Invalid dot radius value (less than 0.01), ignoring\n");
+                    fprintf(stderr, "Warning 106: Invalid dot radius value (less than 0.01), **IGNORED**\n");
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1677,7 +1678,7 @@ int main(int argc, char **argv) {
                 if (val <= 999999) { /* `val` >= 0 always */
                     my_symbol->eci = val;
                 } else {
-                    fprintf(stderr, "Warning 118: ECI code '%d' out of range (0 to 999999), ignoring\n", val);
+                    fprintf(stderr, "Warning 118: ECI code '%d' out of range (0 to 999999), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1703,9 +1704,9 @@ int main(int argc, char **argv) {
                     ncpy_str(filetype, ARRAY_SIZE(filetype), optarg, 3);
                 } else {
                     if (png_refused) {
-                        fprintf(stderr, "Warning 152: PNG format disabled at compile time, ignoring\n");
+                        fprintf(stderr, "Warning 152: PNG format disabled at compile time, **IGNORED**\n");
                     } else {
-                        fprintf(stderr, "Warning 142: File type '%s' not supported, ignoring\n", optarg);
+                        fprintf(stderr, "Warning 142: File type '%s' not supported, **IGNORED**\n", optarg);
                     }
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1734,7 +1735,7 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.0f && float_opt <= 50.0f) {
                     my_symbol->guard_descent = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 135: Guard bar descent '%g' out of range (0 to 50), ignoring\n",
+                    fprintf(stderr, "Warning 135: Guard bar descent '%g' out of range (0 to 50), **IGNORED**\n",
                             float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1751,7 +1752,7 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.5f && float_opt <= 2000.0f) {
                     my_symbol->height = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 2000), ignoring\n",
+                    fprintf(stderr, "Warning 110: Symbol height '%g' out of range (0.5 to 2000), **IGNORED**\n",
                             float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1776,7 +1777,7 @@ int main(int argc, char **argv) {
                     mask = val + 1;
                 } else {
                     /* mask pattern >= 0 and <= 7 (i.e. values >= 1 and <= 8) only permitted */
-                    fprintf(stderr, "Warning 147: Mask value '%d' out of range (0 to 7), ignoring\n", val);
+                    fprintf(stderr, "Warning 147: Mask value '%d' out of range (0 to 7), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1789,7 +1790,7 @@ int main(int argc, char **argv) {
                 if (val <= 6) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
-                    fprintf(stderr, "Warning 116: Mode value '%d' out of range (0 to 6), ignoring\n", val);
+                    fprintf(stderr, "Warning 116: Mode value '%d' out of range (0 to 6), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1807,7 +1808,7 @@ int main(int argc, char **argv) {
                 cpy_str(my_symbol->primary, ARRAY_SIZE(my_symbol->primary), optarg);
                 if (strlen(optarg) >= ARRAY_SIZE(my_symbol->primary)) {
                     fprintf(stderr,
-                            "Warning 115: Primary data string too long (%d character maximum), truncating\n",
+                            "Warning 115: Primary data string too long (%d character maximum), **TRUNCATING**\n",
                             ARRAY_SIZE(my_symbol->primary) - 1);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1831,7 +1832,7 @@ int main(int argc, char **argv) {
                         break;
                     default:
                         fprintf(stderr, "Warning 137: Rotation value '%d' out of range (0, 90, 180 or 270 only),"
-                                " ignoring\n", val);
+                                " **IGNORED**\n", val);
                         fflush(stderr);
                         warn_number = ZINT_WARN_INVALID_OPTION;
                         break;
@@ -1845,7 +1846,7 @@ int main(int argc, char **argv) {
                 if ((val >= 1) && (val <= 90)) {
                     rows = val;
                 } else {
-                    fprintf(stderr, "Warning 112: Number of rows '%d' out of range (1 to 90), ignoring\n", val);
+                    fprintf(stderr, "Warning 112: Number of rows '%d' out of range (1 to 90), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1858,7 +1859,8 @@ int main(int argc, char **argv) {
                 if (float_opt >= 0.01f) {
                     my_symbol->scale = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 105: Invalid scale value '%g' (less than 0.01), ignoring\n", float_opt);
+                    fprintf(stderr, "Warning 105: Invalid scale value '%g' (less than 0.01), **IGNORED**\n",
+                            float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1870,10 +1872,10 @@ int main(int argc, char **argv) {
                 if (x_dim_mm > 10.0f || dpmm > 1000.0f) {
                     if (x_dim_mm > 10.0f) {
                         fprintf(stderr, "Warning 185: scalexdimdp X-dim '%g' out of range (greater than 10),"
-                                " ignoring\n", x_dim_mm);
+                                " **IGNORED**\n", x_dim_mm);
                     } else {
                         fprintf(stderr, "Warning 186: scalexdimdp resolution '%g' out of range (greater than 1000),"
-                                " ignoring\n", dpmm);
+                                " **IGNORED**\n", dpmm);
                     }
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1890,7 +1892,7 @@ int main(int argc, char **argv) {
                 } else {
                     /* Version 00-99 only */
                     fprintf(stderr, "Warning 150: Structured Carrier Message version '%d' out of range (0 to 99),"
-                            " ignoring\n", val);
+                            " **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1903,7 +1905,7 @@ int main(int argc, char **argv) {
                 if (val <= 8) { /* `val` >= 0 always */
                     my_symbol->option_1 = val;
                 } else {
-                    fprintf(stderr, "Warning 114: ECC level '%d' out of range (0 to 8), ignoring\n", val);
+                    fprintf(stderr, "Warning 114: ECC level '%d' out of range (0 to 8), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1930,7 +1932,7 @@ int main(int argc, char **argv) {
                         seg_count = val + 1;
                     }
                 } else {
-                    fprintf(stderr, "Warning 165: Can't define segments in batch mode, ignoring '%s'\n", optarg);
+                    fprintf(stderr, "Warning 165: Can't define segments in batch mode, **IGNORED** '%s'\n", optarg);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1944,7 +1946,7 @@ int main(int argc, char **argv) {
                     separator = val;
                 } else {
                     /* Greater than 4 values are not permitted */
-                    fprintf(stderr, "Warning 127: Separator value '%d' out of range (0 to 4), ignoring\n", val);
+                    fprintf(stderr, "Warning 127: Separator value '%d' out of range (0 to 4), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -1969,7 +1971,7 @@ int main(int argc, char **argv) {
                 if (float_opt >= -5.0f && float_opt <= 10.0f) {
                     my_symbol->text_gap = float_opt;
                 } else {
-                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (-5 to 10), ignoring\n",
+                    fprintf(stderr, "Warning 195: Text gap '%g' out of range (-5 to 10), **IGNORED**\n",
                             float_opt);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -1986,7 +1988,7 @@ int main(int argc, char **argv) {
                 if ((val >= 1) && (val <= 999)) {
                     my_symbol->option_2 = val;
                 } else {
-                    fprintf(stderr, "Warning 113: Version value '%d' out of range (1 to 999), ignoring\n", val);
+                    fprintf(stderr, "Warning 113: Version value '%d' out of range (1 to 999), **IGNORED**\n", val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -2000,7 +2002,8 @@ int main(int argc, char **argv) {
                     my_symbol->whitespace_height = val;
                 } else {
                     fprintf(stderr,
-                            "Warning 154: Vertical whitespace value '%d' out of range (0 to 1000), ignoring\n", val);
+                            "Warning 154: Vertical whitespace value '%d' out of range (0 to 1000), **IGNORED**\n",
+                            val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -2043,7 +2046,7 @@ int main(int argc, char **argv) {
                     my_symbol->whitespace_width = val;
                 } else {
                     fprintf(stderr,
-                            "Warning 121: Horizontal whitespace value '%d' out of range (0 to 1000), ignoring\n",
+                            "Warning 121: Horizontal whitespace value '%d' out of range (0 to 1000), **IGNORED**\n",
                             val);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -2057,7 +2060,7 @@ int main(int argc, char **argv) {
                     data_arg_num++;
                     data_cnt++;
                 } else {
-                    fprintf(stderr, "Warning 122: Can't define data in batch mode, ignoring '%s'\n", optarg);
+                    fprintf(stderr, "Warning 122: Can't define data in batch mode, **IGNORED** '%s'\n", optarg);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
                 }
@@ -2070,7 +2073,7 @@ int main(int argc, char **argv) {
                     data_arg_num++;
                     input_cnt++;
                 } else {
-                    fprintf(stderr, "Warning 143: Can only define one input file in batch mode, ignoring '%s'\n",
+                    fprintf(stderr, "Warning 143: Can only define one input file in batch mode, **IGNORED** '%s'\n",
                             optarg);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -2116,9 +2119,9 @@ int main(int argc, char **argv) {
     }
     if (optind != argc) {
         if (optind + 1 == argc) {
-            fprintf(stderr, "Warning 191: extra argument '%s' ignoring\n", argv[optind]);
+            fprintf(stderr, "Warning 191: extra argument '%s' **IGNORED**\n", argv[optind]);
         } else {
-            fprintf(stderr, "Warning 192: extra arguments beginning with '%s' ignoring\n", argv[optind]);
+            fprintf(stderr, "Warning 192: extra arguments beginning with '%s' **IGNORED**\n", argv[optind]);
         }
         fflush(stderr);
         warn_number = ZINT_WARN_INVALID_OPTION;
@@ -2152,19 +2155,21 @@ int main(int argc, char **argv) {
 
         if (output_given && (my_symbol->output_options & BARCODE_STDOUT)) {
             my_symbol->output_options &= ~BARCODE_STDOUT;
-            fprintf(stderr, "Warning 193: Output file given, ignoring '--direct' option\n");
+            fprintf(stderr, "Warning 193: Output file given, '--direct' option **IGNORED**\n");
             fflush(stderr);
             warn_number = ZINT_WARN_INVALID_OPTION;
         }
         if (batch_mode) {
             /* Take each line of text as a separate data set */
             if (data_arg_num > 1) {
-                fprintf(stderr, "Warning 144: Processing first input file '%s' only\n", arg_opts[0].arg);
+                fprintf(stderr,
+                        "Warning 144: First input file '%s' only processed, subsequent input files **IGNORED**\n",
+                        arg_opts[0].arg);
                 fflush(stderr);
                 warn_number = ZINT_WARN_INVALID_OPTION;
             }
             if (seg_count) {
-                fprintf(stderr, "Warning 169: Ignoring segment arguments\n");
+                fprintf(stderr, "Warning 169: Segment arguments **IGNORED**\n");
                 fflush(stderr);
                 warn_number = ZINT_WARN_INVALID_OPTION;
             }
@@ -2185,7 +2190,8 @@ int main(int argc, char **argv) {
                     my_symbol->scale = float_opt;
                     my_symbol->dpmm = dpmm;
                 } else {
-                    fprintf(stderr, "Warning 187: Invalid scalexdimdp X-dim '%g', resolution '%g' combo, ignoring\n",
+                    fprintf(stderr,
+                            "Warning 187: Invalid scalexdimdp X-dim '%g', resolution '%g' combo, **IGNORED**\n",
                             x_dim_mm, dpmm);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;
@@ -2233,7 +2239,8 @@ int main(int argc, char **argv) {
                     my_symbol->scale = float_opt;
                     my_symbol->dpmm = dpmm;
                 } else {
-                    fprintf(stderr, "Warning 190: Invalid scalexdimdp X-dim '%g', resolution '%g' combo, ignoring\n",
+                    fprintf(stderr,
+                            "Warning 190: Invalid scalexdimdp X-dim '%g', resolution '%g' combo **IGNORED**\n",
                             x_dim_mm, dpmm);
                     fflush(stderr);
                     warn_number = ZINT_WARN_INVALID_OPTION;

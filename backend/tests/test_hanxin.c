@@ -43,32 +43,33 @@ static void test_large(const testCtx *const p_ctx) {
         int ret;
         int expected_rows;
         int expected_width;
+        int zxingcpp_cmp;
         const char *expected_errtxt;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { -1, -1, -1, "1", 7827, 0, 189, 189, "" },
-        /*  1*/ { -1, -1, -1, "1", 7828, ZINT_ERROR_TOO_LONG, -1, -1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
-        /*  2*/ { -1, -1, -1, "A", 4350, 0, 189, 189, "" },
-        /*  3*/ { -1, -1, -1, "A", 4351, ZINT_ERROR_TOO_LONG, -1, -1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
-        /*  4*/ { -1, -1, -1, "\200", 3261, 0, 189, 189, "" },
-        /*  5*/ { -1, -1, -1, "\200", 3262, ZINT_ERROR_TOO_LONG, -1, -1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
-        /*  6*/ { -1, -1, ZINT_FULL_MULTIBYTE, "\241", 4348, 0, 189, 189, "" },
-        /*  7*/ { -1, -1, ZINT_FULL_MULTIBYTE, "\241", 4350, ZINT_ERROR_TOO_LONG, -1, -1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
-        /*  8*/ { -1, 1, -1, "1", 45, 0, 23, 23, "" },
-        /*  9*/ { -1, 1, -1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
-        /* 10*/ { -1, 1, -1, "A", 26, 0, 23, 23, "" },
-        /* 11*/ { -1, 1, -1, "A", 27, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
-        /* 12*/ { -1, 1, -1, "\200", 18, 0, 23, 23, "" },
-        /* 13*/ { -1, 1, -1, "\200", 19, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
-        /* 14*/ { -1, 1, ZINT_FULL_MULTIBYTE, "\241", 24, 0, 23, 23, "" },
-        /* 15*/ { -1, 1, ZINT_FULL_MULTIBYTE, "\241", 26, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
-        /* 16*/ { 2, 1, -1, "A", 21, 0, 23, 23, "" },
-        /* 17*/ { 2, 1, -1, "A", 22, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, ECC 2, requires 18 codewords (maximum 17)" },
-        /* 18*/ { 3, 1, -1, "A", 15, 0, 23, 23, "" },
-        /* 19*/ { 3, 1, -1, "A", 16, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, ECC 3, requires 14 codewords (maximum 13)" },
-        /* 20*/ { 4, 1, -1, "A", 10, 0, 23, 23, "" },
-        /* 21*/ { 4, 1, -1, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1, "Error 542: Input too long for Version 1, ECC 4, requires 10 codewords (maximum 9)" },
+        /*  0*/ { -1, -1, -1, "1", 7827, 0, 189, 189, 1, "" },
+        /*  1*/ { -1, -1, -1, "1", 7828, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
+        /*  2*/ { -1, -1, -1, "A", 4350, 0, 189, 189, 1, "" },
+        /*  3*/ { -1, -1, -1, "A", 4351, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
+        /*  4*/ { -1, -1, -1, "\200", 3261, 0, 189, 189, 899, "" },
+        /*  5*/ { -1, -1, -1, "\200", 3262, ZINT_ERROR_TOO_LONG, -1, -1, 899, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
+        /*  6*/ { -1, -1, ZINT_FULL_MULTIBYTE, "\241", 4348, 0, 189, 189, 899, "" },
+        /*  7*/ { -1, -1, ZINT_FULL_MULTIBYTE, "\241", 4350, ZINT_ERROR_TOO_LONG, -1, -1, 899, "Error 541: Input too long, requires 3265 codewords (maximum 3264)" },
+        /*  8*/ { -1, 1, -1, "1", 45, 0, 23, 23, 1, "" },
+        /*  9*/ { -1, 1, -1, "1", 46, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
+        /* 10*/ { -1, 1, -1, "A", 26, 0, 23, 23, 1, "" },
+        /* 11*/ { -1, 1, -1, "A", 27, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
+        /* 12*/ { -1, 1, -1, "\200", 18, 0, 23, 23, 899, "" },
+        /* 13*/ { -1, 1, -1, "\200", 19, ZINT_ERROR_TOO_LONG, -1, -1, 899, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
+        /* 14*/ { -1, 1, ZINT_FULL_MULTIBYTE, "\241", 24, 0, 23, 23, 899, "" },
+        /* 15*/ { -1, 1, ZINT_FULL_MULTIBYTE, "\241", 26, ZINT_ERROR_TOO_LONG, -1, -1, 899, "Error 542: Input too long for Version 1, requires 22 codewords (maximum 21)" },
+        /* 16*/ { 2, 1, -1, "A", 21, 0, 23, 23, 1, "" },
+        /* 17*/ { 2, 1, -1, "A", 22, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 542: Input too long for Version 1, ECC 2, requires 18 codewords (maximum 17)" },
+        /* 18*/ { 3, 1, -1, "A", 15, 0, 23, 23, 1, "" },
+        /* 19*/ { 3, 1, -1, "A", 16, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 542: Input too long for Version 1, ECC 3, requires 14 codewords (maximum 13)" },
+        /* 20*/ { 4, 1, -1, "A", 10, 0, 23, 23, 1, "" },
+        /* 21*/ { 4, 1, -1, "A", 11, ZINT_ERROR_TOO_LONG, -1, -1, 1, "Error 542: Input too long for Version 1, ECC 4, requires 10 codewords (maximum 9)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -76,13 +77,14 @@ static void test_large(const testCtx *const p_ctx) {
 
     char data_buf[7829];
 
-    char escaped[8196];
+    char ret_buf[8196];
     char cmp_buf[32768];
-    char cmp_msg[8196];
+    char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -92,28 +94,41 @@ static void test_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                    i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, data[i].option_3, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
 
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data_buf, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[189 * 189 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_nonzero(data[i].zxingcpp_cmp, "i:%d data[i].zxingcpp_cmp == 0", i);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data_buf, length, modules_dump, data[i].zxingcpp_cmp, cmp_buf,
+                            sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/,
+                            ret_buf, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            ret_buf);
             }
         }
 
@@ -162,14 +177,15 @@ static void test_options(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[1024];
+    char ret_buf[8192];
     char cmp_buf[32768];
     char cmp_msg[1024];
     char option_3_buf[64];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_options", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -204,13 +220,18 @@ static void test_options(const testCtx *const p_ctx) {
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[189 * 189 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                            sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
-                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/,
+                            ret_buf, &ret_len);
                 assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                               i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                            i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                            ret_buf);
             }
         }
 
@@ -253,85 +274,85 @@ static void test_input(const testCtx *const p_ctx) {
         /*  3*/ { UNICODE_MODE, 32, -1, "é", -1, 0, 32, "82 04 FC FF FF 00 00 00 00", 1, "ECI-32 H(1)1 (GB 18030) (Region One)" },
         /*  4*/ { UNICODE_MODE, 26, -1, "é", -1, 0, 26, "81 A3 00 16 1D 48 00 00 00", 1, "ECI-26 B2 (UTF-8)" },
         /*  5*/ { UNICODE_MODE, 26, ZINT_FULL_MULTIBYTE, "é", -1, 0, 26, "81 A4 70 2F FF 00 00 00 00", 1, "ECI-26 H(1)1 (Region One) (UTF-8) (full multibyte)" },
-        /*  6*/ { DATA_MODE, 0, -1, "é", -1, 0, 0, "30 01 61 D4 80 00 00 00 00", 1, "B2 (UTF-8)" },
-        /*  7*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "é", -1, 0, 0, "47 02 FF F0 00 00 00 00 00", 1, "H(1)1 (UTF-8) (Region One) (full multibyte)" },
-        /*  8*/ { DATA_MODE, 0, -1, "\351", -1, 0, 0, "30 00 F4 80 00 00 00 00 00", 1, "B1 (ISO 8859-1) (0xE9)" },
-        /*  9*/ { UNICODE_MODE, 0, -1, "β", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 53 61 00 00 00 00 00", 1, "B2 (GB 18030) (2-byte Region)" },
+        /*  6*/ { DATA_MODE, 0, -1, "é", -1, 0, 0, "30 01 61 D4 80 00 00 00 00", 899, "B2 (UTF-8)" },
+        /*  7*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "é", -1, 0, 0, "47 02 FF F0 00 00 00 00 00", 899, "H(1)1 (UTF-8) (Region One) (full multibyte)" },
+        /*  8*/ { DATA_MODE, 0, -1, "\351", -1, 0, 0, "30 00 F4 80 00 00 00 00 00", 899, "B1 (ISO 8859-1) (0xE9)" },
+        /*  9*/ { UNICODE_MODE, 0, -1, "β", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 53 61 00 00 00 00 00", 32, "B2 (GB 18030) (2-byte Region)" },
         /* 10*/ { UNICODE_MODE, 9, -1, "β", -1, 0, 9, "80 93 00 0F 10 00 00 00 00", 1, "ECI-9 B1 (ISO 8859-7)" },
         /* 11*/ { UNICODE_MODE, 29, -1, "β", -1, 0, 29, "81 D3 00 15 36 10 00 00 00", 1, "ECI-29 B2 (GB 2312)" },
         /* 12*/ { UNICODE_MODE, 32, -1, "β", -1, 0, 32, "82 03 00 15 36 10 00 00 00", 1, "ECI-32 B2 (GB 18030) (2-byte Region)" },
         /* 13*/ { UNICODE_MODE, 26, -1, "β", -1, 0, 26, "81 A3 00 16 75 90 00 00 00", 1, "ECI-26 B2 (UTF-8)" },
         /* 14*/ { UNICODE_MODE, 26, ZINT_FULL_MULTIBYTE, "β", -1, 0, 26, "81 A4 B1 5F FF 00 00 00 00", 1, "ECI-26 B2 (UTF-8) (full multibyte)" },
-        /* 15*/ { DATA_MODE, 0, -1, "β", -1, 0, 0, "30 01 67 59 00 00 00 00 00", 1, "B2 (UTF-8)" },
-        /* 16*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "β", -1, 0, 0, "4B 15 FF F0 00 00 00 00 00", 1, "H(1)1 (UTF-8) (Region One) (full multibyte)" },
+        /* 15*/ { DATA_MODE, 0, -1, "β", -1, 0, 0, "30 01 67 59 00 00 00 00 00", 899, "B2 (UTF-8)" },
+        /* 16*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "β", -1, 0, 0, "4B 15 FF F0 00 00 00 00 00", 899, "H(1)1 (UTF-8) (Region One) (full multibyte)" },
         /* 17*/ { UNICODE_MODE, 0, -1, "ÿ", -1, 0, 0, "30 00 FF 80 00 00 00 00 00", 1, "B1 (ISO 8859-1)" },
         /* 18*/ { UNICODE_MODE, 0, -1, "ÿÿÿ", -1, 0, 0, "30 01 FF FF FF 80 00 00 00", 1, "B3 (ISO 8859-1)" },
-        /* 19*/ { UNICODE_MODE, 0, -1, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 00 00 00 00 00 00", 1, "H(f)1 (GB 18030) (4-byte Region) (not DATA_MODE so GB 18030 mapping)" },
-        /* 20*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 00 00 00 00 00 00", 1, "H(f)1 (GB 18030) (4-byte Region)" },
-        /* 21*/ { DATA_MODE, 0, 0, "\302\200", -1, 0, 0, "30 01 61 40 00 00 00 00 00", 1, "B2 (UTF-8)" },
-        /* 22*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200", -1, 0, 0, "30 01 61 40 00 00 00 00 00", 1, "B2 (UTF-8) (full multibyte)" },
-        /* 23*/ { UNICODE_MODE, 0, -1, "\302\200�", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 38 26 7E 40 00 00", 1, "H(f)2 (GB 18030) (both 4-byte Region) (not DATA_MODE so GB 18030 mapping)" },
-        /* 24*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200�", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 38 26 7E 40 00 00", 1, "H(f)2 (GB 18030) (both 4-byte Region)" },
-        /* 25*/ { UNICODE_MODE, 0, -1, "啊亍齄丂\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 64 68 50 3C AC 28 80 00 FF FE E0 00 00", 1, "H(d)4 H(f)1 (GB 18030)" },
+        /* 19*/ { UNICODE_MODE, 0, -1, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 00 00 00 00 00 00", 32, "H(f)1 (GB 18030) (4-byte Region) (not DATA_MODE so GB 18030 mapping)" },
+        /* 20*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 00 00 00 00 00 00", 32, "H(f)1 (GB 18030) (4-byte Region)" },
+        /* 21*/ { DATA_MODE, 0, 0, "\302\200", -1, 0, 0, "30 01 61 40 00 00 00 00 00", 899, "B2 (UTF-8)" },
+        /* 22*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200", -1, 0, 0, "30 01 61 40 00 00 00 00 00", 899, "B2 (UTF-8) (full multibyte)" },
+        /* 23*/ { UNICODE_MODE, 0, -1, "\302\200�", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 38 26 7E 40 00 00", 32, "H(f)2 (GB 18030) (both 4-byte Region) (not DATA_MODE so GB 18030 mapping)" },
+        /* 24*/ { UNICODE_MODE, 0, ZINT_FULL_MULTIBYTE, "\302\200�", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 00 38 26 7E 40 00 00", 32, "H(f)2 (GB 18030) (both 4-byte Region)" },
+        /* 25*/ { UNICODE_MODE, 0, -1, "啊亍齄丂\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 64 68 50 3C AC 28 80 00 FF FE E0 00 00", 32, "H(d)4 H(f)1 (GB 18030)" },
         /* 26*/ { DATA_MODE, 0, -1, "\177\177", -1, 0, 0, "2F BD F7 F0 00 00 00 00 00", 1, "T2 (ASCII)" },
         /* 27*/ { DATA_MODE, 0, -1, "\177\177\177", -1, 0, 0, "2F BD F7 DF C0 00 00 00 00", 1, "T3 (ASCII)" },
         /* 28*/ { UNICODE_MODE, 0, -1, "123", -1, 0, 0, "11 EF FF 00 00 00 00 00 00", 1, "N3 (ASCII)" },
         /* 29*/ { UNICODE_MODE, 0, -1, "12345", -1, 0, 0, "11 EC 2D FF 80 00 00 00 00", 1, "N5 (ASCII)" },
         /* 30*/ { UNICODE_MODE, 0, -1, "Aa%$Bb9", -1, 0, 0, "22 A4 FA 18 3E 2E 52 7F 00", 1, "T7 (ASCII)" },
-        /* 31*/ { UNICODE_MODE, 0, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning (171) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 09 C4 0C CD EE 44 06 C4", 1, "T20 B78 H(f)2 T2 H(f)18 B35 (GB 18030)" },
-        /* 32*/ { DATA_MODE, 0, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, 0, 0, "(209) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 15 04 0C CD EE 44 06 C4", 1, "T20 B117 (UTF-8)" },
+        /* 31*/ { UNICODE_MODE, 0, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning (171) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 09 C4 0C CD EE 44 06 C4", 32, "T20 B78 H(f)2 T2 H(f)18 B35 (GB 18030)" },
+        /* 32*/ { DATA_MODE, 0, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, 0, 0, "(209) 27 38 C3 0A 35 F9 CF 99 92 F9 26 A3 E7 3E 76 C9 AE A3 7F CC 15 04 0C CD EE 44 06 C4", 899, "T20 B117 (UTF-8)" },
         /* 33*/ { UNICODE_MODE, 0, -1, "\000\014\033 #/059:<@AMZ", 15, 0, 0, "2F 80 31 B7 1F AF E0 05 27 EB 2E CB E2 96 8F F0 00", 1, "T15 (ASCII)" },
         /* 34*/ { UNICODE_MODE, 0, -1, "Z[\\`alz{~\177", -1, 0, 0, "28 FE CF 4E 3E 92 FF 7E E7 CF 7F 00 00", 1, "T10 (ASCII)" },
-        /* 35*/ { DATA_MODE, 26, ZINT_FULL_MULTIBYTE, "\202\061\203\063", -1, 0, 26, "81 A7 01 B1 D8 00 00 00 00", 0, "ECI-26 H(f)1 (GB 18030) (Invalid UTF-8, forces GB 2312/18030 utf8tosb() difference) NOTE: 2021-01-10 now UTF-8 is checked and mode -> DATA_MODE this test no longer shows difference; ZXing-C++ returns null string" },
+        /* 35*/ { DATA_MODE, 26, ZINT_FULL_MULTIBYTE, "\202\061\203\063", -1, 0, 26, "81 A7 01 B1 D8 00 00 00 00", 0, "ECI-26 H(f)1 (GB 18030) (Invalid UTF-8, forces GB 2312/18030 utf8tosb() difference) NOTE: 2021-01-10 now UTF-8 is checked and mode -> DATA_MODE this test no longer shows difference; ZXing-C++ returns U+FFFD replacement chars for \202 and \203" },
         /* 36*/ { UNICODE_MODE, 128, 0, "A", -1, 0, 128, "88 08 02 2B F0 00 00 00 00", 1, "ECI > 127" },
         /* 37*/ { UNICODE_MODE, 16364, 0, "A", -1, 0, 16364, "8B FE C2 2B F0 00 00 00 00", 1, "ECI > 16363" },
-        /* 38*/ { UNICODE_MODE, 0, -1, "啊啊啊亍", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 00 00 00 00 FF E0 00 FF F0 00 00 00", 1, "Region One (FFE terminator) -> Region Two (no indicator)" },
-        /* 39*/ { UNICODE_MODE, 0, -1, "亍亍亍啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 50 00 00 00 00 FF E0 00 FF F0 00 00 00", 1, "Region Two (FFE terminator) -> Region One (no indicator)" },
-        /* 40*/ { UNICODE_MODE, 0, -1, "啊啊啊啊亍亍啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", 1, "Region One (FFE) -> Region Two (FFE) -> Region One" },
-        /* 41*/ { UNICODE_MODE, 0, -1, "亍亍亍亍啊啊亍", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 50 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", 1, "Region Two (FFE) -> Region One (FFE) -> Region Two" },
-        /* 42*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE | (2 << 8), "é", -1, 0, 0, "47 02 FF F0 00 00 00 00 00", 1, "H(1)1 (UTF-8) (Region One) (full multibyte with mask)" },
-        /* 43*/ { UNICODE_MODE, 0, -1, "˘", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 16 80 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 38*/ { UNICODE_MODE, 0, -1, "啊啊啊亍", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 00 00 00 00 FF E0 00 FF F0 00 00 00", 32, "Region One (FFE terminator) -> Region Two (no indicator)" },
+        /* 39*/ { UNICODE_MODE, 0, -1, "亍亍亍啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 50 00 00 00 00 FF E0 00 FF F0 00 00 00", 32, "Region Two (FFE terminator) -> Region One (no indicator)" },
+        /* 40*/ { UNICODE_MODE, 0, -1, "啊啊啊啊亍亍啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 40 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", 32, "Region One (FFE) -> Region Two (FFE) -> Region One" },
+        /* 41*/ { UNICODE_MODE, 0, -1, "亍亍亍亍啊啊亍", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 50 00 00 00 00 00 0F FE 00 00 00 FF E0 00 FF F0 00", 32, "Region Two (FFE) -> Region One (FFE) -> Region Two" },
+        /* 42*/ { DATA_MODE, 0, ZINT_FULL_MULTIBYTE | (2 << 8), "é", -1, 0, 0, "47 02 FF F0 00 00 00 00 00", 899, "H(1)1 (UTF-8) (Region One) (full multibyte with mask)" },
+        /* 43*/ { UNICODE_MODE, 0, -1, "˘", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 16 80 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 44*/ { UNICODE_MODE, 4, -1, "˘", -1, 0, 4, "80 43 00 0D 10 00 00 00 00", 1, "ECI-4 B1 (ISO 8859-2)" },
-        /* 45*/ { UNICODE_MODE, 0, -1, "Ħ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 47 80 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 45*/ { UNICODE_MODE, 0, -1, "Ħ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 47 80 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 46*/ { UNICODE_MODE, 5, -1, "Ħ", -1, 0, 5, "80 53 00 0D 08 00 00 00 00", 1, "ECI-5 B1 (ISO 8859-3)" },
-        /* 47*/ { UNICODE_MODE, 0, -1, "ĸ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 50 00 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 47*/ { UNICODE_MODE, 0, -1, "ĸ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 50 00 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 48*/ { UNICODE_MODE, 6, -1, "ĸ", -1, 0, 6, "80 63 00 0D 10 00 00 00 00", 1, "ECI-6 B1 (ISO 8859-4)" },
-        /* 49*/ { UNICODE_MODE, 0, -1, "Ж", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 53 D4 00 00 00 00 00", 1, "B2 (GB 18030)" },
+        /* 49*/ { UNICODE_MODE, 0, -1, "Ж", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 53 D4 00 00 00 00 00", 32, "B2 (GB 18030)" },
         /* 50*/ { UNICODE_MODE, 7, -1, "Ж", -1, 0, 7, "80 73 00 0D B0 00 00 00 00", 1, "ECI-7 B1 (ISO 8859-5)" },
-        /* 51*/ { UNICODE_MODE, 0, -1, "Ș", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 B9 80 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 51*/ { UNICODE_MODE, 0, -1, "Ș", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 00 B9 80 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 52*/ { UNICODE_MODE, 18, -1, "Ș", -1, 0, 18, "81 23 00 0D 50 00 00 00 00", 1, "ECI-18 B1 (ISO 8859-16)" },
-        /* 53*/ { UNICODE_MODE, 0, -1, "テ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 52 E3 00 00 00 00 00", 1, "B2 (GB 18030)" },
+        /* 53*/ { UNICODE_MODE, 0, -1, "テ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 52 E3 00 00 00 00 00", 32, "B2 (GB 18030)" },
         /* 54*/ { UNICODE_MODE, 20, -1, "テ", -1, 0, 20, "81 43 00 14 1B 28 00 00 00", 1, "ECI-20 B2 (SHIFT JIS)" },
         /* 55*/ { UNICODE_MODE, 20, -1, "テテ", -1, 0, 20, "81 43 00 24 1B 2C 1B 28 00", 1, "ECI-20 B4 (SHIFT JIS)" },
         /* 56*/ { UNICODE_MODE, 20, -1, "\\\\", -1, 0, 20, "81 43 00 24 0A FC 0A F8 00", 0, "ECI-20 B4 (SHIFT JIS); ZXing-C++ does straight-through ASCII conversion for Shift JIS" },
-        /* 57*/ { UNICODE_MODE, 0, -1, "…", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 4E BC FF F0 00 00 00 00 00", 1, "H(1)1 (GB 18030)" },
+        /* 57*/ { UNICODE_MODE, 0, -1, "…", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 4E BC FF F0 00 00 00 00 00", 32, "H(1)1 (GB 18030)" },
         /* 58*/ { UNICODE_MODE, 21, -1, "…", -1, 0, 21, "81 53 00 0C 28 00 00 00 00", 1, "ECI-21 B1 (Win 1250)" },
-        /* 59*/ { UNICODE_MODE, 0, -1, "Ґ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 B9 00 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 59*/ { UNICODE_MODE, 0, -1, "Ґ", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 B9 00 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 60*/ { UNICODE_MODE, 22, -1, "Ґ", -1, 0, 22, "81 63 00 0D 28 00 00 00 00", 1, "ECI-22 B1 (Win 1251)" },
-        /* 61*/ { UNICODE_MODE, 0, -1, "˜", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 18 00 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 61*/ { UNICODE_MODE, 0, -1, "˜", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 01 18 00 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 62*/ { UNICODE_MODE, 23, -1, "˜", -1, 0, 23, "81 73 00 0C C0 00 00 00 00", 1, "ECI-23 B1 (Win 1252)" },
         /* 63*/ { UNICODE_MODE, 24, -1, "پ", -1, 0, 24, "81 83 00 0C 08 00 00 00 00", 1, "ECI-24 B1 (Win 1256)" },
-        /* 64*/ { UNICODE_MODE, 0, -1, "က", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 07 71 00 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 64*/ { UNICODE_MODE, 0, -1, "က", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 07 71 00 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 65*/ { UNICODE_MODE, 25, -1, "က", -1, 0, 25, "81 92 F9 00 3F 00 00 00 00", 1, "ECI-25 T2 (UCS-2BE)" },
         /* 66*/ { UNICODE_MODE, 25, -1, "ကက", -1, 0, 25, "81 92 F9 00 10 03 F0 00 00", 1, "ECI-25 T4 (UCS-2BE)" },
         /* 67*/ { UNICODE_MODE, 25, -1, "12", -1, 0, 25, "81 93 00 20 01 88 01 90 00", 1, "ECI-25 B4 (UCS-2BE ASCII)" },
         /* 68*/ { UNICODE_MODE, 27, -1, "@", -1, 0, 27, "81 B2 FB 2F C0 00 00 00 00", 1, "ECI-27 T1 (ASCII)" },
-        /* 69*/ { UNICODE_MODE, 0, -1, "龘", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 7E C9 80 00 00 00 00", 1, "B2 (GB 18030)" },
+        /* 69*/ { UNICODE_MODE, 0, -1, "龘", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 30 01 7E C9 80 00 00 00 00", 32, "B2 (GB 18030)" },
         /* 70*/ { UNICODE_MODE, 28, -1, "龘", -1, 0, 28, "81 C3 00 17 CE A8 00 00 00", 1, "ECI-28 B2 (Big5)" },
         /* 71*/ { UNICODE_MODE, 28, -1, "龘龘", -1, 0, 28, "81 C3 00 27 CE AF CE A8 00", 1, "ECI-28 B4 (Big5)" },
-        /* 72*/ { UNICODE_MODE, 0, -1, "齄", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 5B BF FF F0 00 00 00 00 00", 1, "H(2)1 (GB 18030)" },
+        /* 72*/ { UNICODE_MODE, 0, -1, "齄", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 5B BF FF F0 00 00 00 00 00", 32, "H(2)1 (GB 18030)" },
         /* 73*/ { UNICODE_MODE, 29, -1, "齄", -1, 0, 29, "81 D5 BB FF FF 00 00 00 00", 1, "ECI-29 H(2)1 (GB 2312)" },
         /* 74*/ { UNICODE_MODE, 32, -1, "齄", -1, 0, 32, "82 05 BB FF FF 00 00 00 00", 1, "ECI-32 H(2)1 (GB 18030)" },
         /* 75*/ { UNICODE_MODE, 29, -1, "齄齄", -1, 0, 29, "81 D5 BB FB BF FF F0 00 00", 1, "ECI-29 H(2)2 (GB 2312)" },
         /* 76*/ { UNICODE_MODE, 32, -1, "齄齄", -1, 0, 32, "82 05 BB FB BF FF F0 00 00", 1, "ECI-32 H(2)2 (GB 18030)" },
-        /* 77*/ { UNICODE_MODE, 0, -1, "가", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 2B 5E 80 00 00 00 00 00", 1, "H(f)1 (GB 18030)" },
+        /* 77*/ { UNICODE_MODE, 0, -1, "가", -1, ZINT_WARN_NONCOMPLIANT, 0, "Warning 70 2B 5E 80 00 00 00 00 00", 32, "H(f)1 (GB 18030)" },
         /* 78*/ { UNICODE_MODE, 30, -1, "가", -1, 0, 30, "81 E3 00 15 85 08 00 00 00", 1, "ECI-30 T2 (EUC-KR)" },
         /* 79*/ { UNICODE_MODE, 30, -1, "가가", -1, 0, 30, "81 E3 00 25 85 0D 85 08 00", 1, "ECI-30 B4 (EUC-KR)" },
         /* 80*/ { UNICODE_MODE, 170, -1, "?", -1, 0, 170, "88 0A A2 FB 1F C0 00 00 00", 1, "ECI-170 L1 (ASCII invariant)" },
         /* 81*/ { DATA_MODE, 899, -1, "\200", -1, 0, 899, "88 38 33 00 0C 00 00 00 00", 1, "ECI-899 B1 (8-bit binary)" },
-        /* 82*/ { UNICODE_MODE, 900, -1, "é", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", 0, "ECI-900 B2 (no conversion); ZXing-C++ test can't handle UNICODE_MODE binary" },
+        /* 82*/ { UNICODE_MODE, 900, -1, "é", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", 1, "ECI-900 B2 (no conversion)" },
         /* 83*/ { DATA_MODE, 900, -1, "\303\251", -1, 0, 900, "88 38 43 00 16 1D 48 00 00", 1, "ECI-900 B2 (no conversion)" },
-        /* 84*/ { UNICODE_MODE, 16384, -1, "é", -1, 0, 16384, "8C 04 00 03 00 16 1D 48 00", 0, "ECI-16384 B2 (no conversion); ZXing-C++ test can't handle UNICODE_MODE binary" },
+        /* 84*/ { UNICODE_MODE, 16384, -1, "é", -1, 0, 16384, "8C 04 00 03 00 16 1D 48 00", 1, "ECI-16384 B2 (no conversion)" },
         /* 85*/ { DATA_MODE, 16384, -1, "\303\251", -1, 0, 16384, "8C 04 00 03 00 16 1D 48 00", 1, "ECI-16384 B2 (no conversion)" },
         /* 86*/ { UNICODE_MODE, 3, -1, "β", -1, ZINT_ERROR_INVALID_DATA, 3, "Error 545: Invalid character in input for ECI '3'", 1, "" },
         /* 87*/ { GS1_MODE, -1, -1, "[10]01", -1, ZINT_ERROR_INVALID_OPTION, 0, "Error 220: Selected symbology does not support GS1 mode", 1, "" },
@@ -340,13 +361,16 @@ static void test_input(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    char escaped[1024];
+    char escaped[8192];
+    char escaped2[8192];
+    char ret_buf[8192];
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -357,37 +381,53 @@ static void test_input(const testCtx *const p_ctx) {
 
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, data[i].input_mode, data[i].eci, -1 /*option_1*/, -1, data[i].option_3, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, %s, \"%s\", %d, %s, %d, \"%s\", %d, \"%s\" },\n",
-                    i, testUtilInputModeName(data[i].input_mode), data[i].eci, testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
+                    i, testUtilInputModeName(data[i].input_mode), data[i].eci,
+                    testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)), data[i].length,
                     testUtilErrorName(data[i].ret), ret < ZINT_ERROR ? symbol->eci : -1, symbol->errtxt,
                     data[i].zxingcpp_cmp, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n", i, symbol->eci, data[i].expected_eci);
+                assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                            i, symbol->eci, data[i].expected_eci);
             }
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
 
             if (ret < ZINT_ERROR) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     if (!data[i].zxingcpp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not ZXing-C++ compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not ZXing-C++ compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         int cmp_len, ret_len;
                         char modules_dump[189 * 189 + 1];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                    cmp_buf, sizeof(cmp_buf), &cmp_len);
+                        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
-                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
-                        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                    NULL /*primary*/, ret_buf, &ret_len);
+                        assert_zero(ret,
+                                    "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual (%d): %s\nexpected (%d): %s\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg,
+                                    cmp_len, testUtilEscape(cmp_buf, cmp_len, escaped, sizeof(escaped)),
+                                    ret_len, testUtilEscape(ret_buf, ret_len, escaped2, sizeof(escaped2)));
                     }
                 }
             }
@@ -414,11 +454,12 @@ static void test_encode(const testCtx *const p_ctx) {
 
         int expected_rows;
         int expected_width;
+        int zxingcpp_cmp;
         const char *comment;
         const char *expected;
     };
     static const struct item data[] = {
-        /*  0*/ { UNICODE_MODE, -1, -1, -1, -1, "1234", -1, 0, 23, 23, "Mode nnnn, mask 10",
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, -1, "1234", -1, 0, 23, 23, 1, "Mode nnnn, mask 10",
                     "11111110101011001111111"
                     "10000000000000100000001"
                     "10111110111011101111101"
@@ -443,7 +484,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111111000000001"
                     "11101010000100101111111"
                 },
-        /*  1*/ { UNICODE_MODE, -1, 2, -1, -1, "Hanxin Code symbol", -1, 0, 25, 25, "ISO 20830 Figure 1 same",
+        /*  1*/ { UNICODE_MODE, -1, 2, -1, -1, "Hanxin Code symbol", -1, 0, 25, 25, 1, "ISO 20830 Figure 1 same",
                     "1111111010110110101111111"
                     "1000000000111101100000001"
                     "1011111011100101101111101"
@@ -470,7 +511,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101010000010000000001"
                     "1110101011000100101111111"
                 },
-        /*  2*/ { UNICODE_MODE, -1, -1, 24, 3 << 8, "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", -1, ZINT_WARN_NONCOMPLIANT, 69, 69, "ISO 20830 Figure 2 **NOT SAME** different encodation, Binary mode not used by figure, nor Region One/Two 0xFFE switching (same if force mode 11111tt11111111tt11111111111111tt11111211111111111112111tt121121111tt11111tt11111111tt11111111111111 and disable Region One/Two 0xFFE switch",
+        /*  2*/ { UNICODE_MODE, -1, -1, 24, 3 << 8, "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", -1, ZINT_WARN_NONCOMPLIANT, 69, 69, 32, "ISO 20830 Figure 2 **NOT SAME** different encodation, Binary mode not used by figure, nor Region One/Two 0xFFE switching (same if force mode 11111tt11111111tt11111111111111tt11111211111111111112111tt121121111tt11111tt11111111tt11111111111111 and disable Region One/Two 0xFFE switch",
                     "111111100000010101011111111111111111000001110110100100011010101111111"
                     "100000001000101000000000000000000010100000101100000001101001100000001"
                     "101111100010110110110000010011001010001011001011111000011101001111101"
@@ -541,7 +582,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010101000100001010101001001000000010001001001000101001001100000001"
                     "111010101111111101111111111111111010111111111111110111111111001111111"
                 },
-        /*  3*/ { UNICODE_MODE, -1, 1, 1, -1, "1234567890", -1, 0, 23, 23, "ISO 20830 K.2 Figure K.8 (& K.5) same (mask 01)",
+        /*  3*/ { UNICODE_MODE, -1, 1, 1, -1, "1234567890", -1, 0, 23, 23, 1, "ISO 20830 K.2 Figure K.8 (& K.5) same (mask 01)",
                     "11111110001000001111111"
                     "10000000110001100000001"
                     "10111110001010101111101"
@@ -566,7 +607,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101100000001"
                     "11101010001010001111111"
                 },
-        /*  4*/ { UNICODE_MODE, -1, 1, 1, 1 << 8, "1234567890", -1, 0, 23, 23, "ISO 20830 K.2 Figure K.4, with explicit mask pattern 00",
+        /*  4*/ { UNICODE_MODE, -1, 1, 1, 1 << 8, "1234567890", -1, 0, 23, 23, 1, "ISO 20830 K.2 Figure K.4, with explicit mask pattern 00",
                     "11111110100010101111111"
                     "10000000000100100000001"
                     "10111110000000101111101"
@@ -591,7 +632,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010100000000000001"
                     "11101010100000101111111"
                 },
-        /*  5*/ { UNICODE_MODE, -1, 1, 1, 3 << 8, "1234567890", -1, 0, 23, 23, "ISO 20830 K.2 Figure K.6, with explicit mask pattern 10",
+        /*  5*/ { UNICODE_MODE, -1, 1, 1, 3 << 8, "1234567890", -1, 0, 23, 23, 1, "ISO 20830 K.2 Figure K.6, with explicit mask pattern 10",
                     "11111110001011101111111"
                     "10000000100000000000001"
                     "10111110011111001111101"
@@ -616,7 +657,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001100000001"
                     "11101010100100001111111"
                 },
-        /*  6*/ { UNICODE_MODE, -1, 1, 1, 4 << 8, "1234567890", -1, 0, 23, 23, "ISO 20830 K.2 Figure K.7, with explicit mask pattern 11",
+        /*  6*/ { UNICODE_MODE, -1, 1, 1, 4 << 8, "1234567890", -1, 0, 23, 23, 1, "ISO 20830 K.2 Figure K.7, with explicit mask pattern 11",
                     "11111110101111001111111"
                     "10000000000011000000001"
                     "10111110000000001111101"
@@ -641,7 +682,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010000000001"
                     "11101010011010101111111"
                 },
-        /*  7*/ { UNICODE_MODE, -1, 3, 10, -1, "1234567890ABCDEFGabcdefg,Han Xin Code", -1, 0, 41, 41, "**NOT SAME** as ISO 20830 K.3 Figure K.16 (& K.14), different encodation (N9 A28 (6 padbits) vs. N10 A27 (2 padbits)); same if same encoding modes forced (happens to use same mask pattern 00) (forced encoding mode: nnnnnnnnnnttttttttttttttttttttttttttt)",
+        /*  7*/ { UNICODE_MODE, -1, 3, 10, -1, "1234567890ABCDEFGabcdefg,Han Xin Code", -1, 0, 41, 41, 1, "**NOT SAME** as ISO 20830 K.3 Figure K.16 (& K.14), different encodation (N9 A28 (6 padbits) vs. N10 A27 (2 padbits)); same if same encoding modes forced (happens to use same mask pattern 00) (forced encoding mode: nnnnnnnnnnttttttttttttttttttttttttttt)",
                     "11111110001011000010101111011110101111111"
                     "10000000011001010100001111000111100000001"
                     "10111110111111111100011010110100101111101"
@@ -684,7 +725,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010101001001000101001001001000000001"
                     "11101010100100100100111111111111001111111"
                 },
-        /*  8*/ { UNICODE_MODE, -1, 2, 17, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, ZINT_WARN_NONCOMPLIANT, 55, 55, "**NOT SAME** as ISO 20830 K.4 Figure K.23, different encodation; if same encoding modes forced, uses mask pattern 01 instead of pattern 10, but matches pattern 01 example Figure K.20 (forced encoding mode: ttttttttttttttttttttttttttttttttttttttttttttttt1t1t11ttdtt1ttddddddddtttttfftfftffttffffffffffffffffffttttt1t1t111ttttt111111t)",
+        /*  8*/ { UNICODE_MODE, -1, 2, 17, -1, "Summer Palace Ticket for 6 June 2015 13:00;2015年6月6日夜01時00分PM頤和園のチケット;2015년6월6일13시오후여름궁전티켓.2015年6月6号下午13:00的颐和园门票;", -1, ZINT_WARN_NONCOMPLIANT, 55, 55, 32, "**NOT SAME** as ISO 20830 K.4 Figure K.23, different encodation; if same encoding modes forced, uses mask pattern 01 instead of pattern 10, but matches pattern 01 example Figure K.20 (forced encoding mode: ttttttttttttttttttttttttttttttttttttttttttttttt1t1t11ttdtt1ttddddddddtttttfftfftffttffffffffffffffffffttttt1t1t111ttttt111111t)",
                     "1111111001111111111011100100110101101010101100101111111"
                     "1000000000000000001100011000011001000010101111100000001"
                     "1011111010001111001111010100100000101010011010101111101"
@@ -741,7 +782,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101011010101001101010101010101000010110110000000001"
                     "1110101010101101001111111111111111101010010010001111111"
                 },
-        /*  9*/ { UNICODE_MODE, -1, -1, -1, -1, "汉信码标准", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, "ISO 20830 Figure 4, **NOT SAME**, Zint uses mask 11 instead of 10 (note figure includes alternating filler)",
+        /*  9*/ { UNICODE_MODE, -1, -1, -1, -1, "汉信码标准", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 32, "ISO 20830 Figure 4, **NOT SAME**, Zint uses mask 11 instead of 10 (note figure includes alternating filler)",
                     "11111110000101001111111"
                     "10000000001000100000001"
                     "10111110110001001111101"
@@ -766,7 +807,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111010000000001"
                     "11101010011010001111111"
                 },
-        /* 10*/ { UNICODE_MODE, -1, -1, -1, 3 << 8, "汉信码标准", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, "ISO 20830 Figure 4, explicit mask 10, same except no alternating filler",
+        /* 10*/ { UNICODE_MODE, -1, -1, -1, 3 << 8, "汉信码标准", -1, ZINT_WARN_NONCOMPLIANT, 23, 23, 32, "ISO 20830 Figure 4, explicit mask 10, same except no alternating filler",
                     "11111110100001101111111"
                     "10000000101011100000001"
                     "10111110101110001111101"
@@ -791,7 +832,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010101001100000001"
                     "11101010100100101111111"
                 },
-        /* 11*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 4, -1, "汉信码标准\015\012中国物品编码中心", -1, ZINT_WARN_NONCOMPLIANT, 29, 29, "ISO 20830 Figure 5, **NOT SAME** Zint uses mask 00 instead of 10",
+        /* 11*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 4, -1, "汉信码标准\015\012中国物品编码中心", -1, ZINT_WARN_NONCOMPLIANT, 29, 29, 32, "ISO 20830 Figure 5, **NOT SAME** Zint uses mask 00 instead of 10",
                     "11111110001000100011001111111"
                     "10000000101000001110100000001"
                     "10111110111111111110101111101"
@@ -822,7 +863,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010101110110000100000001"
                     "11101010000000111111001111111"
                 },
-        /* 12*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 4, 3 << 8, "汉信码标准\015\012中国物品编码中心", -1, ZINT_WARN_NONCOMPLIANT, 29, 29, "ISO 20830 Figure 5, explicit mask 10, same except no alternating filler",
+        /* 12*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 4, 3 << 8, "汉信码标准\015\012中国物品编码中心", -1, ZINT_WARN_NONCOMPLIANT, 29, 29, 32, "ISO 20830 Figure 5, explicit mask 10, same except no alternating filler",
                     "11111110100000101010001111111"
                     "10000000001100001010000000001"
                     "10111110100000000001001111101"
@@ -853,7 +894,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010000110111001000000001"
                     "11101010000100111111101111111"
                 },
-        /* 13*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 24, -1, "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", -1, ZINT_WARN_NONCOMPLIANT, 69, 69, "ISO 20830 Figure 6 **NOT SAME** different encodation, Binary mode not used by figure",
+        /* 13*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 24, -1, "汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司\015\012张成海、赵楠、黄燕滨、罗秋科、王毅、张铎、王越\015\012施煜、边峥、修兴强\015\012汉信码标准\015\012中国物品编码中心\015\012北京网路畅想科技发展有限公司", -1, ZINT_WARN_NONCOMPLIANT, 69, 69, 32, "ISO 20830 Figure 6 **NOT SAME** different encodation, Binary mode not used by figure",
                     "111111100000101101011111111111111111111001001110010100100010001111111"
                     "100000001100110100000000000000000010111100110000010001110101000000001"
                     "101111100111100011100101000110011011011110011110101101001000101111101"
@@ -924,7 +965,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010100100111101001001010101011000001101010101010101010101100000001"
                     "111010100010101001111111111111111010101010101010100111111111001111111"
                 },
-        /* 14*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 40, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012", -1, ZINT_WARN_NONCOMPLIANT, 101, 101, "ISO 20830 Figure 7 **NOT SAME** different encodation, Binary mode not used by figure",
+        /* 14*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 40, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012", -1, ZINT_WARN_NONCOMPLIANT, 101, 101, 32, "ISO 20830 Figure 7 **NOT SAME** different encodation, Binary mode not used by figure",
                     "11111110111111111111100010101000011101101011111111111111111110101100101110110110101100011000101111111"
                     "10000000100000000000100101011001001001000000000000000000000011000001111101100010001100010100100000001"
                     "10111110110100010100111000101101010111011101101110011000011010100101110001010110001001010010101111101"
@@ -1027,7 +1068,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101010100110101010101010101000001010101010101010011010101010101010100000101010101100000001"
                     "11101010101010101010111111111111111111101010101010101010101011111111111111111110101010101010101111111"
                 },
-        /* 15*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 62, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法RS、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术   122", -1, ZINT_WARN_NONCOMPLIANT, 145, 145, "ISO 20830 Figure 8 **NOT SAME** different encodation, Binary mode not used by figure",
+        /* 15*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 62, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法RS、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术   122", -1, ZINT_WARN_NONCOMPLIANT, 145, 145, 32, "ISO 20830 Figure 8 **NOT SAME** different encodation, Binary mode not used by figure",
                     "1111111000001010101011111111111111111000011101101011001011111111111111111010111011011001101011111111111111111100111110101001101010010010101111111"
                     "1000000001000001100000000000000000001111011000100111000000000000000000001101101011101010000000000000000000001111010010101000100011101101000000001"
                     "1011111001100110000110100101110001001101100010010100100110110000011000101000000110000011100000011011000001001101000000001001100111010111101111101"
@@ -1174,7 +1215,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101000010110101111100111011100000010111011110111001101000101010111000001011011001010101011010000000110000011001001000011001101010101000000001"
                     "1110101010101010101111111111111111101010101010101010101111111111111111101010101010101010101111111111111111101010101010101010101111111111001111111"
                 },
-        /* 16*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 84, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方" "案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012", -1, ZINT_WARN_NONCOMPLIANT, 189, 189, "ISO 20830 Figure 9 **NOT SAME** different encodation, Binary mode not used by figure",
+        /* 16*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, 84, -1, "本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：40本标准规定了一种矩阵式二维条码——汉信码的码制以及编译码方法。本标准中对汉信码的码图方" "案、信息编码方法、纠错编译码算法、信息排布方法、参考译码算法等内容进行了详细的描述，汉信码可高效表示《GB 18030—2000 信息技术 信息交换用汉字编码字符集基本集的扩充》中的汉字信息，并具有数据容量大、抗畸变和抗污损能力强、外观美观等特点，适合于在我国各行业的广泛应用。 测试文本，测试人：施煜，边峥，修兴强，袁娲，测试目的：汉字表示，测试版本：84\015\012", -1, ZINT_WARN_NONCOMPLIANT, 189, 189, 32, "ISO 20830 Figure 9 **NOT SAME** different encodation, Binary mode not used by figure",
                     "111111100111111111100010101000011101011111111111111111000111101110100101111111111111111111100101100001010111111111111111101100011011101001011111111111111110100111001010010101111010101111111"
                     "100000001000000000111000010110101000000000000000000011110111100101100000000000000000001000111110110011000000000000000000110001110111000100000000000000000010001110000000010001110110100000001"
                     "101111100010010100101110011110110011111011110000000011110101010100001011100010110000001010100001111001101000000101101000110110001100001101001011001001110011110001101000100110111010001111101"
@@ -1365,7 +1406,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010101011011100110101010010111000001100010010111011010101010101010001010101010101001101010101010101000101010101010100110101010101010100010101010101010011010101010101010001010101100000001"
                     "111010101010101010111111111111111101001010101010101011111111111111110100101010101010101111111111111111010010101010101010111111111111111101001010101010101011111111111111110100101010001111111"
                 },
-        /* 17*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, -1, 4 << 8, "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。它的主要技术特色是：1． 具有高度的汉字表示能力和汉字压缩效率。2． 信息容量大。 3． 编码范围广，可以将照片、指纹、掌纹、签字、声音、文字等凡可数字化的信息进行编码。4． 支持加密技术。5．抗污损和畸变能力强。6．修正错误能力强。7 ．可供用户选择的纠错能力。8．容易制作且成本低。9．汉信码支持84个版本，可以由用户自主进行选择，最小码仅有指甲大小。10． 外形美观。", -1, ZINT_WARN_NONCOMPLIANT, 67, 67, "Previous draft Figure 1 **NOT SAME** different encodation, Binary mode not used by figure",
+        /* 17*/ { UNICODE_MODE | ESCAPE_MODE, -1, -1, -1, 4 << 8, "汉信码(Chinese-Sensible Code)是一种能够有效表示汉字、图像等信息的二维条码。它的主要技术特色是：1． 具有高度的汉字表示能力和汉字压缩效率。2． 信息容量大。 3． 编码范围广，可以将照片、指纹、掌纹、签字、声音、文字等凡可数字化的信息进行编码。4． 支持加密技术。5．抗污损和畸变能力强。6．修正错误能力强。7 ．可供用户选择的纠错能力。8．容易制作且成本低。9．汉信码支持84个版本，可以由用户自主进行选择，最小码仅有指甲大小。10． 外形美观。", -1, ZINT_WARN_NONCOMPLIANT, 67, 67, 32, "Previous draft Figure 1 **NOT SAME** different encodation, Binary mode not used by figure",
                     "1111111000010101011111111111111110001011011110010101111111001111111"
                     "1000000010000100000000000000000010100011101001010001101110000000001"
                     "1011111001100100110100001101111011111100101010000111111111101111101"
@@ -1434,7 +1475,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001101001000100110010101000000101000110010110110110100000001"
                     "1110101000010001111111111111111010010111110110110111111111001111111"
                 },
-        /* 18*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE, "é", -1, 0, 23, 23, "Mask automatic (01)",
+        /* 18*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE, "é", -1, 0, 23, 23, 3, "Mask automatic (01)",
                     "11111110100010101111111"
                     "10000000001010000000001"
                     "10111110111010001111101"
@@ -1459,7 +1500,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010101010101111111"
                 },
-        /* 19*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "é", -1, 0, 23, 23, "Mask 00",
+        /* 19*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | (1 << 8), "é", -1, 0, 23, 23, 899, "Mask 00",
                     "11111110001000001111111"
                     "10000000111111000000001"
                     "10111110110000001111101"
@@ -1484,7 +1525,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011100100000001"
                     "11101010000000001111111"
                 },
-        /* 20*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | (4 << 8), "é", -1, 0, 23, 23, "Mask 11",
+        /* 20*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | (4 << 8), "é", -1, 0, 23, 23, 899, "Mask 11",
                     "11111110000101101111111"
                     "10000000111000100000001"
                     "10111110110000101111101"
@@ -1509,7 +1550,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010100110100000001"
                     "11101010111010001111111"
                 },
-        /* 21*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | ((4 + 1) << 8), "é", -1, 0, 23, 23, "Mask > 11 ignored",
+        /* 21*/ { DATA_MODE, -1, -1, -1, ZINT_FULL_MULTIBYTE | ((4 + 1) << 8), "é", -1, 0, 23, 23, 899, "Mask > 11 ignored",
                     "11111110100010101111111"
                     "10000000001010000000001"
                     "10111110111010001111101"
@@ -1534,7 +1575,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010101010101111111"
                 },
-        /* 22*/ { UNICODE_MODE, 3, 2, -1, 2 << 8, "sn:7QPB4MN", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 3 Example 1 same with explicit mask 01 (auto 11)",
+        /* 22*/ { UNICODE_MODE, 3, 2, -1, 2 << 8, "sn:7QPB4MN", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 3 Example 1 same with explicit mask 01 (auto 11)",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -1559,7 +1600,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 23*/ { UNICODE_MODE, 3, -1, -1, -1, "price:£20.00", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 3 Example 2 same",
+        /* 23*/ { UNICODE_MODE, 3, -1, -1, -1, "price:£20.00", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 3 Example 2 same",
                     "11111110011010101111111"
                     "10000000010100100000001"
                     "10111110010010001111101"
@@ -1584,7 +1625,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110100000000001"
                     "11101010101010001111111"
                 },
-        /* 24*/ { UNICODE_MODE, 3, -1, -1, 2 << 8, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 3 Example 3 same with explicit mask 01 (auto 11)",
+        /* 24*/ { UNICODE_MODE, 3, -1, -1, 2 << 8, "C:\\DOCS\\EXAMPLE.TXT", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 3 Example 3 same with explicit mask 01 (auto 11)",
                     "1111111011101010001111111"
                     "1000000001110000000000001"
                     "1011111011111110001111101"
@@ -1611,7 +1652,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001101100000000001"
                     "1110101000001010101111111"
                 },
-        /* 25*/ { UNICODE_MODE, 4, 2, 3, 2 << 8, "Študentska št. 2198390", -1, 0, 27, 27, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation, example Binary only, Zint uses Numeric also",
+        /* 25*/ { UNICODE_MODE, 4, 2, 3, 2 << 8, "Študentska št. 2198390", -1, 0, 27, 27, 1, "AIM ITS/04-023:2022 ECI 4 Example 1 **NOT SAME** different encodation, example Binary only, Zint uses Numeric also",
                     "111111100110101010001111111"
                     "100000000101110001100000001"
                     "101111100010101110101111101"
@@ -1640,7 +1681,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010101101010011000000001"
                     "111010100010001010001111111"
                 },
-        /* 26*/ { UNICODE_MODE, 4, 2, 5, 2 << 8, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 31, 31, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** example corrupt??",
+        /* 26*/ { UNICODE_MODE, 4, 2, 5, 2 << 8, "Szczegółowe dane kontaktowe:+48 22 694 60 00", -1, 0, 31, 31, 1, "AIM ITS/04-023:2022 ECI 4 Example 2 **NOT SAME** example corrupt??",
                     "1111111011101010101001001111111"
                     "1000000010001000010011100000001"
                     "1011111011011100100101101111101"
@@ -1673,7 +1714,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101011111011001010100000001"
                     "1110101001101011111111101111111"
                 },
-        /* 27*/ { UNICODE_MODE, 5, 2, -1, 2 << 8, "Liĥtenŝtejno", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 5 Example 1 **NOT SAME** example uses Binary only, Zint uses Text mode also",
+        /* 27*/ { UNICODE_MODE, 5, 2, -1, 2 << 8, "Liĥtenŝtejno", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 5 Example 1 **NOT SAME** example uses Binary only, Zint uses Text mode also",
                     "11111110011010101111111"
                     "10000000010111100000001"
                     "10111110010110001111101"
@@ -1698,7 +1739,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110000000000001"
                     "11101010101010001111111"
                 },
-        /* 28*/ { UNICODE_MODE, 6, 2, -1, -1, "Lietuvą", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 6 Example 1 same",
+        /* 28*/ { UNICODE_MODE, 6, 2, -1, -1, "Lietuvą", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 6 Example 1 same",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -1723,7 +1764,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 29*/ { UNICODE_MODE, 7, 2, -1, -1, "Россия", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 7 Example 1 **NOT SAME** different encodation, figure uses Region One",
+        /* 29*/ { UNICODE_MODE, 7, 2, -1, -1, "Россия", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 7 Example 1 **NOT SAME** different encodation, figure uses Region One",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -1748,7 +1789,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 30*/ { UNICODE_MODE, 7, 2, -1, -1, "Монголулс", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 7 Example 2 same",
+        /* 30*/ { UNICODE_MODE, 7, 2, -1, -1, "Монголулс", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 7 Example 2 same",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -1773,7 +1814,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111101000000001"
                     "11101010101010001111111"
                 },
-        /* 31*/ { UNICODE_MODE, 8, 2, -1, 4 << 8, "جواز السفر", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 8 Example 1 same with explicit mask 11 (auto 01)",
+        /* 31*/ { UNICODE_MODE, 8, 2, -1, 4 << 8, "جواز السفر", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 8 Example 1 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000100101000000001"
                     "10111110000100101111101"
@@ -1798,7 +1839,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010010100100000001"
                     "11101010111010101111111"
                 },
-        /* 32*/ { UNICODE_MODE, 8, 2, -1, 3 << 8, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** example corrupt??",
+        /* 32*/ { UNICODE_MODE, 8, 2, -1, 3 << 8, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 8 Example 2 **NOT SAME** example corrupt??",
                     "11111110011000101001101111111"
                     "10000000100000000011100000001"
                     "10111110010110110011101111101"
@@ -1829,7 +1870,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010100000110001100000001"
                     "11101010100100111111001111111"
                 },
-        /* 33*/ { UNICODE_MODE, 9, 1, -1, -1, "Μέρος #. α123", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
+        /* 33*/ { UNICODE_MODE, 9, 1, -1, -1, "Μέρος #. α123", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 9 Example 1 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
                     "11111110011010001111111"
                     "10000000110101100000001"
                     "10111110001110101111101"
@@ -1854,7 +1895,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110010100000001"
                     "11101010001010001111111"
                 },
-        /* 34*/ { UNICODE_MODE, 10, 2, -1, -1, "דרכון", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 10 Example 1 same",
+        /* 34*/ { UNICODE_MODE, 10, 2, -1, -1, "דרכון", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 10 Example 1 same",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -1879,7 +1920,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 35*/ { UNICODE_MODE, 10, 2, 3, -1, "מספר חלק: A20200715001", -1, 0, 27, 27, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
+        /* 35*/ { UNICODE_MODE, 10, 2, 3, -1, "מספר חלק: A20200715001", -1, 0, 27, 27, 1, "AIM ITS/04-023:2022 ECI 10 Example 2 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
                     "111111100110010010101111111"
                     "100000000001000001000000001"
                     "101111100111111110001111101"
@@ -1908,7 +1949,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010100001001101000000001"
                     "111010101001111111001111111"
                 },
-        /* 36*/ { UNICODE_MODE, 11, 2, 3, -1, "Amerika Birleşik Devletleri", -1, 0, 27, 27, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** example uses 2-byte Region mode",
+        /* 36*/ { UNICODE_MODE, 11, 2, 3, -1, "Amerika Birleşik Devletleri", -1, 0, 27, 27, 1, "AIM ITS/04-023:2022 ECI 11 Example 1 **NOT SAME** example uses 2-byte Region mode",
                     "111111100110101011001111111"
                     "100000000110110010100000001"
                     "101111100000100000101111101"
@@ -1937,7 +1978,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010101000101000000000001"
                     "111010100111001010001111111"
                 },
-        /* 37*/ { UNICODE_MODE, 11, 2, 3, -1, "Biniş kartı #120921039", -1, 0, 27, 27, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
+        /* 37*/ { UNICODE_MODE, 11, 2, 3, -1, "Biniş kartı #120921039", -1, 0, 27, 27, 1, "AIM ITS/04-023:2022 ECI 11 Example 2 **NOT SAME** example uses Binary only, Zint uses Numeric mode also",
                     "111111100110101011001111111"
                     "100000000111001001100000001"
                     "101111100010101101101111101"
@@ -1966,7 +2007,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "111010101101011000000000001"
                     "111010100010101010001111111"
                 },
-        /* 38*/ { UNICODE_MODE, 12, 2, -1, 2 << 8, "Kūrybiškumą", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 12 Example 1 same with explicit mask 01 (auto 10)",
+        /* 38*/ { UNICODE_MODE, 12, 2, -1, 2 << 8, "Kūrybiškumą", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 12 Example 1 same with explicit mask 01 (auto 10)",
                     "11111110011010101111111"
                     "10000000010100100000001"
                     "10111110011100001111101"
@@ -1991,7 +2032,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111110000000001"
                     "11101010101010001111111"
                 },
-        /* 39*/ { UNICODE_MODE, 13, 2, -1, -1, "บาร๋แค่ด", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** example uses Region One",
+        /* 39*/ { UNICODE_MODE, 13, 2, -1, -1, "บาร๋แค่ด", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 13 Example 1 **NOT SAME** example uses Region One",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -2016,7 +2057,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 40*/ { UNICODE_MODE, 15, 2, -1, -1, "uzņēmums", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 15 Example 1 same",
+        /* 40*/ { UNICODE_MODE, 15, 2, -1, -1, "uzņēmums", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 15 Example 1 same",
                     "11111110011010101111111"
                     "10000000010101100000001"
                     "10111110001010001111101"
@@ -2041,7 +2082,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 41*/ { UNICODE_MODE, 16, 2, -1, -1, "ṁórṡáċ", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 16 Example 1 same with explicit mask 11 (auto 10)",
+        /* 41*/ { UNICODE_MODE, 16, 2, -1, -1, "ṁórṡáċ", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 16 Example 1 same with explicit mask 11 (auto 10)",
                     "11111110011001001111111"
                     "10000000000000000000001"
                     "10111110011111101111101"
@@ -2066,7 +2107,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010000100001111111"
                 },
-        /* 42*/ { UNICODE_MODE, 17, -1, -1, 2 << 8, "Price: €13.50", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 17 Example 1 same with explicit mask 01 (auto 10)",
+        /* 42*/ { UNICODE_MODE, 17, -1, -1, 2 << 8, "Price: €13.50", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 17 Example 1 same with explicit mask 01 (auto 10)",
                     "11111110011010101111111"
                     "10000000010011100000001"
                     "10111110000110001111101"
@@ -2091,7 +2132,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111100000000001"
                     "11101010101010001111111"
                 },
-        /* 43*/ { UNICODE_MODE, 18, -1, -1, -1, "Te słowa są głębokie", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** example uses Binary only, Zint uses Text mode also",
+        /* 43*/ { UNICODE_MODE, 18, -1, -1, -1, "Te słowa są głębokie", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 18 Example 1 **NOT SAME** example uses Binary only, Zint uses Text mode also",
                     "1111111001000000101111111"
                     "1000000011100111000000001"
                     "1011111010111110001111101"
@@ -2118,7 +2159,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001010000100000001"
                     "1110101011100000001111111"
                 },
-        /* 44*/ { UNICODE_MODE, 20, -1, -1, -1, "バーコード", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** example uses 2-byte Region mode",
+        /* 44*/ { UNICODE_MODE, 20, -1, -1, -1, "バーコード", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 20 Example 1 **NOT SAME** example uses 2-byte Region mode",
                     "11111110011010101111111"
                     "10000000010000100000001"
                     "10111110001010001111101"
@@ -2143,7 +2184,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010101110000000001"
                     "11101010101010001111111"
                 },
-        /* 45*/ { UNICODE_MODE, 20, -1, -1, -1, "東京都", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** example uses 2-byte Region mode",
+        /* 45*/ { UNICODE_MODE, 20, -1, -1, -1, "東京都", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 20 Example 2 **NOT SAME** example uses 2-byte Region mode",
                     "11111110111010001111111"
                     "10000000110000000000001"
                     "10111110100100101111101"
@@ -2168,7 +2209,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010010101100000001"
                     "11101010001010101111111"
                 },
-        /* 46*/ { UNICODE_MODE, 21, -1, -1, -1, "Študentska št. 2198390", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation, example Binary only, Zint uses Numeric also",
+        /* 46*/ { UNICODE_MODE, 21, -1, -1, -1, "Študentska št. 2198390", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 21 Example 1 **NOT SAME** different encodation, example Binary only, Zint uses Numeric also",
                     "1111111001000000101111111"
                     "1000000011000010000000001"
                     "1011111010111101001111101"
@@ -2195,7 +2236,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001011010100000001"
                     "1110101010000000001111111"
                 },
-        /* 47*/ { UNICODE_MODE, 22, 2, -1, -1, "Россия", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 22 Example 1 same",
+        /* 47*/ { UNICODE_MODE, 22, 2, -1, -1, "Россия", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 22 Example 1 same",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2220,7 +2261,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 48*/ { UNICODE_MODE, 22, 2, -1, 4 << 8, "Монголулс", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 22 Example 1 same with explicit mask 11 (auto 01)",
+        /* 48*/ { UNICODE_MODE, 22, 2, -1, 4 << 8, "Монголулс", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 22 Example 1 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2245,7 +2286,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010010010100000001"
                     "11101010111010101111111"
                 },
-        /* 49*/ { UNICODE_MODE, 23, 2, -1, 4 << 8, "bœuf", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 23 Example 1 same with explicit mask 11 (auto 01)",
+        /* 49*/ { UNICODE_MODE, 23, 2, -1, 4 << 8, "bœuf", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 23 Example 1 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2270,7 +2311,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 50*/ { UNICODE_MODE, 24, -1, -1, -1, "جواز السفر", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 24 Example 1 same",
+        /* 50*/ { UNICODE_MODE, 24, -1, -1, -1, "جواز السفر", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 24 Example 1 same",
                     "11111110011010101111111"
                     "10000000010011100000001"
                     "10111110001110001111101"
@@ -2295,7 +2336,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111011000000001"
                     "11101010101010001111111"
                 },
-        /* 51*/ { UNICODE_MODE, 24, 2, -1, 4 << 8, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, "AIM ITS/04-023:2022 ECI 24 Example 2 **NOT SAME** example corrupt??",
+        /* 51*/ { UNICODE_MODE, 24, 2, -1, 4 << 8, "المنشأ: المملكة العربية السعودية", -1, 0, 29, 29, 1, "AIM ITS/04-023:2022 ECI 24 Example 2 **NOT SAME** example corrupt??",
                     "11111110111100101100001111111"
                     "10000000000110001000100000001"
                     "10111110001001001000101111101"
@@ -2326,7 +2367,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010111110110010000000001"
                     "11101010011000111111101111111"
                 },
-        /* 52*/ { UNICODE_MODE, 25, 2, -1, -1, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 25 Example 1 same",
+        /* 52*/ { UNICODE_MODE, 25, 2, -1, -1, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 25 Example 1 same",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2351,7 +2392,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 53*/ { UNICODE_MODE, 25, 2, -1, 3 << 8, "バーコード", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 25 Example 2 same with explicit mask 10 (auto 01)",
+        /* 53*/ { UNICODE_MODE, 25, 2, -1, 3 << 8, "バーコード", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 25 Example 2 same with explicit mask 10 (auto 01)",
                     "11111110011001001111111"
                     "10000000000001000000001"
                     "10111110011011101111101"
@@ -2376,7 +2417,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001111000000001"
                     "11101010000100001111111"
                 },
-        /* 54*/ { UNICODE_MODE, 25, 2, -1, -1, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 25 Example 3 same",
+        /* 54*/ { UNICODE_MODE, 25, 2, -1, -1, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 25 Example 3 same",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2401,7 +2442,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 55*/ { UNICODE_MODE, 26, 2, -1, -1, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 26 Example 1 **NOT SAME** example uses 2-byte Region mode",
+        /* 55*/ { UNICODE_MODE, 26, 2, -1, -1, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 26 Example 1 **NOT SAME** example uses 2-byte Region mode",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2426,7 +2467,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 56*/ { UNICODE_MODE, 26, 2, -1, 4 << 8, "バーコード", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 26 Example 2 same with explicit mask 11 (auto 01)",
+        /* 56*/ { UNICODE_MODE, 26, 2, -1, 4 << 8, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 26 Example 2 same with explicit mask 11 (auto 01)",
                     "1111111001110110001111111"
                     "1000000011011011100000001"
                     "1011111010000100101111101"
@@ -2453,7 +2494,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101011110011100000001"
                     "1110101001010110001111111"
                 },
-        /* 57*/ { UNICODE_MODE, 26, 2, -1, -1, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 26 Example 3 same",
+        /* 57*/ { UNICODE_MODE, 26, 2, -1, -1, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 26 Example 3 same",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2478,7 +2519,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 58*/ { UNICODE_MODE, 27, 2, -1, 3 << 8, "sn:7QPB4MN", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 27 Example 1 same with explicit mask 10 (auto 11)",
+        /* 58*/ { UNICODE_MODE, 27, 2, -1, 3 << 8, "sn:7QPB4MN", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 27 Example 1 same with explicit mask 10 (auto 11)",
                     "11111110011001001111111"
                     "10000000000000000000001"
                     "10111110011111101111101"
@@ -2503,7 +2544,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010000100001111111"
                 },
-        /* 59*/ { UNICODE_MODE, 28, 2, -1, -1, "條碼", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 28 Example 1 same",
+        /* 59*/ { UNICODE_MODE, 28, 2, -1, -1, "條碼", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 28 Example 1 same",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2528,7 +2569,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 60*/ { UNICODE_MODE, 29, 2, -1, -1, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 29 Example 1 same",
+        /* 60*/ { UNICODE_MODE, 29, 2, -1, -1, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 29 Example 1 same",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2553,7 +2594,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 61*/ { UNICODE_MODE, 29, 2, -1, -1, "北京", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 29 Example 2 same",
+        /* 61*/ { UNICODE_MODE, 29, 2, -1, -1, "北京", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 29 Example 2 same",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2578,7 +2619,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 62*/ { UNICODE_MODE, 30, 2, -1, -1, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** example uses Region One mode",
+        /* 62*/ { UNICODE_MODE, 30, 2, -1, -1, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 **NOT SAME** example uses Region One mode",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2603,7 +2644,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 63*/ { UNICODE_MODE, 30, 2, -1, ZINT_FULL_MULTIBYTE | (4 << 8), "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 30 Example 1 same with FULL_MULTIBYTE and explicit mask 11 (auto 01)",
+        /* 63*/ { UNICODE_MODE, 30, 2, -1, ZINT_FULL_MULTIBYTE | (4 << 8), "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 30 Example 1 same with FULL_MULTIBYTE and explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2628,7 +2669,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 64*/ { UNICODE_MODE, 30, 2, -1, -1, "서울", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 30 Example 2 **NOT SAME** example uses Region One mode",
+        /* 64*/ { UNICODE_MODE, 30, 2, -1, -1, "서울", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 30 Example 2 **NOT SAME** example uses Region One mode",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2653,7 +2694,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 65*/ { UNICODE_MODE, 30, 2, -1, ZINT_FULL_MULTIBYTE, "서울", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 30 Example 2 same with FULL_MULTIBYTE",
+        /* 65*/ { UNICODE_MODE, 30, 2, -1, ZINT_FULL_MULTIBYTE, "서울", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 30 Example 2 same with FULL_MULTIBYTE",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2678,7 +2719,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 66*/ { UNICODE_MODE, 31, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 31 Example 1 same with explicit mask 01 (auto 11)",
+        /* 66*/ { UNICODE_MODE, 31, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 31 Example 1 same with explicit mask 01 (auto 11)",
                     "11111110011010101111111"
                     "10000000010001100000001"
                     "10111110001010001111101"
@@ -2703,7 +2744,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 67*/ { UNICODE_MODE, 31, 2, -1, 4 << 8, "北京", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 31 Example 2 same with explicit mask 11 (auto 10)",
+        /* 67*/ { UNICODE_MODE, 31, 2, -1, 4 << 8, "北京", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 31 Example 2 same with explicit mask 11 (auto 10)",
                     "11111110111101101111111"
                     "10000000100011000000001"
                     "10111110000000101111101"
@@ -2728,7 +2769,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 68*/ { UNICODE_MODE, 31, 2, -1, -1, "條碼", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 31 Example 3 **NOT SAME** example uses 2-byte Region mode, Zint binary (same bit count)",
+        /* 68*/ { UNICODE_MODE, 31, 2, -1, -1, "條碼", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 31 Example 3 **NOT SAME** example uses 2-byte Region mode, Zint binary (same bit count)",
                     "11111110011001001111111"
                     "10000000000000000000001"
                     "10111110011111101111101"
@@ -2753,7 +2794,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010000100001111111"
                 },
-        /* 69*/ { UNICODE_MODE, 32, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 32 Example 1 same with explicit mask 01 (auto 10)",
+        /* 69*/ { UNICODE_MODE, 32, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 32 Example 1 same with explicit mask 01 (auto 10)",
                     "11111110011010101111111"
                     "10000000011101100000001"
                     "10111110001010001111101"
@@ -2778,7 +2819,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 70*/ { UNICODE_MODE, 32, 2, -1, 4 << 8, "北京", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 32 Example 2 same with explicit mask 11 (auto 01)",
+        /* 70*/ { UNICODE_MODE, 32, 2, -1, 4 << 8, "北京", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 32 Example 2 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000101111000000001"
                     "10111110000000101111101"
@@ -2803,7 +2844,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 71*/ { UNICODE_MODE, 32, 2, -1, -1, "條碼", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** example uses 2-byte Region mode, Zint binary (same bit count)",
+        /* 71*/ { UNICODE_MODE, 32, 2, -1, -1, "條碼", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 32 Example 3 **NOT SAME** example uses 2-byte Region mode, Zint binary (same bit count)",
                     "11111110011001001111111"
                     "10000000001100000000001"
                     "10111110011111101111101"
@@ -2828,7 +2869,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010001001000000001"
                     "11101010000100001111111"
                 },
-        /* 72*/ { UNICODE_MODE, 32, 2, -1, 2 << 8, "པེ་ཅིང།", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 32 Example 4 same with explicit mask 01 (auto 10)",
+        /* 72*/ { UNICODE_MODE, 32, 2, -1, 2 << 8, "པེ་ཅིང།", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 32 Example 4 same with explicit mask 01 (auto 10)",
                     "1111111011101011001111111"
                     "1000000001011100000000001"
                     "1011111011000010001111101"
@@ -2855,7 +2896,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001100100000000001"
                     "1110101001001010101111111"
                 },
-        /* 73*/ { UNICODE_MODE, 32, 2, -1, -1, "バーコード", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 32 Example 5 same",
+        /* 73*/ { UNICODE_MODE, 32, 2, -1, -1, "バーコード", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 32 Example 5 same",
                     "11111110111101101111111"
                     "10000000101100000000001"
                     "10111110000000101111101"
@@ -2880,7 +2921,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010000101100000001"
                     "11101010111010101111111"
                 },
-        /* 74*/ { UNICODE_MODE, 32, 2, -1, -1, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 32 Example 6 same",
+        /* 74*/ { UNICODE_MODE, 32, 2, -1, -1, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 32 Example 6 same",
                     "11111110111101101111111"
                     "10000000101111000000001"
                     "10111110000000101111101"
@@ -2905,7 +2946,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 75*/ { UNICODE_MODE, 33, 2, -1, 4 << 8, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 33 Example 1 same with explicit mask 11 (auto 10)",
+        /* 75*/ { UNICODE_MODE, 33, 2, -1, 4 << 8, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 33 Example 1 same with explicit mask 11 (auto 10)",
                     "11111110111101101111111"
                     "10000000101111000000001"
                     "10111110000000101111101"
@@ -2930,7 +2971,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 76*/ { UNICODE_MODE, 33, 2, -1, -1, "バーコード", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 33 Example 2 same",
+        /* 76*/ { UNICODE_MODE, 33, 2, -1, -1, "バーコード", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 33 Example 2 same",
                     "11111110111101101111111"
                     "10000000101101000000001"
                     "10111110000000101111101"
@@ -2955,7 +2996,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010010011100000001"
                     "11101010111010101111111"
                 },
-        /* 77*/ { UNICODE_MODE, 33, 2, -1, 2 << 8, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 33 Example 3 same with explicit mask 01 (auto 11)",
+        /* 77*/ { UNICODE_MODE, 33, 2, -1, 2 << 8, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 33 Example 3 same with explicit mask 01 (auto 11)",
                     "11111110011010101111111"
                     "10000000011101100000001"
                     "10111110001010001111101"
@@ -2980,7 +3021,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 78*/ { UNICODE_MODE, 34, 2, -1, 4 << 8, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 34 Example 1 same with explicit mask 11 (auto 10)",
+        /* 78*/ { UNICODE_MODE, 34, 2, -1, 4 << 8, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 34 Example 1 same with explicit mask 11 (auto 10)",
                     "11111110111101101111111"
                     "10000000101111000000001"
                     "10111110000000101111101"
@@ -3005,7 +3046,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 79*/ { UNICODE_MODE, 34, 2, -1, 2 << 8, "バーコード", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 34 Example 2 same with explicit mask 01 (auto 10)",
+        /* 79*/ { UNICODE_MODE, 34, 2, -1, 2 << 8, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 34 Example 2 same with explicit mask 01 (auto 10)",
                     "1111111011101011001111111"
                     "1000000001010101000000001"
                     "1011111010001110001111101"
@@ -3032,7 +3073,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101001110101000000001"
                     "1110101000101010101111111"
                 },
-        /* 80*/ { UNICODE_MODE, 34, 2, -1, 4 << 8, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 34 Example 3 same with explicit mask 11 (auto 01)",
+        /* 80*/ { UNICODE_MODE, 34, 2, -1, 4 << 8, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 34 Example 3 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000101111000000001"
                     "10111110000010101111101"
@@ -3057,7 +3098,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011010100000001"
                     "11101010111010101111111"
                 },
-        /* 81*/ { UNICODE_MODE, 35, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 35 Example 1 same with explicit mask 01 (auto 11)",
+        /* 81*/ { UNICODE_MODE, 35, 2, -1, 2 << 8, "条码", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 35 Example 1 same with explicit mask 01 (auto 11)",
                     "11111110011010101111111"
                     "10000000011101100000001"
                     "10111110001010001111101"
@@ -3082,7 +3123,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010110101000000001"
                     "11101010101010001111111"
                 },
-        /* 82*/ { UNICODE_MODE, 35, 2, -1, -1, "バーコード", -1, 0, 25, 25, "AIM ITS/04-023:2022 ECI 35 Example 2 same",
+        /* 82*/ { UNICODE_MODE, 35, 2, -1, -1, "バーコード", -1, 0, 25, 25, 1, "AIM ITS/04-023:2022 ECI 35 Example 2 same",
                     "1111111011101011001111111"
                     "1000000001110101000000001"
                     "1011111010100100001111101"
@@ -3109,7 +3150,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "1110101000101100000000001"
                     "1110101000001010101111111"
                 },
-        /* 83*/ { UNICODE_MODE, 35, 2, -1, 4 << 8, "바코드", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 35 Example 3 same with explicit mask 11 (auto 01)",
+        /* 83*/ { UNICODE_MODE, 35, 2, -1, 4 << 8, "바코드", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 35 Example 3 same with explicit mask 11 (auto 01)",
                     "11111110111101101111111"
                     "10000000101101000000001"
                     "10111110010000101111101"
@@ -3134,7 +3175,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010011111100000001"
                     "11101010111010101111111"
                 },
-        /* 84*/ { UNICODE_MODE, 170, 2, -1, -1, "sn:7QPB4MN", -1, 0, 23, 23, "AIM ITS/04-023:2022 ECI 170 Example 1 same",
+        /* 84*/ { UNICODE_MODE, 170, 2, -1, -1, "sn:7QPB4MN", -1, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 170 Example 1 same",
                     "11111110111100101111111"
                     "10000000100111000000001"
                     "10111110000000101111101"
@@ -3159,7 +3200,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     "11101010000110100000001"
                     "11101010111010101111111"
                 },
-        /* 85*/ { DATA_MODE, 899, 2, -1, -1, "\000\001\002\133\134\135\375\376\377", 9, 0, 23, 23, "AIM ITS/04-023:2022 ECI 899 Example 1 same",
+        /* 85*/ { DATA_MODE, 899, 2, -1, -1, "\000\001\002\133\134\135\375\376\377", 9, 0, 23, 23, 1, "AIM ITS/04-023:2022 ECI 899 Example 1 same",
                     "11111110011011101111111"
                     "10000000010110100000001"
                     "10111110010110001111101"
@@ -3190,12 +3231,14 @@ static void test_encode(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192];
+    char ret_buf[8192];
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3231,13 +3274,18 @@ static void test_encode(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[49152];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, data[i].zxingcpp_cmp,
+                                cmp_buf, sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, ret_buf, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                ret_buf);
                 }
             }
         }
@@ -3474,12 +3522,14 @@ static void test_encode_segs(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
     char escaped[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char ret_buf[8192];
     char cmp_buf[32768];
     char cmp_msg[1024];
 
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do ZXing-C++ test if asked, too slow otherwise */
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode_segs", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3505,9 +3555,12 @@ static void test_encode_segs(const testCtx *const p_ctx) {
             printf("        /*%3d*/ { %s, %d, %d, %s, { { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d }, { TU(\"%s\"), %d, %d } }, %s, %d, %d, \"%s\",\n",
                     i, testUtilInputModeName(data[i].input_mode),
                     data[i].option_1, data[i].option_2, testUtilOption3Name(BARCODE_HANXIN, data[i].option_3),
-                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)), data[i].segs[0].length, data[i].segs[0].eci,
-                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)), data[i].segs[1].length, data[i].segs[1].eci,
-                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)), data[i].segs[2].length, data[i].segs[2].eci,
+                    testUtilEscape((const char *) data[i].segs[0].source, length, escaped, sizeof(escaped)),
+                    data[i].segs[0].length, data[i].segs[0].eci,
+                    testUtilEscape((const char *) data[i].segs[1].source, length1, escaped1, sizeof(escaped1)),
+                    data[i].segs[1].length, data[i].segs[1].eci,
+                    testUtilEscape((const char *) data[i].segs[2].source, length2, escaped2, sizeof(escaped2)),
+                    data[i].segs[2].length, data[i].segs[2].eci,
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
@@ -3523,7 +3576,7 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                 if (do_zxingcpp) {
                     if ((symbol->input_mode & 0x07) == DATA_MODE) {
                         if (debug & ZINT_DEBUG_TEST_PRINT) {
-                            printf("i:%d multiple segments in DATA_MODE not currently supported for ZXing-C++ testing (%s)\n",
+                            printf("i:%d %s multiple segments in DATA_MODE not currently supported for ZXing-C++ testing\n",
                                     i, testUtilBarcodeName(symbol->symbology));
                         }
                     } else {
@@ -3531,19 +3584,208 @@ static void test_encode_segs(const testCtx *const p_ctx) {
                         if (testUtilCanZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length, debug)) {
                             int cmp_len, ret_len;
                             char modules_dump[49152];
-                            assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
+                            assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)),
+                                        -1, "i:%d testUtilModulesDump == -1\n", i);
                             ret = testUtilZXingCPP(i, symbol, (const char *) data[i].segs[0].source, length,
-                                    modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                            assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                                        modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
+                            assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                        i, testUtilBarcodeName(symbol->symbology), ret);
 
                             ret = testUtilZXingCPPCmpSegs(symbol, cmp_msg, cmp_buf, cmp_len, data[i].segs, seg_count,
-                                    NULL /*primary*/, escaped, &ret_len);
-                            assert_zero(ret, "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                           i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                        NULL /*primary*/, ret_buf, &ret_len);
+                            assert_zero(ret,
+                                        "i:%d %s testUtilZXingCPPCmpSegs %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
+                                        i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf,
+                                        ret_len, ret_buf);
                         }
                     }
                 }
             }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int eci;
+        int option_3;
+        int output_options;
+        const char *data;
+        int length;
+        int ret;
+        int expected_eci;
+        const char *expected;
+        int expected_length;
+        int expected_raw_eci;
+    };
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, -1, "é", -1, 0, 0, "", -1, 0 },
+        /*  1*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "é", -1, 0, 0, "\351", -1, 3 },
+        /*  2*/ { UNICODE_MODE, -1, -1, -1, "ก", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
+        /*  3*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "ก", -1, ZINT_WARN_NONCOMPLIANT, 0, "\2012\3169", -1, 32 }, /* When single segment will try ECI 32 as secondary default */
+        /*  4*/ { UNICODE_MODE, -1, -1, -1, "啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
+        /*  5*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "啊", -1, ZINT_WARN_NONCOMPLIANT, 0, "\260\241", -1, 32 },
+        /*  6*/ { UNICODE_MODE, -1, -1, -1, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "", -1, 0 },
+        /*  7*/ { UNICODE_MODE, -1, -1, BARCODE_RAW_TEXT, "\302\200", -1, ZINT_WARN_NONCOMPLIANT, 0, "\201\060\201\060", -1, 32 },
+        /*  8*/ { DATA_MODE, -1, -1, -1, "\351", -1, 0, 0, "", -1, 0 },
+        /*  9*/ { DATA_MODE, -1, -1, BARCODE_RAW_TEXT, "\351", -1, 0, 0, "\351", -1, 3 },
+        /* 10*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, -1, "\223\137", -1, 0, 0, "", -1, 0 },
+        /* 11*/ { DATA_MODE, -1, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, "\223\137", -1, 0, 0, "\223\137", -1, 3 }, /* Note "wrong" raw ECI, needs to be specified */
+        /* 12*/ { UNICODE_MODE, 26, -1, -1, "é", -1, 0, 26, "", -1, 0 },
+        /* 13*/ { UNICODE_MODE, 26, -1, BARCODE_RAW_TEXT, "é", -1, 0, 26, "é", -1, 26 },
+        /* 14*/ { UNICODE_MODE, 899, -1, -1, "é", -1, 0, 899, "", -1, 0 },
+        /* 15*/ { UNICODE_MODE, 899, -1, BARCODE_RAW_TEXT, "é", -1, 0, 899, "é", -1, 899 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = testUtilSetSymbol(symbol, BARCODE_HANXIN, data[i].input_mode, data[i].eci,
+                                    -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
+        expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
+
+        ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        if (ret < ZINT_ERROR) {
+            assert_equal(symbol->eci, data[i].expected_eci, "i:%d eci %d != %d\n",
+                        i, symbol->eci, data[i].expected_eci);
+            if (symbol->output_options & BARCODE_RAW_TEXT) {
+                assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+                assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+                assert_equal(symbol->raw_segs[0].length, expected_length,
+                            "i:%d raw_segs[0].length %d != expected_length %d\n",
+                            i, symbol->raw_segs[0].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected, expected_length),
+                            "i:%d raw_segs[0].source memcmp(%s, %s, %d) != 0\n", i,
+                            testUtilEscape((const char *) symbol->raw_segs[0].source, symbol->raw_segs[0].length,
+                                            escaped, sizeof(escaped)),
+                            testUtilEscape(data[i].expected, expected_length, escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[0].eci, data[i].expected_raw_eci,
+                            "i:%d raw_segs[0].eci %d != expected_raw_eci %d\n",
+                            i, symbol->raw_segs[0].eci, data[i].expected_raw_eci);
+            } else {
+                assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+            }
+        }
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
+static void test_rt_segs(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        int input_mode;
+        int option_3;
+        int output_options;
+        struct zint_seg segs[3];
+        int ret;
+
+        int expected_rows;
+        int expected_width;
+        struct zint_seg expected_raw_segs[3];
+        int expected_raw_seg_count;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { UNICODE_MODE, -1, -1, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, 0, 23, 23, {{0}}, 0 },
+        /*  1*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, 0, 23, 23, { { TU("\266"), 1, 3 }, { TU("\266"), 1, 7 }, {0} }, 2 },
+        /*  2*/ { UNICODE_MODE, -1, -1, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, {0} }, ZINT_WARN_USES_ECI, 23, 23, {{0}}, 0 },
+        /*  3*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("ก"), -1, 0 }, { TU("Ж"), -1, 7 }, { TU(""), 0, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("\241"), 1, 13 }, { TU("\266"), 1, 7 }, {0} }, 2 }, /* When multiple segments, ECI 32 is not used as secondary default, so fails and retries with `get_best_eci()` */
+        /*  4*/ { UNICODE_MODE, -1, -1, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 23, 23, {{0}}, 0 },
+        /*  5*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("éé"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 23, 23, { { TU("\351\351"), 2, 3 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 },
+        /*  6*/ { UNICODE_MODE, -1, -1, { { TU("啊啊"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 25, 25, {{0}}, 0 },
+        /*  7*/ { UNICODE_MODE, -1, BARCODE_RAW_TEXT, { { TU("啊啊"), -1, 0 }, { TU("กขฯ"), -1, 0 }, { TU("βββ"), -1, 0 } }, ZINT_WARN_USES_ECI, 25, 25, { { TU("啊啊"), 6, 26 }, { TU("\241\242\317"), 3, 13 }, { TU("\342\342\342"), 3, 9 } }, 3 }, /* Note chooses 26 (UTF-8) for 啊 as multiple segments */
+        /*  8*/ { DATA_MODE, -1, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, {{0}}, 0 },
+        /*  9*/ { DATA_MODE, -1, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\260\241"), 2, 32 } }, 3 },
+        /* 10*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, -1, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, {{0}}, 0 },
+        /* 11*/ { DATA_MODE, ZINT_FULL_MULTIBYTE, BARCODE_RAW_TEXT, { { TU("¶"), -1, 26 }, { TU("Ж"), -1, 0 }, { TU("\260\241"), -1, 32 } }, 0, 23, 23, { { TU("¶"), 2, 26 }, { TU("\320\226"), 2, 3 }, { TU("\260\241"), 2, 32 } }, 3 },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, j, seg_count, ret;
+    struct zint_symbol *symbol = NULL;
+
+    int expected_length;
+
+    char escaped[4096];
+    char escaped2[4096];
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    for (i = 0; i < data_size; i++) {
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        testUtilSetSymbol(symbol, BARCODE_HANXIN, data[i].input_mode, -1 /*eci*/,
+                            -1 /*option_1*/, -1 /*option_2*/, data[i].option_3, data[i].output_options,
+                            NULL, 0, debug);
+        for (j = 0, seg_count = 0; j < 3 && data[i].segs[j].length; j++, seg_count++);
+
+        ret = ZBarcode_Encode_Segs(symbol, data[i].segs, seg_count);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode_Segs ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+
+        assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (width %d)\n",
+                    i, symbol->rows, data[i].expected_rows, symbol->width);
+        assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                    i, symbol->width, data[i].expected_width);
+
+        assert_equal(symbol->raw_seg_count, data[i].expected_raw_seg_count, "i:%d symbol->raw_seg_count %d != %d\n",
+                    i, symbol->raw_seg_count, data[i].expected_raw_seg_count);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            for (j = 0; j < symbol->raw_seg_count; j++) {
+                assert_nonnull(symbol->raw_segs[j].source, "i:%d raw_segs[%d].source NULL\n", i, j);
+
+                expected_length = data[i].expected_raw_segs[j].length;
+
+                assert_equal(symbol->raw_segs[j].length, expected_length,
+                            "i:%d raw_segs[%d].length %d != expected_length %d\n",
+                            i, j, symbol->raw_segs[j].length, expected_length);
+                assert_zero(memcmp(symbol->raw_segs[j].source, data[i].expected_raw_segs[j].source, expected_length),
+                            "i:%d raw_segs[%d].source memcmp(%s, %s, %d) != 0\n", i, j,
+                            testUtilEscape((const char *) symbol->raw_segs[j].source, expected_length, escaped,
+                                            sizeof(escaped)),
+                            testUtilEscape((const char *) data[i].expected_raw_segs[j].source, expected_length,
+                                            escaped2, sizeof(escaped2)),
+                            expected_length);
+                assert_equal(symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci,
+                            "i:%d raw_segs[%d].eci %d != expected_raw_segs.eci %d\n",
+                            i, j, symbol->raw_segs[j].eci, data[i].expected_raw_segs[j].eci);
+            }
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
 
         ZBarcode_Delete(symbol);
@@ -3577,7 +3819,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    testStartSymbol("test_fuzz", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -3707,6 +3949,8 @@ int main(int argc, char *argv[]) {
         { "test_input", test_input },
         { "test_encode", test_encode },
         { "test_encode_segs", test_encode_segs },
+        { "test_rt", test_rt },
+        { "test_rt_segs", test_rt_segs },
         { "test_fuzz", test_fuzz },
         { "test_perf", test_perf },
     };

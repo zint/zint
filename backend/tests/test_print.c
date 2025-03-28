@@ -84,7 +84,7 @@ static void test_print(const testCtx *const p_ctx) {
         have_tiffinfo = testUtilHaveTiffInfo();
     }
 
-    testStartSymbol("test_print", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     assert_nonzero(testUtilDataPath(data_dir, sizeof(data_dir), "/backend/tests/data", NULL), "testUtilDataPath == 0\n");
 

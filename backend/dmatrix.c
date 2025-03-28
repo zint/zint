@@ -1528,7 +1528,8 @@ static int dm_encode(struct zint_symbol *symbol, const unsigned char source[], c
         error_number = dm_minimalenc(symbol, source, length, last_seg, &sp, target, &tp, process_buffer, &process_p,
                                         &b256_start, &current_mode, gs1, debug_print);
     }
-    if (error_number != 0) {
+    if (error_number) {
+        assert(error_number >= ZINT_ERROR);
         return error_number;
     }
 
@@ -1685,6 +1686,8 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
     int gs1;
     int in_macro = 0;
     const struct zint_seg *last_seg = &segs[seg_count - 1];
+    /* GS1 raw text dealt with by `ZBarcode_Encode_Segs()` */
+    const int raw_text = (symbol->input_mode & 0x07) != GS1_MODE && (symbol->output_options & BARCODE_RAW_TEXT);
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if ((i = segs_length(segs, seg_count)) > 3116) { /* Max is 3166 digits */
@@ -1798,6 +1801,10 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
         in_macro = 1;
     }
 
+    if (raw_text && rt_init_segs(symbol, seg_count)) {
+        return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+    }
+
     for (i = 0; i < seg_count; i++) {
         int src_inc = 0, len_dec = 0;
         if (in_macro) {
@@ -1808,10 +1815,13 @@ static int dm_encode_segs(struct zint_symbol *symbol, struct zint_seg segs[], co
                 len_dec += 2;  /* Remove RS + EOT from end */
             }
         }
-        error_number = dm_encode(symbol, segs[i].source + src_inc, segs[i].length - len_dec, segs[i].eci,
-                                i + 1 == seg_count, gs1, target, &tp);
-        if (error_number != 0) {
+        if ((error_number = dm_encode(symbol, segs[i].source + src_inc, segs[i].length - len_dec, segs[i].eci,
+                                        i + 1 == seg_count, gs1, target, &tp))) {
+            assert(error_number >= ZINT_ERROR);
             return error_number;
+        }
+        if (raw_text && rt_cpy_seg(symbol, i, &segs[i])) { /* Note including macro header and RS + EOT */
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
         }
     }
 

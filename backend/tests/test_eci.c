@@ -65,7 +65,7 @@ static void test_bom(const testCtx *const p_ctx) {
 
     int width, height;
 
-    testStart("test_bom");
+    testStart(p_ctx->func_name);
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
@@ -98,7 +98,7 @@ static void test_iso_8859_16(const testCtx *const p_ctx) {
     int length, ret;
     struct zint_symbol *symbol;
 
-    testStart("test_iso_8859_16");
+    testStart(p_ctx->func_name);
 
     symbol = ZBarcode_Create();
     assert_nonnull(symbol, "Symbol not created\n");
@@ -385,7 +385,7 @@ static void test_reduced_charset_input(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol;
 
-    testStart("test_reduced_charset_input");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -695,7 +695,7 @@ static void test_utf8_to_eci_sb(const testCtx *const p_ctx) {
     unsigned char source[5];
     unsigned char dest[2] = {0};
 
-    testStart("test_utf8_to_eci_sb");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int j;
@@ -774,7 +774,7 @@ static void test_utf8_to_eci_ascii(const testCtx *const p_ctx) {
 
     char dest[128] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_utf8_to_eci_ascii");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length;
@@ -825,7 +825,7 @@ static void test_utf8_to_eci_utf16be(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 25;
 
-    testStart("test_utf8_to_eci_utf16be");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -890,7 +890,7 @@ static void test_utf8_to_eci_utf16le(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 33;
 
-    testStart("test_utf8_to_eci_utf16le");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -952,7 +952,7 @@ static void test_utf8_to_eci_utf32be(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 34;
 
-    testStart("test_utf8_to_eci_utf32be");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1016,7 +1016,7 @@ static void test_utf8_to_eci_utf32le(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 35;
 
-    testStart("test_utf8_to_eci_utf32le");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1084,7 +1084,7 @@ static void test_utf8_to_eci_sjis(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 20;
 
-    testStart("test_utf8_to_eci_sjis");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1130,7 +1130,7 @@ static void test_utf8_to_eci_big5(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 28;
 
-    testStart("test_utf8_to_eci_big5");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1176,7 +1176,7 @@ static void test_utf8_to_eci_gb2312(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 29;
 
-    testStart("test_utf8_to_eci_gb2312");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1222,7 +1222,7 @@ static void test_utf8_to_eci_euc_kr(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 30;
 
-    testStart("test_utf8_to_eci_euc_kr");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1268,7 +1268,7 @@ static void test_utf8_to_eci_gbk(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 31;
 
-    testStart("test_utf8_to_eci_gbk");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1314,7 +1314,7 @@ static void test_utf8_to_eci_gb18030(const testCtx *const p_ctx) {
     int i, length, ret;
     const int eci = 32;
 
-    testStart("test_utf8_to_eci_gb18030");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int out_length, eci_length;
@@ -1366,7 +1366,7 @@ static void test_is_eci_convertible_segs(const testCtx *const p_ctx) {
 
     int convertible[3];
 
-    testStart("test_is_eci_convertible_segs");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1405,7 +1405,7 @@ static void test_get_best_eci(const testCtx *const p_ctx) {
     int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    testStart("test_get_best_eci");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 
@@ -1443,7 +1443,7 @@ static void test_get_best_eci_segs(const testCtx *const p_ctx) {
     int i, j, seg_count, ret;
     struct zint_symbol *symbol;
 
-    testStart("test_get_best_eci_segs");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
 

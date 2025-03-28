@@ -63,7 +63,7 @@ static void test_large(const testCtx *const p_ctx) {
 
     char data_buf[128];
 
-    testStartSymbol("test_large", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -103,46 +103,47 @@ static void test_hrt(const testCtx *const p_ctx) {
         const char *data;
 
         const char *expected;
+        const char *expected_raw;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_PHARMA, -1, -1, "123456", "" }, /* None */
-        /*  1*/ { BARCODE_PHARMA, -1, BARCODE_RAW_TEXT, "123456", "123456" },
-        /*  2*/ { BARCODE_PHARMA_TWO, -1, -1, "123456", "" }, /* None */
-        /*  3*/ { BARCODE_PHARMA_TWO, -1, BARCODE_RAW_TEXT, "123456", "123456" },
-        /*  4*/ { BARCODE_CODE32, -1, -1, "123456", "A001234564" },
-        /*  5*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "123456", "015PN4" }, /* Actual encoded CODE39 value */
-        /*  6*/ { BARCODE_CODE32, -1, -1, "12345678", "A123456788" },
-        /*  7*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
-        /*  8*/ { BARCODE_CODE32, 1, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
-        /*  9*/ { BARCODE_CODE32, 1, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
-        /* 10*/ { BARCODE_CODE32, 2, -1, "12345678", "A123456788" }, /* Ignore option_2 re check digits */
-        /* 11*/ { BARCODE_CODE32, 2, BARCODE_RAW_TEXT, "12345678", "3PRM8N" },
-        /* 12*/ { BARCODE_PZN, -1, -1, "12345", "PZN - 00123458" }, /* Pads with zeroes if length < 7 */
-        /* 13*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345", "-00123458" }, /* Actual encoded CODE39 value */
-        /* 14*/ { BARCODE_PZN, -1, -1, "123456", "PZN - 01234562" },
-        /* 15*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "123456", "-01234562" },
-        /* 16*/ { BARCODE_PZN, -1, -1, "1234567", "PZN - 12345678" },
-        /* 17*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "1234567", "-12345678" },
-        /* 18*/ { BARCODE_PZN, -1, -1, "12345678", "PZN - 12345678" },
-        /* 19*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345678", "-12345678" },
-        /* 20*/ { BARCODE_PZN, 1, -1, "1234", "PZN - 0012345" }, /* PZN7, pads with zeroes if length < 6 */
-        /* 21*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234", "-0012345" },
-        /* 22*/ { BARCODE_PZN, 1, -1, "12345", "PZN - 0123458" },
-        /* 23*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "12345", "-0123458" },
-        /* 24*/ { BARCODE_PZN, 1, -1, "123456", "PZN - 1234562" },
-        /* 25*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "123456", "-1234562" },
-        /* 26*/ { BARCODE_PZN, 1, -1, "1234562", "PZN - 1234562" },
-        /* 27*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234562", "-1234562" },
-        /* 28*/ { BARCODE_PZN, 2, -1, "12345", "PZN - 00123458" }, /* Ignore option_2 re check digits */
-        /* 29*/ { BARCODE_PZN, 2, BARCODE_RAW_TEXT, "12345", "-00123458" },
+        /*  0*/ { BARCODE_PHARMA, -1, -1, "123456", "", "" }, /* None */
+        /*  1*/ { BARCODE_PHARMA, -1, BARCODE_RAW_TEXT, "123456", "", "123456" },
+        /*  2*/ { BARCODE_PHARMA_TWO, -1, -1, "123456", "", "" }, /* None */
+        /*  3*/ { BARCODE_PHARMA_TWO, -1, BARCODE_RAW_TEXT, "123456", "", "123456" },
+        /*  4*/ { BARCODE_CODE32, -1, -1, "123456", "A001234564", "" },
+        /*  5*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "123456", "A001234564", "015PN4" }, /* Actual encoded CODE39 value */
+        /*  6*/ { BARCODE_CODE32, -1, -1, "12345678", "A123456788", "" },
+        /*  7*/ { BARCODE_CODE32, -1, BARCODE_RAW_TEXT, "12345678", "A123456788", "3PRM8N" },
+        /*  8*/ { BARCODE_CODE32, 1, -1, "12345678", "A123456788", "" }, /* Ignore option_2 re check digits */
+        /*  9*/ { BARCODE_CODE32, 1, BARCODE_RAW_TEXT, "12345678", "A123456788", "3PRM8N" },
+        /* 10*/ { BARCODE_CODE32, 2, -1, "12345678", "A123456788", "" }, /* Ignore option_2 re check digits */
+        /* 11*/ { BARCODE_CODE32, 2, BARCODE_RAW_TEXT, "12345678", "A123456788", "3PRM8N" },
+        /* 12*/ { BARCODE_PZN, -1, -1, "12345", "PZN - 00123458", "" }, /* Pads with zeroes if length < 7 */
+        /* 13*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345", "PZN - 00123458", "-00123458" }, /* Actual encoded CODE39 value */
+        /* 14*/ { BARCODE_PZN, -1, -1, "123456", "PZN - 01234562", "" },
+        /* 15*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "123456", "PZN - 01234562", "-01234562" },
+        /* 16*/ { BARCODE_PZN, -1, -1, "1234567", "PZN - 12345678", "" },
+        /* 17*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "1234567", "PZN - 12345678", "-12345678" },
+        /* 18*/ { BARCODE_PZN, -1, -1, "12345678", "PZN - 12345678", "" },
+        /* 19*/ { BARCODE_PZN, -1, BARCODE_RAW_TEXT, "12345678", "PZN - 12345678", "-12345678" },
+        /* 20*/ { BARCODE_PZN, 1, -1, "1234", "PZN - 0012345", "" }, /* PZN7, pads with zeroes if length < 6 */
+        /* 21*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234", "PZN - 0012345", "-0012345" },
+        /* 22*/ { BARCODE_PZN, 1, -1, "12345", "PZN - 0123458", "" },
+        /* 23*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "12345", "PZN - 0123458", "-0123458" },
+        /* 24*/ { BARCODE_PZN, 1, -1, "123456", "PZN - 1234562", "" },
+        /* 25*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "123456", "PZN - 1234562", "-1234562" },
+        /* 26*/ { BARCODE_PZN, 1, -1, "1234562", "PZN - 1234562", "" },
+        /* 27*/ { BARCODE_PZN, 1, BARCODE_RAW_TEXT, "1234562", "PZN - 1234562", "-1234562" },
+        /* 28*/ { BARCODE_PZN, 2, -1, "12345", "PZN - 00123458", "" }, /* Ignore option_2 re check digits */
+        /* 29*/ { BARCODE_PZN, 2, BARCODE_RAW_TEXT, "12345", "PZN - 00123458", "-00123458" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
-    testStartSymbol("test_hrt", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -155,6 +156,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
+        expected_raw_length = (int) strlen(data[i].expected_raw);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -163,6 +165,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length, symbol->text);
         assert_zero(strcmp((char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_raw_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                        "i:%d memcmp(%s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ZBarcode_Delete(symbol);
     }
@@ -223,7 +237,7 @@ static void test_input(const testCtx *const p_ctx) {
 
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
 
-    testStartSymbol("test_input", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -323,10 +337,11 @@ static void test_encode(const testCtx *const p_ctx) {
     char cmp_buf[8192];
     char cmp_msg[1024];
 
-    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript(); /* Only do BWIPP test if asked, too slow otherwise */
-    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder(); /* Only do ZXing-C++ test if asked, too slow otherwise */
+    /* Only do BWIPP/ZXing-C++ tests if asked, too slow otherwise */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
 
-    testStartSymbol("test_encode", &symbol);
+    testStartSymbol(p_ctx->func_name, &symbol);
 
     for (i = 0; i < data_size; i++) {
 
@@ -367,13 +382,18 @@ static void test_encode(const testCtx *const p_ctx) {
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[8192 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                                sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
-                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length, NULL /*primary*/, escaped, &ret_len);
+                    ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
+                                NULL /*primary*/, escaped, &ret_len);
                     assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %.*s\nexpected: %.*s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len, escaped);
+                                i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_len, cmp_buf, ret_len,
+                                escaped);
                 }
             }
         }

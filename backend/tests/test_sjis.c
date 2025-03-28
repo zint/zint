@@ -116,7 +116,7 @@ static void test_u_sjis_int(const testCtx *const p_ctx) {
     (void)debug;
 #endif
 
-    testStart("test_u_sjis_int");
+    testStart(p_ctx->func_name);
 
 #ifdef TEST_JUST_SAY_GNO
     if ((debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
@@ -212,7 +212,7 @@ static void test_sjis_utf8(const testCtx *const p_ctx) {
     struct zint_symbol symbol = {0};
     unsigned int jisdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_sjis_utf8");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int ret_length;
@@ -304,7 +304,7 @@ static void test_sjis_utf8_to_eci(const testCtx *const p_ctx) {
 
     unsigned int jisdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_sjis_utf8_to_eci");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int ret_length;
@@ -356,7 +356,7 @@ static void test_sjis_cpy(const testCtx *const p_ctx) {
 
     unsigned int jisdata[20] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    testStart("test_sjis_cpy");
+    testStart(p_ctx->func_name);
 
     for (i = 0; i < data_size; i++) {
         int ret_length;

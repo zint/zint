@@ -555,6 +555,7 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     unsigned char codewords[144];
     int scm_vv = -1;
     int structapp_cw = 0;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     mode = symbol->option_1;
@@ -690,6 +691,17 @@ INTERNAL int maxicode(struct zint_symbol *symbol, struct zint_seg segs[], const 
     error_number = mx_text_process_segs(codewords, mode, segs, seg_count, structapp_cw, scm_vv, debug_print);
     if (error_number == ZINT_ERROR_TOO_LONG) {
         return errtxt(error_number, symbol, 553, "Input too long, requires too many codewords (maximum 144)");
+    }
+
+    if (raw_text) {
+        if (rt_init_segs(symbol, seg_count)) {
+            return ZINT_ERROR_MEMORY; /* `rt_init_segs()` only fails with OOM */
+        }
+        for (i = 0; i < seg_count; i++) {
+            if (rt_cpy_seg(symbol, i, &segs[i])) {
+                return ZINT_ERROR_MEMORY; /* `rt_cpy_seg()` only fails with OOM */
+            }
+        }
     }
 
     /* All the data is sorted - now do error correction */

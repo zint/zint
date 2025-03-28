@@ -758,6 +758,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
     int error_number = 0, i, plus_count;
     int addon_gap = 0;
     int first_part_len, second_part_len;
+    const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
     if (length > 19) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 283, "Input length %d too long (maximum 19)", length);
@@ -943,6 +944,10 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
         ean_add_on(second_part, second_part_len, dest, addon_gap);
         hrt_cat_chr_nochk(symbol, '+');
         hrt_cat_nochk(symbol, second_part, second_part_len);
+    }
+
+    if (raw_text && rt_cpy(symbol, symbol->text, symbol->text_length)) { /* Just use the HRT */
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     expand(symbol, dest, (int) strlen(dest));

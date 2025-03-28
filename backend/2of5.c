@@ -105,11 +105,11 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 
     expand(symbol, dest, d - dest);
 
-    if (symbol->option_2 == 2 && !raw_text) {
-        /* Exclude check digit from HRT */
-        hrt_cpy_nochk(symbol, local_source, length - 1);
-    } else {
-        hrt_cpy_nochk(symbol, local_source, length);
+    /* Exclude check digit from HRT if hidden */
+    hrt_cpy_nochk(symbol, local_source, length - (symbol->option_2 == 2));
+
+    if (raw_text && rt_cpy(symbol, local_source, length)) {
+        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
     }
 
     return 0;
@@ -119,12 +119,6 @@ static int c25_common(struct zint_symbol *symbol, const unsigned char source[], 
 INTERNAL int c25standard(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* 9 + (112 + 1) * 10 + 8 = 1147 */
     return c25_common(symbol, source, length, 112, 1 /*is_matrix*/, C25MatrixStartStop, 6, 301);
-}
-
-/* Code 2 of 5 Industrial */
-INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length) {
-    /* 10 + (79 + 1) * 14 + 9 = 1139 */
-    return c25_common(symbol, source, length, 79, 0 /*is_matrix*/, C25IndustStartStop, 6, 303);
 }
 
 /* Code 2 of 5 IATA */
@@ -137,6 +131,12 @@ INTERNAL int c25iata(struct zint_symbol *symbol, unsigned char source[], int len
 INTERNAL int c25logic(struct zint_symbol *symbol, unsigned char source[], int length) {
     /* 4 + (113 + 1) * 10 + 5 = 1149 */
     return c25_common(symbol, source, length, 113, 1 /*is_matrix*/, C25IataLogicStartStop, 4, 307);
+}
+
+/* Code 2 of 5 Industrial */
+INTERNAL int c25ind(struct zint_symbol *symbol, unsigned char source[], int length) {
+    /* 10 + (79 + 1) * 14 + 9 = 1139 */
+    return c25_common(symbol, source, length, 79, 0 /*is_matrix*/, C25IndustStartStop, 6, 303);
 }
 
 /* vim: set ts=4 sw=4 et : */
