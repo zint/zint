@@ -157,7 +157,7 @@ jobs:
     - name: Test
       working-directory: ${{runner.workspace}}/build
       shell: bash
-      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -V -C $BUILD_TYPE
+      run: LD_LIBRARY_PATH=$LD_LIBRARY_PATH:"$(pwd)/backend" PATH=$PATH:"$(pwd)/frontend" ctest -VV -C $BUILD_TYPE
 
   build-macOS-sanitize:
     runs-on: macOS-latest
