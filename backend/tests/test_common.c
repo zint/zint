@@ -1063,7 +1063,7 @@ static void test_rt_cpy_seg(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    struct zint_symbol s_symbol;
+    struct zint_symbol s_symbol = {0};
     struct zint_symbol *symbol = &s_symbol;
     int expected_length;
 
@@ -1149,7 +1149,7 @@ static void test_rt_cpy(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
 
-    struct zint_symbol s_symbol;
+    struct zint_symbol s_symbol = {0};
     struct zint_symbol *symbol = &s_symbol;
     int expected_length;
 
@@ -1221,7 +1221,7 @@ static void test_rt_printf_256(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i, ret;
 
-    struct zint_symbol s_symbol;
+    struct zint_symbol s_symbol = {0};
     struct zint_symbol *symbol = &s_symbol;
     int expected_length;
 
