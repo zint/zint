@@ -206,7 +206,6 @@ INTERNAL int posn(const char set_string[], const char data);
   `bin_posn`. Returns `bin_posn` + `length` */
 INTERNAL int bin_append_posn(const int arg, const int length, char *binary, const int bin_posn);
 
-
 #define Z_COMMON_INLINE   1
 
 #ifdef Z_COMMON_INLINE
@@ -267,7 +266,7 @@ INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, cons
 
 
 /* Whether `symbology` can have row binding */
-INTERNAL int is_stackable(const int symbology);
+INTERNAL int is_bindable(const int symbology);
 
 /* Whether `symbology` is EAN/UPC */
 INTERNAL int is_upcean(const int symbology);

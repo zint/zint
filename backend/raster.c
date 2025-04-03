@@ -1341,7 +1341,7 @@ static int plot_raster_default(struct zint_symbol *symbol, const int rotate_angl
     }
 
     /* Separator binding for stacked barcodes */
-    if ((symbol->output_options & BARCODE_BIND) && (symbol->rows > 1) && is_stackable(symbol->symbology)) {
+    if ((symbol->output_options & BARCODE_BIND) && symbol->rows > 1 && is_bindable(symbol->symbology)) {
         int sep_xoffset_si = xoffset_si;
         int sep_width_si = symbol->width * si;
         int sep_height_si, sep_yoffset_si;

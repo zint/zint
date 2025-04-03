@@ -4161,122 +4161,6 @@ static void test_fuzz(const testCtx *const p_ctx) {
     testFinish();
 }
 
-#include <time.h>
-
-#define TEST_PERF_ITERATIONS    1000
-
-/* Not a real test, just performance indicator */
-static void test_perf(const testCtx *const p_ctx) {
-    int debug = p_ctx->debug;
-
-    struct item {
-        int symbology;
-        int input_mode;
-        int option_1;
-        int option_2;
-        const char *data;
-        int ret;
-
-        int expected_rows;
-        int expected_width;
-        const char *comment;
-    };
-    static const struct item data[] = {
-        /*  0*/ { BARCODE_AZTEC, -1, -1, -1,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZABCDEFGHIJKLMNOPQRSTUVWXYZ"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ",
-                    0, 49, 49, "286 chars, 8-bit words, upper" },
-        /*  1*/ { BARCODE_AZTEC, -1, -1, -1,
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890"
-                    "123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890",
-                    0, 79, 79, "900 chars, 10-bit words, numeric" },
-        /*  2*/ { BARCODE_AZTEC, -1, -1, -1,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
-                    0, 91, 91, "980 chars, 10-bit words, mixed" },
-        /*  3*/ { BARCODE_AZTEC, -1, -1, -1,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377"
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ abcdefghijklmnopqrstuvwxyz ~~~~~~~~~~~~~~~~~~~~~~~~~ ?????????????????????????? 12345678901234567890123456 \377\377\377\377\377\377",
-                    0, 113, 113, "1540 chars, 12-bit words, mixed" },
-        /*  4*/ { BARCODE_AZRUNE, -1, -1, -1,
-                    "255",
-                    0, 11, 11, "3 chars, AZRUNE" },
-    };
-    const int data_size = ARRAY_SIZE(data);
-    int i, length, ret;
-    struct zint_symbol *symbol;
-
-    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
-
-    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
-        return;
-    }
-
-    for (i = 0; i < data_size; i++) {
-        int j;
-
-        if (testContinue(p_ctx, i)) continue;
-
-        diff_encode = diff_buffer = 0;
-
-        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            symbol = ZBarcode_Create();
-            assert_nonnull(symbol, "Symbol not created\n");
-
-            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                                        data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
-                                        data[i].data, -1, debug);
-
-            start = clock();
-            ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-            diff_encode += clock() - start;
-            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
-                        i, ret, data[i].ret, symbol->errtxt);
-
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
-                        i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
-                        i, symbol->width, data[i].expected_width, data[i].data);
-
-            start = clock();
-            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
-            diff_buffer += clock() - start;
-            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-
-            ZBarcode_Delete(symbol);
-        }
-
-        printf("%s: diff_encode %gms, diff_buffer %gms\n",
-                data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
-
-        total_encode += diff_encode;
-        total_buffer += diff_buffer;
-    }
-    if (p_ctx->index != -1) {
-        printf("totals: encode %gms, buffer %gms\n",
-                total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
-    }
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -4287,7 +4171,6 @@ int main(int argc, char *argv[]) {
         { "test_rt", test_rt },
         { "test_rt_segs", test_rt_segs },
         { "test_fuzz", test_fuzz },
-        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

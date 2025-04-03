@@ -887,6 +887,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
     unsigned int *data_part;
     unsigned int *ecc_part;
     float ecc_ratio;
+    int dim;
 
     if (gs1 && reader_init) {
         return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 501, "Cannot use Reader Initialisation in GS1 mode");
@@ -1283,9 +1284,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             }
             symbol->row_height[y - offset] = 1;
         }
-        symbol->height = 27 - (2 * offset);
-        symbol->rows = 27 - (2 * offset);
-        symbol->width = 27 - (2 * offset);
+        dim = 27 - (2 * offset);
     } else {
         const int offset = AztecOffset[layers - 1];
         const int end_offset = 151 - offset;
@@ -1300,10 +1299,11 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             }
             symbol->row_height[y - offset] = 1;
         }
-        symbol->height = 151 - (2 * offset);
-        symbol->rows = 151 - (2 * offset);
-        symbol->width = 151 - (2 * offset);
+        dim = 151 - (2 * offset);
     }
+    symbol->height = dim;
+    symbol->rows = dim;
+    symbol->width = dim;
 
     return error_number;
 }

@@ -535,7 +535,7 @@ INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, cons
 }
 
 /* Whether `symbology` can have row binding */
-INTERNAL int is_stackable(const int symbology) {
+INTERNAL int is_bindable(const int symbology) {
     if (symbology < BARCODE_PHARMA_TWO && symbology != BARCODE_POSTNET) {
         return 1;
     }
@@ -544,6 +544,7 @@ INTERNAL int is_stackable(const int symbology) {
         case BARCODE_CODE128AB:
         case BARCODE_ISBNX:
         case BARCODE_EAN14:
+        case BARCODE_VIN:
         case BARCODE_NVE18:
         case BARCODE_KOREAPOST:
         case BARCODE_PLESSEY:
@@ -551,7 +552,13 @@ INTERNAL int is_stackable(const int symbology) {
         case BARCODE_ITF14:
         case BARCODE_CODE32:
         case BARCODE_CODABLOCKF:
+        case BARCODE_DPD:
+        case BARCODE_HIBC_128:
+        case BARCODE_HIBC_39:
         case BARCODE_HIBC_BLOCKF:
+        case BARCODE_UPU_S10:
+        case BARCODE_CHANNEL:
+        case BARCODE_BC412:
             return 1;
             break;
     }

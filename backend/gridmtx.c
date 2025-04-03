@@ -363,88 +363,67 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
             switch (current_mode) {
                 case 0:
                     switch (next_mode) {
-                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp);
-                            break;
-                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp);
-                            break;
-                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp);
-                            break;
-                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp);
-                            break;
-                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp);
-                            break;
-                        case GM_BYTE: bp = bin_append_posn(6, 4, binary, bp);
-                            break;
+                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp); break;
+                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp); break;
+                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp); break;
+                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp); break;
+                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp); break;
+                        case GM_BYTE: bp = bin_append_posn(6, 4, binary, bp); break;
                     }
                     break;
                 case GM_CHINESE:
                     switch (next_mode) {
-                        case GM_NUMBER: bp = bin_append_posn(8161, 13, binary, bp);
-                            break;
-                        case GM_LOWER: bp = bin_append_posn(8162, 13, binary, bp);
-                            break;
-                        case GM_UPPER: bp = bin_append_posn(8163, 13, binary, bp);
-                            break;
-                        case GM_MIXED: bp = bin_append_posn(8164, 13, binary, bp);
-                            break;
-                        case GM_BYTE: bp = bin_append_posn(8165, 13, binary, bp);
-                            break;
+                        case GM_NUMBER: bp = bin_append_posn(8161, 13, binary, bp); break;
+                        case GM_LOWER: bp = bin_append_posn(8162, 13, binary, bp); break;
+                        case GM_UPPER: bp = bin_append_posn(8163, 13, binary, bp); break;
+                        case GM_MIXED: bp = bin_append_posn(8164, 13, binary, bp); break;
+                        case GM_BYTE: bp = bin_append_posn(8165, 13, binary, bp); break;
                     }
                     break;
                 case GM_NUMBER:
                     /* add numeric block padding value */
                     switch (p) {
-                        case 1: binary[number_pad_posn] = '1';
+                        case 1:
+                            binary[number_pad_posn] = '1';
                             binary[number_pad_posn + 1] = '0';
                             break; /* 2 pad digits */
-                        case 2: binary[number_pad_posn] = '0';
+                        case 2:
+                            binary[number_pad_posn] = '0';
                             binary[number_pad_posn + 1] = '1';
                             break; /* 1 pad digits */
-                        case 3: binary[number_pad_posn] = '0';
+                        case 3:
+                            binary[number_pad_posn] = '0';
                             binary[number_pad_posn + 1] = '0';
                             break; /* 0 pad digits */
                     }
                     switch (next_mode) {
-                        case GM_CHINESE: bp = bin_append_posn(1019, 10, binary, bp);
-                            break;
-                        case GM_LOWER: bp = bin_append_posn(1020, 10, binary, bp);
-                            break;
-                        case GM_UPPER: bp = bin_append_posn(1021, 10, binary, bp);
-                            break;
-                        case GM_MIXED: bp = bin_append_posn(1022, 10, binary, bp);
-                            break;
-                        case GM_BYTE: bp = bin_append_posn(1023, 10, binary, bp);
-                            break;
+                        case GM_CHINESE: bp = bin_append_posn(1019, 10, binary, bp); break;
+                        case GM_LOWER: bp = bin_append_posn(1020, 10, binary, bp); break;
+                        case GM_UPPER: bp = bin_append_posn(1021, 10, binary, bp); break;
+                        case GM_MIXED: bp = bin_append_posn(1022, 10, binary, bp); break;
+                        case GM_BYTE: bp = bin_append_posn(1023, 10, binary, bp); break;
                     }
                     break;
                 case GM_LOWER:
                 case GM_UPPER:
                     switch (next_mode) {
-                        case GM_CHINESE: bp = bin_append_posn(28, 5, binary, bp);
-                            break;
-                        case GM_NUMBER: bp = bin_append_posn(29, 5, binary, bp);
-                            break;
+                        case GM_CHINESE: bp = bin_append_posn(28, 5, binary, bp); break;
+                        case GM_NUMBER: bp = bin_append_posn(29, 5, binary, bp); break;
                         case GM_LOWER:
-                        case GM_UPPER: bp = bin_append_posn(30, 5, binary, bp);
+                        case GM_UPPER:
+                            bp = bin_append_posn(30, 5, binary, bp);
                             break;
-                        case GM_MIXED: bp = bin_append_posn(124, 7, binary, bp);
-                            break;
-                        case GM_BYTE: bp = bin_append_posn(126, 7, binary, bp);
-                            break;
+                        case GM_MIXED: bp = bin_append_posn(124, 7, binary, bp); break;
+                        case GM_BYTE: bp = bin_append_posn(126, 7, binary, bp); break;
                     }
                     break;
                 case GM_MIXED:
                     switch (next_mode) {
-                        case GM_CHINESE: bp = bin_append_posn(1009, 10, binary, bp);
-                            break;
-                        case GM_NUMBER: bp = bin_append_posn(1010, 10, binary, bp);
-                            break;
-                        case GM_LOWER: bp = bin_append_posn(1011, 10, binary, bp);
-                            break;
-                        case GM_UPPER: bp = bin_append_posn(1012, 10, binary, bp);
-                            break;
-                        case GM_BYTE: bp = bin_append_posn(1015, 10, binary, bp);
-                            break;
+                        case GM_CHINESE: bp = bin_append_posn(1009, 10, binary, bp); break;
+                        case GM_NUMBER: bp = bin_append_posn(1010, 10, binary, bp); break;
+                        case GM_LOWER: bp = bin_append_posn(1011, 10, binary, bp); break;
+                        case GM_UPPER: bp = bin_append_posn(1012, 10, binary, bp); break;
+                        case GM_BYTE: bp = bin_append_posn(1015, 10, binary, bp); break;
                     }
                     break;
                 case GM_BYTE:
@@ -452,33 +431,22 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
                     gm_add_byte_count(binary, byte_count_posn, byte_count);
                     byte_count = 0;
                     switch (next_mode) {
-                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp);
-                            break;
-                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp);
-                            break;
-                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp);
-                            break;
-                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp);
-                            break;
-                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp);
-                            break;
+                        case GM_CHINESE: bp = bin_append_posn(1, 4, binary, bp); break;
+                        case GM_NUMBER: bp = bin_append_posn(2, 4, binary, bp); break;
+                        case GM_LOWER: bp = bin_append_posn(3, 4, binary, bp); break;
+                        case GM_UPPER: bp = bin_append_posn(4, 4, binary, bp); break;
+                        case GM_MIXED: bp = bin_append_posn(5, 4, binary, bp); break;
                     }
                     break;
             }
             if (debug_print) {
                 switch (next_mode) {
-                    case GM_CHINESE: fputs("CHIN ", stdout);
-                        break;
-                    case GM_NUMBER: fputs("NUMB ", stdout);
-                        break;
-                    case GM_LOWER: fputs("LOWR ", stdout);
-                        break;
-                    case GM_UPPER: fputs("UPPR ", stdout);
-                        break;
-                    case GM_MIXED: fputs("MIXD ", stdout);
-                        break;
-                    case GM_BYTE: fputs("BYTE ", stdout);
-                        break;
+                    case GM_CHINESE: fputs("CHIN ", stdout); break;
+                    case GM_NUMBER: fputs("NUMB ", stdout); break;
+                    case GM_LOWER: fputs("LOWR ", stdout); break;
+                    case GM_UPPER: fputs("UPPR ", stdout); break;
+                    case GM_MIXED: fputs("MIXD ", stdout); break;
+                    case GM_BYTE: fputs("BYTE ", stdout); break;
                 }
             }
         }
@@ -575,18 +543,12 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
 
                 if (ppos != -1) {
                     switch (punt) {
-                        case ' ': glyph = 0;
-                            break;
-                        case '+': glyph = 3;
-                            break;
-                        case '-': glyph = 6;
-                            break;
-                        case '.': glyph = 9;
-                            break;
-                        case ',': glyph = 12;
-                            break;
-                        case 13: glyph = 15;
-                            break;
+                        case ' ': glyph = 0; break;
+                        case '+': glyph = 3; break;
+                        case '-': glyph = 6; break;
+                        case '.': glyph = 9; break;
+                        case ',': glyph = 12; break;
+                        case 13: glyph = 15; break;
                     }
                     glyph += ppos;
                     glyph += 1000;
@@ -726,13 +688,16 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
     if (current_mode == GM_NUMBER) {
         /* add numeric block padding value */
         switch (p) {
-            case 1: binary[number_pad_posn] = '1';
+            case 1:
+                binary[number_pad_posn] = '1';
                 binary[number_pad_posn + 1] = '0';
                 break; /* 2 pad digits */
-            case 2: binary[number_pad_posn] = '0';
+            case 2:
+                binary[number_pad_posn] = '0';
                 binary[number_pad_posn + 1] = '1';
                 break; /* 1 pad digit */
-            case 3: binary[number_pad_posn] = '0';
+            case 3:
+                binary[number_pad_posn] = '0';
                 binary[number_pad_posn + 1] = '0';
                 break; /* 0 pad digits */
         }
@@ -745,17 +710,14 @@ static int gm_encode(unsigned int ddata[], const int length, char binary[], cons
 
     /* Add "end of data" character */
     switch (current_mode) {
-        case GM_CHINESE: bp = bin_append_posn(8160, 13, binary, bp);
-            break;
-        case GM_NUMBER: bp = bin_append_posn(1018, 10, binary, bp);
-            break;
+        case GM_CHINESE: bp = bin_append_posn(8160, 13, binary, bp); break;
+        case GM_NUMBER: bp = bin_append_posn(1018, 10, binary, bp); break;
         case GM_LOWER:
-        case GM_UPPER: bp = bin_append_posn(27, 5, binary, bp);
+        case GM_UPPER:
+            bp = bin_append_posn(27, 5, binary, bp);
             break;
-        case GM_MIXED: bp = bin_append_posn(1008, 10, binary, bp);
-            break;
-        case GM_BYTE: bp = bin_append_posn(0, 4, binary, bp);
-            break;
+        case GM_MIXED: bp = bin_append_posn(1008, 10, binary, bp); break;
+        case GM_BYTE: bp = bin_append_posn(0, 4, binary, bp); break;
     }
 
     if (bp > 9191) {
@@ -1187,14 +1149,10 @@ INTERNAL int gridmatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
 
     data_max = 1313;
     switch (ecc_level) {
-        case 2: data_max = 1167;
-            break;
-        case 3: data_max = 1021;
-            break;
-        case 4: data_max = 875;
-            break;
-        case 5: data_max = 729;
-            break;
+        case 2: data_max = 1167; break;
+        case 3: data_max = 1021; break;
+        case 4: data_max = 875; break;
+        case 5: data_max = 729; break;
     }
 
     if (data_cw > data_max) {

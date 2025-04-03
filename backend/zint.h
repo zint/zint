@@ -33,7 +33,10 @@
 /*
  * Version: 2.15.0.9 (dev) (see "zintconfig.h")
  *
- * For documentation, see "../docs/manual.txt" or "../docs/manual.html" or online at
+ * For documentation, see "../docs/manual.txt" or "../docs/manual.html" or the
+ * PDF manual for 2.15.0 at
+ * https://sourceforge.net/projects/zint/files/zint/2.15.0/manual.pdf/download
+ * or online at
  * https://zint.org.uk/manual/
  */
 
@@ -366,6 +369,7 @@ extern "C" {
 #define ZINT_CAP_MASK               0x0800  /* Is mask selectable? */
 #define ZINT_CAP_STRUCTAPP          0x1000  /* Supports Structured Append? */
 #define ZINT_CAP_COMPLIANT_HEIGHT   0x2000  /* Has compliant height? */
+#define ZINT_CAP_BINDABLE           0x4000  /* Can set row separators? */
 
 /* The largest amount of data that can be encoded is 4350 4-byte UTF-8 chars in Han Xin Code */
 #define ZINT_MAX_DATA_LEN       17400

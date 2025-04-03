@@ -1,4 +1,4 @@
-% backend/tests/README 2024-11-18
+% backend/tests/README 2025-04-03
 
 Zint backend test suite
 -----------------------
@@ -124,6 +124,18 @@ To run a test against BWIPP (if any), use '-d 128':
 To run a test against ZXing-C++ (if any), use '-d 512':
 
   backend/tests/test_rss -d 512
+
+  ------------------------------------------------------------------------
+  For testing against ZXing-C++, the "diagnostics2" branch from
+  https://github.com/gitlost/zxing-cpp is required, built with
+  ZXING_EXAMPLE_DECODER defined, and "zxingcppdecoder" placed in PATH,
+  e.g.:
+    git clone --branch diagnostics2 https://github.com/gitlost/zxing-cpp \
+        zxing-cpp-diagnostics2
+    cd zxing-cpp-diagnostics2 && mkdir build && cd build
+    cmake -DCMAKE_INSTALL_PREFIX=/usr/local -DZXING_EXAMPLE_DECODER=ON ..
+    make && sudo make install
+  ------------------------------------------------------------------------
 
 (see also <project-dir>/backend/tests/tools/run_zxingcpp_tests.sh)
 

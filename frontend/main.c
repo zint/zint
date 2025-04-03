@@ -2129,15 +2129,15 @@ int main(int argc, char **argv) {
 
     if (data_arg_num) {
         const int symbology = my_symbol->symbology;
-        const unsigned int cap = ZBarcode_Cap(symbology, ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE |
-                                    ZINT_CAP_FULL_MULTIBYTE | ZINT_CAP_MASK);
+        const unsigned int cap = ZBarcode_Cap(symbology, ZINT_CAP_EXTENDABLE | ZINT_CAP_FULL_MULTIBYTE
+                                    | ZINT_CAP_MASK | ZINT_CAP_BINDABLE);
         if (fullmultibyte && (cap & ZINT_CAP_FULL_MULTIBYTE)) {
             my_symbol->option_3 = ZINT_FULL_MULTIBYTE;
         }
         if (mask && (cap & ZINT_CAP_MASK)) {
             my_symbol->option_3 |= mask << 8;
         }
-        if (separator && (cap & ZINT_CAP_STACKABLE)) {
+        if (separator && (cap & ZINT_CAP_BINDABLE)) {
             my_symbol->option_3 = separator;
         }
         if (addon_gap && (cap & ZINT_CAP_EXTENDABLE)) {

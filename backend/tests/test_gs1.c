@@ -2346,7 +2346,7 @@ static void test_input_mode(const testCtx *const p_ctx) {
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
 
-    struct zint_symbol previous_symbol;
+    struct zint_symbol *previous_symbol = NULL;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -2357,18 +2357,21 @@ static void test_input_mode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
         if (p_ctx->index == -1 && data[i].compare_previous) {
-            ret = testUtilSymbolCmp(symbol, &previous_symbol);
+            ret = testUtilSymbolCmp(symbol, previous_symbol);
             assert_zero(ret, "i:%d testUtilSymbolCmp ret %d != 0\n", i, ret);
         }
-        memcpy(&previous_symbol, symbol, sizeof(previous_symbol));
-
-        ZBarcode_Delete(symbol);
+        ZBarcode_Delete(previous_symbol);
+        previous_symbol = symbol;
     }
+    ZBarcode_Delete(previous_symbol);
 
     testFinish();
 }

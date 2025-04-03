@@ -117,7 +117,8 @@ static void test_to_upper(const testCtx *const p_ctx) {
         buf[length] = '\0';
 
         to_upper(buf, length);
-        assert_zero(strcmp((const char *) buf, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, buf, data[i].expected);
+        assert_zero(strcmp((const char *) buf, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, buf, data[i].expected);
     }
 
     testFinish();
@@ -359,7 +360,8 @@ static void test_not_sane_lookup(const testCtx *const p_ctx) {
         if (ret == 0) {
             int j;
             for (j = 0; j < length; j++) {
-                assert_equal(posns[j], data[i].posns[j], "i:%d posns[%d] %d != expected posns[%d] %d\n", i, j, posns[j], j, data[i].posns[j]);
+                assert_equal(posns[j], data[i].posns[j], "i:%d posns[%d] %d != expected posns[%d] %d\n",
+                            i, j, posns[j], j, data[i].posns[j]);
             }
         }
     }
@@ -407,7 +409,8 @@ static void test_errtxt(const testCtx *const p_ctx) {
 
         ret = errtxt(data[i].error_number, symbol, data[i].err_id, data[i].msg);
         assert_equal(ret, data[i].error_number, "i:%d ret %d != %d\n", i, ret, data[i].error_number);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected);
     }
 
     testFinish();
@@ -539,7 +542,8 @@ static void test_errtxtf(const testCtx *const p_ctx) {
         if (data[i].debug_test) symbol->debug |= ZINT_DEBUG_TEST;
 
         if (data[i].num_args == 0) {
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, NULL /*suppress -Wformat-security*/);
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt,
+                            NULL /*suppress -Wformat-security*/);
         } else if (data[i].num_args == 1) {
             if (data[i].i_arg != -1) {
                 ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg);
@@ -551,29 +555,36 @@ static void test_errtxtf(const testCtx *const p_ctx) {
         } else if (data[i].num_args == 2) {
             if (data[i].i_arg != -1) {
                 if (data[i].s_arg != NULL) {
-                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg);
+                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
+                                    data[i].s_arg);
                 } else {
-                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].f_arg);
+                    ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg,
+                                    data[i].f_arg);
                 }
             } else {
                 assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg, data[i].f_arg);
+                ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].s_arg,
+                                data[i].f_arg);
             }
         } else if (data[i].num_args == 3) {
             assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg, data[i].f_arg);
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, data[i].i_arg, data[i].s_arg,
+                            data[i].f_arg);
         } else if (data[i].num_args == 9) { /* Special case max, assuming 4th arg "%d", 5th arg "%s" */
             assert_nonnull(data[i].s_arg, "i:%d num_args:%d data[i].s_arg NULL", i, data[i].num_args);
-            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, 2100000001, 2100000002, 3333, data[i].i_arg, data[i].s_arg, 2100000006, 2100000007, 2100000008, 2100000009);
+            ret = errtxtf(data[i].error_number, symbol, data[i].err_id, data[i].fmt, 2100000001, 2100000002, 3333,
+                            data[i].i_arg, data[i].s_arg, 2100000006, 2100000007, 2100000008, 2100000009);
         } else {
             assert_nonnull(NULL, "i:%d num_args:%d > 3 && != 9\n", i, data[i].num_args);
         }
         if (data[i].ret == -1) {
-            assert_equal(ret, data[i].error_number, "i:%d ret %d != %d (%s)\n", i, ret, data[i].error_number, symbol->errtxt);
+            assert_equal(ret, data[i].error_number, "i:%d ret %d != %d (%s)\n",
+                        i, ret, data[i].error_number, symbol->errtxt);
         } else {
             assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
         }
-        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected);
     }
 
     testFinish();
@@ -700,9 +711,11 @@ static void test_utf8_to_unicode(const testCtx *const p_ctx) {
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
         if (ret == 0) {
             int j;
-            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n", i, ret_length, data[i].ret_length);
+            assert_equal(ret_length, data[i].ret_length, "i:%d ret_length %d != %d\n",
+                        i, ret_length, data[i].ret_length);
             for (j = 0; j < ret_length; j++) {
-                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%d] %04X != %04X\n", i, j, vals[j], data[i].expected_vals[j]);
+                assert_equal(vals[j], data[i].expected_vals[j], "i:%d vals[%d] %04X != %04X\n",
+                            i, j, vals[j], data[i].expected_vals[j]);
             }
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
@@ -920,7 +933,8 @@ static void test_hrt_cpy_cat_nochk(const testCtx *const p_ctx) {
 
         expected_length = data[i].expected_length == -1 ? (int) strlen(data[i].expected) : data[i].expected_length;
 
-        hrt_cpy_cat_nochk(symbol, TCU(data[i].source), data[i].length, data[i].separator, TCU(data[i].cat), data[i].cat_length);
+        hrt_cpy_cat_nochk(symbol, TCU(data[i].source), data[i].length, data[i].separator, TCU(data[i].cat),
+                            data[i].cat_length);
 
         if (p_ctx->index != -1 && (debug & ZINT_DEBUG_TEST_PRINT)) {
             for (j = 0; j < symbol->text_length; j++) {
@@ -1243,8 +1257,10 @@ static void test_rt_printf_256(const testCtx *const p_ctx) {
 
         if (data[i].num_args == 1) {
             ret = rt_printf_256(symbol, data[i].fmt, data[i].data1);
+            assert_zero(ret, "i:%d rt_printf_256 1 arg ret %d != 0\n", i, ret);
         } else if (data[i].num_args == 2) {
             ret = rt_printf_256(symbol, data[i].fmt, data[i].data1, data[i].data2);
+            assert_zero(ret, "i:%d rt_printf_256 2 args ret %d != 0\n", i, ret);
         } else {
             assert_zero(1, "i:%d, bad num_args\n", i);
         }
@@ -1323,10 +1339,13 @@ static void test_set_height(const testCtx *const p_ctx) {
         }
         symbol->height = data[i].height;
 
-        ret = set_height(symbol, data[i].min_row_height, data[i].default_height, data[i].max_height, data[i].no_errtxt);
+        ret = set_height(symbol, data[i].min_row_height, data[i].default_height, data[i].max_height,
+                        data[i].no_errtxt);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-        assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n", i, symbol->height, data[i].expected_height);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->height, data[i].expected_height, "i:%d symbol->height %g != %g\n",
+                    i, symbol->height, data[i].expected_height);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d errtxt %s != %s\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
     }
 
     testFinish();
@@ -1350,7 +1369,7 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
     const int data_size = ARRAY_SIZE(data);
     int i;
 
-    struct zint_symbol s_symbol;
+    struct zint_symbol s_symbol = {0};
     struct zint_symbol *symbol = &s_symbol;
 
     testStart(p_ctx->func_name);
@@ -1362,8 +1381,11 @@ static void test_debug_test_codeword_dump_int(const testCtx *const p_ctx) {
         if (testContinue(p_ctx, i)) continue;
 
         debug_test_codeword_dump_int(symbol, data[i].codewords, data[i].length);
-        assert_nonzero(strlen(symbol->errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n", i, symbol->errtxt, (int) strlen(symbol->errtxt));
-        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n", i, symbol->errtxt, data[i].expected, (int) strlen(symbol->errtxt), (int) strlen(data[i].expected));
+        assert_nonzero(strlen(symbol->errtxt) < 92, "i:%d strlen(%s) >= 92 (%d)\n",
+                    i, symbol->errtxt, (int) strlen(symbol->errtxt));
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0 (%d, %d)\n",
+                    i, symbol->errtxt, data[i].expected, (int) strlen(symbol->errtxt),
+                    (int) strlen(data[i].expected));
     }
 
     testFinish();

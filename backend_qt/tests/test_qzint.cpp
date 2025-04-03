@@ -384,12 +384,12 @@ private slots:
         QTest::addColumn<int>("cap_flag");
 
         QTest::newRow("BARCODE_CODE11") << BARCODE_CODE11
-            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE);
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128
-            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_READER_INIT);
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_READER_INIT | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_EANX") << BARCODE_EANX
             << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
-                | ZINT_CAP_COMPLIANT_HEIGHT);
+                | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_EANX_CC") << BARCODE_EANX_CC
             << (ZINT_CAP_HRT | ZINT_CAP_EXTENDABLE | ZINT_CAP_COMPOSITE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES
                 | ZINT_CAP_COMPLIANT_HEIGHT);
@@ -420,6 +420,7 @@ private slots:
         QCOMPARE(bc.hasMask(), (cap_flag & ZINT_CAP_MASK) != 0);
         QCOMPARE(bc.supportsStructApp(), (cap_flag & ZINT_CAP_STRUCTAPP) != 0);
         QCOMPARE(bc.hasCompliantHeight(), (cap_flag & ZINT_CAP_COMPLIANT_HEIGHT) != 0);
+        QCOMPARE(bc.isBindable(), (cap_flag & ZINT_CAP_BINDABLE) != 0);
     }
 
     void renderTest_data()

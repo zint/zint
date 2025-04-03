@@ -46,9 +46,12 @@ static void test_large(const testCtx *const p_ctx) {
         /*  0*/ { 200, '0', 2940, 0, "" }, /* 2940 largest Code Set C data that fits in 200x199 HxW */
         /*  1*/ { 200, '0', 2941, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
         /*  2*/ { 200, '9', 200, 0, "" }, /* Changes a number of mask scores re pre-Rev. 4 version, but best score still the same (7) */
-        /*  3*/ { 201, '0', 2940, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol width '201' is too large (maximum 200)" },
-        /*  4*/ { 201, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 526: Resulting symbol size '202x201' (HxW) is too large (maximum 200x200)" }, /* Height > 200 also */
-        /*  5*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
+        /*  3*/ { 200, '0', 2974, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '203' is too large (maximum 200)" }, /* Width > 200 also */
+        /*  4*/ { 200, 'A', 1470, 0, "" },
+        /*  5*/ { 200, 'A', 1471, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
+        /*  6*/ { 200, '\240', 1225, 0, "" },
+        /*  7*/ { 200, '\240', 1226, ZINT_ERROR_INVALID_OPTION, "Error 528: Resulting symbol height '201' is too large (maximum 200)" },
+        /*  8*/ { 30, '\001', 71, 0, "" }, /* Codeword length 72, ECC length 39, for ND + 1 == 112 */
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -105,11 +108,11 @@ static void test_options(const testCtx *const p_ctx) {
         /*  2*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "1234567890", 0, 12, 19, "", 19, 2 << 8 },
         /*  3*/ { -1, -1, -1, 12, -1, { 0, 0, "" }, "1234567890", 0, 19, 12, "", 12, 2 << 8 },
         /*  4*/ { -1, -1, -1, 5, -1, { 0, 0, "" }, "1234567890", 0, 44, 5, "", 5, 6 << 8 },
-        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Resulting symbol width '4' is too small (minimum 5)", 4, 0 }, /* Cols < 5 */
-        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 529: Resulting symbol height '3' is too small (minimum 5)", 200, 0 }, /* Not enough data - height 3 too small */
+        /*  5*/ { -1, -1, -1, 4, -1, { 0, 0, "" }, "1234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '4' is out of range (5 to 200)", 4, 0 }, /* Cols < 5 */
+        /*  6*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890", 0, 5, 200, "", 200, 7 << 8 }, /* Note used to fail - now sets  height to at least 5 */
         /*  7*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "1234567890123456789012345678901234567890", 0, 5, 200, "", 200, 7 << 8 }, /* Cols 200 max */
         /*  8*/ { -1, -1, -1, 200, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", 0, 7, 200, "", 200, 4 << 8 },
-        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 528: Resulting symbol width '201' is too large (maximum 200)", 201, 0 },
+        /*  9*/ { -1, -1, -1, 201, -1, { 0, 0, "" }, "12345678901234567890123456789012345678901234567890123456789012345678901234567890", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 527: Number of columns '201' is out of range (5 to 200)", 201, 0 },
         /* 10*/ { -1, -1, -1, -1, 10 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 1 << 8 }, /* Mask > 8 + 1 ignored */
         /* 11*/ { -1, -1, -1, -1, 8 << 8, { 0, 0, "" }, "1", 0, 9, 14, "", 14, 8 << 8 },
         /* 12*/ { -1, -1, -1, 19, -1, { 0, 0, "" }, "ABCDE", 0, 12, 19, "", 19, 3 << 8 },
@@ -1879,84 +1882,6 @@ static void test_generate(const testCtx *const p_ctx) {
     printf("\n    };\n");
 }
 
-#include <time.h>
-
-#define TEST_PERF_ITERATIONS    1000
-
-/* Not a real test, just performance indicator */
-static void test_perf(const testCtx *const p_ctx) {
-    int debug = p_ctx->debug;
-
-    struct item {
-        int symbology;
-        int input_mode;
-        int option_1;
-        int option_2;
-        const char *data;
-        int ret;
-
-        int expected_rows;
-        int expected_width;
-        const char *comment;
-    };
-    static const struct item data[] = {
-        /*  0*/ { BARCODE_DOTCODE, -1, -1, -1,
-                    "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyz&,:#-.$/+%*=^ABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLM"
-                    "NOPQRSTUVWXYZ;<>@[]_`~!||()?{}'123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJK"
-                    "LMNOPQRSTUVWXYZ12345678912345678912345678912345678900001234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFG"
-                    "HIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ12345678901234567"
-                    "890123456789012345678901234567890123456789012345678901234567890123456789012345678901234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcde"
-                    "fghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNO",
-                    0, 124, 185, "960 chars, text/numeric" },
-    };
-    const int data_size = ARRAY_SIZE(data);
-    int i, length, ret;
-
-    clock_t start, total_encode = 0, total_buffer = 0, diff_encode, diff_buffer;
-
-    if (!(debug & ZINT_DEBUG_TEST_PERFORMANCE)) { /* -d 256 */
-        return;
-    }
-
-    for (i = 0; i < data_size; i++) {
-        int j;
-
-        if (testContinue(p_ctx, i)) continue;
-
-        diff_encode = diff_buffer = 0;
-
-        for (j = 0; j < TEST_PERF_ITERATIONS; j++) {
-            struct zint_symbol *symbol = ZBarcode_Create();
-            assert_nonnull(symbol, "Symbol not created\n");
-
-            length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
-
-            start = clock();
-            ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-            diff_encode += clock() - start;
-            assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-
-            start = clock();
-            ret = ZBarcode_Buffer(symbol, 0 /*rotate_angle*/);
-            diff_buffer += clock() - start;
-            assert_zero(ret, "i:%d ZBarcode_Buffer ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
-
-            ZBarcode_Delete(symbol);
-        }
-
-        printf("%s: diff_encode %gms, diff_buffer %gms\n", data[i].comment, diff_encode * 1000.0 / CLOCKS_PER_SEC, diff_buffer * 1000.0 / CLOCKS_PER_SEC);
-
-        total_encode += diff_encode;
-        total_buffer += diff_buffer;
-    }
-    if (p_ctx->index != -1) {
-        printf("totals: encode %gms, buffer %gms\n", total_encode * 1000.0 / CLOCKS_PER_SEC, total_buffer * 1000.0 / CLOCKS_PER_SEC);
-    }
-}
-
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
@@ -1969,7 +1894,6 @@ int main(int argc, char *argv[]) {
         { "test_rt_segs", test_rt_segs },
         { "test_fuzz", test_fuzz },
         { "test_generate", test_generate },
-        { "test_perf", test_perf },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

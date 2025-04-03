@@ -306,14 +306,10 @@ static int dm_look_ahead_test(const unsigned char source[], const int length, co
     }
 
     switch (current_mode) {
-        case DM_C40: c40_count = 0;
-            break;
-        case DM_TEXT: text_count = 0;
-            break;
-        case DM_X12: x12_count = 0;
-            break;
-        case DM_EDIFACT: edf_count = 0;
-            break;
+        case DM_C40: c40_count = 0; break;
+        case DM_TEXT: text_count = 0; break;
+        case DM_X12: x12_count = 0; break;
+        case DM_EDIFACT: edf_count = 0; break;
         case DM_BASE256:
             b256_count = mode_arg == 249 ? DM_MULT_1 : 0; /* Adjusted to use no. of bytes written */
             break;
@@ -656,19 +652,24 @@ static int dm_switch_mode(const int next_mode, unsigned char target[], int tp, i
         case DM_ASCII:
             if (debug_print) fputs("ASC ", stdout);
             break;
-        case DM_C40: target[tp++] = 230;
+        case DM_C40:
+            target[tp++] = 230;
             if (debug_print) fputs("C40 ", stdout);
             break;
-        case DM_TEXT: target[tp++] = 239;
+        case DM_TEXT:
+            target[tp++] = 239;
             if (debug_print) fputs("TEX ", stdout);
             break;
-        case DM_X12: target[tp++] = 238;
+        case DM_X12:
+            target[tp++] = 238;
             if (debug_print) fputs("X12 ", stdout);
             break;
-        case DM_EDIFACT: target[tp++] = 240;
+        case DM_EDIFACT:
+            target[tp++] = 240;
             if (debug_print) fputs("EDI ", stdout);
             break;
-        case DM_BASE256: target[tp++] = 231;
+        case DM_BASE256:
+            target[tp++] = 231;
             *p_b256_start = tp;
             target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */
             if (debug_print) fputs("BAS ", stdout);

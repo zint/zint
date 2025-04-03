@@ -173,45 +173,57 @@ static int pdf_textprocess_switch(const int curtable, const int newtable, unsign
     switch (curtable) {
         case T_ALPHA:
             switch (newtable) {
-                case T_LOWER: chainet[wnet++] = 27; /* LL */
+                case T_LOWER:
+                    chainet[wnet++] = 27; /* LL */
                     break;
-                case T_MIXED: chainet[wnet++] = 28; /* ML */
+                case T_MIXED:
+                    chainet[wnet++] = 28; /* ML */
                     break;
-                case T_PUNCT: chainet[wnet++] = 28; /* ML+PL */
+                case T_PUNCT:
+                    chainet[wnet++] = 28; /* ML+PL */
                     chainet[wnet++] = 25;
                     break;
             }
             break;
         case T_LOWER:
             switch (newtable) {
-                case T_ALPHA: chainet[wnet++] = 28; /* ML+AL */
+                case T_ALPHA:
+                    chainet[wnet++] = 28; /* ML+AL */
                     chainet[wnet++] = 28;
                     break;
-                case T_MIXED: chainet[wnet++] = 28; /* ML */
+                case T_MIXED:
+                    chainet[wnet++] = 28; /* ML */
                     break;
-                case T_PUNCT: chainet[wnet++] = 28; /* ML+PL */
+                case T_PUNCT:
+                    chainet[wnet++] = 28; /* ML+PL */
                     chainet[wnet++] = 25;
                     break;
             }
             break;
         case T_MIXED:
             switch (newtable) {
-                case T_ALPHA: chainet[wnet++] = 28; /* AL */
+                case T_ALPHA:
+                    chainet[wnet++] = 28; /* AL */
                     break;
-                case T_LOWER: chainet[wnet++] = 27; /* LL */
+                case T_LOWER:
+                    chainet[wnet++] = 27; /* LL */
                     break;
-                case T_PUNCT: chainet[wnet++] = 25; /* PL */
+                case T_PUNCT:
+                    chainet[wnet++] = 25; /* PL */
                     break;
             }
             break;
         case T_PUNCT:
             switch (newtable) {
-                case T_ALPHA: chainet[wnet++] = 29; /* AL */
+                case T_ALPHA:
+                    chainet[wnet++] = 29; /* AL */
                     break;
-                case T_LOWER: chainet[wnet++] = 29; /* AL+LL */
+                case T_LOWER:
+                    chainet[wnet++] = 29; /* AL+LL */
                     chainet[wnet++] = 27;
                     break;
-                case T_MIXED: chainet[wnet++] = 29; /* AL+ML */
+                case T_MIXED:
+                    chainet[wnet++] = 29; /* AL+ML */
                     chainet[wnet++] = 28;
                     break;
             }
@@ -1345,24 +1357,15 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
 
     /* 796 - we now take care of the Reed Solomon codes */
     switch (ecc) {
-        case 1: offset = 2;
-            break;
-        case 2: offset = 6;
-            break;
-        case 3: offset = 14;
-            break;
-        case 4: offset = 30;
-            break;
-        case 5: offset = 62;
-            break;
-        case 6: offset = 126;
-            break;
-        case 7: offset = 254;
-            break;
-        case 8: offset = 510;
-            break;
-        default: offset = 0;
-            break;
+        case 1: offset = 2; break;
+        case 2: offset = 6; break;
+        case 3: offset = 14; break;
+        case 4: offset = 30; break;
+        case 5: offset = 62; break;
+        case 6: offset = 126; break;
+        case 7: offset = 254; break;
+        case 8: offset = 510; break;
+        default: offset = 0; break;
     }
 
     for (i = 0; i < mclength; i++) {
@@ -1744,6 +1747,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
     /* Cluster can be 0, 1 or 2 for Cluster(0), Cluster(3) and Cluster(6) */
 
     if (debug_print) fputs("\nInternal row representation:\n", stdout);
+
     for (i = 0; i < symbol->rows; i++) {
         if (debug_print) printf("row %d: ", i);
         bp = 0;

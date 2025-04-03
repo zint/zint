@@ -1,3 +1,4 @@
+/* Test BWIPP against ZXing-C++ (no zint involved) */
 /*
     libzint - the open source barcode library
     Copyright (C) 2025 Robin Stuart <rstuart114@gmail.com>
@@ -29,45 +30,29 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
+#include <math.h>
 #include "testcommon.h"
 
-static int aztec_width(const int bwipp_len) {
-    static const int width_lens[33] = {
-          15 * 15,   19 * 19,   23 * 23,   27 * 27,   31 * 31,   37 * 37,   41 * 41,   45 * 45,   49 * 49,   53 * 53,
-          57 * 57,   61 * 61,   67 * 67,   71 * 71,   75 * 75,   79 * 79,   83 * 83,   87 * 87,   91 * 91,   95 * 95,
-        101 * 101, 105 * 105, 109 * 109, 113 * 113, 117 * 117, 121 * 121, 125 * 125, 131 * 131, 135 * 135, 139 * 139,
-        143 * 143, 147 * 147, 151 * 151,
-    };
-    static const int widths[33] = {
-               15,        19,        23,        27,        31,        37,        41,        45,        49,        53,
-               57,        61,        67,        71,        75,        79,        83,        87,        91,        95,
-              101,       105,       109,       113,       117,       121,       125,       131,       135,       139,
-              143,       147,       151,
-    };
-    int i;
+#define FLAG_FULL_8BIT  0
+#define FLAG_LATIN_1    1
+#define FLAG_ASCII      2
 
-    for (i = ARRAY_SIZE(width_lens) - 1; i >= 0 && width_lens[i] != bwipp_len; i--);
-    return i >= 0 ? widths[i] : 0;
-}
+struct random_item {
+    int data_flag;
+    int symbology;
+    int input_mode;
+    int eci;
+    int option_1;
+    int option_2;
+    int option_3;
+    int output_options;
+    int max_len;
+};
 
-static int cnv_hex_data(const char *hex, char *buf, const int buf_size) {
-    const char *h = hex;
-    const char *const he = hex + strlen(hex);
-    char *str_end;
-    int i;
+typedef int (*random_width_func_t)(const struct random_item *, const int);
 
-    for (i = 0; i < buf_size && h < he; i++) {
-        buf[i] = (char) strtol(h, &str_end, 16);
-        if (str_end == h) {
-            return -1;
-        }
-        h = str_end + 1;
-    }
-    if (i < buf_size) buf[i] = '\0';
-    return i == buf_size ? -1 : i;
-}
-
-static void test_aztec_random(const testCtx *const p_ctx) {
+static void test_bwipp_random(const testCtx *const p_ctx, const struct random_item *rdata,
+                random_width_func_t width_func) {
 #ifndef _WIN32
     int debug = p_ctx->debug;
 
@@ -76,23 +61,15 @@ static void test_aztec_random(const testCtx *const p_ctx) {
     struct zint_symbol *symbol = NULL;
 
 #ifndef _WIN32
-    int symbology = BARCODE_AZTEC;
-    int input_mode = DATA_MODE;
-    int eci = 899;
-    int option_1 = 1;
-    int option_2 = -1;
-    int option_3 = -1;
-    int output_options = -1;
-
     char data_buf[4096];
-    char bwipp_buf[32768];
-    char escaped[8192];
-    char escaped2[8192];
-    char cmp_buf[8192];
-    char cmp_msg[8192];
-    char ret_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
+    char bwipp_buf[0x100000]; /* Megabyte */
+    char escaped[40960];
+    char escaped2[40960];
+    char cmp_buf[0x100000];
+    char cmp_msg[40960];
+    char ret_buf[40960] = {0}; /* Suppress clang -fsanitize=memory false positive */
 
-    const int iterations =  p_ctx->arg ? p_ctx->arg : 10000; /* Use "-a N" to set iterations */
+    const int iterations = p_ctx->arg ? p_ctx->arg : 10000; /* Use "-a N" to set iterations */
 
     /* Requires to be run with "-d 1024" (see ZINT_DEBUG_TEST_BWIPP_ZXINGCPP in "testcommon.h") */
     int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP_ZXINGCPP) && testUtilHaveGhostscript();
@@ -117,31 +94,30 @@ static void test_aztec_random(const testCtx *const p_ctx) {
     for (i = 0; i < iterations; i++) {
         int bwipp_len, cmp_len, ret_len;
 
-        length = arc4random_uniform(1800) + 1;
+        length = arc4random_uniform(rdata->max_len) + 1;
 
         arc4random_buf(data_buf, length);
 
-        testUtilSetSymbol(symbol, symbology, input_mode, eci, option_1, option_2, option_3,
-                            output_options, data_buf, length, debug);
+        testUtilSetSymbol(symbol, rdata->symbology, rdata->input_mode, rdata->eci,
+                            rdata->option_1, rdata->option_2, rdata->option_3, rdata->output_options,
+                            data_buf, length, debug);
 
-        assert_nonzero(testUtilCanBwipp(i, symbol, option_1, option_2, option_3, debug),
+        assert_nonzero(testUtilCanBwipp(i, symbol, rdata->option_1, rdata->option_2, rdata->option_3, debug),
                     "i:%d testUtilCanBwipp != 0\n", i);
         assert_nonzero(testUtilCanZXingCPP(i, symbol, data_buf, length, debug), "i:%d testUtilCanZXingCPP != 0\n", i);
 
         symbol->rows = 0;
-        ret = testUtilBwipp(i, symbol, option_1, option_2, option_3, data_buf, length, NULL, bwipp_buf,
-                    sizeof(bwipp_buf), NULL);
+        ret = testUtilBwipp(i, symbol, rdata->option_1, rdata->option_2, rdata->option_3, data_buf, length, NULL,
+                    bwipp_buf, sizeof(bwipp_buf), NULL);
         assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
 
         bwipp_len = strlen(bwipp_buf);
         assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
 
-        symbol->width = aztec_width(bwipp_len);
-        assert_equal(symbol->width * symbol->width, bwipp_len,
-                    "i:%d symbol->width^2 %d != bwipp_len %d (symbol->width %d)\n",
-                    i, symbol->width * symbol->width, bwipp_len, symbol->width);
+        symbol->width = width_func ? width_func(rdata, bwipp_len) : bwipp_len;
+        assert_nonzero(symbol->width, "i:%d symbol->width zero\n", i);
 
-        ret = testUtilZXingCPP(i, symbol, data_buf, length, bwipp_buf, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf),
+        ret = testUtilZXingCPP(i, symbol, data_buf, length, bwipp_buf, 899 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf),
                                 &cmp_len);
         assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
         /*fprintf(stderr, "cmp_len %d\n", cmp_len);*/
@@ -158,6 +134,162 @@ static void test_aztec_random(const testCtx *const p_ctx) {
 
     testFinish();
 #endif /* _WIN32 */
+}
+
+static int sqrt_width_func(const struct random_item *rdata, const int bwipp_len) {
+    const int width = (int) sqrt(bwipp_len);
+    const int sq = width * width;
+    (void)rdata;
+    if (sq != bwipp_len) {
+        fprintf(stderr, "sqrt_width_func: width %d, bwipp_len %d, sq %d\n", width, bwipp_len, sq);
+    }
+    return sq == bwipp_len? width : 0;
+}
+
+static void test_aztec(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_AZTEC, DATA_MODE, 899, -1, -1, -1, -1, 1600
+    };
+
+    test_bwipp_random(p_ctx, &rdata, sqrt_width_func);
+}
+
+static int codablockf_width_func(const struct random_item *rdata, const int bwipp_len) {
+    const int row_bits = rdata->option_2 * 11 + 2;
+    const int mod = bwipp_len % row_bits;
+    if (mod) {
+        fprintf(stderr, "codablockf_width_func: row_bits %d, bwipp_len %d, mod %d\n", row_bits, bwipp_len, mod);
+    }
+    return mod == 0 ? row_bits : 0;
+}
+
+static void test_codablockf(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_LATIN_1, BARCODE_CODABLOCKF, DATA_MODE, 0, -1, 30 + 5, -1, -1, 500
+    };
+
+    test_bwipp_random(p_ctx, &rdata, codablockf_width_func);
+}
+
+static void test_code128(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_LATIN_1, BARCODE_CODE128, DATA_MODE, 0, -1, -1, -1, -1, 80
+    };
+
+    test_bwipp_random(p_ctx, &rdata, NULL /*width_func*/);
+}
+
+static void test_datamatrix(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_DATAMATRIX, DATA_MODE, 0, -1, 21, DM_SQUARE, -1, 800
+    };
+
+    test_bwipp_random(p_ctx, &rdata, sqrt_width_func);
+}
+
+/* TODO: explore why "zxingcppdecoder" fails */
+#if 0
+static int dotcode_width_func(const struct random_item *rdata, const int bwipp_len) {
+    const int row_bits = rdata->option_2 >= 1 ? bwipp_len / rdata->option_2 : 0;
+    const int mod = row_bits ? bwipp_len % row_bits : -1;
+    if (mod) {
+        fprintf(stderr, "dotcode_width_func: row_bits %d, bwipp_len %d, mod %d\n", row_bits, bwipp_len, mod);
+    }
+    return mod == 0 ? row_bits : 0;
+}
+
+static void test_dotcode(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_DOTCODE, DATA_MODE, 0, -1, 50, -1, -1, 200
+    };
+
+    test_bwipp_random(p_ctx, &rdata, dotcode_width_func);
+}
+#endif
+
+static int micropdf417_width_func(const struct random_item *rdata, const int bwipp_len) {
+    static const short widths[4] = { 38, 55, 82, 99 };
+    const int row_bits = rdata->option_2 >= 1 && rdata->option_2 <= 4 ? widths[rdata->option_2 - 1] : 0;
+    const int mod = row_bits ? bwipp_len % row_bits : -1;
+    if (mod) {
+        fprintf(stderr, "micropdf417_width_func: row_bits %d, bwipp_len %d, mod %d\n", row_bits, bwipp_len, mod);
+    }
+    return mod == 0 ? row_bits : 0;
+}
+
+static void test_micropdf417(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_MICROPDF417, DATA_MODE, 0, -1, 4, -1, -1, 120
+    };
+
+    test_bwipp_random(p_ctx, &rdata, micropdf417_width_func);
+}
+
+static int pdf417_width_func(const struct random_item *rdata, const int bwipp_len) {
+    const int row_bits = (rdata->option_2 + 4) * 17 + 1;
+    const int mod = bwipp_len % row_bits;
+    if (mod) {
+        fprintf(stderr, "pdf417_width_func: row_bits %d, bwipp_len %d, mod %d\n", row_bits, bwipp_len, mod);
+    }
+    return mod == 0 ? row_bits : 0;
+}
+
+static void test_pdf417(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_PDF417, DATA_MODE, 0, -1, 20, -1, -1, 800
+    };
+
+    test_bwipp_random(p_ctx, &rdata, pdf417_width_func);
+}
+
+static void test_qr(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_QRCODE, DATA_MODE, 0, 1, 21, -1, -1, 800
+    };
+
+    test_bwipp_random(p_ctx, &rdata, sqrt_width_func);
+}
+
+static int rmqr_width_func(const struct random_item *rdata, const int bwipp_len) {
+    static const short vers[32] = {
+            43, 59, 77, 99, 139,
+            43, 59, 77, 99, 139,
+        27, 43, 59, 77, 99, 139,
+        27, 43, 59, 77, 99, 139,
+            43, 59, 77, 99, 139,
+            43, 59, 77, 99, 139,
+    };
+    const int row_bits = rdata->option_2 >= 1 && rdata->option_2 <= ARRAY_SIZE(vers) ? vers[rdata->option_2 - 1] : 0;
+    if (row_bits == 0) {
+        fprintf(stderr, "rmqr_width_func: row_bits %d, bwipp_len %d, option_2 %d\n", row_bits, bwipp_len,
+                    rdata->option_2);
+    }
+    return row_bits;
+}
+
+static void test_rmqr(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_FULL_8BIT, BARCODE_RMQR, DATA_MODE, 0, 2, 32, -1, -1, 140
+    };
+
+    test_bwipp_random(p_ctx, &rdata, rmqr_width_func);
+}
+
+static int cnv_hex_data(const char *hex, char *buf, const int buf_size) {
+    const char *h = hex;
+    const char *const he = hex + strlen(hex);
+    char *str_end;
+    int i;
+
+    for (i = 0; i < buf_size && h < he; i++) {
+        buf[i] = (char) strtol(h, &str_end, 16);
+        if (str_end == h) {
+            return -1;
+        }
+        h = str_end + 1;
+    }
+    if (i < buf_size) buf[i] = '\0';
+    return i == buf_size ? -1 : i;
 }
 
 static void test_aztec_bwipjs_354(const testCtx *const p_ctx) {
@@ -281,7 +413,7 @@ static void test_aztec_bwipjs_354(const testCtx *const p_ctx) {
         bwipp_len = strlen(bwipp_buf);
         assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
 
-        symbol->width = aztec_width(bwipp_len);
+        symbol->width = sqrt_width_func(NULL /*rdata*/, bwipp_len);
         assert_equal(symbol->width * symbol->width, bwipp_len,
                     "i:%d symbol->width^2 %d != bwipp_len %d (symbol->width %d)\n",
                     i, symbol->width * symbol->width, bwipp_len, symbol->width);
@@ -304,11 +436,111 @@ static void test_aztec_bwipjs_354(const testCtx *const p_ctx) {
     testFinish();
 }
 
+static void test_codablockf_fnc4_digit(const testCtx *const p_ctx) {
+    int debug = p_ctx->debug;
+
+    struct item {
+        const char *data;
+    };
+    /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+    static const struct item data[] = {
+        /*  0*/ { "EE 9F 56 C8 B6 37 36 37" },
+    };
+    const int data_size = ARRAY_SIZE(data);
+    int i, length, ret;
+    struct zint_symbol *symbol = NULL;
+
+    struct random_item s_rdata = { 0, BARCODE_CODABLOCKF, DATA_MODE, 0, -1, 8 + 5, -1, -1, 0 };
+    struct random_item *rdata = &s_rdata;
+
+    char data_buf[4096];
+    char bwipp_buf[32768];
+    char escaped[8192];
+    char escaped2[8192];
+    char cmp_buf[8192];
+    char cmp_msg[8192];
+    char ret_buf[8192] = {0}; /* Suppress clang -fsanitize=memory false positive */
+
+    /* Requires to be run with "-d 1024" (see ZINT_DEBUG_TEST_BWIPP_ZXINGCPP in "testcommon.h") */
+    int do_bwipp = (debug & ZINT_DEBUG_TEST_BWIPP_ZXINGCPP) && testUtilHaveGhostscript();
+    int do_zxingcpp = (debug & ZINT_DEBUG_TEST_BWIPP_ZXINGCPP) && testUtilHaveZXingCPPDecoder();
+
+    testStartSymbol(p_ctx->func_name, &symbol);
+
+    if (!do_bwipp || !do_zxingcpp) {
+        testSkip("Test requires BWIPP and ZXing-C++");
+        return;
+    }
+
+    for (i = 0; i < data_size; i++) {
+        int bwipp_len, cmp_len, ret_len;
+
+        if (testContinue(p_ctx, i)) continue;
+
+        symbol = ZBarcode_Create();
+        assert_nonnull(symbol, "Symbol not created\n");
+
+        length = cnv_hex_data(data[i].data, data_buf, ARRAY_SIZE(data_buf));
+        assert_nonzero(length, "i:%d cnv_hex_data length zero\n", i);
+
+        #if 0
+        debug_print_escape(TCU(data_buf), length, NULL);
+        printf("\n");
+        #endif
+
+        testUtilSetSymbol(symbol, rdata->symbology, rdata->input_mode, rdata->eci,
+                            rdata->option_1, rdata->option_2, rdata->option_3, rdata->output_options,
+                            data_buf, length, debug);
+
+        assert_nonzero(testUtilCanBwipp(i, symbol, rdata->option_1, rdata->option_2, rdata->option_3, debug),
+                    "i:%d testUtilCanBwipp != 0\n", i);
+        assert_nonzero(testUtilCanZXingCPP(i, symbol, data_buf, length, debug), "i:%d testUtilCanZXingCPP != 0\n", i);
+
+        symbol->rows = 0;
+        ret = testUtilBwipp(i, symbol, rdata->option_1, rdata->option_2, rdata->option_3, data_buf, length, NULL,
+                    bwipp_buf, sizeof(bwipp_buf), NULL);
+        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+
+        bwipp_len = strlen(bwipp_buf);
+        assert_nonzero(bwipp_len, "i:%d bwipp_len %d = 0\n", i, bwipp_len);
+
+        symbol->width = codablockf_width_func(rdata, bwipp_len);
+        assert_nonzero(symbol->width, "i:%d symbol->width == 0\n", i);
+
+        ret = testUtilZXingCPP(i, symbol, data_buf, length, bwipp_buf, 899 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf),
+                    &cmp_len);
+        assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+        /*fprintf(stderr, "cmp_len %d\n", cmp_len);*/
+
+        ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data_buf, length, NULL /*primary*/,
+                    ret_buf, &ret_len);
+        assert_zero(ret, "i:%d %s testUtilZXingCPPCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
+                    i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg,
+                    testUtilEscape(cmp_buf, cmp_len, escaped, sizeof(escaped)),
+                    testUtilEscape(ret_buf, ret_len, escaped2, sizeof(escaped2)));
+
+        ZBarcode_Delete(symbol);
+    }
+
+    testFinish();
+}
+
 int main(int argc, char *argv[]) {
 
     testFunction funcs[] = { /* name, func */
-        { "test_aztec_random", test_aztec_random },
+        { "test_aztec", test_aztec },
+        { "test_codablockf", test_codablockf },
+        { "test_code128", test_code128 },
+        { "test_datamatrix", test_datamatrix },
+        #if 0
+        { "test_dotcode", test_dotcode },
+        #endif
+        { "test_micropdf417", test_micropdf417 },
+        { "test_pdf417", test_pdf417 },
+        { "test_qr", test_qr },
+        { "test_rmqr", test_rmqr },
         { "test_aztec_bwipjs_354", test_aztec_bwipjs_354 },
+        { "test_codablockf_fnc4_digit", test_codablockf_fnc4_digit },
     };
 
     testRun(argc, argv, funcs, ARRAY_SIZE(funcs));

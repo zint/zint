@@ -1293,12 +1293,9 @@ static void qr_add_format_info(unsigned char *grid, const int size, const int ec
     int i;
 
     switch (ecc_level) {
-        case QR_LEVEL_L: format |= 0x08;
-            break;
-        case QR_LEVEL_Q: format |= 0x18;
-            break;
-        case QR_LEVEL_H: format |= 0x10;
-            break;
+        case QR_LEVEL_L: format |= 0x08; break;
+        case QR_LEVEL_Q: format |= 0x18; break;
+        case QR_LEVEL_H: format |= 0x10; break;
     }
 
     seq = qr_annex_c[format];
@@ -2067,14 +2064,10 @@ static int microqr_evaluate(const unsigned char *grid, const int size, const int
     int sum1, sum2, i, filter = 0, retval;
 
     switch (pattern) {
-        case 0: filter = 0x01;
-            break;
-        case 1: filter = 0x02;
-            break;
-        case 2: filter = 0x04;
-            break;
-        case 3: filter = 0x08;
-            break;
+        case 0: filter = 0x01; break;
+        case 1: filter = 0x02; break;
+        case 2: filter = 0x04; break;
+        case 3: filter = 0x08; break;
     }
 
     sum1 = 0;
@@ -2417,8 +2410,6 @@ INTERNAL int upnqr(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned int *ddata = (unsigned int *) z_alloca(sizeof(unsigned int) * length);
     char *mode = (char *) z_alloca(length + 1);
     unsigned char *preprocessed = (unsigned char *) z_alloca(length + 1);
-
-    symbol->eci = 4; /* Set before any processing */
 
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is pattern + 1, so >= 1 and <= 8 */
     if (user_mask > 8) {

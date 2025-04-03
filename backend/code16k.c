@@ -134,7 +134,7 @@ static void c16k_dxsmooth(int list[2][C128_MAX], int *p_indexliste) {
             }
         }
 
-        if (i == 0) { /* first block */
+        if (i == 0) { /* First block */
             if (current == C16K_ABORC) {
                 if ((indexliste == 1) && (length == 2)) {
                     /* Rule 1a */
@@ -383,16 +383,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         printf("FSet: %.*s\n", length, fset);
     }
 
-    /* start with the mode character - Table 2 */
-    m = 0;
-    switch (set[0]) {
-        case 'A': m = 0;
-            break;
-        case 'B': m = 1;
-            break;
-        case 'C': m = 2;
-            break;
-    }
+    /* Start with the mode character - Table 2 */
+    m = set[0] - 'A';
 
     if (symbol->output_options & READER_INIT) {
         if (gs1) {
@@ -409,10 +401,8 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         if (gs1) {
             /* Integrate FNC1 */
             switch (set[0]) {
-                case 'B': m = 3;
-                    break;
-                case 'C': m = 4;
-                    break;
+                case 'B': m = 3; break;
+                case 'C': m = 4; break;
             }
         } else {
             if ((set[0] == 'B') && (set[1] == 'C')) {
@@ -472,14 +462,17 @@ INTERNAL int code16k(struct zint_symbol *symbol, unsigned char source[], int len
         if (!gs1 || source[read] != '\x1D') {
             switch (set[read]) { /* Encode data characters */
                 case 'A':
-                case 'a': c16k_set_a(source[read], values, &bar_characters);
+                case 'a':
+                    c16k_set_a(source[read], values, &bar_characters);
                     read++;
                     break;
                 case 'B':
-                case 'b': (void) c16k_set_b(source[read], values, &bar_characters);
+                case 'b':
+                    (void) c16k_set_b(source[read], values, &bar_characters);
                     read++;
                     break;
-                case 'C': c16k_set_c(source[read], source[read + 1], values, &bar_characters);
+                case 'C':
+                    c16k_set_c(source[read], source[read + 1], values, &bar_characters);
                     read += 2;
                     break;
             }

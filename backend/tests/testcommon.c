@@ -793,6 +793,12 @@ char *testUtilEscape(const char *buffer, const int length, char *escaped, const 
                     sprintf(escaped + i, "\\%.3o", *b);
                 }
                 i += 4;
+            } else if (*b == '\\' || *b == '"') {
+                if (i + 2 < escaped_size) {
+                    escaped[i] = '\\';
+                    escaped[i + 1] = *b;
+                }
+                i += 2;
             } else {
                 escaped[i++] = *b;
             }
@@ -1260,7 +1266,7 @@ int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char 
 }
 
 /* Dump an unsigned int array as hex */
-char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size) {
+char *testUtilUIntArrayDump(const unsigned int *array, const int size, char *dump, const int dump_size) {
     int i, cnt_len = 0;
 
     for (i = 0; i < size; i++) {
@@ -1274,7 +1280,7 @@ char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_
 }
 
 /* Dump an unsigned char array as hex */
-char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size) {
+char *testUtilUCharArrayDump(const unsigned char *array, const int size, char *dump, const int dump_size) {
     int i, cnt_len = 0;
 
     for (i = 0; i < size; i++) {

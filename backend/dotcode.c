@@ -1219,7 +1219,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     int jc, n_dots;
     int data_length, ecc_length;
     int min_dots, min_area;
-    int height, width;
+    int height, width = 0;
     int mask_score[8];
     int user_mask;
     int dot_stream_length;
@@ -1241,6 +1241,14 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     if (symbol->eci > 811799) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 525, "ECI code '%d' out of range (0 to 811799)",
                         symbol->eci);
+    }
+
+    if (symbol->option_2 > 0) {
+        if (symbol->option_2 < 5 || symbol->option_2 > 200) {
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 527,
+                                "Number of columns '%d' is out of range (5 to 200)", symbol->option_2);
+        }
+        width = symbol->option_2;
     }
 
     user_mask = (symbol->option_3 >> 8) & 0x0F; /* User mask is mask + 1, so >= 1 and <= 8 */
@@ -1293,7 +1301,7 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     min_dots = 9 * (data_length + 3 + (data_length / 2)) + 2;
     min_area = min_dots * 2;
 
-    if (symbol->option_2 == 0) {
+    if (width == 0) {
         /* Automatic sizing */
         /* Following Rule 3 (Section 5.2.2) and applying a recommended width to height ratio 3:2 */
         /* Eliminates undersized symbols */
@@ -1334,8 +1342,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
     } else {
         /* User defined width */
 
-        width = symbol->option_2;
-        height = (min_area + (width - 1)) / width;
+        if ((height = (min_area + (width - 1)) / width) < 5) {
+            height = 5;
+        }
 
         if (!((width + height) & 1)) {
             height++;
@@ -1359,9 +1368,9 @@ INTERNAL int dotcode(struct zint_symbol *symbol, struct zint_seg segs[], const i
 
     if ((height < 5) || (width < 5)) {
         assert(height >= 5 || width >= 5); /* If width < 5, min height is 19 */
-        ZEXT errtxtf(0, symbol, 529, "Resulting symbol %1$s '%2$d' is too small (minimum 5)",
-                    width < 5 ? "width" : "height", width < 5 ? width : height);
-        return ZINT_ERROR_INVALID_OPTION;
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 529,
+                            "Resulting symbol %1$s '%2$d' is too small (minimum 5)",
+                            width < 5 ? "width" : "height", width < 5 ? width : height);
     }
 
     n_dots = (height * width) / 2;

@@ -324,7 +324,7 @@ static int dump_plot(struct zint_symbol *symbol) {
                     byt += 1;
                 }
             }
-            if (((i + 1) % 4) == 0) {
+            if ((i + 1) % 4 == 0) {
                 fputc(hex[byt], f);
                 space++;
                 byt = 0;
@@ -335,7 +335,7 @@ static int dump_plot(struct zint_symbol *symbol) {
             }
         }
 
-        if ((symbol->width % 4) != 0) {
+        if (symbol->width % 4 != 0) {
             byt = byt << (4 - (symbol->width % 4));
             fputc(hex[byt], f);
         }
@@ -740,7 +740,7 @@ static int esc_base(struct zint_symbol *symbol, const unsigned char *input_strin
             val = (c1 << 6) | (c2 << 3) | c3;
         }
     } else {
-        if ((c1 >= 0) && (c2 >= 0)) {
+        if (c1 >= 0 && c2 >= 0) {
             val = (c1 << 4) | c2;
         }
     }
@@ -1138,29 +1138,29 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
     }
 
     /* Check other symbol fields */
-    if ((symbol->scale < 0.01f) || (symbol->scale > 200.0f)) {
+    if (symbol->scale < 0.01f || symbol->scale > 200.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 227, "Scale out of range (0.01 to 200)");
     }
-    if ((symbol->dot_size < 0.01f) || (symbol->dot_size > 20.0f)) {
+    if (symbol->dot_size < 0.01f || symbol->dot_size > 20.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 221, "Dot size out of range (0.01 to 20)");
     }
 
-    if ((symbol->height < 0.0f) || (symbol->height > 2000.0f)) { /* Allow for 44 row CODABLOCKF at 45X each */
+    if (symbol->height < 0.0f || symbol->height > 2000.0f) { /* Allow for 44 row CODABLOCKF at 45X each */
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 765, "Height out of range (0 to 2000)");
     }
-    if ((symbol->guard_descent < 0.0f) || (symbol->guard_descent > 50.0f)) {
+    if (symbol->guard_descent < 0.0f || symbol->guard_descent > 50.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 769, "Guard bar descent out of range (0 to 50)");
     }
-    if ((symbol->text_gap < -5.0f) || (symbol->text_gap > 10.0f)) {
+    if (symbol->text_gap < -5.0f || symbol->text_gap > 10.0f) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 219, "Text gap out of range (-5 to 10)");
     }
-    if ((symbol->whitespace_width < 0) || (symbol->whitespace_width > 100)) {
+    if (symbol->whitespace_width < 0 || symbol->whitespace_width > 100) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 766, "Whitespace width out of range (0 to 100)");
     }
-    if ((symbol->whitespace_height < 0) || (symbol->whitespace_height > 100)) {
+    if (symbol->whitespace_height < 0 || symbol->whitespace_height > 100) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 767, "Whitespace height out of range (0 to 100)");
     }
-    if ((symbol->border_width < 0) || (symbol->border_width > 100)) {
+    if (symbol->border_width < 0 || symbol->border_width > 100) {
         return error_tag(ZINT_ERROR_INVALID_OPTION, symbol, 768, "Border width out of range (0 to 100)");
     }
 
@@ -1687,8 +1687,15 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
     if ((cap_flag & ZINT_CAP_HRT) && has_hrt(symbol_id)) {
         result |= ZINT_CAP_HRT;
     }
-    if ((cap_flag & ZINT_CAP_STACKABLE) && is_stackable(symbol_id)) {
-        result |= ZINT_CAP_STACKABLE;
+    if ((cap_flag & ZINT_CAP_STACKABLE) && is_bindable(symbol_id)) {
+        switch (symbol_id) {
+            case BARCODE_CODE16K: /* Stacked are not stackable */
+            case BARCODE_CODE49:
+                break;
+            default:
+                result |= ZINT_CAP_STACKABLE;
+                break;
+        }
     }
     if ((cap_flag & ZINT_CAP_EANUPC) && is_upcean(symbol_id)) {
         result |= ZINT_CAP_EANUPC;
@@ -1823,6 +1830,9 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
                 result |= ZINT_CAP_COMPLIANT_HEIGHT;
                 break;
         }
+    }
+    if ((cap_flag & ZINT_CAP_BINDABLE) && is_bindable(symbol_id)) {
+        result |= ZINT_CAP_BINDABLE;
     }
 
     return result;

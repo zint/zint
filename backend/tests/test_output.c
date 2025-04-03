@@ -209,7 +209,8 @@ INTERNAL int out_quiet_zones_test(const struct zint_symbol *symbol, const int hi
 
 static void test_quiet_zones(const testCtx *const p_ctx) {
     int i, ret;
-    struct zint_symbol symbol = {0};
+    struct zint_symbol s_symbol = {0};
+    struct zint_symbol *symbol = &s_symbol;
     int hide_text = 0;
     int comp_xoffset = 0;
     float left, right, top, bottom;
@@ -220,9 +221,9 @@ static void test_quiet_zones(const testCtx *const p_ctx) {
         if (!ZBarcode_ValidID(i)) continue;
         if (testContinue(p_ctx, i)) continue;
 
-        symbol.symbology = i;
-        symbol.output_options = BARCODE_QUIET_ZONES;
-        ret = out_quiet_zones_test(&symbol, hide_text, comp_xoffset, &left, &right, &top, &bottom);
+        symbol->symbology = i;
+        symbol->output_options = BARCODE_QUIET_ZONES;
+        ret = out_quiet_zones_test(symbol, hide_text, comp_xoffset, &left, &right, &top, &bottom);
         if (i != BARCODE_FLAT && i != BARCODE_BC412) { /* Only two which aren't marked as done */
             assert_nonzero(ret, "i:%d %s not done\n", i, testUtilBarcodeName(i));
         }

@@ -894,6 +894,10 @@ namespace Zint {
         return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_COMPLIANT_HEIGHT);
     }
 
+    bool QZint::isBindable(int symbology) const {
+        return ZBarcode_Cap(symbology ? symbology : m_symbol, ZINT_CAP_BINDABLE);
+    }
+
     /* Whether takes GS1 AI-delimited data */
     bool QZint::takesGS1AIData(int symbology) const {
         if (symbology == 0) {

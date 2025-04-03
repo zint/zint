@@ -921,7 +921,7 @@ INTERNAL int plot_vector(struct zint_symbol *symbol, int rotate_angle, int file_
     }
 
     /* Separator binding for stacked barcodes */
-    if ((symbol->output_options & BARCODE_BIND) && (symbol->rows > 1) && is_stackable(symbol->symbology)) {
+    if ((symbol->output_options & BARCODE_BIND) && symbol->rows > 1 && is_bindable(symbol->symbology)) {
         float sep_xoffset = xoffset;
         float sep_width = symbol->width;
         float sep_height = 1.0f, sep_yoffset, sep_half_height;

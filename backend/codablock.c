@@ -72,10 +72,10 @@ typedef struct sCharacterSetTable {
  * The result is an OR of CodeA, CodeB, CodeC, CodeFNC1, CodeFNC4 depending on the
  * possible Code 128 character sets.
  */
-static int GetPossibleCharacterSet(unsigned char C) {
+static int GetPossibleCharacterSet(const unsigned char C, const int prevNotFNC4) {
     if (C <= '\x1f') /* Control chars */
         return CodeA;
-    if (z_isdigit(C))
+    if (z_isdigit(C) && prevNotFNC4)
         return ZTNum; /* ZTNum = CodeA | CodeB | CodeC */
     if (C == aFNC1) /* FNC1s (GS1) not used */
         return ZTFNC1; /* ZTFNC1 = CodeA | CodeB | CodeC | CodeFNC1 */ /* Not reached */
@@ -93,37 +93,37 @@ static int GetPossibleCharacterSet(unsigned char C) {
  *  int AFollowing, BFollowing  The number of source characters you still may encode in this character set.
  *  int CFollowing              The number of characters encodable in CodeC if we start here.
  */
-static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, const int dataLength) {
+static void CreateCharacterSetTable(CharacterSetTable T[], const unsigned char *data, const int dataLength) {
     int charCur;
     int runChar;
+    int prevNotFNC4;
 
     /* Treat the Data backwards */
     charCur = dataLength - 1;
-    T[charCur].CharacterSet = GetPossibleCharacterSet(data[charCur]);
-    T[charCur].AFollowing = ((T[charCur].CharacterSet & CodeA) == 0) ? 0 : 1;
-    T[charCur].BFollowing = ((T[charCur].CharacterSet & CodeB) == 0) ? 0 : 1;
-    T[charCur].CFollowing = 0;
+    prevNotFNC4 = charCur > 0 ? data[charCur - 1] != aFNC4 : 1;
+    T[charCur].CharacterSet = GetPossibleCharacterSet(data[charCur], prevNotFNC4);
+    T[charCur].AFollowing = T[charCur].CharacterSet & CodeA ? 1 : 0;
+    T[charCur].BFollowing = T[charCur].CharacterSet & CodeB ? 1 : 0;
 
     for (charCur--; charCur >= 0; charCur--) {
-        T[charCur].CharacterSet = GetPossibleCharacterSet(data[charCur]);
-        T[charCur].AFollowing = ((T[charCur].CharacterSet & CodeA) == 0) ? 0 : T[charCur + 1].AFollowing + 1;
-        T[charCur].BFollowing = ((T[charCur].CharacterSet & CodeB) == 0) ? 0 : T[charCur + 1].BFollowing + 1;
-        T[charCur].CFollowing = 0;
+        prevNotFNC4 = charCur > 0 ? data[charCur - 1] != aFNC4 : 1;
+        T[charCur].CharacterSet = GetPossibleCharacterSet(data[charCur], prevNotFNC4);
+        T[charCur].AFollowing = T[charCur].CharacterSet & CodeA ? T[charCur + 1].AFollowing + 1 : 0;
+        T[charCur].BFollowing = T[charCur].CharacterSet & CodeB ? T[charCur + 1].BFollowing + 1 : 0;
     }
     /* Find the CodeC-chains */
     for (charCur = 0; charCur < dataLength; charCur++) {
         T[charCur].CFollowing = 0;
-        if ((T[charCur].CharacterSet & CodeC) != 0) {
+        if (T[charCur].CharacterSet & CodeC) {
             /* CodeC possible */
             runChar = charCur;
             do {
                 /* Whether this is FNC1, whether next is */
                 /* numeric */
                 if (T[runChar].CharacterSet == ZTFNC1) /* FNC1s (GS1) not used */
-                    ++(T[charCur].CFollowing); /* Not reached */
+                    T[charCur].CFollowing++; /* Not reached */
                 else {
-                    ++runChar;
-                    if (runChar >= dataLength)
+                    if (++runChar >= dataLength)
                         break;
                     /* Only a Number may follow */
                     if (T[runChar].CharacterSet == ZTNum)
@@ -141,11 +141,9 @@ static void CreateCharacterSetTable(CharacterSetTable T[], unsigned char *data, 
  * one bundle into the line (up to here). This is calculated online because
  * it depends on the space in the line.
  */
-static int RemainingDigits(CharacterSetTable *T, int charCur, int emptyColumns) {
-    int digitCount; /* Numerical digits fitting in the line */
-    int runChar;
-    runChar = charCur;
-    digitCount = 0;
+static int RemainingDigits(const CharacterSetTable T[], const int charCur, int emptyColumns) {
+    int digitCount = 0; /* Numerical digits fitting in the line */
+    int runChar = charCur;
     while (emptyColumns > 0 && runChar < charCur + T[charCur].CFollowing) {
         if (T[runChar].CharacterSet != ZTFNC1) {
             /* NOT FNC1 */
@@ -168,8 +166,8 @@ static int RemainingDigits(CharacterSetTable *T, int charCur, int emptyColumns) 
  *  pSet        Output of the character sets used, allocated by me.
  *  Return value    Resulting row count
  */
-static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const int dataLength, int *pRows,
-                        int *pUseColumns, int *pSet, int *pFillings) {
+static int Columns2Rows(const CharacterSetTable T[], const int dataLength, int *pRows, int *pUseColumns, int *pSet,
+                        int *pFillings, const int debug) {
     int useColumns;   /* Usable Characters per line */
     int fillings = 0; /* Number of filling characters */
     int rowsCur;
@@ -191,7 +189,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
         /* >>> Line Loop */
         do {
             /* >> Start Character */
-            emptyColumns = useColumns; /* Remained place in Line */
+            emptyColumns = useColumns; /* Remaining space in line */
 
             /* >>Choose in Set A or B */
             /* (C is changed as an option later on) */
@@ -226,7 +224,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
 
             /* >> Following characters */
             while (emptyColumns > 0 && charCur < dataLength) {
-                isFNC4 = (T[charCur].CharacterSet & CodeFNC4);
+                isFNC4 = T[charCur].CharacterSet & CodeFNC4;
                 switch (characterSetCur) {
                 case CodeA:
                 case CodeB:
@@ -342,13 +340,18 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
         switch (emptyColumns) {
         case 1:
             pSet[charCur - 1] |= CFill;
-            /* fall through */
+            /* [[fallthrough]] */
         case 0:
             ++rowsCur;
             fillings = useColumns - 2 + emptyColumns;
             break;
-        case 2: fillings = 0; break;
-        default: pSet[charCur - 1] |= CFill; fillings = emptyColumns - 2;
+        case 2:
+            fillings = 0;
+            break;
+        default:
+            pSet[charCur - 1] |= CFill;
+            fillings = emptyColumns - 2;
+            break;
         }
 
         if (rowsCur > 44) {
@@ -361,7 +364,7 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
             fillings += useColumns;
         }
     } while (rowsCur > 44);
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug) {
         printf("  -> out: rowsCur <%d>, useColumns <%d>, fillings <%d>\n", rowsCur, useColumns, fillings);
     }
     *pUseColumns = useColumns;
@@ -372,8 +375,8 @@ static int Columns2Rows(struct zint_symbol *symbol, CharacterSetTable *T, const 
 
 /* Find columns if row count is given.
  */
-static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const int dataLength, int *pRows,
-                        int *pUseColumns, int *pSet, int *pFillings) {
+static int Rows2Columns(const CharacterSetTable T[], const int dataLength, int *pRows, int *pUseColumns, int *pSet,
+                        int *pFillings, const int debug) {
     int rowsCur;
     int rowsRequested;    /* Number of requested rows */
     int columnsRequested; /* Number of requested columns (if any) */
@@ -387,7 +390,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
     rowsRequested = *pRows;
     columnsRequested = *pUseColumns >= 4 ? *pUseColumns : 0;
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug) {
         printf("Optimizer : Searching <%d> rows\n", rowsRequested);
     }
 
@@ -407,7 +410,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
         pTestList[testListSize] = testColumns;
         testListSize++;
         useColumns = testColumns; /* Make a copy because it may be modified */
-        errorCur = Columns2Rows(symbol, T, dataLength, &rowsCur, &useColumns, pSet, &fillings);
+        errorCur = Columns2Rows(T, dataLength, &rowsCur, &useColumns, pSet, &fillings, debug);
         if (errorCur != 0)
             return errorCur;
         if (rowsCur <= rowsRequested) {
@@ -448,7 +451,7 @@ static int Rows2Columns(struct zint_symbol *symbol, CharacterSetTable *T, const 
 
 /* Print a character in character set A
  */
-static void A2C128_A(uchar **ppOutPos, uchar c) {
+static void A2C128_A(uchar **ppOutPos, const uchar c) {
     uchar *pOutPos = *ppOutPos;
     switch (c) {
     case aCodeB: *pOutPos = 100; break;
@@ -471,7 +474,7 @@ static void A2C128_A(uchar **ppOutPos, uchar c) {
 
 /* Output c in Set B
  */
-static void A2C128_B(uchar **ppOutPos, uchar c) {
+static void A2C128_B(uchar **ppOutPos, const uchar c) {
     uchar *pOutPos = *ppOutPos;
     switch (c) {
     case aFNC1: *pOutPos = 102; break; /* FNC1s (GS1) not used */           /* Not reached */
@@ -483,12 +486,12 @@ static void A2C128_B(uchar **ppOutPos, uchar c) {
     case aShift: *pOutPos = 98; break;
     default: *pOutPos = (uchar) (c - ' '); break;
     }
-    ++(*ppOutPos);
+    (*ppOutPos)++;
 }
 
 /* Output c1, c2 in Set C
  */
-static void A2C128_C(uchar **ppOutPos, uchar c1, uchar c2) {
+static void A2C128_C(uchar **ppOutPos, const uchar c1, const uchar c2) {
     uchar *pOutPos = *ppOutPos;
     switch (c1) {
     case aFNC1: *pOutPos = 102; break; /* FNC1s (GS1) not used */ /* Not reached */
@@ -501,7 +504,7 @@ static void A2C128_C(uchar **ppOutPos, uchar c1, uchar c2) {
 
 /* Output a character in Characterset
  */
-static void ASCIIZ128(uchar **ppOutPos, int CharacterSet, uchar c1, uchar c2) {
+static void ASCIIZ128(uchar **ppOutPos, const int CharacterSet, const uchar c1, const uchar c2) {
     if (CharacterSet == CodeA)
         A2C128_A(ppOutPos, c1);
     else if (CharacterSet == CodeB)
@@ -512,7 +515,7 @@ static void ASCIIZ128(uchar **ppOutPos, int CharacterSet, uchar c1, uchar c2) {
 
 /* XLate Tables D.2, D.3 and F.1 of Codablock-F Specification and call output
  */
-static void SumASCII(uchar **ppOutPos, int Sum, int CharacterSet) {
+static void SumASCII(uchar **ppOutPos, const int Sum, const int CharacterSet) {
     switch (CharacterSet) {
     case CodeA: /* Row # Indicators and Data Check Characters K1/K2 for CodeA and CodeB are the same */
     case CodeB:
@@ -548,6 +551,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     int *pSet;
     uchar *pOutput;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
+    const int debug = symbol->debug & ZINT_DEBUG_PRINT;
 
     /* Suppresses clang-analyzer-core.VLASize warning */
     assert(length > 0);
@@ -595,18 +599,15 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
 
     dataLength = 0;
     if (symbol->output_options & READER_INIT) {
-        data[dataLength] = aFNC3;
-        dataLength++;
+        data[dataLength++] = aFNC3;
     }
     /* Replace all Codes>127 with <fnc4>Code-128 */
     for (charCur = 0; charCur < length; charCur++) {
         if (source[charCur] > 127) {
-            data[dataLength] = aFNC4;
-            dataLength++;
-            data[dataLength] = (unsigned char) (source[charCur] & 127);
+            data[dataLength++] = aFNC4;
+            data[dataLength++] = (unsigned char) (source[charCur] & 127);
         } else
-            data[dataLength] = source[charCur];
-        dataLength++;
+            data[dataLength++] = source[charCur];
     }
 
     /* Build character set table */
@@ -625,7 +626,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         } else if (columns < 9) {
             columns = 9;
         }
-        if (symbol->debug & ZINT_DEBUG_PRINT) {
+        if (debug) {
             printf("Auto column count for %d characters:%d\n", dataLength, columns);
         }
     }
@@ -633,10 +634,10 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     useColumns = columns - 5;
     if (rows > 0) {
         /* Row count given */
-        error_number = Rows2Columns(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
+        error_number = Rows2Columns(T, dataLength, &rows, &useColumns, pSet, &fillings, debug);
     } else {
         /* Column count given */
-        error_number = Columns2Rows(symbol, T, dataLength, &rows, &useColumns, pSet, &fillings);
+        error_number = Columns2Rows(T, dataLength, &rows, &useColumns, pSet, &fillings, debug);
     }
     if (error_number != 0) {
         return errtxt(error_number, symbol, 413,
@@ -652,7 +653,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         Sum2 = (Sum2 + charCur * source[charCur]) % 86;
     }
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug) {
         int DPos;
         fputs("\nData:", stdout);
         for (DPos = 0; DPos < dataLength; DPos++)
@@ -745,24 +746,24 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
             while (emptyColumns > 0 && charCur < dataLength) {
                 /* ? Change character set */
                 if (emptyColumns < useColumns) {
-                    if ((pSet[charCur] & CodeA) != 0) {
+                    if (pSet[charCur] & CodeA) {
                         /* Change to A */
                         ASCIIZ128(&pOutPos, characterSetCur, aCodeA, '\0');
                         --emptyColumns;
                         characterSetCur = CodeA;
-                    } else if ((pSet[charCur] & CodeB) != 0) {
+                    } else if (pSet[charCur] & CodeB) {
                         /* Change to B */
                         ASCIIZ128(&pOutPos, characterSetCur, aCodeB, '\0');
                         --emptyColumns;
                         characterSetCur = CodeB;
-                    } else if ((pSet[charCur] & CodeC) != 0) {
+                    } else if (pSet[charCur] & CodeC) {
                         /* Change to C */
                         ASCIIZ128(&pOutPos, characterSetCur, aCodeC, '\0');
                         --emptyColumns;
                         characterSetCur = CodeC;
                     }
                 }
-                if ((pSet[charCur] & CShift) != 0) {
+                if (pSet[charCur] & CShift) {
                     /* >> Shift it and put out the shifted character */
                     ASCIIZ128(&pOutPos, characterSetCur, aShift, '\0');
                     emptyColumns -= 2;
@@ -832,7 +833,7 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
         *pOutPos++ = 106;
     } /* End Lineloop */
 
-    if (symbol->debug & ZINT_DEBUG_PRINT) {
+    if (debug) {
         int DPos, DPos2;
         fputs("\nCode 128 Code Numbers:\n", stdout);
         for (DPos = 0; DPos < rows; DPos++) {

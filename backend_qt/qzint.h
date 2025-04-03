@@ -268,6 +268,7 @@ public:
     bool hasMask(int symbology = 0) const;
     bool supportsStructApp(int symbology = 0) const;
     bool hasCompliantHeight(int symbology = 0) const;
+    bool isBindable(int symbology = 0) const;
 
     /* Whether takes GS1 AI-delimited data */
     bool takesGS1AIData(int symbology = 0) const;

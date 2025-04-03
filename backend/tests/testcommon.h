@@ -133,6 +133,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...);
 
 #define TU(p) ((unsigned char *) (p))
 #define TCU(p) ((const unsigned char *) (p))
+#define TCC(p) ((const char *) (p))
 
 INTERNAL void vector_free(struct zint_symbol *symbol); /* Free vector structures */
 
@@ -160,8 +161,8 @@ void testUtilModulesPrint(const struct zint_symbol *symbol, const char *prefix, 
 void testUtilModulesPrintRow(const struct zint_symbol *symbol, int row, const char *prefix, const char *postfix);
 int testUtilModulesCmp(const struct zint_symbol *symbol, const char *expected, int *width, int *row);
 int testUtilModulesCmpRow(const struct zint_symbol *symbol, int row, const char *expected, int *width);
-char *testUtilUIntArrayDump(unsigned int *array, int size, char *dump, int dump_size);
-char *testUtilUCharArrayDump(unsigned char *array, int size, char *dump, int dump_size);
+char *testUtilUIntArrayDump(const unsigned int *array, const int size, char *dump, const int dump_size);
+char *testUtilUCharArrayDump(const unsigned char *array, const int size, char *dump, const int dump_size);
 
 void testUtilBitmapPrint(const struct zint_symbol *symbol, const char *prefix, const char *postfix);
 int testUtilBitmapCmp(const struct zint_symbol *symbol, const char *expected, int *row, int *column);

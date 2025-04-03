@@ -201,14 +201,10 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
 
     switch (codewords[0]) {
             /* Set starting mode value */
-        case 48: M = 2;
-            break;
-        case 43: M = 4;
-            break;
-        case 44: M = 5;
-            break;
-        default: M = 0;
-            break;
+        case 48: M = 2; break;
+        case 43: M = 4; break;
+        case 44: M = 5; break;
+        default: M = 0; break;
     }
 
     if (M != 0) {

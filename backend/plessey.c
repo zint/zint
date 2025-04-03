@@ -99,10 +99,12 @@ INTERNAL int plessey(struct zint_symbol *symbol, unsigned char source[], int len
 
     for (i = 0; i < 8; i++) {
         switch (checkptr[length * 4 + i]) {
-            case 0: memcpy(d, "13", 2);
+            case 0:
+                memcpy(d, "13", 2);
                 d += 2;
                 break;
-            case 1: memcpy(d, "31", 2);
+            case 1:
+                memcpy(d, "31", 2);
                 d += 2;
                 check_digits |= (1 << i);
                 break;
@@ -352,20 +354,13 @@ INTERNAL int msi_plessey(struct zint_symbol *symbol, unsigned char source[], int
     d += 2;
 
     switch (check_option) {
-        case 0: d = msi_plessey_nomod(symbol, source, length, raw_text, d);
-            break;
-        case 1: d = msi_plessey_mod10(symbol, source, length, no_checktext, raw_text, d);
-            break;
-        case 2: d = msi_plessey_mod1010(symbol, source, length, no_checktext, raw_text, d);
-            break;
-        case 3: d = msi_plessey_mod11(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d);
-            break;
-        case 4: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d);
-            break;
-        case 5: d = msi_plessey_mod11(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d);
-            break;
-        case 6: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d);
-            break;
+        case 0: d = msi_plessey_nomod(symbol, source, length, raw_text, d); break;
+        case 1: d = msi_plessey_mod10(symbol, source, length, no_checktext, raw_text, d); break;
+        case 2: d = msi_plessey_mod1010(symbol, source, length, no_checktext, raw_text, d); break;
+        case 3: d = msi_plessey_mod11(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d); break;
+        case 4: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 7 /*IBM wrap*/, raw_text, d); break;
+        case 5: d = msi_plessey_mod11(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d); break;
+        case 6: d = msi_plessey_mod1110(symbol, source, length, no_checktext, 9 /*NCR wrap*/, raw_text, d); break;
     }
 
     if (!d) {

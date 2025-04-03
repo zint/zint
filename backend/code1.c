@@ -195,14 +195,10 @@ static int c1_look_ahead_test(const unsigned char source[], const int length, co
     }
 
     switch (current_mode) {
-        case C1_C40: c40_count = 0; /* Step J2 */
-            break;
-        case C1_TEXT: text_count = 0; /* Step J3 */
-            break;
-        case C1_EDI: edi_count = 0; /* Missing in spec */
-            break;
-        case C1_BYTE: byte_count = 0; /* Step J4 */
-            break;
+        case C1_C40: c40_count = 0; break; /* Step J2 */
+        case C1_TEXT: text_count = 0; break; /* Step J3 */
+        case C1_EDI: edi_count = 0; break; /* Missing in spec */
+        case C1_BYTE: byte_count = 0; break; /* Step J4 */
     }
 
     for (sp = position; sp < length; sp++) {
@@ -579,16 +575,20 @@ static int c1_encode(struct zint_symbol *symbol, unsigned char source[], int len
         if (current_mode != next_mode) {
             /* Change mode */
             switch (next_mode) {
-                case C1_C40: target[tp++] = 230;
+                case C1_C40:
+                    target[tp++] = 230;
                     if (debug_print) fputs("->C40 ", stdout);
                     break;
-                case C1_TEXT: target[tp++] = 239;
+                case C1_TEXT:
+                    target[tp++] = 239;
                     if (debug_print) fputs("->Text ", stdout);
                     break;
-                case C1_EDI: target[tp++] = 238;
+                case C1_EDI:
+                    target[tp++] = 238;
                     if (debug_print) fputs("->EDI ", stdout);
                     break;
-                case C1_BYTE: target[tp++] = 231;
+                case C1_BYTE:
+                    target[tp++] = 231;
                     if (debug_print) fputs("->Byte ", stdout);
                     byte_start = tp;
                     target[tp++] = 0; /* Byte count holder (may be expanded to 2 codewords) */

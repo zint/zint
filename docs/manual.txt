@@ -1,6 +1,6 @@
 Zint Barcode Generator and Zint Barcode Studio User Manual
 Version 2.15.0.9
-March 2025
+April 2025
 
 *******************************************************************************
 * For reference the following is a text-only version of the Zint manual,      *
@@ -2553,7 +2553,8 @@ see which are set.
   --------------------------- --------------------------------------------------
   ZINT_CAP_HRT                Can the symbology print Human Readable Text?
 
-  ZINT_CAP_STACKABLE          Is the symbology stackable?
+  ZINT_CAP_STACKABLE          Is the symbology stackable? Note that stacked
+                              symbologies are not stackable.
 
   ZINT_CAP_EANUPC[14]         Is the symbology EAN/UPC?
 
@@ -2567,7 +2568,8 @@ see which are set.
 
   ZINT_CAP_DOTTY              Can the symbology be outputted as dots?
 
-  ZINT_CAP_QUIET_ZONES        Does the symbology have default quiet zones?
+  ZINT_CAP_QUIET_ZONES        Does the symbology have default quiet zones? Note
+                              that default quiet zones may be zero.
 
   ZINT_CAP_FIXED_RATIO        Does the symbology have a fixed width-to-height
                               (aspect) ratio?
@@ -2582,6 +2584,10 @@ see which are set.
 
   ZINT_CAP_COMPLIANT_HEIGHT   Does the symbology have a compliant height
                               defined?
+
+  ZINT_CAP_BINDABLE           Does the symbology have row separators that can be
+                              set? Includes stacked symbologies and stackable
+                              linear symbologies.
   ------------------------------------------------------------------------------
 
   Table : API Capability Flags
@@ -2613,8 +2619,8 @@ mask used as (N + 1) << 8, N being the mask. Also Aztec Code will return the
 actual ECC percentage used in option_1 as P << 8, where P is the integer
 percentage, the low byte containing the values given in Table
 : Aztec Code Error Correction Modes (with the addition of 0 meaning less than
-5% + 3 codewords). Micro PDF417 also will return the ECC percentage in option_1
-as P << 8.
+5% + 3 codewords and -1 meaning minimum 3 codewords). Micro PDF417 also will
+return the ECC percentage in option_1 as P << 8.
 
 Detailed feedback on the data encoded may be requested by specifying the
 BARCODE_RAW_TEXT option in the output_options member, which will populate the
@@ -2687,7 +2693,7 @@ check digits are added by default. To add just one check digit, set --vers=1
 6.1.2 Code 2 of 5
 
 Code 2 of 5 is a family of one-dimensional self-checking symbols, 8 of which are
-supported by Zint. Note that the names given to these standards alters from one
+supported by Zint. Note that the names given to these standards alter from one
 source to another so you should take care to ensure that you have the right
 barcode type before using them.
 
@@ -4469,7 +4475,7 @@ Structured Append) (API structapp). The ID ranges from 0 (default) to 255.
 [zint -b DOTCODE -d "[01]00012345678905[17]201231[10]ABC123456" --gs1]
 
 DotCode uses a grid of dots in a rectangular formation to encode characters up
-to a maximum of approximately 450 characters (or 900 numeric digits). The
+to a maximum of approximately 1220 characters (or 2940 numeric digits). The
 symbology supports ECI encoding and GS1 data encoding. By default Zint will
 produce a symbol which is approximately square, however the width of the symbol
 can be adjusted by using the --cols option (API option_2) (maximum 200).
@@ -4930,7 +4936,7 @@ configured barcode is displayed once the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
-% ZINT(1) Version 2.15.0.9 % % March 2025
+% ZINT(1) Version 2.15.0.9 % % April 2025
 
 NAME
 

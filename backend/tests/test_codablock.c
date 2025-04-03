@@ -102,18 +102,26 @@ static void test_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                    i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);
@@ -183,13 +191,18 @@ static void test_options(const testCtx *const p_ctx) {
                                     data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                        i, symbol->rows, data[i].expected_rows, data[i].data);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                        i, symbol->width, data[i].expected_width, data[i].data);
         }
         assert_equal(symbol->option_1, data[i].expected_option_1, "i:%d symbol->option_1 %d != %d (option_2 %d)\n",
                     i, symbol->option_1, data[i].expected_option_1, symbol->option_2);
@@ -238,21 +251,28 @@ static void test_reader_init(const testCtx *const p_ctx) {
 
         symbol->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %s, \"%s\", %s, %d, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), testUtilOutputOptionsName(data[i].output_options),
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    testUtilOutputOptionsName(data[i].output_options),
                     testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
-                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
+                assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                            i, symbol->errtxt, data[i].expected);
             }
         }
 
@@ -312,10 +332,11 @@ static void test_hrt(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
-                    data[i].data, data[i].length, debug);
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
         expected_length = (int) strlen(data[i].expected);
-        expected_raw_length = data[i].expected_raw_length == -1 ? (int) strlen(data[i].expected_raw) : data[i].expected_raw_length;
+        expected_raw_length = data[i].expected_raw_length == -1 ? (int) strlen(data[i].expected_raw)
+                                                                : data[i].expected_raw_length;
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_zero(ret, "i:%d ZBarcode_Encode ret %d != 0 %s\n", i, ret, symbol->errtxt);
@@ -429,8 +450,10 @@ static void test_input(const testCtx *const p_ctx) {
         /* 48*/ { BARCODE_CODABLOCKF, UNICODE_MODE | ESCAPE_MODE, -1, -1, "2610\\u00F2", -1, 0, 2, 101, 1, 1, "67 63 00 1A 0A 64 63 4B 6A 67 64 0B 64 52 33 26 64 6A", "Okapi data-fuzz-19.png" },
         /* 49*/ { BARCODE_CODABLOCKF, DATA_MODE | ESCAPE_MODE, 7, -1, "*\\r\\xF2\\x82\\x82(\\x982\\x82\\x82*\\r\\xF2\\x82\\xA8\\x82\\x82\\x82\\x82", -1, 0, 7, 123, 0, 899, "(77) 67 62 45 0A 4D 64 64 52 63 35 6A 67 62 0B 65 42 65 42 08 63 43 6A 67 62 0C 65 58 12", "Okapi data-fuzz-20.png; BWIPP different encodation" },
         /* 50*/ { BARCODE_CODABLOCKF, UNICODE_MODE | ESCAPE_MODE, -1, -1, "\\u0018\\u00F2", -1, 0, 2, 101, 0, 1, "67 62 40 58 65 62 52 16 6A 67 64 0B 63 64 38 30 30 6A", "Okapi data-fuzz-21.png; BWIPP different encodation" },
-        /* 51*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, 1, 1, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
-        /* 52*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$520:1510X3", -1, ZINT_ERROR_INVALID_DATA, -1, -1, 1, 1, "Error 203: Invalid character at position 16 in input (alphanumerics, space and \"-.$/+%\" only)", "" },
+        /* 51*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\256^a\357\033\270\017,\274u$B\305\311\006\011]\273\025u\315\2638\263\333", -1, 0, 7, 123, 1, 899, "(77) 67 64 45 64 0E 3E 41 64 4F 33 6A 67 62 0B 5B 65 18 4F 0C 63 01 6A 67 64 0C 64 1C 55", "Misencodation of 0xB0-B9 (\260-\271) as FNC4 digit followed by digit as CodeC (found with 'test_random'" },
+        /* 52*/ { BARCODE_CODABLOCKF, DATA_MODE, -1, -1, "\356\237V\310\266767", -1, 0, 5, 101, 0, 899, "(45) 67 64 43 64 4E 63 64 57 6A 67 62 0B 65 5F 36 63 13 6A 67 64 0C 64 28 64 16 53 6A 67", "BWIPP example of above; BWIPP different encodation" },
+        /* 53*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$52001510X3", -1, 0, 6, 101, 1, 1, "(54) 67 64 44 0B 21 19 19 3A 6A 67 63 2B 5B 17 2D 64 24 6A 67 64 0C 0F 04 04 15 16 6A 67", "" },
+        /* 54*/ { BARCODE_HIBC_BLOCKF, UNICODE_MODE, -1, -1, "A99912345/$$520:1510X3", -1, ZINT_ERROR_INVALID_DATA, -1, -1, 1, 1, "Error 203: Invalid character at position 16 in input (alphanumerics, space and \"-.$/+%\" only)", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -460,7 +483,8 @@ static void test_input(const testCtx *const p_ctx) {
                                     data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %d, \"%s\", %d, %s, %d, %d, %d, %d, \"%s\", \"%s\" },\n",
@@ -470,23 +494,33 @@ static void test_input(const testCtx *const p_ctx) {
                     testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].bwipp_cmp,
                     data[i].zxingcpp_cmp, symbol->errtxt, data[i].comment);
         } else {
-            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp((char *) symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
                         char modules_dump[32768];
-                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                    "i:%d testUtilModulesDump == -1\n", i);
+                        ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length,
+                                    NULL, cmp_buf, sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, modules_dump);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       modules_dump);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
@@ -535,47 +569,47 @@ static void test_encode(const testCtx *const p_ctx) {
         /*  0*/ { BARCODE_CODABLOCKF, 1, -1, "AIM", 0, 1, 68, 1, "Same as CODE128 (not supported by BWIPP or ZXing-C++)",
                     "11010010000101000110001100010001010111011000101110110001100011101011"
                 },
-        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against tec-it",
+        /*  1*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101001011000010100011000101000110001010001100010100011000110110011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010111011110100100111101100011101011"
                     "11010000100101111011101011001110010111011110101111011101100001010011011101110111100101001100011101011"
                 },
-        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against tec-it",
+        /*  2*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAA", 0, 3, 101, 1, "Defaults to rows 3, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101001011000010100011000101000110001010001100010100011000110110011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001110110010010010110000111000101101100011101011"
                 },
-        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against tec-it",
+        /*  3*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101001000011010100011000101000110001010001100010100011000110011001101100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010111011110100111101001100011101011"
                     "11010000100101111011101001101110010111011110101111011101110101100011101100100110010111001100011101011"
                 },
-        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against tec-it",
+        /*  4*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAA", 0, 4, 101, 1, "Defaults to rows 4, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101001000011010100011000101000110001010001100010100011000110011001101100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001011110100010111011000100110000101100011101011"
                 },
-        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against tec-it",
+        /*  5*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101000010110010100011000101000110001010001100010100011000100100011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001010001100010111011110111101001001100011101011"
                     "11010000100101111011101001100111010111011110101111011101000110001010111101000110001010001100011101011"
                 },
-        /*  6*/ { BARCODE_CODABLOCKF, -1, 14, "AAAAAAAAAAAAAAA", 0, 2, 156, 1, "Rows 2, columns 14 (9 data); verified manually against tec-it",
+        /*  6*/ { BARCODE_CODABLOCKF, -1, 14, "AAAAAAAAAAAAAAA", 0, 2, 156, 1, "Rows 2, columns 14 (9 data); verified manually against TEC-IT",
                     "110100001001011110111010100001100101000110001010001100010100011000101000110001010001100010100011000101000110001010001100010100011000110001000101100011101011"
                     "110100001001011110111011000100100101000110001010001100010100011000101000110001010001100010100011000101110111101110111101011011000110111000101101100011101011"
                 },
-        /*  7*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against tec-it",
+        /*  7*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAA", 0, 5, 101, 1, "Defaults to rows 5, columns 9 (4 data); verified manually against TEC-IT",
                     "11010000100101111011101000010110010100011000101000110001010001100010100011000100100011001100011101011"
                     "11010000100101111011101100010010010100011000101000110001010001100010100011000111101000101100011101011"
                     "11010000100101111011101011001110010100011000101000110001010001100010100011000101111011101100011101011"
                     "11010000100101111011101001101110010100011000101000110001010001100010100011000111101011101100011101011"
                     "11010000100101111011101001100111010111011110101111011101011100011010001100010100011101101100011101011"
                 },
-        /*  8*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAA", 0, 6, 112, 1, "Defaults to rows 6, columns 10 (5 data); verified manually against tec-it",
+        /*  8*/ { BARCODE_CODABLOCKF, -1, -1, "AAAAAAAAAAAAAAAAAAAAAAAAA", 0, 6, 112, 1, "Defaults to rows 6, columns 10 (5 data); verified manually against TEC-IT",
                     "1101000010010111101110100001001101010001100010100011000101000110001010001100010100011000110110001101100011101011"
                     "1101000010010111101110110001001001010001100010100011000101000110001010001100010100011000110010011101100011101011"
                     "1101000010010111101110101100111001010001100010100011000101000110001010001100010100011000110011101001100011101011"
@@ -607,12 +641,12 @@ static void test_encode(const testCtx *const p_ctx) {
                     "110100001001011110111011100110010100111101001001111001011110100100111100101001111001001011011011110110111101101111011011010101111000111101010001100011101011"
                     "110100001001011110111011011011000101000111101000101111010111011110101111011101011101111010111101110101110111101011100011011101101110101001100001100011101011"
                 },
-        /* 12*/ { BARCODE_HIBC_BLOCKF, 3, -1, "A123BJC5D6E71", 0, 3, 123, 0, "Verified manually against tec-it; differs from BWIPP (columns=6) which uses Code C for final 71 (same no. of codewords)",
+        /* 12*/ { BARCODE_HIBC_BLOCKF, 3, -1, "A123BJC5D6E71", 0, 3, 123, 0, "Verified manually against TEC-IT; differs from BWIPP (columns=6) which uses Code C for final 71 (same no. of codewords)",
                     "110100001001011110111010010110000110001001001010001100010011100110110011100101100101110010001011000100100001101100011101011"
                     "110100001001011110111011000100100101101110001000100011011011100100101100010001100111010010001101000111001001101100011101011"
                     "110100001001011110111010110011100111011011101001110011011010001000101110111101011100011011001110100100100110001100011101011"
                 },
-        /* 13*/ { BARCODE_HIBC_BLOCKF, -1, -1, "$$52001510X3G", 0, 4, 101, 1, "tec-it differs as adds unnecessary Code C at end of 1st line",
+        /* 13*/ { BARCODE_HIBC_BLOCKF, -1, -1, "$$52001510X3G", 0, 4, 101, 1, "TEC-IT differs as adds unnecessary Code C at end of 1st line",
                     "11010000100101111011101001000011011000100100100100011001001000110011011100100101110011001100011101011"
                     "11010000100101110111101011000111011001001110110011011001101110100010111101110100001100101100011101011"
                     "11010000100101111011101011001110010011101100111000101101100101110011010001000100100011001100011101011"
@@ -758,21 +792,30 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_CODABLOCKF, -1 /*input_mode*/, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
 
             if (do_bwipp && testUtilCanBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, debug)) {
                 if (!data[i].bwipp_cmp) {
-                    if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    if (debug & ZINT_DEBUG_TEST_PRINT) {
+                        printf("i:%d %s not BWIPP compatible (%s)\n",
+                                i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                    }
                 } else {
                     char modules_dump[32768];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilBwipp(i, symbol, data[i].option_1, data[i].option_2, -1, data[i].data, length, NULL,
+                                cmp_buf, sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",

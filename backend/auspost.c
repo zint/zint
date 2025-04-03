@@ -171,12 +171,9 @@ INTERNAL int auspost(struct zint_symbol *symbol, unsigned char source[], int len
         }
     } else {
         switch (symbol->symbology) {
-            case BARCODE_AUSREPLY: memcpy(fcc, "45", 2);
-                break;
-            case BARCODE_AUSROUTE: memcpy(fcc, "87", 2);
-                break;
-            case BARCODE_AUSREDIRECT: memcpy(fcc, "92", 2);
-                break;
+            case BARCODE_AUSREPLY: memcpy(fcc, "45", 2); break;
+            case BARCODE_AUSROUTE: memcpy(fcc, "87", 2); break;
+            case BARCODE_AUSREDIRECT: memcpy(fcc, "92", 2); break;
         }
 
         /* Add leading zeros as required */

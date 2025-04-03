@@ -333,7 +333,7 @@
 <h1 class="title">Zint Barcode Generator and Zint Barcode Studio User
 Manual</h1>
 <p class="author">Version 2.15.0.9</p>
-<p class="date">March 2025</p>
+<p class="date">April 2025</p>
 </header>
 <nav id="TOC" role="doc-toc">
 <ul>
@@ -4224,7 +4224,8 @@ Text?</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_STACKABLE</code></td>
-<td style="text-align: left;">Is the symbology stackable?</td>
+<td style="text-align: left;">Is the symbology stackable? Note that
+stacked symbologies are not stackable.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_EANUPC</code><a
@@ -4255,7 +4256,7 @@ dots?</td>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_QUIET_ZONES</code></td>
 <td style="text-align: left;">Does the symbology have default quiet
-zones?</td>
+zones? Note that default quiet zones may be zero.</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>ZINT_CAP_FIXED_RATIO</code></td>
@@ -4287,6 +4288,12 @@ style="text-align: left;"><code>ZINT_CAP_COMPLIANT_HEIGHT</code></td>
 <td style="text-align: left;">Does the symbology have a compliant height
 defined?</td>
 </tr>
+<tr>
+<td style="text-align: left;"><code>ZINT_CAP_BINDABLE</code></td>
+<td style="text-align: left;">Does the symbology have row separators
+that can be set? Includes stacked symbologies and stackable linear
+symbologies.</td>
+</tr>
 </tbody>
 </table>
 </div>
@@ -4317,9 +4324,9 @@ return the actual ECC percentage used in <code>option_1</code> as
 <code>P &lt;&lt; 8</code>, where P is the integer percentage, the low
 byte containing the values given in Table <a href="#tbl:aztec_eccs">:
 Aztec Code Error Correction Modes</a> (with the addition of
-<code>0</code> meaning less than 5% + 3 codewords). Micro PDF417 also
-will return the ECC percentage in <code>option_1</code> as
-<code>P &lt;&lt; 8</code>.</p>
+<code>0</code> meaning less than 5% + 3 codewords and <code>-1</code>
+meaning minimum 3 codewords). Micro PDF417 also will return the ECC
+percentage in <code>option_1</code> as <code>P &lt;&lt; 8</code>.</p>
 <p>Detailed feedback on the data encoded may be requested by specifying
 the <code>BARCODE_RAW_TEXT</code> option in the
 <code>output_options</code> member, which will populate the
@@ -4392,7 +4399,7 @@ default. To add just one check digit, set <code>--vers=1</code> (API
 <h3 id="code-2-of-5">6.1.2 Code 2 of 5</h3>
 <p>Code 2 of 5 is a family of one-dimensional self-checking symbols, 8
 of which are supported by Zint. Note that the names given to these
-standards alters from one source to another so you should take care to
+standards alter from one source to another so you should take care to
 ensure that you have the right barcode type before using them.</p>
 <h4 id="standard-code-2-of-5">6.1.2.1 Standard Code 2 of 5</h4>
 <figure>
@@ -7656,7 +7663,7 @@ alt="zint -b DOTCODE -d &quot;[01]00012345678905[17]201231[10]ABC123456&quot; --
 aria-hidden="true"><code>zint -b DOTCODE -d "[01]00012345678905[17]201231[10]ABC123456" --gs1</code></figcaption>
 </figure>
 <p>DotCode uses a grid of dots in a rectangular formation to encode
-characters up to a maximum of approximately 450 characters (or 900
+characters up to a maximum of approximately 1220 characters (or 2940
 numeric digits). The symbology supports ECI encoding and GS1 data
 encoding. By default Zint will produce a symbol which is approximately
 square, however the width of the symbol can be adjusted by using the

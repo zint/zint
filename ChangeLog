@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-03-28)
+Version 2.15.0.9 (dev) not released yet (2025-04-04)
 ====================================================
 
 **Incompatible changes**
@@ -8,6 +8,7 @@ Version 2.15.0.9 (dev) not released yet (2025-03-28)
 - Symbol structure members `option_1`, `option_2` and `option_3` now updated
   after `ZBarcode_Encode()` and variants are called, and there are three new
   methods in the Qt Backend to access to them
+- New Qt Backend method `isBindable()` for new flag `ZINT_CAP_BINDABLE`
 - GS1 Composites now return warning if CC type upped from requested due to size
   of composite data
 
@@ -25,12 +26,22 @@ Changes
 - composite: warn if CC type upped from requested
 - gs1: csumalpha: improve warning, report both chars (ticket #332, props Harald
   Oehlmann)
+- New `ZBarcode_Cap()` flag `ZINT_CAP_BINDABLE`, differentiated from
+  `ZINT_CAP_STACKABLE`, and new Qt Backend method `isBindable()`
+- DOTCODE: now pads rows if given number of columns instead of failing if rows
+  below min (5)
 
 Bugs
 ----
+- CODABLOCKF: fix misencodation of extended ASCII 0xB0-0xB9 when followed by
+  digit (ignore 2nd byte of FNC4 when categorizing Code C characters)
 - AZTEC: fix GS1 mode with Structured Append (wasn't outputting initial FNC1)
 - set_height: fix non-compliance false positives by using epsilon in checks
 - UPU_S10: fix Service Indicator warning re "H" (ticket #331, props Milton Neal)
+- CLI: fix `separator` check to use new `ZINT_CAP_BINDABLE` instead of
+  `ZINT_CAP_STACKABLE`
+- ZBarcode_Cap: add missing symbologies to `ZINT_CAP_BINDABLE` (was
+  `ZINT_CAP_STACKABLE`)
 - manual/man page: fix DATAMATRIX Sizes tables "28 12x26" -> "27 12x26"
 
 
