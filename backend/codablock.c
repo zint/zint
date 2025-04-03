@@ -850,6 +850,8 @@ INTERNAL int codablockf(struct zint_symbol *symbol, unsigned char source[], int 
     }
 #endif
 
+    symbol->rows = 0; /* Stacked are not stackable */
+
     /* Paint the C128 patterns */
     for (r = 0; r < rows; r++) {
         const int rc = r * columns;

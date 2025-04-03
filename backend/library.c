@@ -1691,6 +1691,8 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
         switch (symbol_id) {
             case BARCODE_CODE16K: /* Stacked are not stackable */
             case BARCODE_CODE49:
+            case BARCODE_CODABLOCKF:
+            case BARCODE_HIBC_BLOCKF:
                 break;
             default:
                 result |= ZINT_CAP_STACKABLE;
