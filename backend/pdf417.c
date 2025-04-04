@@ -1245,6 +1245,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
         }
         fputs("\n\n", stdout);
     }
+    assert(mclength > 0); /* Suppress clang-tidy-20.1 warning clang-analyzer-core.CallAndMessage */
 
     /* 752 - Now take care of the number of CWs per row */
 
@@ -1402,6 +1403,7 @@ static int pdf_enc(struct zint_symbol *symbol, struct zint_seg segs[], const int
     c3 = cols - 1;
 
     /* We now encode each row */
+    assert(rows * cols <= mclength); /* Suppress clang-tidy-20.1 warning clang-analyzer-core.uninitialized.Assign */
     for (i = 0; i < rows; i++) {
         const int k = (i / 3) * 30;
         bp = 0;

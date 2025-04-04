@@ -143,8 +143,11 @@ typedef unsigned __int64 uint64_t;
 #define z_isascii(c) (((c) & 0x7F) == (c))
 #define z_iscntrl(c) (z_isascii(c) && ((c) < 32 || (c) == 127))
 
-/* Helper to cast away char pointer signedness */
-#define ustrlen(source) strlen((const char *) (source))
+/* Shorthands to cast away char pointer signedness */
+#define ZUCP(p)     ((unsigned char *) (p))
+#define ZCUCP(p)    ((const unsigned char *) (p))
+#define ZCCP(p)     ((const char *) (p))
+#define ustrlen(p)  strlen(ZCCP(p))
 
 /* Converts an integer value to its value + '0' (so >= 10 becomes ':', ';' etc) */
 #define itoc(i) ((i) + '0')

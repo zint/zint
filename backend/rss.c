@@ -299,6 +299,15 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     int widths[4];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
+    /* Allow and ignore any AI prefix, but only if have check digit */
+    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+        source += 4;
+        length -= 4;
+    /* Likewise initial '01', if have check digit */
+    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+        source += 2;
+        length -= 2;
+    }
     if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 380, "Input length %d too long (maximum 14)", length);
     }
@@ -617,8 +626,8 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     if (raw_text) {
         unsigned char buf[14];
-        if (rt_cpy(symbol, dbar_gtin14(source, length, buf), 14)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+        if (rt_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
         }
     }
 
@@ -643,6 +652,15 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     int widths[7];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
+    /* Allow and ignore any AI prefix, but only if have check digit */
+    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+        source += 4;
+        length -= 4;
+    /* Likewise initial '01', if have check digit */
+    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+        source += 2;
+        length -= 2;
+    }
     if (length > 14) { /* Allow check digit to be specified (will be verified and ignored) */
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 382, "Input length %d too long (maximum 14)", length);
     }
@@ -799,8 +817,8 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     if (raw_text) {
         unsigned char buf[14];
-        if (rt_cpy(symbol, dbar_gtin14(source, length, buf), 14)) {
-            return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+        if (rt_cpy_cat(symbol, ZCUCP("01"), 2, '\xFF' /*none*/, dbar_gtin14(source, length, buf), 14)) {
+            return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
         }
     }
 

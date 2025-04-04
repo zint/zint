@@ -383,6 +383,8 @@ INTERNAL int code128(struct zint_symbol *symbol, unsigned char source[], int len
     const int start_idx = (symbol->output_options & READER_INIT) ? 2 : 0;
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
+    assert(length); /* Suppress clang-tidy-20.1 warning clang-analyzer-optin.portability.UnixAPI */
+
     if (length > C128_MAX) {
         /* This only blocks ridiculously long input - the actual length of the
            resulting barcode depends on the type of data, so this is trapped later */
