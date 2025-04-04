@@ -340,7 +340,7 @@ static int Columns2Rows(const CharacterSetTable T[], const int dataLength, int *
         switch (emptyColumns) {
         case 1:
             pSet[charCur - 1] |= CFill;
-            /* [[fallthrough]] */
+            /* fall through */
         case 0:
             ++rowsCur;
             fillings = useColumns - 2 + emptyColumns;
