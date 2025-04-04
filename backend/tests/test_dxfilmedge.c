@@ -44,19 +44,19 @@ static void test_hrt(const testCtx *const p_ctx) {
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
         /*  0*/ { -1, "79-7", "", "" }, /* None */
-        /*  1*/ { BARCODE_RAW_TEXT, "79-7", "", "1271" },
+        /*  1*/ { BARCODE_RAW_TEXT, "79-7", "", "79-7" },
         /*  2*/ { -1, "1271", "", "" }, /* None */
-        /*  3*/ { BARCODE_RAW_TEXT, "1271", "", "1271" },
+        /*  3*/ { BARCODE_RAW_TEXT, "1271", "", "79-7" },
         /*  4*/ { -1, "012710", "", "" }, /* None */
-        /*  5*/ { BARCODE_RAW_TEXT, "012710", "", "1271" },
+        /*  5*/ { BARCODE_RAW_TEXT, "012710", "", "79-7" },
         /*  6*/ { -1, "1-0", "", "" }, /* None */
-        /*  7*/ { BARCODE_RAW_TEXT, "1-0", "", "0016" },
+        /*  7*/ { BARCODE_RAW_TEXT, "1-0", "", "1-0" },
         /*  8*/ { -1, "2047/63A", "", "" }, /* None */
-        /*  9*/ { BARCODE_RAW_TEXT, "2047/63A", "", "204763A" },
+        /*  9*/ { BARCODE_RAW_TEXT, "2047/63A", "", "127-15/63A" },
         /* 10*/ { -1, "79-7/1", "", "" }, /* None */
-        /* 11*/ { BARCODE_RAW_TEXT, "79-7/1", "", "12711" },
+        /* 11*/ { BARCODE_RAW_TEXT, "79-7/1", "", "79-7/1" },
         /* 12*/ { -1, "79-7/sa", "", "" }, /* None */
-        /* 13*/ { BARCODE_RAW_TEXT, "79-7/sa", "", "127162A" },
+        /* 13*/ { BARCODE_RAW_TEXT, "79-7/sa", "", "79-7/62A" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
