@@ -246,7 +246,8 @@ static int dx_parse_code(struct zint_symbol *symbol, const unsigned char *source
 
     *output_length = bp;
 
-    if (raw_text && rt_printf_256(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/", frame_info)) {
+    if (raw_text && rt_printf_256(symbol, (*has_frame_info ? "%d-%d%s%s" : "%d-%d"), dx_code_1, dx_code_2, "/",
+                                    frame_info)) {
         return ZINT_ERROR_MEMORY; /* `rt_printf_256()` only fails with OOM */
     }
 
