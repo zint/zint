@@ -657,106 +657,121 @@ static void test_hrt(const testCtx *const p_ctx) {
         const char *data;
         int ret;
         const char *expected;
+        const char *expected_raw;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_EANX, -1, "12345678901", 0, "0123456789012" },
-        /*  1*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345678901", 0, "0123456789012" },
-        /*  2*/ { BARCODE_EANX, -1, "123456789012", 0, "1234567890128" },
-        /*  3*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123456789012", 0, "1234567890128" },
-        /*  4*/ { BARCODE_EANX, -1, "1234567890128", 0, "1234567890128" }, /* EANX accepts CHK (treated as such if no leading zeroes required) */
-        /*  5*/ { BARCODE_EANX_CHK, -1, "1234567890128", 0, "1234567890128" },
-        /*  6*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128", 0, "1234567890128" },
-        /*  7*/ { BARCODE_EANX_CHK, -1, "123456789012", 0, "0123456789012" }, /* '2' happens to be correct check digit for "012345678901" */
-        /*  8*/ { BARCODE_EANX, -1, "1234567890128+1", 0, "1234567890128+01" },
-        /*  9*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01" },
-        /* 10*/ { BARCODE_EANX_CHK, -1, "1234567890128+1", 0, "1234567890128+01" },
-        /* 11*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01" },
-        /* 12*/ { BARCODE_EANX, -1, "12345678", 0, "0000123456784" },
-        /* 13*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345678", 0, "0000123456784" },
-        /* 14*/ { BARCODE_EANX, -1, "1234567", 0, "12345670" }, /* EAN-8 */
-        /* 15*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567", 0, "12345670" },
-        /* 16*/ { BARCODE_EANX_CHK, -1, "12345670", 0, "12345670" }, /* EAN-8 */
-        /* 17*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "12345670", 0, "12345670" },
-        /* 18*/ { BARCODE_EANX, -1, "123456", 0, "01234565" }, /* EAN-8 */
-        /* 19*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123456", 0, "01234565" },
-        /* 20*/ { BARCODE_EANX_CHK, -1, "123457", 0, "00123457" }, /* EAN-8 */
-        /* 21*/ { BARCODE_EANX, -1, "12345", 0, "12345" }, /* EAN-5 */
-        /* 22*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345", 0, "12345" },
-        /* 23*/ { BARCODE_EANX, -1, "123", 0, "00123" }, /* EAN-5 */
-        /* 24*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123", 0, "00123" },
-        /* 25*/ { BARCODE_EANX, -1, "12", 0, "12" }, /* EAN-2 */
-        /* 26*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12", 0, "12" },
-        /* 27*/ { BARCODE_EANX, -1, "1", 0, "01" }, /* EAN-2 */
-        /* 28*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1", 0, "01" },
-        /* 29*/ { BARCODE_EANX, -1, "0", 0, "00" }, /* EAN-2 */
-        /* 30*/ { BARCODE_ISBNX, -1, "0", 0, "9780000000002" },
-        /* 31*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "0", 0, "9780000000002" },
-        /* 32*/ { BARCODE_ISBNX, -1, "123456789X", 0, "9781234567897" },
-        /* 33*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "123456789X", 0, "9781234567897" },
-        /* 34*/ { BARCODE_ISBNX, -1, "9781234567897", 0, "9781234567897" },
-        /* 35*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9781234567897", 0, "9781234567897" },
-        /* 36*/ { BARCODE_ISBNX, -1, "9791234567896+12", 0, "9791234567896+12" },
-        /* 37*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9791234567896+12", 0, "9791234567896+12" },
-        /* 38*/ { BARCODE_UPCA, -1, "12345678901", 0, "123456789012" },
-        /* 39*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678901", 0, "123456789012" },
-        /* 40*/ { BARCODE_UPCA, -1, "123456789012", 0, "123456789012" },
-        /* 41*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012" },
-        /* 42*/ { BARCODE_UPCA_CHK, -1, "123456789012", 0, "123456789012" },
-        /* 43*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012" },
-        /* 44*/ { BARCODE_UPCA, -1, "12345678905+1", 0, "123456789050+01" },
-        /* 45*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678905+1", 0, "123456789050+01" },
-        /* 46*/ { BARCODE_UPCA_CHK, -1, "123456789050+1", 0, "123456789050+01" },
-        /* 47*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+1", 0, "123456789050+01" },
-        /* 48*/ { BARCODE_UPCA, -1, "123456789050+123", 0, "123456789050+00123" },
-        /* 49*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123" },
-        /* 50*/ { BARCODE_UPCA_CHK, -1, "123456789050+123", 0, "123456789050+00123" },
-        /* 51*/ { BARCODE_UPCE, -1, "12345", 0, "00123457" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
-        /* 52*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345", 0, "00123457" },
-        /* 53*/ { BARCODE_UPCE_CHK, -1, "12344", 0, "00012344" }, /* equivalent: 00012000003, hrt: 00012344, Check digit: 4 */
-        /* 54*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12344", 0, "00012344" },
-        /* 55*/ { BARCODE_UPCE, -1, "123456", 0, "01234565" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
-        /* 56*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123456", 0, "01234565" },
-        /* 57*/ { BARCODE_UPCE_CHK, -1, "123457", 0, "00123457" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
-        /* 58*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "123457", 0, "00123457" },
-        /* 59*/ { BARCODE_UPCE, -1, "1234567", 0, "12345670" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
-        /* 60*/ { BARCODE_UPCE_CHK, -1, "1234565", 0, "01234565" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
-        /* 61*/ { BARCODE_UPCE_CHK, -1, "12345670", 0, "12345670" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
-        /* 62*/ { BARCODE_UPCE, -1, "2345678", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
-        /* 63*/ { BARCODE_UPCE_CHK, -1, "23456781", 0, "03456781" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
-        /* 64*/ { BARCODE_UPCE, -1, "123455", 0, "01234558" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
-        /* 65*/ { BARCODE_UPCE_CHK, -1, "1234558", 0, "01234558" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
-        /* 66*/ { BARCODE_UPCE, -1, "456784", 0, "04567840" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
-        /* 67*/ { BARCODE_UPCE_CHK, -1, "4567840", 0, "04567840" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
-        /* 68*/ { BARCODE_UPCE, -1, "345670", 0, "03456703" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
-        /* 69*/ { BARCODE_UPCE_CHK, -1, "3456703", 0, "03456703" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
-        /* 70*/ { BARCODE_UPCE, -1, "984753", 0, "09847531" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
-        /* 71*/ { BARCODE_UPCE_CHK, -1, "9847531", 0, "09847531" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
-        /* 72*/ { BARCODE_UPCE, -1, "123453", 0, "01234531" },
-        /* 73*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123453", 0, "01234531" },
-        /* 74*/ { BARCODE_UPCE, -1, "000000", 0, "00000000" },
-        /* 75*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "000000", 0, "00000000" },
-        /* 76*/ { BARCODE_UPCE, -1, "0000000", 0, "00000000" },
-        /* 77*/ { BARCODE_UPCE, -1, "1000000", 0, "10000007" },
-        /* 78*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1000000", 0, "10000007" },
-        /* 79*/ { BARCODE_UPCE, -1, "2000000", 0, "00000000" }, /* First char 2-9 ignored, replaced with 0 */
-        /* 80*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2000000", 0, "00000000" },
-        /* 81*/ { BARCODE_UPCE, -1, "3000000", 0, "00000000" },
-        /* 82*/ { BARCODE_UPCE, -1, "8000000", 0, "00000000" },
-        /* 83*/ { BARCODE_UPCE, -1, "9000000", 0, "00000000" },
-        /* 84*/ { BARCODE_UPCE, -1, "1234567+1", 0, "12345670+01" },
-        /* 85*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567+1", 0, "12345670+01" },
-        /* 86*/ { BARCODE_UPCE, -1, "12345670+1", 0, "12345670+01" },
-        /* 87*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01" },
-        /* 88*/ { BARCODE_UPCE_CHK, -1, "12345670+1", 0, "12345670+01" },
-        /* 89*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01" },
-        /* 90*/ { BARCODE_UPCE_CHK, -1, "1234565+1", 0, "01234565+01" },
-        /* 91*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565+1", 0, "01234565+01" },
+        /*  0*/ { BARCODE_EANX, -1, "12345678901", 0, "0123456789012", "" },
+        /*  1*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345678901", 0, "0123456789012", "0123456789012" },
+        /*  2*/ { BARCODE_EANX, -1, "123456789012", 0, "1234567890128", "" },
+        /*  3*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123456789012", 0, "1234567890128", "1234567890128" },
+        /*  4*/ { BARCODE_EANX, -1, "1234567890128", 0, "1234567890128", "" }, /* EANX accepts CHK (treated as such if no leading zeroes required) */
+        /*  5*/ { BARCODE_EANX_CHK, -1, "1234567890128", 0, "1234567890128", "1234567890128" },
+        /*  6*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128", 0, "1234567890128", "1234567890128" },
+        /*  7*/ { BARCODE_EANX_CHK, -1, "123456789012", 0, "0123456789012", "0123456789012" }, /* '2' happens to be correct check digit for "012345678901" */
+        /*  8*/ { BARCODE_EANX, -1, "1234567890128+1", 0, "1234567890128+01", "" },
+        /*  9*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "1234567890128+01" },
+        /* 10*/ { BARCODE_EANX_CHK, -1, "1234567890128+1", 0, "1234567890128+01", "" },
+        /* 11*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "1234567890128+01" },
+        /* 12*/ { BARCODE_EANX, -1, "12345678", 0, "0000123456784", "" },
+        /* 13*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345678", 0, "0000123456784", "0000123456784" },
+        /* 14*/ { BARCODE_EANX, -1, "1234567", 0, "12345670", "" }, /* EAN-8 */
+        /* 15*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567", 0, "12345670", "12345670" },
+        /* 16*/ { BARCODE_EANX_CHK, -1, "12345670", 0, "12345670", "" }, /* EAN-8 */
+        /* 17*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "12345670", 0, "12345670", "12345670" },
+        /* 18*/ { BARCODE_EANX, -1, "123456", 0, "01234565", "" }, /* EAN-8 */
+        /* 19*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123456", 0, "01234565", "01234565" },
+        /* 20*/ { BARCODE_EANX_CHK, -1, "123457", 0, "00123457", "" }, /* EAN-8 */
+        /* 21*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "123457", 0, "00123457", "00123457" },
+        /* 22*/ { BARCODE_EANX, -1, "12345", 0, "12345", "" }, /* EAN-5 */
+        /* 23*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345", 0, "12345", "12345" },
+        /* 24*/ { BARCODE_EANX, -1, "123", 0, "00123", "" }, /* EAN-5 */
+        /* 25*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "123", 0, "00123", "00123" },
+        /* 26*/ { BARCODE_EANX, -1, "12", 0, "12", "" }, /* EAN-2 */
+        /* 27*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12", 0, "12", "12" },
+        /* 28*/ { BARCODE_EANX, -1, "1", 0, "01", "" }, /* EAN-2 */
+        /* 29*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1", 0, "01", "01" },
+        /* 30*/ { BARCODE_EANX, -1, "0", 0, "00", "" }, /* EAN-2 */
+        /* 31*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "0", 0, "00", "00" },
+        /* 32*/ { BARCODE_ISBNX, -1, "0", 0, "9780000000002", "" },
+        /* 33*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "0", 0, "9780000000002", "9780000000002" },
+        /* 34*/ { BARCODE_ISBNX, -1, "123456789X", 0, "9781234567897", "" },
+        /* 35*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "123456789X", 0, "9781234567897", "9781234567897" },
+        /* 36*/ { BARCODE_ISBNX, -1, "9781234567897", 0, "9781234567897", "" },
+        /* 37*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9781234567897", 0, "9781234567897", "9781234567897" },
+        /* 38*/ { BARCODE_ISBNX, -1, "9791234567896+12", 0, "9791234567896+12", "" },
+        /* 39*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9791234567896+12", 0, "9791234567896+12", "9791234567896+12" },
+        /* 40*/ { BARCODE_UPCA, -1, "12345678901", 0, "123456789012", "" },
+        /* 41*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678901", 0, "123456789012", "123456789012" },
+        /* 42*/ { BARCODE_UPCA, -1, "123456789012", 0, "123456789012", "" },
+        /* 43*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "123456789012" },
+        /* 44*/ { BARCODE_UPCA_CHK, -1, "123456789012", 0, "123456789012", "" },
+        /* 45*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "123456789012" },
+        /* 46*/ { BARCODE_UPCA, -1, "12345678905+1", 0, "123456789050+01", "" },
+        /* 47*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678905+1", 0, "123456789050+01", "123456789050+01" },
+        /* 48*/ { BARCODE_UPCA_CHK, -1, "123456789050+1", 0, "123456789050+01", "" },
+        /* 49*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+1", 0, "123456789050+01", "123456789050+01" },
+        /* 50*/ { BARCODE_UPCA, -1, "123456789050+123", 0, "123456789050+00123", "" },
+        /* 51*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "123456789050+00123" },
+        /* 52*/ { BARCODE_UPCA_CHK, -1, "123456789050+123", 0, "123456789050+00123", "" },
+        /* 53*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "123456789050+00123" },
+        /* 54*/ { BARCODE_UPCE, -1, "12345", 0, "00123457", "" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
+        /* 55*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345", 0, "00123457", "00123457" },
+        /* 56*/ { BARCODE_UPCE_CHK, -1, "12344", 0, "00012344", "" }, /* equivalent: 00012000003, hrt: 00012344, Check digit: 4 */
+        /* 57*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12344", 0, "00012344", "00012344" },
+        /* 58*/ { BARCODE_UPCE, -1, "123456", 0, "01234565", "" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
+        /* 59*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123456", 0, "01234565", "01234565" },
+        /* 60*/ { BARCODE_UPCE_CHK, -1, "123457", 0, "00123457", "" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
+        /* 61*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "123457", 0, "00123457", "00123457" },
+        /* 62*/ { BARCODE_UPCE, -1, "1234567", 0, "12345670", "" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
+        /* 63*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567", 0, "12345670", "12345670" },
+        /* 64*/ { BARCODE_UPCE_CHK, -1, "1234565", 0, "01234565", "" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
+        /* 65*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565", 0, "01234565", "01234565" },
+        /* 66*/ { BARCODE_UPCE_CHK, -1, "12345670", 0, "12345670", "" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
+        /* 67*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670", 0, "12345670", "12345670" },
+        /* 68*/ { BARCODE_UPCE, -1, "2345678", 0, "03456781", "" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
+        /* 69*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2345678", 0, "03456781", "03456781" },
+        /* 70*/ { BARCODE_UPCE_CHK, -1, "23456781", 0, "03456781", "" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
+        /* 71*/ { BARCODE_UPCE, -1, "123455", 0, "01234558", "" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 72*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123455", 0, "01234558", "01234558" },
+        /* 73*/ { BARCODE_UPCE_CHK, -1, "1234558", 0, "01234558", "" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
+        /* 74*/ { BARCODE_UPCE, -1, "456784", 0, "04567840", "" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 75*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "456784", 0, "04567840", "04567840" },
+        /* 76*/ { BARCODE_UPCE_CHK, -1, "4567840", 0, "04567840", "" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
+        /* 77*/ { BARCODE_UPCE, -1, "345670", 0, "03456703", "" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 78*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "345670", 0, "03456703", "03456703" },
+        /* 79*/ { BARCODE_UPCE_CHK, -1, "3456703", 0, "03456703", "" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
+        /* 80*/ { BARCODE_UPCE, -1, "984753", 0, "09847531", "" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
+        /* 81*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "984753", 0, "09847531", "09847531" },
+        /* 82*/ { BARCODE_UPCE_CHK, -1, "9847531", 0, "09847531", "" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
+        /* 83*/ { BARCODE_UPCE, -1, "123453", 0, "01234531", "" },
+        /* 84*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123453", 0, "01234531", "01234531" },
+        /* 85*/ { BARCODE_UPCE, -1, "000000", 0, "00000000", "" },
+        /* 86*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "000000", 0, "00000000", "00000000" },
+        /* 87*/ { BARCODE_UPCE, -1, "0000000", 0, "00000000", "" },
+        /* 88*/ { BARCODE_UPCE, -1, "1000000", 0, "10000007", "" },
+        /* 89*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1000000", 0, "10000007", "10000007" },
+        /* 90*/ { BARCODE_UPCE, -1, "2000000", 0, "00000000", "" }, /* First char 2-9 ignored, replaced with 0 */
+        /* 91*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2000000", 0, "00000000", "00000000" },
+        /* 92*/ { BARCODE_UPCE, -1, "3000000", 0, "00000000", "" },
+        /* 93*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "3000000", 0, "00000000", "00000000" },
+        /* 94*/ { BARCODE_UPCE, -1, "8000000", 0, "00000000", "" },
+        /* 95*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "8000000", 0, "00000000", "00000000" },
+        /* 96*/ { BARCODE_UPCE, -1, "9000000", 0, "00000000", "" },
+        /* 97*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "9000000", 0, "00000000", "00000000" },
+        /* 98*/ { BARCODE_UPCE, -1, "1234567+1", 0, "12345670+01", "" },
+        /* 99*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567+1", 0, "12345670+01", "12345670+01" },
+        /*100*/ { BARCODE_UPCE, -1, "12345670+1", 0, "12345670+01", "" },
+        /*101*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "12345670+01" },
+        /*102*/ { BARCODE_UPCE_CHK, -1, "12345670+1", 0, "12345670+01", "" },
+        /*103*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "12345670+01" },
+        /*104*/ { BARCODE_UPCE_CHK, -1, "1234565+1", 0, "01234565+01", "" },
+        /*105*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565+1", 0, "01234565+01", "01234565+01" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
     struct zint_symbol *symbol = NULL;
-    int expected_length;
+    int expected_length, expected_raw_length;
 
     testStartSymbol(p_ctx->func_name, &symbol);
 
@@ -771,6 +786,7 @@ static void test_hrt(const testCtx *const p_ctx) {
                     -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
                     data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
+        expected_raw_length = (int) strlen(data[i].expected_raw);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -779,6 +795,18 @@ static void test_hrt(const testCtx *const p_ctx) {
                     i, symbol->text_length, expected_length);
         assert_zero(strcmp((const char *) symbol->text, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->text, data[i].expected);
+        if (symbol->output_options & BARCODE_RAW_TEXT) {
+            assert_nonnull(symbol->raw_segs, "i:%d raw_segs NULL\n", i);
+            assert_nonnull(symbol->raw_segs[0].source, "i:%d raw_segs[0].source NULL\n", i);
+            assert_equal(symbol->raw_segs[0].length, expected_raw_length,
+                        "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
+                        i, symbol->raw_segs[0].length, expected_raw_length);
+            assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
+                        "i:%d memcmp(%s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+        } else {
+            assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
+        }
 
         ZBarcode_Delete(symbol);
     }
