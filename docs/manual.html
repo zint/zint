@@ -4472,9 +4472,10 @@ aria-hidden="true"><code>zint -b ITF14 --compliantheight -d "9212320967145"</cod
 </figure>
 <p>ITF-14, also known as UPC Shipping Container Symbol or Case Code, is
 based on Interleaved Code 2 of 5 and is designed to encode a GTIN-14. It
-takes a 13-digit numeric input (digits 0-9), which will be prefixed with
-leading zeroes if less than 13 digits entered. One modulo-10 check digit
-is added by Zint.</p>
+takes a 13-digit input, which will be prefixed with leading zeroes if
+less than 13 digits entered, or a 14-digit input if the standard GS1
+check digit is given, in which case the check digit will be verified. A
+standard GS1 check digit is added by Zint unless already given.</p>
 <p>If no border option is specified Zint defaults to adding a bounding
 box with a border width of 5. This behaviour can be overridden by using
 the <code>--bind</code> option (API
@@ -5011,9 +5012,12 @@ alt="zint -b EAN14 --compliantheight -d &quot;9889876543210&quot;" />
 <figcaption
 aria-hidden="true"><code>zint -b EAN14 --compliantheight -d "9889876543210"</code></figcaption>
 </figure>
-<p>A shorter version of GS1-128 which encodes GTIN data only. A 13-digit
-number is required. The GTIN check digit and HRT-only AI
-<code>"(01)"</code> are added by Zint.</p>
+<p>A shorter version of GS1-128 which encodes GTIN-14 data only, EAN-14
+takes a 13-digit input, which will be prefixed with leading zeroes if
+less than 13 digits entered, or a 14-digit number if the standard GS1
+check digit is given, in which case the check digit will be verified.
+The GS1 check digit (if not given) and HRT-only AI <code>"(01)"</code>
+are added by Zint.</p>
 <h4 id="nve-18-sscc-18">6.1.10.5 NVE-18 (SSCC-18)</h4>
 <figure>
 <img src="images/nve18.svg" title="fig:" class="lin"
@@ -5023,9 +5027,11 @@ aria-hidden="true"><code>zint -b NVE18 --compliantheight -d "37612345000001003"<
 </figure>
 <p>A variation of Code 128 the ‘Nummer der Versandeinheit’ standard,
 also known as SSCC-18 (Serial Shipping Container Code), includes both a
-visible modulo-10 and a hidden modulo-103 check digit. NVE-18 requires a
-17-digit numerical input. Check digits and HRT-only AI
-<code>"(00)"</code> are added by Zint.</p>
+visible standard GS1 check digit and a hidden modulo-103 check digit.
+NVE-18 takes a 17-digit input, which will be prefixed with leading zeros
+if less than 17 digits given, or an 18-digit input if the GS1 check
+digit is included, in which case the check digit will be verified. Check
+digit(s) and HRT-only AI <code>"(00)"</code> are added by Zint.</p>
 <h4 id="hibc-code-128">6.1.10.6 HIBC Code 128</h4>
 <figure>
 <img src="images/hibc_128.svg" title="fig:" class="lin"
@@ -5129,8 +5135,8 @@ aria-hidden="true"><code>zint -b DBAR_OMN --compliantheight -d "0950110153001"</
 <p>Previously known as RSS-14 this standard encodes a 13-digit item
 code. A check digit and HRT-only Application Identifier of
 <code>"(01)"</code> are added by Zint. (A 14-digit code that appends the
-check digit may be given, in which case the check digit will be
-verified.)</p>
+standard GS1 check digit may be given, in which case the check digit
+will be verified.)</p>
 <p>GS1 DataBar Omnidirectional symbols should have a height of 33 or
 greater. To produce a GS1 DataBar Truncated symbol set the symbol height
 to a value between 13 and 32. Truncated symbols may not be scannable by
@@ -5171,10 +5177,11 @@ inclusion of parentheses in the data to be encoded. If the data does not
 include parentheses, the AIs may alternatively be encased in parentheses
 using the <code>--gs1parens</code> switch. See <a
 href="#gs1-128">6.1.10.3 GS1-128</a>.</p>
-<p>GTIN data AI (01) should also include the check digit data as this is
-not calculated by Zint when this symbology is encoded. Fixed length data
-should be entered at the appropriate length for correct encoding. The
-following is an example of a valid GS1 DataBar Expanded input:</p>
+<p>GTIN data AI (01) should also include the standard GS1 check digit
+data as this is not calculated by Zint when this symbology is encoded.
+Fixed length data should be entered at the appropriate length for
+correct encoding. The following is an example of a valid GS1 DataBar
+Expanded input:</p>
 <div class="sourceCode" id="cb105"><pre
 class="sourceCode bash"><code class="sourceCode bash"><span id="cb105-1"><a href="#cb105-1" aria-hidden="true" tabindex="-1"></a><span class="ex">zint</span> <span class="at">-b</span> 31 <span class="at">-d</span> <span class="st">&quot;[01]98898765432106[3202]012345[15]991231&quot;</span></span></code></pre></div>
 <h3 id="korea-post-barcode">6.1.12 Korea Post Barcode</h3>

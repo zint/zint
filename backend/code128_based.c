@@ -42,32 +42,53 @@
 INTERNAL int gs1_128(struct zint_symbol *symbol, unsigned char source[], int length);
 
 /* Helper to do NVE18 or EAN14 */
-static int nve18_or_ean14(struct zint_symbol *symbol, unsigned char source[], const int length, const int data_len) {
+static int nve18_or_ean14(struct zint_symbol *symbol, const unsigned char source[], int length, const int data_len) {
     static const char prefix[2][2][5] = {
         { "(01)", "[01]" }, /* EAN14 */
         { "(00)", "[00]" }, /* NVE18 */
     };
+    const int idx = data_len == 17;
     unsigned char ean128_equiv[23];
     int i, zeroes;
+    unsigned char have_check_digit = '\0';
+    unsigned char check_digit;
     int error_number;
 
-    if (length > data_len) {
-        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %1$d too long (maximum %2$d)", length,
-                            data_len);
+    /* Allow and ignore any AI prefix, but only if have check digit */
+    if (length == data_len + 1 + 4
+            && (memcmp(source, prefix[idx][0], 4) == 0 || memcmp(source, prefix[idx][1], 4) == 0)) {
+        source += 4;
+        length -= 4;
+    /* Likewise initial '01' (EAN-14) or '00' (NVE-18), if have check digit */
+    } else if (length == data_len + 1 + 2 && source[0] == prefix[idx][0][1] && source[1] == prefix[idx][0][2]) {
+        source += 2;
+        length -= 2;
     }
-
+    if (length > data_len + 1) {
+        return ZEXT errtxtf(ZINT_ERROR_TOO_LONG, symbol, 345, "Input length %1$d too long (maximum %2$d)",
+                            length, data_len + 1);
+    }
     if ((i = not_sane(NEON_F, source, length))) {
         /* Note: for all "at position" error messages, escape sequences not accounted for */
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 346,
                         "Invalid character at position %d in input (digits only)", i);
     }
+    if (length == data_len + 1) {
+        have_check_digit = source[data_len];
+        length--;
+    }
 
     zeroes = data_len - length;
-    memcpy(ean128_equiv, prefix[data_len == 17][!(symbol->input_mode & GS1PARENS_MODE)], 4);
+    memcpy(ean128_equiv, prefix[idx][!(symbol->input_mode & GS1PARENS_MODE)], 4);
     memset(ean128_equiv + 4, '0', zeroes);
     memcpy(ean128_equiv + 4 + zeroes, source, length);
 
-    ean128_equiv[data_len + 4] = gs1_check_digit(ean128_equiv + 4, data_len);
+    check_digit = (unsigned char) gs1_check_digit(ean128_equiv + 4, data_len);
+    if (have_check_digit && have_check_digit != check_digit) {
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 347, "Invalid check digit '%1$c', expecting '%2$c'",
+                            have_check_digit, check_digit);
+    }
+    ean128_equiv[data_len + 4] = check_digit;
     ean128_equiv[data_len + 5] = '\0'; /* Terminating NUL required by `c128_cost()` */
 
     error_number = gs1_128(symbol, ean128_equiv, data_len + 5);

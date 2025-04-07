@@ -70,8 +70,8 @@ static void test_large(const testCtx *const p_ctx) {
         /* 21*/ { BARCODE_DPLEIT, -1, "1", 14, ZINT_ERROR_TOO_LONG, -1, -1, "Error 313: Input length 14 too long (maximum 13)" },
         /* 22*/ { BARCODE_DPIDENT, -1, "1", 11, 0, 1, 117, "" },
         /* 23*/ { BARCODE_DPIDENT, -1, "1", 12, ZINT_ERROR_TOO_LONG, -1, -1, "Error 315: Input length 12 too long (maximum 11)" },
-        /* 24*/ { BARCODE_ITF14, -1, "1", 13, 0, 1, 135, "" },
-        /* 25*/ { BARCODE_ITF14, -1, "1", 14, ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 14 too long (maximum 13)" },
+        /* 24*/ { BARCODE_ITF14, -1, "0", 14, 0, 1, 135, "" },
+        /* 25*/ { BARCODE_ITF14, -1, "0", 15, ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 15 too long (maximum 14)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -89,18 +89,26 @@ static void test_large(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilStrCpyRepeat(data_buf, data[i].pattern, data[i].length);
-        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n", i, data[i].length, (int) strlen(data_buf));
+        assert_equal(data[i].length, (int) strlen(data_buf), "i:%d length %d != strlen(data_buf) %d\n",
+                    i, data[i].length, (int) strlen(data_buf));
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data_buf, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/,
+                                    data_buf, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data_buf), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);
@@ -242,6 +250,19 @@ static void test_input(const testCtx *const p_ctx) {
         /*  8*/ { BARCODE_DPIDENT, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 316: Invalid character at position 1 in input (digits only)" },
         /*  9*/ { BARCODE_DPIDENT, -1, "1234567890A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 316: Invalid character at position 11 in input (digits only)" },
         /* 10*/ { BARCODE_ITF14, -1, "A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 312: Invalid character at position 1 in input (digits only)" },
+        /* 11*/ { BARCODE_ITF14, -1, "1234567890123", 0, 1, 135, "" },
+        /* 12*/ { BARCODE_ITF14, -1, "12345678901231", 0, 1, 135, "" },
+        /* 13*/ { BARCODE_ITF14, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 850: Invalid check digit '4', expecting '1'" },
+        /* 14*/ { BARCODE_ITF14, -1, "1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 312: Invalid character at position 14 in input (digits only)" },
+        /* 15*/ { BARCODE_ITF14, -1, "0112345678901231", 0, 1, 135, "" }, /* Allow '01' prefix if have check digit */
+        /* 16*/ { BARCODE_ITF14, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 15 too long (maximum 14)" }, /* But not without */
+        /* 17*/ { BARCODE_ITF14, -1, "[01]12345678901231", 0, 1, 135, "" }, /* Allow '[01]' prefix if have check digit */
+        /* 18*/ { BARCODE_ITF14, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 17 too long (maximum 14)" }, /* But not without */
+        /* 19*/ { BARCODE_ITF14, -1, "(01)12345678901231", 0, 1, 135, "" }, /* Allow '(01)' prefix if have check digit */
+        /* 20*/ { BARCODE_ITF14, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 17 too long (maximum 14)" }, /* But not without */
+        /* 21*/ { BARCODE_ITF14, -1, "0012345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 16 too long (maximum 14)" },
+        /* 22*/ { BARCODE_ITF14, -1, "[00]12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
+        /* 23*/ { BARCODE_ITF14, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -256,16 +277,23 @@ static void test_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n",
+                    i, ret ? "set" : "empty", symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);

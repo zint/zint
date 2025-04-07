@@ -87,10 +87,10 @@ static void test_large(const testCtx *const p_ctx) {
         /* 32*/ { BARCODE_GS1_128, -1, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]123456789012345678901234567890123456789012345678901234567890123456789012345678901234[93]123", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 104 symbol characters (maximum 102)", 1 }, /* StartC + 194 nos + CodeA + single no. + 3 FNC1s */
         /* 33*/ { BARCODE_GS1_128, -1, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345[93]1", -1, ZINT_ERROR_TOO_LONG, -1, "Error 344: Input too long, requires 132 symbol characters (maximum 102)", 1 },
         /* 34*/ { BARCODE_GS1_128, -1, -1, "[90]123456789012345678901234567890[91]1234567890123456789012345678901234567890123456789012345678901234567890[92]1234567890123456789012345678901234567890123456789012345678901234567890[92]12345678901234567890123456789012345678901234567890123456789012345[93]12", -1, ZINT_ERROR_TOO_LONG, -1, "Error 342: Input length 257 too long (maximum 256)", 1 },
-        /* 35*/ { BARCODE_EAN14, -1, -1, "1234567890123", -1, 0, 134, "", 1 },
-        /* 36*/ { BARCODE_EAN14, -1, -1, "12345678901234", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 14 too long (maximum 13)", 1 },
-        /* 37*/ { BARCODE_NVE18, -1, -1, "12345678901234567", -1, 0, 156, "", 1 },
-        /* 38*/ { BARCODE_NVE18, -1, -1, "123456789012345678", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)", 1 },
+        /* 35*/ { BARCODE_EAN14, -1, -1, "12345678901231", -1, 0, 134, "", 1 },
+        /* 36*/ { BARCODE_EAN14, -1, -1, "123456789012315", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 15 too long (maximum 14)", 1 },
+        /* 37*/ { BARCODE_NVE18, -1, -1, "123456789012345675", -1, 0, 156, "", 1 },
+        /* 38*/ { BARCODE_NVE18, -1, -1, "1234567890123456759", -1, ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 19 too long (maximum 18)", 1 },
         /* 39*/ { BARCODE_HIBC_128, -1, -1, "1", 110, 0, 684, "", 1 },
         /* 40*/ { BARCODE_HIBC_128, -1, -1, "1", 111, ZINT_ERROR_TOO_LONG, -1, "Error 202: Input length 111 too long for HIBC LIC (maximum 110)", 1 },
     };
@@ -1018,9 +1018,23 @@ static void test_nve18_input(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { -1, "123456789012345678", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 17)", "" },
-        /*  1*/ { -1, "1234A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "" },
-        /*  2*/ { ESCAPE_MODE, "\\d049\\d050\\d051\\d052A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "Position does not account for escape sequences" },
+        /*  0*/ { -1, "1234567890123456789", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 19 too long (maximum 18)", "" },
+        /*  1*/ { -1, "12345678901234567A", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 18 in input (digits only)", "" },
+        /*  2*/ { -1, "123456789012345678", ZINT_ERROR_INVALID_CHECK, -1, "Error 347: Invalid check digit '8', expecting '5'", "" },
+        /*  3*/ { -1, "1234A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "" },
+        /*  4*/ { ESCAPE_MODE, "\\d049\\d050\\d051\\d052A568901234567", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 5 in input (digits only)", "Position does not account for escape sequences" },
+        /*  5*/ { -1, "123456789012345675", 0, 156, "(14) 105 102 0 12 34 56 78 90 12 34 56 75 42 106", "" },
+        /*  6*/ { -1, "12345678901234567", 0, 156, "(14) 105 102 0 12 34 56 78 90 12 34 56 75 42 106", "" },
+        /*  7*/ { -1, "00123456789012345675", 0, 156, "(14) 105 102 0 12 34 56 78 90 12 34 56 75 42 106", "'00' prefix allowed if check digit" },
+        /*  8*/ { -1, "0012345678901234567", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 19 too long (maximum 18)", "But not without" },
+        /*  9*/ { -1, "[00]123456789012345675", 0, 156, "(14) 105 102 0 12 34 56 78 90 12 34 56 75 42 106", "'[00]' prefix allowed if check digit" },
+        /* 10*/ { -1, "[00]12345678901234567", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 21 too long (maximum 18)", "But not without" },
+        /* 11*/ { -1, "(00)123456789012345675", 0, 156, "(14) 105 102 0 12 34 56 78 90 12 34 56 75 42 106", "'(00)' prefix allowed if check digit" },
+        /* 12*/ { -1, "(00)12345678901234567", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 21 too long (maximum 18)", "But not without" },
+        /* 13*/ { -1, "01123456789012345675", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 20 too long (maximum 18)", "" },
+        /* 14*/ { -1, "[01]123456789012345675", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 22 too long (maximum 18)", "" },
+        /* 15*/ { -1, "(01)123456789012345675", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 22 too long (maximum 18)", "" },
+        /* 16*/ { -1, "(00]123456789012345675", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 22 too long (maximum 18)", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1044,18 +1058,21 @@ static void test_nve18_input(const testCtx *const p_ctx) {
                                     data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_equal(symbol->errtxt[0] == '\0', ret == 0, "i:%d symbol->errtxt not %s (%s)\n", i, ret ? "set" : "empty", symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
-            printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
-                    i, testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
+            printf("        /*%3d*/ { %s, \"%s\", %s, %d, \"%s\", \"%s\" },\n",
+                    i, testUtilInputModeName(data[i].input_mode),
+                    testUtilEscape(data[i].data, length, escaped, sizeof(escaped)),
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
             }
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);
@@ -1075,8 +1092,22 @@ static void test_ean14_input(const testCtx *const p_ctx) {
         const char *comment;
     };
     static const struct item data[] = {
-        /*  0*/ { "12345678901234", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 14 too long (maximum 13)", "" },
-        /*  1*/ { "123456789012A", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 13 in input (digits only)", "" },
+        /*  0*/ { "123456789012345", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 15 too long (maximum 14)", "" },
+        /*  1*/ { "1234567890123A", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 14 in input (digits only)", "" },
+        /*  2*/ { "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, "Error 347: Invalid check digit '4', expecting '1'", "" },
+        /*  3*/ { "123456789012A", ZINT_ERROR_INVALID_DATA, -1, "Error 346: Invalid character at position 13 in input (digits only)", "" },
+        /*  4*/ { "1234567890123", 0, 134, "(12) 105 102 1 12 34 56 78 90 12 31 74 106", "" },
+        /*  5*/ { "12345678901231", 0, 134, "(12) 105 102 1 12 34 56 78 90 12 31 74 106", "" },
+        /*  6*/ { "0112345678901231", 0, 134, "(12) 105 102 1 12 34 56 78 90 12 31 74 106", "'01' prefix allowed if check digit" },
+        /*  7*/ { "011234567890123", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 15 too long (maximum 14)", "But not without" },
+        /*  8*/ { "[01]12345678901231", 0, 134, "(12) 105 102 1 12 34 56 78 90 12 31 74 106", "'[01]' prefix allowed if check digit" },
+        /*  9*/ { "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 17 too long (maximum 14)", "But not without" },
+        /* 10*/ { "(01)12345678901231", 0, 134, "(12) 105 102 1 12 34 56 78 90 12 31 74 106", "'(01)' prefix allowed if check digit" },
+        /* 11*/ { "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 17 too long (maximum 14)", "But not without" },
+        /* 12*/ { "0012345678901231", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 16 too long (maximum 14)", "" },
+        /* 13*/ { "[00]12345678901231", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 14)", "" },
+        /* 14*/ { "(00)12345678901231", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 14)", "" },
+        /* 15*/ { "(01]12345678901231", ZINT_ERROR_TOO_LONG, -1, "Error 345: Input length 18 too long (maximum 14)", "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1100,7 +1131,8 @@ static void test_ean14_input(const testCtx *const p_ctx) {
                                     data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, \"%s\", \"%s\" },\n",
@@ -1108,9 +1140,11 @@ static void test_ean14_input(const testCtx *const p_ctx) {
                     testUtilErrorName(data[i].ret), symbol->width, symbol->errtxt, data[i].comment);
         } else {
             if (ret < ZINT_ERROR) {
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
             }
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
         }
 
         ZBarcode_Delete(symbol);

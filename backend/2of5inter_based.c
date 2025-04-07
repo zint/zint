@@ -43,14 +43,30 @@ INTERNAL int c25_inter_common(struct zint_symbol *symbol, unsigned char source[]
 INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int length) {
     int i, error_number, zeroes;
     unsigned char local_source[14];
+    unsigned char have_check_digit = '\0';
+    unsigned char check_digit;
 
-    if (length > 13) {
-        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 13)", length);
+    /* Allow and ignore any AI prefix, but only if have check digit */
+    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+        source += 4;
+        length -= 4;
+    /* Likewise initial '01', if have check digit */
+    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+        source += 2;
+        length -= 2;
+    }
+    if (length > 14) {
+        return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 311, "Input length %d too long (maximum 14)", length);
     }
 
     if ((i = not_sane(NEON_F, source, length))) {
         return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 312,
                         "Invalid character at position %d in input (digits only)", i);
+    }
+
+    if (length == 14) {
+        have_check_digit = source[13];
+        length--;
     }
 
     /* Add leading zeros as required */
@@ -61,7 +77,12 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     memcpy(local_source + zeroes, source, length);
 
     /* Calculate the check digit - the same method used for EAN-13 */
-    local_source[13] = gs1_check_digit(local_source, 13);
+    check_digit = (unsigned char) gs1_check_digit(local_source, 13);
+    if (have_check_digit && have_check_digit != check_digit) {
+        return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 850, "Invalid check digit '%1$c', expecting '%2$c'",
+                            have_check_digit, check_digit);
+    }
+    local_source[13] = check_digit;
     error_number = c25_inter_common(symbol, local_source, 14, 0 /*checkdigit_option*/, 1 /*dont_set_height*/);
 
     if (error_number < ZINT_ERROR) {
