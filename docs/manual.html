@@ -5909,26 +5909,24 @@ data-tag=": Royal Mail 4-State Mailmark Input Fields">
 </div>
 <p>The 6 Destination+DPS (Destination Post Code plus Delivery Point
 Suffix) patterns are:</p>
-<div id="tbl:mailmark_destination_dps" class="tablenos">
-<table id="tbl:mailmark_destination_dps"
-data-tag=": Royal Mail Mailmark Destination+DPS Patterns">
-<caption><span>Table : Royal Mail Mailmark Destination+DPS
+<div id="tbl:mailmark_4s_destination_dps" class="tablenos">
+<table id="tbl:mailmark_4s_destination_dps"
+data-tag=": Royal Mail 4-State Mailmark Destination+DPS Patterns">
+<caption><span>Table : Royal Mail 4-State Mailmark Destination+DPS
 Patterns:</span> </caption>
 <tbody>
 <tr>
-<td><code>FNFNLLNLS</code></td>
-<td><code>FFNNLLNLS</code></td>
-<td><code>FFNNNLLNL</code></td>
-</tr>
-<tr>
-<td><code>FFNFNLLNL</code></td>
-<td><code>FNNLLNLSS</code></td>
-<td><code>FNNNLLNLS</code></td>
+<td><code>ANNLLNLSS</code></td>
+<td><code>AANNLLNLS</code></td>
+<td><code>ANNNLLNLS</code></td>
+<td><code>AANNNLLNL</code></td>
+<td><code>ANANLLNLS</code></td>
+<td><code>AANANLLNL</code></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>where <code>'F'</code> stands for full alphabetic (A-Z),
+<p>where <code>'A'</code> stands for full alphabetic (A-Z),
 <code>'L'</code> for limited alphabetic (A-Z less
 <code>'CIKMOV'</code>), <code>'N'</code> for numeric (0-9), and
 <code>'S'</code> for space.</p>
@@ -6300,7 +6298,7 @@ data-tag=": Royal Mail 2D Mailmark Input Fields">
 <tr>
 <td style="text-align: left;">Destination+DPS</td>
 <td style="text-align: left;">9</td>
-<td style="text-align: left;">Alphanumeric (1 of 6 patterns)</td>
+<td style="text-align: left;">Alphanumeric (1 of 13 patterns)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Service Type</td>
@@ -6310,7 +6308,7 @@ data-tag=": Royal Mail 2D Mailmark Input Fields">
 <tr>
 <td style="text-align: left;">RTS Post Code</td>
 <td style="text-align: left;">7</td>
-<td style="text-align: left;">Alphanumeric (1 of 6 patterns)</td>
+<td style="text-align: left;">Alphanumeric (1 of 7 patterns)</td>
 </tr>
 <tr>
 <td style="text-align: left;">Reserved</td>
@@ -6325,12 +6323,43 @@ data-tag=": Royal Mail 2D Mailmark Input Fields">
 </tbody>
 </table>
 </div>
-<p>The 6 Destination+DPS (Destination Post Code plus Delivery Point
-Suffix) patterns are the same as for the 4-state - see Table <a
-href="#tbl:mailmark_destination_dps">: Royal Mail Mailmark
-Destination+DPS Patterns</a>. The 6 RTS (Return to Sender) Post Code
-patterns are the same also except without the additional DPS
-<code>'NL'</code>, i.e.</p>
+<p>The 13 Destination+DPS (Destination Post Code plus Delivery Point
+Suffix) patterns are similar to those for the 4-state except that the
+alphabetic limitation (<code>'L'</code> versus <code>'A'</code>) does
+not apply, only the initial “outward” part is required (the rest can be
+blank), and the whole field can be blank:</p>
+<div id="tbl:mailmark_2d_destination_dps" class="tablenos">
+<table id="tbl:mailmark_2d_destination_dps"
+data-tag=": Royal Mail 2D Mailmark Destination+DPS Patterns">
+<caption><span>Table : Royal Mail 2D Mailmark Destination+DPS
+Patterns:</span> </caption>
+<tbody>
+<tr>
+<td><code>ANNAANASS</code></td>
+<td><code>AANNAANAS</code></td>
+<td><code>ANNNAANAS</code></td>
+<td><code>AANNNAANA</code></td>
+<td><code>ANANAANAS</code></td>
+<td><code>AANANAANA</code></td>
+<td><code>SSSSSSSSS</code></td>
+</tr>
+<tr>
+<td><code>ANSSSSSSS</code></td>
+<td><code>AANSSSSSS</code></td>
+<td><code>ANNSSSSSS</code></td>
+<td><code>AANNSSSSS</code></td>
+<td><code>ANASSSSSS</code></td>
+<td><code>AANASSSSS</code></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>where <code>'A'</code> is alphabetic (A-Z), <code>'N'</code> numeric
+(0-9), and <code>'S'</code> space.</p>
+<p>The 7 RTS (Return to Sender) Post Code patterns are similar to above
+except without the DPS (<code>'NA'</code>), and the trailing “inward”
+part cannot be blank (although the whole field can be):</p>
 <div id="tbl:mailmark_2d_rts" class="tablenos">
 <table id="tbl:mailmark_2d_rts"
 data-tag=": Royal Mail 2D Mailmark RTS Patterns">
@@ -6338,21 +6367,17 @@ data-tag=": Royal Mail 2D Mailmark RTS Patterns">
 </caption>
 <tbody>
 <tr>
-<td><code>FNFNLLS</code></td>
-<td><code>FFNNLLS</code></td>
-<td><code>FFNNNLL</code></td>
-</tr>
-<tr>
-<td><code>FFNFNLL</code></td>
-<td><code>FNNLLSS</code></td>
-<td><code>FNNNLLS</code></td>
+<td><code>ANNAASS</code></td>
+<td><code>AANNAAS</code></td>
+<td><code>ANNNAAS</code></td>
+<td><code>AANNNAA</code></td>
+<td><code>ANANAAS</code></td>
+<td><code>AANANAA</code></td>
+<td><code>SSSSSSS</code></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>where <code>'F'</code> is full alphabetic (A-Z), <code>'L'</code>
-limited alphabetic (A-Z less <code>'CIKMOV'</code>), <code>'N'</code>
-numeric (0-9), and <code>'S'</code> space.</p>
 <p>Three sizes are defined, one rectangular, with varying maximum
 amounts of optional customer data:</p>
 <div id="tbl:mailmark_2d_sizes" class="tablenos">

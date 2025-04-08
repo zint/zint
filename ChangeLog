@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-04-04)
+Version 2.15.0.9 (dev) not released yet (2025-04-09)
 ====================================================
 
 **Incompatible changes**
@@ -42,6 +42,9 @@ Bugs
   `ZINT_CAP_STACKABLE`
 - ZBarcode_Cap: add missing symbologies to `ZINT_CAP_BINDABLE` (was
   `ZINT_CAP_STACKABLE`)
+- MAILMARK_2D: fix postcode validation: no limited alphanumerics, spaced-out
+  DPS "outward"-only allowed, all-blank DPS allowed (ticket #334, props Milton
+  Neal)
 - manual/man page: fix DATAMATRIX Sizes tables "28 12x26" -> "27 12x26"
 
 

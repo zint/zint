@@ -3974,15 +3974,14 @@ tag=": Royal Mail 4-State Mailmark Input Fields"}
 The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
 patterns are:
 
------------  -----------  -----------
-`FNFNLLNLS`  `FFNNLLNLS`  `FFNNNLLNL`
-`FFNFNLLNL`  `FNNLLNLSS`  `FNNNLLNLS`
------------  -----------  -----------
+-----------  -----------  ----------- -----------  -----------  -----------
+`ANNLLNLSS`  `AANNLLNLS`  `ANNNLLNLS` `AANNNLLNL`  `ANANLLNLS`  `AANANLLNL`
+-----------  -----------  ----------- -----------  -----------  -----------
 
-Table: {#tbl:mailmark_destination_dps
-tag=": Royal Mail Mailmark Destination+DPS Patterns"}
+Table: {#tbl:mailmark_4s_destination_dps
+tag=": Royal Mail 4-State Mailmark Destination+DPS Patterns"}
 
-where `'F'` stands for full alphabetic (A-Z), `'L'` for limited alphabetic (A-Z
+where `'A'` stands for full alphabetic (A-Z), `'L'` for limited alphabetic (A-Z
 less `'CIKMOV'`), `'N'` for numeric (0-9), and `'S'` for space.
 
 Four of the permitted patterns include a number of trailing space characters -
@@ -4142,30 +4141,40 @@ Version ID        1            `"1"`
 Class             1            Alphanumeric
 Supply Chain ID   7            Numeric
 Item ID           8            Numeric
-Destination+DPS   9            Alphanumeric (1 of 6 patterns)
+Destination+DPS   9            Alphanumeric (1 of 13 patterns)
 Service Type      1            Numeric
-RTS Post Code     7            Alphanumeric (1 of 6 patterns)
+RTS Post Code     7            Alphanumeric (1 of 7 patterns)
 Reserved          6            Spaces
 Customer Data     6, 45 or 29  Anything (Latin-1)
 
 Table: {#tbl:mailmark_2d_input_fields
 tag=": Royal Mail 2D Mailmark Input Fields"}
 
-The 6 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
-patterns are the same as for the 4-state - see Table
-{@tbl:mailmark_destination_dps}. The 6 RTS (Return to Sender) Post Code patterns
-are the same also except without the additional DPS `'NL'`, i.e.
+The 13 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
+patterns are similar to those for the 4-state except that the alphabetic
+limitation (`'L'` versus `'A'`) does not apply, only the initial "outward" part
+is required (the rest can be blank), and the whole field can be blank:
 
----------  ---------  ---------
-`FNFNLLS`  `FFNNLLS`  `FFNNNLL`
-`FFNFNLL`  `FNNLLSS`  `FNNNLLS`
----------  ---------  ---------
+-----------  -----------  ----------- -----------  -----------  -----------  -----------
+`ANNAANASS`  `AANNAANAS`  `ANNNAANAS` `AANNNAANA`  `ANANAANAS`  `AANANAANA`  `SSSSSSSSS`
+`ANSSSSSSS`  `AANSSSSSS`  `ANNSSSSSS` `AANNSSSSS`  `ANASSSSSS`  `AANASSSSS`
+-----------  -----------  ----------- -----------  -----------  -----------  -----------
+
+Table: {#tbl:mailmark_2d_destination_dps
+tag=": Royal Mail 2D Mailmark Destination+DPS Patterns"}
+
+where `'A'` is alphabetic (A-Z), `'N'` numeric (0-9), and `'S'` space.
+
+The 7 RTS (Return to Sender) Post Code patterns are similar to above except
+without the DPS (`'NA'`), and the trailing "inward" part cannot be blank
+(although the whole field can be):
+
+---------  ---------  --------- ---------  ---------  ---------  ---------
+`ANNAASS`  `AANNAAS`  `ANNNAAS` `AANNNAA`  `ANANAAS`  `AANANAA`  `SSSSSSS`
+---------  ---------  --------- ---------  ---------  ---------  ---------
 
 Table: {#tbl:mailmark_2d_rts
 tag=": Royal Mail 2D Mailmark RTS Patterns"}
-
-where `'F'` is full alphabetic (A-Z), `'L'` limited alphabetic (A-Z less
-`'CIKMOV'`), `'N'` numeric (0-9), and `'S'` space.
 
 Three sizes are defined, one rectangular, with varying maximum amounts of
 optional customer data:

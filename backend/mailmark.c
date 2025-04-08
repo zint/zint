@@ -40,6 +40,7 @@
  *
  */
 
+#include <assert.h>
 #include <stdio.h>
 #include "common.h"
 #include "large.h"
@@ -48,15 +49,15 @@
 #define RUBIDIUM_F (IS_NUM_F | IS_UPR_F | IS_SPC_F) /* RUBIDIUM "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ " */
 
 /* Allowed character values from Table 3 */
-#define SET_F "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+#define SET_A "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 #define SET_L "ABDEFGHJLNPQRSTUWXYZ"
 #define SET_N "0123456789"
 #define SET_S " "
 
 static const char mailmark_postcode_format[6][9] = {
-    {'F','N','F','N','L','L','N','L','S'}, {'F','F','N','N','L','L','N','L','S'},
-    {'F','F','N','N','N','L','L','N','L'}, {'F','F','N','F','N','L','L','N','L'},
-    {'F','N','N','L','L','N','L','S','S'}, {'F','N','N','N','L','L','N','L','S'}
+    {'A','N','A','N','L','L','N','L','S'}, {'A','A','N','N','L','L','N','L','S'},
+    {'A','A','N','N','N','L','L','N','L'}, {'A','A','N','A','N','L','L','N','L'},
+    {'A','N','N','L','L','N','L','S','S'}, {'A','N','N','N','L','L','N','L','S'}
 };
 
 /* Data/Check Symbols from Table 5 */
@@ -80,15 +81,16 @@ static const unsigned char mailmark_extender_group_l[26] = {
     2, 5, 7, 8, 13, 14, 15, 16, 21, 22, 23, 0, 1, 3, 4, 6, 9, 10, 11, 12, 17, 18, 19, 20, 24, 25
 };
 
-static int mailmark_verify_character(char input, char type) {
+static int mailmark_verify_character(const char input, const char type, const int is_2d) {
     int val = 0;
 
     switch (type) {
-        case 'F':
-            val = posn(SET_F, input);
+        case 'A':
+            val = posn(SET_A, input);
             break;
         case 'L':
-            val = posn(SET_L, input);
+            /* Limited only applies to 4-state (ticket #334, props Milton Neal) */
+            val = posn(is_2d ? SET_A : SET_L, input);
             break;
         case 'N':
             val = posn(SET_N, input);
@@ -98,35 +100,33 @@ static int mailmark_verify_character(char input, char type) {
             break;
     }
 
-    if (val == -1) {
-        return 0;
-    } else {
-        return 1;
-    }
+    return val != -1;
 }
 
-static int mailmark_verify_postcode(const char postcode[10], int *p_postcode_type) {
+static int mailmark_verify_postcode(const char postcode[10], const int length, int *p_postcode_type) {
+    const int is_2d = !p_postcode_type;
     int postcode_type;
 
     /* Detect postcode type */
     /* postcode_type is used to select which format of postcode
      *
-     * 1 = FNFNLLNLS
-     * 2 = FFNNLLNLS
-     * 3 = FFNNNLLNL
-     * 4 = FFNFNLLNL
-     * 5 = FNNLLNLSS
-     * 6 = FNNNLLNLS
+     * 1 = ANANLLNLS
+     * 2 = AANNLLNLS
+     * 3 = AANNNLLNL
+     * 4 = AANANLLNL
+     * 5 = ANNLLNLSS
+     * 6 = ANNNLLNLS
      * 7 = International designation
      */
+    assert(length == 9 || (length >= 2 && length <= 4));
 
-    if (strcmp(postcode, "XY11     ") == 0) {
+    if (length >= 4 && memcmp(postcode, "XY11     ", length) == 0) {
         postcode_type = 7;
     } else {
-        if (postcode[7] == ' ') {
+        if (length == 2 || (length == 9 && postcode[7] == ' ')) {
             postcode_type = 5;
         } else {
-            if (postcode[8] == ' ') {
+            if (length == 3 || (length == 9 && postcode[8] == ' ')) {
                 /* Types 1, 2 and 6 */
                 if (z_isdigit(postcode[1])) {
                     if (z_isdigit(postcode[2])) {
@@ -138,6 +138,7 @@ static int mailmark_verify_postcode(const char postcode[10], int *p_postcode_typ
                     postcode_type = 2;
                 }
             } else {
+                assert(length >= 4);
                 /* Types 3 and 4 */
                 if (z_isdigit(postcode[3])) {
                     postcode_type = 3;
@@ -156,8 +157,8 @@ static int mailmark_verify_postcode(const char postcode[10], int *p_postcode_typ
     if (postcode_type != 7) {
         int i;
         const char *const pattern = mailmark_postcode_format[postcode_type - 1];
-        for (i = 0; i < 9; i++) {
-            if (!(mailmark_verify_character(postcode[i], pattern[i]))) {
+        for (i = 0; i < length; i++) {
+            if (!mailmark_verify_character(postcode[i], pattern[i], is_2d)) {
                 return 1;
             }
         }
@@ -262,13 +263,12 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
         }
     }
 
-    /* Separate Destination Post Code plus DPS field */
+    /* Destination Post Code plus DPS field */
     for (i = 0; i < 9; i++) {
         postcode[i] = local_source[(length - 9) + i];
     }
-    postcode[9] = '\0';
-    if (mailmark_verify_postcode(postcode, &postcode_type) != 0) {
-        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 587, "Invalid postcode \"%s\"", postcode);
+    if (mailmark_verify_postcode(postcode, 9, &postcode_type) != 0) {
+        return errtxtf(ZINT_ERROR_INVALID_DATA, symbol, 587, "Invalid postcode \"%.9s\"", postcode);
     }
 
     /* Convert postcode to internal user field */
@@ -282,9 +282,9 @@ INTERNAL int mailmark_4s(struct zint_symbol *symbol, unsigned char source[], int
 
         for (i = 0; i < 9; i++) {
             switch (pattern[i]) {
-                case 'F':
+                case 'A':
                     large_mul_u64(&b, 26);
-                    large_add_u64(&b, posn(SET_F, postcode[i]));
+                    large_add_u64(&b, posn(SET_A, postcode[i]));
                     break;
                 case 'L':
                     large_mul_u64(&b, 20);
@@ -511,7 +511,7 @@ INTERNAL int datamatrix(struct zint_symbol *symbol, struct zint_seg segs[], cons
 /* Royal Mail 2D Mailmark (CMDM) (Data Matrix) */
 /* https://www.royalmailtechnical.com/rmt_docs/User_Guides_2021/Mailmark_Barcode_definition_document_20210215.pdf */
 INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int length) {
-
+    static const char spaces[9] = "         ";
     unsigned char local_source[90 + 1];
     char postcode[10];
     int i;
@@ -614,12 +614,16 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     /* Destination Post Code plus DPS field */
-    for (i = 0; i < 9; i++) {
-        postcode[i] = local_source[22 + i];
-    }
-    postcode[9] = '\0';
-    if (mailmark_verify_postcode(postcode, NULL) != 0) {
-        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 872, "Invalid Destination Post Code plus DPS");
+    if (memcmp(local_source + 22, spaces, 9) != 0) { /* If not blank (allowed) */
+        for (i = 0; i < 9; i++) {
+            postcode[i] = local_source[22 + i];
+        }
+        for (i = 8; i >= 0 && postcode[i] == ' '; i--); /* Find trailing spaces */
+        i++;
+        /* If not 2 to 4 non-spaces left, check full post code */
+        if (mailmark_verify_postcode(postcode, i >= 2 && i <= 4 ? i : 9, NULL /*p_postcode_type*/) != 0) {
+            return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 872, "Invalid Destination Post Code plus DPS");
+        }
     }
 
     /* Service Type */
@@ -628,7 +632,7 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
     }
 
     /* Return to Sender Post Code */
-    if (memcmp(local_source + 32, "       ", 7) != 0) { /* If not blank (allowed) */
+    if (memcmp(local_source + 32, spaces, 7) != 0) { /* If not blank (allowed) */
         for (i = 0; i < 7; i++) {
             postcode[i] = local_source[32 + i];
         }
@@ -640,14 +644,13 @@ INTERNAL int mailmark_2d(struct zint_symbol *symbol, unsigned char source[], int
         while (i != 9) {
             postcode[i++] = ' ';
         }
-        postcode[9] = '\0';
-        if (mailmark_verify_postcode(postcode, NULL) != 0) {
+        if (mailmark_verify_postcode(postcode, 9, NULL /*p_postcode_type*/) != 0) {
             return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 874, "Invalid Return to Sender Post Code");
         }
     }
 
     /* Reserved */
-    if (memcmp(local_source + 39, "      ", 6) != 0) {
+    if (memcmp(local_source + 39, spaces, 6) != 0) {
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 875, "Invalid Reserved field (must be spaces only)");
     }
 

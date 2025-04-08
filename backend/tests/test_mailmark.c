@@ -69,8 +69,8 @@ static void test_4s_hrt(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/,
-                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
-                    data[i].data, -1, debug);
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
         expected_raw_length = (int) strlen(data[i].expected_raw);
 
@@ -167,7 +167,8 @@ static void test_4s_input(const testCtx *const p_ctx) {
         /* 53*/ { "01000000000000000C12JQ3U A", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N L L N L S S bad 2nd S */
         /* 54*/ { "01000000000000000C123JQ4U ", 0, 3, 155, }, /* F N N N L L N L S */
         /* 55*/ { "01000000000000000C 23JQ4U ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* F N N N L L N L S bad 1st N (non-alpha otherwise matches 2nd pattern) */
-        /* 56*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1 },
+        /* 56*/ { "01000000000000000         ", ZINT_ERROR_INVALID_DATA, -1, -1 }, /* All spaces */
+        /* 57*/ { "41038422416563762XY1", ZINT_ERROR_INVALID_DATA, -1, -1 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -182,14 +183,19 @@ static void test_4s_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_2*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
         }
 
         ZBarcode_Delete(symbol);
@@ -252,19 +258,24 @@ static void test_4s_encode_vector(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
+        assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret_encode, symbol->errtxt);
 
         assert_equal(symbol->rows, 3, "i:%d symbol->rows %d != 3\n", i, symbol->rows);
 
         ret = testUtilDAFTConvert(symbol, actual_daft, sizeof(actual_daft));
         assert_nonzero(ret, "i:%d testUtilDAFTConvert ret == 0", i);
-        assert_zero(strcmp(actual_daft, data[i].expected_daft), "i:%d\n  actual %s\nexpected %s\n", i, actual_daft, data[i].expected_daft);
+        assert_zero(strcmp(actual_daft, data[i].expected_daft), "i:%d\n  actual %s\nexpected %s\n",
+                    i, actual_daft, data[i].expected_daft);
 
         ret = ZBarcode_Buffer_Vector(symbol, 0);
-        assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n", i, ret, data[i].ret_vector, symbol->errtxt);
+        assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n",
+                    i, ret, data[i].ret_vector, symbol->errtxt);
 
         ZBarcode_Delete(symbol);
     }
@@ -306,10 +317,13 @@ static void test_4s_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_4S, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { \"%s\", %s, %d, %d, \"%s\",\n",
@@ -321,11 +335,14 @@ static void test_4s_encode(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
             }
         }
 
@@ -348,6 +365,7 @@ static void test_2d_input(const testCtx *const p_ctx) {
         int expected_option_2;
     };
     /* s/\/\*[ 0-9]*\*\//\=printf("\/\*%3d*\/", line(".") - line("'<")): */
+                    /* UUUUIVCSSSSSSSIIIIIIIIDDDDDDDDDSRRRRRRRSSSSSS */
     static const struct item data[] = {
         /*  0*/ { -1, "012100123412345678AB19XY1A 0", 0, 24, 24, "", 8 },
         /*  1*/ { -1, "012100123412345678ab19xy1a 0", 0, 24, 24, "", 8 }, /* Converts to upper */
@@ -371,18 +389,36 @@ static void test_2d_input(const testCtx *const p_ctx) {
         /* 19*/ { -1, "JGB 01 100123412345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 869: Invalid Class (cannot be space)", 8 },
         /* 20*/ { -1, "JGB 012100123A12345678AB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 870: Invalid Supply Chain ID (7 digits only)", 8 },
         /* 21*/ { -1, "JGB 01210012341234567AAB19XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 871: Invalid Item ID (8 digits only)", 8 },
-        /* 22*/ { -1, "JGB 012100123412345678AB19VY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 22*/ { -1, "JGB 012100123412345678AB19VY1A 0", 0, 24, 24, "", 8 }, /* Limited ('V') allowed for 2D (ticket #334, props Milton Neal) */
         /* 23*/ { -1, "JGB 012100123412345678AB19XY11 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
-        /* 24*/ { -1, "JGB 012100123412345678AB19XY1A 7", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 873: Invalid Service Type (\"0\" to \"6\" only)", 8 },
-        /* 25*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XY", 0, 24, 24, "", 8 },
-        /* 26*/ { -1, "JGB 012100123412345678AB190XY1A0AB18XY", 0, 24, 24, "", 8 },
-        /* 27*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XI", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
-        /* 28*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XY", 0, 24, 24, "", 8 },
-        /* 29*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XC", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
-        /* 30*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY", 0, 24, 24, "", 8 },
-        /* 31*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181VY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
-        /* 32*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY     ", 0, 24, 24, "", 8 },
-        /* 33*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XYA    ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 875: Invalid Reserved field (must be spaces only)", 8 },
+        /* 24*/ { -1, "JGB 012100123412345678ABC9XY1A 0", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 25*/ { -1, "JGB 012100123412345678         0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS all spaces */
+        /* 25*/ { -1, "JGB 012100123412345678AB1      0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'AAN' + spaces */
+        /* 26*/ { -1, "JGB 012100123412345678AB       0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 27*/ { -1, "JGB 012100123412345678A1       0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'AN' + spaces */
+        /* 28*/ { -1, "JGB 012100123412345678A        0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 29*/ { -1, "JGB 012100123412345678A12      0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'ANN' + spaces */
+        /* 30*/ { -1, "JGB 012100123412345678A123     0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 31*/ { -1, "JGB 012100123412345678AB12     0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'AANN' + spaces */
+        /* 32*/ { -1, "JGB 012100123412345678AB123    0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 33*/ { -1, "JGB 012100123412345678A1B      0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'ANA' + spaces */
+        /* 34*/ { -1, "JGB 012100123412345678A1B1     0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 35*/ { -1, "JGB 012100123412345678AB1A     0AB181XY     ", 0, 24, 24, "", 8 }, /* DPS 'AANA' + spaces */
+        /* 36*/ { -1, "JGB 012100123412345678AB1A1    0AB181XY     ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 872: Invalid Destination Post Code plus DPS", 8 },
+        /* 37*/ { -1, "JGB 012100123412345678AB19XY1A 7", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 873: Invalid Service Type (\"0\" to \"6\" only)", 8 },
+        /* 38*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XY", 0, 24, 24, "", 8 },
+        /* 39*/ { -1, "JGB 012100123412345678AB190XY1A0AB18XY", 0, 24, 24, "", 8 },
+        /* 40*/ { -1, "JGB 012100123412345678AB19XY1A 0AB18XI", 0, 24, 24, "", 8 }, /* Limited ('I') allowed for 2D (ticket #334, props Milton Neal) */
+        /* 41*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XY", 0, 24, 24, "", 8 },
+        /* 42*/ { -1, "JGB 012100123412345678AB19XY1A 0A18XC", 0, 24, 24, "", 8 }, /* Limited ('C') allowed for 2D (ticket #334, props Milton Neal) */
+        /* 43*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY", 0, 24, 24, "", 8 },
+        /* 44*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181VY", 0, 24, 24, "", 8 }, /* Limited ('C') allowed for 2D (ticket #334, props Milton Neal) */
+        /* 45*/ { -1, "JGB 012100123412345678AB19XY1A 0ABC81XY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 46*/ { -1, "JGB 012100123412345678AB19XY1A 01B181VY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 47*/ { -1, "JGB 012100123412345678AB19XY1A 0AB1811Y", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 48*/ { -1, "JGB 012100123412345678AB19XY1A 0A1AB1XY", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 874: Invalid Return to Sender Post Code", 8 },
+        /* 49*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XY     ", 0, 24, 24, "", 8 },
+        /* 50*/ { -1, "JGB 012100123412345678AB19XY1A 0AB181XYA    ", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 875: Invalid Reserved field (must be spaces only)", 8 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -402,11 +438,14 @@ static void test_2d_input(const testCtx *const p_ctx) {
                                     data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
-            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n", i, symbol->rows, data[i].expected_rows);
-            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n", i, symbol->width, data[i].expected_width);
+            assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d\n",
+                        i, symbol->rows, data[i].expected_rows);
+            assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d\n",
+                        i, symbol->width, data[i].expected_width);
         }
         assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d  strcmp(%s, %s) != 0\n",
                     i, symbol->errtxt, data[i].expected_errtxt);
@@ -624,10 +663,13 @@ static void test_2d_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_MAILMARK_2D, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %d, \"%s\", %s, %d, %d, %d, \"%s\",\n",
@@ -639,30 +681,42 @@ static void test_2d_encode(const testCtx *const p_ctx) {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
                     if (!data[i].bwipp_cmp) {
-                        if (debug & ZINT_DEBUG_TEST_PRINT) printf("i:%d %s not BWIPP compatible (%s)\n", i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        if (debug & ZINT_DEBUG_TEST_PRINT) {
+                            printf("i:%d %s not BWIPP compatible (%s)\n",
+                                    i, testUtilBarcodeName(symbol->symbology), data[i].comment);
+                        }
                     } else {
-                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                        ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf,
+                                    sizeof(cmp_buf), NULL);
+                        assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                    i, testUtilBarcodeName(symbol->symbology), ret);
 
                         ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                         assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                       i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                       data[i].expected);
                     }
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[144 * 144 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                                sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
                                 NULL /*primary*/, escaped, &ret_len);
