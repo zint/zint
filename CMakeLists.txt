@@ -201,4 +201,4 @@ if(ZINT_UNINSTALL)
 endif()
 
 configure_file("zint-config.cmake.in" "zint-config.cmake" @ONLY)
-install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zint-config.cmake" DESTINATION "${CMAKE_INSTALL_DATADIR}/zint")
+install(FILES "${CMAKE_CURRENT_BINARY_DIR}/zint-config.cmake" DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/zint")
