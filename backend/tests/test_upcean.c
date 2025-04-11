@@ -115,7 +115,9 @@ static void test_upce_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
@@ -123,9 +125,12 @@ static void test_upce_input(const testCtx *const p_ctx) {
         if (ret < ZINT_ERROR) {
             if (do_bwipp && testUtilCanBwipp(i, symbol, -1, -1, -1, debug)) {
                 char modules_dump[8192 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].hrt, (int) strlen(data[i].hrt), NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilBwipp(i, symbol, -1, -1, -1, data[i].hrt, (int) strlen(data[i].hrt), NULL, cmp_buf,
+                            sizeof(cmp_buf), NULL);
+                assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, modules_dump);
                 assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
@@ -134,9 +139,12 @@ static void test_upce_input(const testCtx *const p_ctx) {
             if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                 int cmp_len, ret_len;
                 char modules_dump[8192 + 1];
-                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                            "i:%d testUtilModulesDump == -1\n", i);
+                ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                            sizeof(cmp_buf), &cmp_len);
+                assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                            i, testUtilBarcodeName(symbol->symbology), ret);
 
                 ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].hrt, (int) strlen(data[i].hrt),
                             NULL /*primary*/, escaped, &ret_len);
@@ -178,14 +186,17 @@ static void test_upca_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, "out.gif");
         ret = ZBarcode_Print(symbol, 0);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
+                    i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
 
         assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
 
@@ -298,11 +309,14 @@ static void test_upca_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected_errtxt);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected_errtxt), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected_errtxt);
 
         ZBarcode_Delete(symbol);
     }
@@ -368,9 +382,9 @@ static void test_eanx_input(const testCtx *const p_ctx) {
         /* 43*/ { BARCODE_EANX, "12+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
         /* 44*/ { BARCODE_EANX, "1+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
         /* 45*/ { BARCODE_EANX, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
-        /* 46*/ { BARCODE_EANX, "1+12345", 0, "", "" },
+        /* 46*/ { BARCODE_EANX, "1+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /* 47*/ { BARCODE_EANX, "1+", 0, "", "EAN-2" },
-        /* 48*/ { BARCODE_EANX, "+1", 0, "", "EAN-8" },
+        /* 48*/ { BARCODE_EANX, "+1", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "EAN-8" },
         /* 49*/ { BARCODE_EANX, "+", 0, "", "EAN-2" },
         /* 50*/ { BARCODE_EANX, "1", 0, "", "EAN-2" },
         /* 51*/ { BARCODE_EANX, "12", 0, "", "EAN-2" },
@@ -426,26 +440,26 @@ static void test_eanx_input(const testCtx *const p_ctx) {
         /*101*/ { BARCODE_EANX_CHK, "1234567890+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
         /*102*/ { BARCODE_EANX_CHK, "123456789+12345", ZINT_ERROR_INVALID_CHECK, "Error 275: Invalid check digit '9', expecting '4'", "" },
         /*103*/ { BARCODE_EANX_CHK, "12345678+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '8', expecting '0'", "EAN-8" },
-        /*104*/ { BARCODE_EANX_CHK, "12345670+12345", 0, "", "" },
+        /*104*/ { BARCODE_EANX_CHK, "12345670+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*105*/ { BARCODE_EANX_CHK, "1234567+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '7', expecting '5'", "" },
-        /*106*/ { BARCODE_EANX_CHK, "1234565+12345", 0, "", "" },
+        /*106*/ { BARCODE_EANX_CHK, "1234565+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*107*/ { BARCODE_EANX_CHK, "123456+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '6', expecting '7'", "" },
-        /*108*/ { BARCODE_EANX_CHK, "123457+12345", 0, "", "" },
+        /*108*/ { BARCODE_EANX_CHK, "123457+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*109*/ { BARCODE_EANX_CHK, "12345+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '5', expecting '8'", "" },
-        /*110*/ { BARCODE_EANX_CHK, "12348+12345", 0, "", "" },
+        /*110*/ { BARCODE_EANX_CHK, "12348+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*111*/ { BARCODE_EANX_CHK, "1234+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '6'", "" },
-        /*112*/ { BARCODE_EANX_CHK, "1236+12345", 0, "", "" },
-        /*113*/ { BARCODE_EANX_CHK, "123+12345", 0, "", "3 happens to be correct check digit" },
+        /*112*/ { BARCODE_EANX_CHK, "1236+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
+        /*113*/ { BARCODE_EANX_CHK, "123+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "3 happens to be correct check digit" },
         /*114*/ { BARCODE_EANX_CHK, "124+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '4', expecting '3'", "" },
         /*115*/ { BARCODE_EANX_CHK, "12+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '2', expecting '7'", "" },
-        /*116*/ { BARCODE_EANX_CHK, "17+12345", 0, "", "" },
+        /*116*/ { BARCODE_EANX_CHK, "17+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*117*/ { BARCODE_EANX_CHK, "1+12345", ZINT_ERROR_INVALID_CHECK, "Error 276: Invalid check digit '1', expecting '0'", "" },
-        /*118*/ { BARCODE_EANX_CHK, "0+12345", 0, "", "" },
+        /*118*/ { BARCODE_EANX_CHK, "0+12345", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "" },
         /*119*/ { BARCODE_EANX_CHK, "0+123456", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 6 too long (maximum 5)", "" },
         /*120*/ { BARCODE_EANX_CHK, "1+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
         /*121*/ { BARCODE_EANX_CHK, "0+12345678901234", ZINT_ERROR_TOO_LONG, "Error 297: Input add-on length 14 too long (maximum 5)", "" },
         /*122*/ { BARCODE_EANX_CHK, "1+", 0, "", "EAN-2" },
-        /*123*/ { BARCODE_EANX_CHK, "+1", 0, "", "EAN-8" },
+        /*123*/ { BARCODE_EANX_CHK, "+1", ZINT_WARN_NONCOMPLIANT, "Warning 292: EAN-8 with add-on is non-standard", "EAN-8" },
         /*124*/ { BARCODE_EANX_CHK, "+", 0, "", "EAN-2" },
         /*125*/ { BARCODE_EANX_CHK, "12345678901234", ZINT_ERROR_TOO_LONG, "Error 294: Input length 14 too long (maximum 13)", "" },
         /*126*/ { BARCODE_EANX_CHK, "1234567890123A", ZINT_ERROR_INVALID_DATA, "Error 284: Invalid character at position 14 in input (digits and \"+\" only)", "" },
@@ -470,18 +484,21 @@ static void test_eanx_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, \"%s\", %s, \"%s\", \"%s\" },\n",
-                i, testUtilBarcodeName(data[i].symbology), data[i].data, testUtilErrorName(data[i].ret),
+                i, testUtilBarcodeName(data[i].symbology), data[i].data, testUtilErrorName(ret),
                 testUtilEscape(symbol->errtxt, (int) strlen(symbol->errtxt), errtxt_escaped, sizeof(errtxt_escaped)),
                 data[i].comment);
         } else {
             assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
-            assert_zero(strcmp(symbol->errtxt, data[i].ret_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].ret_errtxt);
+            assert_zero(strcmp(symbol->errtxt, data[i].ret_errtxt), "i:%d errtxt %s != %s\n",
+                        i, symbol->errtxt, data[i].ret_errtxt);
         }
 
         ZBarcode_Delete(symbol);
@@ -623,7 +640,9 @@ static void test_isbn_input(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_ISBNX, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, BARCODE_ISBNX, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
 
@@ -633,12 +652,15 @@ static void test_isbn_input(const testCtx *const p_ctx) {
                 testUtilEscape(symbol->errtxt, (int) strlen(symbol->errtxt), errtxt_escaped, sizeof(errtxt_escaped)),
                 data[i].comment);
         } else {
-            assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
-            assert_zero(strcmp(symbol->errtxt, data[i].ret_errtxt), "i:%d errtxt %s != %s\n", i, symbol->errtxt, data[i].ret_errtxt);
+            assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret_encode, symbol->errtxt);
+            assert_zero(strcmp(symbol->errtxt, data[i].ret_errtxt), "i:%d errtxt %s != %s\n",
+                        i, symbol->errtxt, data[i].ret_errtxt);
 
             if (data[i].ret_vector != -1) {
                 ret = ZBarcode_Buffer_Vector(symbol, 0);
-                assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n", i, ret, data[i].ret_vector, symbol->errtxt);
+                assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n",
+                            i, ret, data[i].ret_vector, symbol->errtxt);
             }
         }
 
@@ -670,9 +692,9 @@ static void test_hrt(const testCtx *const p_ctx) {
         /*  6*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128", 0, "1234567890128", "1234567890128" },
         /*  7*/ { BARCODE_EANX_CHK, -1, "123456789012", 0, "0123456789012", "0123456789012" }, /* '2' happens to be correct check digit for "012345678901" */
         /*  8*/ { BARCODE_EANX, -1, "1234567890128+1", 0, "1234567890128+01", "" },
-        /*  9*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "1234567890128+01" },
+        /*  9*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "123456789012801" },
         /* 10*/ { BARCODE_EANX_CHK, -1, "1234567890128+1", 0, "1234567890128+01", "" },
-        /* 11*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "1234567890128+01" },
+        /* 11*/ { BARCODE_EANX_CHK, BARCODE_RAW_TEXT, "1234567890128+1", 0, "1234567890128+01", "123456789012801" },
         /* 12*/ { BARCODE_EANX, -1, "12345678", 0, "0000123456784", "" },
         /* 13*/ { BARCODE_EANX, BARCODE_RAW_TEXT, "12345678", 0, "0000123456784", "0000123456784" },
         /* 14*/ { BARCODE_EANX, -1, "1234567", 0, "12345670", "" }, /* EAN-8 */
@@ -700,73 +722,73 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 36*/ { BARCODE_ISBNX, -1, "9781234567897", 0, "9781234567897", "" },
         /* 37*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9781234567897", 0, "9781234567897", "9781234567897" },
         /* 38*/ { BARCODE_ISBNX, -1, "9791234567896+12", 0, "9791234567896+12", "" },
-        /* 39*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9791234567896+12", 0, "9791234567896+12", "9791234567896+12" },
+        /* 39*/ { BARCODE_ISBNX, BARCODE_RAW_TEXT, "9791234567896+12", 0, "9791234567896+12", "979123456789612" },
         /* 40*/ { BARCODE_UPCA, -1, "12345678901", 0, "123456789012", "" },
-        /* 41*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678901", 0, "123456789012", "123456789012" },
+        /* 41*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678901", 0, "123456789012", "0123456789012" },
         /* 42*/ { BARCODE_UPCA, -1, "123456789012", 0, "123456789012", "" },
-        /* 43*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "123456789012" },
+        /* 43*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "0123456789012" },
         /* 44*/ { BARCODE_UPCA_CHK, -1, "123456789012", 0, "123456789012", "" },
-        /* 45*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "123456789012" },
+        /* 45*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789012", 0, "123456789012", "0123456789012" },
         /* 46*/ { BARCODE_UPCA, -1, "12345678905+1", 0, "123456789050+01", "" },
-        /* 47*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678905+1", 0, "123456789050+01", "123456789050+01" },
+        /* 47*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "12345678905+1", 0, "123456789050+01", "012345678905001" },
         /* 48*/ { BARCODE_UPCA_CHK, -1, "123456789050+1", 0, "123456789050+01", "" },
-        /* 49*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+1", 0, "123456789050+01", "123456789050+01" },
+        /* 49*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+1", 0, "123456789050+01", "012345678905001" },
         /* 50*/ { BARCODE_UPCA, -1, "123456789050+123", 0, "123456789050+00123", "" },
-        /* 51*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "123456789050+00123" },
+        /* 51*/ { BARCODE_UPCA, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "012345678905000123" },
         /* 52*/ { BARCODE_UPCA_CHK, -1, "123456789050+123", 0, "123456789050+00123", "" },
-        /* 53*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "123456789050+00123" },
+        /* 53*/ { BARCODE_UPCA_CHK, BARCODE_RAW_TEXT, "123456789050+123", 0, "123456789050+00123", "012345678905000123" },
         /* 54*/ { BARCODE_UPCE, -1, "12345", 0, "00123457", "" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
-        /* 55*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345", 0, "00123457", "00123457" },
+        /* 55*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345", 0, "00123457", "0001234000057" },
         /* 56*/ { BARCODE_UPCE_CHK, -1, "12344", 0, "00012344", "" }, /* equivalent: 00012000003, hrt: 00012344, Check digit: 4 */
-        /* 57*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12344", 0, "00012344", "00012344" },
+        /* 57*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12344", 0, "00012344", "0000120000034" },
         /* 58*/ { BARCODE_UPCE, -1, "123456", 0, "01234565", "" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
-        /* 59*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123456", 0, "01234565", "01234565" },
+        /* 59*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123456", 0, "01234565", "0012345000065" },
         /* 60*/ { BARCODE_UPCE_CHK, -1, "123457", 0, "00123457", "" }, /* equivalent: 00123400005, hrt: 00123457, Check digit: 7 */
-        /* 61*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "123457", 0, "00123457", "00123457" },
+        /* 61*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "123457", 0, "00123457", "0001234000057" },
         /* 62*/ { BARCODE_UPCE, -1, "1234567", 0, "12345670", "" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
-        /* 63*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567", 0, "12345670", "12345670" },
+        /* 63*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567", 0, "12345670", "0123456000070" },
         /* 64*/ { BARCODE_UPCE_CHK, -1, "1234565", 0, "01234565", "" }, /* equivalent: 01234500006, hrt: 01234565, Check digit: 5 */
-        /* 65*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565", 0, "01234565", "01234565" },
+        /* 65*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565", 0, "01234565", "0012345000065" },
         /* 66*/ { BARCODE_UPCE_CHK, -1, "12345670", 0, "12345670", "" }, /* equivalent: 12345600007, hrt: 12345670, Check digit: 0 */
-        /* 67*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670", 0, "12345670", "12345670" },
+        /* 67*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670", 0, "12345670", "0123456000070" },
         /* 68*/ { BARCODE_UPCE, -1, "2345678", 0, "03456781", "" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
-        /* 69*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2345678", 0, "03456781", "03456781" },
+        /* 69*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2345678", 0, "03456781", "0034567000081" },
         /* 70*/ { BARCODE_UPCE_CHK, -1, "23456781", 0, "03456781", "" }, /* 2 ignored, equivalent: 03456700008, hrt: 03456781, Check digit: 1 */
         /* 71*/ { BARCODE_UPCE, -1, "123455", 0, "01234558", "" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
-        /* 72*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123455", 0, "01234558", "01234558" },
+        /* 72*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123455", 0, "01234558", "0012345000058" },
         /* 73*/ { BARCODE_UPCE_CHK, -1, "1234558", 0, "01234558", "" }, /* equivalent: 01234500005, hrt: 01234558, Check digit: 8 (BS 797 Rule 3 (a)) */
         /* 74*/ { BARCODE_UPCE, -1, "456784", 0, "04567840", "" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
-        /* 75*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "456784", 0, "04567840", "04567840" },
+        /* 75*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "456784", 0, "04567840", "0045670000080" },
         /* 76*/ { BARCODE_UPCE_CHK, -1, "4567840", 0, "04567840", "" }, /* equivalent: 04567000008, hrt: 04567840, Check digit: 0 (BS 797 Rule 3 (b)) */
         /* 77*/ { BARCODE_UPCE, -1, "345670", 0, "03456703", "" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
-        /* 78*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "345670", 0, "03456703", "03456703" },
+        /* 78*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "345670", 0, "03456703", "0034000005673" },
         /* 79*/ { BARCODE_UPCE_CHK, -1, "3456703", 0, "03456703", "" }, /* equivalent: 03400000567, hrt: 03456703, Check digit: 3 (BS 797 Rule 3 (c)) */
         /* 80*/ { BARCODE_UPCE, -1, "984753", 0, "09847531", "" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
-        /* 81*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "984753", 0, "09847531", "09847531" },
+        /* 81*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "984753", 0, "09847531", "0098400000751" },
         /* 82*/ { BARCODE_UPCE_CHK, -1, "9847531", 0, "09847531", "" }, /* equivalent: 09840000075, hrt: 09847531, Check digit: 1 (BS 797 Rule 3 (d)) */
         /* 83*/ { BARCODE_UPCE, -1, "123453", 0, "01234531", "" },
-        /* 84*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123453", 0, "01234531", "01234531" },
+        /* 84*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "123453", 0, "01234531", "0012300000451" },
         /* 85*/ { BARCODE_UPCE, -1, "000000", 0, "00000000", "" },
-        /* 86*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "000000", 0, "00000000", "00000000" },
+        /* 86*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "000000", 0, "00000000", "0000000000000" },
         /* 87*/ { BARCODE_UPCE, -1, "0000000", 0, "00000000", "" },
         /* 88*/ { BARCODE_UPCE, -1, "1000000", 0, "10000007", "" },
-        /* 89*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1000000", 0, "10000007", "10000007" },
+        /* 89*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1000000", 0, "10000007", "0100000000007" },
         /* 90*/ { BARCODE_UPCE, -1, "2000000", 0, "00000000", "" }, /* First char 2-9 ignored, replaced with 0 */
-        /* 91*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2000000", 0, "00000000", "00000000" },
+        /* 91*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "2000000", 0, "00000000", "0000000000000" },
         /* 92*/ { BARCODE_UPCE, -1, "3000000", 0, "00000000", "" },
-        /* 93*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "3000000", 0, "00000000", "00000000" },
+        /* 93*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "3000000", 0, "00000000", "0000000000000" },
         /* 94*/ { BARCODE_UPCE, -1, "8000000", 0, "00000000", "" },
-        /* 95*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "8000000", 0, "00000000", "00000000" },
+        /* 95*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "8000000", 0, "00000000", "0000000000000" },
         /* 96*/ { BARCODE_UPCE, -1, "9000000", 0, "00000000", "" },
-        /* 97*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "9000000", 0, "00000000", "00000000" },
+        /* 97*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "9000000", 0, "00000000", "0000000000000" },
         /* 98*/ { BARCODE_UPCE, -1, "1234567+1", 0, "12345670+01", "" },
-        /* 99*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567+1", 0, "12345670+01", "12345670+01" },
+        /* 99*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "1234567+1", 0, "12345670+01", "012345600007001" },
         /*100*/ { BARCODE_UPCE, -1, "12345670+1", 0, "12345670+01", "" },
-        /*101*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "12345670+01" },
+        /*101*/ { BARCODE_UPCE, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "012345600007001" },
         /*102*/ { BARCODE_UPCE_CHK, -1, "12345670+1", 0, "12345670+01", "" },
-        /*103*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "12345670+01" },
+        /*103*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "12345670+1", 0, "12345670+01", "012345600007001" },
         /*104*/ { BARCODE_UPCE_CHK, -1, "1234565+1", 0, "01234565+01", "" },
-        /*105*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565+1", 0, "01234565+01", "01234565+01" },
+        /*105*/ { BARCODE_UPCE_CHK, BARCODE_RAW_TEXT, "1234565+1", 0, "01234565+01", "001234500006501" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -783,8 +805,8 @@ static void test_hrt(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
-                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
-                    data[i].data, -1, debug);
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         expected_length = (int) strlen(data[i].expected);
         expected_raw_length = (int) strlen(data[i].expected_raw);
 
@@ -802,8 +824,9 @@ static void test_hrt(const testCtx *const p_ctx) {
                         "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
                         i, symbol->raw_segs[0].length, expected_raw_length);
             assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
-                        "i:%d memcmp(%s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+                        "i:%d memcmp(%.*s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
+                        expected_raw_length);
         } else {
             assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
@@ -845,13 +868,17 @@ static void test_vector_same(const testCtx *const p_ctx) {
             symbol = ZBarcode_Create();
             assert_nonnull(symbol, "Symbol not created\n");
 
-            length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, -1, debug);
+            length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                        -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                        data[i].data, -1, debug);
 
             ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-            assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret_encode, symbol->errtxt);
+            assert_equal(ret, data[i].ret_encode, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                        i, ret, data[i].ret_encode, symbol->errtxt);
 
             ret = ZBarcode_Buffer_Vector(symbol, 0);
-            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n", i, ret, data[i].ret_vector, symbol->errtxt);
+            assert_equal(ret, data[i].ret_vector, "i:%d ZBarcode_Buffer_Vector ret %d != %d (%s)\n",
+                        i, ret, data[i].ret_vector, symbol->errtxt);
 
             assert_nonnull(symbol->vector, "i:%d symbol->vector NULL\n", i);
             vectors[j] = testUtilVectorCpy(symbol->vector);
@@ -954,10 +981,10 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 20*/ { BARCODE_UPCE_CHK, -1, "12345670+12345", 0, 1, 105, "Example of UPC-E with 5-digit add-on",
                     "101001001101111010100011011100100001010010001010101000000010110110011010010011010100001010100011010110001"
                 },
-        /* 21*/ { BARCODE_EANX, -1, "1234567+12", 0, 1, 94, "Example of EAN-8 with 2-digit add-on",
+        /* 21*/ { BARCODE_EANX, -1, "1234567+12", ZINT_WARN_NONCOMPLIANT, 1, 94, "Example of EAN-8 with 2-digit add-on",
                     "1010011001001001101111010100011010101001110101000010001001110010101000000010110011001010010011"
                 },
-        /* 22*/ { BARCODE_EANX_CHK, -1, "12345670+12345", 0, 1, 121, "Example of EAN-8 with 5-digit add-on",
+        /* 22*/ { BARCODE_EANX_CHK, -1, "12345670+12345", ZINT_WARN_NONCOMPLIANT, 1, 121, "Example of EAN-8 with 5-digit add-on",
                     "1010011001001001101111010100011010101001110101000010001001110010101000000010110110011010010011010100001010100011010110001"
                 },
         /* 23*/ { BARCODE_EANX, -1, "54321", 0, 1, 47, "Example of EAN-5",
@@ -966,10 +993,10 @@ static void test_encode(const testCtx *const p_ctx) {
         /* 24*/ { BARCODE_EANX, -1, "21", 0, 1, 20, "Example of EAN-2",
                     "10110010011010110011"
                 },
-        /* 25*/ { BARCODE_EANX_CHK, 9, "76543210+21", 0, 1, 96, "Example of EAN-8 barcode with two-digit add-on, addon_gap 9",
+        /* 25*/ { BARCODE_EANX_CHK, 9, "76543210+21", ZINT_WARN_NONCOMPLIANT, 1, 96, "Example of EAN-8 barcode with two-digit add-on, addon_gap 9",
                     "101011101101011110110001010001101010100001011011001100110111001010100000000010110010011010110011"
                 },
-        /* 26*/ { BARCODE_EANX, 12, "7654321+54321", 0, 1, 126, "Example of EAN-8 barcode with five-digit add-on, addon_gap 12",
+        /* 26*/ { BARCODE_EANX, 12, "7654321+54321", ZINT_WARN_NONCOMPLIANT, 1, 126, "Example of EAN-8 barcode with five-digit add-on, addon_gap 12",
                     "101011101101011110110001010001101010100001011011001100110111001010100000000000010110111001010100011010100001010010011010011001"
                 },
         /* 27*/ { BARCODE_UPCA_CHK, 10, "210987654329+21", 0, 1, 125, "Example of UPC-A with 2-digit add-on, addon_gap 10",
@@ -1021,40 +1048,53 @@ static void test_encode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, data[i].option_2, -1, -1 /*output_options*/, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, data[i].option_2, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %d, \"%s\", %s, %d, %d, \"%s\",\n",
-                                i, testUtilBarcodeName(data[i].symbology), data[i].option_2, data[i].data, testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
+                                i, testUtilBarcodeName(data[i].symbology), data[i].option_2, data[i].data,
+                                testUtilErrorName(data[i].ret), symbol->rows, symbol->width, data[i].comment);
             testUtilModulesPrint(symbol, "                    ", "\n");
             printf("                },\n");
         } else {
             if (ret < ZINT_ERROR) {
                 int width, row;
 
-                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n", i, symbol->rows, data[i].expected_rows, data[i].data);
-                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n", i, symbol->width, data[i].expected_width, data[i].data);
+                assert_equal(symbol->rows, data[i].expected_rows, "i:%d symbol->rows %d != %d (%s)\n",
+                            i, symbol->rows, data[i].expected_rows, data[i].data);
+                assert_equal(symbol->width, data[i].expected_width, "i:%d symbol->width %d != %d (%s)\n",
+                            i, symbol->width, data[i].expected_width, data[i].data);
 
                 ret = testUtilModulesCmp(symbol, data[i].expected, &width, &row);
-                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n", i, ret, width, row, data[i].data);
+                assert_zero(ret, "i:%d testUtilModulesCmp ret %d != 0 width %d row %d (%s)\n",
+                            i, ret, width, row, data[i].data);
 
                 if (do_bwipp && testUtilCanBwipp(i, symbol, -1, data[i].option_2, -1, debug)) {
-                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf, sizeof(cmp_buf), NULL);
-                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    ret = testUtilBwipp(i, symbol, -1, data[i].option_2, -1, data[i].data, length, NULL, cmp_buf,
+                                sizeof(cmp_buf), NULL);
+                    assert_zero(ret, "i:%d %s testUtilBwipp ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilBwippCmp(symbol, cmp_msg, cmp_buf, data[i].expected);
                     assert_zero(ret, "i:%d %s testUtilBwippCmp %d != 0 %s\n  actual: %s\nexpected: %s\n",
-                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf, data[i].expected);
+                                   i, testUtilBarcodeName(symbol->symbology), ret, cmp_msg, cmp_buf,
+                                   data[i].expected);
                 }
                 if (do_zxingcpp && testUtilCanZXingCPP(i, symbol, data[i].data, length, debug)) {
                     int cmp_len, ret_len;
                     char modules_dump[8192 + 1];
-                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1, "i:%d testUtilModulesDump == -1\n", i);
-                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf, sizeof(cmp_buf), &cmp_len);
-                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n", i, testUtilBarcodeName(symbol->symbology), ret);
+                    assert_notequal(testUtilModulesDump(symbol, modules_dump, sizeof(modules_dump)), -1,
+                                "i:%d testUtilModulesDump == -1\n", i);
+                    ret = testUtilZXingCPP(i, symbol, data[i].data, length, modules_dump, 1 /*zxingcpp_cmp*/, cmp_buf,
+                                sizeof(cmp_buf), &cmp_len);
+                    assert_zero(ret, "i:%d %s testUtilZXingCPP ret %d != 0\n",
+                                i, testUtilBarcodeName(symbol->symbology), ret);
 
                     ret = testUtilZXingCPPCmp(symbol, cmp_msg, cmp_buf, cmp_len, data[i].data, length,
                                 NULL /*primary*/, escaped, &ret_len);
@@ -1091,7 +1131,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /* 5*/ { BARCODE_UPCE, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
         /* 6*/ { BARCODE_UPCE_CHK, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
         /* 7*/ { BARCODE_ISBNX, "+123456789012345678", -1, ZINT_ERROR_TOO_LONG },
-        /* 8*/ { BARCODE_EANX, "+12345", -1, 0 },
+        /* 8*/ { BARCODE_EANX, "+12345", -1, ZINT_WARN_NONCOMPLIANT },
         /* 9*/ { BARCODE_EANX, "+123456", -1, ZINT_ERROR_TOO_LONG },
         /*10*/ { BARCODE_EANX, "000002000000200+203", -1, ZINT_ERROR_TOO_LONG }, /* #218 Jan Schrewe CI-Fuzz */
     };
@@ -1108,7 +1148,9 @@ static void test_fuzz(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
+                                    data[i].data, data[i].length, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);

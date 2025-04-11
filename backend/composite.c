@@ -1456,8 +1456,13 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
             }
         } else {
             /* If symbol->height given then min row height was returned, else default height */
-            error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
-                                        symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
+            if (error_number == 0) { /* Avoid overwriting any previous warning (e.g. EAN-8 with add-on) */
+                error_number = set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                            symbol->height ? 0.0f : linear->height, 0.0f, 0 /*no_errtxt*/);
+            } else {
+                (void) set_height(symbol, symbol->height ? linear->height : 0.0f,
+                                            symbol->height ? 0.0f : linear->height, 0.0f, 1 /*no_errtxt*/);
+            }
         }
     } else {
         if (symbol->symbology == BARCODE_DBAR_STK_CC) {

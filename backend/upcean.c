@@ -84,7 +84,7 @@ static const char EANsetB[10][4] = {
     {'1','3','2','1'}, {'4','1','1','1'}, {'2','1','3','1'}, {'3','1','2','1'}, {'2','1','1','3'}
 };
 
-/* UPC A is usually used for 12 digit numbers, but this function takes a source of any length */
+/* Write UPC-A or EAN-8 encodation to destination `d` */
 static void upca_set_dest(const unsigned char source[], const int length, char *d) {
     int i, half_way;
 
@@ -156,12 +156,12 @@ static int upca(struct zint_symbol *symbol, const unsigned char source[], int le
 }
 
 /* UPC-E, allowing for composite if `cc_rows` set */
-static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char *d, int cc_rows) {
+static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char *d, int cc_rows,
+                    unsigned char equivalent[12]) {
     int i, num_system;
     char emode, check_digit;
     const char *parity;
     char src_check_digit = '\0';
-    unsigned char equivalent[12];
     const unsigned char *hrt = symbol->text;
     int error_number = 0;
 
@@ -266,6 +266,7 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
         return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 274, "Invalid check digit '%1$c', expecting '%2$c'",
                             src_check_digit, check_digit);
     }
+    equivalent[11] = check_digit;
 
     /* Use the number system and check digit information to choose a parity scheme */
     if (num_system == 1) {
@@ -322,8 +323,9 @@ static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int lengt
 }
 
 /* UPC-E is a zero-compressed version of UPC-A */
-static int upce(struct zint_symbol *symbol, unsigned char source[], int length, char dest[]) {
-    return upce_cc(symbol, source, length, dest, 0 /*cc_rows*/);
+static int upce(struct zint_symbol *symbol, unsigned char source[], int length, char dest[],
+                unsigned char equivalent[12]) {
+    return upce_cc(symbol, source, length, dest, 0 /*cc_rows*/, equivalent);
 }
 
 /* EAN-2 and EAN-5 add-on codes */
@@ -753,6 +755,7 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
 INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, int cc_rows) {
     unsigned char first_part[14], second_part[6];
     unsigned char local_source[20]; /* Allow 13 + "+" + 5 + 1 */
+    unsigned char equivalent[12] = {0}; /* For UPC-E - GTIN-12 equivalent */
     char dest[1000] = {0};
     int with_addon;
     int error_number = 0, i, plus_count;
@@ -899,7 +902,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
             if ((first_part_len >= 6) && (first_part_len <= 8)) {
-                error_number = upce(symbol, first_part, first_part_len, dest);
+                error_number = upce(symbol, first_part, first_part_len, dest, equivalent);
             } else {
                 return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 290,
                                 "Input length %d wrong (6, 7 or 8 characters required)", first_part_len);
@@ -917,7 +920,7 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
                 symbol->row_height[symbol->rows + 1] = 2;
                 symbol->row_height[symbol->rows + 2] = 2;
                 symbol->rows += 3;
-                error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows);
+                error_number = upce_cc(symbol, first_part, first_part_len, dest, cc_rows, equivalent);
             } else {
                 return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 291,
                                 "Input length %d wrong (6, 7 or 8 characters required)", first_part_len);
@@ -944,10 +947,40 @@ INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int len
         ean_add_on(second_part, second_part_len, dest, addon_gap);
         hrt_cat_chr_nochk(symbol, '+');
         hrt_cat_nochk(symbol, second_part, second_part_len);
+        if (first_part_len <= 8 && (symbol->symbology == BARCODE_EANX || symbol->symbology == BARCODE_EANX_CHK
+                || symbol->symbology == BARCODE_EANX_CC)) {
+            error_number = errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 292, "EAN-8 with add-on is non-standard");
+        }
     }
 
-    if (raw_text && rt_cpy(symbol, symbol->text, symbol->text_length)) { /* Just use the HRT */
-        return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+    if (raw_text) {
+        const int is_ean = symbol->symbology == BARCODE_EANX || symbol->symbology == BARCODE_EANX_CHK
+                            || symbol->symbology == BARCODE_EANX_CC || symbol->symbology == BARCODE_ISBNX;
+        /* EAN-8 with no add-on, EAN-2, EAN-5 */
+        if (is_ean && symbol->text_length <= 8 && !second_part_len) {
+            if (rt_cpy(symbol, symbol->text, symbol->text_length)) { /* Just use the HRT */
+                return ZINT_ERROR_MEMORY; /* `rt_cpy()` only fails with OOM */
+            }
+        } else { /* Expand to GTIN-13 (UPC-A, UPC-E, EAN-8 with add-on) */
+            unsigned char gtin13[13];
+            /* EAN-13, ISBNX */
+            if (is_ean && symbol->text_length >= 13) {
+                memcpy(gtin13, symbol->text, 13);
+            /* UPC-E */
+            } else if (*equivalent) {
+                gtin13[0] = '0';
+                memcpy(gtin13 + 1, equivalent, 12);
+            /* UPC-A, EAN-8 */
+            } else {
+                const int zeroes = 13 - (symbol->text_length - (second_part_len ? second_part_len + 1 : 0));
+                assert(zeroes > 0);
+                memset(gtin13, '0', zeroes);
+                memcpy(gtin13 + zeroes, symbol->text, 13 - zeroes);
+            }
+            if (rt_cpy_cat(symbol, gtin13, 13, '\xFF' /*none*/, second_part, second_part_len)) {
+                return ZINT_ERROR_MEMORY; /* `rt_cpy_cat()` only fails with OOM */
+            }
+        }
     }
 
     expand(symbol, dest, (int) strlen(dest));

@@ -230,7 +230,7 @@ static void test_checks(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
-                                    data[i].option_1, -1, -1, -1 /*output_options*/,
+                                    data[i].option_1, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     data[i].data, data[i].length, debug);
         if (data[i].height) {
             symbol->height = data[i].height;
@@ -329,7 +329,7 @@ static void test_checks_segs(const testCtx *const p_ctx) {
         assert_nonnull(symbol, "Symbol not created\n");
 
         testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, data[i].eci,
-                            data[i].option_1, -1, -1, -1 /*output_options*/,
+                            data[i].option_1, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                             NULL, 0, debug);
         if (data[i].warn_level != -1) {
             symbol->warn_level = data[i].warn_level;
@@ -394,7 +394,7 @@ static void test_input_data(const testCtx *const p_ctx) {
             text = data[i].data;
         }
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     text, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(text), length);
@@ -411,7 +411,9 @@ static void test_input_data(const testCtx *const p_ctx) {
     if (p_ctx->index == -1 && p_ctx->exclude[0] == -1) {
         char data_buf[ZINT_MAX_DATA_LEN + 10];
         int expected_ret = ZINT_ERROR_TOO_LONG;
-        const char *expected_errtxt[] = { "Error 797: Input too long", "Error 340: Input length 17399 too long (maximum 256)" };
+        const char *expected_errtxt[] = {
+            "Error 797: Input too long", "Error 340: Input length 17399 too long (maximum 256)"
+        };
 
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
@@ -603,8 +605,8 @@ static void test_input_mode(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode,
-                                    -1 /*eci*/, -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+        length = testUtilSetSymbol(symbol, BARCODE_CODE49 /*Supports GS1*/, data[i].input_mode, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     data[i].data, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
@@ -753,7 +755,7 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
         debug |= ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode | ESCAPE_MODE, data[i].eci,
-                                    -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                     text, -1, debug);
 
         ret = ZBarcode_Encode(symbol, TCU(text), length);
@@ -798,7 +800,7 @@ static void test_escape_char_process(const testCtx *const p_ctx) {
                 symbol2->debug = ZINT_DEBUG_TEST; /* Needed to get codeword dump in errtxt */
 
                 (void) testUtilSetSymbol(symbol2, data[i].symbology, data[i].input_mode | ESCAPE_MODE, data[i].eci,
-                                        -1 /*option_1*/, -1, -1, -1 /*output_options*/,
+                                        -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, -1 /*output_options*/,
                                         data[i].data, -1, debug);
 
                 ret = ZBarcode_Encode_File(symbol2, input_filename);
@@ -2047,7 +2049,8 @@ static void test_barcode_name(const testCtx *const p_ctx) {
         }
         prev_ret = test_prev_ZBarcode_BarcodeName(symbol_id, prev_name);
         assert_equal(ret, prev_ret, "ZBarcode_BarcodeName(%d) ret %d != prev_ret %d\n", symbol_id, ret, prev_ret);
-        assert_zero(strcmp(name, prev_name), "ZBarcode_BarcodeName(%d) strcmp(%s, %s) != 0\n", symbol_id, name, prev_name);
+        assert_zero(strcmp(name, prev_name), "ZBarcode_BarcodeName(%d) strcmp(%s, %s) != 0\n",
+                    symbol_id, name, prev_name);
     }
 
     testFinish();
@@ -2104,13 +2107,15 @@ static void test_error_tag(const testCtx *const p_ctx) {
 
         ret = error_tag_test(data[i].error_number, symbol, -1, data[i].data);
         assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+        assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, data[i].expected);
 
         if ((int) strlen(data[i].data) < 100) {
             strcpy(symbol->errtxt, data[i].data);
             ret = error_tag_test(data[i].error_number, symbol, -1, NULL);
             assert_equal(ret, data[i].ret, "i:%d ret %d != %d\n", i, ret, data[i].ret);
-            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n", i, symbol->errtxt, data[i].expected);
+            assert_zero(strcmp(symbol->errtxt, data[i].expected), "i:%d strcmp(%s, %s) != 0\n",
+                        i, symbol->errtxt, data[i].expected);
         }
     }
 
@@ -2169,7 +2174,8 @@ static void test_zero_outfile(const testCtx *const p_ctx) {
     assert_zero(symbol->outfile[0], "ZBarcode_Encode() outfile non-zero\n");
 
     ret = ZBarcode_Print(symbol, 0);
-    assert_equal(ret, ZINT_ERROR_INVALID_OPTION, "ZBarcode_Print() ret %d != ZINT_ERROR_INVALID_OPTION (%s)\n", ret, symbol->errtxt);
+    assert_equal(ret, ZINT_ERROR_INVALID_OPTION, "ZBarcode_Print() ret %d != ZINT_ERROR_INVALID_OPTION (%s)\n",
+                ret, symbol->errtxt);
     assert_zero(symbol->outfile[0], "ZBarcode_Print() outfile non-zero\n");
 
     ret = ZBarcode_Buffer(symbol, 0);
@@ -2344,10 +2350,13 @@ static void test_reset(const testCtx *const p_ctx) {
     assert_nonzero(symbol->symbology == symbol_def->symbology, "ZBarcodeBuffer symbology != symbol_def\n");
     assert_nonzero(symbol->height == symbol_def->height, "ZBarcodeBuffer height != symbol_def\n");
     assert_nonzero(symbol->scale == symbol_def->scale, "ZBarcodeBuffer scale != symbol_def\n");
-    assert_nonzero(symbol->whitespace_width == symbol_def->whitespace_width, "ZBarcodeBuffer whitespace_width != symbol_def\n");
-    assert_nonzero(symbol->whitespace_height == symbol_def->whitespace_height, "ZBarcodeBuffer whitespace_height != symbol_def\n");
+    assert_nonzero(symbol->whitespace_width == symbol_def->whitespace_width,
+                "ZBarcodeBuffer whitespace_width != symbol_def\n");
+    assert_nonzero(symbol->whitespace_height == symbol_def->whitespace_height,
+                "ZBarcodeBuffer whitespace_height != symbol_def\n");
     assert_nonzero(symbol->border_width == symbol_def->border_width, "ZBarcodeBuffer border_width != symbol_def\n");
-    assert_nonzero(symbol->output_options == symbol_def->output_options, "ZBarcodeBuffer output_options != symbol_def\n");
+    assert_nonzero(symbol->output_options == symbol_def->output_options,
+                "ZBarcodeBuffer output_options != symbol_def\n");
     assert_zero(strcmp(symbol->fgcolour, symbol_def->fgcolour), "ZBarcodeBuffer fgcolour != symbol_def\n");
     assert_zero(strcmp(symbol->bgcolour, symbol_def->bgcolour), "ZBarcodeBuffer bgcolour != symbol_def\n");
     assert_zero(strcmp(symbol->fgcolor, symbol_def->fgcolor), "ZBarcodeBuffer fgcolor != symbol_def\n");
@@ -2363,9 +2372,12 @@ static void test_reset(const testCtx *const p_ctx) {
     assert_nonzero(symbol->dpmm == symbol_def->dpmm, "ZBarcodeBuffer dpmm != symbol_def\n");
     assert_nonzero(symbol->dot_size == symbol_def->dot_size, "ZBarcodeBuffer dot_size != symbol_def\n");
     assert_nonzero(symbol->text_gap == symbol_def->text_gap, "ZBarcodeBuffer text_gap != symbol_def\n");
-    assert_nonzero(symbol->guard_descent == symbol_def->guard_descent, "ZBarcodeBuffer guard_descent != symbol_def\n");
-    assert_nonzero(symbol->structapp.index == symbol_def->structapp.index, "ZBarcodeBuffer structapp.index != symbol_def\n");
-    assert_nonzero(symbol->structapp.count == symbol_def->structapp.count, "ZBarcodeBuffer structapp.count != symbol_def\n");
+    assert_nonzero(symbol->guard_descent == symbol_def->guard_descent,
+                "ZBarcodeBuffer guard_descent != symbol_def\n");
+    assert_nonzero(symbol->structapp.index == symbol_def->structapp.index,
+                "ZBarcodeBuffer structapp.index != symbol_def\n");
+    assert_nonzero(symbol->structapp.count == symbol_def->structapp.count,
+                "ZBarcodeBuffer structapp.count != symbol_def\n");
     assert_nonzero(symbol->warn_level == symbol_def->warn_level, "ZBarcodeBuffer warn_level != symbol_def\n");
 
     /* Vector */
@@ -2397,10 +2409,13 @@ static void test_reset(const testCtx *const p_ctx) {
     assert_nonzero(symbol->symbology == symbol_def->symbology, "ZBarcodeBuffer symbology != symbol_def\n");
     assert_nonzero(symbol->height == symbol_def->height, "ZBarcodeBuffer height != symbol_def\n");
     assert_nonzero(symbol->scale == symbol_def->scale, "ZBarcodeBuffer scale != symbol_def\n");
-    assert_nonzero(symbol->whitespace_width == symbol_def->whitespace_width, "ZBarcodeBuffer whitespace_width != symbol_def\n");
-    assert_nonzero(symbol->whitespace_height == symbol_def->whitespace_height, "ZBarcodeBuffer whitespace_height != symbol_def\n");
+    assert_nonzero(symbol->whitespace_width == symbol_def->whitespace_width,
+                "ZBarcodeBuffer whitespace_width != symbol_def\n");
+    assert_nonzero(symbol->whitespace_height == symbol_def->whitespace_height,
+                "ZBarcodeBuffer whitespace_height != symbol_def\n");
     assert_nonzero(symbol->border_width == symbol_def->border_width, "ZBarcodeBuffer border_width != symbol_def\n");
-    assert_nonzero(symbol->output_options == symbol_def->output_options, "ZBarcodeBuffer output_options != symbol_def\n");
+    assert_nonzero(symbol->output_options == symbol_def->output_options,
+                "ZBarcodeBuffer output_options != symbol_def\n");
     assert_zero(strcmp(symbol->fgcolour, symbol_def->fgcolour), "ZBarcodeBuffer fgcolour != symbol_def\n");
     assert_zero(strcmp(symbol->bgcolour, symbol_def->bgcolour), "ZBarcodeBuffer bgcolour != symbol_def\n");
     assert_zero(strcmp(symbol->fgcolor, symbol_def->fgcolor), "ZBarcodeBuffer fgcolor != symbol_def\n");
@@ -2416,9 +2431,12 @@ static void test_reset(const testCtx *const p_ctx) {
     assert_nonzero(symbol->dpmm == symbol_def->dpmm, "ZBarcodeBuffer dpmm != symbol_def\n");
     assert_nonzero(symbol->dot_size == symbol_def->dot_size, "ZBarcodeBuffer dot_size != symbol_def\n");
     assert_nonzero(symbol->text_gap == symbol_def->text_gap, "ZBarcodeBuffer text_gap != symbol_def\n");
-    assert_nonzero(symbol->guard_descent == symbol_def->guard_descent, "ZBarcodeBuffer guard_descent != symbol_def\n");
-    assert_nonzero(symbol->structapp.index == symbol_def->structapp.index, "ZBarcodeBuffer structapp.index != symbol_def\n");
-    assert_nonzero(symbol->structapp.count == symbol_def->structapp.count, "ZBarcodeBuffer structapp.count != symbol_def\n");
+    assert_nonzero(symbol->guard_descent == symbol_def->guard_descent,
+                "ZBarcodeBuffer guard_descent != symbol_def\n");
+    assert_nonzero(symbol->structapp.index == symbol_def->structapp.index,
+                "ZBarcodeBuffer structapp.index != symbol_def\n");
+    assert_nonzero(symbol->structapp.count == symbol_def->structapp.count,
+                "ZBarcodeBuffer structapp.count != symbol_def\n");
     assert_nonzero(symbol->warn_level == symbol_def->warn_level, "ZBarcodeBuffer warn_level != symbol_def\n");
 
     ZBarcode_Delete(symbol);
@@ -2538,20 +2556,26 @@ static void test_scale_from_xdimdp(const testCtx *const p_ctx) {
 
         ret = ZBarcode_Scale_From_XdimDp(data[i].symbology, data[i].x_dim, data[i].dpmm, data[i].filetype);
         assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g, %g, %s) %.8g != %.8g\n",
-            i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].x_dim, data[i].filetype, ret, data[i].expected);
+                    i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].x_dim, data[i].filetype, ret,
+                    data[i].expected);
 
         if (ret) {
             dpmm_from_dpi = stripf(roundf(data[i].dpi / 25.4f));
             ret = ZBarcode_Scale_From_XdimDp(data[i].symbology, data[i].x_dim, dpmm_from_dpi, data[i].filetype);
-            assert_equal(ret, data[i].expected, "i:%d ZBarcode_Scale_From_XdimDp(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
-                i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].x_dim, data[i].filetype, ret, data[i].expected);
+            assert_equal(ret, data[i].expected,
+                        "i:%d ZBarcode_Scale_From_XdimDp(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
+                        i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].x_dim,
+                        data[i].filetype, ret, data[i].expected);
 
             if (data[i].expected > 0.1f && data[i].expected < 200.0f /* Can't round trip scales <= 0.1 or >= 200.0 */
-                    && (data[i].symbology == BARCODE_MAXICODE || strcmp(data[i].filetype, "gif") != 0)) { /* Non-MAXICODE raster rounds to half-increments */
+                    /* Non-MAXICODE raster rounds to half-increments */
+                    && (data[i].symbology == BARCODE_MAXICODE || strcmp(data[i].filetype, "gif") != 0)) {
                 x_dim_from_scale = ZBarcode_XdimDp_From_Scale(data[i].symbology, ret, data[i].dpmm, data[i].filetype);
                 x_dim_from_scale = stripf(stripf(roundf(x_dim_from_scale * 100.0f)) / 100.0f);
-                assert_equal(x_dim_from_scale, data[i].x_dim, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != x_dim %.8g\n",
-                    i, testUtilBarcodeName(data[i].symbology), ret, data[i].x_dim, data[i].filetype, x_dim_from_scale, data[i].x_dim);
+                assert_equal(x_dim_from_scale, data[i].x_dim,
+                            "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != x_dim %.8g\n",
+                            i, testUtilBarcodeName(data[i].symbology), ret, data[i].x_dim, data[i].filetype,
+                            x_dim_from_scale, data[i].x_dim);
             }
         }
     }
@@ -2612,13 +2636,16 @@ static void test_xdimdp_from_scale(const testCtx *const p_ctx) {
 
         ret = ZBarcode_XdimDp_From_Scale(data[i].symbology, data[i].scale, data[i].dpmm, data[i].filetype);
         assert_equal(ret, data[i].expected, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g, %g, %s) %.8g != %.8g\n",
-            i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].scale, data[i].filetype, ret, data[i].expected);
+                    i, testUtilBarcodeName(data[i].symbology), data[i].dpmm, data[i].scale, data[i].filetype, ret,
+                    data[i].expected);
 
         if (ret) {
             dpmm_from_dpi = stripf(roundf(data[i].dpi / 25.4f));
             ret = ZBarcode_XdimDp_From_Scale(data[i].symbology, data[i].scale, dpmm_from_dpi, data[i].filetype);
-            assert_equal(ret, data[i].expected, "i:%d ZBarcode_XdimDp_From_Scale(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
-                i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].scale, data[i].filetype, ret, data[i].expected);
+            assert_equal(ret, data[i].expected,
+                        "i:%d ZBarcode_XdimDp_From_Scale(%s, %g (dpi %d), %g, %s) %.8g != %.8g\n",
+                        i, testUtilBarcodeName(data[i].symbology), dpmm_from_dpi, data[i].dpi, data[i].scale,
+                        data[i].filetype, ret, data[i].expected);
         }
     }
 
@@ -2724,10 +2751,12 @@ static void test_utf8_to_eci(const testCtx *const p_ctx) {
                             "i:%d ZBarcode_UTF8_To_ECI dest_length %d != expected_length %d\n",
                             i, dest_length, expected_length);
                 #if 0
-                printf("dest_length %d\n", dest_length); debug_print_escape(TCU(dest), dest_length, NULL); printf("\n");
+                printf("dest_length %d\n", dest_length); debug_print_escape(TCU(dest), dest_length, NULL);
+                printf("\n");
                 #endif
-                assert_zero(memcmp(dest, data[i].expected, expected_length), "i:%d memcmp(\"%s\", \"%s\", %d) != 0\n",
-                            i, dest, data[i].expected, expected_length);
+                assert_zero(memcmp(dest, data[i].expected, expected_length),
+                            "i:%d memcmp(\"%.*s\", \"%s\", %d) != 0\n",
+                            i, dest_length, dest, data[i].expected, expected_length);
             }
         }
     }
@@ -2771,10 +2800,10 @@ static void test_raw_text(const testCtx *const p_ctx) {
         /* 22*/ { BARCODE_DBAR_LTD, -1, "1234567890123", "0112345678901231" },
         /* 23*/ { BARCODE_DBAR_EXP, -1, "[01]12345678901231", "0112345678901231" },
         /* 24*/ { BARCODE_TELEPEN, -1, "1234567890", "1234567890n" },
-        /* 25*/ { BARCODE_UPCA, -1, "12345678901", "123456789012" },
-        /* 26*/ { BARCODE_UPCA_CHK, -1, "123456789012", "123456789012" },
-        /* 27*/ { BARCODE_UPCE, -1, "1234567", "12345670" },
-        /* 28*/ { BARCODE_UPCE_CHK, -1, "12345670", "" },
+        /* 25*/ { BARCODE_UPCA, -1, "12345678901", "0123456789012" },
+        /* 26*/ { BARCODE_UPCA_CHK, -1, "123456789012", "0123456789012" },
+        /* 27*/ { BARCODE_UPCE, -1, "1234567", "0123456000070" },
+        /* 28*/ { BARCODE_UPCE_CHK, -1, "12345670", "0123456000070" },
         /* 29*/ { BARCODE_POSTNET, -1, "12345678901", "123456789014" },
         /* 30*/ { BARCODE_MSI_PLESSEY, -1, "1234567890", "" },
         /* 31*/ { BARCODE_FIM, -1, "A", "" },
@@ -2840,8 +2869,8 @@ static void test_raw_text(const testCtx *const p_ctx) {
         /* 91*/ { BARCODE_DBAR_OMN_CC, -1, "1234567890123", "0112345678901231|2001" },
         /* 92*/ { BARCODE_DBAR_LTD_CC, -1, "1234567890123", "0112345678901231|2001" },
         /* 93*/ { BARCODE_DBAR_EXP_CC, -1, "[01]12345678901231", "0112345678901231|2001" },
-        /* 94*/ { BARCODE_UPCA_CC, -1, "12345678901", "123456789012|2001" },
-        /* 95*/ { BARCODE_UPCE_CC, -1, "1234567", "12345670|2001" },
+        /* 94*/ { BARCODE_UPCA_CC, -1, "12345678901", "0123456789012|2001" },
+        /* 95*/ { BARCODE_UPCE_CC, -1, "1234567", "0123456000070|2001" },
         /* 96*/ { BARCODE_DBAR_STK_CC, -1, "1234567890123", "0112345678901231|2001" },
         /* 97*/ { BARCODE_DBAR_OMNSTK_CC, -1, "1234567890123", "0112345678901231|2001" },
         /* 98*/ { BARCODE_DBAR_EXPSTK_CC, -1, "[01]12345678901231", "0112345678901231|2001" },
@@ -2882,8 +2911,8 @@ static void test_raw_text(const testCtx *const p_ctx) {
             text = data[i].data;
         }
         length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
-                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, BARCODE_RAW_TEXT,
-                    text, -1, debug);
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, BARCODE_RAW_TEXT,
+                                    text, -1, debug);
         expected = data[i].expected[0] ? data[i].expected : data[i].data;
         expected_length = (int) strlen(expected);
 

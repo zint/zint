@@ -109,14 +109,14 @@ static void test_print(const testCtx *const p_ctx) {
         /* 49*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 0, 2, -1, -1, 0, "", "", 0, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2_notext.svg", "" },
         /* 50*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501234", "", 0, "ean8_gss_5.2.2.2-1.svg", "" },
         /* 51*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "9501234", "", 0, "ean8_gss_5.2.2.2-1_gws.svg", "" },
-        /* 52*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "ean8_2addon.svg", "" },
-        /* 53*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", 0, "ean8_2addon_gws.svg", "" },
-        /* 54*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "ean8_5addon.svg", "" },
-        /* 55*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", 0, "ean8_5addon_gws.svg", "" },
-        /* 56*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3.svg", "" },
-        /* 57*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3_gws.svg", "" },
-        /* 58*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3.svg", "" },
-        /* 59*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3_gws.svg", "" },
+        /* 52*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", ZINT_WARN_NONCOMPLIANT, "ean8_2addon.svg", "" },
+        /* 53*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12", "", ZINT_WARN_NONCOMPLIANT, "ean8_2addon_gws.svg", "" },
+        /* 54*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", ZINT_WARN_NONCOMPLIANT, "ean8_5addon.svg", "" },
+        /* 55*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "1234567+12345", "", ZINT_WARN_NONCOMPLIANT, "ean8_5addon_gws.svg", "" },
+        /* 56*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", ZINT_WARN_NONCOMPLIANT, "ean8_cc_2addon_cca_4x3.svg", "" },
+        /* 57*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 1, -1, -1, 0, "", "", 0, "9876543+65", "[91]1234567", ZINT_WARN_NONCOMPLIANT, "ean8_cc_2addon_cca_4x3_gws.svg", "" },
+        /* 58*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", ZINT_WARN_NONCOMPLIANT, "ean8_cc_5addon_ccb_8x3.svg", "" },
+        /* 59*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, -1, 0, "", "", 0, "9876543+74083", "[91]123456789012345678", ZINT_WARN_NONCOMPLIANT, "ean8_cc_5addon_ccb_8x3_gws.svg", "" },
         /* 60*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5.svg", "" },
         /* 61*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5_gws.svg", "" },
         /* 62*/ { BARCODE_EANX, -1, 2, BARCODE_BIND, -1, -1, -1, -1, -1, -1, 0, "", "", 0, "12345", "", 0, "ean5_bind2.svg", "" },
@@ -163,7 +163,8 @@ static void test_print(const testCtx *const p_ctx) {
         have_libreoffice = testUtilHaveLibreOffice();
         have_vnu = testUtilHaveVnu();
 
-        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL),
+					"testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
             ret = testUtilMkDir(data_dir_path);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
@@ -178,7 +179,9 @@ static void test_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+									data[i].option_1, data[i].option_2, data[i].option_3, data[i].output_options,
+									data[i].data, -1, debug);
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
@@ -210,44 +213,53 @@ static void test_print(const testCtx *const p_ctx) {
         text_length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, TCU(text), text_length);
-        assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n",
+					i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, svg);
         ret = ZBarcode_Print(symbol, data[i].rotate_angle);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n",
+					i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file),
+					"i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.8g, \"%s\", \"%s\", %d, \"%s\", \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
-                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
-                    data[i].option_1, data[i].option_2, data[i].option_3, data[i].height, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+					data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
+					data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
+                    data[i].option_1, data[i].option_2, data[i].option_3, data[i].height,
+					data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
                     testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite,
                     testUtilErrorName(data[i].ret), data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {
                 ret = testUtilVerifyLibreOffice(expected_file, debug);
-                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0\n",
+							i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
             if (have_vnu) {
                 ret = testUtilVerifyVnu(expected_file, debug); /* Very slow */
-                assert_zero(ret, "i:%d %s vnu libreoffice %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s vnu libreoffice %s ret %d != 0\n",
+							i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
             assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
             ret = testUtilCmpSvgs(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpSvgs(%s, %s) %d != 0\n",
+						i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
 
             symbol->output_options |= BARCODE_MEMORY_FILE;
             ret = ZBarcode_Print(symbol, data[i].rotate_angle);
             assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
                             i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
             assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
-            assert_nonzero(symbol->memfile_size, "i:%d %s memfile_size 0\n", i, testUtilBarcodeName(data[i].symbology));
+            assert_nonzero(symbol->memfile_size, "i:%d %s memfile_size 0\n",
+						i, testUtilBarcodeName(data[i].symbology));
 
             ret = testUtilWriteFile(memfile, symbol->memfile, symbol->memfile_size, "wb");
             assert_zero(ret, "%d: testUtilWriteFile(%s) fail ret %d != 0\n", i, memfile, ret);
@@ -288,15 +300,20 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
-        static char expected_errtxt[] = "680: Could not open SVG output file ("; /* Excluding OS-dependent `errno` stuff */
+		/* Excluding OS-dependent `errno` stuff */
+        static char expected_errtxt[] = "680: Could not open SVG output file (";
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "svg_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_nonzero(testUtilCreateROFile(symbol.outfile), "svg_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+					symbol.outfile, errno, strerror(errno));
 
         ret = svg_plot(&symbol, 0);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "svg_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "svg_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
-        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "svg_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+					ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+        assert_zero(testUtilRmROFile(symbol.outfile), "svg_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+					symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
+					symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;
@@ -308,7 +325,8 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.vector = NULL;
     ret = svg_plot(&symbol, 0);
-    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "svg_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n", ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "svg_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n",
+				ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
 
     testFinish();
 }

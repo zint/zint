@@ -82,7 +82,9 @@ static void test_svg(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/, -1 /*option_1*/, -1, -1, data[i].output_options, data[i].data, data[i].length, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, -1 /*input_mode*/, -1 /*eci*/,
+                                    -1 /*option_1*/, -1 /*option_2*/, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, data[i].length, debug);
         strcpy(symbol->outfile, data[i].outfile);
 
         ret = ZBarcode_Encode_and_Print(symbol, TCU(data[i].data), length, 0);
@@ -176,7 +178,8 @@ static void test_putsf(const testCtx *const p_ctx) {
             } else {
                 symbol->output_options |= BARCODE_MEMORY_FILE;
             }
-            assert_nonzero(fm_open(fmp, symbol, "w"), "i:%d: fm_open fail (%d, %s)\n", i, fmp->err, strerror(fmp->err));
+            assert_nonzero(fm_open(fmp, symbol, "w"), "i:%d: fm_open fail (%d, %s)\n",
+                        i, fmp->err, strerror(fmp->err));
             if (j == 1) {
 #ifndef ZINT_TEST_NO_FMEMOPEN
                 /* Hack in `fmemopen()` fp */
@@ -212,7 +215,8 @@ static void test_putsf(const testCtx *const p_ctx) {
                 assert_equal(symbol->memfile_size, expected_size, "i:%d: memfile_size %d != expected_size %d\n",
                             i, symbol->memfile_size, expected_size);
                 assert_nonnull(symbol->memfile, "i:%d memfile NULL\n", i);
-                assert_zero(memcmp(symbol->memfile, data[i].expected, expected_size), "i:%d: memcmp(%.*s, %.*s) != 0\n",
+                assert_zero(memcmp(symbol->memfile, data[i].expected, expected_size),
+                            "i:%d: memcmp(%.*s, %.*s) != 0\n",
                             i, symbol->memfile_size, symbol->memfile, expected_size, data[i].expected);
             }
 

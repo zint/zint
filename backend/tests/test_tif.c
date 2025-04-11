@@ -117,19 +117,22 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         symbol->debug |= debug;
 
         size = data[i].width * data[i].height;
-        assert_nonzero(size < (int) sizeof(data_buf), "i:%d tif_pixel_plot size %d >= sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
+        assert_nonzero(size < (int) sizeof(data_buf), "i:%d tif_pixel_plot size %d >= sizeof(data_buf) %d\n",
+                    i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
             testUtilStrCpyRepeat(data_buf, data[i].pattern, size);
         } else {
             strcpy(data_buf, data[i].pattern);
         }
-        assert_equal(size, (int) strlen(data_buf), "i:%d tif_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
+        assert_equal(size, (int) strlen(data_buf), "i:%d tif_pixel_plot size %d != strlen(data_buf) %d\n",
+                    i, size, (int) strlen(data_buf));
 
         symbol->bitmap = (unsigned char *) data_buf;
 
         ret = tif_pixel_plot(symbol, (unsigned char *) data_buf);
-        assert_equal(ret, data[i].ret, "i:%d tif_pixel_plot ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d tif_pixel_plot ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             if (have_tiffinfo) {
@@ -225,7 +228,8 @@ static void test_print(const testCtx *const p_ctx) {
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
-        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL),
+                    "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
             ret = testUtilMkDir(data_dir_path);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
@@ -240,7 +244,9 @@ static void test_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
@@ -274,38 +280,49 @@ static void test_print(const testCtx *const p_ctx) {
         text_length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, TCU(text), text_length);
-        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, tif);
         ret = ZBarcode_Print(symbol, 0);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n",
+                    i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file),
+                    "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %d, %.5g, \"%s\",\"%s\",  \"%s\", \"%s\", \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
-                    data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2,
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
+                    data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
+                    data[i].option_1, data[i].option_2,
                     data[i].height, data[i].scale, data[i].fgcolour, data[i].bgcolour,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, data[i].expected_file, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite,
+                    data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_tiffinfo) {
                 ret = testUtilVerifyTiffInfo(expected_file, debug);
-                assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s tiffinfo %s ret %d != 0\n",
+                            i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             } else if (have_identify) {
                 ret = testUtilVerifyIdentify(have_identify, expected_file, debug);
-                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n",
+                            i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
             assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
             ret = testUtilCmpBins(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
 
-            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size); /* For BARCODE_MEMORY_FILE */
-            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+            /* For BARCODE_MEMORY_FILE */
+            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size);
+            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
                 assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
@@ -314,12 +331,13 @@ static void test_print(const testCtx *const p_ctx) {
             symbol->output_options |= BARCODE_MEMORY_FILE;
             ret = ZBarcode_Print(symbol, 0);
             assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
             assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
             assert_equal(symbol->memfile_size, filebuf_size, "i:%d %s memfile_size %d != %d\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
-            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size), "i:%d %s memcmp(memfile, filebuf) != 0\n",
-                            i, testUtilBarcodeName(data[i].symbology));
+                        i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
+            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size),
+                        "i:%d %s memcmp(memfile, filebuf) != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology));
         }
 
         ZBarcode_Delete(symbol);
@@ -347,15 +365,21 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
-        static char expected_errtxt[] = "672: Could not open TIF output file ("; /* Excluding OS-dependent `errno` stuff */
+        /* Excluding OS-dependent `errno` stuff */
+        static char expected_errtxt[] = "672: Could not open TIF output file (";
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "tif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_nonzero(testUtilCreateROFile(symbol.outfile),
+                    "tif_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
 
         ret = tif_pixel_plot(&symbol, data);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "tif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "tif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
-        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "tif_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+                    ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+        assert_zero(testUtilRmROFile(symbol.outfile), "tif_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
+                    symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;

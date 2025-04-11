@@ -2691,10 +2691,11 @@ The `source`, `length` and `eci` members of `zint_seg` will be set accordingly -
 the data in `source`, the data length in `length`, and the character set the
 data is in (UTF-8 data will be converted) in `eci`. Any check characters encoded
 will be included,[^16] and for GS1 data any `FNC1` separators will be
-represented as `GS` characters. For EAN/UPC data, add-ons will be separated from
-the main data with a plus (`+`) sign. GS1 Composite data if any will be
-separated from the primary data (including any EAN/UPC add-ons) by a pipe (`|`)
-character.
+represented as `GS` (ASCII 29) characters. UPC-A and UPC-E data will be expanded
+to EAN-13, as will EAN-8 but only if it has an add-on (otherwise it will remain
+at 8 digits), and any add-ons will follow the 13 digits directly (no separator).
+GS1 Composite data if any will be separated from the primary data (including any
+EAN/UPC add-ons) by a pipe (`|`) character.
 
 [^15]: DotCode, Han Xin, Micro QR Code, QR Code and UPNQR have variable masks.
 Rectangular Micro QR Code has a fixed mask (4).

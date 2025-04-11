@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-04-09)
+Version 2.15.0.9 (dev) not released yet (2025-04-11)
 ====================================================
 
 **Incompatible changes**
@@ -11,6 +11,7 @@ Version 2.15.0.9 (dev) not released yet (2025-04-09)
 - New Qt Backend method `isBindable()` for new flag `ZINT_CAP_BINDABLE`
 - GS1 Composites now return warning if CC type upped from requested due to size
   of composite data
+- EAN-8 with add-on now returns warning that it's non-standard
 
 Changes
 -------
@@ -30,6 +31,7 @@ Changes
   `ZINT_CAP_STACKABLE`, and new Qt Backend method `isBindable()`
 - DOTCODE: now pads rows if given number of columns instead of failing if rows
   below min (5)
+- EAN-8 + add-on: warn as non-compliant
 
 Bugs
 ----

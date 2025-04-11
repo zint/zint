@@ -4343,10 +4343,12 @@ character set the data is in (UTF-8 data will be converted) in
 href="#fn16" class="footnote-ref" id="fnref16"
 role="doc-noteref"><sup>16</sup></a> and for GS1 data any
 <code>FNC1</code> separators will be represented as <code>GS</code>
-characters. For EAN/UPC data, add-ons will be separated from the main
-data with a plus (<code>+</code>) sign. GS1 Composite data if any will
-be separated from the primary data (including any EAN/UPC add-ons) by a
-pipe (<code>|</code>) character.</p>
+(ASCII 29) characters. UPC-A and UPC-E data will be expanded to EAN-13,
+as will EAN-8 but only if it has an add-on (otherwise it will remain at
+8 digits), and any add-ons will follow the 13 digits directly (no
+separator). GS1 Composite data if any will be separated from the primary
+data (including any EAN/UPC add-ons) by a pipe (<code>|</code>)
+character.</p>
 <h2 id="utf-8-to-eci-convenience-functions">5.17 UTF-8 to ECI
 convenience functions</h2>
 <p>As a convenience the conversion done by Zint from UTF-8 to ECIs is

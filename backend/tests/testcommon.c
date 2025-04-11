@@ -2915,6 +2915,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
         if (upcean) {
             if (symbology == BARCODE_EANX_CC && (primary_len <= 8 || (addon_posn && addon_posn <= 8))) {
                 bwipp_barcode = "ean8composite";
+                if (addon_posn) {
+                    sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%spermitaddon",
+                            strlen(bwipp_opts_buf) ? " " : "");
+                }
             }
             if (addon_posn) {
                 sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%saddongap=%d",
@@ -2951,6 +2955,10 @@ int testUtilBwipp(int index, const struct zint_symbol *symbol, int option_1, int
                 if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK)
                         && (data_len <= 8 || (addon_posn && addon_posn <= 8))) {
                     bwipp_barcode = data_len <= 3 ? "ean2" : data_len <= 5 ? "ean5" : "ean8";
+                    if (addon_posn) {
+                        sprintf(bwipp_opts_buf + strlen(bwipp_opts_buf), "%spermitaddon",
+                                strlen(bwipp_opts_buf) ? " " : "");
+                    }
                 }
                 if (symbology == BARCODE_ISBNX) {
                     testUtilISBNHyphenate(bwipp_data, addon_posn);

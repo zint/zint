@@ -53,21 +53,21 @@ static void test_eanx_leading_zeroes(const testCtx *const p_ctx) {
         /* 5*/ { BARCODE_EANX_CC, "123456", "[21]A12345678", 0, 8, 72 },
         /* 6*/ { BARCODE_EANX_CC, "1234567", "[21]A12345678", 0, 8, 72 },
         /* 7*/ { BARCODE_EANX_CC, "12345678", "[21]A12345678", 0, 7, 99 }, /* EAN-13 */
-        /* 8*/ { BARCODE_EANX_CC, "1+12", "[21]A12345678", 0, 8, 98 }, /* EAN-8 + EAN-2 */
-        /* 9*/ { BARCODE_EANX_CC, "12+12", "[21]A12345678", 0, 8, 98 },
-        /*10*/ { BARCODE_EANX_CC, "123+12", "[21]A12345678", 0, 8, 98 },
-        /*11*/ { BARCODE_EANX_CC, "1234+12", "[21]A12345678", 0, 8, 98 },
-        /*12*/ { BARCODE_EANX_CC, "12345+12", "[21]A12345678", 0, 8, 98 },
-        /*13*/ { BARCODE_EANX_CC, "123456+12", "[21]A12345678", 0, 8, 98 },
-        /*14*/ { BARCODE_EANX_CC, "1234567+12", "[21]A12345678", 0, 8, 98 },
+        /* 8*/ { BARCODE_EANX_CC, "1+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 }, /* EAN-8 + EAN-2 */
+        /* 9*/ { BARCODE_EANX_CC, "12+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
+        /*10*/ { BARCODE_EANX_CC, "123+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
+        /*11*/ { BARCODE_EANX_CC, "1234+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
+        /*12*/ { BARCODE_EANX_CC, "12345+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
+        /*13*/ { BARCODE_EANX_CC, "123456+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
+        /*14*/ { BARCODE_EANX_CC, "1234567+12", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 98 },
         /*15*/ { BARCODE_EANX_CC, "12345678+12", "[21]A12345678", 0, 7, 125 }, /* EAN-13 + EAN-2 */
-        /*16*/ { BARCODE_EANX_CC, "1+123", "[21]A12345678", 0, 8, 125 }, /* EAN-8 + EAN-5 */
-        /*17*/ { BARCODE_EANX_CC, "12+123", "[21]A12345678", 0, 8, 125 },
-        /*18*/ { BARCODE_EANX_CC, "123+123", "[21]A12345678", 0, 8, 125 },
-        /*19*/ { BARCODE_EANX_CC, "1234+123", "[21]A12345678", 0, 8, 125 },
-        /*20*/ { BARCODE_EANX_CC, "12345+123", "[21]A12345678", 0, 8, 125 },
-        /*21*/ { BARCODE_EANX_CC, "123456+123", "[21]A12345678", 0, 8, 125 },
-        /*22*/ { BARCODE_EANX_CC, "1234567+123", "[21]A12345678", 0, 8, 125 },
+        /*16*/ { BARCODE_EANX_CC, "1+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 }, /* EAN-8 + EAN-5 */
+        /*17*/ { BARCODE_EANX_CC, "12+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
+        /*18*/ { BARCODE_EANX_CC, "123+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
+        /*19*/ { BARCODE_EANX_CC, "1234+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
+        /*20*/ { BARCODE_EANX_CC, "12345+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
+        /*21*/ { BARCODE_EANX_CC, "123456+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
+        /*22*/ { BARCODE_EANX_CC, "1234567+123", "[21]A12345678", ZINT_WARN_NONCOMPLIANT, 8, 125 },
         /*23*/ { BARCODE_EANX_CC, "12345678+123", "[21]A12345678", 0, 7, 152 }, /* EAN-13 + EAN-5 */
         /*24*/ { BARCODE_EANX_CC, "1234567890128", "[21]A12345678", 0, 7, 99 }, /* EAN-13 + CHK */
         /*25*/ { BARCODE_EANX_CC, "1234567890128+12", "[21]A12345678", 0, 7, 125 }, /* EAN-13 + CHK + EAN-2 */
@@ -1493,7 +1493,7 @@ static void test_examples(const testCtx *const p_ctx) {
                     "000100000000000000000000000000000000000000000000000001000000000000000000000000000000000000000000000000000000"
                     "000101011011100100010000101011000101000110100001010101000000010110110001010101111010010001010110111010010111"
                 },
-        /* 77*/ { BARCODE_EANX_CC, -1, 1, "9876543+65", "[91]1234567", 0, 8, 98, 1, "Example of EAN-8 with 2-digit addon, CC-A 3 cols, 4 rows",
+        /* 77*/ { BARCODE_EANX_CC, -1, 1, "9876543+65", "[91]1234567", ZINT_WARN_NONCOMPLIANT, 8, 98, 1, "Example of EAN-8 with 2-digit addon, CC-A 3 cols, 4 rows",
                     "10010001111100110101001100011100010111001100110001011101000001110100110100000000000000000000000000"
                     "11011111100110100101011100011011110010110000111100010011110101110101110100000000000000000000000000"
                     "10000101100000110101011000010101111101111100111010010000111001110101100100000000000000000000000000"
@@ -1503,7 +1503,7 @@ static void test_examples(const testCtx *const p_ctx) {
                     "00001000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000"
                     "00001010001011011011101110110101111010101001110101110010000101110010101000000010110101111010111001"
                 },
-        /* 78*/ { BARCODE_EANX_CC, -1, 2, "9876543+74083", "[91]123456789012345678", 0, 12, 135, 1, "Example of EAN-8 with 5-digit addon, CC-B 3 cols, 8 rows",
+        /* 78*/ { BARCODE_EANX_CC, -1, 2, "9876543+74083", "[91]123456789012345678", ZINT_WARN_NONCOMPLIANT, 12, 135, 1, "Example of EAN-8 with 5-digit addon, CC-B 3 cols, 8 rows",
                     "110011101011101111101110100100001011010000010000100010111110110100111101100111010100000000000000000000000000000000000000000000000000000"
                     "111011101011001011100001000100001001011100101100100000111000110111010001110111010100000000000000000000000000000000000000000000000000000"
                     "111001101011011111100110100100001101010100010111100000110010011011111101110011010100000000000000000000000000000000000000000000000000000"
@@ -3006,7 +3006,7 @@ static void test_addongap(const testCtx *const p_ctx) {
     };
     /* Verified via bwipp_dump.ps against BWIPP */
     static const struct item data[] = {
-        /*  0*/ { BARCODE_EANX_CC, 1, -1, "1234567+12", 0, 8, 98, "EAN-8 default 7 gap",
+        /*  0*/ { BARCODE_EANX_CC, 1, -1, "1234567+12", ZINT_WARN_NONCOMPLIANT, 8, 98, "EAN-8 default 7 gap",
                     "10010001111100110101001100011110001011001100110110011110000101110100110100000000000000000000000000"
                     "10000011100101100101011100010111100010001000100000100101111001110101110100000000000000000000000000"
                     "11001101001000000101011000011010011100011110110001100110011001110101100100000000000000000000000000"
@@ -3016,7 +3016,7 @@ static void test_addongap(const testCtx *const p_ctx) {
                     "00001000000000000000000000000000000000000000000000000000000000000000001000000000000000000000000000"
                     "00001010011001001001101111010100011010101001110101000010001001110010101000000010110011001010010011"
                 },
-        /*  1*/ { BARCODE_EANX_CC, 1, 8, "1234567+12", 0, 8, 99, "EAN-8 8 gap",
+        /*  1*/ { BARCODE_EANX_CC, 1, 8, "1234567+12", ZINT_WARN_NONCOMPLIANT, 8, 99, "EAN-8 8 gap",
                     "100100011111001101010011000111100010110011001101100111100001011101001101000000000000000000000000000"
                     "100000111001011001010111000101111000100010001000001001011110011101011101000000000000000000000000000"
                     "110011010010000001010110000110100111000111101100011001100110011101011001000000000000000000000000000"
@@ -3242,7 +3242,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /*  9*/ { BARCODE_EANX_CC, -1, -1, "1234567890128", "[20]1A", ZINT_WARN_NONCOMPLIANT, "1234567890128", "" }, /* AI (20) should be 2 nos. */
         /* 10*/ { BARCODE_EANX_CC, GS1NOCHECK_MODE, -1, "1234567890128", "[20]1A", 0, "1234567890128", "" },
         /* 11*/ { BARCODE_EANX_CC, -1, -1, "1234567890128+12", "[20]12", 0, "1234567890128+12", "" },
-        /* 12*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "1234567890128+12", "1234567890128+12|2012" },
+        /* 12*/ { BARCODE_EANX_CC, -1, BARCODE_RAW_TEXT, "1234567890128+12", "[20]12", 0, "1234567890128+12", "123456789012812|2012" },
         /* 13*/ { BARCODE_DBAR_OMN_CC, -1, -1, "1234567890123", "[20]12", 0, "(01)12345678901231", "" },
         /* 14*/ { BARCODE_DBAR_OMN_CC, -1, BARCODE_RAW_TEXT, "1234567890123", "[20]12", 0, "(01)12345678901231", "0112345678901231|2012" },
         /* 15*/ { BARCODE_DBAR_OMN_CC, -1, -1, "12345678901231", "[20]12", 0, "(01)12345678901231", "" },
@@ -3258,16 +3258,16 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 25*/ { BARCODE_DBAR_LTD_CC, -1, -1, "12345678901231", "[20]1A", ZINT_WARN_NONCOMPLIANT, "(01)12345678901231", "" }, /* AI (20) should be 2 nos. */
         /* 26*/ { BARCODE_DBAR_LTD_CC, GS1NOCHECK_MODE, -1, "12345678901231", "[20]1A", 0, "(01)12345678901231", "" },
         /* 27*/ { BARCODE_UPCA_CC, -1, -1, "12345678901", "[20]12", 0, "123456789012", "" },
-        /* 28*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "12345678901", "[20]12", 0, "123456789012", "123456789012|2012" },
+        /* 28*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "12345678901", "[20]12", 0, "123456789012", "0123456789012|2012" },
         /* 29*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]12", 0, "123456789012", "" },
         /* 30*/ { BARCODE_UPCA_CC, -1, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
         /* 31*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789013", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" }, /* Still checked */
         /* 32*/ { BARCODE_UPCA_CC, -1, -1, "123456789012", "[20]1A", ZINT_WARN_NONCOMPLIANT, "123456789012", "" }, /* AI (20) should be 2 nos. */
         /* 33*/ { BARCODE_UPCA_CC, GS1NOCHECK_MODE, -1, "123456789012", "[20]1A", 0, "123456789012", "" },
         /* 34*/ { BARCODE_UPCA_CC, -1, -1, "123456789012+123", "[20]12", 0, "123456789012+00123", "" },
-        /* 35*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "123456789012+00123", "123456789012+00123|2012" },
+        /* 35*/ { BARCODE_UPCA_CC, -1, BARCODE_RAW_TEXT, "123456789012+123", "[20]12", 0, "123456789012+00123", "012345678901200123|2012" },
         /* 36*/ { BARCODE_UPCE_CC, -1, -1, "123456", "[20]12", 0, "01234565", "" },
-        /* 37*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "123456", "[20]12", 0, "01234565", "01234565|2012" },
+        /* 37*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "123456", "[20]12", 0, "01234565", "0012345000065|2012" },
         /* 38*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]12", 0, "12345670", "" },
         /* 39*/ { BARCODE_UPCE_CC, -1, -1, "12345670", "[20]12", 0, "12345670", "" },
         /* 40*/ { BARCODE_UPCE_CC, -1, -1, "12345671", "[20]12", ZINT_ERROR_INVALID_CHECK, "", "" },
@@ -3276,7 +3276,7 @@ static void test_hrt(const testCtx *const p_ctx) {
         /* 43*/ { BARCODE_UPCE_CC, -1, -1, "1234567", "[20]1A", ZINT_WARN_NONCOMPLIANT, "12345670", "" }, /* AI (20) should be 2 nos. */
         /* 44*/ { BARCODE_UPCE_CC, GS1NOCHECK_MODE, -1, "1234567", "[20]1A", 0, "12345670", "" },
         /* 45*/ { BARCODE_UPCE_CC, -1, -1, "1234567+2", "[20]12", 0, "12345670+02", "" },
-        /* 46*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02", "12345670+02|2012" },
+        /* 46*/ { BARCODE_UPCE_CC, -1, BARCODE_RAW_TEXT, "1234567+2", "[20]12", 0, "12345670+02", "012345600007002|2012" },
         /* 47*/ { BARCODE_DBAR_STK_CC, -1, -1, "12345678901231", "[20]12", 0, "", "" }, /* No HRT for stacked symbologies */
         /* 48*/ { BARCODE_DBAR_STK_CC, -1, BARCODE_RAW_TEXT, "12345678901231", "[20]12", 0, "", "0112345678901231|2012" }, /* But have RAW_TEXT */
         /* 49*/ { BARCODE_DBAR_OMNSTK_CC, -1, -1, "12345678901231", "[20]12", 0, "", "" },
@@ -3321,8 +3321,9 @@ static void test_hrt(const testCtx *const p_ctx) {
                         "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
                         i, symbol->raw_segs[0].length, expected_raw_length);
             assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
-                        "i:%d memcmp(%s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+                        "i:%d memcmp(%.*s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
+                        expected_raw_length);
         } else {
             assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
@@ -3538,7 +3539,7 @@ static void test_fuzz(const testCtx *const p_ctx) {
         /* 0*/ { BARCODE_EANX_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "Error 297: Input add-on length 18 too long (maximum 5) (linear component)", "" },
         /* 1*/ { BARCODE_UPCA_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "Error 297: Input add-on length 18 too long (maximum 5) (linear component)", "" },
         /* 2*/ { BARCODE_UPCE_CC, -1, -1, "+123456789012345678", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "Error 297: Input add-on length 18 too long (maximum 5) (linear component)", "" },
-        /* 3*/ { BARCODE_EANX_CC, -1, -1, "+12345", -1, "[21]A12345678", 0 , 0, "", "BWIPP checks for proper EAN data" },
+        /* 3*/ { BARCODE_EANX_CC, -1, -1, "+12345", -1, "[21]A12345678", ZINT_WARN_NONCOMPLIANT , 0, "Warning 292: EAN-8 with add-on is non-standard (linear component)", "BWIPP checks for proper EAN data" },
         /* 4*/ { BARCODE_EANX_CC, -1, -1, "+123456", -1, "[21]A12345678", ZINT_ERROR_TOO_LONG, 1, "Error 297: Input add-on length 6 too long (maximum 5) (linear component)", "" },
         /* 5*/ { BARCODE_EANX_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "kks", -1, "()111%", ZINT_ERROR_INVALID_DATA, 1, "Error 284: Invalid character at position 1 in input (digits and \"+\" only) (linear component)", "" }, /* #300 (#5), Andre Maute (`dbar_date()` not checking length + other non-checks) */
         /* 6*/ { BARCODE_UPCA_CC, GS1PARENS_MODE | GS1NOCHECK_MODE, -1, "\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\153\225\215\153\153\153\153\153\153\263\153\153\153\153\153\153\153\153\153\153\163", -1, "()90", ZINT_ERROR_TOO_LONG, 1, "Error 283: Input length 46 too long (maximum 19) (linear component)", "" }, /* #300 (#6), Andre Maute (`dbar_date()` not checking length + other non-checks) */

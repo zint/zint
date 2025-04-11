@@ -83,19 +83,22 @@ static void test_pixel_plot(const testCtx *const p_ctx) {
         symbol->debug |= debug;
 
         size = data[i].width * data[i].height;
-        assert_nonzero(size < (int) sizeof(data_buf), "i:%d png_pixel_plot size %d < sizeof(data_buf) %d\n", i, size, (int) sizeof(data_buf));
+        assert_nonzero(size < (int) sizeof(data_buf), "i:%d png_pixel_plot size %d < sizeof(data_buf) %d\n",
+                    i, size, (int) sizeof(data_buf));
 
         if (data[i].repeat) {
             testUtilStrCpyRepeat(data_buf, data[i].pattern, size);
         } else {
             strcpy(data_buf, data[i].pattern);
         }
-        assert_equal(size, (int) strlen(data_buf), "i:%d png_pixel_plot size %d != strlen(data_buf) %d\n", i, size, (int) strlen(data_buf));
+        assert_equal(size, (int) strlen(data_buf), "i:%d png_pixel_plot size %d != strlen(data_buf) %d\n",
+                    i, size, (int) strlen(data_buf));
 
         symbol->bitmap = (unsigned char *) data_buf;
 
         ret = png_pixel_plot(symbol, (unsigned char *) data_buf);
-        assert_equal(ret, data[i].ret, "i:%d png_pixel_plot ret %d != %d (%s)\n", i, ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d png_pixel_plot ret %d != %d (%s)\n",
+                    i, ret, data[i].ret, symbol->errtxt);
 
         if (ret < ZINT_ERROR) {
             if (have_identify) {
@@ -195,14 +198,14 @@ static void test_print(const testCtx *const p_ctx) {
         /* 47*/ { BARCODE_UPCE_CC, -1, -1, -1, -1, -1, 0, 2, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1876543+56789", "[91]12345", 0, "upce_cc_5addon_ccb_8x2_notext.png", "" },
         /* 48*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567", "", 0, "ean8_gss_5.2.2.2-1.png", "" },
         /* 49*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567", "", 0, "ean8_gss_5.2.2.2-1_gws.png", "" },
-        /* 50*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12", "", 0, "ean8_2addon.png", "" },
-        /* 51*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12", "", 0, "ean8_2addon_gws.png", "" },
-        /* 52*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12345", "", 0, "ean8_5addon.png", "" },
-        /* 53*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12345", "", 0, "ean8_5addon_gws.png", "" },
-        /* 54*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3.png", "" },
-        /* 55*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+65", "[91]1234567", 0, "ean8_cc_2addon_cca_4x3_gws.png", "" },
-        /* 56*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3.png", "" },
-        /* 57*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+74083", "[91]123456789012345678", 0, "ean8_cc_5addon_ccb_8x3_gws.png", "" },
+        /* 50*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12", "", ZINT_WARN_NONCOMPLIANT, "ean8_2addon.png", "" },
+        /* 51*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12", "", ZINT_WARN_NONCOMPLIANT, "ean8_2addon_gws.png", "" },
+        /* 52*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12345", "", ZINT_WARN_NONCOMPLIANT, "ean8_5addon.png", "" },
+        /* 53*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "1234567+12345", "", ZINT_WARN_NONCOMPLIANT, "ean8_5addon_gws.png", "" },
+        /* 54*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+65", "[91]1234567", ZINT_WARN_NONCOMPLIANT, "ean8_cc_2addon_cca_4x3.png", "" },
+        /* 55*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+65", "[91]1234567", ZINT_WARN_NONCOMPLIANT, "ean8_cc_2addon_cca_4x3_gws.png", "" },
+        /* 56*/ { BARCODE_EANX_CC, -1, -1, -1, -1, -1, -1, 2, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+74083", "[91]123456789012345678", ZINT_WARN_NONCOMPLIANT, "ean8_cc_5addon_ccb_8x3.png", "" },
+        /* 57*/ { BARCODE_EANX_CC, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, 2, -1, 0, 0, { 0, 0, "" }, "", "", 1, "9876543+74083", "[91]123456789012345678", ZINT_WARN_NONCOMPLIANT, "ean8_cc_5addon_ccb_8x3_gws.png", "" },
         /* 58*/ { BARCODE_EANX, -1, -1, -1, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "12345", "", 0, "ean5.png", "" },
         /* 59*/ { BARCODE_EANX, -1, -1, EANUPC_GUARD_WHITESPACE, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "12345", "", 0, "ean5_gws.png", "" },
         /* 60*/ { BARCODE_EANX, -1, 2, BARCODE_BIND, -1, -1, -1, -1, -1, 0, 0, { 0, 0, "" }, "", "", 1, "12345", "", 0, "ean5_bind2.png", "" },
@@ -257,7 +260,8 @@ static void test_print(const testCtx *const p_ctx) {
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
-        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL),
+                    "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
             ret = testUtilMkDir(data_dir_path);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
@@ -272,7 +276,9 @@ static void test_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].show_hrt != -1) {
             symbol->show_hrt = data[i].show_hrt;
         }
@@ -311,40 +317,51 @@ static void test_print(const testCtx *const p_ctx) {
         text_length = (int) strlen(text);
 
         ret = ZBarcode_Encode(symbol, TCU(text), text_length);
-        assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n", i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
+        assert_equal(ret, data[i].ret, "i:%d %s ZBarcode_Encode ret %d != %d (%s)\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, data[i].ret, symbol->errtxt);
 
         strcpy(symbol->outfile, png);
         ret = ZBarcode_Print(symbol, 0);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
+                    i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
 
-        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file),
+                    "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %d, %.5g, %.5g, { %d, %d, \"%s\" }, \"%s\", \"%s\", %.5g, \"%s\", \"%s\", %s, \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
-                    data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt, data[i].option_1, data[i].option_2, data[i].height, data[i].scale,
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
+                    data[i].whitespace_width, data[i].whitespace_height, data[i].show_hrt,
+                    data[i].option_1, data[i].option_2, data[i].height, data[i].scale,
                     data[i].structapp.index, data[i].structapp.count, data[i].structapp.id,
                     data[i].fgcolour, data[i].bgcolour, data[i].text_gap,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite, testUtilErrorName(data[i].ret), data[i].expected_file, data[i].comment);
+                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].composite,
+                    testUtilErrorName(data[i].ret), data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_identify) {
                 ret = testUtilVerifyIdentify(have_identify, expected_file, debug);
-                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
+                assert_zero(ret, "i:%d %s identify %s ret %d != 0\n",
+                            i, testUtilBarcodeName(data[i].symbology), expected_file, ret);
             }
         } else {
             assert_nonzero(testUtilExists(symbol->outfile), "i:%d testUtilExists(%s) == 0\n", i, symbol->outfile);
             assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
             ret = testUtilCmpPngs(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpPngs(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             #ifndef ZLIBNG_VERSION /* zlib-ng (used by e.g. Fedora 40) may produce non-binary compat output */
             ret = testUtilCmpBins(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
             #endif
 
-            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size); /* For BARCODE_MEMORY_FILE */
-            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+            /* For BARCODE_MEMORY_FILE */
+            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size);
+            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
                 assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
@@ -353,12 +370,13 @@ static void test_print(const testCtx *const p_ctx) {
             symbol->output_options |= BARCODE_MEMORY_FILE;
             ret = ZBarcode_Print(symbol, 0);
             assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
             assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
             assert_equal(symbol->memfile_size, filebuf_size, "i:%d %s memfile_size %d != %d\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
-            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size), "i:%d %s memcmp(memfile, filebuf) != 0\n",
-                            i, testUtilBarcodeName(data[i].symbology));
+                        i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
+            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size),
+                        "i:%d %s memcmp(memfile, filebuf) != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology));
         }
 
         ZBarcode_Delete(symbol);
@@ -386,15 +404,21 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
-        static char expected_errtxt[] = "632: Could not open PNG output file ("; /* Excluding OS-dependent `errno` stuff */
+        /* Excluding OS-dependent `errno` stuff */
+        static char expected_errtxt[] = "632: Could not open PNG output file (";
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "png_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_nonzero(testUtilCreateROFile(symbol.outfile),
+                    "png_pixel_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
 
         ret = png_pixel_plot(&symbol, data);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "png_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "png_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
-        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "png_pixel_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+                    ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+        assert_zero(testUtilRmROFile(symbol.outfile), "png_pixel_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
+                    symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;
@@ -484,7 +508,8 @@ static void test_large_compliant_height(const testCtx *const p_ctx) {
     symbol->symbology = BARCODE_CODABLOCKF;
     symbol->output_options |= COMPLIANT_HEIGHT;
     testUtilStrCpyRepeat(data_buf, pattern, codablockf_max);
-    assert_equal(codablockf_max, (int) strlen(data_buf), "length %d != strlen(data_buf) %d\n", codablockf_max, (int) strlen(data_buf));
+    assert_equal(codablockf_max, (int) strlen(data_buf), "length %d != strlen(data_buf) %d\n",
+                codablockf_max, (int) strlen(data_buf));
 
     ret = ZBarcode_Encode_and_Print(symbol, (const unsigned char *) data_buf, codablockf_max, 0);
     assert_zero(ret, "ZBarcode_Encode_and_Print ret %d != 0 (%s)\n", ret, symbol->errtxt);

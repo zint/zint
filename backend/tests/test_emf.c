@@ -116,7 +116,8 @@ static void test_print(const testCtx *const p_ctx) {
 
     if (p_ctx->generate) {
         char data_dir_path[1024];
-        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL), "testUtilDataPath(%s) == 0\n", data_dir);
+        assert_nonzero(testUtilDataPath(data_dir_path, sizeof(data_dir_path), data_dir, NULL),
+                    "testUtilDataPath(%s) == 0\n", data_dir);
         if (!testUtilDirExists(data_dir_path)) {
             ret = testUtilMkDir(data_dir_path);
             assert_zero(ret, "testUtilMkDir(%s) ret %d != 0 (%d: %s)\n", data_dir_path, ret, errno, strerror(errno));
@@ -130,7 +131,9 @@ static void test_print(const testCtx *const p_ctx) {
         symbol = ZBarcode_Create();
         assert_nonnull(symbol, "Symbol not created\n");
 
-        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/, data[i].option_1, data[i].option_2, -1, data[i].output_options, data[i].data, -1, debug);
+        length = testUtilSetSymbol(symbol, data[i].symbology, data[i].input_mode, -1 /*eci*/,
+                                    data[i].option_1, data[i].option_2, -1 /*option_3*/, data[i].output_options,
+                                    data[i].data, -1, debug);
         if (data[i].border_width != -1) {
             symbol->border_width = data[i].border_width;
         }
@@ -145,7 +148,8 @@ static void test_print(const testCtx *const p_ctx) {
         }
         if (data[i].dpmm) {
             symbol->dpmm = data[i].dpmm;
-            symbol->scale = ZBarcode_Scale_From_XdimDp(symbol->symbology, ZBarcode_Default_Xdim(symbol->symbology), symbol->dpmm, "EMF");
+            symbol->scale = ZBarcode_Scale_From_XdimDp(symbol->symbology, ZBarcode_Default_Xdim(symbol->symbology),
+                                symbol->dpmm, "EMF");
         }
         if (*data[i].fgcolour) {
             strcpy(symbol->fgcolour, data[i].fgcolour);
@@ -155,24 +159,31 @@ static void test_print(const testCtx *const p_ctx) {
         }
 
         ret = ZBarcode_Encode(symbol, TCU(data[i].data), length);
-        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n", i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
+        assert_zero(ret, "i:%d %s ZBarcode_Encode ret %d != 0 %s\n",
+                    i, testUtilBarcodeName(data[i].symbology), ret, symbol->errtxt);
 
         strcpy(symbol->outfile, emf);
         ret = ZBarcode_Print(symbol, data[i].rotate_angle);
-        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+        assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0\n",
+                    i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
-        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file), "i:%d testUtilDataPath == 0\n", i);
+        assert_nonzero(testUtilDataPath(expected_file, sizeof(expected_file), data_dir, data[i].expected_file),
+                    "i:%d testUtilDataPath == 0\n", i);
 
         if (p_ctx->generate) {
             printf("        /*%3d*/ { %s, %s, %d, %s, %d, %d, %d, %d, %g, \"%s\", \"%s\", %d, \"%s\", \"%s\", \"%s\" },\n",
-                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode), data[i].border_width,
-                    testUtilOutputOptionsName(data[i].output_options), data[i].whitespace_width, data[i].whitespace_height,
-                    data[i].option_1, data[i].option_2, data[i].dpmm, data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
-                    testUtilEscape(data[i].data, length, escaped, escaped_size), data[i].expected_file, data[i].comment);
+                    i, testUtilBarcodeName(data[i].symbology), testUtilInputModeName(data[i].input_mode),
+                    data[i].border_width, testUtilOutputOptionsName(data[i].output_options),
+                    data[i].whitespace_width, data[i].whitespace_height,
+                    data[i].option_1, data[i].option_2, data[i].dpmm,
+                    data[i].fgcolour, data[i].bgcolour, data[i].rotate_angle,
+                    testUtilEscape(data[i].data, length, escaped, escaped_size),
+                    data[i].expected_file, data[i].comment);
             ret = testUtilRename(symbol->outfile, expected_file);
             assert_zero(ret, "i:%d testUtilRename(%s, %s) ret %d != 0\n", i, symbol->outfile, expected_file, ret);
             if (have_libreoffice) {
-                /* Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running (i.e. anything but LibreOffice Draw)
+                /* Note this will fail (on Ubuntu anyway) if LibreOffice Base/Calc/Impress/Writer running
+                   (i.e. anything but LibreOffice Draw)
                    Doesn't seem to be a way to force Draw invocation through the command line */
                 ret = testUtilVerifyLibreOffice(expected_file, debug);
                 assert_zero(ret, "i:%d %s libreoffice %s ret %d != 0 - check that LibreOffice is not running!\n",
@@ -183,10 +194,13 @@ static void test_print(const testCtx *const p_ctx) {
             assert_nonzero(testUtilExists(expected_file), "i:%d testUtilExists(%s) == 0\n", i, expected_file);
 
             ret = testUtilCmpBins(symbol->outfile, expected_file);
-            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
+            assert_zero(ret, "i:%d %s testUtilCmpBins(%s, %s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, expected_file, ret);
 
-            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size); /* For BARCODE_MEMORY_FILE */
-            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n", i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
+            /* For BARCODE_MEMORY_FILE */
+            ret = testUtilReadFile(symbol->outfile, filebuf, sizeof(filebuf), &filebuf_size);
+            assert_zero(ret, "i:%d %s testUtilReadFile(%s) %d != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret);
 
             if (!(debug & ZINT_DEBUG_TEST_KEEP_OUTFILE)) {
                 assert_zero(testUtilRemove(symbol->outfile), "i:%d testUtilRemove(%s) != 0\n", i, symbol->outfile);
@@ -195,12 +209,13 @@ static void test_print(const testCtx *const p_ctx) {
             symbol->output_options |= BARCODE_MEMORY_FILE;
             ret = ZBarcode_Print(symbol, data[i].rotate_angle);
             assert_zero(ret, "i:%d %s ZBarcode_Print %s ret %d != 0 (%s)\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
+                        i, testUtilBarcodeName(data[i].symbology), symbol->outfile, ret, symbol->errtxt);
             assert_nonnull(symbol->memfile, "i:%d %s memfile NULL\n", i, testUtilBarcodeName(data[i].symbology));
             assert_equal(symbol->memfile_size, filebuf_size, "i:%d %s memfile_size %d != %d\n",
-                            i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
-            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size), "i:%d %s memcmp(memfile, filebuf) != 0\n",
-                            i, testUtilBarcodeName(data[i].symbology));
+                        i, testUtilBarcodeName(data[i].symbology), symbol->memfile_size, filebuf_size);
+            assert_zero(memcmp(symbol->memfile, filebuf, symbol->memfile_size),
+                        "i:%d %s memcmp(memfile, filebuf) != 0\n",
+                        i, testUtilBarcodeName(data[i].symbology));
         }
 
         ZBarcode_Delete(symbol);
@@ -229,15 +244,20 @@ static void test_outfile(const testCtx *const p_ctx) {
     skip_readonly_test = getuid() == 0; /* Skip if running as root on Unix as can't create read-only file */
 #endif
     if (!skip_readonly_test) {
-        static char expected_errtxt[] = "640: Could not open EMF output file ("; /* Excluding OS-dependent `errno` stuff */
+        /* Excluding OS-dependent `errno` stuff */
+        static char expected_errtxt[] = "640: Could not open EMF output file (";
 
         (void) testUtilRmROFile(symbol.outfile); /* In case lying around from previous fail */
-        assert_nonzero(testUtilCreateROFile(symbol.outfile), "emf_plot testUtilCreateROFile(%s) fail (%d: %s)\n", symbol.outfile, errno, strerror(errno));
+        assert_nonzero(testUtilCreateROFile(symbol.outfile), "emf_plot testUtilCreateROFile(%s) fail (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
 
         ret = emf_plot(&symbol, 0);
-        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n", ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
-        assert_zero(testUtilRmROFile(symbol.outfile), "emf_plot testUtilRmROFile(%s) != 0 (%d: %s)\n", symbol.outfile, errno, strerror(errno));
-        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n", symbol.errtxt, expected_errtxt);
+        assert_equal(ret, ZINT_ERROR_FILE_ACCESS, "emf_plot ret %d != ZINT_ERROR_FILE_ACCESS (%d) (%s)\n",
+                    ret, ZINT_ERROR_FILE_ACCESS, symbol.errtxt);
+        assert_zero(testUtilRmROFile(symbol.outfile), "emf_plot testUtilRmROFile(%s) != 0 (%d: %s)\n",
+                    symbol.outfile, errno, strerror(errno));
+        assert_zero(strncmp(symbol.errtxt, expected_errtxt, sizeof(expected_errtxt) - 1), "strncmp(%s, %s) != 0\n",
+                    symbol.errtxt, expected_errtxt);
     }
 
     symbol.output_options |= BARCODE_STDOUT;
@@ -249,7 +269,8 @@ static void test_outfile(const testCtx *const p_ctx) {
 
     symbol.vector = NULL;
     ret = emf_plot(&symbol, 0);
-    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "emf_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n", ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
+    assert_equal(ret, ZINT_ERROR_INVALID_DATA, "emf_plot ret %d != ZINT_ERROR_INVALID_DATA (%d) (%s)\n",
+                ret, ZINT_ERROR_INVALID_DATA, symbol.errtxt);
 
     testFinish();
 }

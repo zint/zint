@@ -92,8 +92,9 @@ static void test_hrt(const testCtx *const p_ctx) {
                         "i:%d raw_segs[0].length %d != expected_raw_length %d\n",
                         i, symbol->raw_segs[0].length, expected_raw_length);
             assert_zero(memcmp(symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length),
-                        "i:%d memcmp(%s, %s, %d) != 0\n",
-                        i, symbol->raw_segs[0].source, data[i].expected_raw, expected_raw_length);
+                        "i:%d memcmp(%.*s, %s, %d) != 0\n",
+                        i, symbol->raw_segs[0].length, symbol->raw_segs[0].source, data[i].expected_raw,
+                        expected_raw_length);
         } else {
             assert_null(symbol->raw_segs, "i:%d raw_segs not NULL\n", i);
         }
