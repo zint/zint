@@ -131,7 +131,7 @@ endif()
 if(ZINT_STATIC)
     install(TARGETS zint-static EXPORT zint-targets ${INSTALL_TARGETS_DEFAULT_ARGS})
 endif()
-install(EXPORT zint-targets NAMESPACE zint:: DESTINATION "${CMAKE_INSTALL_DATADIR}/zint")
+install(EXPORT zint-targets NAMESPACE zint:: DESTINATION "${CMAKE_INSTALL_LIBDIR}/cmake/zint")
 install(FILES zint.h DESTINATION ${CMAKE_INSTALL_INCLUDEDIR} COMPONENT Devel)
 
 if(ZINT_TEST)
