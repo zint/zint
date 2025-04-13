@@ -4181,6 +4181,24 @@ static int textUtilZXingCPPDX(const char *expected, const int expected_len, cons
     return 0;
 }
 
+/* Helper to append add-on if any to EAN-13, returning expected length */
+static int textUtilZXingCPPEAN13AddOn(const char *expected, const int expected_len, char *out) {
+    char *plus;
+    if ((plus = strchr(expected, '+')) != NULL) {
+        const int addon_len = expected_len - (plus + 1 - expected);
+        if (addon_len <= 2) {
+            memset(out + 13, '0', 2 - addon_len);
+            memcpy(out + 13 + (2 - addon_len), plus + 1, addon_len);
+            return 15;
+        }
+        assert(addon_len <= 5);
+        memset(out + 13, '0', 5 - addon_len);
+        memcpy(out + 13 + (5 - addon_len), plus + 1, addon_len);
+        return 18;
+    }
+    return 13;
+}
+
 /* Massage result from "zxingcppdecoder" so as can compare to Zint input */
 int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, int cmp_len, const char *expected,
             int expected_len, const char *primary, char *ret_buf, int *p_ret_len) {
@@ -4188,6 +4206,8 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
 
     const int is_gs1_128_dbar_exp = symbology == BARCODE_GS1_128 || symbology == BARCODE_DBAR_EXP
                                 || symbology == BARCODE_DBAR_EXPSTK;
+    const int is_dbar_nonexp = symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_LTD
+                                || symbology == BARCODE_DBAR_OMNSTK || symbology == BARCODE_DBAR_STK;
     const int gs1 = (symbol->input_mode & 0x07) == GS1_MODE || is_gs1_128_dbar_exp;
     const int is_extra_escaped = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
     const int is_escaped = (symbol->input_mode & ESCAPE_MODE) || is_extra_escaped;
@@ -4207,7 +4227,8 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
                     ? (char *) z_alloca(expected_len + strlen(primary) + 4 + 6 + 9 + 1) : NULL;
     char *vin = is_vin_international ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
     char *c25inter = have_c25inter ? (char *) z_alloca(expected_len + 13 + 1 + 1) : NULL;
-    char *upcean = is_upcean ? (char *) z_alloca(expected_len + 1 + 1) : NULL;
+    char *dbar_nonexp = is_dbar_nonexp ? (char *) z_alloca(expected_len + 2 + 1) : NULL;
+    char *upcean = is_upcean ? (char *) z_alloca(expected_len + 13 + 1) : NULL;
     char *ean14_nve18 = symbology == BARCODE_EAN14 || symbology == BARCODE_NVE18
                         ? (char *) z_alloca(expected_len + 3 + 19 + 1) : NULL;
     char *dpd = need_dpd_prefix ? (char *) z_alloca(28 + 1) : NULL;
@@ -4402,117 +4423,85 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
             c25inter[++expected_len] = '\0';
             expected = c25inter;
         }
-    } else if (symbology == BARCODE_DBAR_OMN || symbology == BARCODE_DBAR_LTD || symbology == BARCODE_DBAR_OMNSTK
-                || symbology == BARCODE_DBAR_STK) {
+    } else if (is_dbar_nonexp) {
         if (expected_len == 13) {
             cmp_len--; /* Too messy to calc the check digit so ignore */
         }
-        if (symbology == BARCODE_DBAR_LTD) {
-            cmp_buf += 2; /* Ignore prefixed "01" */
-            cmp_len -= 2;
-        }
+        dbar_nonexp[0] = '0';
+        dbar_nonexp[1] = '1';
+        memcpy(dbar_nonexp + 2, expected, expected_len);
+        expected = dbar_nonexp;
+        expected_len += 2;
     } else if (is_upcean) {
-        if (symbology == BARCODE_UPCA && (expected_len == 11 || expected_len == 14 || expected_len == 17)) {
-            memcpy(upcean, expected, 11);
-            upcean[11] = gs1_check_digit((const unsigned char *) upcean, 11);
-            if (expected_len == 14) {
-                upcean[12] = ' ';
-                memcpy(upcean + 13, expected + 12, 2);
-            } else if (expected_len == 17) {
-                upcean[12] = ' ';
-                memcpy(upcean + 13, expected + 12, 5);
-            }
-            expected_len++;
+        const char *plus;
+        if (symbology == BARCODE_UPCA || symbology == BARCODE_UPCA_CHK) {
+            assert(expected_len >= 11);
+            upcean[0] = '0';
+            memcpy(upcean + 1, expected, 11);
+            upcean[12] = gs1_check_digit(ZCUCP(upcean), 12);
+            expected_len = textUtilZXingCPPEAN13AddOn(expected, expected_len, upcean);
             upcean[expected_len] = '\0';
             expected = upcean;
-        } else if (symbology == BARCODE_UPCA_CHK && (expected_len == 15 || expected_len == 18)) {
-            memcpy(upcean, expected, expected_len);
-            upcean[12] = ' ';
-            expected = upcean;
-        } else if (symbology == BARCODE_UPCE && (expected_len == 7 || expected_len == 10 || expected_len == 13)) {
+        } else if (symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK) {
             char equivalent[11];
-            memcpy(upcean, expected, 7);
-            memcpy(equivalent, upcean, 3);
+            assert(expected_len >= 7);
+            memcpy(equivalent, expected, 3);
             memset(equivalent + 3, '0', 8);
-            switch (upcean[6]) {
+            switch (expected[6]) {
                 case '0': case '1': case '2':
-                    equivalent[3] = upcean[6];
-                    equivalent[8] = upcean[3];
-                    equivalent[9] = upcean[4];
-                    equivalent[10] = upcean[5];
+                    equivalent[3] = expected[6];
+                    equivalent[8] = expected[3];
+                    equivalent[9] = expected[4];
+                    equivalent[10] = expected[5];
                     break;
                 case '3':
-                    equivalent[3] = upcean[3];
-                    equivalent[9] = upcean[4];
-                    equivalent[10] = upcean[5];
+                    equivalent[3] = expected[3];
+                    equivalent[9] = expected[4];
+                    equivalent[10] = expected[5];
                     break;
                 case '4':
-                    equivalent[3] = upcean[3];
-                    equivalent[4] = upcean[4];
-                    equivalent[10] = upcean[5];
+                    equivalent[3] = expected[3];
+                    equivalent[4] = expected[4];
+                    equivalent[10] = expected[5];
                     break;
                 case '5': case '6': case '7': case '8': case '9':
-                    equivalent[3] = upcean[3];
-                    equivalent[4] = upcean[4];
-                    equivalent[5] = upcean[5];
-                    equivalent[10] = upcean[6];
+                    equivalent[3] = expected[3];
+                    equivalent[4] = expected[4];
+                    equivalent[5] = expected[5];
+                    equivalent[10] = expected[6];
                     break;
             }
-            upcean[7] = gs1_check_digit((const unsigned char *) equivalent, 11);
-            if (expected_len == 10) {
-                upcean[8] = ' ';
-                memcpy(upcean + 9, expected + 8, 2);
-            } else if (expected_len == 13) {
-                upcean[8] = ' ';
-                memcpy(upcean + 9, expected + 8, 5);
-            }
-            expected_len++;
+            upcean[0] = '0';
+            memcpy(upcean + 1, equivalent, 11);
+            upcean[12] = gs1_check_digit(ZCUCP(upcean), 12);
+            expected_len = textUtilZXingCPPEAN13AddOn(expected, expected_len, upcean);
             upcean[expected_len] = '\0';
             expected = upcean;
-        } else if (symbology == BARCODE_UPCE_CHK && (expected_len == 11 || expected_len == 14)) {
-            memcpy(upcean, expected, expected_len);
-            upcean[8] = ' ';
+        /* EAN-8 with add-on check must happen before other EANX checks */
+        } else if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK)
+                    && (plus = strchr(expected, '+')) != NULL && (plus - expected) <= 8) {
+            const int ean7_len = (int) (plus - expected) - (symbology == BARCODE_EANX_CHK);
+            memset(upcean, '0', 12 - ean7_len);
+            memcpy(upcean + (12 - ean7_len), expected, ean7_len);
+            upcean[12] = gs1_check_digit(ZCUCP(upcean), 12);
+            expected_len = textUtilZXingCPPEAN13AddOn(expected, expected_len, upcean);
+            upcean[expected_len] = '\0';
             expected = upcean;
-        } else if (symbology == BARCODE_EANX && (expected_len == 12 || expected_len == 15 || expected_len == 18)) {
+        } else if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK)
+                    && (expected_len == 7 || expected_len == 8)) {
+            if (expected_len == 7) {
+                memcpy(upcean, expected, 7);
+                upcean[7] = gs1_check_digit(ZCUCP(expected), 7);
+            }
+            expected_len = 8;
+            upcean[expected_len] = '\0';
+            expected = upcean;
+        } else if ((symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_ISBNX)
+                    && expected_len >= 12) {
             memcpy(upcean, expected, 12);
-            upcean[12] = gs1_check_digit((const unsigned char *) upcean, 12);
-            if (expected_len == 15) {
-                upcean[13] = ' ';
-                memcpy(upcean + 14, expected + 13, 2);
-            } else if (expected_len == 18) {
-                upcean[13] = ' ';
-                memcpy(upcean + 14, expected + 13, 5);
-            }
-            expected_len++;
+            upcean[12] = gs1_check_digit(ZCUCP(upcean), 12);
+            expected_len = textUtilZXingCPPEAN13AddOn(expected, expected_len, upcean);
             upcean[expected_len] = '\0';
-            expected = upcean;
-        } else if (symbology == BARCODE_EANX && (expected_len == 16 || expected_len == 19)) {
-            memcpy(upcean, expected, expected_len);
-            upcean[13] = ' ';
-            expected = upcean;
-        } else if (symbology == BARCODE_EANX && (expected_len == 7
-                || (strchr(expected, '+') != NULL && (expected_len == 10 || expected_len == 13)))) {
-            memcpy(upcean, expected, 7);
-            upcean[7] = gs1_check_digit((const unsigned char *) upcean, 7);
-            if (expected_len == 10) {
-                upcean[8] = ' ';
-                memcpy(upcean + 9, expected + 8, 2);
-            } else if (expected_len == 13) {
-                upcean[8] = ' ';
-                memcpy(upcean + 9, expected + 8, 5);
-            }
-            expected_len++;
-            upcean[expected_len] = '\0';
-            expected = upcean;
-        } else if ((symbology == BARCODE_EANX_CHK || symbology == BARCODE_ISBNX)
-                && (expected_len == 16 || expected_len == 19)) {
-            memcpy(upcean, expected, expected_len);
-            upcean[13] = ' ';
-            expected = upcean;
-        } else if (symbology == BARCODE_EANX_CHK && strchr(expected, '+') != NULL
-                && (expected_len == 11 || expected_len == 14)) {
-            memcpy(upcean, expected, expected_len);
-            upcean[8] = ' ';
             expected = upcean;
         }
 
@@ -4525,7 +4514,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
         memcpy(ean14_nve18 + 2 + zeroes, expected, expected_len);
         ean14_nve18[len + 2] = gs1_check_digit((unsigned char *) (ean14_nve18 + 2), len);
         expected = ean14_nve18;
-        expected_len += zeroes + 3;
+        expected_len = len + 3;
 
     } else if (need_dpd_prefix) {
         dpd[0] = '%';

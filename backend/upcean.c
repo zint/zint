@@ -473,7 +473,8 @@ static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int
         hrt_cat_chr_nochk(symbol, gs1_check_digit(gtin, 7));
     } else {
         if (source[length - 1] != gs1_check_digit(gtin, 7)) {
-            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 276, "Invalid check digit '%1$c', expecting '%2$c'",
+            return ZEXT errtxtf(ZINT_ERROR_INVALID_CHECK, symbol, 276,
+                                "Invalid EAN-8 check digit '%1$c', expecting '%2$c'",
                                 source[length - 1], gs1_check_digit(gtin, 7));
         }
     }
