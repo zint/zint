@@ -4596,7 +4596,7 @@ int testUtilZXingCPPCmp(struct zint_symbol *symbol, char *msg, char *cmp_buf, in
     ret_memcmp = memcmp(cmp_buf, expected, expected_len);
     if (ret_memcmp != 0) {
         for (i = 0; i < expected_len; i++) {
-            if (cmp_buf[i] != expected[i]) {
+            if (cmp_buf[i] != expected[i]) { /* NOLINT(clang-analyzer-core.UndefinedBinaryOperatorResult) */
                 break;
             }
         }
