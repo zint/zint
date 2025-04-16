@@ -910,7 +910,8 @@ namespace Zint {
                 return true;
                 break;
             default:
-                return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
+                return (symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC)
+						|| symbology == BARCODE_EAN8_CC || symbology == BARCODE_EAN13_CC;
                 break;
         }
     }

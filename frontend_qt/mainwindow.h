@@ -74,6 +74,7 @@ public slots:
     void codeone_ui_set();
     void upcean_no_quiet_zones_ui_set();
     void upcae_no_quiet_zones_ui_set();
+    void eanaddon_no_quiet_zones_ui_set();
     void structapp_ui_set();
     void clear_text_gap();
     void on_encoded();

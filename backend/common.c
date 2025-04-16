@@ -566,18 +566,37 @@ INTERNAL int is_bindable(const int symbology) {
     return 0;
 }
 
-/* Whether `symbology` is EAN/UPC */
-INTERNAL int is_upcean(const int symbology) {
-
+/* Whether `symbology` is EAN */
+INTERNAL int is_ean(const int symbology) {
     switch (symbology) {
+        case BARCODE_EAN8:
+        case BARCODE_EAN_2ADDON:
+        case BARCODE_EAN_5ADDON:
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
+        case BARCODE_EAN13:
+        case BARCODE_ISBNX:
+        case BARCODE_EANX_CC:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN13_CC:
+            return 1;
+            break;
+    }
+
+    return 0;
+}
+
+/* Whether `symbology` is EAN/UPC */
+INTERNAL int is_upcean(const int symbology) {
+    if (is_ean(symbology)) {
+        return 1;
+    }
+
+    switch (symbology) {
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:
         case BARCODE_UPCE:
         case BARCODE_UPCE_CHK:
-        case BARCODE_ISBNX:
-        case BARCODE_EANX_CC:
         case BARCODE_UPCA_CC:
         case BARCODE_UPCE_CC:
             return 1;
@@ -589,7 +608,9 @@ INTERNAL int is_upcean(const int symbology) {
 
 /* Whether `symbology` can have composite 2D component data */
 INTERNAL int is_composite(const int symbology) {
-    return symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC;
+    /* Note if change this must change "backend_qt/qzint.cpp" `takesGS1AIData()` also */
+    return (symbology >= BARCODE_EANX_CC && symbology <= BARCODE_DBAR_EXPSTK_CC)
+            || symbology == BARCODE_EAN8_CC || symbology == BARCODE_EAN13_CC;
 }
 
 /* Whether `symbology` is a matrix design renderable as dots */

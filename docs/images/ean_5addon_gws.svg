@@ -8,5 +8,8 @@
   <text x="94" y="31.2" text-anchor="middle" font-family="OCRB, monospace" font-size="40">
    54321
   </text>
+  <text x="210" y="31.2" text-anchor="end" font-family="OCRB, monospace" font-size="40">
+   &gt;
+  </text>
  </g>
 </svg>

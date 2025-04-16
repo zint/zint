@@ -1,10 +1,12 @@
-Version 2.15.0.9 (dev) not released yet (2025-04-11)
+Version 2.15.0.9 (dev) not released yet (2025-04-16)
 ====================================================
 
 **Incompatible changes**
 ------------------------
-- New `raw_segs` & `raw_seg_count` fields in `symbol` for use with new output
-  option `BARCODE_RAW_TEXT`
+- Buffer length of member `errtxt` in `zint_symbol` extended 100 -> 160
+  (client buffers may need checking/extending)
+- New `raw_segs` & `raw_seg_count` fields in `zint_symbol` for use with new
+  output option `BARCODE_RAW_TEXT`
 - Symbol structure members `option_1`, `option_2` and `option_3` now updated
   after `ZBarcode_Encode()` and variants are called, and there are three new
   methods in the Qt Backend to access to them
@@ -12,6 +14,7 @@ Version 2.15.0.9 (dev) not released yet (2025-04-11)
 - GS1 Composites now return warning if CC type upped from requested due to size
   of composite data
 - EAN-8 with add-on now returns warning that it's non-standard
+- UPC-E now returns warning if first digit of 7 digits ignored (not '0' or '1')
 
 Changes
 -------
@@ -32,6 +35,14 @@ Changes
 - DOTCODE: now pads rows if given number of columns instead of failing if rows
   below min (5)
 - EAN-8 + add-on: warn as non-compliant
+- UPC-E: warn if first digit of 7 (or 8 if check digit given) not '0' or '1'
+- Extend `errtxt` buffer 100 -> 160
+- Add new symbologies `BARCODE_EAN8`, `BARCODE_EAN_2ADDON`,
+  `BARCODE_EAN_5ADDON`, `BARCODE_EAN13`, `BARCODE_EAN8_CC` and
+  `BARCODE_EAN13_CC` as replacements for `BARCODE_EANX`, `BARCODE_EANX_CHK` and
+  `BARCODE_EANX_CC` and use in CLI/GUI (`BARCODE_EANX` etc. marked as legacy)
+- For EAN/UPC accept space as alternative add-on separator to '+', and accept
+  GTIN-13 format with & without 2-digit or 5-digit add-on (no separator)
 
 Bugs
 ----
@@ -60,7 +71,7 @@ Version 2.15.0 (2025-02-25)
 
 **Incompatible changes**
 ------------------------
-- New `text_length` field in `symbol`
+- New `text_length` field in `zint_symbol`
 
 Changes
 -------
@@ -83,7 +94,7 @@ Version 2.14.0 (2025-02-05)
 
 **Incompatible changes**
 ------------------------
-- New `memfile` & `memfile_size` fields in `symbol` for use with new output
+- New `memfile` & `memfile_size` fields in `zint_symbol` for use with new output
   option `BARCODE_MEMORY_FILE`
 - Buffer length of member `text` (HRT) in `zint_symbol` extended 200 -> 256
   (client buffers may need checking/extending)

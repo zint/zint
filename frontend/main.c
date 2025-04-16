@@ -75,48 +75,50 @@ static void types(void) {
           " 7 C25IND      Industrial 2 of 5        81 DBAR_EXPSTK    GS1 DataBar Exp Stack\n"
           " 8 CODE39      Code 39                  82 PLANET         USPS PLANET\n"
           " 9 EXCODE39    Extended Code 39         84 MICROPDF417    MicroPDF417\n"
-          "13 EANX        EAN-2 to EAN-13          85 USPS_IMAIL     USPS Intelligent Mail\n", stdout);
-    fputs("14 EANX_CHK    EAN + Check Digit        86 PLESSEY        UK Plessey\n"
-          "16 GS1_128     GS1-128                  87 TELEPEN_NUM    Telepen Numeric\n"
-          "18 CODABAR     Codabar                  89 ITF14          ITF-14\n"
-          "20 CODE128     Code 128                 90 KIX            Dutch Post KIX Code\n"
-          "21 DPLEIT      Deutsche Post Leitcode   92 AZTEC          Aztec Code\n", stdout);
-    fputs("22 DPIDENT     Deutsche Post Identcode  93 DAFT           DAFT Code\n"
-          "23 CODE16K     Code 16K                 96 DPD            DPD Parcel Code 128\n"
-          "24 CODE49      Code 49                  97 MICROQR        Micro QR Code\n"
-          "25 CODE93      Code 93                  98 HIBC_128       HIBC Code 128\n"
-          "28 FLAT        Flattermarken            99 HIBC_39        HIBC Code 39\n", stdout);
-    fputs("29 DBAR_OMN    GS1 DataBar Omni        102 HIBC_DM        HIBC Data Matrix\n"
-          "30 DBAR_LTD    GS1 DataBar Limited     104 HIBC_QR        HIBC QR Code\n"
-          "31 DBAR_EXP    GS1 DataBar Expanded    106 HIBC_PDF       HIBC PDF417\n"
-          "32 TELEPEN     Telepen Alpha           108 HIBC_MICPDF    HIBC MicroPDF417\n"
-          "34 UPCA        UPC-A                   110 HIBC_BLOCKF    HIBC Codablock-F\n", stdout);
-    fputs("35 UPCA_CHK    UPC-A + Check Digit     112 HIBC_AZTEC     HIBC Aztec Code\n"
-          "37 UPCE        UPC-E                   115 DOTCODE        DotCode\n"
-          "38 UPCE_CHK    UPC-E + Check Digit     116 HANXIN         Han Xin Code\n"
-          "40 POSTNET     USPS POSTNET            119 MAILMARK_2D    Royal Mail 2D Mailmark\n"
-          "47 MSI_PLESSEY MSI Plessey             120 UPU_S10        UPU S10\n", stdout);
-    fputs("49 FIM         Facing Ident Mark       121 MAILMARK_4S    RM 4-State Mailmark\n"
-          "50 LOGMARS     LOGMARS Code 39         128 AZRUNE         Aztec Runes\n"
-          "51 PHARMA      Pharmacode One-Track    129 CODE32         Code 32 (Ital. Pharma)\n"
-          "52 PZN         Pharmazentralnummer     130 EANX_CC        Composite EAN\n"
-          "53 PHARMA_TWO  Pharmacode Two-Track    131 GS1_128_CC     Composite GS1-128\n", stdout);
-    fputs("54 CEPNET      Brazilian CEPNet        132 DBAR_OMN_CC    Comp DataBar Omni\n"
-          "55 PDF417      PDF417                  133 DBAR_LTD_CC    Comp DataBar Limited\n"
-          "56 PDF417COMP  Compact PDF417          134 DBAR_EXP_CC    Comp DataBar Expanded\n"
-          "57 MAXICODE    MaxiCode                135 UPCA_CC        Composite UPC-A\n"
-          "58 QRCODE      QR Code                 136 UPCE_CC        Composite UPC-E\n", stdout);
-    fputs("60 CODE128AB   Code 128 (Suppress C)   137 DBAR_STK_CC    Comp DataBar Stacked\n"
-          "63 AUSPOST     AP Standard Customer    138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
-          "66 AUSREPLY    AP Reply Paid           139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
-          "67 AUSROUTE    AP Routing              140 CHANNEL        Channel Code\n"
-          "68 AUSREDIRECT AP Redirection          141 CODEONE        Code One\n", stdout);
-    fputs("69 ISBNX       ISBN                    142 GRIDMATRIX     Grid Matrix\n"
-          "70 RM4SCC      Royal Mail 4SCC         143 UPNQR          UPN QR Code\n"
-          "71 DATAMATRIX  Data Matrix             144 ULTRA          Ultracode\n"
-          "72 EAN14       EAN-14                  145 RMQR           Rectangular Micro QR\n"
-          "73 VIN         Vehicle Information No. 146 BC412          BC412\n", stdout);
-    fputs("74 CODABLOCKF  Codablock-F             147 DXFILMEDGE     DX Film Edge Barcode\n", stdout);
+          "10 EAN8        EAN-8                    85 USPS_IMAIL     USPS Intelligent Mail\n", stdout);
+    fputs("11 EAN_2ADDON  EAN 2-digit add-on       86 PLESSEY        UK Plessey\n"
+          "12 EAN_5ADDON  EAN 5-digit add-on       87 TELEPEN_NUM    Telepen Numeric\n"
+          "15 EAN13       EAN-13                   89 ITF14          ITF-14\n"
+          "16 GS1_128     GS1-128                  90 KIX            Dutch Post KIX Code\n"
+          "18 CODABAR     Codabar                  92 AZTEC          Aztec Code\n", stdout);
+    fputs("20 CODE128     Code 128                 93 DAFT           DAFT Code\n"
+          "21 DPLEIT      Deutsche Post Leitcode   96 DPD            DPD Parcel Code 128\n"
+          "22 DPIDENT     Deutsche Post Identcode  97 MICROQR        Micro QR Code\n"
+          "23 CODE16K     Code 16K                 98 HIBC_128       HIBC Code 128\n"
+          "24 CODE49      Code 49                  99 HIBC_39        HIBC Code 39\n", stdout);
+    fputs("25 CODE93      Code 93                 102 HIBC_DM        HIBC Data Matrix\n"
+          "28 FLAT        Flattermarken           104 HIBC_QR        HIBC QR Code\n"
+          "29 DBAR_OMN    GS1 DataBar Omni        106 HIBC_PDF       HIBC PDF417\n"
+          "30 DBAR_LTD    GS1 DataBar Limited     108 HIBC_MICPDF    HIBC MicroPDF417\n"
+          "31 DBAR_EXP    GS1 DataBar Expanded    110 HIBC_BLOCKF    HIBC Codablock-F\n", stdout);
+    fputs("32 TELEPEN     Telepen Alpha           112 HIBC_AZTEC     HIBC Aztec Code\n"
+          "34 UPCA        UPC-A                   115 DOTCODE        DotCode\n"
+          "35 UPCA_CHK    UPC-A + Check Digit     116 HANXIN         Han Xin Code\n"
+          "37 UPCE        UPC-E                   119 MAILMARK_2D    Royal Mail 2D Mailmark\n"
+          "38 UPCE_CHK    UPC-E + Check Digit     120 UPU_S10        UPU S10\n", stdout);
+    fputs("40 POSTNET     USPS POSTNET            121 MAILMARK_4S    RM 4-State Mailmark\n"
+          "47 MSI_PLESSEY MSI Plessey             128 AZRUNE         Aztec Runes\n"
+          "49 FIM         Facing Ident Mark       129 CODE32         Code 32 (Ital. Pharma)\n"
+          "50 LOGMARS     LOGMARS Code 39         131 GS1_128_CC     Composite GS1-128\n"
+          "51 PHARMA      Pharmacode One-Track    132 DBAR_OMN_CC    Comp DataBar Omni\n", stdout);
+    fputs("52 PZN         Pharmazentralnummer     133 DBAR_LTD_CC    Comp DataBar Limited\n"
+          "53 PHARMA_TWO  Pharmacode Two-Track    134 DBAR_EXP_CC    Comp DataBar Expanded\n"
+          "54 CEPNET      Brazilian CEPNet        135 UPCA_CC        Composite UPC-A\n"
+          "55 PDF417      PDF417                  136 UPCE_CC        Composite UPC-E\n"
+          "56 PDF417COMP  Compact PDF417          137 DBAR_STK_CC    Comp DataBar Stacked\n", stdout);
+    fputs("57 MAXICODE    MaxiCode                138 DBAR_OMNSTK_CC Comp DataBar Stack Omn\n"
+          "58 QRCODE      QR Code                 139 DBAR_EXPSTK_CC Comp DataBar Exp Stack\n"
+          "60 CODE128AB   Code 128 (Suppress C)   140 CHANNEL        Channel Code\n"
+          "63 AUSPOST     AP Standard Customer    141 CODEONE        Code One\n"
+          "66 AUSREPLY    AP Reply Paid           142 GRIDMATRIX     Grid Matrix\n", stdout);
+    fputs("67 AUSROUTE    AP Routing              143 UPNQR          UPN QR Code\n"
+          "68 AUSREDIRECT AP Redirection          144 ULTRA          Ultracode\n"
+          "69 ISBNX       ISBN                    145 RMQR           Rectangular Micro QR\n"
+          "70 RM4SCC      Royal Mail 4SCC         146 BC412          BC412\n"
+          "71 DATAMATRIX  Data Matrix             147 DXFILMEDGE     DX Film Edge Barcode\n", stdout);
+    fputs("72 EAN14       EAN-14 (GS1-128 based)  148 EAN8_CC        Composite EAN-8\n"
+          "73 VIN         Vehicle Information No. 149 EAN13_CC       Composite EAN-13\n"
+          "74 CODABLOCKF  Codablock-F\n", stdout);
 }
 
 /* Output version information */
@@ -501,7 +503,15 @@ static int get_barcode_name(const char *barcode_name) {
         { BARCODE_EANX, "ean" }, /* Synonym */
         { BARCODE_GS1_128, "ean128" }, /* Synonym */
         { BARCODE_GS1_128_CC, "ean128cc" }, /* Synonym */
+        { BARCODE_EAN13, "ean13" },
+        { BARCODE_EAN13_CC, "ean13cc" },
         { BARCODE_EAN14, "ean14" },
+        { BARCODE_EAN_2ADDON, "ean2" }, /* Synonym */
+        { BARCODE_EAN_2ADDON, "ean2addon" },
+        { BARCODE_EAN_5ADDON, "ean5" }, /* Synonym */
+        { BARCODE_EAN_5ADDON, "ean5addon" },
+        { BARCODE_EAN8, "ean8" },
+        { BARCODE_EAN8_CC, "ean8cc" },
         { BARCODE_EANX_CC, "eancc" }, /* Synonym */
         { BARCODE_EANX_CHK, "eanchk" }, /* Synonym */
         { BARCODE_EANX, "eanx" },

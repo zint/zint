@@ -263,7 +263,7 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         5   Enhanced ECC for all of the message
         6   Reader Initialisation (Programming)
 
-    For GS1 Composite symbols (names end in `_CC`, i.e. EANX_CC, GS1_128_CC, DBAR_OMN_CC etc.):
+    For GS1 Composite symbols (names end in `_CC`, i.e. `EAN8_CC`, `EAN13_CC`, `GS1_128_CC`, `DBAR_OMN_CC` etc.):
 
         1   CC-A
         2   CC-B
@@ -627,7 +627,7 @@ to create a series of EAN-13 barcodes, formatting the output filenames to "ean00
 special character "~".
 
 ```bash
-zint -b EANX --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
+zint -b EAN13 --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
 ```
 
 # BUGS

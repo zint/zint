@@ -182,6 +182,8 @@
 - MSVC: suppress warning 4996 (_CRT_SECURE_NO_WARNINGS)
 2025-02-15 GL
 - strcpy() -> memcpy(); sizeof(primary); tabs -> spaces
+2025-04-16 GL
+- Added: EAN8, EAN_2ADDON, EAN_5ADDON, EAN13, EAN8_CC, EAN13_CC, DMFILMEDGE
 */
 
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
@@ -269,8 +271,12 @@ static const char *s_code_list[] = {
     "Ind2of5",
     "Code39",
     "Code39Extended",
+    "EAN8",
+    "EAN-2AddOn",
+    "EAN-5AddOn",
     "EAN",
     "EAN+Check",
+    "EAN13",
     "GS1-128",
     "Codabar",
     "Code128",
@@ -361,6 +367,9 @@ static const char *s_code_list[] = {
     "UltraCode",
     "rMQR",
     "BC412",
+    "DMFilmEdge",
+    "EAN8-CC",
+    "EAN13-CC",
     NULL};
 
 static const int s_code_number[] = {
@@ -372,8 +381,12 @@ static const int s_code_number[] = {
     BARCODE_C25IND,
     BARCODE_CODE39,
     BARCODE_EXCODE39,
+    BARCODE_EAN8,
+    BARCODE_EAN_2ADDON,
+    BARCODE_EAN_5ADDON,
     BARCODE_EANX,
     BARCODE_EANX_CHK,
+    BARCODE_EAN13,
     BARCODE_GS1_128,
     BARCODE_CODABAR,
     BARCODE_CODE128,
@@ -464,6 +477,9 @@ static const int s_code_number[] = {
     BARCODE_ULTRA,
     BARCODE_RMQR,
     BARCODE_BC412,
+    BARCODE_DXFILMEDGE,
+    BARCODE_EAN8_CC,
+    BARCODE_EAN13_CC,
     0};
 
 /* ECI TCL encoding names.

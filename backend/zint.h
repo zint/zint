@@ -138,7 +138,7 @@ extern "C" {
         int width;          /* Width of the generated symbol (output only) */
         unsigned char encoded_data[200][144]; /* Encoded data (output only). Allows for rows of 1152 modules */
         float row_height[200]; /* Heights of rows (output only). Allows for 200 row DotCode */
-        char errtxt[100];   /* Error message if an error or warning occurs, NUL-terminated (output only) */
+        char errtxt[160];   /* Error message if an error or warning occurs, NUL-terminated (output only) */
         unsigned char *bitmap; /* Stored bitmap image (raster output only) */
         int bitmap_width;   /* Width of bitmap image (raster output only) */
         int bitmap_height;  /* Height of bitmap image (raster output only) */
@@ -161,8 +161,12 @@ extern "C" {
 #define BARCODE_C25IND          7   /* 2 of 5 Industrial */
 #define BARCODE_CODE39          8   /* Code 39 */
 #define BARCODE_EXCODE39        9   /* Extended Code 39 */
-#define BARCODE_EANX            13  /* EAN (European Article Number) */
-#define BARCODE_EANX_CHK        14  /* EAN + Check Digit */
+#define BARCODE_EAN8            10  /* EAN-8 (European Article Number) GTIN-8 */
+#define BARCODE_EAN_2ADDON      11  /* EAN/UPC 2-digit add-on (standalone) */
+#define BARCODE_EAN_5ADDON      12  /* EAN/UPC 5-digit add-on (standalone) */
+#define BARCODE_EANX            13  /* Legacy */
+#define BARCODE_EANX_CHK        14  /* Legacy */
+#define BARCODE_EAN13           15  /* EAN-13 (European Article Number) GTIN-13 */
 #define BARCODE_GS1_128         16  /* GS1-128 */
 #define BARCODE_EAN128          16  /* Legacy */
 #define BARCODE_CODABAR         18  /* Codabar */
@@ -181,9 +185,9 @@ extern "C" {
 #define BARCODE_RSS_EXP         31  /* Legacy */
 #define BARCODE_TELEPEN         32  /* Telepen Alpha */
 #define BARCODE_UPCA            34  /* UPC-A */
-#define BARCODE_UPCA_CHK        35  /* UPC-A + Check Digit */
+#define BARCODE_UPCA_CHK        35  /* UPC-A including check digit */
 #define BARCODE_UPCE            37  /* UPC-E */
-#define BARCODE_UPCE_CHK        38  /* UPC-E + Check Digit */
+#define BARCODE_UPCE_CHK        38  /* UPC-E including check digit */
 #define BARCODE_POSTNET         40  /* USPS (U.S. Postal Service) POSTNET */
 #define BARCODE_MSI_PLESSEY     47  /* MSI Plessey */
 #define BARCODE_FIM             49  /* Facing Identification Mark */
@@ -256,7 +260,7 @@ extern "C" {
     /* Zint specific */
 #define BARCODE_AZRUNE          128 /* Aztec Runes */
 #define BARCODE_CODE32          129 /* Code 32 */
-#define BARCODE_EANX_CC         130 /* EAN Composite */
+#define BARCODE_EANX_CC         130 /* Legacy */
 #define BARCODE_GS1_128_CC      131 /* GS1-128 Composite */
 #define BARCODE_EAN128_CC       131 /* Legacy */
 #define BARCODE_DBAR_OMN_CC     132 /* GS1 DataBar Omnidirectional Composite */
@@ -281,7 +285,9 @@ extern "C" {
 #define BARCODE_RMQR            145 /* Rectangular Micro QR Code (rMQR) */
 #define BARCODE_BC412           146 /* IBM BC412 (SEMI T1-95) */
 #define BARCODE_DXFILMEDGE      147 /* DX Film Edge Barcode on 35mm and APS films */
-#define BARCODE_LAST            147 /* Max barcode number marker, not barcode */
+#define BARCODE_EAN8_CC         148 /* EAN-8 Composite */
+#define BARCODE_EAN13_CC        149 /* EAN-13 Composite */
+#define BARCODE_LAST            149 /* Max barcode number marker, not barcode */
 
 /* Output options (`symbol->output_options`) */
 #define BARCODE_BIND_TOP        0x00001 /* Boundary bar above the symbol only (not below), does not affect stacking */

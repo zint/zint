@@ -271,6 +271,9 @@ INTERNAL int errtxt_adj(const int error_number, struct zint_symbol *symbol, cons
 /* Whether `symbology` can have row binding */
 INTERNAL int is_bindable(const int symbology);
 
+/* Whether `symbology` is EAN */
+INTERNAL int is_ean(const int symbology);
+
 /* Whether `symbology` is EAN/UPC */
 INTERNAL int is_upcean(const int symbology);
 

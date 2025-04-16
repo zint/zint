@@ -65,9 +65,13 @@ IMAGES = \
 	images/upca.svg \
 	images/upca_5.svg \
 	images/upce.svg \
-	images/eanx13.svg \
-	images/eanx5.svg \
-	images/eanx8_5.svg \
+	images/ean13.svg \
+	images/ean13_2.svg \
+	images/ean13_gd_gws.svg \
+	images/ean8.svg \
+	images/ean8_gws.svg \
+	images/ean_2addon.svg \
+	images/ean_5addon_gws.svg \
 	images/isbnx.svg \
 	images/plessey.svg \
 	images/msi_plessey.svg \
@@ -109,8 +113,8 @@ IMAGES = \
 	images/dbar_omnstk.svg \
 	images/dbar_expstk.svg \
 	images/code49.svg \
-	images/eanx_cc_a.svg \
-	images/eanx_cc_b.svg \
+	images/ean13_cc_a.svg \
+	images/ean13_cc_b.svg \
 	images/gs1_128_cc_c.svg \
 	images/pharma_two.svg \
 	images/postnet.svg \

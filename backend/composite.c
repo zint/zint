@@ -1164,6 +1164,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     switch (symbol->symbology) {
             /* Determine width of 2D component according to ISO/IEC 24723 Table 1 */
         case BARCODE_EANX_CC:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN13_CC:
             if (pri_len < 20) {
                 int padded_pri_len;
                 int with_addon;
@@ -1173,7 +1175,7 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                     return errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
                 padded_pri_len = (int) ustrlen(padded_pri);
-                if (padded_pri_len <= 7) { /* EAN-8 */
+                if (padded_pri_len <= 7 || symbol->symbology == BARCODE_EAN8_CC) { /* EAN-8 */
                     cc_width = 3;
                 } else {
                     switch (padded_pri_len) {
@@ -1283,6 +1285,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
 
     switch (symbol->symbology) {
         case BARCODE_EANX_CC:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN13_CC:
             error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
             break;
         case BARCODE_GS1_128_CC:
@@ -1331,6 +1335,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     switch (symbol->symbology) {
             /* Determine horizontal alignment (according to section 12.3) */
         case BARCODE_EANX_CC:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN13_CC:
             switch (linear->text_length) { /* Use zero-padded length */
                 case 8: /* EAN-8 */
                 case 11: /* EAN-8 + 2 */

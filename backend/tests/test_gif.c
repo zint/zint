@@ -401,7 +401,7 @@ static void test_too_big(const testCtx *const p_ctx) {
     length = (int) strlen(data);
 
     ZBarcode_Reset(&symbol);
-    symbol.symbology = BARCODE_EANX;
+    symbol.symbology = BARCODE_EAN_5ADDON;
     strcpy(symbol.outfile, "out.gif");
     symbol.scale = 200.0f;
     symbol.whitespace_width = 32;

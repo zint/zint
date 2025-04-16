@@ -91,8 +91,10 @@ April 2025
       - 6.1.3.1 UPC Version A
       - 6.1.3.2 UPC Version E
     - 6.1.4 EAN (European Article Number) (ISO 15420)
-      - 6.1.4.1 EAN-2, EAN-5, EAN-8 and EAN-13
-      - 6.1.4.2 SBN, ISBN and ISBN-13
+      - 6.1.4.1 EAN-13
+      - 6.1.4.2 EAN-8
+      - 6.1.4.3 ISBN (including SBN and ISBN-13)
+      - 6.1.4.4 EAN/UPC Add-Ons (standalone)
     - 6.1.5 Plessey
       - 6.1.5.1 UK Plessey
       - 6.1.5.2 MSI Plessey
@@ -790,220 +792,230 @@ or
 Names are treated case-insensitively by the CLI, and the BARCODE_ prefix and any
 underscores are optional.
 
-  ------------------------------------------------------------------------------
-  Numeric   Name[3]                   Barcode Name
+  -----------------------------------------------------------------------------
+  Numeric   Name[3]                     Barcode Name
   Value
-  --------- ------------------------- ------------------------------------------
-  1         BARCODE_CODE11            Code 11
+  --------- --------------------------- ---------------------------------------
+  1         BARCODE_CODE11              Code 11
 
-  2*        BARCODE_C25STANDARD       Standard Code 2 of 5
+  2         BARCODE_C25STANDARD *       Standard Code 2 of 5
 
-  3         BARCODE_C25INTER          Interleaved 2 of 5
+  3         BARCODE_C25INTER            Interleaved 2 of 5
 
-  4         BARCODE_C25IATA           Code 2 of 5 IATA
+  4         BARCODE_C25IATA             Code 2 of 5 IATA
 
-  6         BARCODE_C25LOGIC          Code 2 of 5 Data Logic
+  6         BARCODE_C25LOGIC            Code 2 of 5 Data Logic
 
-  7         BARCODE_C25IND            Code 2 of 5 Industrial
+  7         BARCODE_C25IND              Code 2 of 5 Industrial
 
-  8         BARCODE_CODE39            Code 3 of 9 (Code 39)
+  8         BARCODE_CODE39              Code 3 of 9 (Code 39)
 
-  9         BARCODE_EXCODE39          Extended Code 3 of 9 (Code 39+)
+  9         BARCODE_EXCODE39            Extended Code 3 of 9 (Code 39+)
 
-  13        BARCODE_EANX              EAN (EAN-2, EAN-5, EAN-8 and EAN-13)
+  10        BARCODE_EAN8 †              EAN-8 (European Article Number) GTIN-8
 
-  14        BARCODE_EANX_CHK          EAN + Check Digit
+  11        BARCODE_EAN_2ADDON †        EAN/UPC 2-digit add-on (standalone)
 
-  16*       BARCODE_GS1_128           GS1-128 (UCC.EAN-128)
+  12        BARCODE_EAN_5ADDON †        EAN/UPC 5-digit add-on (standalone)
 
-  18        BARCODE_CODABAR           Codabar
+  15        BARCODE_EAN13 †             EAN-13 (European Article Number)
+                                        GTIN-13
 
-  20        BARCODE_CODE128           Code 128 (automatic Code Set switching)
+  16        BARCODE_GS1_128 *           GS1-128 (UCC.EAN-128)
 
-  21        BARCODE_DPLEIT            Deutsche Post Leitcode
+  18        BARCODE_CODABAR             Codabar
 
-  22        BARCODE_DPIDENT           Deutsche Post Identcode
+  20        BARCODE_CODE128             Code 128 (automatic Code Set switching)
 
-  23        BARCODE_CODE16K           Code 16K
+  21        BARCODE_DPLEIT              Deutsche Post Leitcode
 
-  24        BARCODE_CODE49            Code 49
+  22        BARCODE_DPIDENT             Deutsche Post Identcode
 
-  25        BARCODE_CODE93            Code 93
+  23        BARCODE_CODE16K             Code 16K
 
-  28        BARCODE_FLAT              Flattermarken
+  24        BARCODE_CODE49              Code 49
 
-  29*       BARCODE_DBAR_OMN          GS1 DataBar Omnidirectional (including GS1
-                                      DataBar Truncated)
+  25        BARCODE_CODE93              Code 93
 
-  30*       BARCODE_DBAR_LTD          GS1 DataBar Limited
+  28        BARCODE_FLAT                Flattermarken
 
-  31*       BARCODE_DBAR_EXP          GS1 DataBar Expanded
+  29        BARCODE_DBAR_OMN *          GS1 DataBar Omnidirectional (including
+                                        GS1 DataBar Truncated)
 
-  32        BARCODE_TELEPEN           Telepen Alpha
+  30        BARCODE_DBAR_LTD *          GS1 DataBar Limited
 
-  34        BARCODE_UPCA              UPC-A
+  31        BARCODE_DBAR_EXP *          GS1 DataBar Expanded
 
-  35        BARCODE_UPCA_CHK          UPC-A + Check Digit
+  32        BARCODE_TELEPEN             Telepen Alpha
 
-  37        BARCODE_UPCE              UPC-E
+  34        BARCODE_UPCA                UPC-A
 
-  38        BARCODE_UPCE_CHK          UPC-E + Check Digit
+  35        BARCODE_UPCA_CHK            UPC-A with check digit
 
-  40        BARCODE_POSTNET           POSTNET
+  37        BARCODE_UPCE                UPC-E
 
-  47        BARCODE_MSI_PLESSEY       MSI Plessey
+  38        BARCODE_UPCE_CHK            UPC-E with check digit
 
-  49        BARCODE_FIM               FIM
+  40        BARCODE_POSTNET             POSTNET
 
-  50        BARCODE_LOGMARS           LOGMARS
+  47        BARCODE_MSI_PLESSEY         MSI Plessey
 
-  51        BARCODE_PHARMA            Pharmacode One-Track
+  49        BARCODE_FIM                 FIM
 
-  52        BARCODE_PZN               PZN
+  50        BARCODE_LOGMARS             LOGMARS
 
-  53        BARCODE_PHARMA_TWO        Pharmacode Two-Track
+  51        BARCODE_PHARMA              Pharmacode One-Track
 
-  54        BARCODE_CEPNET            Brazilian CEPNet
+  52        BARCODE_PZN                 PZN
 
-  55        BARCODE_PDF417            PDF417
+  53        BARCODE_PHARMA_TWO          Pharmacode Two-Track
 
-  56*       BARCODE_PDF417COMP        Compact PDF417 (Truncated PDF417)
+  54        BARCODE_CEPNET              Brazilian CEPNet
 
-  57        BARCODE_MAXICODE          MaxiCode
+  55        BARCODE_PDF417              PDF417
 
-  58        BARCODE_QRCODE            QR Code
+  56        BARCODE_PDF417COMP *        Compact PDF417 (Truncated PDF417)
 
-  60        BARCODE_CODE128AB         Code 128 (Suppress Code Set C)
+  57        BARCODE_MAXICODE            MaxiCode
 
-  63        BARCODE_AUSPOST           Australia Post Standard Customer
+  58        BARCODE_QRCODE              QR Code
 
-  66        BARCODE_AUSREPLY          Australia Post Reply Paid
+  60        BARCODE_CODE128AB           Code 128 (Suppress Code Set C)
 
-  67        BARCODE_AUSROUTE          Australia Post Routing
+  63        BARCODE_AUSPOST             Australia Post Standard Customer
 
-  68        BARCODE_AUSDIRECT         Australia Post Redirection
+  66        BARCODE_AUSREPLY            Australia Post Reply Paid
 
-  69        BARCODE_ISBNX             ISBN (EAN-13 with verification stage)
+  67        BARCODE_AUSROUTE            Australia Post Routing
 
-  70        BARCODE_RM4SCC            Royal Mail 4-State Customer Code (RM4SCC)
+  68        BARCODE_AUSDIRECT           Australia Post Redirection
 
-  71        BARCODE_DATAMATRIX        Data Matrix (ECC 200)
+  69        BARCODE_ISBNX               ISBN (EAN-13 with verification stage)
 
-  72        BARCODE_EAN14             EAN-14
+  70        BARCODE_RM4SCC              Royal Mail 4-State Customer Code
+                                        (RM4SCC)
 
-  73        BARCODE_VIN               Vehicle Identification Number
+  71        BARCODE_DATAMATRIX          Data Matrix (ECC 200)
 
-  74        BARCODE_CODABLOCKF        Codablock-F
+  72        BARCODE_EAN14               EAN-14
 
-  75        BARCODE_NVE18             NVE-18 (SSCC-18)
+  73        BARCODE_VIN                 Vehicle Identification Number
 
-  76        BARCODE_JAPANPOST         Japanese Postal Code
+  74        BARCODE_CODABLOCKF          Codablock-F
 
-  77        BARCODE_KOREAPOST         Korea Post
+  75        BARCODE_NVE18               NVE-18 (SSCC-18)
 
-  79*       BARCODE_DBAR_STK          GS1 DataBar Stacked
+  76        BARCODE_JAPANPOST           Japanese Postal Code
 
-  80*       BARCODE_DBAR_OMNSTK       GS1 DataBar Stacked Omnidirectional
+  77        BARCODE_KOREAPOST           Korea Post
 
-  81*       BARCODE_DBAR_EXPSTK       GS1 DataBar Expanded Stacked
+  79        BARCODE_DBAR_STK *          GS1 DataBar Stacked
 
-  82        BARCODE_PLANET            PLANET
+  80        BARCODE_DBAR_OMNSTK *       GS1 DataBar Stacked Omnidirectional
 
-  84        BARCODE_MICROPDF417       MicroPDF417
+  81        BARCODE_DBAR_EXPSTK *       GS1 DataBar Expanded Stacked
 
-  85*       BARCODE_USPS_IMAIL        USPS Intelligent Mail (OneCode)
+  82        BARCODE_PLANET              PLANET
 
-  86        BARCODE_PLESSEY           UK Plessey
+  84        BARCODE_MICROPDF417         MicroPDF417
 
-  87        BARCODE_TELEPEN_NUM       Telepen Numeric
+  85        BARCODE_USPS_IMAIL *        USPS Intelligent Mail (OneCode)
 
-  89        BARCODE_ITF14             ITF-14
+  86        BARCODE_PLESSEY             UK Plessey
 
-  90        BARCODE_KIX               Dutch Post KIX Code
+  87        BARCODE_TELEPEN_NUM         Telepen Numeric
 
-  92        BARCODE_AZTEC             Aztec Code
+  89        BARCODE_ITF14               ITF-14
 
-  93        BARCODE_DAFT              DAFT Code
+  90        BARCODE_KIX                 Dutch Post KIX Code
 
-  96        BARCODE_DPD               DPD Code
+  92        BARCODE_AZTEC               Aztec Code
 
-  97        BARCODE_MICROQR           Micro QR Code
+  93        BARCODE_DAFT                DAFT Code
 
-  98        BARCODE_HIBC_128          HIBC Code 128
+  96        BARCODE_DPD                 DPD Code
 
-  99        BARCODE_HIBC_39           HIBC Code 39
+  97        BARCODE_MICROQR             Micro QR Code
 
-  102       BARCODE_HIBC_DM           HIBC Data Matrix
+  98        BARCODE_HIBC_128            HIBC Code 128
 
-  104       BARCODE_HIBC_QR           HIBC QR Code
+  99        BARCODE_HIBC_39             HIBC Code 39
 
-  106       BARCODE_HIBC_PDF          HIBC PDF417
+  102       BARCODE_HIBC_DM             HIBC Data Matrix
 
-  108       BARCODE_HIBC_MICPDF       HIBC MicroPDF417
+  104       BARCODE_HIBC_QR             HIBC QR Code
 
-  110       BARCODE_HIBC_BLOCKF       HIBC Codablock-F
+  106       BARCODE_HIBC_PDF            HIBC PDF417
 
-  112       BARCODE_HIBC_AZTEC        HIBC Aztec Code
+  108       BARCODE_HIBC_MICPDF         HIBC MicroPDF417
 
-  115       BARCODE_DOTCODE           DotCode
+  110       BARCODE_HIBC_BLOCKF         HIBC Codablock-F
 
-  116       BARCODE_HANXIN            Han Xin (Chinese Sensible) Code
+  112       BARCODE_HIBC_AZTEC          HIBC Aztec Code
 
-  119       BARCODE_MAILMARK_2D       Royal Mail 2D Mailmark (CMDM) (Data
-                                      Matrix)
+  115       BARCODE_DOTCODE             DotCode
 
-  121       BARCODE_MAILMARK_4S       Royal Mail 4-State Mailmark
+  116       BARCODE_HANXIN              Han Xin (Chinese Sensible) Code
 
-  128       BARCODE_AZRUNE            Aztec Runes
+  119       BARCODE_MAILMARK_2D         Royal Mail 2D Mailmark (CMDM) (Data
+                                        Matrix)
 
-  129       BARCODE_CODE32            Code 32
+  121       BARCODE_MAILMARK_4S         Royal Mail 4-State Mailmark
 
-  130       BARCODE_EANX_CC           GS1 Composite Symbol with EAN linear
-                                      component
+  128       BARCODE_AZRUNE              Aztec Runes
 
-  131*      BARCODE_GS1_128_CC        GS1 Composite Symbol with GS1-128 linear
-                                      component
+  129       BARCODE_CODE32              Code 32
 
-  132*      BARCODE_DBAR_OMN_CC       GS1 Composite Symbol with GS1 DataBar
-                                      Omnidirectional linear component
+  131       BARCODE_GS1_128_CC *        GS1 Composite Symbol with GS1-128
+                                        linear component
 
-  133*      BARCODE_DBAR_LTD_CC       GS1 Composite Symbol with GS1 DataBar
-                                      Limited linear component
+  132       BARCODE_DBAR_OMN_CC *       GS1 Composite Symbol with GS1 DataBar
+                                        Omnidirectional linear component
 
-  134*      BARCODE_DBAR_EXP_CC       GS1 Composite Symbol with GS1 DataBar
-                                      Expanded linear component
+  133       BARCODE_DBAR_LTD_CC *       GS1 Composite Symbol with GS1 DataBar
+                                        Limited linear component
 
-  135       BARCODE_UPCA_CC           GS1 Composite Symbol with UPC-A linear
-                                      component
+  134       BARCODE_DBAR_EXP_CC *       GS1 Composite Symbol with GS1 DataBar
+                                        Expanded linear component
 
-  136       BARCODE_UPCE_CC           GS1 Composite Symbol with UPC-E linear
-                                      component
+  135       BARCODE_UPCA_CC             GS1 Composite Symbol with UPC-A linear
+                                        component
 
-  137*      BARCODE_DBAR_STK_CC       GS1 Composite Symbol with GS1 DataBar
-                                      Stacked component
+  136       BARCODE_UPCE_CC             GS1 Composite Symbol with UPC-E linear
+                                        component
 
-  138*      BARCODE_DBAR_OMNSTK_CC    GS1 Composite Symbol with GS1 DataBar
-                                      Stacked Omnidirectional component
+  137       BARCODE_DBAR_STK_CC *       GS1 Composite Symbol with GS1 DataBar
+                                        Stacked component
 
-  139*      BARCODE_DBAR_EXPSTK_CC    GS1 Composite Symbol with GS1 DataBar
-                                      Expanded Stacked component
+  138       BARCODE_DBAR_OMNSTK_CC *    GS1 Composite Symbol with GS1 DataBar
+                                        Stacked Omnidirectional component
 
-  140       BARCODE_CHANNEL           Channel Code
+  139       BARCODE_DBAR_EXPSTK_CC *    GS1 Composite Symbol with GS1 DataBar
+                                        Expanded Stacked component
 
-  141       BARCODE_CODEONE           Code One
+  140       BARCODE_CHANNEL             Channel Code
 
-  142       BARCODE_GRIDMATRIX        Grid Matrix
+  141       BARCODE_CODEONE             Code One
 
-  143       BARCODE_UPNQR             UPNQR (Univerzalnega Plačilnega Naloga QR)
+  142       BARCODE_GRIDMATRIX          Grid Matrix
 
-  144       BARCODE_ULTRA             Ultracode
+  143       BARCODE_UPNQR               UPNQR (Univerzalnega Plačilnega Naloga
+                                        QR Code)
 
-  145       BARCODE_RMQR              Rectangular Micro QR Code (rMQR)
+  144       BARCODE_ULTRA               Ultracode
 
-  146       BARCODE_BC412             IBM BC412 (SEMI T1-95)
+  145       BARCODE_RMQR                Rectangular Micro QR Code (rMQR)
 
-  147       BARCODE_DXFILMEDGE        DX Film Edge Barcode
-  ------------------------------------------------------------------------------
+  146       BARCODE_BC412               IBM BC412 (SEMI T1-95)
+
+  147       BARCODE_DXFILMEDGE          DX Film Edge Barcode
+
+  148       BARCODE_EAN8_CC †           GS1 Composite symbol with EAN-8 linear
+                                        component
+
+  149       BARCODE_EAN13_CC †          GS1 Composite symbol with EAN-13 linear
+                                        component
+  -----------------------------------------------------------------------------
 
   Table : Barcode Types (Symbologies)
 
@@ -1069,9 +1081,9 @@ A --quietzones option is also available which adds quiet zones compliant with
 the symbology’s specification. This is in addition to any whitespace specified
 with the --whitesp or --vwhitesp switches.
 
-Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-2 to EAN-13, ISBN, UPC-A
-and UPC-E have compliant quiet zones added by default. This can be disabled with
-the option --noquietzones.
+Note that Codablock-F, Code 16K, Code 49, ITF-14, EAN-13, EAN-8, EAN/UPC
+add-ons, ISBN, UPC-A and UPC-E have compliant quiet zones added by default. This
+can be disabled with the option --noquietzones.
 
 4.6 Adding Boundary Bars and Boxes
 
@@ -1158,15 +1170,11 @@ which case they will be converted formulaically to CMYK approximations.
 
 4.8 Rotating the Symbol
 
-The symbol can be rotated through four orientations using the --rotate option
-followed by the angle of rotation as shown below.
-
-    --rotate=0 (default)
-    --rotate=90
-    --rotate=180
-    --rotate=270
-
 [zint -d "This Text" --rotate=90]
+
+The symbol can be rotated through four orientations using the --rotate option
+followed by the angle of rotation, valid values being 0 (the default), 90, 180
+and 270.
 
 4.9 Adjusting Image Size (X-dimension)
 
@@ -1243,12 +1251,12 @@ print that example as a PNG at 12 dpmm, the approximate equivalent of 300 dpi
 (dpi = dpmm * 25.4), specify a scale of 2, since 0.33 * 12 = 3.96 pixels, or 4
 pixels rounding to the nearest pixel:
 
-    zint -b EANX -d "501234567890" --compliantheight --scale=2
+    zint -b EAN13 -d "501234567890" --compliantheight --scale=2
 
 This will result in output of 37.29mm x 25.56mm (WxH) at 12 dpmm. The same
 result can be achieved using the --scalexdimdp option with
 
-    zint -b EANX -d "501234567890" --compliantheight --scalexdimdp=0
+    zint -b EAN13 -d "501234567890" --compliantheight --scalexdimdp=0
 
 as 0.33mm is the default X-dimension for EAN, and 12 dpmm the default
 resolution.
@@ -1510,7 +1518,7 @@ barcode image for each line of text in that file. To do this use the --batch
 switch together with -i to select the input file from which to read data. For
 example
 
-    zint -b EANX --batch -i ean13nos.txt
+    zint -b EAN13 --batch -i ean13nos.txt
 
 where "ean13nos.txt" contains a list of EAN-13 numbers (GTINs), each on its own
 line. Zint will automatically detect the end of a line of text (in either Unix
@@ -1535,7 +1543,7 @@ characters in the output filename as shown in the table below:
 
 For instance
 
-    zint -b EANX --batch -i ean13nos.txt -o file~~~.svg
+    zint -b EAN13 --batch -i ean13nos.txt -o file~~~.svg
 
 The following table shows some examples to clarify this method:
 
@@ -1553,9 +1561,9 @@ The special characters can span directories also, which is useful when creating
 a large number of barcodes:
 
   Input                 Filenames Generated
-  --------------------- ---------------------------------------------
+  --------------------- -------------------------------------------
   -o dir~/file~~~.svg   "dir0/file001.svg", "dir0/file002.svg", …
-                        , "dir0/file999.svg", "dir1/file000.svg", …
+                        "dir0/file999.svg", "dir1/file000.svg", …
 
   Table : Batch Directory Examples
 
@@ -2786,28 +2794,36 @@ Zint adds a check digit.
 
 [zint -b UPCA --compliantheight -d "72527270270"]
 
-UPC-A is used in the United States for retail applications. The symbol requires
-an 11-digit article number. The check digit is calculated by Zint. In addition
-EAN-2 and EAN-5 add-on symbols can be added using the + character. For example,
-to draw a UPC-A symbol with the data 72527270270 with an EAN-5 add-on showing
-the data 12345 use the command:
+UPC-A is used in the United States for retail applications, and encodes a
+GTIN-12, a 12-digit Global Trade Item Number that includes a standard GS1 check
+digit.
+
+Input up to 11 digits may be given, to which a check digit will be added by
+Zint. A 12-digit input including the check digit may also be supplied, in which
+case Zint will verify the check digit, or you may use symbology BARCODE_UPCA_CHK
+(35), which verifies that the last digit is a check digit. Input less than 11
+digits will be zero-filled.
+
+In addition 2-digit and 5-digit add-on symbols can be added, their data
+separated from the main data by a + character or a space. For example, to draw a
+UPC-A symbol with the data “72527270270” and 5-digit add-on data “12345” use the
+command:
 
     zint -b UPCA -d "72527270270+12345"
 
-or using the API encode a data string with the + character included:
+or using the API:
 
     my_symbol->symbology = BARCODE_UPCA;
+    /* Using '+' */
     error = ZBarcode_Encode_and_Print(my_symbol, "72527270270+12345", 0, 0);
+    /* Or a space */
+    error = ZBarcode_Encode_and_Print(my_symbol, "72527270270 12345", 0, 0);
 
 [zint -b UPCA --compliantheight -d "72527270270+12345"]
 
-If your input data already includes the check digit symbology BARCODE_UPCA_CHK
-(35) can be used which takes a 12-digit input and validates the check digit
-before encoding.
-
 A quiet zone indicator can be added to the HRT by setting --guardwhitespace (API
 output_options |= EANUPC_GUARD_WHITESPACE). For UPC, this is only relevant when
-there is add-on:
+there is an add-on:
 
     zint -b UPCA -d "72527270270+12345" --guardwhitespace
 
@@ -2827,31 +2843,26 @@ guard_descent) to a value between 0.0 and 20.0 (default 5.0).
 
 6.1.3.2 UPC Version E
 
-[zint -b UPCE --compliantheight -d "1123456"]
+[zint -b UPCE --compliantheight -d "123456"]
 
-UPC-E is a zero-compressed version of UPC-A developed for smaller packages. The
-code requires a 6-digit article number (digits 0-9). The check digit is
-calculated by Zint. EAN-2 and EAN-5 add-on symbols can be added using the +
-character as with UPC-A. In addition Zint also supports Number System 1 encoding
-by entering a 7-digit article number starting with the digit 1. For example:
+UPC-E is a zero-compressed version of UPC-A developed for smaller packages,
+which takes up to 7 digits as input. A standard GS1 check digit will be added by
+Zint. If 7 digits are given then the first must be ‘0’ or ‘1’ (the latter is
+known as number system 1 and is non-standard). Input less than 7 digits will be
+zero-filled.
 
-    zint -b UPCE -d "1123456"
+An 8-digit input including the check digit may also be supplied, in which case
+Zint will verify the check digit, or the symbology BARCODE_UPCE_CHK (38) may be
+used, which will verify that the last digit is a check digit before encoding.
 
-or
+As with UPC-A, 2-digit and 5-digit add-on symbols can be added using a +
+character or a space as a separator, and a quiet zone indicator can be added
+when there is an add-on by setting --guardwhitespace (API
+output_options |= EANUPC_GUARD_WHITESPACE):
 
-    my_symbol->symbology = BARCODE_UPCE;
-    error = ZBarcode_Encode_and_Print(my_symbol, "1123456", 0, 0);
+    zint -b UPCE -d "123456+12" --guardwhitespace
 
-If your input data already includes the check digit symbology BARCODE_UPCE_CHK
-(38) can be used which takes a 7 or 8-digit input and validates the check digit
-before encoding.
-
-As with UPC-A, a quiet zone indicator can be added when there is an add-on by
-setting --guardwhitespace (API output_options |= EANUPC_GUARD_WHITESPACE):
-
-    zint -b UPCE -d "1123456+12" --guardwhitespace
-
-[zint -b UPCE --compliantheight -d "1123456+12" --guardwhitespace]
+[zint -b UPCE --compliantheight -d "123456+12" --guardwhitespace]
 
 You can adjust the gap between the main symbol and an add-on in integral
 multiples of the X-dimension by setting --addongap (API option_2) to a value
@@ -2861,49 +2872,71 @@ guard_descent) to a value between 0.0 and 20.0 (default 5.0).
 
 6.1.4 EAN (European Article Number) (ISO 15420)
 
-6.1.4.1 EAN-2, EAN-5, EAN-8 and EAN-13
+The EAN system, which stands for European Article Number but it is also known as
+International Article Number, is a backward-compatible extension of UPC, used in
+retail across Europe and internationally. It defines the symbologies EAN-13,
+EAN-8 and ISBN (a subset of EAN-13).
 
-[zint -b EANX --compliantheight -d "4512345678906"]
+6.1.4.1 EAN-13
 
-The EAN system is used in retail across Europe and includes standards for EAN-2,
-EAN-5, EAN-8 and EAN-13 which encode 2, 5, 7 or 12-digit numbers respectively.
-Zint will decide which symbology to use depending on the length of the input
-data. In addition EAN-2 and EAN-5 add-on symbols can be added to EAN-8 and
-EAN-13 symbols using the + character as with UPC symbols. For example:
+[zint -b EAN13 --compliantheight -d "451234567890"]
 
-    zint -b EANX -d "54321"
+EAN-13 encodes a GTIN-13, a 13-digit Global Trade Item Number that includes a
+standard GS1 check digit. Input up to 12 digits may be given, to which a check
+digit will be added by Zint, or a 13-digit input can be supplied in which case
+Zint will validate the check digit. Input less than 12 digits will be
+zero-filled.
 
-[zint -b EANX --compliantheight -d "54321"]
+A 2-digit or 5-digit add-on can be added by using a ‘+’ or space character as
+with UPC symbols. For example:
 
-will encode a stand-alone EAN-5, whereas
+    zint -b EAN13 -d "451234567890+21"
 
-    zint -b EANX -d "7432365+54321"
+will encode an EAN-13 symbol with a 2-digit add-on. As before these results can
+be achieved using the API:
 
-will encode an EAN-8 symbol with an EAN-5 add-on. As before these results can be
-achieved using the API:
+    my_symbol->symbology = BARCODE_EAN13;
+    error = ZBarcode_Encode_and_Print(my_symbol, "451234567890+21", 0, 0);
 
-    my_symbol->symbology = BARCODE_EANX;
-
-    error = ZBarcode_Encode_and_Print(my_symbol, "54321", 0, 0);
-
-    error = ZBarcode_Encode_and_Print(my_symbol, "7432365+54321", 0, 0);
-
-[zint -b EANX --compliantheight -d "7432365+54321"]
-
-All of the EAN symbols include check digits which are added by Zint.
-
-If you are encoding an EAN-8 or EAN-13 symbol and your data already includes the
-check digit then you can use symbology BARCODE_EANX_CHK (14) which takes an 8 or
-13-digit input and validates the check digit before encoding.
+[zint -b EAN13 --compliantheight -d "451234567890+21"]
 
 Options to add quiet zone indicators and to adjust the add-on gap and the guard
 bar descent height are the same as for 6.1.3.2 UPC Version E. For instance:
 
-    zint -b EANX_CHK -d "74323654" --guardwhitespace
+    zint -b EAN13 -d "4512345678906" --guarddescent=2.5 --guardwhitespace
 
-[zint -b EANX_CHK --compliantheight -d "74323654" –guardwhitespace]
+[zint -b EAN13 --compliantheight -d "4512345678906" –guarddescent=2.5
+–guardwhitespace]
 
-6.1.4.2 SBN, ISBN and ISBN-13
+6.1.4.2 EAN-8
+
+[zint -b EAN8 --compliantheight -d "7432365"]
+
+EAN-8 is a shortened version of EAN-13, encoding a GTIN-8 (a GTIN-13 with 5
+leading zeroes implied), for use with small packages.
+
+Input up to 7 digits may be supplied, to which Zint will add a standard GS1
+check digit. An 8-digit input including the check digit may also be given, in
+which case Zint will verify the check digit. Input less than 7 digits will be
+zero-filled.
+
+Options to add quiet zone indicators and to adjust the guard bar descent height
+are the same as for 6.1.3.2 UPC Version E. For instance:
+
+    zint -b EAN8 -d "7432365" --guardwhitespace
+
+or using the API:
+
+    my_symbol->symbology = BARCODE_EAN8;
+    my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+    error = ZBarcode_Encode_and_Print(my_symbol, "7432365", 0, 0);
+
+[zint -b EAN8 --compliantheight -d "7432365" –guardwhitespace]
+
+2-digit and 5-digit add-ons may also be added, and the gap adjusted, as with
+EAN-13, but this usage is non-standard and Zint will issue a warning on use.
+
+6.1.4.3 ISBN (including SBN and ISBN-13)
 
 [zint -b ISBNX --compliantheight -d "9789295055124"]
 
@@ -2916,9 +2949,29 @@ As with EAN-13, a quiet zone indicator can be added using --guardwhitespace:
 
 [zint -b ISBNX --compliantheight -d "9789295055124" --guardwhitespace]
 
-EAN-2 and EAN-5 add-on symbols can be added using the + character, and there are
-options to adjust the add-on gap and the guard bar descent height - see 6.1.3.2
-UPC Version E.
+2-digit and 5-digit add-on symbols can be added using a + or space character,
+and there are options to adjust the add-on gap and the guard bar descent
+height - see 6.1.3.2 UPC Version E.
+
+6.1.4.4 EAN/UPC Add-Ons (standalone)
+
+[zint -b EAN_2ADDON --compliantheight -d "12"]
+
+As a convenience, 2-digit and 5-digit add-ons may be generated as standalone
+symbols using the symbologies BARCODE_EAN_2ADDON (11) and BARCODE_EAN_5ADDON
+(12), and as with the main EAN/UPC symbols a quiet zone indicator can be added
+using ---guardwhitespace. For instance
+
+    zint -b EAN_5ADDON -d '54321' --guardwhitespace
+
+will generate a standalone 5-digit add-on with quiet zone guards, or using the
+API:
+
+    my_symbol->symbology = BARCODE_EAN_5ADDON;
+    my_symbol->output_options |= EANUPC_GUARD_WHITESPACE;
+    error = ZBarcode_Encode_and_Print(my_symbol, "54321", 0, 0);
+
+[zint -b EAN_5ADDON --compliantheight -d "54321" –guardwhitespace]
 
 6.1.5 Plessey
 
@@ -3355,11 +3408,8 @@ achieved using the API by executing the ZBarcode_Encode() function more than
 once on a symbol. For example:
 
     my_symbol->symbology = BARCODE_CODE128;
-
     error = ZBarcode_Encode(my_symbol, "This", 0);
-
     error = ZBarcode_Encode(my_symbol, "That", 0);
-
     error = ZBarcode_Print(my_symbol);
 
 [zint -d "This" -d "That"]
@@ -3531,9 +3581,6 @@ encoding methods. Valid values are shown below.
   Numeric   Name                      Barcode Name
   Value
   --------- ------------------------- ----------------------------------------
-  130       BARCODE_EANX_CC           GS1 Composite Symbol with EAN linear
-                                      component
-
   131       BARCODE_GS1_128_CC        GS1 Composite Symbol with GS1-128 linear
                                       component
 
@@ -3560,6 +3607,12 @@ encoding methods. Valid values are shown below.
 
   139       BARCODE_DBAR_EXPSTK_CC    GS1 Composite Symbol with GS1 DataBar
                                       Expanded Stacked component
+
+  148       BARCODE_EAN8_CC           GS1 Composite Symbol with EAN-8 linear
+                                      component
+
+  149       BARCODE_EAN13_CC          GS1 Composite Symbol with EAN-13 linear
+                                      component
   ----------------------------------------------------------------------------
 
   Table : GS1 Composite Symbology Values
@@ -3569,21 +3622,18 @@ entered into a primary string with the data for the 2D component being entered
 in the normal way. To do this at the command prompt use the --primary switch
 (API primary). For example:
 
-    zint -b EANX_CC --mode=1 --primary=331234567890 -d "[99]1234-abcd"
+    zint -b EAN13_CC --mode=1 --primary=331234567890 -d "[99]1234-abcd"
 
 This creates an EAN-13 linear component with the data "331234567890" and a 2D
 CC-A (see below) component with the data "(99)1234-abcd". The same results can
 be achieved using the API as shown below:
 
-    my_symbol->symbology = BARCODE_EANX_CC;
-
+    my_symbol->symbology = BARCODE_EAN13_CC;
     my_symbol->option_1 = 1;
-
     strcpy(my_symbol->primary, "331234567890");
-
     ZBarcode_Encode_and_Print(my_symbol, "[99]1234-abcd", 0, 0);
 
-EAN-2 and EAN-5 add-on data can be used with EAN and UPC symbols using the +
+2-digit and 5-digit add-on data can be used with EAN and UPC symbols using the +
 character as described in sections 6.1.3 UPC (Universal Product Code) (ISO
 15420) and 6.1.4 EAN (European Article Number) (ISO 15420).
 
@@ -3595,8 +3645,8 @@ followed by 1, 2 or 3 for CC-A, CC-B or CC-C respectively.
 
 6.3.1 CC-A
 
-[zint -b EANX_CC --compliantheight -d "[99]1234-abcd" --mode=1 --primary=3312345
-67890]
+[zint -b EAN13_CC --compliantheight -d "[99]1234-abcd" --mode=1 --primary=331234
+567890]
 
 This system uses a variation of MicroPDF417 which is optimised to fit into a
 small space. The size of the 2D component and the amount of error correction is
@@ -3606,8 +3656,8 @@ string of shorter length. To select CC-A use --mode=1 (API option_1 = 1).
 
 6.3.2 CC-B
 
-[zint -b EANX_CC --compliantheight -d "[99]1234-abcd" --mode=2 --primary=3312345
-67890]
+[zint -b EAN13_CC --compliantheight -d "[99]1234-abcd" --mode=2 --primary=331234
+567890]
 
 This system uses MicroPDF417 to encode the 2D component. The size of the 2D
 component and the amount of error correction is determined by the amount of data
@@ -3959,31 +4009,28 @@ section, as summarized below.
 
   Table : Royal Mail 2D Mailmark Input Fields
 
-The 13 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
+The 12 Destination+DPS (Destination Post Code plus Delivery Point Suffix)
 patterns are similar to those for the 4-state except that the alphabetic
 limitation ('L' versus 'A') does not apply, only the initial “outward” part is
 required (the rest can be blank), and the whole field can be blank:
 
-  ----------- ----------- ----------- ----------- ----------- ----------- ------
------
-  ANNAANASS   AANNAANAS   ANNNAANAS   AANNNAANA   ANANAANAS   AANANAANA   SSSSSS
-SSS
+  ----------- ----------- ----------- ----------- ----------- -----------
+  ANNAANASS   AANNAANAS   ANNNAANAS   AANNNAANA   ANANAANAS   AANANAANA
   ANSSSSSSS   AANSSSSSS   ANNSSSSSS   AANNSSSSS   ANASSSSSS   AANASSSSS
-  ----------- ----------- ----------- ----------- ----------- ----------- ------
------
+  ----------- ----------- ----------- ----------- ----------- -----------
 
   Table : Royal Mail 2D Mailmark Destination+DPS Patterns
 
 
 where 'A' is alphabetic (A-Z), 'N' numeric (0-9), and 'S' space.
 
-The 7 RTS (Return to Sender) Post Code patterns are similar to above except
+The 6 RTS (Return to Sender) Post Code patterns are similar to above except
 without the DPS ('NA'), and the trailing “inward” part cannot be blank (although
 the whole field can be):
 
-  --------- --------- --------- --------- --------- --------- ---------
-  ANNAASS   AANNAAS   ANNNAAS   AANNNAA   ANANAAS   AANANAA   SSSSSSS
-  --------- --------- --------- --------- --------- --------- ---------
+  --------- --------- --------- --------- --------- ---------
+  ANNAASS   AANNAAS   ANNNAAS   AANNNAA   ANANAAS   AANANAA
+  --------- --------- --------- --------- --------- ---------
 
   Table : Royal Mail 2D Mailmark RTS Patterns
 
@@ -4951,8 +4998,8 @@ which will display the following window.
 [Tcl/Tk demonstration program window]
 
 You can select the symbology, enter the data to encode, and set options (which
-are the same as those given in the usage message). A raster preview of the
-configured barcode is displayed once the "Generate" button is pressed.
+are the same as those given in the usage message). The raster preview of the
+configured barcode is updated when the "Generate" button is pressed.
 
 Annex D. Man Page ZINT(1)
 
@@ -5247,8 +5294,8 @@ OPTIONS
         5   Enhanced ECC for all of the message
         6   Reader Initialisation (Programming)
 
-    For GS1 Composite symbols (names end in _CC, i.e. EANX_CC, GS1_128_CC,
-    DBAR_OMN_CC etc.):
+    For GS1 Composite symbols (names end in _CC, i.e. EAN8_CC, EAN13_CC,
+    GS1_128_CC, DBAR_OMN_CC etc.):
 
         1   CC-A
         2   CC-B
@@ -5625,7 +5672,7 @@ Use batch mode to read from an input file “ean13nos.txt” containing a list o
 formatting the output filenames to “ean001.gif”, “ean002.gif” etc. using the
 special character “~”.
 
-    zint -b EANX --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
+    zint -b EAN13 --batch -i 'ean13nos.txt' -o 'ean~~~.gif'
 
 BUGS
 
@@ -5669,11 +5716,12 @@ Robin Stuart robin@zint.org.uk
 codeset from U+0000 to U+D7FF and U+E000 to U+FFFF (i.e. excluding surrogates).
 Not to be confused with the Windows Bitmap file format BMP!
 
-[3] The symbologies marked with an asterisk (*) in Table
-: Barcode Types (Symbologies) above used different names in Zint before version
-2.9.0. For example, symbology 29 used the name BARCODE_RSS14. These names are
-now deprecated but are still recognised by Zint and will continue to be
-supported in future versions.
+[3] The symbology names marked with an asterisk (*) in Table
+: Barcode Types (Symbologies) above used different names in previous versions of
+Zint. These names are now deprecated but are still recognised by Zint. Those
+marked with a dagger (†) are replacements for BARCODE_EANX (13),
+BARCODE_EANX_CHK (14) and BARCODE_EANX_CC (130), which are still recognised by
+Zint.
 
 [4] The background is omitted for vector outputs EMF, EPS and SVG when
 --nobackground is given. For raster outputs GIF, PCX, PNG and TIF, the
@@ -5710,8 +5758,8 @@ Code.
 [12] The BARCODE_BIND flag is always set for Codablock-F, Code 16K and Code 49.
 Special considerations apply to ITF-14 - see 6.1.2.6 ITF-14.
 
-[13] Codablock-F, Code 16K, Code 49, EAN-2 to EAN-13, ISBN, ITF-14, UPC-A and
-UPC-E have compliant quiet zones added by default.
+[13] Codablock-F, Code 16K, Code 49, EAN-13, EAN-8, EAN/UPC add-ons, ISBN,
+ITF-14, UPC-A and UPC-E have compliant quiet zones added by default.
 
 [14] ZINT_CAP_EANUPC was previously named ZINT_CAP_EXTENDABLE, which is still
 recognised.

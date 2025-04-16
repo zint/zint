@@ -564,8 +564,8 @@ typedef int (*barcode_seg_func_t)(struct zint_symbol *, struct zint_seg[], const
 static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
           NULL,      code11, c25standard,    c25inter,     c25iata, /*0-4*/
           NULL,    c25logic,      c25ind,      code39,    excode39, /*5-9*/
-          NULL,        NULL,        NULL,        eanx,        eanx, /*10-14*/
-          NULL,     gs1_128,        NULL,     codabar,        NULL, /*15-19*/
+          eanx,        eanx,        eanx,        eanx,        eanx, /*10-14*/
+          eanx,     gs1_128,        NULL,     codabar,        NULL, /*15-19*/
        code128,      dpleit,     dpident,     code16k,      code49, /*20-24*/
         code93,        NULL,        NULL,        flat,    dbar_omn, /*25-29*/
       dbar_ltd,    dbar_exp,     telepen,        NULL,        eanx, /*30-34*/
@@ -591,7 +591,7 @@ static const barcode_src_func_t barcode_src_funcs[BARCODE_LAST + 1] = {
      composite,   composite,   composite,   composite,   composite, /*130-134*/
      composite,   composite,   composite,   composite,   composite, /*135-139*/
        channel,        NULL,        NULL,       upnqr,        NULL, /*140-144*/
-          NULL,       bc412,  dxfilmedge,                           /*145-147*/
+          NULL,       bc412,  dxfilmedge,   composite,   composite, /*145-149*/
 };
 
 #define LIB_SEG_FUNCS_START 55
@@ -616,7 +616,7 @@ static const barcode_seg_func_t barcode_seg_funcs[BARCODE_LAST + 1 - LIB_SEG_FUN
           NULL,        NULL,        NULL,        NULL,        NULL, /*130-134*/
           NULL,        NULL,        NULL,        NULL,        NULL, /*135-139*/
           NULL,     codeone,  gridmatrix,        NULL,       ultra, /*140-144*/
-          rmqr,        NULL,        NULL,                           /*145-147*/
+          rmqr,        NULL,        NULL,        NULL,        NULL, /*145-149*/
 };
 
 static int reduced_charset(struct zint_symbol *symbol, struct zint_seg segs[], const int seg_count);
@@ -922,8 +922,8 @@ static int map_invalid_symbology(struct zint_symbol *symbol) {
     static const unsigned char id_map[LIB_ID_MAP_LAST + 1] = {
                           0,                   0,                0,                0,                   0, /*0-4*/
         BARCODE_C25STANDARD,                   0,                0,                0,                   0, /*5-9*/
-               BARCODE_EANX,        BARCODE_EANX,     BARCODE_EANX,                0,                   0, /*10-14*/
-               BARCODE_EANX,                   0,     BARCODE_UPCA,                0,     BARCODE_CODABAR, /*15-19*/
+                          0,                   0,                0,                0,                   0, /*10-14*/
+                          0,                   0,     BARCODE_UPCA,                0,     BARCODE_CODABAR, /*15-19*/
                           0,                   0,                0,                0,                   0, /*20-24*/
                           0,        BARCODE_UPCA,                0,                0,                   0, /*25-29*/
                           0,                   0,                0,  BARCODE_GS1_128,                   0, /*30-34*/
@@ -1633,8 +1633,8 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
     static const char *const names[] = {
         "",            "CODE11",      "C25STANDARD", "C25INTER",       "C25IATA",        /*0-4*/
         "",            "C25LOGIC",    "C25IND",      "CODE39",         "EXCODE39",       /*5-9*/
-        "",            "",            "",            "EANX",           "EANX_CHK",       /*10-14*/
-        "",            "GS1_128",     "",            "CODABAR",        "",               /*15-19*/
+        "EAN8",        "EAN_2ADDON",  "EAN_5ADDON",  "EANX",           "EANX_CHK",       /*10-14*/
+        "EAN13",       "GS1_128",     "",            "CODABAR",        "",               /*15-19*/
         "CODE128",     "DPLEIT",      "DPIDENT",     "CODE16K",        "CODE49",         /*20-24*/
         "CODE93",      "",            "",            "FLAT",           "DBAR_OMN",       /*25-29*/
         "DBAR_LTD",    "DBAR_EXP",    "TELEPEN",     "",               "UPCA",           /*30-34*/
@@ -1660,7 +1660,7 @@ int ZBarcode_BarcodeName(int symbol_id, char name[32]) {
         "EANX_CC",     "GS1_128_CC",  "DBAR_OMN_CC", "DBAR_LTD_CC",    "DBAR_EXP_CC",    /*130-134*/
         "UPCA_CC",     "UPCE_CC",     "DBAR_STK_CC", "DBAR_OMNSTK_CC", "DBAR_EXPSTK_CC", /*135-139*/
         "CHANNEL",     "CODEONE",     "GRIDMATRIX",  "UPNQR",          "ULTRA",          /*140-144*/
-        "RMQR",        "BC412",       "DXFILMEDGE",                                      /*145-147*/
+        "RMQR",        "BC412",       "DXFILMEDGE",  "EAN8_CC",        "EAN13_CC",       /*145-149*/
     };
 
     name[0] = '\0';
@@ -1721,9 +1721,15 @@ unsigned int ZBarcode_Cap(int symbol_id, unsigned int cap_flag) {
             case BARCODE_CODABLOCKF:
             case BARCODE_HIBC_BLOCKF:
             case BARCODE_ITF14:
+            case BARCODE_EAN8:
+            case BARCODE_EAN8_CC:
+            case BARCODE_EAN_2ADDON:
+            case BARCODE_EAN_5ADDON:
             case BARCODE_EANX:
             case BARCODE_EANX_CHK:
             case BARCODE_EANX_CC:
+            case BARCODE_EAN13:
+            case BARCODE_EAN13_CC:
             case BARCODE_ISBNX:
             case BARCODE_UPCA:
             case BARCODE_UPCA_CHK:
@@ -1875,9 +1881,15 @@ float ZBarcode_Default_Xdim(int symbol_id) {
             break;
 
         /* GS1 (excluding GS1-128, ITF-14, GS1 QRCODE & GS1 DATAMATRIX - see default) */
+        case BARCODE_EAN8:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN_2ADDON:
+        case BARCODE_EAN_5ADDON:
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
         case BARCODE_EANX_CC:
+        case BARCODE_EAN13:
+        case BARCODE_EAN13_CC:
         case BARCODE_ISBNX:
         case BARCODE_UPCA:
         case BARCODE_UPCA_CHK:

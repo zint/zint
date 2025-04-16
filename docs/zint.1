@@ -293,8 +293,9 @@ postcode, 3\-digit ISO 3166\-1 country code, 3\-digit service code):
 6   Reader Initialisation (Programming)
 .EE
 .PP
-For GS1 Composite symbols (names end in \f[CR]_CC\f[R], i.e.\ EANX_CC,
-GS1_128_CC, DBAR_OMN_CC etc.):
+For GS1 Composite symbols (names end in \f[CR]_CC\f[R],
+i.e.\ \f[CR]EAN8_CC\f[R], \f[CR]EAN13_CC\f[R], \f[CR]GS1_128_CC\f[R],
+\f[CR]DBAR_OMN_CC\f[R] etc.):
 .IP
 .EX
 1   CC\-A
@@ -704,7 +705,7 @@ a series of EAN\-13 barcodes, formatting the output filenames to
 using the special character \[lq]\[ti]\[rq].
 .IP
 .EX
-zint \-b EANX \-\-batch \-i \[aq]ean13nos.txt\[aq] \-o \[aq]ean\[ti]\[ti]\[ti].gif\[aq]
+zint \-b EAN13 \-\-batch \-i \[aq]ean13nos.txt\[aq] \-o \[aq]ean\[ti]\[ti]\[ti].gif\[aq]
 .EE
 .SH BUGS
 Please send bug reports to https://sourceforge.net/p/zint/tickets/.

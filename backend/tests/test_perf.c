@@ -257,7 +257,7 @@ static void test_code128(const testCtx *const p_ctx) {
 static void test_composite(const testCtx *const p_ctx) {
 
     static const struct perf_item data[] = {
-        /*  0*/ { BARCODE_EANX_CC, -1, 1, -1, -1, "123456789012",
+        /*  0*/ { BARCODE_EAN13_CC, -1, 1, -1, -1, "123456789012",
                     "[91]123456789012345678901234567890123456789012345678901234",
                     0, 11, 99, "58 chars CC-A" },
         /*  1*/ { BARCODE_UPCA_CC, -1, 2, -1, -1, "12345678901",
@@ -669,16 +669,16 @@ static void test_microqr(const testCtx *const p_ctx) {
 static void test_upcean(const testCtx *const p_ctx) {
 
     static const struct perf_item data[] = {
-        /*  0*/ { BARCODE_EANX, -1, -1, -1, -1, "123456789012+12345", "", 0, 1, 149, "EAN-13 add-on 5" },
-        /*  1*/ { BARCODE_EANX, -1, -1, -1, -1, "123456789012", "", 0, 1, 95, "EAN-13 no add-on" },
+        /*  0*/ { BARCODE_EAN13, -1, -1, -1, -1, "123456789012+12345", "", 0, 1, 149, "EAN-13 add-on 5" },
+        /*  1*/ { BARCODE_EAN13, -1, -1, -1, -1, "123456789012", "", 0, 1, 95, "EAN-13 no add-on" },
         /*  2*/ { BARCODE_UPCA, -1, -1, -1, -1, "12345678901+12345", "", 0, 1, 151, "UPC-A add-on 5" },
         /*  3*/ { BARCODE_UPCA, -1, -1, -1, -1, "12345678901", "", 0, 1, 95, "UPC-A no add-on" },
-        /*  4*/ { BARCODE_EANX, -1, -1, -1, -1, "1234567+12345", "", 0, 1, 121, "EAN-8 add-on 5" },
-        /*  5*/ { BARCODE_EANX, -1, -1, -1, -1, "1234567", "", 0, 1, 67, "EAN-8 no add-on" },
+        /*  4*/ { BARCODE_EAN8, -1, -1, -1, -1, "1234567+12345", "", ZINT_WARN_NONCOMPLIANT, 1, 121, "EAN-8 add-on 5" },
+        /*  5*/ { BARCODE_EAN8, -1, -1, -1, -1, "1234567", "", 0, 1, 67, "EAN-8 no add-on" },
         /*  6*/ { BARCODE_UPCE, -1, -1, -1, -1, "1234567+12", "", 0, 1, 78, "UPC-E add-on 2" },
         /*  7*/ { BARCODE_UPCE, -1, -1, -1, -1, "1234567", "", 0, 1, 51, "UPC-E no add-on" },
-        /*  8*/ { BARCODE_EANX, -1, -1, -1, -1, "12345", "", 0, 1, 47, "EAN-5" },
-        /*  9*/ { BARCODE_EANX, -1, -1, -1, -1, "12", "", 0, 1, 20, "EAN-2" },
+        /*  8*/ { BARCODE_EAN_5ADDON, -1, -1, -1, -1, "12345", "", 0, 1, 47, "EAN 5-digit add-on" },
+        /*  9*/ { BARCODE_EAN_2ADDON, -1, -1, -1, -1, "12", "", 0, 1, 20, "EAN 2-digit add-on" },
     };
     const int data_size = ARRAY_SIZE(data);
     const int default_iterations = 10 * 1000;

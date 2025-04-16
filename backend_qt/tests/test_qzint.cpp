@@ -387,10 +387,28 @@ private slots:
             << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_CODE128") << BARCODE_CODE128
             << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_READER_INIT | ZINT_CAP_BINDABLE);
+        QTest::newRow("BARCODE_EAN8") << BARCODE_EAN8
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
+        QTest::newRow("BARCODE_EAN_2ADDON") << BARCODE_EAN_2ADDON
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
+        QTest::newRow("BARCODE_EAN_5ADDON") << BARCODE_EAN_5ADDON
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_EANX") << BARCODE_EANX
             << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
                 | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
+        QTest::newRow("BARCODE_EAN13") << BARCODE_EAN13
+            << (ZINT_CAP_HRT | ZINT_CAP_STACKABLE | ZINT_CAP_EXTENDABLE | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT | ZINT_CAP_BINDABLE);
         QTest::newRow("BARCODE_EANX_CC") << BARCODE_EANX_CC
+            << (ZINT_CAP_HRT | ZINT_CAP_EXTENDABLE | ZINT_CAP_COMPOSITE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT);
+        QTest::newRow("BARCODE_EAN8_CC") << BARCODE_EAN8_CC
+            << (ZINT_CAP_HRT | ZINT_CAP_EXTENDABLE | ZINT_CAP_COMPOSITE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES
+                | ZINT_CAP_COMPLIANT_HEIGHT);
+        QTest::newRow("BARCODE_EAN13_CC") << BARCODE_EAN13_CC
             << (ZINT_CAP_HRT | ZINT_CAP_EXTENDABLE | ZINT_CAP_COMPOSITE | ZINT_CAP_GS1 | ZINT_CAP_QUIET_ZONES
                 | ZINT_CAP_COMPLIANT_HEIGHT);
         QTest::newRow("BARCODE_QRCODE") << BARCODE_QRCODE
@@ -900,6 +918,20 @@ private slots:
             << "" << "" << ""
             << "zint -b 96 --compliantheight -d '1234567890123456789012345678' --scalexdimdp=0.375mm,600dpi";
 
+        QTest::newRow("BARCODE_EAN13") << true << 0.0f << ""
+            << BARCODE_EAN13 << UNICODE_MODE // symbology-inputMode
+            << "123456789012+12" << "" // text-primary
+            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << false << false << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 15 --addongap=8 --compliantheight -d '123456789012+12' --guarddescent=0"
+            << "zint.exe -b 15 --addongap=8 --compliantheight -d \"123456789012+12\" --guarddescent=0"
+            << "" << "" << "" << "";
+
         QTest::newRow("BARCODE_EANX") << true << 0.0f << ""
             << BARCODE_EANX << UNICODE_MODE // symbology-inputMode
             << "123456789012+12" << "" // text-primary
@@ -912,6 +944,20 @@ private slots:
             << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
             << "zint -b 13 --addongap=8 --compliantheight -d '123456789012+12' --guarddescent=0"
             << "zint.exe -b 13 --addongap=8 --compliantheight -d \"123456789012+12\" --guarddescent=0"
+            << "" << "" << "" << "";
+
+        QTest::newRow("BARCODE_EAN13 (guardWhitespace/embedVectorFont") << true << 0.0f << ""
+            << BARCODE_EAN13 << UNICODE_MODE // symbology-inputMode
+            << "123456789012+12" << "" // text-primary
+            << 0.0f << -1 << 8 << 0 << 1.0f << 0.0f << true << 0.8f << 1.0f // height-textGap
+            << 0.0f << 0 << 0 << "" // guardDescent-structAppID
+            << "" << "" << QColor(Qt::black) << QColor(Qt::white) << false // fgStr-cmyk
+            << 0 << 0 << 0 << 0 << 0 // borderTypeIndex-fontSetting
+            << true << false << false << false << true << 0 // showText-rotateAngle
+            << 0 << false << false << false << true << true << WARN_DEFAULT << false // eci-debug
+            << 0.0 << 0 << 0 << 0 << 0 << 0 // xdimdp
+            << "zint -b 15 --addongap=8 --compliantheight -d '123456789012+12' --embedfont --guarddescent=0 --guardwhitespace"
+            << "zint.exe -b 15 --addongap=8 --compliantheight -d \"123456789012+12\" --embedfont --guarddescent=0 --guardwhitespace"
             << "" << "" << "" << "";
 
         QTest::newRow("BARCODE_EANX (guardWhitespace/embedVectorFont") << true << 0.0f << ""

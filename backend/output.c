@@ -262,10 +262,16 @@ static int out_quiet_zones(const struct zint_symbol *symbol, const int hide_text
             }
             done = 1;
             break;
+        case BARCODE_EAN8:
+        case BARCODE_EAN_2ADDON:
+        case BARCODE_EAN_5ADDON:
         case BARCODE_EANX:
         case BARCODE_EANX_CHK:
-        case BARCODE_EANX_CC:
+        case BARCODE_EAN13:
         case BARCODE_ISBNX:
+        case BARCODE_EANX_CC:
+        case BARCODE_EAN8_CC:
+        case BARCODE_EAN13_CC:
             /* GS1 General Specifications 21.0.1 Section 5.2.3.4 */
             switch (symbol->text_length) {
                 case 13: /* EAN-13/ISBN */
@@ -774,8 +780,7 @@ INTERNAL int out_process_upcean(const struct zint_symbol *symbol, const int comp
 
     upceanflag = 0;
     main_width = symbol->width;
-    if ((symbol->symbology == BARCODE_EANX) || (symbol->symbology == BARCODE_EANX_CHK)
-            || (symbol->symbology == BARCODE_EANX_CC) || (symbol->symbology == BARCODE_ISBNX)) {
+    if (is_ean(symbol->symbology)) {
         switch (symbol->text_length) {
             case 13: /* EAN-13 */
             case 16: /* EAN-13 + EAN-2 */

@@ -148,8 +148,11 @@ static const struct bstyle_item bstyle_items[] = {
     { QSL("DPD Code"), BARCODE_DPD },
     { QSL("Dutch Post KIX"), BARCODE_KIX },
     { QSL("DX Film Edge"), BARCODE_DXFILMEDGE },
-    { QSL("EAN (EAN-2, EAN-5, EAN-8 and EAN-13) (ISO 15420)"), BARCODE_EANX },
+    { QSL("EAN-13 European Article Number (ISO 15420)"), BARCODE_EAN13 },
     { QSL("EAN-14"), BARCODE_EAN14 },
+    { QSL("EAN-8 European Article Number (ISO 15420)"), BARCODE_EAN8 },
+    { QSL("EAN/UPC 2-digit add-on (standalone)"), BARCODE_EAN_2ADDON },
+    { QSL("EAN/UPC 5-digit add-on (standalone)"), BARCODE_EAN_5ADDON },
     { QSL("FIM (Facing Identification Mark)"), BARCODE_FIM },
     { QSL("Flattermarken"), BARCODE_FLAT },
     { QSL("Grid Matrix"), BARCODE_GRIDMATRIX },
@@ -1176,6 +1179,7 @@ void MainWindow::HRTShow_ui_set()
     text_gap_ui_set();
     upcean_no_quiet_zones_ui_set();
     upcae_no_quiet_zones_ui_set();
+    eanaddon_no_quiet_zones_ui_set();
 }
 
 void MainWindow::text_gap_ui_set()
@@ -1255,6 +1259,22 @@ void MainWindow::upcae_no_quiet_zones_ui_set()
             noQZs->setEnabled(!showHRT);
             guardWS->setEnabled(false);
         }
+    }
+}
+
+void MainWindow::eanaddon_no_quiet_zones_ui_set()
+{
+    int symbology = bstyle_items[bstyle->currentIndex()].symbology;
+    if (symbology != BARCODE_EAN_2ADDON && symbology != BARCODE_EAN_5ADDON)
+        return;
+
+    bool showHRT = chkHRTShow->isEnabled() && chkHRTShow->isChecked();
+    QCheckBox *noQZs, *guardWS;
+    noQZs = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkEANAddOnNoQuietZones")) : nullptr;
+    guardWS = m_optionWidget ? m_optionWidget->findChild<QCheckBox*>(QSL("chkEANAddOnGuardWhitespace")) : nullptr;
+
+    if (noQZs && guardWS) {
+        guardWS->setEnabled(!noQZs->isChecked() && showHRT);
     }
 }
 
@@ -1583,7 +1603,7 @@ void MainWindow::height_per_row_default()
 
 bool MainWindow::have_addon()
 {
-    const QRegularExpression addonRE(QSL("^[0-9X]+[+][0-9]+$"));
+    const QRegularExpression addonRE(QSL("^[0-9X]+[+ ][0-9]+$"));
     return txtData->text().contains(addonRE);
 }
 
@@ -2257,7 +2277,8 @@ void MainWindow::change_options()
         connect(get_widget(QSL("chkUPCANoQuietZones")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("chkUPCAGuardWhitespace")), SIGNAL(toggled(bool)), SLOT(update_preview()));
 
-    } else if (symbology == BARCODE_EANX || symbology == BARCODE_EANX_CHK || symbology == BARCODE_EANX_CC
+    } else if (symbology == BARCODE_EAN8 || symbology == BARCODE_EAN8_CC
+            || symbology == BARCODE_EAN13 || symbology == BARCODE_EAN13_CC
             || symbology == BARCODE_UPCE || symbology == BARCODE_UPCE_CHK || symbology == BARCODE_UPCE_CC
             || symbology == BARCODE_ISBNX) {
         QFile file(QSL(":/grpUPCEAN.ui"));
@@ -2271,11 +2292,10 @@ void MainWindow::change_options()
         if (is_upce) {
             tabMain->insertTab(1, m_optionWidget, tr("UPC-&E"));
             upcae_no_quiet_zones_ui_set();
-        } else if (symbology == BARCODE_ISBNX) {
-            tabMain->insertTab(1, m_optionWidget, tr("ISBN"));
-            upcean_no_quiet_zones_ui_set();
         } else {
-            tabMain->insertTab(1, m_optionWidget, tr("&EAN"));
+            tabMain->insertTab(1, m_optionWidget,
+                symbology == BARCODE_ISBNX ? tr("ISBN") :
+                symbology == BARCODE_EAN8 || symbology == BARCODE_EAN8_CC ? tr("&EAN-8") : tr("&EAN-13"));
             upcean_no_quiet_zones_ui_set();
         }
         combobox_item_enabled(cmbFontSetting, 1, false); // Disable bold options
@@ -2296,6 +2316,21 @@ void MainWindow::change_options()
         connect(get_widget(QSL("chkUPCEANNoQuietZones")), SIGNAL(toggled(bool)), SLOT(update_preview()));
         connect(get_widget(QSL("chkUPCEANGuardWhitespace")), SIGNAL(toggled(bool)), SLOT(update_preview()));
 
+    } else if (symbology == BARCODE_EAN_2ADDON || symbology == BARCODE_EAN_5ADDON) {
+        QFile file(QSL(":/grpEANAddOn.ui"));
+        if (file.open(QIODevice::ReadOnly)) {
+            m_optionWidget = uiload.load(&file);
+            file.close();
+            load_sub_settings(settings, symbology);
+            vLayoutSpecific->addWidget(m_optionWidget);
+            grpSpecific->show();
+            eanaddon_no_quiet_zones_ui_set();
+            connect(get_widget(QSL("chkEANAddOnNoQuietZones")), SIGNAL(toggled(bool)),
+                    SLOT(eanaddon_no_quiet_zones_ui_set()));
+            connect(get_widget(QSL("chkEANAddOnNoQuietZones")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+            connect(get_widget(QSL("chkEANAddOnGuardWhitespace")), SIGNAL(toggled(bool)), SLOT(update_preview()));
+        }
+
     } else if (symbology == BARCODE_VIN) {
         QFile file(QSL(":/grpVIN.ui"));
         if (!file.open(QIODevice::ReadOnly))
@@ -2314,7 +2349,8 @@ void MainWindow::change_options()
 
     switch (symbology) {
         case BARCODE_CODE128:
-        case BARCODE_EANX:
+        case BARCODE_EAN8:
+        case BARCODE_EAN13:
         case BARCODE_UPCA:
         case BARCODE_UPCE:
         case BARCODE_DBAR_OMN:
@@ -2708,14 +2744,33 @@ void MainWindow::update_preview()
             }
             break;
 
-        case BARCODE_EANX:
-            m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_EANX_CC : BARCODE_EANX);
-            {
-                bool have_addon = upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
-                bool enable_guard = have_addon || txtData->text().length() > 5;
-                upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
-                                        QSL("btnUPCEANGuardDefault"), enable_guard);
+        case BARCODE_EAN8:
+            m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_EAN8_CC : BARCODE_EAN8);
+            upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
+            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
+                                    QSL("btnUPCEANGuardDefault"));
+            if (get_chk_val(QSL("chkUPCEANNoQuietZones"))) {
+                m_bc.bc.setNoQuietZones(true);
+            } else if (get_chk_val(QSL("chkUPCEANGuardWhitespace"))) {
+                m_bc.bc.setGuardWhitespace(true);
             }
+            break;
+
+        case BARCODE_EAN_2ADDON:
+        case BARCODE_EAN_5ADDON:
+            m_bc.bc.setSymbol(symbology);
+            if (get_chk_val(QSL("chkEANAddOnNoQuietZones"))) {
+                m_bc.bc.setNoQuietZones(true);
+            } else if (get_chk_val(QSL("chkEANAddOnGuardWhitespace"))) {
+                m_bc.bc.setGuardWhitespace(true);
+            }
+            break;
+
+        case BARCODE_EAN13:
+            m_bc.bc.setSymbol(chkComposite->isChecked() ? BARCODE_EAN13_CC : BARCODE_EAN13);
+            upcean_addon_gap(QSL("cmbUPCEANAddonGap"), QSL("lblUPCEANAddonGap"), 7 /*base*/);
+            upcean_guard_descent(QSL("spnUPCEANGuardDescent"), QSL("lblUPCEANGuardDescent"),
+                                    QSL("btnUPCEANGuardDefault"));
             if (get_chk_val(QSL("chkUPCEANNoQuietZones"))) {
                 m_bc.bc.setNoQuietZones(true);
             } else if (get_chk_val(QSL("chkUPCEANGuardWhitespace"))) {
@@ -4002,9 +4057,11 @@ QString MainWindow::get_setting_name(int symbology)
         case BARCODE_UPCA_CC:
             symbology = BARCODE_UPCA;
             break;
-        case BARCODE_EANX_CHK:
-        case BARCODE_EANX_CC:
-            symbology = BARCODE_EANX;
+        case BARCODE_EAN8_CC:
+            symbology = BARCODE_EAN8;
+            break;
+        case BARCODE_EAN13_CC:
+            symbology = BARCODE_EAN13;
             break;
         case BARCODE_UPCE_CHK:
         case BARCODE_UPCE_CC:
@@ -4502,14 +4559,37 @@ void MainWindow::save_sub_settings(QSettings &settings, int symbology)
             settings.setValue(QSL("studio/bc/upca/chk_guard_whitespace"), get_chk_val(QSL("chkUPCAGuardWhitespace")));
             break;
 
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_EANX_CC:
-            settings.setValue(QSL("studio/bc/eanx/addongap"), get_cmb_index(QSL("cmbUPCEANAddonGap")));
-            settings.setValue(QSL("studio/bc/eanx/guard_descent"),
+        case BARCODE_EAN8:
+        case BARCODE_EAN8_CC:
+            settings.setValue(QSL("studio/bc/ean8/addongap"), get_cmb_index(QSL("cmbUPCEANAddonGap")));
+            settings.setValue(QSL("studio/bc/ean8/guard_descent"),
                 QString::number(get_dspn_val(QSL("spnUPCEANGuardDescent")), 'f', 3 /*precision*/));
-            settings.setValue(QSL("studio/bc/eanx/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
-            settings.setValue(QSL("studio/bc/eanx/chk_guard_whitespace"),
+            settings.setValue(QSL("studio/bc/ean8/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
+            settings.setValue(QSL("studio/bc/ean8/chk_guard_whitespace"),
+                get_chk_val(QSL("chkUPCEANGuardWhitespace")));
+            break;
+
+        case BARCODE_EAN_2ADDON:
+            settings.setValue(QSL("studio/bc/ean2addon/chk_no_quiet_zones"),
+                get_chk_val(QSL("chkEANAddOnNoQuietZones")));
+            settings.setValue(QSL("studio/bc/ean2addon/chk_guard_whitespace"),
+                get_chk_val(QSL("chkEANAddOnGuardWhitespace")));
+            break;
+
+        case BARCODE_EAN_5ADDON:
+            settings.setValue(QSL("studio/bc/ean5addon/chk_no_quiet_zones"),
+                get_chk_val(QSL("chkEANAddOnNoQuietZones")));
+            settings.setValue(QSL("studio/bc/ean5addon/chk_guard_whitespace"),
+                get_chk_val(QSL("chkEANAddOnGuardWhitespace")));
+            break;
+
+        case BARCODE_EAN13:
+        case BARCODE_EAN13_CC:
+            settings.setValue(QSL("studio/bc/ean13/addongap"), get_cmb_index(QSL("cmbUPCEANAddonGap")));
+            settings.setValue(QSL("studio/bc/ean13/guard_descent"),
+                QString::number(get_dspn_val(QSL("spnUPCEANGuardDescent")), 'f', 3 /*precision*/));
+            settings.setValue(QSL("studio/bc/ean13/chk_no_quiet_zones"), get_chk_val(QSL("chkUPCEANNoQuietZones")));
+            settings.setValue(QSL("studio/bc/ean13/chk_guard_whitespace"),
                 get_chk_val(QSL("chkUPCEANGuardWhitespace")));
             break;
 
@@ -4944,13 +5024,35 @@ void MainWindow::load_sub_settings(QSettings &settings, int symbology)
             set_chk_from_setting(settings, QSL("studio/bc/upca/chk_guard_whitespace"), QSL("chkUPCAGuardWhitespace"));
             break;
 
-        case BARCODE_EANX:
-        case BARCODE_EANX_CHK:
-        case BARCODE_EANX_CC:
-            set_cmb_from_setting(settings, QSL("studio/bc/eanx/addongap"), QSL("cmbUPCEANAddonGap"));
-            set_dspn_from_setting(settings, QSL("studio/bc/eanx/guard_descent"), QSL("spnUPCEANGuardDescent"), 5.0f);
-            set_chk_from_setting(settings, QSL("studio/bc/eanx/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
-            set_chk_from_setting(settings, QSL("studio/bc/eanx/chk_guard_whitespace"),
+        case BARCODE_EAN8:
+        case BARCODE_EAN8_CC:
+            set_cmb_from_setting(settings, QSL("studio/bc/ean8/addongap"), QSL("cmbUPCEANAddonGap"));
+            set_dspn_from_setting(settings, QSL("studio/bc/ean8/guard_descent"), QSL("spnUPCEANGuardDescent"), 5.0f);
+            set_chk_from_setting(settings, QSL("studio/bc/ean8/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
+            set_chk_from_setting(settings, QSL("studio/bc/ean8/chk_guard_whitespace"),
+                QSL("chkUPCEANGuardWhitespace"));
+            break;
+
+        case BARCODE_EAN_2ADDON:
+            set_chk_from_setting(settings, QSL("studio/bc/ean2addon/chk_no_quiet_zones"),
+                QSL("chkEANAddOnNoQuietZones"));
+            set_chk_from_setting(settings, QSL("studio/bc/ean2addon/chk_guard_whitespace"),
+                QSL("chkEANAddOnGuardWhitespace"));
+            break;
+
+        case BARCODE_EAN_5ADDON:
+            set_chk_from_setting(settings, QSL("studio/bc/ean5addon/chk_no_quiet_zones"),
+                QSL("chkEANAddOnNoQuietZones"));
+            set_chk_from_setting(settings, QSL("studio/bc/ean5addon/chk_guard_whitespace"),
+                QSL("chkEANAddOnGuardWhitespace"));
+            break;
+
+        case BARCODE_EAN13:
+        case BARCODE_EAN13_CC:
+            set_cmb_from_setting(settings, QSL("studio/bc/ean13/addongap"), QSL("cmbUPCEANAddonGap"));
+            set_dspn_from_setting(settings, QSL("studio/bc/ean13/guard_descent"), QSL("spnUPCEANGuardDescent"), 5.0f);
+            set_chk_from_setting(settings, QSL("studio/bc/ean13/chk_no_quiet_zones"), QSL("chkUPCEANNoQuietZones"));
+            set_chk_from_setting(settings, QSL("studio/bc/ean13/chk_guard_whitespace"),
                 QSL("chkUPCEANGuardWhitespace"));
             break;
 
