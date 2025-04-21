@@ -54,13 +54,14 @@ static int nve18_or_ean14(struct zint_symbol *symbol, const unsigned char source
     unsigned char check_digit;
     int error_number;
 
-    /* Allow and ignore any AI prefix, but only if have check digit */
-    if (length == data_len + 1 + 4
+    /* Allow and ignore any AI prefix */
+    if ((length == data_len + 4 || length == data_len + 1 + 4)
             && (memcmp(source, prefix[idx][0], 4) == 0 || memcmp(source, prefix[idx][1], 4) == 0)) {
         source += 4;
         length -= 4;
-    /* Likewise initial '01' (EAN-14) or '00' (NVE-18), if have check digit */
-    } else if (length == data_len + 1 + 2 && source[0] == prefix[idx][0][1] && source[1] == prefix[idx][0][2]) {
+    /* Likewise initial '01' (EAN-14) or '00' (NVE-18) */
+    } else if ((length == data_len + 2 || length == data_len + 1 + 2)
+            && source[0] == prefix[idx][0][1] && source[1] == prefix[idx][0][2]) {
         source += 2;
         length -= 2;
     }

@@ -255,15 +255,17 @@ static void test_input(const testCtx *const p_ctx) {
         /* 12*/ { BARCODE_ITF14, -1, "12345678901231", 0, 1, 135, "" },
         /* 13*/ { BARCODE_ITF14, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 850: Invalid check digit '4', expecting '1'" },
         /* 14*/ { BARCODE_ITF14, -1, "1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 312: Invalid character at position 14 in input (digits only)" },
-        /* 15*/ { BARCODE_ITF14, -1, "0112345678901231", 0, 1, 135, "" }, /* Allow '01' prefix if have check digit */
-        /* 16*/ { BARCODE_ITF14, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 15 too long (maximum 14)" }, /* But not without */
-        /* 17*/ { BARCODE_ITF14, -1, "[01]12345678901231", 0, 1, 135, "" }, /* Allow '[01]' prefix if have check digit */
-        /* 18*/ { BARCODE_ITF14, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 17 too long (maximum 14)" }, /* But not without */
-        /* 19*/ { BARCODE_ITF14, -1, "(01)12345678901231", 0, 1, 135, "" }, /* Allow '(01)' prefix if have check digit */
-        /* 20*/ { BARCODE_ITF14, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 17 too long (maximum 14)" }, /* But not without */
-        /* 21*/ { BARCODE_ITF14, -1, "0012345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 16 too long (maximum 14)" },
-        /* 22*/ { BARCODE_ITF14, -1, "[00]12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
-        /* 23*/ { BARCODE_ITF14, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
+        /* 15*/ { BARCODE_ITF14, -1, "01345678901235", 0, 1, 135, "" },
+        /* 16*/ { BARCODE_ITF14, -1, "0134567890123", 0, 1, 135, "" },
+        /* 17*/ { BARCODE_ITF14, -1, "0112345678901231", 0, 1, 135, "" }, /* Allow '01' prefix if have check digit */
+        /* 18*/ { BARCODE_ITF14, -1, "011234567890123", 0, 1, 135, "" }, /* Or not */
+        /* 19*/ { BARCODE_ITF14, -1, "[01]12345678901231", 0, 1, 135, "" }, /* Allow '[01]' prefix if have check digit */
+        /* 20*/ { BARCODE_ITF14, -1, "[01]1234567890123", 0, 1, 135, "" }, /* Or not */
+        /* 21*/ { BARCODE_ITF14, -1, "(01)12345678901231", 0, 1, 135, "" }, /* Allow '(01)' prefix if have check digit */
+        /* 22*/ { BARCODE_ITF14, -1, "(01)1234567890123", 0, 1, 135, "" }, /* Or not */
+        /* 23*/ { BARCODE_ITF14, -1, "0012345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 16 too long (maximum 14)" },
+        /* 24*/ { BARCODE_ITF14, -1, "[00]12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
+        /* 25*/ { BARCODE_ITF14, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 311: Input length 18 too long (maximum 14)" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

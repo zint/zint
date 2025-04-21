@@ -278,6 +278,7 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     for (i = 0; i < rows - 1; i++) {
         for (j = 0; j < 4; j++) {
             local_value = (c_grid[i][2 * j] * 49) + c_grid[i][(2 * j) + 1];
+            /* Maximum value of `x/y/z_count` is at most 8 × (4 × 44 × 48 × 52) = 3514368 so won't overflow */
             x_count += c49_x_weight[posn_val] * local_value;
             y_count += c49_y_weight[posn_val] * local_value;
             z_count += c49_z_weight[posn_val] * local_value;
@@ -287,8 +288,9 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
 
     if (rows > 6) {
         /* Add Z Symbol Check */
-        c_grid[rows - 1][0] = (z_count % 2401) / 49;
-        c_grid[rows - 1][1] = (z_count % 2401) % 49;
+        z_count %= 2401;
+        c_grid[rows - 1][0] = z_count / 49;
+        c_grid[rows - 1][1] = z_count % 49;
     }
 
     local_value = (c_grid[rows - 1][0] * 49) + c_grid[rows - 1][1];
@@ -297,15 +299,17 @@ INTERNAL int code49(struct zint_symbol *symbol, unsigned char source[], int leng
     posn_val++;
 
     /* Add Y Symbol Check */
-    c_grid[rows - 1][2] = (y_count % 2401) / 49;
-    c_grid[rows - 1][3] = (y_count % 2401) % 49;
+    y_count %= 2401;
+    c_grid[rows - 1][2] = y_count / 49;
+    c_grid[rows - 1][3] = y_count % 49;
 
     local_value = (c_grid[rows - 1][2] * 49) + c_grid[rows - 1][3];
     x_count += c49_x_weight[posn_val] * local_value;
 
     /* Add X Symbol Check */
-    c_grid[rows - 1][4] = (x_count % 2401) / 49;
-    c_grid[rows - 1][5] = (x_count % 2401) % 49;
+    x_count %= 2401;
+    c_grid[rows - 1][4] = x_count / 49;
+    c_grid[rows - 1][5] = x_count % 49;
 
     /* Add last row check character */
     j = 0;

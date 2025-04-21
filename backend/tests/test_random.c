@@ -35,6 +35,9 @@
 #define FLAG_FULL_8BIT  0
 #define FLAG_LATIN_1    1
 #define FLAG_ASCII      2
+#define FLAG_NUMERIC    4
+#define FLAG_MASK       0xFF
+#define FLAG_ZERO_FILL  0x100
 
 struct random_item {
     int data_flag;
@@ -94,7 +97,7 @@ static void test_random(const testCtx *const p_ctx, const struct random_item *rd
 
         arc4random_buf(data_buf, length);
 
-        switch (rdata->data_flag) {
+        switch (rdata->data_flag & FLAG_MASK) {
             case FLAG_FULL_8BIT: /* Full 8-bit */
                 break;
             case FLAG_LATIN_1: /* ASCII + Latin-1 only */
@@ -113,9 +116,21 @@ static void test_random(const testCtx *const p_ctx, const struct random_item *rd
                     data_buf[j] &= 0x7F;
                 }
                 break;
+            case FLAG_NUMERIC: /* Digits only */
+                for (j = 0; j < length; j++) {
+                    data_buf[j] = '0' + (data_buf[j] % 10);
+                }
+                break;
             default:
                 assert_nonzero(0, "i:%d invalid data_flag %d\n", i, rdata->data_flag);
                 break;
+        }
+
+        if (rdata->data_flag & FLAG_ZERO_FILL) {
+            const int zeroes = rdata->max_len - length;
+            memmove(data_buf + zeroes, data_buf, length);
+            memset(data_buf, '0', zeroes);
+            length = rdata->max_len;
         }
 
         (void) testUtilSetSymbol(symbol, rdata->symbology, rdata->input_mode, rdata->eci,
@@ -207,6 +222,14 @@ static void test_datamatrix_fast(const testCtx *const p_ctx) {
     test_random(p_ctx, &rdata);
 }
 
+static void test_dbar_omn(const testCtx *const p_ctx) {
+    struct random_item rdata = {
+        FLAG_NUMERIC | FLAG_ZERO_FILL, BARCODE_DBAR_OMN, DATA_MODE, 0, -1, 0, 0, -1, 13
+    };
+
+    test_random(p_ctx, &rdata);
+}
+
 static void test_dotcode(const testCtx *const p_ctx) {
     struct random_item rdata = {
         FLAG_FULL_8BIT, BARCODE_DOTCODE, DATA_MODE, 899, 1, 0, 0, -1, 620
@@ -281,6 +304,7 @@ int main(int argc, char *argv[]) {
         { "test_code128_ascii", test_code128_ascii },
         { "test_datamatrix", test_datamatrix },
         { "test_datamatrix_fast", test_datamatrix_fast },
+        { "test_dbar_omn", test_dbar_omn },
         { "test_dotcode", test_dotcode },
         { "test_hanxin", test_hanxin },
         { "test_maxicode", test_maxicode },

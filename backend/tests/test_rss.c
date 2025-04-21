@@ -116,6 +116,10 @@ static void test_binary_div_modulo_divisor(const testCtx *const p_ctx) {
         /* 68*/ { BARCODE_DBAR_LTD_CC, "1999999999999", 100, 30, 6, 79, "0100001000000101010100000101011010110100100101010000101110001101011110010100000" },
         /* 69*/ { BARCODE_DBAR_LTD, "1651257071912", 100, 30, 1, 79, "0100000111100011110101010101010111010100100101010101010101111110111111110100000" },
         /* 70*/ { BARCODE_DBAR_LTD_CC, "0987144605916", 100, 30, 6, 79, "0101010101010011111000011111011010110100100101010101010100111110000111110100000" },
+        /* 71*/ { BARCODE_DBAR_OMN, "08801234560009", 100, 30, 1, 96, "010000100001010001011100000000010110011001101100100001001001100101111111100011000010011010111101" },
+        /* 72*/ { BARCODE_DBAR_OMN, "0880000000000", 100, 30, 1, 96, "010000100001010001000111110000010111000101100110101101100110000101100000000111000010110111100101" },
+        /* 73*/ { BARCODE_DBAR_OMN, "02001234567893", 100, 30, 1, 96, "010100001000000101000100000000010100110100111100101111011100010101111111000001001001110111000101" },
+        /* 74*/ { BARCODE_DBAR_OMN, "01969232328964", 100, 30, 1, 96, "010100001000000101000111000000010110010111011110100111100100010101111110000011011101110111000101" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1407,138 +1411,146 @@ static void test_input(const testCtx *const p_ctx) {
         /*  4*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "12345678901234", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '4', expecting '1'", 0, 0 }, /* Still checked */
         /*  5*/ { BARCODE_DBAR_OMN, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
         /*  6*/ { BARCODE_DBAR_OMN, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
-        /*  7*/ { BARCODE_DBAR_OMN, -1, -1, -1, "0112345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '01' prefix if check digit given */
-        /*  8*/ { BARCODE_DBAR_OMN, -1, -1, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /*  9*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01]12345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
-        /* 10*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 11*/ { BARCODE_DBAR_OMN, -1, -1, -1, "(01)12345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
-        /* 12*/ { BARCODE_DBAR_OMN, -1, -1, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 13*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 18 too long (maximum 14)", 0, 0 },
-        /* 14*/ { BARCODE_DBAR_LTD, -1, -1, -1, "1234567890123", 0, 1, 79, "", 0, 0 },
-        /* 15*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 16*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'", 0, 0 },
-        /* 18*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'", 0, 0 }, /* Still checked */
-        /* 19*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 20*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 21*/ { BARCODE_DBAR_LTD, -1, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
-        /* 22*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
-        /* 23*/ { BARCODE_DBAR_LTD, -1, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
-        /* 24*/ { BARCODE_DBAR_LTD, -1, -1, -1, "0112345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '01' prefix if check digit given */
-        /* 25*/ { BARCODE_DBAR_LTD, -1, -1, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 26*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01]12345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
-        /* 27*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 28*/ { BARCODE_DBAR_LTD, -1, -1, -1, "(01)12345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
-        /* 29*/ { BARCODE_DBAR_LTD, -1, -1, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 30*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 18 too long (maximum 14)", 0, 0 },
-        /* 31*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[10]12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 18 too long (maximum 14)", 0, 0 },
-        /* 32*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
-        /* 33*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 0, 0 },
-        /* 34*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "", 0, 0 },
-        /* 35*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231", 0, 1, 134, "", 0, 0 },
-        /* 36*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
-        /* 37*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
-        /* 38*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 259: Invalid data length for AI (01)", 0, 0 },
-        /* 39*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 1, 151, "", 0, 0 },
-        /* 40*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 0, 0 },
-        /* 41*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "", 0, 0 },
-        /* 42*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", ZINT_WARN_NONCOMPLIANT, 1, 526, "Warning 261: AI (91) position 21: Invalid CSET 82 character ' '", 0, 0 }, /* ISOIEC punc */
-        /* 43*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", 0, 1, 526, "", 0, 0 },
-        /* 44*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "", 0, 0 }, /* ISOIEC punc less space */
-        /* 45*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "", 0, 0 },
-        /* 46*/ { BARCODE_DBAR_STK, -1, -1, -1, "1234567890123", 0, 3, 50, "", 0, 0 },
-        /* 47*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 48*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 49*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 50*/ { BARCODE_DBAR_STK, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'", 0, 0 },
-        /* 51*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'", 0, 0 }, /* Still checked */
-        /* 52*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 53*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 54*/ { BARCODE_DBAR_STK, -1, -1, -1, "0112345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '01' prefix if check digit given */
-        /* 55*/ { BARCODE_DBAR_STK, -1, -1, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 56*/ { BARCODE_DBAR_STK, -1, -1, -1, "[01]12345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
-        /* 57*/ { BARCODE_DBAR_STK, -1, -1, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 58*/ { BARCODE_DBAR_STK, -1, -1, -1, "(01)12345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
-        /* 59*/ { BARCODE_DBAR_STK, -1, -1, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 60*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "1234567890123", 0, 5, 50, "", 0, 0 },
-        /* 61*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 62*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
-        /* 63*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'", 0, 0 },
-        /* 64*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'", 0, 0 }, /* Still checked */
-        /* 65*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 66*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
-        /* 67*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "0112345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '01' prefix if check digit given */
-        /* 68*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "011234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 69*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "[01]12345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
-        /* 70*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "[01]1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 71*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(01)12345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
-        /* 72*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(01)1234567890123", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 17 too long (maximum 14)", 0, 0 }, /* But not if no check digit given */
-        /* 73*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(00)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 18 too long (maximum 14)", 0, 0 },
-        /* 74*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 2, 0 },
-        /* 75*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 5, 102, "", 2, 0 },
-        /* 76*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 },
-        /* 77*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
-        /* 78*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
-        /* 79*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 259: Invalid data length for AI (01)", 0, 0 },
-        /* 80*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 5, 102, "", 2, 0 },
-        /* 81*/ { BARCODE_DBAR_EXPSTK, -1, 12, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 }, /* Cols > 11 ignored */
-        /* 82*/ { BARCODE_DBAR_EXPSTK, -1, -1, 12, "[01]12345678901231", 0, 5, 102, "", 2, 0 }, /* Rows > 11 ignored */
-        /* 83*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[01]12345678901231", 0, 9, 53, "", 1, 0 },
-        /* 84*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 },
-        /* 85*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[01]12345678901231", 0, 1, 134, "", 3, 0 },
-        /* 86*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[01]12345678901231", 0, 1, 134, "", 4, 0 },
-        /* 87*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[01]12345678901231", 0, 5, 102, "", 2, 2 },
-        /* 88*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[01]12345678901231", 0, 5, 102, "", 2, 3 },
-        /* 89*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 0 },
-        /* 90*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[8110]106141416543213500110000310123196000", 0, 25, 53, "", 1, 0 },
-        /* 91*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 0 },
-        /* 92*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[8110]106141416543213500110000310123196000", 0, 9, 151, "", 3, 0 },
-        /* 93*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[8110]106141416543213500110000310123196000", 0, 5, 200, "", 4, 0 },
-        /* 94*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[8110]106141416543213500110000310123196000", 0, 5, 249, "", 5, 0 },
-        /* 95*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[8110]106141416543213500110000310123196000", 0, 5, 200, "", 4, 2 },
-        /* 96*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[8110]106141416543213500110000310123196000", 0, 9, 151, "", 3, 3 },
-        /* 97*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 4 },
-        /* 98*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 5 },
-        /* 99*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]123456789012345678901", 0, 9, 102, "", 2, 0 },
-        /*100*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]123456789012345678901", 0, 17, 53, "", 1, 0 },
-        /*101*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]123456789012345678901", 0, 9, 102, "", 2, 0 },
-        /*102*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]123456789012345678901", 0, 5, 151, "", 3, 0 },
-        /*103*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]123456789012345678901", 0, 5, 200, "", 4, 0 },
-        /*104*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]123456789012345678901", 0, 5, 151, "", 3, 2 },
-        /*105*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]123456789012345678901", 0, 9, 102, "", 2, 3 },
-        /*106*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]123456789012345678901", 0, 9, 102, "", 2, 4 },
+        /*  7*/ { BARCODE_DBAR_OMN, -1, -1, -1, "01345678901235", 0, 1, 96, "", 0, 0 },
+        /*  8*/ { BARCODE_DBAR_OMN, -1, -1, -1, "0134567890123", 0, 1, 96, "", 0, 0 },
+        /*  9*/ { BARCODE_DBAR_OMN, -1, -1, -1, "0112345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '01' prefix if check digit given */
+        /* 10*/ { BARCODE_DBAR_OMN, -1, -1, -1, "011234567890123", 0, 1, 96, "", 0, 0 }, /* Or not */
+        /* 11*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01]12345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
+        /* 12*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01]1234567890123", 0, 1, 96, "", 0, 0 }, /* Or not */
+        /* 13*/ { BARCODE_DBAR_OMN, -1, -1, -1, "(01)12345678901231", 0, 1, 96, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
+        /* 14*/ { BARCODE_DBAR_OMN, -1, -1, -1, "(01)1234567890123", 0, 1, 96, "", 0, 0 }, /* Or not */
+        /* 15*/ { BARCODE_DBAR_OMN, -1, -1, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 18 too long (maximum 14)", 0, 0 },
+        /* 16*/ { BARCODE_DBAR_LTD, -1, -1, -1, "1234567890123", 0, 1, 79, "", 0, 0 },
+        /* 17*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 18*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 383: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 19*/ { BARCODE_DBAR_LTD, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'", 0, 0 },
+        /* 20*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 389: Invalid check digit '5', expecting '1'", 0, 0 }, /* Still checked */
+        /* 21*/ { BARCODE_DBAR_LTD, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 22*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 23*/ { BARCODE_DBAR_LTD, -1, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
+        /* 24*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "2234567890123", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
+        /* 25*/ { BARCODE_DBAR_LTD, -1, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
+        /* 26*/ { BARCODE_DBAR_LTD, -1, -1, -1, "01345678901235", 0, 1, 79, "", 0, 0 },
+        /* 27*/ { BARCODE_DBAR_LTD, -1, -1, -1, "0134567890123", 0, 1, 79, "", 0, 0 },
+        /* 28*/ { BARCODE_DBAR_LTD, -1, -1, -1, "0112345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '01' prefix if check digit given */
+        /* 29*/ { BARCODE_DBAR_LTD, -1, -1, -1, "011234567890123", 0, 1, 79, "", 0, 0 }, /* Or not */
+        /* 30*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01]12345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
+        /* 31*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01]1234567890123", 0, 1, 79, "", 0, 0 }, /* Or not */
+        /* 32*/ { BARCODE_DBAR_LTD, -1, -1, -1, "(01)12345678901231", 0, 1, 79, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
+        /* 33*/ { BARCODE_DBAR_LTD, -1, -1, -1, "(01)1234567890123", 0, 1, 79, "", 0, 0 }, /* Or not */
+        /* 34*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[01)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 18 too long (maximum 14)", 0, 0 },
+        /* 35*/ { BARCODE_DBAR_LTD, -1, -1, -1, "[10]12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 382: Input length 18 too long (maximum 14)", 0, 0 },
+        /* 36*/ { BARCODE_DBAR_LTD, GS1NOCHECK_MODE, -1, -1, "22345678901238", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 384: Input value out of range (0 to 1999999999999)", 0, 0 },
+        /* 37*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 0, 0 },
+        /* 38*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "", 0, 0 },
+        /* 39*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231", 0, 1, 134, "", 0, 0 },
+        /* 40*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
+        /* 41*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
+        /* 42*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 259: Invalid data length for AI (01)", 0, 0 },
+        /* 43*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 1, 151, "", 0, 0 },
+        /* 44*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 1, 134, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 0, 0 },
+        /* 45*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 1, 134, "", 0, 0 },
+        /* 46*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", ZINT_WARN_NONCOMPLIANT, 1, 526, "Warning 261: AI (91) position 21: Invalid CSET 82 character ' '", 0, 0 }, /* ISOIEC punc */
+        /* 47*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_ ", 0, 1, 526, "", 0, 0 },
+        /* 48*/ { BARCODE_DBAR_EXP, -1, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "", 0, 0 }, /* ISOIEC punc less space */
+        /* 49*/ { BARCODE_DBAR_EXP, GS1NOCHECK_MODE, -1, -1, "[01]12345678901231[91]!\"%&'()*+,-./:;<=>?_", 0, 1, 494, "", 0, 0 },
+        /* 50*/ { BARCODE_DBAR_STK, -1, -1, -1, "1234567890123", 0, 3, 50, "", 0, 0 },
+        /* 51*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 52*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 53*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 54*/ { BARCODE_DBAR_STK, -1, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'", 0, 0 },
+        /* 55*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "12345678901235", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '5', expecting '1'", 0, 0 }, /* Still checked */
+        /* 56*/ { BARCODE_DBAR_STK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 57*/ { BARCODE_DBAR_STK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 58*/ { BARCODE_DBAR_STK, -1, -1, -1, "01345678901235", 0, 3, 50, "", 0, 0 },
+        /* 59*/ { BARCODE_DBAR_STK, -1, -1, -1, "0134567890123", 0, 3, 50, "", 0, 0 },
+        /* 60*/ { BARCODE_DBAR_STK, -1, -1, -1, "0112345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '01' prefix if check digit given */
+        /* 61*/ { BARCODE_DBAR_STK, -1, -1, -1, "011234567890123", 0, 3, 50, "", 0, 0 }, /* Or not */
+        /* 62*/ { BARCODE_DBAR_STK, -1, -1, -1, "[01]12345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
+        /* 63*/ { BARCODE_DBAR_STK, -1, -1, -1, "[01]1234567890123", 0, 3, 50, "", 0, 0 }, /* Or not */
+        /* 64*/ { BARCODE_DBAR_STK, -1, -1, -1, "(01)12345678901231", 0, 3, 50, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
+        /* 65*/ { BARCODE_DBAR_STK, -1, -1, -1, "(01)1234567890123", 0, 3, 50, "", 0, 0 }, /* Or not */
+        /* 66*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "1234567890123", 0, 5, 50, "", 0, 0 },
+        /* 67*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 68*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 381: Invalid character at position 13 in input (digits only)", 0, 0 },
+        /* 69*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'", 0, 0 },
+        /* 70*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "12345678901236", ZINT_ERROR_INVALID_CHECK, -1, -1, "Error 388: Invalid check digit '6', expecting '1'", 0, 0 }, /* Still checked */
+        /* 71*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 72*/ { BARCODE_DBAR_OMNSTK, GS1NOCHECK_MODE, -1, -1, "123456789012315", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 15 too long (maximum 14)", 0, 0 },
+        /* 73*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "01345678901235", 0, 5, 50, "", 0, 0 },
+        /* 74*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "0134567890123", 0, 5, 50, "", 0, 0 },
+        /* 75*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "0112345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '01' prefix if check digit given */
+        /* 76*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "011234567890123", 0, 5, 50, "", 0, 0 }, /* Or not */
+        /* 77*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "[01]12345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '[01]' prefix if check digit given */
+        /* 78*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "[01]1234567890123", 0, 5, 50, "", 0, 0 }, /* Or not */
+        /* 79*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(01)12345678901231", 0, 5, 50, "", 0, 0 }, /* Allow '(01)' prefix if check digit given */
+        /* 80*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(01)1234567890123", 0, 5, 50, "", 0, 0 }, /* Or not */
+        /* 81*/ { BARCODE_DBAR_OMNSTK, -1, -1, -1, "(00)12345678901231", ZINT_ERROR_TOO_LONG, -1, -1, "Error 380: Input length 18 too long (maximum 14)", 0, 0 },
+        /* 82*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901234", ZINT_WARN_NONCOMPLIANT, 5, 102, "Warning 261: AI (01) position 14: Bad checksum '4', expected '1'", 2, 0 },
+        /* 83*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]12345678901234", 0, 5, 102, "", 2, 0 },
+        /* 84*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 },
+        /* 85*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
+        /* 86*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]1234567890123A", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 385: Invalid character in Compressed Field data (digits only)", 0, 0 },
+        /* 87*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[01]123456789012315", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 259: Invalid data length for AI (01)", 0, 0 },
+        /* 88*/ { BARCODE_DBAR_EXPSTK, GS1NOCHECK_MODE, -1, -1, "[01]123456789012315", 0, 5, 102, "", 2, 0 },
+        /* 89*/ { BARCODE_DBAR_EXPSTK, -1, 12, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 }, /* Cols > 11 ignored */
+        /* 90*/ { BARCODE_DBAR_EXPSTK, -1, -1, 12, "[01]12345678901231", 0, 5, 102, "", 2, 0 }, /* Rows > 11 ignored */
+        /* 91*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[01]12345678901231", 0, 9, 53, "", 1, 0 },
+        /* 92*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[01]12345678901231", 0, 5, 102, "", 2, 0 },
+        /* 93*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[01]12345678901231", 0, 1, 134, "", 3, 0 },
+        /* 94*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[01]12345678901231", 0, 1, 134, "", 4, 0 },
+        /* 95*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[01]12345678901231", 0, 5, 102, "", 2, 2 },
+        /* 96*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[01]12345678901231", 0, 5, 102, "", 2, 3 },
+        /* 97*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 0 },
+        /* 98*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[8110]106141416543213500110000310123196000", 0, 25, 53, "", 1, 0 },
+        /* 99*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 0 },
+        /*100*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[8110]106141416543213500110000310123196000", 0, 9, 151, "", 3, 0 },
+        /*101*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[8110]106141416543213500110000310123196000", 0, 5, 200, "", 4, 0 },
+        /*102*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[8110]106141416543213500110000310123196000", 0, 5, 249, "", 5, 0 },
+        /*103*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[8110]106141416543213500110000310123196000", 0, 5, 200, "", 4, 2 },
+        /*104*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[8110]106141416543213500110000310123196000", 0, 9, 151, "", 3, 3 },
+        /*105*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 4 },
+        /*106*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[8110]106141416543213500110000310123196000", 0, 13, 102, "", 2, 5 },
         /*107*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]123456789012345678901", 0, 9, 102, "", 2, 0 },
-        /*108*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 0 },
-        /*109*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 33, 53, "", 1, 0 },
-        /*110*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 0 },
-        /*111*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 0 },
-        /*112*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 200, "", 4, 0 },
-        /*113*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 200, "", 4, 0 },
-        /*114*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 249, "", 5, 0 },
-        /*115*/ { BARCODE_DBAR_EXPSTK, -1, 6, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 298, "", 6, 0 },
-        /*116*/ { BARCODE_DBAR_EXPSTK, -1, 7, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 347, "", 7, 0 },
-        /*117*/ { BARCODE_DBAR_EXPSTK, -1, 8, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 396, "", 8, 0 },
-        /*118*/ { BARCODE_DBAR_EXPSTK, -1, 9, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 1, 428, "", 9, 0 },
-        /*119*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 249, "", 5, 2 },
-        /*120*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 3 },
-        /*121*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 4 },
-        /*122*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 5 },
-        /*123*/ { BARCODE_DBAR_EXPSTK, -1, -1, 6, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 6 },
-        /*124*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
-        /*125*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 41, 53, "", 1, 0 },
-        /*126*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
-        /*127*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 0 },
-        /*128*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 200, "", 4, 0 },
-        /*129*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 249, "", 5, 0 },
-        /*130*/ { BARCODE_DBAR_EXPSTK, -1, 6, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 298, "", 6, 0 },
-        /*131*/ { BARCODE_DBAR_EXPSTK, -1, 7, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 347, "", 7, 0 },
-        /*132*/ { BARCODE_DBAR_EXPSTK, -1, -1, 1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
-        /*133*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 298, "", 6, 2 },
-        /*134*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 200, "", 4, 3 },
-        /*135*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 4 },
-        /*136*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 5 },
-        /*137*/ { BARCODE_DBAR_EXPSTK, -1, -1, 6, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 6 },
-        /*138*/ { BARCODE_DBAR_EXPSTK, -1, -1, 7, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 7 },
+        /*108*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]123456789012345678901", 0, 17, 53, "", 1, 0 },
+        /*109*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]123456789012345678901", 0, 9, 102, "", 2, 0 },
+        /*110*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]123456789012345678901", 0, 5, 151, "", 3, 0 },
+        /*111*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]123456789012345678901", 0, 5, 200, "", 4, 0 },
+        /*112*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]123456789012345678901", 0, 5, 151, "", 3, 2 },
+        /*113*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]123456789012345678901", 0, 9, 102, "", 2, 3 },
+        /*114*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]123456789012345678901", 0, 9, 102, "", 2, 4 },
+        /*115*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]123456789012345678901", 0, 9, 102, "", 2, 0 },
+        /*116*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 0 },
+        /*117*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 33, 53, "", 1, 0 },
+        /*118*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 0 },
+        /*119*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 0 },
+        /*120*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 200, "", 4, 0 },
+        /*121*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 200, "", 4, 0 },
+        /*122*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 249, "", 5, 0 },
+        /*123*/ { BARCODE_DBAR_EXPSTK, -1, 6, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 298, "", 6, 0 },
+        /*124*/ { BARCODE_DBAR_EXPSTK, -1, 7, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 347, "", 7, 0 },
+        /*125*/ { BARCODE_DBAR_EXPSTK, -1, 8, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 396, "", 8, 0 },
+        /*126*/ { BARCODE_DBAR_EXPSTK, -1, 9, -1, "[91]1234567890123456789012345678901234567890123456789", 0, 1, 428, "", 9, 0 },
+        /*127*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]1234567890123456789012345678901234567890123456789", 0, 5, 249, "", 5, 2 },
+        /*128*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 3 },
+        /*129*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]1234567890123456789012345678901234567890123456789", 0, 9, 151, "", 3, 4 },
+        /*130*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 5 },
+        /*131*/ { BARCODE_DBAR_EXPSTK, -1, -1, 6, "[91]1234567890123456789012345678901234567890123456789", 0, 17, 102, "", 2, 6 },
+        /*132*/ { BARCODE_DBAR_EXPSTK, -1, -1, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
+        /*133*/ { BARCODE_DBAR_EXPSTK, -1, 1, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 41, 53, "", 1, 0 },
+        /*134*/ { BARCODE_DBAR_EXPSTK, -1, 2, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
+        /*135*/ { BARCODE_DBAR_EXPSTK, -1, 3, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 0 },
+        /*136*/ { BARCODE_DBAR_EXPSTK, -1, 4, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 200, "", 4, 0 },
+        /*137*/ { BARCODE_DBAR_EXPSTK, -1, 5, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 249, "", 5, 0 },
+        /*138*/ { BARCODE_DBAR_EXPSTK, -1, 6, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 298, "", 6, 0 },
+        /*139*/ { BARCODE_DBAR_EXPSTK, -1, 7, -1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 347, "", 7, 0 },
+        /*140*/ { BARCODE_DBAR_EXPSTK, -1, -1, 1, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 0 },
+        /*141*/ { BARCODE_DBAR_EXPSTK, -1, -1, 2, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 5, 298, "", 6, 2 },
+        /*142*/ { BARCODE_DBAR_EXPSTK, -1, -1, 3, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 9, 200, "", 4, 3 },
+        /*143*/ { BARCODE_DBAR_EXPSTK, -1, -1, 4, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 4 },
+        /*144*/ { BARCODE_DBAR_EXPSTK, -1, -1, 5, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 13, 151, "", 3, 5 },
+        /*145*/ { BARCODE_DBAR_EXPSTK, -1, -1, 6, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 6 },
+        /*146*/ { BARCODE_DBAR_EXPSTK, -1, -1, 7, "[91]12345678901234567890123456789012345678901234567890123456789012", 0, 21, 102, "", 2, 7 },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;

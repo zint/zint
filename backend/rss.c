@@ -30,7 +30,7 @@
  */
 /* SPDX-License-Identifier: BSD-3-Clause */
 
-/* The functions "rss_combins" and "getRSSwidths" are copyright BSI and are
+/* The functions "dbar_combins" and "dbar_widths" are copyright BSI and are
    released with permission under the following terms:
 
    "Copyright subsists in all BSI publications. BSI also holds the copyright, in the
@@ -50,7 +50,7 @@
 
 /* Includes numerous bugfixes thanks to Pablo Orduña @ the PIRAmIDE project */
 
-/* Note: This code reflects the symbol names as used in ISO/IEC 24724:2006. These names
+/* Note: The symbol names used in ISO/IEC 24724:2006
  * were updated in ISO/IEC 24724:2011 as follows:
  *
  * RSS-14 > GS1 DataBar Omnidirectional
@@ -65,16 +65,17 @@
 #include <assert.h>
 #include <stdio.h>
 #include "common.h"
+#include "general_field.h"
+#include "gs1.h"
 #include "large.h"
 #include "rss.h"
-#include "gs1.h"
-#include "general_field.h"
 
+/* `combins()' in ISO/IEC 24724:2011 Annex B */
 /****************************************************************************
- * rss_combins(n,r): returns the number of Combinations of r selected from n:
+ * dbar_combins(n,r): returns the number of Combinations of r selected from n:
  *   Combinations = n! / ((n - r)! * r!)
  ****************************************************************************/
-static int rss_combins(const int n, const int r) {
+static int dbar_combins(const int n, const int r) {
     int i, j;
     int maxDenom, minDenom;
     int val;
@@ -101,9 +102,10 @@ static int rss_combins(const int n, const int r) {
     return (val);
 }
 
+/* `getRSSwidths()' in ISO/IEC 24724:2011 Annex B, modified to use arg `widths` instead of static */
 /**********************************************************************
- * getRSSwidths
- * routine to generate widths for RSS elements for a given value.#
+ * dbar_widths
+ * routine to generate widths for RSS elements for a given value.
  *
  * Calling arguments:
  * int widths[] = element widths
@@ -114,7 +116,7 @@ static int rss_combins(const int n, const int r) {
  * noNarrow = 0 will skip patterns without a one module wide element
  *
  **********************************************************************/
-static void getRSSwidths(int widths[], int val, int n, const int elements, const int maxWidth, const int noNarrow) {
+static void dbar_widths(int widths[], int val, int n, const int elements, const int maxWidth, const int noNarrow) {
     int bar;
     int elmWidth;
     int mxwElement;
@@ -125,11 +127,11 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
                 ;
                 elmWidth++, narrowMask &= ~(1 << bar)) {
             /* Get all combinations */
-            subVal = rss_combins(n - elmWidth - 1, elements - bar - 2);
+            subVal = dbar_combins(n - elmWidth - 1, elements - bar - 2);
             /* Less combinations with no single-module element */
             if (!noNarrow && !narrowMask
                     && (n - elmWidth - (elements - bar - 1) >= elements - bar - 1)) {
-                subVal -= rss_combins(n - elmWidth - (elements - bar), elements - bar - 2);
+                subVal -= dbar_combins(n - elmWidth - (elements - bar), elements - bar - 2);
             }
             /* Less combinations with elements > maxVal */
             if (elements - bar - 1 > 1) {
@@ -137,7 +139,7 @@ static void getRSSwidths(int widths[], int val, int n, const int elements, const
                 for (mxwElement = n - elmWidth - (elements - bar - 2);
                         mxwElement > maxWidth;
                         mxwElement--) {
-                    lessVal += rss_combins(n - elmWidth - mxwElement - 1, elements - bar - 3);
+                    lessVal += dbar_combins(n - elmWidth - mxwElement - 1, elements - bar - 3);
                 }
                 subVal -= lessVal * (elements - 1 - bar);
             } else if (n - elmWidth > maxWidth) {
@@ -175,22 +177,25 @@ static void dbar_set_gtin14_hrt(struct zint_symbol *symbol, const unsigned char 
 }
 
 /* Expand from a width pattern to a bit pattern */
-static int dbar_expand(struct zint_symbol *symbol, int writer, int *p_latch, const int width) {
-    int j;
+static int dbar_expand(struct zint_symbol *symbol, int writer, int latch, const int *const widths, const int start,
+            const int end) {
+    int i, j;
 
-    if (*p_latch) {
-        for (j = 0; j < width; j++) {
-            set_module(symbol, symbol->rows, writer);
-            writer++;
+    for (i = start; i < end; i++) {
+        const int width = widths[i];
+        if (latch) {
+            for (j = 0; j < width; j++) {
+                set_module(symbol, symbol->rows, writer);
+                writer++;
+            }
+        } else {
+            for (j = 0; j < width; j++) {
+                unset_module(symbol, symbol->rows, writer);
+                writer++;
+            }
         }
-    } else {
-        for (j = 0; j < width; j++) {
-            unset_module(symbol, symbol->rows, writer);
-            writer++;
-        }
+        latch = !latch;
     }
-
-    *p_latch = !*p_latch;
 
     return writer;
 }
@@ -292,19 +297,18 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     int error_number = 0, i;
     large_uint accum;
     uint64_t left_pair, right_pair;
-    int data_character[4] = {0}, data_group[4] = {0}, v_odd[4], v_even[4];
+    int data_character[4] = {0}, data_group[4] = {0};
     int data_widths[8][4], checksum, c_left, c_right, total_widths[46], writer;
-    int latch;
     int separator_row = 0;
     int widths[4];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
-    /* Allow and ignore any AI prefix, but only if have check digit */
-    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+    /* Allow and ignore any AI prefix */
+    if ((length == 17 || length == 18) && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
         source += 4;
         length -= 4;
-    /* Likewise initial '01', if have check digit */
-    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+    /* Likewise initial '01' */
+    } else if ((length == 15 || length == 16) && source[0] == '0' && source[1] == '1') {
         source += 2;
         length -= 2;
     }
@@ -404,40 +408,22 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         data_group[2] = 4;
     }
 
-    v_odd[0] = (data_character[0] - dbar_g_sum_table[data_group[0]]) / dbar_t_table[data_group[0]];
-    v_even[0] = (data_character[0] - dbar_g_sum_table[data_group[0]]) % dbar_t_table[data_group[0]];
-    v_odd[1] = (data_character[1] - dbar_g_sum_table[data_group[1]]) % dbar_t_table[data_group[1]];
-    v_even[1] = (data_character[1] - dbar_g_sum_table[data_group[1]]) / dbar_t_table[data_group[1]];
-    v_odd[3] = (data_character[3] - dbar_g_sum_table[data_group[3]]) % dbar_t_table[data_group[3]];
-    v_even[3] = (data_character[3] - dbar_g_sum_table[data_group[3]]) / dbar_t_table[data_group[3]];
-    v_odd[2] = (data_character[2] - dbar_g_sum_table[data_group[2]]) / dbar_t_table[data_group[2]];
-    v_even[2] = (data_character[2] - dbar_g_sum_table[data_group[2]]) % dbar_t_table[data_group[2]];
-
     /* Use DataBar subset width algorithm */
     for (i = 0; i < 4; i++) {
-        if (i == 0 || i == 2) {
-            getRSSwidths(widths, v_odd[i], dbar_modules_odd[data_group[i]], 4, dbar_widest_odd[data_group[i]], 1);
-            data_widths[0][i] = widths[0];
-            data_widths[2][i] = widths[1];
-            data_widths[4][i] = widths[2];
-            data_widths[6][i] = widths[3];
-            getRSSwidths(widths, v_even[i], dbar_modules_even[data_group[i]], 4, dbar_widest_even[data_group[i]], 0);
-            data_widths[1][i] = widths[0];
-            data_widths[3][i] = widths[1];
-            data_widths[5][i] = widths[2];
-            data_widths[7][i] = widths[3];
-        } else {
-            getRSSwidths(widths, v_odd[i], dbar_modules_odd[data_group[i]], 4, dbar_widest_odd[data_group[i]], 0);
-            data_widths[0][i] = widths[0];
-            data_widths[2][i] = widths[1];
-            data_widths[4][i] = widths[2];
-            data_widths[6][i] = widths[3];
-            getRSSwidths(widths, v_even[i], dbar_modules_even[data_group[i]], 4, dbar_widest_even[data_group[i]], 1);
-            data_widths[1][i] = widths[0];
-            data_widths[3][i] = widths[1];
-            data_widths[5][i] = widths[2];
-            data_widths[7][i] = widths[3];
-        }
+        const int dg = data_group[i];
+        const int v = data_character[i] - dbar_g_sum_table[dg];
+        const int v_div = v / dbar_t_table[dg];
+        const int v_mod = v % dbar_t_table[dg];
+        dbar_widths(widths, !(i & 1) ? v_div : v_mod, dbar_modules_odd[dg], 4, dbar_widest_odd[dg], !(i & 1));
+        data_widths[0][i] = widths[0];
+        data_widths[2][i] = widths[1];
+        data_widths[4][i] = widths[2];
+        data_widths[6][i] = widths[3];
+        dbar_widths(widths, i & 1 ? v_div : v_mod, dbar_modules_even[dg], 4, dbar_widest_even[dg], i & 1);
+        data_widths[1][i] = widths[0];
+        data_widths[3][i] = widths[1];
+        data_widths[5][i] = widths[2];
+        data_widths[7][i] = widths[3];
     }
 
     checksum = 0;
@@ -461,7 +447,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
     c_right = checksum % 9;
 
     if (symbol->debug & ZINT_DEBUG_PRINT) {
-        printf("c_left: %d,  c_right: %d\n", c_left, c_right);
+        printf("checksum %d, c_left: %d,  c_right: %d\n", checksum, c_left, c_right);
     }
 
     /* Put element widths together */
@@ -482,11 +468,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     /* Put this data into the symbol */
     if (symbol->symbology == BARCODE_DBAR_OMN || symbol->symbology == BARCODE_DBAR_OMN_CC) {
-        writer = 0;
-        latch = 0;
-        for (i = 0; i < 46; i++) {
-            writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-        }
+        writer = dbar_expand(symbol, 0 /*writer*/, 0 /*latch*/, total_widths, 0 /*start*/, 46 /*end*/);
         if (symbol->width < writer) {
             symbol->width = writer;
         }
@@ -517,11 +499,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     } else if (symbol->symbology == BARCODE_DBAR_STK || symbol->symbology == BARCODE_DBAR_STK_CC) {
         /* Top row */
-        writer = 0;
-        latch = 0;
-        for (i = 0; i < 23; i++) {
-            writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-        }
+        writer = dbar_expand(symbol, 0 /*writer*/, 0 /*latch*/, total_widths, 0 /*start*/, 23 /*end*/);
         set_module(symbol, symbol->rows, writer);
         unset_module(symbol, symbol->rows, writer + 1);
         symbol->row_height[symbol->rows] = 5.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 5X */
@@ -530,11 +508,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows += 2;
         set_module(symbol, symbol->rows, 0);
         unset_module(symbol, symbol->rows, 1);
-        writer = 2;
-        latch = 1;
-        for (i = 23; i < 46; i++) {
-            writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-        }
+        (void) dbar_expand(symbol, 2 /*writer*/, 1 /*latch*/, total_widths, 23 /*start*/, 46 /*end*/);
         symbol->row_height[symbol->rows] = 7.0f; /* ISO/IEC 24724:2011 5.3.2.1 set to 7X */
 
         /* Separator pattern */
@@ -570,11 +544,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
 
     } else if (symbol->symbology == BARCODE_DBAR_OMNSTK || symbol->symbology == BARCODE_DBAR_OMNSTK_CC) {
         /* Top row */
-        writer = 0;
-        latch = 0;
-        for (i = 0; i < 23; i++) {
-            writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-        }
+        writer = dbar_expand(symbol, 0 /*writer*/, 0 /*latch*/, total_widths, 0 /*start*/, 23 /*end*/);
         set_module(symbol, symbol->rows, writer);
         unset_module(symbol, symbol->rows, writer + 1);
 
@@ -582,11 +552,7 @@ INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int
         symbol->rows += 4;
         set_module(symbol, symbol->rows, 0);
         unset_module(symbol, symbol->rows, 1);
-        writer = 2;
-        latch = 1;
-        for (i = 23; i < 46; i++) {
-            writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-        }
+        (void) dbar_expand(symbol, 2 /*writer*/, 1 /*latch*/, total_widths, 23 /*start*/, 46 /*end*/);
 
         /* Middle separator */
         for (i = 5; i < 46; i += 2) {
@@ -647,17 +613,16 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     int left_group, right_group, left_odd, left_even, right_odd, right_even;
     int left_widths[14], right_widths[14];
     int checksum, check_elements[14], total_widths[47], writer;
-    int latch;
     int separator_row = 0;
     int widths[7];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
-    /* Allow and ignore any AI prefix, but only if have check digit */
-    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+    /* Allow and ignore any AI prefix */
+    if ((length == 17 || length == 18) && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
         source += 4;
         length -= 4;
-    /* Likewise initial '01', if have check digit */
-    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+    /* Likewise initial '01' */
+    } else if ((length == 15 || length == 16) && source[0] == '0' && source[1] == '1') {
         source += 2;
         length -= 2;
     }
@@ -750,19 +715,19 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
     right_odd = (int) (right_character / dbar_ltd_t_even[right_group]);
     right_even = (int) (right_character % dbar_ltd_t_even[right_group]);
 
-    getRSSwidths(widths, left_odd, dbar_ltd_modules_odd[left_group], 7, dbar_ltd_widest_odd[left_group], 1);
+    dbar_widths(widths, left_odd, dbar_ltd_modules_odd[left_group], 7, dbar_ltd_widest_odd[left_group], 1);
     for (i = 0; i <= 6; i++) {
         left_widths[i * 2] = widths[i];
     }
-    getRSSwidths(widths, left_even, dbar_ltd_modules_even[left_group], 7, dbar_ltd_widest_even[left_group], 0);
+    dbar_widths(widths, left_even, dbar_ltd_modules_even[left_group], 7, dbar_ltd_widest_even[left_group], 0);
     for (i = 0; i <= 6; i++) {
         left_widths[i * 2 + 1] = widths[i];
     }
-    getRSSwidths(widths, right_odd, dbar_ltd_modules_odd[right_group], 7, dbar_ltd_widest_odd[right_group], 1);
+    dbar_widths(widths, right_odd, dbar_ltd_modules_odd[right_group], 7, dbar_ltd_widest_odd[right_group], 1);
     for (i = 0; i <= 6; i++) {
         right_widths[i * 2] = widths[i];
     }
-    getRSSwidths(widths, right_even, dbar_ltd_modules_even[right_group], 7, dbar_ltd_widest_even[right_group], 0);
+    dbar_widths(widths, right_even, dbar_ltd_modules_even[right_group], 7, dbar_ltd_widest_even[right_group], 0);
     for (i = 0; i <= 6; i++) {
         right_widths[i * 2 + 1] = widths[i];
     }
@@ -793,11 +758,7 @@ INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int
         total_widths[i + 30] = right_widths[i];
     }
 
-    writer = 0;
-    latch = 0;
-    for (i = 0; i < 47; i++) {
-        writer = dbar_expand(symbol, writer, &latch, total_widths[i]);
-    }
+    writer = dbar_expand(symbol, 0 /*writer*/, 0 /*latch*/, total_widths, 0 /*start*/, 47 /*end*/);
     if (symbol->width < writer) {
         symbol->width = writer;
     }
@@ -1399,12 +1360,12 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         v_even = (vs - dbar_exp_g_sum[group - 1]) % dbar_exp_t_even[group - 1];
         if (debug_print) printf("%s%d", i == 0 || (i & 1) ? " " : ",", vs);
 
-        getRSSwidths(widths, v_odd, dbar_exp_modules_odd[group - 1], 4, dbar_exp_widest_odd[group - 1], 0);
+        dbar_widths(widths, v_odd, dbar_exp_modules_odd[group - 1], 4, dbar_exp_widest_odd[group - 1], 0);
         char_widths[i][0] = widths[0];
         char_widths[i][2] = widths[1];
         char_widths[i][4] = widths[2];
         char_widths[i][6] = widths[3];
-        getRSSwidths(widths, v_even, dbar_exp_modules_even[group - 1], 4, dbar_exp_widest_even[group - 1], 1);
+        dbar_widths(widths, v_even, dbar_exp_modules_even[group - 1], 4, dbar_exp_widest_even[group - 1], 1);
         char_widths[i][1] = widths[0];
         char_widths[i][3] = widths[1];
         char_widths[i][5] = widths[2];
@@ -1445,12 +1406,12 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     c_odd = (check_char - dbar_exp_g_sum[c_group - 1]) / dbar_exp_t_even[c_group - 1];
     c_even = (check_char - dbar_exp_g_sum[c_group - 1]) % dbar_exp_t_even[c_group - 1];
 
-    getRSSwidths(widths, c_odd, dbar_exp_modules_odd[c_group - 1], 4, dbar_exp_widest_odd[c_group - 1], 0);
+    dbar_widths(widths, c_odd, dbar_exp_modules_odd[c_group - 1], 4, dbar_exp_widest_odd[c_group - 1], 0);
     check_widths[0] = widths[0];
     check_widths[2] = widths[1];
     check_widths[4] = widths[2];
     check_widths[6] = widths[3];
-    getRSSwidths(widths, c_even, dbar_exp_modules_even[c_group - 1], 4, dbar_exp_widest_even[c_group - 1], 1);
+    dbar_widths(widths, c_even, dbar_exp_modules_even[c_group - 1], 4, dbar_exp_widest_even[c_group - 1], 1);
     check_widths[1] = widths[0];
     check_widths[3] = widths[1];
     check_widths[5] = widths[2];
@@ -1500,11 +1461,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
         elements[pattern_width - 2] = 1; /* Right guard */
         elements[pattern_width - 1] = 1;
 
-        writer = 0;
-        latch = 0;
-        for (i = 0; i < pattern_width; i++) {
-            writer = dbar_expand(symbol, writer, &latch, elements[i]);
-        }
+        writer = dbar_expand(symbol, 0 /*writer*/, 0 /*latch*/, elements, 0 /*start*/, pattern_width /*end*/);
         if (symbol->width < writer) {
             symbol->width = writer;
         }
@@ -1599,10 +1556,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
 
             latch = (current_row & 1) || special_case_row ? 0 : 1;
 
-            writer = 0;
-            for (i = 0; i < elements_in_sub; i++) {
-                writer = dbar_expand(symbol, writer, &latch, sub_elements[i]);
-            }
+            writer = dbar_expand(symbol, 0 /*writer*/, latch, sub_elements, 0 /*start*/, elements_in_sub /*end*/);
             if (symbol->width < writer) {
                 symbol->width = writer;
             }

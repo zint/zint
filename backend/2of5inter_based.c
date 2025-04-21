@@ -46,12 +46,12 @@ INTERNAL int itf14(struct zint_symbol *symbol, unsigned char source[], int lengt
     unsigned char have_check_digit = '\0';
     unsigned char check_digit;
 
-    /* Allow and ignore any AI prefix, but only if have check digit */
-    if (length == 18 && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
+    /* Allow and ignore any AI prefix */
+    if ((length == 17 || length == 18) && (memcmp(source, "[01]", 4) == 0 || memcmp(source, "(01)", 4) == 0)) {
         source += 4;
         length -= 4;
-    /* Likewise initial '01', if have check digit */
-    } else if (length == 16 && source[0] == '0' && source[1] == '1') {
+    /* Likewise initial '01' */
+    } else if ((length == 15 || length == 16) && source[0] == '0' && source[1] == '1') {
         source += 2;
         length -= 2;
     }
