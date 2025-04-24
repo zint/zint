@@ -51,11 +51,11 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
 
     if ((comma1 = strchr(colour, ',')) == NULL) {
         const int len = (int) strlen(colour);
-        if ((len != 6) && (len != 8)) {
+        if (len != 6 && len != 8) {
             return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 880, "Malformed %s RGB colour (6 or 8 characters only)",
                             name);
         }
-        if (not_sane(OUT_SSET_F, (unsigned char *) colour, len)) {
+        if (not_sane(OUT_SSET_F, ZCUCP(colour), len)) {
             return ZEXT errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 881,
                                 "Malformed %1$s RGB colour '%2$s' (hexadecimal only)", name, colour);
         }
@@ -74,19 +74,19 @@ static int out_check_colour(struct zint_symbol *symbol, const char *colour, cons
                         "Malformed %s CMYK colour (3 digit maximum per number)", name);
     }
 
-    if ((val = to_int((const unsigned char *) colour, (int) (comma1 - colour))) == -1 || val > 100) {
+    if ((val = to_int(ZCUCP(colour), (int) (comma1 - colour))) == -1 || val > 100) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 884, "Malformed %s CMYK colour C (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
+    if ((val = to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)))) == -1 || val > 100) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 885, "Malformed %s CMYK colour M (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
+    if ((val = to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)))) == -1 || val > 100) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 886, "Malformed %s CMYK colour Y (decimal 0 to 100 only)",
                         name);
     }
-    if ((val = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
+    if ((val = to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1))) == -1 || val > 100) {
         return errtxtf(ZINT_ERROR_INVALID_OPTION, symbol, 887, "Malformed %s CMYK colour K (decimal 0 to 100 only)",
                         name);
     }
@@ -126,15 +126,15 @@ INTERNAL int out_colour_get_rgb(const char *colour, unsigned char *red, unsigned
     comma2 = strchr(comma1 + 1, ',');
     comma3 = strchr(comma2 + 1, ',');
 
-    black = 100 - to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
+    black = 100 - to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
 
-    val = 100 - to_int((const unsigned char *) colour, (int) (comma1 - colour)); /* Cyan */
+    val = 100 - to_int(ZCUCP(colour), (int) (comma1 - colour)); /* Cyan */
     *red = (unsigned char) round((0xFF * val * black) / 10000.0);
 
-    val = 100 - to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
+    val = 100 - to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1))); /* Magenta */
     *green = (unsigned char) round((0xFF * val * black) / 10000.0);
 
-    val = 100 - to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
+    val = 100 - to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1))); /* Yellow */
     *blue = (unsigned char) round((0xFF * val * black) / 10000.0);
 
     if (alpha) {
@@ -154,10 +154,10 @@ INTERNAL int out_colour_get_cmyk(const char *colour, int *cyan, int *magenta, in
     if ((comma1 = strchr(colour, ',')) != NULL) {
         const char *const comma2 = strchr(comma1 + 1, ',');
         const char *const comma3 = strchr(comma2 + 1, ',');
-        *cyan = to_int((const unsigned char *) colour, (int) (comma1 - colour));
-        *magenta = to_int((const unsigned char *) (comma1 + 1), (int) (comma2 - (comma1 + 1)));
-        *yellow = to_int((const unsigned char *) (comma2 + 1), (int) (comma3 - (comma2 + 1)));
-        *black = to_int((const unsigned char *) (comma3 + 1), (int) strlen(comma3 + 1));
+        *cyan = to_int(ZCUCP(colour), (int) (comma1 - colour));
+        *magenta = to_int(ZCUCP(comma1 + 1), (int) (comma2 - (comma1 + 1)));
+        *yellow = to_int(ZCUCP(comma2 + 1), (int) (comma3 - (comma2 + 1)));
+        *black = to_int(ZCUCP(comma3 + 1), (int) strlen(comma3 + 1));
         if (rgb_alpha) {
             *rgb_alpha = 0xFF;
         }

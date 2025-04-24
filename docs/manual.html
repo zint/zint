@@ -1320,7 +1320,7 @@ table below.</p>
 <col style="width: 15%" />
 <col style="width: 15%" />
 <col style="width: 10%" />
-<col style="width: 57%" />
+<col style="width: 58%" />
 </colgroup>
 <thead>
 <tr>
@@ -1402,6 +1402,20 @@ table below.</p>
 <td style="text-align: left;">0x1E</td>
 <td style="text-align: left;"><code>RS</code></td>
 <td style="text-align: left;">Record Separator</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>\(</code></td>
+<td style="text-align: left;">0x28</td>
+<td style="text-align: left;"><code>(</code></td>
+<td style="text-align: left;">Opening parenthesis (only with
+<code>--gs1parens</code>)</td>
+</tr>
+<tr>
+<td style="text-align: left;"><code>\)</code></td>
+<td style="text-align: left;">0x29</td>
+<td style="text-align: left;"><code>)</code></td>
+<td style="text-align: left;">Closing parenthesis (only with
+<code>--gs1parens</code>)</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>\\</code></td>
@@ -4035,7 +4049,8 @@ sequences.</td>
 <td style="text-align: left;"><code>GS1PARENS_MODE</code></td>
 <td style="text-align: left;">Parentheses (round brackets) used in GS1
 data instead of square brackets to delimit Application Identifiers
-(parentheses must not otherwise occur in the data).</td>
+(parentheses in the data must be escaped and <code>ESCAPE_MODE</code>
+selected).</td>
 </tr>
 <tr>
 <td style="text-align: left;"><code>GS1NOCHECK_MODE</code></td>
@@ -5059,11 +5074,13 @@ symbology is defined by the GS1 General Specifications. Application
 Identifiers (AIs) should be entered using [square bracket] notation.
 These will be converted to parentheses (round brackets) for the Human
 Readable Text. This method allows the inclusion of parentheses in the AI
-data.</p>
-<p>For compatibility with data entry in other systems, if the data does
-not include parentheses, the option <code>--gs1parens</code> (API
-<code>input_mode |= GS1PARENS_MODE</code>) may be used to signal that
-AIs are encased in round brackets instead of square ones.</p>
+data without escaping.</p>
+<p>For compatibility with data entry in other systems, the option
+<code>--gs1parens</code> (API <code>input_mode |= GS1PARENS_MODE</code>)
+may be used to signal that AIs are encased in parentheses. If there are
+any parentheses in the AI data, they must be escaped with a backslash
+(<code>\(</code> or <code>\)</code>) and the option <code>--esc</code>
+(API <code>input_mode |= ESCAPE_MODE</code>) selected.</p>
 <p>Fixed length data should be entered at the appropriate length for
 correct encoding. GS1-128 does not support extended ASCII (ISO/IEC
 8859-1) characters. Check digits for GTIN data AI (01) are not generated
@@ -5242,10 +5259,10 @@ aria-hidden="true"><code>zint -b DBAR_EXP --compliantheight -d "[01]988987654321
 capable of encoding data from a number of AIs in a single symbol. AIs
 should be encased in [square brackets] in the input data, which will be
 displayed as parentheses (round brackets) in the Human Readable Text.
-This method allows the inclusion of parentheses in the AI data. If the
-data does not include parentheses, the AIs may alternatively be encased
-in parentheses using the <code>--gs1parens</code> switch - see <a
-href="#gs1-128">6.1.10.3 GS1-128</a>.</p>
+This method allows the inclusion of parentheses in the AI data without
+escaping. The AIs may alternatively be encased in parentheses using the
+<code>--gs1parens</code> switch - see <a href="#gs1-128">6.1.10.3
+GS1-128</a>.</p>
 <p>The GTIN-14 data for AI (01) must include the standard GS1 check
 digit as this is not calculated by Zint when this symbology is encoded.
 Data for fixed-length AIs must be entered at the appropriate length. The
@@ -9123,6 +9140,10 @@ are:</p>
 \e       (0x1B)    ESC  Escape
 \G       (0x1D)    GS   Group Separator
 \R       (0x1E)    RS   Record Separator
+\(       (0x28)    (    Opening parenthesis (only with
+                        --gs1parens)
+\)       (0x29)    )    Closing parenthesis (only with
+                        --gs1parens)
 \\       (0x5C)    \    Backslash
 \dNNN    (NNN)          Any 8-bit character where NNN is
                         decimal (000-255)
@@ -9182,8 +9203,9 @@ should be placed in square brackets <code>"[]"</code> (but see
 <dt><code>--gs1parens</code></dt>
 <dd>
 <p>Process parentheses <code>"()"</code> as GS1 AI delimiters, rather
-than square brackets <code>"[]"</code>. The input data must not
-otherwise contain parentheses.</p>
+than square brackets <code>"[]"</code>. If the AI data contains
+parentheses, they must be backslashed (<code>"\("</code> or
+<code>"\)"</code>) and the <code>--esc</code> option selected.</p>
 </dd>
 <dt><code>--gssep</code></dt>
 <dd>

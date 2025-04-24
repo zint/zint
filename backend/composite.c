@@ -756,12 +756,12 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     target_bitsize = 0;
     mode = NUMERIC;
 
-    if (length > 1 && (source[0] == '1') && ((source[1] == '0') || (source[1] == '1') || (source[1] == '7'))) {
+    if (length > 1 && source[0] == '1' && (source[1] == '0' || source[1] == '1' || source[1] == '7')) {
         /* Source starts (10), (11) or (17) */
         if (source[1] == '0' || dbar_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
             encoding_method = 2;
         }
-    } else if (length > 1 && (source[0] == '9') && (source[1] == '0')) {
+    } else if (length > 1 && source[0] == '9' && source[1] == '0') {
         /* Source starts (90) */
         encoding_method = 3;
     }
@@ -794,7 +794,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             }
             read_posn = 8;
 
-            if (read_posn + 1 < length && (source[read_posn] == '1') && (source[read_posn + 1] == '0')) {
+            if (read_posn + 1 < length && source[read_posn] == '1' && source[read_posn + 1] == '0') {
                 /* Followed by AI 10 - strip this from general field */
                 read_posn += 2;
             } else if (source[read_posn]) {
@@ -902,13 +902,12 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
             if (next_ai_posn < length && source[next_ai_posn] == '\x1D') {
                 /* There are more AIs afterwards */
-                if (next_ai_posn + 2 < length
-                        && (source[next_ai_posn + 1] == '2') && (source[next_ai_posn + 2] == '1')) {
+                if (next_ai_posn + 2 < length && source[next_ai_posn + 1] == '2' && source[next_ai_posn + 2] == '1') {
                     /* AI 21 follows */
                     ai_crop = 1;
                 } else if (next_ai_posn + 4 < length
-                        && (source[next_ai_posn + 1] == '8') && (source[next_ai_posn + 2] == '0')
-                        && (source[next_ai_posn + 3] == '0') && (source[next_ai_posn + 4] == '4')) {
+                        && source[next_ai_posn + 1] == '8' && source[next_ai_posn + 2] == '0'
+                        && source[next_ai_posn + 3] == '0' && source[next_ai_posn + 4] == '4') {
                     /* AI 8004 follows */
                     ai_crop = 3;
                 }
@@ -1043,7 +1042,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
     if (last_digit) {
         /* There is still one more numeric digit to encode */
 
-        if ((remainder >= 4) && (remainder <= 6)) {
+        if (remainder >= 4 && remainder <= 6) {
             /* ISO/IEC 24723:2010 5.4.1 c) 2) "If four to six bits remain, add 1 to the digit value and encode the
                result in the next four bits. ..." */
             bp = bin_append_posn(ctoi(last_digit) + 1, 4, binary_string, bp);
@@ -1094,7 +1093,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 }
 
 /* Calculate the width of the linear part (primary) */
-static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source, const int length) {
+static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source, int *p_length) {
     struct zint_symbol dummy = {0};
     int error_number;
     int linear_width;
@@ -1103,7 +1102,7 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
     dummy.option_1 = -1;
     dummy.input_mode = symbol->input_mode;
     dummy.debug = symbol->debug;
-    error_number = gs1_128_cc(&dummy, source, length, 3 /*cc_mode*/, 0 /*cc_rows*/);
+    error_number = gs1_128_cc(&dummy, source, *p_length, 3 /*cc_mode*/, 0 /*cc_rows*/);
     linear_width = dummy.width;
     if (error_number >= ZINT_ERROR || (symbol->debug & ZINT_DEBUG_TEST)) {
         (void) errtxt(0, symbol, -1, dummy.errtxt);
@@ -1112,6 +1111,7 @@ static int cc_linear_dummy_run(struct zint_symbol *symbol, unsigned char *source
     if (error_number >= ZINT_ERROR) {
         return 0;
     }
+    *p_length = (int) ustrlen(source); /* May have changed if ESCAPE_MODE & GS1PARENS_MODE and escaped parentheses */
     return linear_width;
 }
 
@@ -1122,37 +1122,43 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
     /* Allow for 8 bits + 5-bit latch per char + 1000 bits overhead/padding */
     const unsigned int bs = 13 * length + 1000 + 1;
     char *binary_string = (char *) z_alloca(bs);
-    unsigned int pri_len;
+    int primary_len;
     struct zint_symbol *linear;
     int top_shift, bottom_shift;
     int linear_width = 0;
+    unsigned char primary[sizeof(symbol->primary)];
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
     const int debug_print = symbol->debug & ZINT_DEBUG_PRINT;
 
     if (debug_print) printf("Reduced length: %d\n", length);
 
     /* Perform sanity checks on input options first */
-    pri_len = (int) strlen(symbol->primary);
-    if (pri_len == 0) {
-        /* TODO: change to more appropiate ZINT_ERROR_INVALID_DATA */
-        return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 445, "No primary (linear) message");
+    primary_len = (int) strlen(symbol->primary);
+    if (primary_len == 0) {
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 445, "No primary (linear component)");
     }
-
+    if (primary_len >= (int) sizeof(symbol->primary)) {
+        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 854,
+                        "Invalid primary (linear component), must be NUL-terminated");
+    }
     if (length > 2990) {
         return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 446,
                         "2D component input too long, requires %d characters (maximum 2990)", length);
     }
 
     cc_mode = symbol->option_1;
-    if ((cc_mode == 3) && (symbol->symbology != BARCODE_GS1_128_CC)) {
+    if (cc_mode == 3 && symbol->symbology != BARCODE_GS1_128_CC) {
         /* CC-C can only be used with a GS1-128 linear part */
         return errtxt(ZINT_ERROR_INVALID_OPTION, symbol, 447,
                         "Invalid mode (CC-C only valid with GS1-128 linear component)");
     }
 
+    /* Take copy of primary so passed-in remains unchanged */
+    memcpy(primary, symbol->primary, primary_len + 1); /* Include terminating NUL */
+
     if (symbol->symbology == BARCODE_GS1_128_CC) {
         /* Do a test run of encoding the linear component to establish its width */
-        linear_width = cc_linear_dummy_run(symbol, (unsigned char *) symbol->primary, pri_len);
+        linear_width = cc_linear_dummy_run(symbol, primary, &primary_len); /* Length can change */
         if (linear_width == 0) {
             return errtxt_adj(ZINT_ERROR_INVALID_DATA, symbol, "%1$s%2$s", " (linear component)");
         }
@@ -1166,19 +1172,18 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         case BARCODE_EANX_CC:
         case BARCODE_EAN8_CC:
         case BARCODE_EAN13_CC:
-            if (pri_len < 20) {
-                int padded_pri_len;
+            if (primary_len < 20) {
+                int padded_primary_len;
                 int with_addon;
-                unsigned char padded_pri[21];
-                if (!ean_leading_zeroes(symbol, (unsigned char *) symbol->primary, pri_len, padded_pri, &with_addon,
-                                        NULL, NULL)) {
+                unsigned char padded_primary[21];
+                if (!ean_leading_zeroes(symbol, primary, primary_len, padded_primary, &with_addon, NULL, NULL)) {
                     return errtxt_adj(ZINT_ERROR_TOO_LONG, symbol, "%1$s%2$s", " (linear component)");
                 }
-                padded_pri_len = (int) ustrlen(padded_pri);
-                if (padded_pri_len <= 7 || symbol->symbology == BARCODE_EAN8_CC) { /* EAN-8 */
+                padded_primary_len = (int) ustrlen(padded_primary);
+                if (padded_primary_len <= 7 || symbol->symbology == BARCODE_EAN8_CC) { /* EAN-8 */
                     cc_width = 3;
                 } else {
-                    switch (padded_pri_len) {
+                    switch (padded_primary_len) {
                         case 10: /* EAN-8 + 2 */
                             cc_width = 3;
                             break;
@@ -1196,7 +1201,8 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
                 }
             }
             if (cc_width == 0) {
-                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 449, "Input length %d wrong (linear component)", pri_len);
+                return errtxtf(ZINT_ERROR_TOO_LONG, symbol, 449, "Input length %d wrong (linear component)",
+                                primary_len);
             }
             break;
         case BARCODE_GS1_128_CC: cc_width = 4; break;
@@ -1287,35 +1293,35 @@ INTERNAL int composite(struct zint_symbol *symbol, unsigned char source[], int l
         case BARCODE_EANX_CC:
         case BARCODE_EAN8_CC:
         case BARCODE_EAN13_CC:
-            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_GS1_128_CC:
             /* GS1-128 needs to know which type of 2D component is used */
-            error_number = gs1_128_cc(linear, (unsigned char *) symbol->primary, pri_len, cc_mode, symbol->rows);
+            error_number = gs1_128_cc(linear, primary, primary_len, cc_mode, symbol->rows);
             break;
         case BARCODE_DBAR_OMN_CC:
-            error_number = dbar_omn_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_LTD_CC:
-            error_number = dbar_ltd_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_ltd_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXP_CC:
-            error_number = dbar_exp_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_exp_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_UPCA_CC:
-            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_UPCE_CC:
-            error_number = eanx_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = eanx_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_STK_CC:
-            error_number = dbar_omn_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_OMNSTK_CC:
-            error_number = dbar_omn_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_omn_cc(linear, primary, primary_len, symbol->rows);
             break;
         case BARCODE_DBAR_EXPSTK_CC:
-            error_number = dbar_exp_cc(linear, (unsigned char *) symbol->primary, pri_len, symbol->rows);
+            error_number = dbar_exp_cc(linear, primary, primary_len, symbol->rows);
             break;
     }
 

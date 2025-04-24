@@ -774,6 +774,8 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
     int i;
     unsigned int unicode;
     const int extra_escape_mode = (symbol->input_mode & EXTRA_ESCAPE_MODE) && symbol->symbology == BARCODE_CODE128;
+    const int escape_parens = (symbol->input_mode & GS1PARENS_MODE)
+                                && ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology));
 
     do {
         if (input_string[in_posn] == '\\') {
@@ -820,6 +822,21 @@ static int escape_char_process(struct zint_symbol *symbol, const unsigned char *
                             in_posn++;
                         }
                     }
+                    break;
+                case '(':
+                case ')':
+                    if (!escape_parens) {
+                        return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 853,
+                                        "Escaped parentheses only valid in GS1 mode with GS1 parentheses flag");
+                    }
+                    /* Pass through unaltered */
+                    if (escaped_string) {
+                        escaped_string[out_posn++] = '\\';
+                        escaped_string[out_posn] = ch;
+                    } else {
+                        out_posn++;
+                    }
+                    in_posn += 2;
                     break;
                 case 'd':
                 case 'o':
@@ -1086,7 +1103,7 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         char source[151], primary[151]; /* 30*5 + 1 = 151 */
         (void) ZBarcode_BarcodeName(symbol->symbology, name);
         debug_print_escape(local_segs[0].source, len > 30 ? 30 : len, source);
-        debug_print_escape((const unsigned char *) symbol->primary, primary_len > 30 ? 30 : primary_len, primary);
+        debug_print_escape(ZCUCP(symbol->primary), primary_len > 30 ? 30 : primary_len, primary);
         printf("\nZBarcode_Encode_Segs: %s (%d), input_mode: 0x%X, ECI: %d, option_1/2/3: (%d, %d, %d)\n"
                 "                      scale: %g, output_options: 0x%X, fg: %s, bg: %s, seg_count: %d,\n"
                 "                      %ssource%s (%d): \"%s\",\n"
@@ -1198,12 +1215,12 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
 
     if (escape_mode && symbol->primary[0] && strchr(symbol->primary, '\\') != NULL) {
         unsigned char primary[sizeof(symbol->primary)];
-        int primary_len = (int) ustrlen(symbol->primary);
+        int primary_len = (int) strlen(symbol->primary);
         if (primary_len >= (int) sizeof(symbol->primary)) {
-            return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 799, "Invalid primary string");
+            return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 799, "Invalid primary, must be NUL-terminated");
         }
         memcpy(primary, symbol->primary, primary_len);
-        error_number = escape_char_process(symbol, primary, &primary_len, (unsigned char *) symbol->primary);
+        error_number = escape_char_process(symbol, primary, &primary_len, ZUCP(symbol->primary));
         if (error_number != 0) { /* Only returns errors, not warnings */
             return error_tag(error_number, symbol, -1, NULL);
         }
@@ -1219,7 +1236,6 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
         strip_bom(local_segs[0].source, &local_segs[0].length);
     }
 
-
     if ((symbol->input_mode & 0x07) == GS1_MODE || check_force_gs1(symbol->symbology)) {
         if (gs1_compliant(symbol->symbology)) {
             /* Reduce input for composite and non-forced symbologies, others (GS1_128 and DBAR_EXP based) will
@@ -1228,8 +1244,8 @@ int ZBarcode_Encode_Segs(struct zint_symbol *symbol, const struct zint_seg segs[
             if (have_composite || !check_force_gs1(symbol->symbology)) {
                 const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
                 unsigned char *reduced = (unsigned char *) z_alloca(local_segs[0].length + 1);
-                error_number = gs1_verify(symbol, local_segs[0].source, local_segs[0].length, reduced,
-                                            &local_segs[0].length);
+                int source_len = local_segs[0].length;
+                error_number = gs1_verify(symbol, local_segs[0].source, &source_len, reduced, &local_segs[0].length);
                 if (error_number) {
                     if (have_composite) {
                         errtxt_adj(0, symbol, "%1$s%2$s", " (2D component)");
@@ -1322,7 +1338,7 @@ static int filetype_idx(const char *extension) {
         return -1;
     }
     memcpy(uc_extension, extension, 3);
-    to_upper((unsigned char *) uc_extension, 3);
+    to_upper(ZUCP(uc_extension), 3);
 
     for (i = 0; i < ARRAY_SIZE(filetypes); i++) {
         if (strcmp(uc_extension, filetypes[i].extension) == 0) {
@@ -1343,6 +1359,9 @@ int ZBarcode_Print(struct zint_symbol *symbol, int rotate_angle) {
     }
 
     len = (int) strlen(symbol->outfile);
+    if (len >= (int) sizeof(symbol->outfile)) {
+        return error_tag(ZINT_ERROR_INVALID_DATA, symbol, 855, "Invalid outfile, must be NUL-terminated");
+    }
     if (len > 3) {
         int i = filetype_idx(symbol->outfile + len - 3);
         if (i >= 0) {

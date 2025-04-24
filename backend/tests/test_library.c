@@ -365,7 +365,7 @@ static void test_input_data(const testCtx *const p_ctx) {
         /*  2*/ { BARCODE_GS1_128, -1, "", -1, "", ZINT_ERROR_INVALID_DATA, "Error 778: No input data" },
         /*  3*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", -1, "[10]121212", 0, "" },
         /*  4*/ { BARCODE_GS1_128_CC, -1, "[01]12345678901231", -1, "", ZINT_ERROR_INVALID_DATA, "Error 779: No composite data (2D component)" },
-        /*  5*/ { BARCODE_GS1_128_CC, -1, "", -1, "[10]121212", ZINT_ERROR_INVALID_OPTION, "Error 445: No primary (linear) message" },
+        /*  5*/ { BARCODE_GS1_128_CC, -1, "", -1, "[10]121212", ZINT_ERROR_INVALID_DATA, "Error 445: No primary (linear component)" },
         /*  6*/ { BARCODE_DATAMATRIX, -1, "", -1, "", ZINT_ERROR_INVALID_DATA, "Error 228: No input data (segment 0 empty)" },
     };
     const int data_size = ARRAY_SIZE(data);
@@ -408,7 +408,11 @@ static void test_input_data(const testCtx *const p_ctx) {
         char data_buf[ZINT_MAX_DATA_LEN + 10];
         int expected_ret = ZINT_ERROR_TOO_LONG;
         const char *expected_errtxt[] = {
-            "Error 797: Input too long", "Error 340: Input length 17399 too long (maximum 256)"
+            "Error 797: Input too long",
+            "Error 340: Input length 17399 too long (maximum 256)",
+            "Error 799: Invalid primary, must be NUL-terminated",
+            "Error 854: Invalid primary (linear component), must be NUL-terminated",
+            "Error 855: Invalid outfile, must be NUL-terminated",
         };
 
         symbol = ZBarcode_Create();
@@ -431,11 +435,47 @@ static void test_input_data(const testCtx *const p_ctx) {
         data_buf[ZINT_MAX_DATA_LEN - 2] = '\\';
         data_buf[ZINT_MAX_DATA_LEN - 1] = 'n';
 
-        ret = ZBarcode_Encode(symbol, (unsigned char *) data_buf, ZINT_MAX_DATA_LEN);
+        ret = ZBarcode_Encode(symbol, ZCUCP(data_buf), ZINT_MAX_DATA_LEN);
         assert_equal(ret, expected_ret, "ZBarcode_Encode(%d) ret %d != %d (%s)\n",
                     symbol->symbology, ret, expected_ret, symbol->errtxt);
         assert_zero(strcmp(symbol->errtxt, expected_errtxt[1]), "i:%d strcmp(%s, %s) != 0\n",
                     i, symbol->errtxt, expected_errtxt[1]);
+
+        /* Check no NUL-termination */
+        expected_ret = ZINT_ERROR_INVALID_DATA;
+
+        ZBarcode_Reset(symbol);
+
+        symbol->input_mode |= ESCAPE_MODE; /* Library only checks primary in escape mode */
+        memset(symbol->primary, 'a', sizeof(symbol->primary));
+        symbol->primary[0] = '\\'; /* And only if primary contains a backslash */
+
+        ret = ZBarcode_Encode(symbol, ZCUCP("123"), 0);
+        assert_equal(ret, expected_ret, "ZBarcode_Encode(%d) ret %d != %d (%s)\n",
+                    symbol->symbology, ret, expected_ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, expected_errtxt[2]), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, expected_errtxt[2]);
+
+        ZBarcode_Reset(symbol);
+
+        symbol->symbology = BARCODE_EAN13_CC; /* Composite always checks primary */
+        memset(symbol->primary, '0', sizeof(symbol->primary));
+
+        ret = ZBarcode_Encode(symbol, ZCUCP("[01]12345678901231"), 0);
+        assert_equal(ret, expected_ret, "ZBarcode_Encode(%d) ret %d != %d (%s)\n",
+                    symbol->symbology, ret, expected_ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, expected_errtxt[3]), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, expected_errtxt[3]);
+
+        ZBarcode_Reset(symbol);
+
+        memset(symbol->outfile, 'A', sizeof(symbol->outfile));
+
+        ret = ZBarcode_Encode_and_Print(symbol, ZCUCP("123"), 0, 0);
+        assert_equal(ret, expected_ret, "ZBarcode_Encode_and_Print(%d) ret %d != %d (%s)\n",
+                    symbol->symbology, ret, expected_ret, symbol->errtxt);
+        assert_zero(strcmp(symbol->errtxt, expected_errtxt[4]), "i:%d strcmp(%s, %s) != 0\n",
+                    i, symbol->errtxt, expected_errtxt[4]);
 
         ZBarcode_Delete(symbol);
     }

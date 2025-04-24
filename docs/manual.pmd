@@ -521,10 +521,10 @@ Non-printing characters can be entered on the command line using backslash (`\`)
 as an escape character in combination with the `--esc` switch. Permissible
 sequences are shown in the table below.
 
----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 Escape      ASCII       Name    Interpretation
 Sequence    Equivalent
-----------  ----------  -----   -------------------------------------------
+----------  ----------  -----   ---------------------------------------------
 `\0`        0x00        `NUL`   Null character
 
 `\E`        0x04        `EOT`   End of Transmission
@@ -549,6 +549,10 @@ Sequence    Equivalent
 
 `\R`        0x1E        `RS`    Record Separator
 
+`\(`        0x28        `(`     Opening parenthesis (only with `--gs1parens`)
+
+`\)`        0x29        `)`     Closing parenthesis (only with `--gs1parens`)
+
 `\\`        0x5C        `\`     Backslash
 
 `\dNNN`     NNN                 Any 8-bit character where NNN is decimal
@@ -565,7 +569,7 @@ Sequence    Equivalent
 
 `\UNNNNNN`                      Any 21-bit Unicode character where NNNNNN
                                 is hexadecimal (000000-10FFFF)
----------------------------------------------------------------------------
+-----------------------------------------------------------------------------
 
 Table: {#tbl:escape_sequences tag=": Escape Sequences"}
 
@@ -2379,7 +2383,8 @@ Value               Effect
 
 `GS1PARENS_MODE`    Parentheses (round brackets) used in GS1 data instead of
                     square brackets to delimit Application Identifiers
-                    (parentheses must not otherwise occur in the data).
+                    (parentheses in the data must be escaped and `ESCAPE_MODE`
+                    selected).
 
 `GS1NOCHECK_MODE`   Do not check GS1 data for validity, i.e. suppress checks
                     for valid AIs and data lengths. Invalid characters (e.g.
@@ -3322,11 +3327,13 @@ A variation of Code 128 previously known as UCC/EAN-128, this symbology is
 defined by the GS1 General Specifications. Application Identifiers (AIs) should
 be entered using [square bracket] notation. These will be converted to
 parentheses (round brackets) for the Human Readable Text. This method allows the
-inclusion of parentheses in the AI data.
+inclusion of parentheses in the AI data without escaping.
 
-For compatibility with data entry in other systems, if the data does not include
-parentheses, the option `--gs1parens` (API `input_mode |= GS1PARENS_MODE`) may
-be used to signal that AIs are encased in round brackets instead of square ones.
+For compatibility with data entry in other systems, the option `--gs1parens`
+(API `input_mode |= GS1PARENS_MODE`) may be used to signal that AIs are encased
+in parentheses. If there are any parentheses in the AI data, they must be
+escaped with a backslash (`\(` or `\)`) and the option `--esc` (API `input_mode
+|= ESCAPE_MODE`) selected.
 
 Fixed length data should be entered at the appropriate length for correct
 encoding. GS1-128 does not support extended ASCII (ISO/IEC 8859-1) characters.
@@ -3352,8 +3359,6 @@ A shorter version of GS1-128 which encodes GTIN-14 data only, EAN-14 takes a
 digits entered, or a 14-digit number if the standard GS1 check digit is given,
 in which case the check digit will be verified. The GS1 check digit (if not
 given) and HRT-only AI `"(01)"` are added by Zint.
-
-\clearpage
 
 #### 6.1.10.5 NVE-18 (SSCC-18)
 
@@ -3477,9 +3482,8 @@ Previously known as RSS Expanded this is a variable length symbology capable of
 encoding data from a number of AIs in a single symbol. AIs should be encased in
 [square brackets] in the input data, which will be displayed as parentheses
 (round brackets) in the Human Readable Text. This method allows the inclusion of
-parentheses in the AI data.  If the data does not include parentheses, the AIs
-may alternatively be encased in parentheses using the `--gs1parens` switch - see
-[6.1.10.3 GS1-128].
+parentheses in the AI data without escaping. The AIs may alternatively be
+encased in parentheses using the `--gs1parens` switch - see [6.1.10.3 GS1-128].
 
 The GTIN-14 data for AI (01) must include the standard GS1 check digit as this
 is not calculated by Zint when this symbology is encoded. Data for fixed-length

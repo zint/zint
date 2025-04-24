@@ -686,24 +686,28 @@ static void test_options(const testCtx *const p_ctx) {
         /* 79*/ { BARCODE_DATAMATRIX, -1, -1, -1, DM_SQUARE, -1, { 0, 0, "" }, "______________________________________________________________________________________________________________________", 0, 44, 44, "", 13, 1, "118 data" },
         /* 80*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90]12", 0, 10, 10, "", 1, 1, "" },
         /* 81*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)12", 0, 10, 10, "", 1, 1, "" },
-        /* 82*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 2, 1, "" },
-        /* 83*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 2, 1, "" },
-        /* 84*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)", 0, 1, "" },
-        /* 85*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)", 0, 1, "" },
-        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)", 0, 1, "" },
-        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)", 0, 1, "" },
-        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "", 2, 1, "" },
-        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)", 0, 1, "" },
-        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")", 0, 1, "" },
-        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")", 0, 1, "" },
-        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")", 0, 1, "" },
-        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")", 0, 1, "" },
-        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")", 0, 1, "" },
-        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")", 0, 1, "" },
-        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)", 0, 1, "" },
-        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time", 0, 1, "" },
-        /* 98*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "", 27, 1, "Macro05/06 ignored if have Structured Append TODO: error/warning " },
-        /* 99*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)", 0, 1, "" },
+        /* 82*/ { BARCODE_DATAMATRIX, GS1_MODE, -1, -1, -1, -1, { 0, 0, "" }, "[90](", 0, 10, 10, "", 1, 1, "" },
+        /* 83*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", 0, 1, "" },
+        /* 84*/ { BARCODE_DATAMATRIX, GS1_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)\\(", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 253: Malformed AI in input (brackets don't match)", 0, 1, "" },
+        /* 85*/ { BARCODE_DATAMATRIX, GS1_MODE | ESCAPE_MODE | GS1PARENS_MODE, -1, -1, -1, -1, { 0, 0, "" }, "(90)\\(", 0, 10, 10, "", 1, 1, "" },
+        /* 86*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 2, "" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 87*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 16, 16, "" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 88*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 1, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '1' out of range (2 to 16)", 0, 1, "" },
+        /* 89*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 1, 17, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 720: Structured Append count '17' out of range (2 to 16)", 0, 1, "" },
+        /* 90*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 0, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '0' out of range (1 to count 16)", 0, 1, "" },
+        /* 91*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 17, 16, "" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 721: Structured Append index '17' out of range (1 to count 16)", 0, 1, "" },
+        /* 92*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1001" }, "1", 0, 12, 12, "", 2, 1, "" },
+        /* 93*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "A" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 723: Invalid Structured Append ID (digits only)", 0, 1, "" },
+        /* 94*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "0" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '000' and ID2 '000' out of range (001 to 254) (ID \"000000\")", 0, 1, "" },
+        /* 95*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '000' out of range (001 to 254) (ID \"000001\")", 0, 1, "" },
+        /* 96*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1000" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '000' out of range (001 to 254) (ID \"001000\")", 0, 1, "" },
+        /* 97*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "001255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 726: Structured Append ID2 '255' out of range (001 to 254) (ID \"001255\")", 0, 1, "" },
+        /* 98*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 725: Structured Append ID1 '255' out of range (001 to 254) (ID \"255001\")", 0, 1, "" },
+        /* 99*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "255255" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 724: Structured Append ID1 '255' and ID2 '255' out of range (001 to 254) (ID \"255255\")", 0, 1, "" },
+        /*100*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, -1, { 2, 3, "1234567" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 722: Structured Append ID length 7 too long (6 digit maximum)", 0, 1, "" },
+        /*101*/ { BARCODE_DATAMATRIX, -1, -1, -1, -1, READER_INIT, { 2, 3, "1001" }, "1", ZINT_ERROR_INVALID_OPTION, -1, -1, "Error 727: Cannot have Structured Append and Reader Initialisation at the same time", 0, 1, "" },
+        /*102*/ { BARCODE_DATAMATRIX, ESCAPE_MODE, -1, -1, -1, -1, { 2, 3, "1001" }, "[)>\\R05\\GA\\R\\E", 0, 12, 26, "", 27, 1, "Macro05/06 ignored if have Structured Append TODO: error/warning " },
+        /*103*/ { BARCODE_HIBC_DM, -1, -1, -1, -1, -1, { 0, 0, "" }, "1234,67", ZINT_ERROR_INVALID_DATA, -1, -1, "Error 203: Invalid character at position 5 in input (alphanumerics, space and \"-.$/+%\" only)", 0, 1, "" },
     };
     const int data_size = ARRAY_SIZE(data);
     int i, length, ret;
@@ -1305,7 +1309,7 @@ static void test_input(const testCtx *const p_ctx) {
                     int binlen;
                     int binlens[2] = {0};
                     unsigned char reduced[1000];
-                    unsigned char *text;
+                    const unsigned char *text;
                     const int last_seg = 1;
                     const int expected_rows_width = data[i].expected_rows * data[i].expected_width;
                     const int prev_expected_rows_width = data[i - 1].expected_rows * data[i - 1].expected_width;
@@ -1315,11 +1319,12 @@ static void test_input(const testCtx *const p_ctx) {
                                 i, expected_rows_width, prev_expected_rows_width);
 
                     if ((data[i].input_mode & 0x07) == GS1_MODE) {
-                        ret = gs1_verify(symbol, (unsigned char *) data[i].data, length, reduced, &length);
+                        int data_len = length;
+                        ret = gs1_verify(symbol, ZUCP(data[i].data), &data_len, reduced, &length);
                         assert_zero(ret, "i:%d gs1_verify() ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
                         text = reduced;
                     } else {
-                        text = (unsigned char *) data[i].data;
+                        text = ZCUCP(data[i].data);
                     }
                     binlen = 0;
                     symbol->input_mode = data[i - 1].input_mode;
@@ -5912,7 +5917,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     symbol->input_mode = data[i - 1].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1,
+                    ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
                                         binary[0], &binlen);
                     assert_zero(ret, "i:%d dm_encode() FAST_MODE ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
@@ -5922,7 +5927,7 @@ static void test_encode(const testCtx *const p_ctx) {
                     symbol->input_mode = data[i].input_mode;
                     gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 :
                             (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-                    ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1,
+                    ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1,
                                         binary[1], &binlen);
                     assert_zero(ret, "i:%d dm_encode() minimal ret %d != 0 (%s)\n", i, ret, symbol->errtxt);
 
@@ -7632,8 +7637,7 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode |= FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1, binary[0],
-                    &binlen);
+        ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[0], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() FAST_MODE ret %d != %d (%s)\n",
                     i, ret, data[i].ret, symbol->errtxt);
 
@@ -7642,8 +7646,7 @@ static void test_minimalenc(const testCtx *const p_ctx) {
         binlen = 0;
         symbol->input_mode &= ~FAST_MODE;
         gs1 = (symbol->input_mode & 0x07) != GS1_MODE ? 0 : (symbol->output_options & GS1_GS_SEPARATOR) ? 2 : 1;
-        ret = dm_encode_test(symbol, (unsigned char *) data[i].data, length, symbol->eci, last_seg, gs1, binary[1],
-                    &binlen);
+        ret = dm_encode_test(symbol, ZCUCP(data[i].data), length, symbol->eci, last_seg, gs1, binary[1], &binlen);
         assert_equal(ret, data[i].ret, "i:%d dm_encode() minimal ret %d != %d (%s)\n",
                     i, ret, data[i].ret, symbol->errtxt);
 

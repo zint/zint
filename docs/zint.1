@@ -180,6 +180,10 @@ The escape sequences are:
 \[rs]e       (0x1B)    ESC  Escape
 \[rs]G       (0x1D)    GS   Group Separator
 \[rs]R       (0x1E)    RS   Record Separator
+\[rs](       (0x28)    (    Opening parenthesis (only with
+                        \-\-gs1parens)
+\[rs])       (0x29)    )    Closing parenthesis (only with
+                        \-\-gs1parens)
 \[rs]\[rs]       (0x5C)    \[rs]    Backslash
 \[rs]dNNN    (NNN)          Any 8\-bit character where NNN is
                         decimal (000\-255)
@@ -235,7 +239,9 @@ Do not check the validity of GS1 data.
 \f[CR]\-\-gs1parens\f[R]
 Process parentheses \f[CR]\[dq]()\[dq]\f[R] as GS1 AI delimiters, rather
 than square brackets \f[CR]\[dq][]\[dq]\f[R].
-The input data must not otherwise contain parentheses.
+If the AI data contains parentheses, they must be backslashed
+(\f[CR]\[dq]\[rs](\[dq]\f[R] or \f[CR]\[dq]\[rs])\[dq]\f[R]) and the
+\f[CR]\-\-esc\f[R] option selected.
 .TP
 \f[CR]\-\-gssep\f[R]
 For Data Matrix in GS1 mode, use \f[CR]GS\f[R] (0x1D) as the GS1 data

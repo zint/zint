@@ -531,7 +531,7 @@ INTERNAL int gs1_128_cc(struct zint_symbol *symbol, unsigned char source[], int 
         symbol->row_height[separator_row] = 1;
     }
 
-    error_number = gs1_verify(symbol, source, length, reduced, &reduced_length);
+    error_number = gs1_verify(symbol, source, &length, reduced, &reduced_length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }

@@ -133,13 +133,13 @@ foreach ($lines as $line) {
                 $max = (int) substr($matches[3], 2);
             }
             if ($matches[1] === 'N') {
-                $validator = "numeric";
+                $validator = "gs1_numeric";
             } elseif ($matches[1] === 'X') {
-                $validator = "cset82";
+                $validator = "gs1_cset82";
             } elseif ($matches[1] === 'Y') {
-                $validator = "cset39";
+                $validator = "gs1_cset39";
             } else { // 'Z'
-                $validator = "cset64";
+                $validator = "gs1_cset64";
             }
         } else if (preg_match('/^\[([NXYZ])([1-9]+)?(\.\.[0-9|]+)?\]$/', $validator, $matches)) {
             if (count($matches) === 3) {
@@ -150,13 +150,13 @@ foreach ($lines as $line) {
                 $max = (int) substr($matches[3], 2);
             }
             if ($matches[1] === 'N') {
-                $validator = "numeric";
+                $validator = "gs1_numeric";
             } elseif ($matches[1] === 'X') {
-                $validator = "cset82";
+                $validator = "gs1_cset82";
             } elseif ($matches[1] === 'Y') {
-                $validator = "cset39";
+                $validator = "gs1_cset39";
             } else { // 'Z'
-                $validator = "cset64";
+                $validator = "gs1_cset64";
             }
         } else {
             exit("$basename:" . __LINE__ . " ERROR: Could not parse validator \"$validator\" line $line_no"
@@ -288,7 +288,7 @@ EOD;
 // Print the spec validator/checkers functions
 
 foreach ($spec_parts as $spec => $spec_part) {
-    $spec_funcs[$spec] = $spec_func = str_replace(array(' ', '.', ',', '[', ']'), '_', strtolower($spec));
+    $spec_funcs[$spec] = $spec_func = 'gs1_' . str_replace(array(' ', '.', ',', '[', ']'), '_', strtolower($spec));
     $comment = '';
     if (isset($spec_comments[$spec])) {
         $comment = ' (Used by';
@@ -327,7 +327,7 @@ EOD;
             foreach ($checkers as $checker) {
                 print <<<EOD
 
-$tab$tab{$tab}&& $checker(data, data_len, $offset, $min, $max, p_err_no, p_err_posn, err_msg$length_only_arg)
+$tab$tab{$tab}&& gs1_$checker(data, data_len, $offset, $min, $max, p_err_no, p_err_posn, err_msg$length_only_arg)
 EOD;
             }
 
@@ -347,7 +347,7 @@ EOD;
         foreach ($checkers as $checker) {
             print <<<EOD
 
-$tab$tab{$tab}&& $checker(data, data_len, $offset, $min, $max, p_err_no, p_err_posn, err_msg$length_only_arg)
+$tab$tab{$tab}&& gs1_$checker(data, data_len, $offset, $min, $max, p_err_no, p_err_posn, err_msg$length_only_arg)
 EOD;
         }
 

@@ -1280,7 +1280,7 @@ INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int
     char *binary_string = (char *) z_alloca(bin_len);
     const int raw_text = symbol->output_options & BARCODE_RAW_TEXT;
 
-    error_number = gs1_verify(symbol, source, length, reduced, &reduced_length);
+    error_number = gs1_verify(symbol, source, &length, reduced, &reduced_length);
     if (error_number >= ZINT_ERROR) {
         return error_number;
     }

@@ -37,8 +37,8 @@
 extern "C" {
 #endif /* __cplusplus */
 
-INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
-                unsigned char reduced[], int *p_reduced_length);
+INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int *p_length, unsigned char reduced[],
+                int *p_reduced_length);
 INTERNAL char gs1_check_digit(const unsigned char source[], const int length);
 INTERNAL int gs1_iso3166_alpha2(const unsigned char *cc);
 

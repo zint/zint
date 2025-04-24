@@ -1,4 +1,4 @@
-Version 2.15.0.9 (dev) not released yet (2025-04-16)
+Version 2.15.0.9 (dev) not released yet (2025-04-24)
 ====================================================
 
 **Incompatible changes**
@@ -15,6 +15,8 @@ Version 2.15.0.9 (dev) not released yet (2025-04-16)
   of composite data
 - EAN-8 with add-on now returns warning that it's non-standard
 - UPC-E now returns warning if first digit of 7 digits ignored (not '0' or '1')
+- For GS1 Composite, no primary (linear component) now returns
+  `ZINT_ERROR_INVALID_DATA` (previously returned `ZINT_ERROR_INVALID_OPTION`)
 
 Changes
 -------
@@ -43,6 +45,7 @@ Changes
   `BARCODE_EANX_CC` and use in CLI/GUI (`BARCODE_EANX` etc. marked as legacy)
 - For EAN/UPC accept space as alternative add-on separator to '+', and accept
   GTIN-13 format with & without 2-digit or 5-digit add-on (no separator)
+- GS1PARENS_MODE: allow parentheses in AI data if backslashed and `ESCAPE_MODE`
 
 Bugs
 ----

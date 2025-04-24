@@ -1561,6 +1561,8 @@ or import from file</string>
 &lt;tr&gt;&lt;td&gt;\e&amp;nbsp;&lt;/td&gt;&lt;td&gt;Escape (0x1B)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\G&amp;nbsp;&lt;/td&gt;&lt;td&gt;Group Separator (0x1D)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\R&amp;nbsp;&lt;/td&gt;&lt;td&gt;Record Separator (0x1E)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\(&amp;nbsp;&lt;/td&gt;&lt;td&gt;Opening parenthesis (0x28) ("GS1 ()" only) &lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;\)&amp;nbsp;&lt;/td&gt;&lt;td&gt;Closing parenthesis (0x29) ("GS1 ()" only) &lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\\&amp;nbsp;&lt;/td&gt;&lt;td&gt;Backslash (0x5C)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\dNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N decimal)&lt;/td&gt;&lt;/tr&gt;
 &lt;tr&gt;&lt;td&gt;\oNNN&amp;nbsp;&lt;/td&gt;&lt;td&gt;8-bit character (N octal)&lt;/td&gt;&lt;/tr&gt;

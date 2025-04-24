@@ -131,6 +131,7 @@ void assert_notequal(int e1, int e2, const char *fmt, ...);
 #define assert_notequal(e1, e2, ...) assert_exp((e1) != (e2), __VA_ARGS__)
 #endif
 
+/* TODO: replace these with `ZUCP()`, `ZCUCP()` & `ZCCP()` resp. */
 #define TU(p) ((unsigned char *) (p))
 #define TCU(p) ((const unsigned char *) (p))
 #define TCC(p) ((const char *) (p))

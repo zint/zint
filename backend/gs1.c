@@ -67,7 +67,7 @@ ZINT_FORMAT_PRINTF(2, 3) static int gs1_err_msg_printf_nochk(char err_msg[50], c
 }
 
 /* Validate numeric */
-static int numeric(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_numeric(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -94,17 +94,29 @@ static int numeric(const unsigned char *data, int data_len, int offset, int min,
 
 /* GS1 General Specifications 21.0.1 Figure 7.9.5-1. GS1 AI encodable character reference values.
    Also used to determine if character in set 82 - a value of 82 means not in */
-static const char c82[] = {
-     0,  1, 82, 82,  2,  3,  4,  5,  6,  7,  8,  9, 10, 11, 12, 13, /*!-0*/
-    14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 82, /*1-@*/
-    29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, /*A-P*/
-    45, 46, 47, 48, 49, 50, 51, 52, 53, 54, 82, 82, 82, 82, 55, 82, /*Q-`*/
-    56, 57, 58, 59, 60, 61, 62, 63, 64, 65, 66, 67, 68, 69, 70, 71, /*a-p*/
-    72, 73, 74, 75, 76, 77, 78, 79, 80, 81, /*q-z*/
+static const char gs1_c82[] = {
+    /*   !   "   #   $   %   &   '   (   )   *   */
+         0,  1, 82, 82,  2,  3,  4,  5,  6,  7,
+    /*   +   ,   -   .   /   0   1   2   3   4   */
+         8,  9, 10, 11, 12, 13, 14, 15, 16, 17,
+    /*   5   6   7   8   9   :   ;   <   =   >   */
+        18, 19, 20, 21, 22, 23, 24, 25, 26, 27,
+    /*   ?   @   A   B   C   D   E   F   G   H   */
+        28, 82, 29, 30, 31, 32, 33, 34, 35, 36,
+    /*   I   J   K   L   M   N   O   P   Q   R   */
+        37, 38, 39, 40, 41, 42, 43, 44, 45, 46,
+    /*   S   T   U   V   W   X   Y   Z   [   \   */
+        47, 48, 49, 50, 51, 52, 53, 54, 82, 82,
+    /*   ]   ^   _   `   a   b   c   d   e   f   */
+        82, 82, 55, 82, 56, 57, 58, 59, 60, 61,
+    /*   g   h   i   j   k   l   m   n   o   p   */
+        62, 63, 64, 65, 66, 67, 68, 69, 70, 71,
+    /*   q   r   s   t   u   v   w   x   y   z   */
+        72, 73, 74, 75, 76, 77, 78, 79, 80, 81,
 };
 
 /* Validate of character set 82 (GS1 General Specifications Figure 7.11-1) */
-static int cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_cset82(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -118,7 +130,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
         const unsigned char *const de = d + (data_len > max ? max : data_len);
 
         for (; d < de; d++) {
-            if (*d < '!' || *d > 'z' || c82[*d - '!'] == 82) {
+            if (*d < '!' || *d > 'z' || gs1_c82[*d - '!'] == 82) {
                 *p_err_no = 3;
                 *p_err_posn = d - data + 1;
                 return gs1_err_msg_printf_nochk(err_msg, "Invalid CSET 82 character '%c'", *d);
@@ -130,7 +142,7 @@ static int cset82(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Validate of character set 39 (GS1 General Specifications Figure 7.11-2) */
-static int cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_cset39(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -157,7 +169,7 @@ static int cset39(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Validate of character set 64 (GSCN 21-307 Figure 7.11-3) */
-static int cset64(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_cset64(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50]) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -189,7 +201,7 @@ static int cset64(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Check a check digit (GS1 General Specifications 7.9.1) */
-static int csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_csum(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -223,7 +235,7 @@ static int csum(const unsigned char *data, int data_len, int offset, int min, in
 }
 
 /* Check alphanumeric check characters (GS1 General Specifications 7.9.5) */
-static int csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_csumalpha(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -247,7 +259,7 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
         int checksum = 0, c1, c2;
 
         for (; d < de; d++) {
-            checksum += c82[*d - '!'] * weights[de - 1 - d];
+            checksum += gs1_c82[*d - '!'] * weights[de - 1 - d];
         }
         checksum %= 1021;
         c1 = c32[checksum >> 5];
@@ -266,7 +278,7 @@ static int csumalpha(const unsigned char *data, int data_len, int offset, int mi
 #define GS1_GCP_MIN_LENGTH  4 /* Minimum length of GS1 Company Prefix */
 
 /* Check for a GS1 Prefix (GS1 General Specifications GS1 1.4.2) */
-static int key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -305,16 +317,16 @@ static int key(const unsigned char *data, int data_len, int offset, int min, int
 }
 
 /* Check for a GS1 Prefix at offset 1 (2nd position) */
-static int keyoff1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_keyoff1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    return key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only);
+    return gs1_key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only);
 }
 
 /* Note following date/time checkers (!length_only) assume data all digits, i.e. `numeric()` has succeeded */
 
 /* Check for a date YYYYMMDD with zero day allowed */
-static int yyyymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_yyyymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     static const char days_in_month[13] = { 0, 31, 29, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31 };
@@ -358,10 +370,10 @@ static int yyyymmd0(const unsigned char *data, int data_len, int offset, int min
 }
 
 /* Check for a date YYYYMMDD. Zero day NOT allowed */
-static int yyyymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_yyyymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    if (!yyyymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+    if (!gs1_yyyymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
         return 0;
     }
 
@@ -380,7 +392,7 @@ static int yyyymmdd(const unsigned char *data, int data_len, int offset, int min
 }
 
 /* Check for a date YYMMDD with zero day allowed */
-static int yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_yymmd0(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -395,7 +407,7 @@ static int yymmd0(const unsigned char *data, int data_len, int offset, int min, 
         unsigned char buf[8] = { '2', '0' };
 
         memcpy(buf + 2, data + offset, 6);
-        if (!yyyymmd0(buf, 8, 0, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+        if (!gs1_yyyymmd0(buf, 8, 0, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
             *p_err_posn += offset - 2;
             return 0;
         }
@@ -405,10 +417,10 @@ static int yymmd0(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Check for a date YYMMDD. Zero day NOT allowed */
-static int yymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_yymmdd(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    if (!yymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
+    if (!gs1_yymmd0(data, data_len, offset, min, max, p_err_no, p_err_posn, err_msg, length_only)) {
         return 0;
     }
 
@@ -427,7 +439,7 @@ static int yymmdd(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Check for a time HHMI */
-static int hhmi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_hhmi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -458,7 +470,7 @@ static int hhmi(const unsigned char *data, int data_len, int offset, int min, in
 }
 
 /* Check for a time HH (hours) */
-static int hh(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_hh(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -481,7 +493,7 @@ static int hh(const unsigned char *data, int data_len, int offset, int min, int 
 }
 
 /* Check for a time MI (minutes) */
-static int mi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_mi(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -504,7 +516,7 @@ static int mi(const unsigned char *data, int data_len, int offset, int min, int 
 }
 
 /* Check for a time SS (seconds) */
-static int ss(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_ss(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -530,7 +542,7 @@ static int ss(const unsigned char *data, int data_len, int offset, int min, int 
 #include "iso3166.h"
 
 /* Check for an ISO 3166-1 numeric country code */
-static int iso3166(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iso3166(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -556,7 +568,7 @@ static int iso3166(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Check for an ISO 3166-1 numeric country code allowing "999" */
-static int iso3166999(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iso3166999(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -579,7 +591,7 @@ static int iso3166999(const unsigned char *data, int data_len, int offset, int m
 }
 
 /* Check for an ISO 3166-1 alpha2 country code */
-static int iso3166alpha2(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iso3166alpha2(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -604,7 +616,7 @@ static int iso3166alpha2(const unsigned char *data, int data_len, int offset, in
 #include "iso4217.h"
 
 /* Check for an ISO 4217 currency code */
-static int iso4217(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iso4217(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -626,7 +638,7 @@ static int iso4217(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Check for percent encoded */
-static int pcenc(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_pcenc(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     static const char hex_chars[] = "0123456789ABCDEFabcdef";
@@ -661,7 +673,7 @@ static int pcenc(const unsigned char *data, int data_len, int offset, int min, i
 }
 
 /* Check for yes/no (1/0) indicator */
-static int yesno(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_yesno(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -683,7 +695,7 @@ static int yesno(const unsigned char *data, int data_len, int offset, int min, i
 }
 
 /* Check for importer index (GS1 General Specifications 3.8.17) */
-static int importeridx(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_importeridx(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -708,7 +720,7 @@ static int importeridx(const unsigned char *data, int data_len, int offset, int 
 }
 
 /* Check non-zero */
-static int nonzero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_nonzero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -731,7 +743,7 @@ static int nonzero(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Check winding direction (0/1/9) (GS1 General Specifications 3.9.1) */
-static int winding(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_winding(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -753,7 +765,7 @@ static int winding(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Check zero */
-static int zero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_zero(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -775,7 +787,7 @@ static int zero(const unsigned char *data, int data_len, int offset, int min, in
 }
 
 /* Check piece of a trade item (GS1 General Specifications 3.9.6 and 3.9.17) */
-static int pieceoftotal(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_pieceoftotal(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -812,7 +824,7 @@ static int pieceoftotal(const unsigned char *data, int data_len, int offset, int
 }
 
 /* Check IBAN (ISO 13616) */
-static int iban(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iban(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -888,7 +900,7 @@ static int iban(const unsigned char *data, int data_len, int offset, int min, in
 }
 
 /* Check CPID does not begin with zero */
-static int nozeroprefix(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_nozeroprefix(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -913,7 +925,7 @@ static int nozeroprefix(const unsigned char *data, int data_len, int offset, int
 
 /* Helper to parse coupon Variable Length Indicator (VLI) and associated field. If `vli_nine` set
  * then a VLI of '9' means no field present */
-static const unsigned char *coupon_vli(const unsigned char *data, const int data_len, const unsigned char *d,
+static const unsigned char *gs1_coupon_vli(const unsigned char *data, const int data_len, const unsigned char *d,
             const char *name, const int vli_offset, const int vli_min, const int vli_max, const int vli_nine,
             int *p_err_no, int *p_err_posn, char err_msg[50]) {
     const unsigned char *de;
@@ -959,7 +971,7 @@ static const unsigned char *coupon_vli(const unsigned char *data, const int data
 }
 
 /* Helper to parse coupon value field (numeric) */
-static const unsigned char *coupon_val(const unsigned char *data, const int data_len, const unsigned char *d,
+static const unsigned char *gs1_coupon_val(const unsigned char *data, const int data_len, const unsigned char *d,
             const char *name, const int val_len, int *p_val, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     int val;
 
@@ -986,7 +998,7 @@ static const unsigned char *coupon_val(const unsigned char *data, const int data
 
 /* Check North American Coupon Code */
 /* Note all fields including optional must be numeric so type could be N..70 */
-static int couponcode(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_couponcode(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     /* Minimum possible required fields length = 21
@@ -1016,21 +1028,22 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
         data_len += offset;
 
         /* Required fields */
-        if (!(d = coupon_vli(data, data_len, d, "Primary GS1 Co. Prefix", 6, 0, 6, 0, p_err_no, p_err_posn,
-                            err_msg))) {
+        if (!(d = gs1_coupon_vli(data, data_len, d, "Primary GS1 Co. Prefix", 6, 0, 6, 0, p_err_no, p_err_posn,
+                                err_msg))) {
             return 0;
         }
-        if (!(d = coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
-        if (!(d = coupon_vli(data, data_len, d, "Save Value", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_vli(data, data_len, d, "Save Value", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
-        if (!(d = coupon_vli(data, data_len, d, "Primary Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_vli(data, data_len, d, "Primary Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
+                                err_msg))) {
             return 0;
         }
-        if (!(d = coupon_val(data, data_len, d, "Primary Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
-                            err_msg))) {
+        if (!(d = gs1_coupon_val(data, data_len, d, "Primary Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
+                                err_msg))) {
             return 0;
         }
         if (val > 5 && val < 9) {
@@ -1038,8 +1051,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
             *p_err_posn = d - 1 - data + 1;
             return gs1_err_msg_printf_nochk(err_msg, "Invalid Primary Purch. Req. Code '%c'", *(d - 1));
         }
-        if (!(d = coupon_val(data, data_len, d, "Primary Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
-                            err_msg))) {
+        if (!(d = gs1_coupon_val(data, data_len, d, "Primary Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
+                                err_msg))) {
             return 0;
         }
 
@@ -1050,8 +1063,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
             if (data_field == 1) {
 
-                if (!(d = coupon_val(data, data_len, d, "Add. Purch. Rules Code", 1, &val, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Add. Purch. Rules Code", 1, &val, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
                 if (val > 3) {
@@ -1059,12 +1072,12 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                     *p_err_posn = d - 1 - data + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Add. Purch. Rules Code '%c'", *(d - 1));
                 }
-                if (!(d = coupon_vli(data, data_len, d, "2nd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "2nd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!(d = coupon_val(data, data_len, d, "2nd Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "2nd Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
                 if (val > 4 && val < 9) {
@@ -1072,23 +1085,23 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                     *p_err_posn = d - 1 - data + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid 2nd Purch. Req. Code '%c'", *(d - 1));
                 }
-                if (!(d = coupon_val(data, data_len, d, "2nd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "2nd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!(d = coupon_vli(data, data_len, d, "2nd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "2nd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no,
+                                        p_err_posn, err_msg))) {
                     return 0;
                 }
 
             } else if (data_field == 2) {
 
-                if (!(d = coupon_vli(data, data_len, d, "3rd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "3rd Purch. Req.", 0, 1, 5, 0, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!(d = coupon_val(data, data_len, d, "3rd Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "3rd Purch. Req. Code", 1, &val, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
                 if (val > 4 && val < 9) {
@@ -1096,49 +1109,52 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                     *p_err_posn = d - 1 - data + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid 3rd Purch. Req. Code '%c'", *(d - 1));
                 }
-                if (!(d = coupon_val(data, data_len, d, "3rd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "3rd Purch. Family Code", 3, NULL, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!(d = coupon_vli(data, data_len, d, "3rd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "3rd Purch. GS1 Co. Prefix", 6, 0, 6, 1, p_err_no,
+                                        p_err_posn, err_msg))) {
                     return 0;
                 }
 
             } else if (data_field == 3) {
 
-                if (!(d = coupon_val(data, data_len, d, "Expiration Date", 6, NULL, p_err_no, p_err_posn, err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Expiration Date", 6, NULL, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                if (!gs1_yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
                     return 0;
                 }
 
             } else if (data_field == 4) {
 
-                if (!(d = coupon_val(data, data_len, d, "Start Date", 6, NULL, p_err_no, p_err_posn, err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Start Date", 6, NULL, p_err_no, p_err_posn, err_msg))) {
                     return 0;
                 }
-                if (!yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
+                if (!gs1_yymmd0(data, data_len, d - 6 - data, 6, 6, p_err_no, p_err_posn, err_msg, 0)) {
                     return 0;
                 }
 
             } else if (data_field == 5) {
 
-                if (!(d = coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
 
             } else if (data_field == 6) {
 
-                if (!(d = coupon_vli(data, data_len, d, "Retailer ID", 6, 1, 7, 0, p_err_no, p_err_posn, err_msg))) {
+                if (!(d = gs1_coupon_vli(data, data_len, d, "Retailer ID", 6, 1, 7, 0, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
 
             } else if (data_field == 9) {
 
-                if (!(d = coupon_val(data, data_len, d, "Save Value Code", 1, &val, p_err_no, p_err_posn, err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Save Value Code", 1, &val, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
                 if ((val > 2 && val < 5) || val > 6) {
@@ -1146,8 +1162,8 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                     *p_err_posn = d - 1 - data + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Save Value Code '%c'", *(d - 1));
                 }
-                if (!(d = coupon_val(data, data_len, d, "Save Value Applies To", 1, &val, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Save Value Applies To", 1, &val, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
                 if (val > 2) {
@@ -1155,11 +1171,11 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
                     *p_err_posn = d - 1 - data + 1;
                     return gs1_err_msg_printf_nochk(err_msg, "Invalid Save Value Applies To '%c'", *(d - 1));
                 }
-                if (!(d = coupon_val(data, data_len, d, "Store Coupon Flag", 1, NULL, p_err_no, p_err_posn,
-                                    err_msg))) {
+                if (!(d = gs1_coupon_val(data, data_len, d, "Store Coupon Flag", 1, NULL, p_err_no, p_err_posn,
+                                        err_msg))) {
                     return 0;
                 }
-                if (!(d = coupon_val(data, data_len, d, "Don't Multiply Flag", 1, &val, p_err_no, p_err_posn,
+                if (!(d = gs1_coupon_val(data, data_len, d, "Don't Multiply Flag", 1, &val, p_err_no, p_err_posn,
                                     err_msg))) {
                     return 0;
                 }
@@ -1188,7 +1204,7 @@ static int couponcode(const unsigned char *data, int data_len, int offset, int m
 
 /* Check North American Positive Offer File */
 /* Note max is currently set at 36 numeric digits with remaining 34 characters reserved */
-static int couponposoffer(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_couponposoffer(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     /* Minimum possible length = 21
@@ -1215,7 +1231,7 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
         const unsigned char *d = data + offset;
         int val;
 
-        if (!(d = coupon_val(data, data_len, d, "Coupon Format", 1, &val, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_val(data, data_len, d, "Coupon Format", 1, &val, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
         if (val != 0 && val != 1) {
@@ -1223,13 +1239,13 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
             *p_err_posn = d - 1 - data + 1;
             return gs1_err_msg_cpy_nochk(err_msg, "Coupon Format must be 0 or 1");
         }
-        if (!(d = coupon_vli(data, data_len, d, "Coupon Funder ID", 6, 0, 6, 0, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_vli(data, data_len, d, "Coupon Funder ID", 6, 0, 6, 0, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
-        if (!(d = coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_val(data, data_len, d, "Offer Code", 6, NULL, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
-        if (!(d = coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn, err_msg))) {
+        if (!(d = gs1_coupon_vli(data, data_len, d, "Serial Number", 6, 0, 9, 0, p_err_no, p_err_posn, err_msg))) {
             return 0;
         }
         if (d - data != data_len) {
@@ -1243,7 +1259,7 @@ static int couponposoffer(const unsigned char *data, int data_len, int offset, i
 }
 
 /* Check WSG 84 latitude */
-static int latitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_latitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -1272,7 +1288,7 @@ static int latitude(const unsigned char *data, int data_len, int offset, int min
 }
 
 /* Check WSG 84 longitude */
-static int longitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_longitude(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -1301,7 +1317,7 @@ static int longitude(const unsigned char *data, int data_len, int offset, int mi
 }
 
 /* Check AIDC media type (GSCN 22-345 Figure 3.8.22-2) */
-static int mediatype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_mediatype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -1330,7 +1346,7 @@ static int mediatype(const unsigned char *data, int data_len, int offset, int mi
 }
 
 /* Check negative temperature indicator (GSCN 22-353) */
-static int hyphen(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_hyphen(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -1356,7 +1372,7 @@ static int hyphen(const unsigned char *data, int data_len, int offset, int min, 
 }
 
 /* Check for an ISO/IEC 5128 code for the representation of human sexes (GSCN 22-246) */
-static int iso5218(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_iso5218(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -1379,7 +1395,7 @@ static int iso5218(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Validate sequence indicator, slash-separated (GSCN 22-246) */
-static int posinseqslash(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_posinseqslash(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     data_len = data_len < offset ? 0 : data_len - offset;
@@ -1442,7 +1458,7 @@ static int posinseqslash(const unsigned char *data, int data_len, int offset, in
 }
 
 /* Check that input contains non-digit (GSCN 21-283) */
-static int hasnondigit(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_hasnondigit(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -1469,7 +1485,7 @@ static int hasnondigit(const unsigned char *data, int data_len, int offset, int 
 }
 
 /* Check for package type (GSCN 23-272) */
-static int packagetype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_packagetype(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
     /* Package type codes https://navigator.gs1.org/edi/codelist-details?name=PackageTypeCode */
@@ -1593,9 +1609,11 @@ static int packagetype(const unsigned char *data, int data_len, int offset, int 
 /* Generated by "php backend/tools/gen_gs1_linter.php > backend/gs1_lint.h" */
 #include "gs1_lint.h"
 
+#define GS1_PARENS_PLACEHOLDER_MASK 0x20  /* Mask `(` or `)` by this if escaped (get BS (\x08) or HT (\x09)) */
+
 /* Verify a GS1 input string */
-INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[], const int length,
-                unsigned char reduced[], int *p_reduced_length) {
+INTERNAL int gs1_verify(struct zint_symbol *symbol, unsigned char source[], int *p_length, unsigned char reduced[],
+                int *p_reduced_length) {
     int i, j;
     int error_value = 0;
     int bracket_level = 0, max_bracket_level = 0;
@@ -1604,6 +1622,7 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int max_ai_pos = 0, min_ai_pos = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positives */
     int ai_zero_len_no_data = 0, ai_single_digit = 0, ai_nonnumeric = 0;
     int ai_nonnumeric_pos = 0; /* Suppress gcc 14 "-Wmaybe-uninitialized" false positive */
+    int length = *p_length;
     const char obracket = symbol->input_mode & GS1PARENS_MODE ? '(' : '[';
     const char cbracket = symbol->input_mode & GS1PARENS_MODE ? ')' : ']';
     const int ai_max = chr_cnt(source, length, obracket) + 1; /* Plus 1 so non-zero */
@@ -1611,6 +1630,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     int *ai_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_location = (int *) z_alloca(sizeof(int) * ai_max);
     int *data_length = (int *) z_alloca(sizeof(int) * ai_max);
+
+    assert(p_length != p_reduced_length); /* Make sure we don't overwrite one with the other */
 
     /* Detect control and extended ASCII characters */
     for (i = 0; i < length; i++) {
@@ -1630,6 +1651,27 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
 
     if (source[0] != obracket) {
         return errtxt(ZINT_ERROR_INVALID_DATA, symbol, 252, "Data does not start with an AI");
+    }
+
+    if ((symbol->input_mode & (ESCAPE_MODE | GS1PARENS_MODE)) == (ESCAPE_MODE | GS1PARENS_MODE)) {
+        /* Check for escaped parentheses */
+        for (i = 0; i < length; i++) {
+            if (source[i] == '\\' && i + 1 < length && (source[i + 1] == '(' || source[i + 1] == ')')) {
+                break;
+            }
+        }
+        if (i != length) {
+            /* Replace with control-char placeholders */
+            for (i = 0, j = 0; i < length; i++) {
+                if (source[i] == '\\' && i + 1 < length && (source[i + 1] == '(' || source[i + 1] == ')')) {
+                    source[j++] = source[++i] & ~GS1_PARENS_PLACEHOLDER_MASK; /* BS (\x08) or HT (\x09) */
+                } else {
+                    source[j++] = source[i];
+                }
+            }
+            source[j] = '\0';
+            length = j;
+        }
     }
 
     /* Check the balance of the brackets & AI lengths */
@@ -1702,6 +1744,8 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     }
 
     if (!(symbol->input_mode & GS1NOCHECK_MODE)) {
+        unsigned char *local_source = source;
+        unsigned char *local_source_buf = (unsigned char *) z_alloca(length + 1);
         int ai_count = 0;
         for (i = 1; i < length; i++) {
             if (source[i - 1] == obracket) {
@@ -1732,12 +1776,24 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             }
         }
 
+        if (length != *p_length) {
+            /* Temporarily re-instate escaped parentheses before linting */
+            local_source = local_source_buf;
+            memcpy(local_source, source, length + 1); /* Include terminating NUL */
+            for (i = 0; i < length; i++) {
+                if (local_source[i] < '\x1D') {
+                    local_source[i] |= GS1_PARENS_PLACEHOLDER_MASK;
+                }
+            }
+        }
+
         /* Check for valid AI values and data lengths according to GS1 General
-           Specifications Release 21.0.1, January 2021 */
+           Specifications Release 25, January 2025 */
         for (i = 0; i < ai_count; i++) {
             int err_no, err_posn;
             char err_msg[50];
-            if (!gs1_lint(ai_value[i], source + data_location[i], data_length[i], &err_no, &err_posn, err_msg)) {
+            if (!gs1_lint(ai_value[i], local_source + data_location[i], data_length[i], &err_no, &err_posn,
+                            err_msg)) {
                 if (err_no == 1) {
                     errtxtf(0, symbol, 260, "Invalid AI (%02d)", ai_value[i]);
                 } else if (err_no == 2 || err_no == 4) { /* 4 is backward-incompatible bad length */
@@ -1767,17 +1823,13 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
             if (i + 1 != length) {
                 int last_ai = to_int(source + i + 1, 2);
                 ai_latch = 0;
-                /* The following values from "GS1 General Specifications Release 21.0.1"
-                   Figure 7.8.4-2 "Element strings with predefined length using GS1 Application Identifiers" */
-                if (
-                        ((last_ai >= 0) && (last_ai <= 4))
-                        || ((last_ai >= 11) && (last_ai <= 20))
+                /* The following values from GS1 General Specifications Release 25.0
+                   Figure 7.8.5-2 "Element strings with predefined length using GS1 Application Identifiers" */
+                if ((last_ai >= 0 && last_ai <= 4) || (last_ai >= 11 && last_ai <= 20)
                         /* NOTE: as noted by Terry Burton the following complies with ISO/IEC 24724:2011 Table D.1,
                            but clashes with TPX AI [235], introduced May 2019; awaiting feedback from GS1 */
-                        || (last_ai == 23) /* legacy support */ /* TODO: probably remove */
-                        || ((last_ai >= 31) && (last_ai <= 36))
-                        || (last_ai == 41)
-                        ) {
+                        || last_ai == 23 /* legacy support */ /* TODO: probably remove */
+                        || (last_ai >= 31 && last_ai <= 36) || last_ai == 41) {
                     ai_latch = 1;
                 }
             }
@@ -1790,6 +1842,21 @@ INTERNAL int gs1_verify(struct zint_symbol *symbol, const unsigned char source[]
     }
     reduced[j] = '\0';
     *p_reduced_length = j;
+
+    if (length != *p_length) {
+        /* Re-instate escaped parentheses */
+        for (i = 0; i < *p_reduced_length; i++) {
+            if (reduced[i] < '\x1D') {
+                reduced[i] |= GS1_PARENS_PLACEHOLDER_MASK;
+            }
+        }
+        for (i = 0; i < length; i++) {
+            if (source[i] < '\x1D') {
+                source[i] |= GS1_PARENS_PLACEHOLDER_MASK;
+            }
+        }
+        *p_length = length;
+    }
 
     /* The character '\x1D' (GS) in the reduced string refers to the FNC1 character */
     return error_value;

@@ -160,6 +160,10 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
         \e       (0x1B)    ESC  Escape
         \G       (0x1D)    GS   Group Separator
         \R       (0x1E)    RS   Record Separator
+        \(       (0x28)    (    Opening parenthesis (only with
+                                --gs1parens)
+        \)       (0x29)    )    Closing parenthesis (only with
+                                --gs1parens)
         \\       (0x5C)    \    Backslash
         \dNNN    (NNN)          Any 8-bit character where NNN is
                                 decimal (000-255)
@@ -208,8 +212,8 @@ Paintbrush (`PCX`), Portable Network Format (`PNG`), Scalable Vector Graphic (`S
 
 `--gs1parens`
 
-:   Process parentheses `"()"` as GS1 AI delimiters, rather than square brackets `"[]"`. The input data must not
-    otherwise contain parentheses.
+:   Process parentheses `"()"` as GS1 AI delimiters, rather than square brackets `"[]"`. If the AI data contains
+    parentheses, they must be backslashed (`"\("` or `"\)"`) and the `--esc` option selected.
 
 `--gssep`
 
