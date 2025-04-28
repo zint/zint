@@ -70,7 +70,7 @@ INTERNAL int dbar_omnstk_set_height(struct zint_symbol *symbol, const int first_
 INTERNAL int dbar_omn_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int dbar_ltd_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
 INTERNAL int dbar_exp_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows);
-INTERNAL int dbar_date(const unsigned char source[], const int length, const int src_posn);
+INTERNAL int dbar_exp_date(const unsigned char source[], const int length, const int position);
 
 static int cc_min(const int first, const int second) {
 
@@ -758,7 +758,7 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
 
     if (length > 1 && source[0] == '1' && (source[1] == '0' || source[1] == '1' || source[1] == '7')) {
         /* Source starts (10), (11) or (17) */
-        if (source[1] == '0' || dbar_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
+        if (source[1] == '0' || dbar_exp_date(source, length, 2) >= 0) { /* Check date valid if (11) or (17) */
             encoding_method = 2;
         }
     } else if (length > 1 && source[0] == '9' && source[1] == '0') {
@@ -781,9 +781,9 @@ static int cc_binary_string(struct zint_symbol *symbol, const unsigned char sour
             read_posn = 2;
         } else {
             /* Production Date (11) or Expiration Date (17) */
-            assert(length >= 8); /* Due to `dbar_date()` check above */
+            assert(length >= 8); /* Due to `dbar_exp_date()` check above */
 
-            bp = bin_append_posn(dbar_date(source, length, 2), 16, binary_string, bp);
+            bp = bin_append_posn(dbar_exp_date(source, length, 2), 16, binary_string, bp);
 
             if (source[1] == '1') {
                 /* Production Date AI 11 */

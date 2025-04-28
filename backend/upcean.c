@@ -110,7 +110,8 @@ static void upca_set_dest(const unsigned char source[], const int length, char *
 }
 
 /* Make a UPC-A barcode, allowing for composite if `cc_rows` set */
-static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
+static int upca_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[],
+                    const int cc_rows) {
     const unsigned char *gtin = symbol->text;
     int error_number = 0;
 
@@ -157,7 +158,7 @@ static int upca(struct zint_symbol *symbol, const unsigned char source[], int le
 }
 
 /* Make a UPC-E, allowing for composite if `cc_rows` set */
-static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char *d, int cc_rows,
+static int upce_cc(struct zint_symbol *symbol, unsigned char source[], int length, char *d, const int cc_rows,
                     unsigned char equivalent[12]) {
     int i;
     int num_system = 0;
@@ -390,7 +391,7 @@ static void ean_add_on(const unsigned char source[], const int length, char dest
 
 /* Make an EAN-13, allowing for composite if `cc_rows` set */
 static int ean13_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char *d,
-            int cc_rows) {
+                    const int cc_rows) {
     int i, half_way;
     const char *parity;
     const unsigned char *gtin = symbol->text;
@@ -468,7 +469,8 @@ static int ean13(struct zint_symbol *symbol, const unsigned char source[], int l
 }
 
 /* Make an EAN-8, allowing for composite if `cc_rows` set */
-static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[], int cc_rows) {
+static int ean8_cc(struct zint_symbol *symbol, const unsigned char source[], int length, char dest[],
+                    const int cc_rows) {
     /* EAN-8 is basically the same as UPC-A but with fewer digits */
     const unsigned char *gtin = symbol->text;
     int error_number = 0;
@@ -862,7 +864,7 @@ INTERNAL int ean_leading_zeroes(struct zint_symbol *symbol, const unsigned char 
 }
 
 /* Make EAN/UPC and ISBN, allowing for composite if `cc_rows` set */
-INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, int cc_rows) {
+INTERNAL int eanx_cc(struct zint_symbol *symbol, unsigned char source[], int length, const int cc_rows) {
     unsigned char first_part[14], second_part[6];
     unsigned char local_source[20]; /* Allow 13 + "+" + 5 + 1 */
     unsigned char equivalent[12] = {0}; /* For UPC-E - GTIN-12 equivalent */
