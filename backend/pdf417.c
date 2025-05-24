@@ -1681,7 +1681,7 @@ INTERNAL int micropdf417(struct zint_symbol *symbol, struct zint_seg segs[], con
 
     /* Feedback options */
     /* Place in top byte, leaving bottom one for maybe future use - also compatible with AZTEC */
-    symbol->option_1 = ((int) roundf(ecc_cwds * 100.0f / (longueur + ecc_cwds))) << 8;
+    symbol->option_1 = ((int) stripf(roundf(stripf(ecc_cwds * 100.0f / (longueur + ecc_cwds))))) << 8;
 
     if (debug_print) {
         fputs("\nChoose symbol size:\n", stdout);

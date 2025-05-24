@@ -1125,7 +1125,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
         error_number = ZEXT errtxt(ZINT_WARN_NONCOMPLIANT, symbol, 706, "Number of ECC codewords 3 at minimum");
         symbol->option_1 = -1; /* Feedback options: indicate minimum 3 with -1 */
     } else {
-        ecc_ratio = (float) (ecc_blocks - 3) / (data_blocks + ecc_blocks);
+        ecc_ratio = stripf((float) (ecc_blocks - 3) / (data_blocks + ecc_blocks));
         if (ecc_ratio < 0.05f) {
             error_number = ZEXT errtxtf(ZINT_WARN_NONCOMPLIANT, symbol, 708,
                                         "Number of ECC codewords %1$d less than 5%% + 3 of data codewords %2$d",
@@ -1136,7 +1136,7 @@ INTERNAL int aztec(struct zint_symbol *symbol, struct zint_seg segs[], const int
             symbol->option_1 = ecc_ratio < 0.165f ? 1 : ecc_ratio < 0.295f ? 2 : ecc_ratio < 0.43f ? 3 : 4;
         }
         /* Feedback percentage in top byte */
-        symbol->option_1 |= ((int) (ecc_ratio * 100.0f)) << 8;
+        symbol->option_1 |= ((int) stripf(ecc_ratio * 100.0f)) << 8;
     }
 
     if (debug_print) {
