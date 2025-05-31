@@ -538,14 +538,16 @@ static int gs1_n1_zero_n13_csum_key__x__16_(const unsigned char *data,
             && gs1_cset82(data, data_len, 14, 0, 16, p_err_no, p_err_posn, err_msg);
 }
 
-/* N14,csum N4,pieceoftotal (Used by ITIP, ITIP CONTENT) */
-static int gs1_n14_csum_n4_pieceoftotal(const unsigned char *data,
+/* N14,csum,keyoff1 N4,pieceoftotal (Used by ITIP, ITIP CONTENT) */
+static int gs1_n14_csum_keyoff1_n4_pieceoftotal(const unsigned char *data,
             const int data_len, int *p_err_no, int *p_err_posn, char err_msg[50]) {
     return data_len == 18
             && gs1_csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
+            && gs1_keyoff1(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && gs1_pieceoftotal(data, data_len, 14, 4, 4, p_err_no, p_err_posn, err_msg, 1 /*length_only*/)
             && gs1_numeric(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg)
             && gs1_csum(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0)
+            && gs1_keyoff1(data, data_len, 0, 14, 14, p_err_no, p_err_posn, err_msg, 0)
             && gs1_numeric(data, data_len, 14, 4, 4, p_err_no, p_err_posn, err_msg)
             && gs1_pieceoftotal(data, data_len, 14, 4, 4, p_err_no, p_err_posn, err_msg, 0);
 }
@@ -979,7 +981,7 @@ static int gs1_lint(const int ai, const unsigned char *data, const int data_len,
             return gs1_n6(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8006 || ai == 8026) {
-            return gs1_n14_csum_n4_pieceoftotal(data, data_len, p_err_no, p_err_posn, err_msg);
+            return gs1_n14_csum_keyoff1_n4_pieceoftotal(data, data_len, p_err_no, p_err_posn, err_msg);
         }
         if (ai == 8007) {
             return gs1_x__34_iban(data, data_len, p_err_no, p_err_posn, err_msg);
