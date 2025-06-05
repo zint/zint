@@ -278,7 +278,7 @@ static int gs1_csumalpha(const unsigned char *data, int data_len, int offset, in
 #define GS1_GCP_MIN_LENGTH  4 /* Minimum length of GS1 Company Prefix */
 
 /* Check for a GS1 Prefix (GS1 General Specifications GS1 1.4.2) */
-static int gs1_key(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_gcppos1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
     (void)max;
 
@@ -317,10 +317,10 @@ static int gs1_key(const unsigned char *data, int data_len, int offset, int min,
 }
 
 /* Check for a GS1 Prefix at offset 1 (2nd position) */
-static int gs1_keyoff1(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
+static int gs1_gcppos2(const unsigned char *data, int data_len, int offset, int min, int max, int *p_err_no,
             int *p_err_posn, char err_msg[50], const int length_only) {
 
-    return gs1_key(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only);
+    return gs1_gcppos1(data, data_len, offset + 1, min - 1, max - 1, p_err_no, p_err_posn, err_msg, length_only);
 }
 
 /* Note following date/time checkers (!length_only) assume data all digits, i.e. `numeric()` has succeeded */

@@ -56,7 +56,7 @@ foreach ($lines as $line) {
     if ($line === '' || $line[0] === '#') {
         continue;
     }
-    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *?]* )([NXYZ][0-9.][ NXYZ0-9.,a-z=|+\[\]]*)(?:# (.+))?$/',
+    if (!preg_match('/^([0-9]+(?:-[0-9]+)?) +([ *!?]* )([NXYZ][0-9.][ NXYZ0-9.,a-z=|+\[\]]*)(?:# (.+))?$/',
                     $line, $matches)) {
         print $line . PHP_EOL;
         exit("$basename:" . __LINE__ . " ERROR: Could not parse line $line_no" . PHP_EOL);
