@@ -42,8 +42,8 @@ TEA_LOAD_TCLCONFIG
 # Load the tkConfig.sh file if necessary (Tk extension)
 #--------------------------------------------------------------------
 
-#TEA_PATH_TKCONFIG
-#TEA_LOAD_TKCONFIG
+TEA_PATH_TKCONFIG
+TEA_LOAD_TKCONFIG
 
 #-----------------------------------------------------------------------
 # Handle the --prefix=... option by defaulting to what Tcl gave.
@@ -172,7 +172,7 @@ fi
 TEA_PUBLIC_TCL_HEADERS
 #TEA_PRIVATE_TCL_HEADERS
 
-#TEA_PUBLIC_TK_HEADERS
+TEA_PUBLIC_TK_HEADERS
 #TEA_PRIVATE_TK_HEADERS
 #TEA_PATH_X
 
