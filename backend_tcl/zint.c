@@ -225,6 +225,10 @@ typedef int Tcl_Size;
 # define TCL_SIZE_MODIFIER ""
 #endif
 
+#ifndef CONST
+#define CONST const
+#endif
+
 #undef EXPORT
 #if defined(__WIN32__) || defined(_WIN32) || defined(WIN32)
 #define EXPORT __declspec(dllexport)
